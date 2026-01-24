@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 15 of 22 (Background Jobs Infrastructure) — IN PROGRESS
-Plan: 3 of 6 complete
-Status: Bull Board dashboard ready with authentication
-Last activity: 2026-01-24 — Completed 15-03-PLAN.md
+Plan: 4 of 6 complete
+Status: Integration tests and E2E verification complete
+Last activity: 2026-01-24 — Completed 15-04-PLAN.md
 
-Progress: [██░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 11% (9/79 plans)
+Progress: [███░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 13% (10/79 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,12 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 9
+- Plans completed: 10
 - Phases completed: 1 (14-real-time-foundation)
-- In progress: 15-background-jobs-infrastructure (3/6 plans)
+- In progress: 15-background-jobs-infrastructure (4/6 plans)
 
 **Combined:**
-- Total plans completed: 9/79
+- Total plans completed: 10/79
 - Total phases: 15 (1 complete, 1 in progress)
 - Milestones shipped: 2 (v1.0, v1.1)
 
@@ -97,6 +97,8 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | BOARD-01 | Wrap Bull Board in plugin context with onRequest auth hook | 15-03 | Ensures all dashboard routes require JWT validation without modifying Bull Board internals |
 | BOARD-02 | Mount dashboard at /admin/queues (not /api/admin/queues) | 15-03 | Follows Bull Board conventions and plan requirements for clean dashboard path |
 | BOARD-03 | Separate health check endpoints at /api/admin | 15-03 | Provides API-friendly JSON endpoints for programmatic queue monitoring |
+| TEST-01 | Test file path adapted to project convention | 15-04 | Tests in backend/tests/services/ not src/__tests__/ |
+| TEST-02 | Integration tests require running Redis | 15-04 | Skip with docker compose down, run with docker compose up redis |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -111,15 +113,15 @@ See also: .planning/PROJECT.md Key Decisions table
 - Production data migration requires Supabase access (DEFERRED)
 - Real-time E2E verification requires local staging environment (Phase 01 plans pending)
 - TTN device tests failing: 10 tests in ttn-devices.test.ts returning 500 errors (needs debugging)
-- Worker deployment pending: Workers defined but not running in any environment
+- Worker container verified working locally, deployment pending for production
 
 ## Session Continuity
 
-**Last session:** 2026-01-24 09:55 UTC
-**Stopped at:** Completed 15-03-PLAN.md (Bull Board Dashboard Integration)
+**Last session:** 2026-01-24 10:05 UTC
+**Stopped at:** Completed 15-04-PLAN.md (Queue Integration Tests)
 **Resume file:** None
-**Next action:** Continue with Phase 15 remaining plans (15-04, 15-05, 15-06)
+**Next action:** Continue with Phase 15 remaining plans (15-05, 15-06)
 
 ---
 
-*State updated: 2026-01-24 after completing Plan 15-03*
+*State updated: 2026-01-24 after completing Plan 15-04*
