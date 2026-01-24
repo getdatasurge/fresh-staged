@@ -23,6 +23,8 @@ import {
 const DigestPreferencesResponseSchema = z.object({
   digestDaily: z.boolean(),
   digestWeekly: z.boolean(),
+  digestDailyTime: z.string(),
+  digestSiteIds: z.array(z.string()).nullable(),
   timezone: z.string(),
   emailEnabled: z.boolean(),
 });
@@ -30,6 +32,11 @@ const DigestPreferencesResponseSchema = z.object({
 const UpdateDigestPreferencesSchema = z.object({
   digestDaily: z.boolean().optional(),
   digestWeekly: z.boolean().optional(),
+  digestDailyTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Must be HH:MM format (24-hour)')
+    .optional(),
+  digestSiteIds: z.array(z.string().uuid()).nullable().optional(),
   timezone: z.string().min(1).max(64).optional(),
 });
 
@@ -67,6 +74,8 @@ export default async function preferencesRoutes(fastify: FastifyInstance) {
         .select({
           digestDaily: profiles.digestDaily,
           digestWeekly: profiles.digestWeekly,
+          digestDailyTime: profiles.digestDailyTime,
+          digestSiteIds: profiles.digestSiteIds,
           timezone: profiles.timezone,
           emailEnabled: profiles.emailEnabled,
         })
@@ -78,7 +87,13 @@ export default async function preferencesRoutes(fastify: FastifyInstance) {
         return reply.status(404).send({ error: 'Profile not found' });
       }
 
-      return reply.send(profile);
+      // Parse digestSiteIds from JSON text to array
+      return reply.send({
+        ...profile,
+        digestSiteIds: profile.digestSiteIds
+          ? JSON.parse(profile.digestSiteIds)
+          : null,
+      });
     }
   );
 
@@ -120,11 +135,20 @@ export default async function preferencesRoutes(fastify: FastifyInstance) {
       const updates: Partial<{
         digestDaily: boolean;
         digestWeekly: boolean;
+        digestDailyTime: string;
+        digestSiteIds: string | null;
         timezone: string;
       }> = {};
 
       if (body.digestDaily !== undefined) updates.digestDaily = body.digestDaily;
       if (body.digestWeekly !== undefined) updates.digestWeekly = body.digestWeekly;
+      if (body.digestDailyTime !== undefined)
+        updates.digestDailyTime = body.digestDailyTime;
+      if (body.digestSiteIds !== undefined) {
+        updates.digestSiteIds = body.digestSiteIds
+          ? JSON.stringify(body.digestSiteIds)
+          : null;
+      }
       if (body.timezone !== undefined) updates.timezone = body.timezone;
 
       // Update profile in database
@@ -135,6 +159,8 @@ export default async function preferencesRoutes(fastify: FastifyInstance) {
         .returning({
           digestDaily: profiles.digestDaily,
           digestWeekly: profiles.digestWeekly,
+          digestDailyTime: profiles.digestDailyTime,
+          digestSiteIds: profiles.digestSiteIds,
           timezone: profiles.timezone,
           emailEnabled: profiles.emailEnabled,
         });
@@ -144,11 +170,18 @@ export default async function preferencesRoutes(fastify: FastifyInstance) {
         dailyEnabled: updated.digestDaily,
         weeklyEnabled: updated.digestWeekly,
         timezone: updated.timezone,
+        dailyTime: updated.digestDailyTime,
       }).catch((err) => {
         fastify.log.error({ err }, '[Preferences] Failed to sync digest schedulers');
       });
 
-      return reply.send(updated);
+      // Parse digestSiteIds from JSON text to array
+      return reply.send({
+        ...updated,
+        digestSiteIds: updated.digestSiteIds
+          ? JSON.parse(updated.digestSiteIds)
+          : null,
+      });
     }
   );
 
