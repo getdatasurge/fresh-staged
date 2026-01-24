@@ -123,10 +123,16 @@ See also: .planning/PROJECT.md Key Decisions table
 - TTN device tests failing: 10 tests in ttn-devices.test.ts returning 500 errors (needs debugging)
 - Worker container verified working locally, deployment pending for production
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 001 | Remove Supabase references from README and project configuration | 2026-01-24 | 62c8e17 | [001-remove-supabase-references-from-readme-a](./quick/001-remove-supabase-references-from-readme-a/) |
+
 ## Session Continuity
 
-**Last session:** 2026-01-24 14:34 UTC
-**Stopped at:** Completed quick-001 (README/ARCHITECTURE doc updates)
+**Last session:** 2026-01-24
+**Stopped at:** Completed quick task 001: Remove Supabase references from docs
 **Resume file:** None
 **Next action:** Plan Phase 17 (Email Digests) or Phase 18 (Stripe Billing)
 
