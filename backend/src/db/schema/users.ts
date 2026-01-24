@@ -51,6 +51,10 @@ export const profiles = pgTable(
     smsEnabled: boolean('sms_enabled').notNull().default(false),
     digestDaily: boolean('digest_daily').notNull().default(false),
     digestWeekly: boolean('digest_weekly').notNull().default(false),
+    digestDailyTime: varchar('digest_daily_time', { length: 5 })
+      .notNull()
+      .default('09:00'),
+    digestSiteIds: text('digest_site_ids'),
     timezone: varchar('timezone', { length: 64 }).notNull().default('UTC'),
     ...timestamps,
   },
