@@ -7,16 +7,18 @@ vi.mock('../src/utils/jwt.js', () => ({
   verifyAccessToken: vi.fn(),
 }));
 
-// Mock user service for org context
+// Mock user service for org context (must include getOrCreateProfile for org-context middleware)
 vi.mock('../src/services/user.service.js', () => ({
   getUserRoleInOrg: vi.fn(),
+  getOrCreateProfile: vi.fn(),
 }));
 
 import { verifyAccessToken } from '../src/utils/jwt.js';
-import { getUserRoleInOrg } from '../src/services/user.service.js';
+import { getUserRoleInOrg, getOrCreateProfile } from '../src/services/user.service.js';
 
 const mockVerify = vi.mocked(verifyAccessToken);
 const mockGetRole = vi.mocked(getUserRoleInOrg);
+const mockGetOrCreateProfile = vi.mocked(getOrCreateProfile);
 
 const TEST_ORG_ID = '00000000-0000-0000-0000-000000000001';
 const TEST_USER_ID = 'user_123';
@@ -40,6 +42,11 @@ describe('RBAC Middleware', () => {
         iat: Math.floor(Date.now() / 1000),
       },
       userId: TEST_USER_ID,
+    });
+    // Mock getOrCreateProfile for org-context middleware
+    mockGetOrCreateProfile.mockResolvedValue({
+      id: 'profile_test123',
+      isNew: false,
     });
   });
 

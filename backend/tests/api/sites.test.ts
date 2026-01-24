@@ -7,9 +7,10 @@ vi.mock('../../src/utils/jwt.js', () => ({
   verifyAccessToken: vi.fn(),
 }));
 
-// Mock user service for org context
+// Mock user service for org context (must include getOrCreateProfile for org-context middleware)
 vi.mock('../../src/services/user.service.js', () => ({
   getUserRoleInOrg: vi.fn(),
+  getOrCreateProfile: vi.fn(),
 }));
 
 // Mock site service
@@ -22,11 +23,12 @@ vi.mock('../../src/services/site.service.js', () => ({
 }));
 
 import { verifyAccessToken } from '../../src/utils/jwt.js';
-import { getUserRoleInOrg } from '../../src/services/user.service.js';
+import { getUserRoleInOrg, getOrCreateProfile } from '../../src/services/user.service.js';
 import * as siteService from '../../src/services/site.service.js';
 
 const mockVerify = vi.mocked(verifyAccessToken);
 const mockGetRole = vi.mocked(getUserRoleInOrg);
+const mockGetOrCreateProfile = vi.mocked(getOrCreateProfile);
 const mockListSites = vi.mocked(siteService.listSites);
 const mockGetSite = vi.mocked(siteService.getSite);
 const mockCreateSite = vi.mocked(siteService.createSite);
@@ -67,6 +69,11 @@ describe('Sites API', () => {
         iat: Math.floor(Date.now() / 1000),
       },
       userId,
+    });
+    // Mock getOrCreateProfile for org-context middleware
+    mockGetOrCreateProfile.mockResolvedValue({
+      id: 'profile_test123',
+      isNew: false,
     });
   }
 
