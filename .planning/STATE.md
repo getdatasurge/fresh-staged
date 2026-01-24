@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
-Phase: 17 of 22 (Email Digests) — IN PROGRESS
-Plan: 2 of 3 complete
-Status: Completed 17-02-PLAN.md (digest builder grouping)
-Last activity: 2026-01-24 — Completed 17-02-PLAN.md
+Phase: 17 of 22 (Email Digests) — COMPLETE
+Plan: 3 of 3 complete
+Status: Phase 17 complete
+Last activity: 2026-01-24 — Completed 17-03-PLAN.md
 
-Progress: [██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 20% (17/85 plans)
+Progress: [██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 21% (18/85 plans)
 
 ## Completed Milestones
 
@@ -50,13 +50,13 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 17
-- Phases completed: 3 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications)
-- Current phase: 17-email-digests (2/3 plans)
+- Plans completed: 18
+- Phases completed: 4 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests)
+- Current phase: None (ready for Phase 18)
 
 **Combined:**
-- Total plans completed: 17/85
-- Total phases: 16 (3 complete in v2.0, 1 in progress)
+- Total plans completed: 18/85
+- Total phases: 17 (4 complete in v2.0)
 - Milestones shipped: 2 (v1.0, v1.1)
 
 ## Accumulated Context
@@ -112,6 +112,9 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | DIGEST-03 | Weekly digest uses same dailyTime as daily | 17-01 | Consistent user experience, Monday at user's preferred time |
 | DIGEST-04 | Map-based intermediate grouping for digest data | 17-02 | Efficient O(n) pass to build nested structure, then convert to arrays |
 | DIGEST-05 | 5-alert limit per unit in digest emails | 17-02 | Prevents email bloat while showing representative sample per unit |
+| UNSUB-01 | JWT token for unsubscribe with 30-day expiry | 17-03 | Secure, stateless, no DB lookup needed for validation |
+| UNSUB-02 | UNSUBSCRIBE_SECRET with JWT_SECRET fallback | 17-03 | Dedicated secret optional, works with existing setup |
+| UNSUB-03 | Endpoint at /unsubscribe (no /api prefix) | 17-03 | Public user-facing link from emails |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -139,10 +142,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-24
-**Stopped at:** Completed 17-02-PLAN.md (digest builder grouping)
+**Stopped at:** Completed 17-03-PLAN.md (unsubscribe & processor)
 **Resume file:** None
-**Next action:** Execute 17-03-PLAN.md (email scheduling)
+**Next action:** Phase 18 (Stripe Billing Integration)
 
 ---
 
-*State updated: 2026-01-24 after completing 17-02*
+*State updated: 2026-01-24 after completing 17-03 (Phase 17 complete)*
