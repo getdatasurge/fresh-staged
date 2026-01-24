@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
-Phase: 18 of 22 (Stripe Billing) — COMPLETE
-Plan: 6 of 6 complete
-Status: Phase 18 verified and complete
-Last activity: 2026-01-24 — Completed 18-06 (integration tests & verification)
+Phase: 19 of 22 (Backend API Migration Foundation) — IN PROGRESS
+Plan: 1 of 6 complete
+Status: tRPC infrastructure established
+Last activity: 2026-01-24 — Completed 19-01 (tRPC infrastructure setup)
 
-Progress: [███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 32% (27/85 plans)
+Progress: [███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 33% (28/85 plans)
 
 ## Completed Milestones
 
@@ -50,13 +50,13 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 27
+- Plans completed: 28
 - Phases completed: 6 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing)
-- Ready for: Phase 19
+- In progress: Phase 19 (1/6 plans complete)
 
 **Combined:**
-- Total plans completed: 27/85
-- Total phases: 18 (6 complete in v2.0)
+- Total plans completed: 28/85
+- Total phases: 19 (6 complete in v2.0, 1 in progress)
 - Milestones shipped: 2 (v1.0, v1.1)
 
 ## Accumulated Context
@@ -132,6 +132,11 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | SCHED-04 | Initial report on startup | 18-05 | Ensures sensor counts are current when API starts |
 | TEST-03 | Mock Stripe API for unit tests | 18-06 | Vitest mocks keep tests fast and deterministic |
 | TEST-04 | Update queue test count after METER_REPORTING | 18-06 | Queue service now has 3 queues after billing phase |
+| TRPC-01 | Use tRPC v11 with Fastify adapter | 19-01 | Type-safe API layer with automatic client generation, native Fastify integration |
+| TRPC-02 | Reuse existing JWT verification from Stack Auth | 19-01 | Context creation uses same verifyAccessToken as REST middleware |
+| TRPC-03 | Support both auth header formats | 19-01 | x-stack-access-token (custom) and Authorization Bearer (standard) |
+| TRPC-04 | Organization middleware validates membership | 19-01 | orgProcedure checks user role and creates/retrieves profile |
+| TRPC-05 | Type narrowing via middleware composition | 19-01 | protectedProcedure narrows user to non-null, orgProcedure extends this |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -159,10 +164,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-24
-**Stopped at:** Completed Phase 18 (Stripe Billing)
+**Stopped at:** Completed 19-01 (tRPC Infrastructure Foundation)
 **Resume file:** None
-**Next action:** Begin Phase 19 or review roadmap for next priority
+**Next action:** Continue Phase 19 - Plan 02 (Organizations Router)
 
 ---
 
-*State updated: 2026-01-24 after completing Phase 18 Stripe Billing*
+*State updated: 2026-01-24 after completing 19-01 tRPC Infrastructure*
