@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import { db } from '../db/client.js';
 import { organizations, subscriptions, type Subscription } from '../db/schema/tenancy.js';
+import { stripeEvents, type InsertStripeEvent } from '../db/schema/billing.js';
 import { eq } from 'drizzle-orm';
 import type { PlanKey } from '../schemas/payments.js';
 
@@ -387,10 +388,42 @@ export function clearAdminNotifications(): void {
 }
 
 /**
+ * Check if a webhook event has already been processed
+ * Returns true if event exists (already processed), false otherwise
+ */
+async function isEventProcessed(eventId: string): Promise<boolean> {
+  const [existing] = await db
+    .select({ id: stripeEvents.id })
+    .from(stripeEvents)
+    .where(eq(stripeEvents.eventId, eventId))
+    .limit(1);
+
+  return !!existing;
+}
+
+/**
+ * Record that a webhook event has been processed
+ */
+async function recordProcessedEvent(eventId: string, eventType: string): Promise<void> {
+  const insert: InsertStripeEvent = {
+    eventId,
+    eventType,
+  };
+
+  await db.insert(stripeEvents).values(insert).onConflictDoNothing();
+}
+
+/**
  * Main webhook event handler
- * Routes events to appropriate handlers
+ * Routes events to appropriate handlers with idempotency protection
  */
 export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
+  // Idempotency check - Stripe retries failed webhooks for up to 3 days
+  if (await isEventProcessed(event.id)) {
+    console.log(`[Stripe Webhook] Event ${event.id} already processed, skipping`);
+    return;
+  }
+
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
@@ -416,4 +449,7 @@ export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
       // Unhandled event type - log for monitoring
       console.log(`[Stripe Webhook] Unhandled event type: ${event.type}`);
   }
+
+  // Record successful processing for idempotency
+  await recordProcessedEvent(event.id, event.type);
 }
