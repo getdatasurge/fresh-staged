@@ -32,8 +32,10 @@ import {
   JobNames,
   defaultJobOptions,
   smsJobOptions,
+  meterReportJobOptions,
   type BaseJobData,
   type SmsNotificationJobData,
+  type MeterReportJobData,
 } from '../jobs/index.js';
 
 /**
@@ -105,6 +107,7 @@ export class QueueService {
       // Register queues
       this.registerQueue(QueueNames.SMS_NOTIFICATIONS);
       this.registerQueue(QueueNames.EMAIL_DIGESTS);
+      this.registerQueue(QueueNames.METER_REPORTING);
 
       this.redisEnabled = true;
       console.log('[QueueService] Queues initialized and ready');
@@ -223,6 +226,31 @@ export class QueueService {
       JobNames.SMS_SEND,
       data,
       smsJobOptions
+    );
+  }
+
+  /**
+   * Add a meter reporting job with meter-specific options
+   *
+   * Convenience method that applies meterReportJobOptions (5 attempts, 5s backoff)
+   * automatically. Use this for queueing Stripe meter events.
+   *
+   * @param data - Meter job data (organizationId, eventName, value, optional timestamp)
+   * @returns Job ID if queued, null if queues disabled
+   *
+   * @example
+   * await queueService.addMeterJob({
+   *   organizationId: 'org-123',
+   *   eventName: 'temperature_readings',
+   *   value: 150,
+   * });
+   */
+  async addMeterJob(data: MeterReportJobData): Promise<string | null> {
+    return this.addJob<MeterReportJobData>(
+      QueueNames.METER_REPORTING,
+      JobNames.METER_REPORT,
+      data,
+      meterReportJobOptions
     );
   }
 
