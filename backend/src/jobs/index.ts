@@ -14,9 +14,18 @@ export interface BaseJobData {
 
 // SMS notification job data (Phase 16)
 export interface SmsNotificationJobData extends BaseJobData {
+  /** Destination phone number in E.164 format */
   phoneNumber: string;
+  /** Message content to send */
   message: string;
+  /** Associated alert ID for tracking */
   alertId?: string;
+  /** Delivery tracking ID from notification_deliveries table */
+  deliveryId?: string;
+  /** User ID for rate limiting context */
+  userId?: string;
+  /** Alert type for rate limiting (critical, warning, info) */
+  alertType?: string;
 }
 
 // Email digest job data (Phase 17)
@@ -56,4 +65,26 @@ export const defaultJobOptions: JobsOptions = {
   },
   removeOnComplete: 100, // Keep last 100 completed jobs
   removeOnFail: 500,     // Keep last 500 failed jobs for debugging
+};
+
+/**
+ * SMS notification job options with custom backoff for Telnyx
+ *
+ * Configuration:
+ * - 5 attempts (vs default 3) for higher delivery reliability
+ * - 2s initial delay with exponential backoff (2s, 4s, 8s, 16s, 32s)
+ * - Longer history retention for SMS debugging
+ *
+ * Note: BullMQ does not natively support jitter in backoff options.
+ * Standard exponential backoff is used. If jitter is critical for
+ * thundering herd prevention, implement custom backoff in processor.
+ */
+export const smsJobOptions: JobsOptions = {
+  attempts: 5,
+  backoff: {
+    type: 'exponential',
+    delay: 2000, // 2s initial, then 4s, 8s, 16s, 32s
+  },
+  removeOnComplete: 100,
+  removeOnFail: 500,
 };
