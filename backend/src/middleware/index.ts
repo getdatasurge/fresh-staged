@@ -21,5 +21,8 @@ export { requireOrgContext } from './org-context.js';
 // API key authentication middleware (04-01)
 export { requireApiKey } from './api-key-auth.js';
 
+// Socket.io authentication middleware (14-02)
+export { setupSocketAuth } from './socket-auth.js';
+
 // Re-export types for convenience
 export type { AppRole } from './rbac.js';

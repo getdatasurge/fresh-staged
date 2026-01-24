@@ -75,6 +75,30 @@ export async function getUserRoleInOrg(
 }
 
 /**
+ * Get user's primary organization (first role record)
+ *
+ * Used by WebSocket authentication to get the user's default organization
+ * context when connecting. Returns the first organization the user belongs to.
+ *
+ * @param stackAuthUserId - Stack Auth user ID (from JWT sub claim)
+ * @returns Organization ID and role, or null if user has no organizations
+ */
+export async function getUserPrimaryOrganization(
+  stackAuthUserId: string
+): Promise<{ organizationId: string; role: AppRole } | null> {
+  const [roleRecord] = await db
+    .select({
+      organizationId: userRoles.organizationId,
+      role: userRoles.role,
+    })
+    .from(userRoles)
+    .where(eq(userRoles.userId, stackAuthUserId))
+    .limit(1);
+
+  return roleRecord || null;
+}
+
+/**
  * Get profile by Stack Auth user ID
  * Helper function for auth middleware
  *
