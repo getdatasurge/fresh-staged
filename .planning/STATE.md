@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 18 of 22 (Stripe Billing) — IN PROGRESS
-Plan: 1 of 6 complete
-Status: Plan 18-01 complete
-Last activity: 2026-01-24 — Completed 18-01 (billing foundation)
+Plan: 2 of 6 complete
+Status: Plan 18-02 complete
+Last activity: 2026-01-24 — Completed 18-02 (meter service & webhook idempotency)
 
-Progress: [████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 26% (22/85 plans)
+Progress: [████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 27% (23/85 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,12 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 22
+- Plans completed: 23
 - Phases completed: 5 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests)
-- Current phase: 18-stripe-billing (1/6 plans complete)
+- Current phase: 18-stripe-billing (2/6 plans complete)
 
 **Combined:**
-- Total plans completed: 22/85
+- Total plans completed: 23/85
 - Total phases: 17 (5 complete in v2.0)
 - Milestones shipped: 2 (v1.0, v1.1)
 
@@ -118,6 +118,10 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | BILLING-01 | Manual migration SQL for stripe_events | 18-01 | drizzle-kit ESM resolution issues, follows existing pattern |
 | BILLING-02 | Meter event names as literal union type | 18-01 | 'active_sensors' | 'temperature_readings' for compile-time safety |
 | BILLING-03 | 5 attempts with 5s backoff for meter reporting | 18-01 | Stripe meter events are idempotent, longer delays safe |
+| METER-01 | Lazy-initialized Stripe client singleton for meter events | 18-02 | Consistent with webhook service pattern |
+| METER-02 | Return {success, error} instead of throwing for meter ops | 18-02 | Callers handle failures gracefully without try/catch |
+| WEBHOOK-01 | Idempotency check at start of handleWebhookEvent | 18-02 | Prevents any duplicate processing of retried webhooks |
+| WEBHOOK-02 | Record event after all handlers complete | 18-02 | Ensures partial processing doesn't mark event as done |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -145,10 +149,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-24
-**Stopped at:** Completed 18-01-PLAN.md
+**Stopped at:** Completed 18-02-PLAN.md
 **Resume file:** None
-**Next action:** Execute 18-02-PLAN.md (webhook endpoint)
+**Next action:** Execute 18-03-PLAN.md (scheduled jobs)
 
 ---
 
-*State updated: 2026-01-24 after completing 18-01-PLAN.md*
+*State updated: 2026-01-24 after completing 18-02-PLAN.md*
