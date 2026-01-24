@@ -88,11 +88,12 @@ async function registerIngestRoutes(app: FastifyInstance) {
           const tempInt = Math.round(latestReading.temperature * 10);
 
           try {
-            // Evaluate alert state machine
+            // Evaluate alert state machine with real-time notifications
             const evaluation = await alertEvaluator.evaluateUnitAfterReading(
               unitId,
               tempInt,
-              new Date(latestReading.recordedAt)
+              new Date(latestReading.recordedAt),
+              request.server.socketService
             );
 
             if (evaluation.alertCreated || evaluation.alertResolved) {

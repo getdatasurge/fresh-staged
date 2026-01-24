@@ -39,13 +39,7 @@ export interface ServerToClientEvents {
   }) => void;
 
   // Alert events
-  'alert:triggered': (data: {
-    alertId: string;
-    unitId: string;
-    severity: 'critical' | 'warning' | 'info';
-    message: string;
-    timestamp: string;
-  }) => void;
+  'alert:triggered': (data: AlertNotification) => void;
 
   'alert:acknowledged': (data: {
     alertId: string;
@@ -55,8 +49,14 @@ export interface ServerToClientEvents {
 
   'alert:resolved': (data: {
     alertId: string;
-    resolvedBy: string;
-    timestamp: string;
+    unitId: string;
+    resolvedAt: string;
+  }) => void;
+
+  'alert:escalated': (data: {
+    alertId: string;
+    unitId: string;
+    escalationLevel: number;
   }) => void;
 
   // Error events
@@ -76,6 +76,20 @@ export interface SensorReading {
   signalStrength: number | null;
   recordedAt: Date;
   source: string;
+}
+
+/**
+ * Alert notification payload
+ */
+export interface AlertNotification {
+  alertId: string;
+  unitId: string;
+  alertType: string;
+  severity: 'warning' | 'critical';
+  message: string;
+  triggerTemperature: number;
+  thresholdViolated: 'min' | 'max';
+  triggeredAt: string;
 }
 
 /**

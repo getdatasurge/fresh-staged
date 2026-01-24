@@ -10,6 +10,7 @@ import {
   type InsertAlert,
   type Unit,
 } from '../db/schema/index.js';
+import type { SocketService } from './socket.service.js';
 
 /**
  * Result of evaluating a unit after a new temperature reading
@@ -166,24 +167,33 @@ export async function createAlertIfNotExists(
  * @param unitId - Unit to evaluate
  * @param latestTemp - Latest temperature reading (integer, e.g., 320 = 32.0F)
  * @param recordedAt - Timestamp of the reading
+ * @param socketService - Optional Socket.io service for real-time notifications
  * @returns Evaluation result with state changes and alert mutations
  */
 export async function evaluateUnitAfterReading(
   unitId: string,
   latestTemp: number,
-  recordedAt: Date
+  recordedAt: Date,
+  socketService?: SocketService
 ): Promise<EvaluationResult> {
   return db.transaction(async (tx) => {
-    // Fetch current unit state
-    const [unit] = await tx
-      .select()
+    // Fetch current unit state with organization context
+    const [unitData] = await tx
+      .select({
+        unit: units,
+        organizationId: sites.organizationId,
+      })
       .from(units)
+      .innerJoin(areas, eq(units.areaId, areas.id))
+      .innerJoin(sites, eq(areas.siteId, sites.id))
       .where(eq(units.id, unitId))
       .limit(1);
 
-    if (!unit) {
+    if (!unitData) {
       throw new Error(`Unit ${unitId} not found`);
     }
+
+    const { unit, organizationId } = unitData;
 
     // Get effective thresholds via hierarchy resolution
     const thresholds = await resolveEffectiveThresholds(unitId);
@@ -234,6 +244,20 @@ export async function evaluateUnitAfterReading(
         thresholdViolated: isAboveLimit ? 'max' : 'min',
         triggeredAt: now,
       });
+
+      // Emit real-time alert notification
+      if (result.alertCreated && socketService) {
+        socketService.emitToOrg(organizationId, 'alert:triggered', {
+          alertId: result.alertCreated.id,
+          unitId: result.alertCreated.unitId,
+          alertType: result.alertCreated.alertType,
+          severity: result.alertCreated.severity,
+          message: result.alertCreated.message,
+          triggerTemperature: result.alertCreated.triggerTemperature,
+          thresholdViolated: result.alertCreated.thresholdViolated,
+          triggeredAt: result.alertCreated.triggeredAt.toISOString(),
+        });
+      }
     }
 
     // STATE TRANSITION 2: excursion -> alarm_active (confirmation time elapsed)
@@ -258,7 +282,7 @@ export async function evaluateUnitAfterReading(
           .where(eq(units.id, unitId));
 
         // Escalate existing alert to critical severity
-        await tx
+        const [escalatedAlert] = await tx
           .update(alerts)
           .set({
             severity: 'critical',
@@ -272,7 +296,17 @@ export async function evaluateUnitAfterReading(
               eq(alerts.alertType, 'alarm_active'),
               inArray(alerts.status, ['active', 'acknowledged'])
             )
-          );
+          )
+          .returning();
+
+        // Emit real-time escalation notification
+        if (escalatedAlert && socketService) {
+          socketService.emitToOrg(organizationId, 'alert:escalated', {
+            alertId: escalatedAlert.id,
+            unitId: escalatedAlert.unitId,
+            escalationLevel: escalatedAlert.escalationLevel || 1,
+          });
+        }
       }
     }
 
@@ -313,6 +347,15 @@ export async function evaluateUnitAfterReading(
         .returning();
 
       result.alertResolved = resolved || null;
+
+      // Emit real-time resolution notification
+      if (resolved && socketService) {
+        socketService.emitToOrg(organizationId, 'alert:resolved', {
+          alertId: resolved.id,
+          unitId: resolved.unitId,
+          resolvedAt: resolved.resolvedAt?.toISOString() || now.toISOString(),
+        });
+      }
     }
 
     // STATE TRANSITION 4: restoring -> ok (future: after N good readings)
