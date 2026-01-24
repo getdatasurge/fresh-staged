@@ -95,6 +95,9 @@ COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 # Copy drizzle migrations folder (SQL files needed for migrations)
 COPY --chown=nodejs:nodejs drizzle ./drizzle
 
+# Copy migration script
+COPY --chown=nodejs:nodejs scripts/migrate-production.sh ./scripts/
+
 # Switch to non-root user
 USER nodejs
 

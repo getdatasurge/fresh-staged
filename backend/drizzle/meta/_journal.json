@@ -15,6 +15,13 @@
       "when": 1769254653004,
       "tag": "0001_silky_rhodey",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769339100000,
+      "tag": "0002_reading_metrics",
+      "breakpoints": true
     }
   ]
 }
