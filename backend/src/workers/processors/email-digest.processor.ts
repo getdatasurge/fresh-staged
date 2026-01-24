@@ -23,6 +23,7 @@ import { WeeklyDigest } from '../../emails/weekly-digest.js';
 import { db } from '../../db/client.js';
 import { profiles } from '../../db/schema/users.js';
 import { eq } from 'drizzle-orm';
+import { generateUnsubscribeToken } from '../../utils/unsubscribe-token.js';
 
 // Singleton digest builder for reuse across jobs
 const digestBuilder = new DigestBuilderService();
@@ -114,18 +115,23 @@ export async function processEmailDigest(
   // Build URLs for email links
   const baseUrl = process.env.APP_URL || 'https://app.freshtrack.app';
   const dashboardUrl = `${baseUrl}/alerts`;
-  const unsubscribeUrl = `${baseUrl}/preferences/notifications`;
+
+  // Generate secure unsubscribe URL with JWT token
+  const unsubscribeToken = await generateUnsubscribeToken(userId, period);
+  const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${unsubscribeToken}`;
 
   // Render appropriate template
   const Template = period === 'daily' ? DailyDigest : WeeklyDigest;
-  const html = await render(
-    Template({
-      userName: user.fullName || 'User',
-      digest: digestData,
-      unsubscribeUrl,
-      dashboardUrl,
-    })
-  );
+  const templateProps = {
+    userName: user.fullName || 'User',
+    digest: digestData,
+    unsubscribeUrl,
+    dashboardUrl,
+  };
+
+  // Render HTML and plain text versions
+  const html = await render(Template(templateProps));
+  const text = await render(Template(templateProps), { plainText: true });
 
   // Get EmailService
   const emailService = getEmailService();
@@ -134,11 +140,12 @@ export async function processEmailDigest(
     return { success: false, reason: 'email_service_disabled' };
   }
 
-  // Send via EmailService
+  // Send via EmailService with both HTML and plain text
   const result = await emailService.sendDigest({
     to: user.email,
     subject: `Your ${period} alert digest - ${digestData.summary.total} alert${digestData.summary.total !== 1 ? 's' : ''}`,
     html,
+    text,
   });
 
   if (!result) {
