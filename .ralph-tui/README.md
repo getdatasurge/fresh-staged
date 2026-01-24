@@ -2,174 +2,193 @@
 
 This directory contains the Ralph TUI configuration for automating code review and deployment preparation tasks for the FrostGuard (FreshTrack Pro) project.
 
-## Overview
+## Quick Start
 
-Ralph TUI is an AI Agent Loop Orchestrator that connects your AI coding assistant (Claude Code) to a task tracker and runs them in an autonomous loop, completing tasks one-by-one with intelligent selection, error handling, and full visibility.
+```bash
+# Install Ralph TUI (if not already installed)
+bun install -g ralph-tui
+
+# Run setup wizard (optional - creates config interactively)
+ralph-tui setup
+
+# Run with JSON tracker (RECOMMENDED)
+ralph-tui run --prd .ralph-tui/prd.json
+
+# Check status
+ralph-tui status
+```
 
 ## Directory Structure
 
 ```
 .ralph-tui/
 ├── config.toml                           # Main configuration
-├── prd.json                              # Task tracker (PRD format)
+├── prd.json                              # Task tracker (11 user stories)
 ├── progress.md                           # Cross-iteration progress tracking
+├── iterations/                           # Iteration logs (auto-created)
 ├── templates/
 │   └── frostguard-review-deploy.hbs      # Custom prompt template
 ├── skills/                               # Project-specific skills
 └── README.md                             # This file
 ```
 
-## Getting Started
+## Configuration Overview
 
-### Prerequisites
+### config.toml Key Settings
 
-1. Install Ralph TUI:
-   ```bash
-   npm install -g ralph-tui
-   # or
-   npx ralph-tui
-   ```
+```toml
+# Agent: Claude Code with subagent tracing
+agent = "claude"
 
-2. Ensure Claude Code CLI is installed:
-   ```bash
-   claude --version
-   ```
+[agentOptions]
+model = "claude-sonnet-4-20250514"
 
-### Running Tasks
+# Tracker: JSON file-based (no external dependencies)
+tracker = "json"
 
-1. **Start the TUI:**
-   ```bash
-   ralph-tui run
-   ```
+[trackerOptions]
+prdFile = ".ralph-tui/prd.json"
 
-2. **Resume a previous session:**
-   ```bash
-   ralph-tui resume
-   ```
+# Progress tracking for cross-iteration context
+progressFile = ".ralph-tui/progress.md"
+```
 
-3. **Check status:**
-   ```bash
-   ralph-tui status
-   ```
+### prd.json Format
 
-## Custom Prompt Template
+The task file follows the Ralph PRD format:
 
-The custom template at `templates/frostguard-review-deploy.hbs` is designed for:
+```json
+{
+  "project": "FrostGuard",
+  "branchName": "feature/deployment-readiness",
+  "description": "...",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Task Title",
+      "description": "As a [user], I want [capability] so that [benefit]...",
+      "acceptanceCriteria": ["Criterion 1", "Criterion 2"],
+      "priority": 1,
+      "passes": false,
+      "notes": "Additional context"
+    }
+  ]
+}
+```
 
-- **Code Review Tasks:** Security audits, code quality checks, test coverage
-- **Deployment Preparation:** Environment config, Docker builds, monitoring setup
-- **Self-Hosted/DigitalOcean VPS:** Complete deployment strategy
+## Task List (11 User Stories)
 
-### Template Variables Used
+### Code Review (US-001 to US-005)
 
-| Variable | Description |
-|----------|-------------|
-| `{{taskId}}` | Unique task identifier (e.g., "REVIEW-001") |
-| `{{taskTitle}}` | Task summary |
-| `{{taskDescription}}` | Full task description |
-| `{{acceptanceCriteria}}` | Checklist of requirements |
-| `{{recentProgress}}` | Progress from previous iterations |
-| `{{codebasePatterns}}` | Discovered patterns and learnings |
-| `{{prdCompletedCount}}` | Completed tasks count |
-| `{{prdTotalCount}}` | Total tasks count |
-| `{{currentDate}}` | Current date (ISO format) |
+| ID | Title | Priority |
+|----|-------|----------|
+| US-001 | Security Audit - Authentication & Authorization | 1 (Critical) |
+| US-002 | Security Audit - Input Validation & API Security | 2 |
+| US-003 | Code Quality - Linting & Type Safety | 3 |
+| US-004 | Test Coverage - Frontend & Backend | 4 |
+| US-005 | Database Review - Schema & Migrations | 5 |
 
-### Cross-Iteration Progress Tracking
+### Deployment Preparation (US-006 to US-011)
 
-The `progress.md` file maintains context across task iterations:
+| ID | Title | Priority |
+|----|-------|----------|
+| US-006 | Environment Configuration - Production Setup | 6 |
+| US-007 | Docker Build - Production Images | 7 |
+| US-008 | Reverse Proxy - Caddy Configuration | 8 |
+| US-009 | Monitoring Stack - Prometheus & Grafana | 9 |
+| US-010 | Documentation - Deployment Guide Validation | 10 |
+| US-011 | Final Validation - Deployment Dry Run | 11 (Final) |
 
-- **Codebase Patterns:** Architecture decisions, code style, deployment patterns
+## Cross-Iteration Progress Tracking
+
+The `progress.md` file maintains context across iterations:
+
+- **Codebase Patterns:** Architecture decisions, code style conventions
 - **Recent Progress:** Work completed in previous iterations
 - **Learnings & Blockers:** Issues encountered and solutions
 
-This enables the AI agent to:
-- Avoid repeating mistakes
-- Build on previous work
-- Maintain consistency across tasks
+Template variables injected from progress:
+- `{{recentProgress}}` - Recent work summary
+- `{{codebasePatterns}}` - Discovered patterns
 
-## Task List (prd.json)
+## Custom Prompt Template
 
-The task file contains 11 structured tasks:
+The template at `templates/frostguard-review-deploy.hbs` includes:
 
-### Code Review Tasks
-| ID | Title | Priority |
-|----|-------|----------|
-| REVIEW-001 | Security Audit - Authentication & Authorization | Critical |
-| REVIEW-002 | Security Audit - Input Validation & API Security | Critical |
-| REVIEW-003 | Code Quality - Linting & Type Safety | High |
-| REVIEW-004 | Test Coverage - Frontend & Backend | High |
-| REVIEW-005 | Database Review - Schema & Migrations | High |
+- Project context (tech stack, structure)
+- Code review guidelines (security, quality, testing)
+- Deployment strategy (self-hosted VM / DigitalOcean VPS)
+- Quality gates and acceptance criteria
+- Progress tracking instructions
 
-### Deployment Tasks
-| ID | Title | Priority |
-|----|-------|----------|
-| DEPLOY-001 | Environment Configuration - Production Setup | High |
-| DEPLOY-002 | Docker Build - Production Images | High |
-| DEPLOY-003 | Reverse Proxy - Caddy Configuration | Medium |
-| DEPLOY-004 | Monitoring Stack - Prometheus & Grafana | Medium |
-| DEPLOY-005 | Documentation - Deployment Guide Validation | Medium |
-| DEPLOY-006 | Final Validation - Deployment Dry Run | Critical |
+## Running Ralph TUI
+
+### Basic Commands
+
+```bash
+# Start autonomous loop with JSON tracker
+ralph-tui run --prd .ralph-tui/prd.json
+
+# Resume previous session
+ralph-tui resume
+
+# Check current status
+ralph-tui status
+
+# View iteration logs
+ralph-tui logs
+```
+
+### Keyboard Controls
+
+**Execution:** `s` (start), `p` (pause), `q` (quit)
+**Navigation:** `j`/`k` (up/down), `Tab` (switch panels)
+**Views:** `d` (dashboard), `T` (subagent tree)
 
 ## Deployment Target
 
-The tasks prepare the project for deployment on:
+Tasks prepare the project for deployment on:
 
-- **Self-Hosted VM** (any Linux VPS)
-- **DigitalOcean Droplet** (recommended: s-4vcpu-8gb, ~$48/month)
+| Environment | Specs | Cost |
+|-------------|-------|------|
+| Self-Hosted VM | 4 vCPU, 8GB RAM, 100GB SSD | Varies |
+| DigitalOcean | s-4vcpu-8gb droplet | ~$48/month |
 
-### Server Requirements
+**OS:** Ubuntu 22.04 LTS recommended
 
-| Resource | Minimum |
-|----------|---------|
-| CPU | 4 vCPU |
-| RAM | 8 GB |
-| Storage | 100 GB SSD |
-| OS | Ubuntu 22.04 LTS |
+## Completion Detection
 
-## Skills Available
-
-The following skills can be used during task execution:
-
-- `/ralph-tui-prd` - Create or update PRD documents
-- `/ralph-tui-create-json` - Generate JSON task files
-- `/ralph-tui-create-beads` - Create beads tracker entries
-
-## Configuration Options
-
-Key settings in `config.toml`:
-
-```toml
-# Agent
-agent = "claude"
-model = "claude-sonnet-4-20250514"
-
-# Task Tracker
-tracker = "json"
-
-# Progress Tracking
-[progress]
-enabled = true
-file = ".ralph-tui/progress.md"
-
-# Quality Gates
-[quality]
-require_tests = true
-require_lint = true
-require_typecheck = true
-```
-
-## Completion Signal
-
-When all acceptance criteria are met, the agent signals completion with:
+Ralph detects task completion when the agent outputs:
 
 ```
 <promise>COMPLETE</promise>
 ```
 
-This triggers Ralph TUI to proceed to the next task automatically.
+This signals Ralph to mark the current story as `passes: true` and proceed to the next task.
+
+## Alternative: Beads Tracker
+
+If you prefer git-backed task tracking with dependencies:
+
+```bash
+# Install Beads CLI
+bun install -g beads
+
+# Create an epic
+bd create --title "FrostGuard Deployment" --type epic
+# Returns: beads-xyz
+
+# Create tasks under the epic
+bd create --title "Security Audit" --type task --parent beads-xyz
+
+# Run Ralph with Beads
+ralph-tui run --epic beads-xyz
+```
 
 ## Resources
 
 - [Ralph TUI Documentation](https://ralph-tui.com/docs/)
-- [Handlebars Reference](https://ralph-tui.com/docs/templates/handlebars)
+- [Quick Start Guide](https://ralph-tui.com/docs/getting-started/quick-start)
+- [Configuration Reference](https://ralph-tui.com/docs/configuration/overview)
+- [Handlebars Templates](https://ralph-tui.com/docs/templates/handlebars)
 - [FrostGuard Deployment Guide](../docs/PRODUCTION_DEPLOYMENT.md)
