@@ -62,8 +62,8 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 
 # Copy built artifacts from builder (only what workers need)
-COPY --from=builder --chown=nodejs:nodejs /app/dist/src/workers ./dist/src/workers
-COPY --from=builder --chown=nodejs:nodejs /app/dist/src/jobs ./dist/src/jobs
+COPY --from=builder --chown=nodejs:nodejs /app/dist/workers ./dist/workers
+COPY --from=builder --chown=nodejs:nodejs /app/dist/jobs ./dist/jobs
 
 # Switch to non-root user
 USER nodejs
@@ -74,4 +74,4 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=40s \
   CMD pgrep -f "node.*workers/index.js" || exit 1
 
 # Start worker process
-CMD ["node", "dist/src/workers/index.js"]
+CMD ["node", "dist/workers/index.js"]
