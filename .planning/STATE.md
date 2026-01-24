@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 14 of 22 (Real-Time Foundation) — In Progress
-Plan: 1 of 5 complete
-Status: Socket.io infrastructure established
-Last activity: 2026-01-24 — Completed 14-01-PLAN.md
+Plan: 2 of 5 complete
+Status: WebSocket authentication and Redis adapter configured
+Last activity: 2026-01-24 — Completed 14-02-PLAN.md
 
-Progress: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 1% (1/79 plans)
+Progress: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 3% (2/79 plans)
 
 ## Completed Milestones
 
@@ -50,7 +50,7 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 1
+- Plans completed: 2
 - Phases in progress: 1 (14-real-time-foundation)
 
 **Combined:**
@@ -67,6 +67,10 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | REALTIME-01 | Custom Socket.io plugin for Fastify 5 | 14-01 | Full control over integration, bypasses fastify-socket.io incompatibility |
 | REALTIME-02 | bufferutil/utf-8-validate as optional deps | 14-01 | Performance optimization without breaking changes |
 | REALTIME-03 | Setup Socket.io in app.ready() callback | 14-01 | Prevents undefined access, ensures HTTP server initialized |
+| REALTIME-04 | WebSocket authentication via socket.handshake.auth.token | 14-02 | Uses existing Stack Auth JWT verification, clear error messages on rejection |
+| REALTIME-05 | Organization-scoped room naming convention | 14-02 | Prevents cross-organization message leakage, enables targeted broadcasting |
+| REALTIME-06 | Redis adapter optional for local development | 14-02 | Graceful fallback to single-instance mode, no Redis infrastructure required locally |
+| REALTIME-07 | Auto-join organization room on connection | 14-02 | Enables org-wide broadcasts, site/unit subscriptions explicit via client events |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -79,16 +83,14 @@ See also: .planning/PROJECT.md Key Decisions table
 
 - AUTH-02 blocked until database queries migrate to backend API (v2.0 scope)
 - Production data migration requires Supabase access (DEFERRED)
-- Socket.io authentication not yet implemented (14-02)
-- Redis adapter for scaling not configured (14-03)
 
 ## Session Continuity
 
-**Last session:** 2026-01-24 08:31 UTC
-**Stopped at:** Completed 14-01-PLAN.md (Socket.io Infrastructure Setup)
+**Last session:** 2026-01-24 08:42 UTC
+**Stopped at:** Completed 14-02-PLAN.md (Socket.io JWT Authentication)
 **Resume file:** None
-**Next action:** Execute plan 14-02 (Socket.io JWT Authentication)
+**Next action:** Execute plan 14-03 (Real-time Sensor Data Streaming)
 
 ---
 
-*State updated: 2026-01-24 after completing 14-01*
+*State updated: 2026-01-24 after completing 14-02*
