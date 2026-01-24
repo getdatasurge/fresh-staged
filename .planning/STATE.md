@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 19 of 22 (Backend API Migration Foundation) — IN PROGRESS
-Plan: 3 of 6 complete
-Status: tRPC client integrated in frontend
-Last activity: 2026-01-24 — Completed 19-03 (Frontend tRPC Client Setup)
+Plan: 4 of 6 complete
+Status: Organizations API migrated to tRPC, E2E tests passing
+Last activity: 2026-01-24 — Completed 19-04 (Organizations API Migration)
 
-Progress: [███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 35% (30/85 plans)
+Progress: [███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 36% (31/85 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,12 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 30
+- Plans completed: 31
 - Phases completed: 6 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing)
-- In progress: Phase 19 (3/6 plans complete)
+- In progress: Phase 19 (4/6 plans complete)
 
 **Combined:**
-- Total plans completed: 30/85
+- Total plans completed: 31/85
 - Total phases: 19 (6 complete in v2.0, 1 in progress)
 - Milestones shipped: 2 (v1.0, v1.1)
 
@@ -144,6 +144,10 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | TRPC-07 | TRPCWrapper component pattern | 19-03 | Needs access to useUser (StackProvider) and useQueryClient (QueryClientProvider) |
 | TRPC-08 | useMemo for client recreation | 19-03 | Recreate client when user changes (login/logout) |
 | TRPC-09 | Auth token from Stack Auth user.getAuthJson() | 19-03 | All tRPC calls authenticated via x-stack-access-token header |
+| TRPC-10 | Use inferRouterInputs/inferRouterOutputs for type inference | 19-04 | Official tRPC v11 pattern for extracting types from router |
+| TRPC-11 | Deprecated wrapper pattern for backward compatibility | 19-04 | Allow gradual component migration without breaking existing code |
+| TRPC-12 | queryOptions pattern for TanStack React Query | 19-04 | Allows custom cache configuration while maintaining type inference |
+| TRPC-13 | Mock JWT verification in E2E tests | 19-04 | Avoid Stack Auth API calls and environment setup in test environment |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -171,10 +175,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-24
-**Stopped at:** Completed 19-03 (Frontend tRPC Client Setup)
+**Stopped at:** Completed 19-04 (Organizations API Migration)
 **Resume file:** None
-**Next action:** Continue Phase 19 - Plan 04 (Organizations API Migration)
+**Next action:** Continue Phase 19 - Plan 05 (remaining domain migrations)
 
 ---
 
-*State updated: 2026-01-24 after completing 19-03 Frontend tRPC Client Setup*
+*State updated: 2026-01-24 after completing 19-04 Organizations API Migration*
