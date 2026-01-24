@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
-Phase: 15 of 22 (Background Jobs Infrastructure) — COMPLETE
-Plan: 4 of 4 complete
-Status: All Phase 15 success criteria verified
-Last activity: 2026-01-24 — Phase 15 verified complete
+Phase: 16 of 22 (SMS Notifications) — IN PROGRESS
+Plan: 1 of 4 complete
+Status: Plan 16-01 complete (Telnyx Service Foundation)
+Last activity: 2026-01-24 — Completed 16-01-PLAN.md
 
-Progress: [████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 15% (12/82 plans)
+Progress: [████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 16% (13/82 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,12 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 12
+- Plans completed: 13
 - Phases completed: 2 (14-real-time-foundation, 15-background-jobs-infrastructure)
-- Next phase: 16-sms-notifications
+- Current phase: 16-sms-notifications (1/4 plans)
 
 **Combined:**
-- Total plans completed: 12/82
+- Total plans completed: 13/82
 - Total phases: 15 (2 complete in v2.0)
 - Milestones shipped: 2 (v1.0, v1.1)
 
@@ -99,6 +99,9 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | BOARD-03 | Separate health check endpoints at /api/admin | 15-03 | Provides API-friendly JSON endpoints for programmatic queue monitoring |
 | TEST-01 | Test file path adapted to project convention | 15-04 | Tests in backend/tests/services/ not src/__tests__/ |
 | TEST-02 | Integration tests require running Redis | 15-04 | Skip with docker compose down, run with docker compose up redis |
+| SMS-01 | Use Telnyx SDK v5.11.0 with maxRetries: 0 | 16-01 | BullMQ handles retries, SDK auto-retry would conflict |
+| SMS-02 | 11 unrecoverable + 10 retryable error codes | 16-01 | Proper categorization prevents wasted retries on permanent failures |
+| SMS-03 | Standard exponential backoff without jitter | 16-01 | BullMQ doesn't natively support jitter; can add custom backoff if needed |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -117,11 +120,11 @@ See also: .planning/PROJECT.md Key Decisions table
 
 ## Session Continuity
 
-**Last session:** 2026-01-24 10:15 UTC
-**Stopped at:** Phase 15 verified complete
+**Last session:** 2026-01-24 10:32 UTC
+**Stopped at:** Completed 16-01-PLAN.md (Telnyx Service Foundation)
 **Resume file:** None
-**Next action:** Plan Phase 16 (SMS Notifications) or Phase 17 (Email Digests)
+**Next action:** Execute 16-02-PLAN.md (SMS Notification Processor)
 
 ---
 
-*State updated: 2026-01-24 after completing Phase 15*
+*State updated: 2026-01-24 after completing 16-01*
