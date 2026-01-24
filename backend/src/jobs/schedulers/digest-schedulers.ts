@@ -6,7 +6,8 @@
  *
  * Features:
  * - Per-user scheduler identification prevents duplicates
- * - Timezone-aware cron scheduling (9 AM user local time)
+ * - Timezone-aware cron scheduling at user's preferred time
+ * - User-configurable daily time (HH:MM format, default 09:00)
  * - Graceful fallback when queue service unavailable
  * - Clean removal when preferences disabled
  */
@@ -31,6 +32,7 @@ export async function syncUserDigestSchedulers(
     dailyEnabled: boolean;
     weeklyEnabled: boolean;
     timezone: string;
+    dailyTime?: string; // "HH:MM" format, defaults to "09:00"
   }
 ): Promise<void> {
   const queueService = getQueueService();
@@ -45,14 +47,17 @@ export async function syncUserDigestSchedulers(
     return;
   }
 
-  const { dailyEnabled, weeklyEnabled, timezone } = preferences;
+  const { dailyEnabled, weeklyEnabled, timezone, dailyTime = '09:00' } = preferences;
 
-  // Daily digest: 9 AM user's timezone
+  // Parse user's preferred time
+  const [hour, minute] = dailyTime.split(':').map(Number);
+
+  // Daily digest at user's preferred time
   if (dailyEnabled) {
     await queue.upsertJobScheduler(
       `digest-daily-${userId}`,
       {
-        pattern: '0 9 * * *', // 9 AM daily
+        pattern: `${minute} ${hour} * * *`, // User's chosen time daily
         tz: timezone,
       },
       {
@@ -70,19 +75,19 @@ export async function syncUserDigestSchedulers(
         },
       }
     );
-    console.log(`[DigestSchedulers] Upserted daily scheduler for user ${userId} at 9 AM ${timezone}`);
+    console.log(`[DigestSchedulers] Upserted daily scheduler for user ${userId} at ${dailyTime} ${timezone}`);
   } else {
     // Remove scheduler if disabled
     await queue.removeJobScheduler(`digest-daily-${userId}`);
     console.log(`[DigestSchedulers] Removed daily scheduler for user ${userId}`);
   }
 
-  // Weekly digest: Monday 9 AM user's timezone
+  // Weekly digest: Monday at user's preferred time
   if (weeklyEnabled) {
     await queue.upsertJobScheduler(
       `digest-weekly-${userId}`,
       {
-        pattern: '0 9 * * 1', // Monday = 1
+        pattern: `${minute} ${hour} * * 1`, // Monday at user's time
         tz: timezone,
       },
       {
@@ -100,7 +105,7 @@ export async function syncUserDigestSchedulers(
         },
       }
     );
-    console.log(`[DigestSchedulers] Upserted weekly scheduler for user ${userId} at Monday 9 AM ${timezone}`);
+    console.log(`[DigestSchedulers] Upserted weekly scheduler for user ${userId} at Monday ${dailyTime} ${timezone}`);
   } else {
     await queue.removeJobScheduler(`digest-weekly-${userId}`);
     console.log(`[DigestSchedulers] Removed weekly scheduler for user ${userId}`);
