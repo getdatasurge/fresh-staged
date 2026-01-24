@@ -22,6 +22,20 @@
       "when": 1769266500001,
       "tag": "0002_reading_metrics",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1769266500002,
+      "tag": "0003_digest_preferences",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1769278875000,
+      "tag": "0004_stripe_events",
+      "breakpoints": true
     }
   ]
 }

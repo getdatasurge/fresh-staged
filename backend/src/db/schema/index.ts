@@ -30,3 +30,6 @@ export * from './notifications.js';
 
 // Audit logging (depends on tenancy, users)
 export * from './audit.js';
+
+// Billing (Stripe integration)
+export * from './billing.js';
