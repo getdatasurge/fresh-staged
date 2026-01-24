@@ -137,6 +137,9 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | TRPC-03 | Support both auth header formats | 19-01 | x-stack-access-token (custom) and Authorization Bearer (standard) |
 | TRPC-04 | Organization middleware validates membership | 19-01 | orgProcedure checks user role and creates/retrieves profile |
 | TRPC-05 | Type narrowing via middleware composition | 19-01 | protectedProcedure narrows user to non-null, orgProcedure extends this |
+| TRPC-06 | Use getRawInput() for middleware input access | 19-02 | Middleware must use getRawInput() not input parameter in tRPC v11 |
+| ROUTER-01 | Domain router composition pattern | 19-02 | Export domain routers, import into appRouter, mount at namespace |
+| ROUTER-02 | Role-based access in procedure handlers | 19-02 | Check ctx.user.role for permission-gated operations like update |
 | TRPC-06 | Use createTRPCContext for React hooks | 19-03 | Official tRPC v11 pattern for TanStack React Query integration |
 | TRPC-07 | TRPCWrapper component pattern | 19-03 | Needs access to useUser (StackProvider) and useQueryClient (QueryClientProvider) |
 | TRPC-08 | useMemo for client recreation | 19-03 | Recreate client when user changes (login/logout) |
