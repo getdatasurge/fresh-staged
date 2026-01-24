@@ -9,6 +9,7 @@ import { stackClientApp } from "@/lib/stack/client";
 import { DebugProvider } from "@/contexts/DebugContext";
 import { TTNConfigProvider } from "@/contexts/TTNConfigContext";
 import { SuperAdminProvider } from "@/contexts/SuperAdminContext";
+import { RealtimeProvider } from "@/providers/RealtimeProvider";
 import { DebugTerminal, RouteLogger } from "@/components/debug";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -65,12 +66,13 @@ const App = () => (
     <StackProvider app={stackClientApp}>
       <StackTheme>
         <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <DebugProvider>
-              <TTNConfigProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
+          <RealtimeProvider>
+            <TooltipProvider>
+              <DebugProvider>
+                <TTNConfigProvider>
+                  <Toaster />
+                  <Sonner />
+                  <BrowserRouter>
                   <SuperAdminProvider>
             <ImpersonationCacheSync />
             <RouteLogger />
@@ -117,10 +119,11 @@ const App = () => (
             </Routes>
             <DebugTerminal />
             </SuperAdminProvider>
-                </BrowserRouter>
-              </TTNConfigProvider>
-            </DebugProvider>
-          </TooltipProvider>
+                  </BrowserRouter>
+                </TTNConfigProvider>
+              </DebugProvider>
+            </TooltipProvider>
+          </RealtimeProvider>
         </QueryClientProvider>
       </StackTheme>
     </StackProvider>
