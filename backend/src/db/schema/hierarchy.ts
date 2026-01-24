@@ -9,7 +9,8 @@ import {
   index,
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
-import { unitTypeEnum, unitStatusEnum, tempUnitEnum } from './enums.js';
+import { unitTypeEnum, unitStatusEnum, tempUnitEnum, gatewayStatusEnum } from './enums.js';
+import { ttnConnections } from './tenancy.js';
 import { organizations } from './tenancy.js';
 
 // Reusable timestamp columns
@@ -139,6 +140,41 @@ export const hubs = pgTable(
   ]
 );
 
+// Gateways - LoRaWAN gateways for TTN network
+export const gateways = pgTable(
+  'gateways',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    ttnConnectionId: uuid('ttn_connection_id')
+      .references(() => ttnConnections.id, { onDelete: 'cascade' })
+      .notNull(),
+    siteId: uuid('site_id')
+      .references(() => sites.id, { onDelete: 'set null' }),
+    gatewayId: varchar('gateway_id', { length: 36 }).notNull(), // TTN gateway ID
+    gatewayEui: varchar('gateway_eui', { length: 16 }).notNull(), // 16 hex chars
+    name: varchar('name', { length: 256 }),
+    description: text('description'),
+    frequencyPlanId: varchar('frequency_plan_id', { length: 64 }),
+    status: gatewayStatusEnum('status').notNull().default('unknown'),
+    latitude: varchar('latitude', { length: 32 }),
+    longitude: varchar('longitude', { length: 32 }),
+    altitude: integer('altitude'),
+    lastSeenAt: timestamp('last_seen_at', {
+      mode: 'date',
+      precision: 3,
+      withTimezone: true,
+    }),
+    isActive: boolean('is_active').notNull().default(true),
+    ...timestamps,
+  },
+  (table) => [
+    index('gateways_ttn_connection_idx').on(table.ttnConnectionId),
+    index('gateways_site_idx').on(table.siteId),
+    uniqueIndex('gateways_gateway_id_idx').on(table.gatewayId),
+    uniqueIndex('gateways_gateway_eui_idx').on(table.gatewayEui),
+  ]
+);
+
 // Type exports
 export type Site = typeof sites.$inferSelect;
 export type InsertSite = typeof sites.$inferInsert;
@@ -148,3 +184,5 @@ export type Unit = typeof units.$inferSelect;
 export type InsertUnit = typeof units.$inferInsert;
 export type Hub = typeof hubs.$inferSelect;
 export type InsertHub = typeof hubs.$inferInsert;
+export type Gateway = typeof gateways.$inferSelect;
+export type InsertGateway = typeof gateways.$inferInsert;

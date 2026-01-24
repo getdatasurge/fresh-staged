@@ -18,6 +18,7 @@ import unitRoutes from './routes/units.js';
 import readingsRoutes from './routes/readings.js';
 import alertRoutes from './routes/alerts.js';
 import ttnDeviceRoutes from './routes/ttn-devices.js';
+import ttnGatewayRoutes from './routes/ttn-gateways.js';
 import { adminRoutes } from './routes/admin.js';
 
 export interface AppOptions {
@@ -81,6 +82,9 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
 
   // Register TTN device routes
   app.register(ttnDeviceRoutes, { prefix: '/api/orgs/:organizationId/ttn/devices' });
+
+  // Register TTN gateway routes
+  app.register(ttnGatewayRoutes, { prefix: '/api/orgs/:organizationId/ttn/gateways' });
 
   // Register admin routes (includes Bull Board dashboard and health checks)
   app.register(adminRoutes, { prefix: '/api/admin' });

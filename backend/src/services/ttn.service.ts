@@ -7,6 +7,40 @@
  * API Reference: https://www.thethingsindustries.com/docs/reference/api/
  */
 
+// TTN API response types for gateways
+export interface TTNGateway {
+  ids: {
+    gateway_id: string;
+    eui: string;
+  };
+  created_at: string;
+  updated_at: string;
+  name?: string;
+  description?: string;
+  attributes?: Record<string, string>;
+  frequency_plan_id?: string;
+  gateway_server_address?: string;
+  status_public?: boolean;
+  location_public?: boolean;
+  antennas?: Array<{
+    location?: {
+      latitude?: number;
+      longitude?: number;
+      altitude?: number;
+      source?: string;
+    };
+  }>;
+}
+
+export interface TTNGatewayList {
+  gateways: TTNGateway[];
+}
+
+export interface TTNGatewayStatus {
+  online: boolean;
+  last_seen_at?: string;
+}
+
 // TTN API response types
 export interface TTNDevice {
   ids: {
@@ -349,6 +383,236 @@ export class TTNClient {
     });
 
     return this.handleResponse<TTNDevice>(response);
+  }
+
+  // ==========================================
+  // Gateway Management Methods
+  // ==========================================
+
+  /**
+   * List all gateways in TTN (organization-scoped via API key)
+   */
+  async listGateways(): Promise<TTNGateway[]> {
+    const url = `${this.apiUrl}/api/v3/gateways`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: this.getHeaders(),
+    });
+    const result = await this.handleResponse<TTNGatewayList>(response);
+    return result.gateways || [];
+  }
+
+  /**
+   * Get a specific gateway by ID
+   */
+  async getGateway(gatewayId: string): Promise<TTNGateway | null> {
+    const url = `${this.apiUrl}/api/v3/gateways/${gatewayId}`;
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+      return await this.handleResponse<TTNGateway>(response);
+    } catch (error) {
+      if (error instanceof TTNApiError && error.statusCode === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Get gateway connection status
+   */
+  async getGatewayStatus(gatewayId: string): Promise<TTNGatewayStatus | null> {
+    const url = `${this.apiUrl}/api/v3/gs/gateways/${gatewayId}/connection/stats`;
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+      const stats = await this.handleResponse<{ last_status_received_at?: string }>(response);
+      return {
+        online: !!stats.last_status_received_at,
+        last_seen_at: stats.last_status_received_at,
+      };
+    } catch (error) {
+      if (error instanceof TTNApiError && error.statusCode === 404) {
+        return { online: false };
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Register (create) a new gateway in TTN
+   */
+  async registerGateway(params: {
+    gatewayId: string;
+    gatewayEui: string;
+    name?: string;
+    description?: string;
+    frequencyPlanId?: string;
+    latitude?: number;
+    longitude?: number;
+    altitude?: number;
+  }): Promise<TTNGateway> {
+    const {
+      gatewayId,
+      gatewayEui,
+      name,
+      description,
+      frequencyPlanId = 'US_902_928_FSB_2',
+      latitude,
+      longitude,
+      altitude,
+    } = params;
+
+    const url = `${this.apiUrl}/api/v3/users/me/gateways`;
+
+    // Build gateway payload
+    const gateway: Record<string, unknown> = {
+      ids: {
+        gateway_id: gatewayId,
+        eui: gatewayEui.toUpperCase(),
+      },
+      name: name || gatewayId,
+      description,
+      frequency_plan_id: frequencyPlanId,
+      gateway_server_address: 'nam1.cloud.thethings.network', // Default for US
+      status_public: false,
+      location_public: false,
+    };
+
+    // Add antenna location if coordinates provided
+    if (latitude !== undefined && longitude !== undefined) {
+      gateway.antennas = [
+        {
+          location: {
+            latitude,
+            longitude,
+            altitude: altitude ?? 0,
+            source: 'SOURCE_REGISTRY',
+          },
+        },
+      ];
+    }
+
+    const paths = [
+      'ids.gateway_id',
+      'ids.eui',
+      'name',
+      'frequency_plan_id',
+      'gateway_server_address',
+      'status_public',
+      'location_public',
+    ];
+
+    if (description !== undefined) {
+      paths.push('description');
+    }
+
+    if (latitude !== undefined && longitude !== undefined) {
+      paths.push('antennas');
+    }
+
+    const payload = {
+      gateway,
+      field_mask: { paths },
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    return this.handleResponse<TTNGateway>(response);
+  }
+
+  /**
+   * Update gateway metadata in TTN
+   */
+  async updateGateway(
+    gatewayId: string,
+    params: {
+      name?: string;
+      description?: string;
+      frequencyPlanId?: string;
+      latitude?: number | null;
+      longitude?: number | null;
+      altitude?: number | null;
+    }
+  ): Promise<TTNGateway> {
+    const url = `${this.apiUrl}/api/v3/gateways/${gatewayId}`;
+
+    const paths: string[] = [];
+    const gateway: Record<string, unknown> = {
+      ids: {
+        gateway_id: gatewayId,
+      },
+    };
+
+    if (params.name !== undefined) {
+      gateway.name = params.name;
+      paths.push('name');
+    }
+    if (params.description !== undefined) {
+      gateway.description = params.description;
+      paths.push('description');
+    }
+    if (params.frequencyPlanId !== undefined) {
+      gateway.frequency_plan_id = params.frequencyPlanId;
+      paths.push('frequency_plan_id');
+    }
+
+    // Handle location updates
+    if (params.latitude !== undefined || params.longitude !== undefined) {
+      if (params.latitude !== null && params.longitude !== null) {
+        gateway.antennas = [
+          {
+            location: {
+              latitude: params.latitude,
+              longitude: params.longitude,
+              altitude: params.altitude ?? 0,
+              source: 'SOURCE_REGISTRY',
+            },
+          },
+        ];
+      } else {
+        // Clear location by setting empty antennas
+        gateway.antennas = [];
+      }
+      paths.push('antennas');
+    }
+
+    const payload = {
+      gateway,
+      field_mask: { paths },
+    };
+
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: this.getHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    return this.handleResponse<TTNGateway>(response);
+  }
+
+  /**
+   * Deregister (delete) a gateway from TTN
+   */
+  async deregisterGateway(gatewayId: string): Promise<void> {
+    const url = `${this.apiUrl}/api/v3/gateways/${gatewayId}`;
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+
+    if (!response.ok && response.status !== 404) {
+      await this.handleResponse<void>(response);
+    }
   }
 
   /**

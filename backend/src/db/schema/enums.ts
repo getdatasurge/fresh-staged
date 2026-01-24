@@ -106,3 +106,11 @@ export const pairingStatusEnum = pgEnum('pairing_status', [
   'failed',
   'expired',
 ]);
+
+// Gateway Management
+export const gatewayStatusEnum = pgEnum('gateway_status', [
+  'online',
+  'offline',
+  'disconnected',
+  'unknown',
+]);
