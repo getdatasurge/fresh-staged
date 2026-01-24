@@ -20,8 +20,9 @@
 
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fastifyPlugin from 'fastify-plugin';
-import { QueueService } from '../services/queue.service.js';
+import { QueueService, setQueueService } from '../services/queue.service.js';
 import { TelnyxService, setTelnyxService } from '../services/telnyx.service.js';
+import { initializeSensorCountScheduler } from '../services/sensor-count-scheduler.service.js';
 import { createBullBoard } from '@bull-board/api';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { FastifyAdapter } from '@bull-board/fastify';
@@ -61,10 +62,17 @@ const queuePlugin: FastifyPluginAsync<QueuePluginOptions> = async (
   // Initialize QueueService with Redis connection
   await queueService.initialize();
 
-  // Setup Bull Board dashboard if Redis is enabled
+  // Set singleton for services that need queue access
+  setQueueService(queueService);
+
+  // Setup Bull Board dashboard and sensor scheduler if Redis is enabled
   // Note: Must be done during plugin registration, not after ready()
   if (queueService.isRedisEnabled()) {
     setupBullBoard(fastify, queueService, opts.dashboardPath);
+
+    // Initialize sensor count scheduler (hourly Stripe meter reporting)
+    await initializeSensorCountScheduler();
+    fastify.log.info('[Queue Plugin] Sensor count scheduler initialized');
   }
 
   // Graceful shutdown: close all queues and Redis connection
