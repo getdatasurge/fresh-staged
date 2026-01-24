@@ -1,18 +1,12 @@
 {
-  "name": "FrostGuard Code Review & Deployment Preparation",
-  "description": "Comprehensive code review and deployment readiness tasks to prepare FrostGuard (FreshTrack Pro) for production deployment on a self-hosted VM or DigitalOcean VPS.",
-  "version": "1.0.0",
-  "metadata": {
-    "project": "FrostGuard",
-    "targetEnvironment": "Self-hosted VM / DigitalOcean VPS",
-    "minimumSpecs": "4 vCPU, 8GB RAM, 100GB SSD",
-    "estimatedCost": "$48/month (DigitalOcean)"
-  },
-  "stories": [
+  "project": "FrostGuard",
+  "branchName": "feature/deployment-readiness",
+  "description": "Comprehensive code review and deployment readiness preparation for FrostGuard (FreshTrack Pro) - a refrigeration monitoring and food safety compliance platform. This PRD covers security audits, code quality checks, and deployment preparation for self-hosted VM or DigitalOcean VPS deployment.",
+  "userStories": [
     {
-      "id": "REVIEW-001",
+      "id": "US-001",
       "title": "Security Audit - Authentication & Authorization",
-      "description": "Perform a comprehensive security review of the authentication and authorization implementation.\n\n**Review Areas:**\n- Stack Auth integration in `src/contexts/AuthContext.tsx`\n- Backend auth middleware in `backend/src/middleware/`\n- Protected routes and role-based access control\n- Session management and token handling\n- CORS configuration for production domains",
+      "description": "As a security engineer, I want to audit the authentication and authorization implementation so that the application is secure before production deployment.\n\n**Review Areas:**\n- Stack Auth integration in `src/contexts/AuthContext.tsx`\n- Backend auth middleware in `backend/src/middleware/`\n- Protected routes and role-based access control\n- Session management and token handling\n- CORS configuration for production domains\n\n**Key Files:**\n- `src/contexts/AuthContext.tsx`\n- `backend/src/middleware/auth.ts`\n- `backend/src/plugins/auth.ts`\n- `.env.production.example` (CORS_ORIGINS)",
       "acceptanceCriteria": [
         "No hardcoded secrets found in codebase",
         "Auth middleware properly validates tokens on all protected routes",
@@ -20,15 +14,14 @@
         "Session cookies use secure flags in production",
         "Rate limiting configured for auth endpoints"
       ],
-      "type": "task",
-      "priority": 0,
-      "status": "open",
-      "labels": ["security", "code-review", "authentication"]
+      "priority": 1,
+      "passes": false,
+      "notes": "Critical security task - must complete before any deployment"
     },
     {
-      "id": "REVIEW-002",
+      "id": "US-002",
       "title": "Security Audit - Input Validation & API Security",
-      "description": "Review all API endpoints for proper input validation and security vulnerabilities.\n\n**Review Areas:**\n- Zod schemas in `backend/src/schemas/`\n- Route handlers in `backend/src/routes/`\n- SQL injection prevention (Drizzle ORM parameterized queries)\n- XSS prevention in frontend rendering\n- File upload validation (if applicable)",
+      "description": "As a security engineer, I want to review all API endpoints for proper input validation so that the application is protected against injection attacks.\n\n**Review Areas:**\n- Zod schemas in `backend/src/schemas/`\n- Route handlers in `backend/src/routes/`\n- SQL injection prevention (Drizzle ORM parameterized queries)\n- XSS prevention in frontend rendering\n- File upload validation (if applicable)\n\n**Key Files:**\n- `backend/src/schemas/*.ts`\n- `backend/src/routes/*.ts`\n- `backend/src/db/schema.ts`",
       "acceptanceCriteria": [
         "All API endpoints have Zod schema validation",
         "No raw SQL queries - all use Drizzle ORM",
@@ -36,16 +29,14 @@
         "File uploads validated for type and size",
         "Error responses don't leak sensitive information"
       ],
-      "type": "task",
-      "priority": 0,
-      "status": "open",
-      "labels": ["security", "code-review", "api"],
-      "dependsOn": "REVIEW-001"
+      "priority": 2,
+      "passes": false,
+      "notes": "Depends on US-001 completion"
     },
     {
-      "id": "REVIEW-003",
+      "id": "US-003",
       "title": "Code Quality - Linting & Type Safety",
-      "description": "Ensure all code passes linting and type checking with no errors.\n\n**Tasks:**\n1. Run `npm run lint` in root directory\n2. Run `npm run lint` in backend directory\n3. Run `npm run typecheck` for TypeScript validation\n4. Fix any errors or warnings found\n5. Ensure ESLint config is appropriate for production",
+      "description": "As a developer, I want to ensure all code passes linting and type checking so that the codebase maintains high quality standards.\n\n**Tasks:**\n1. Run `npm run lint` in root directory\n2. Run `npm run lint` in backend directory\n3. Run `npm run typecheck` for TypeScript validation\n4. Fix any errors or warnings found\n5. Ensure ESLint config is appropriate for production\n\n**Commands:**\n```bash\nnpm run lint           # Frontend\ncd backend && npm run lint  # Backend\nnpm run typecheck      # Full typecheck\n```",
       "acceptanceCriteria": [
         "`npm run lint` passes with no errors (root)",
         "`npm run lint` passes with no errors (backend)",
@@ -53,15 +44,14 @@
         "No `// @ts-ignore` comments without justification",
         "Strict TypeScript mode enabled"
       ],
-      "type": "task",
-      "priority": 1,
-      "status": "open",
-      "labels": ["code-quality", "code-review", "typescript"]
+      "priority": 3,
+      "passes": false,
+      "notes": "Run these commands and fix any issues found"
     },
     {
-      "id": "REVIEW-004",
+      "id": "US-004",
       "title": "Test Coverage - Frontend & Backend",
-      "description": "Verify test coverage and ensure all tests pass.\n\n**Tasks:**\n1. Run `npm run test` in root directory (frontend tests)\n2. Run `npm run test` in backend directory\n3. Review test coverage for critical paths\n4. Identify and document any coverage gaps\n5. Ensure mock implementations are correct",
+      "description": "As a QA engineer, I want to verify test coverage and ensure all tests pass so that the application is reliable.\n\n**Tasks:**\n1. Run `npm run test` in root directory (frontend tests)\n2. Run `npm run test` in backend directory\n3. Review test coverage for critical paths\n4. Identify and document any coverage gaps\n5. Ensure mock implementations are correct\n\n**Commands:**\n```bash\nnpm run test           # Frontend tests\ncd backend && npm run test  # Backend tests\n```",
       "acceptanceCriteria": [
         "All frontend tests pass",
         "All backend tests pass",
@@ -69,16 +59,14 @@
         "API route handlers have integration tests",
         "No flaky or intermittent test failures"
       ],
-      "type": "task",
-      "priority": 1,
-      "status": "open",
-      "labels": ["testing", "code-review", "quality"],
-      "dependsOn": "REVIEW-003"
+      "priority": 4,
+      "passes": false,
+      "notes": "Depends on US-003 (lint clean code)"
     },
     {
-      "id": "REVIEW-005",
+      "id": "US-005",
       "title": "Database Review - Schema & Migrations",
-      "description": "Review database schema design and migration strategy.\n\n**Review Areas:**\n- Drizzle schema definitions in `backend/src/db/`\n- Migration files in `backend/drizzle/`\n- Index optimization for query performance\n- Foreign key relationships and cascades\n- Data types and constraints",
+      "description": "As a database administrator, I want to review the database schema and migrations so that the database is optimized and migration-safe.\n\n**Review Areas:**\n- Drizzle schema definitions in `backend/src/db/`\n- Migration files in `backend/drizzle/`\n- Index optimization for query performance\n- Foreign key relationships and cascades\n- Data types and constraints\n\n**Commands:**\n```bash\ncd backend && npm run db:check  # Validate schema\ncd backend && npm run db:studio # Visual inspection\n```",
       "acceptanceCriteria": [
         "Schema matches documented data model",
         "Indexes exist for frequently queried columns",
@@ -86,15 +74,14 @@
         "Migrations are reversible where possible",
         "`npm run db:check` passes without errors"
       ],
-      "type": "task",
-      "priority": 1,
-      "status": "open",
-      "labels": ["database", "code-review", "performance"]
+      "priority": 5,
+      "passes": false,
+      "notes": "Use Drizzle Studio to visually inspect schema"
     },
     {
-      "id": "DEPLOY-001",
+      "id": "US-006",
       "title": "Environment Configuration - Production Setup",
-      "description": "Prepare and validate production environment configuration.\n\n**Tasks:**\n1. Review `.env.production.example` for completeness\n2. Document all required environment variables\n3. Create secrets generation script validation\n4. Verify Docker Compose production overrides\n5. Ensure feature flags are configured correctly",
+      "description": "As a DevOps engineer, I want to prepare and validate production environment configuration so that deployment can proceed smoothly.\n\n**Tasks:**\n1. Review `.env.production.example` for completeness\n2. Document all required environment variables\n3. Create secrets generation script validation\n4. Verify Docker Compose production overrides\n5. Ensure feature flags are configured correctly\n\n**Key Files:**\n- `.env.production.example`\n- `compose.production.yaml`\n- `docker-compose.yml`",
       "acceptanceCriteria": [
         "All required env vars documented in .env.production.example",
         "Secrets generation commands work correctly",
@@ -102,16 +89,14 @@
         "Feature flags have sensible production defaults",
         "No development-only settings in production config"
       ],
-      "type": "task",
-      "priority": 1,
-      "status": "open",
-      "labels": ["deployment", "configuration", "production"],
-      "dependsOn": "REVIEW-002"
+      "priority": 6,
+      "passes": false,
+      "notes": "Security tasks must be complete first"
     },
     {
-      "id": "DEPLOY-002",
+      "id": "US-007",
       "title": "Docker Build - Production Images",
-      "description": "Validate Docker production build process.\n\n**Tasks:**\n1. Build backend production image: `docker build -t freshtrack-backend --target production ./backend`\n2. Build worker image: `docker build -f backend/Dockerfile.worker --target production ./backend`\n3. Verify multi-stage builds minimize image size\n4. Check for security vulnerabilities in base images\n5. Test images run correctly with production config",
+      "description": "As a DevOps engineer, I want to validate the Docker production build process so that images are secure and optimized.\n\n**Tasks:**\n1. Build backend production image\n2. Build worker image\n3. Verify multi-stage builds minimize image size\n4. Check for security vulnerabilities in base images\n5. Test images run correctly with production config\n\n**Commands:**\n```bash\ndocker build -t freshtrack-backend --target production ./backend\ndocker build -f backend/Dockerfile.worker --target production -t freshtrack-worker ./backend\n```",
       "acceptanceCriteria": [
         "Backend image builds successfully",
         "Worker image builds successfully",
@@ -119,16 +104,14 @@
         "No development dependencies in production images",
         "Health check endpoints respond correctly"
       ],
-      "type": "task",
-      "priority": 1,
-      "status": "open",
-      "labels": ["deployment", "docker", "production"],
-      "dependsOn": "DEPLOY-001"
+      "priority": 7,
+      "passes": false,
+      "notes": "Depends on US-006 (environment config)"
     },
     {
-      "id": "DEPLOY-003",
+      "id": "US-008",
       "title": "Reverse Proxy - Caddy Configuration",
-      "description": "Review and validate Caddy reverse proxy configuration for production.\n\n**Review Areas:**\n- `docker/caddy/Caddyfile` configuration\n- HTTPS/TLS settings (auto Let's Encrypt)\n- Security headers (HSTS, CSP, X-Frame-Options)\n- API routing and upstream health checks\n- WebSocket proxy configuration",
+      "description": "As a DevOps engineer, I want to review the Caddy reverse proxy configuration so that HTTPS and routing work correctly in production.\n\n**Review Areas:**\n- `docker/caddy/Caddyfile` configuration\n- HTTPS/TLS settings (auto Let's Encrypt)\n- Security headers (HSTS, CSP, X-Frame-Options)\n- API routing and upstream health checks\n- WebSocket proxy configuration\n\n**Key File:**\n- `docker/caddy/Caddyfile`",
       "acceptanceCriteria": [
         "Caddyfile has production domain placeholders documented",
         "HTTPS redirect configured",
@@ -136,16 +119,14 @@
         "WebSocket upgrade headers configured",
         "API routes correctly proxied to backend"
       ],
-      "type": "task",
-      "priority": 2,
-      "status": "open",
-      "labels": ["deployment", "infrastructure", "security"],
-      "dependsOn": "DEPLOY-002"
+      "priority": 8,
+      "passes": false,
+      "notes": "Depends on US-007 (Docker builds)"
     },
     {
-      "id": "DEPLOY-004",
+      "id": "US-009",
       "title": "Monitoring Stack - Prometheus & Grafana",
-      "description": "Validate monitoring infrastructure configuration.\n\n**Review Areas:**\n- `docker/prometheus/prometheus.yml` scrape configs\n- `docker/grafana/` dashboard provisioning\n- `docker/loki/` log aggregation\n- Uptime Kuma health checks\n- Alert rules and notification channels",
+      "description": "As a DevOps engineer, I want to validate the monitoring infrastructure so that production can be observed effectively.\n\n**Review Areas:**\n- `docker/prometheus/prometheus.yml` scrape configs\n- `docker/grafana/` dashboard provisioning\n- `docker/loki/` log aggregation\n- Uptime Kuma health checks\n- Alert rules and notification channels\n\n**Key Directories:**\n- `docker/prometheus/`\n- `docker/grafana/`\n- `docker/loki/`\n- `docker/promtail/`",
       "acceptanceCriteria": [
         "Prometheus scrapes all required targets",
         "Grafana dashboards are provisioned automatically",
@@ -153,16 +134,14 @@
         "Health check endpoints monitored",
         "Basic alerting rules configured"
       ],
-      "type": "task",
-      "priority": 2,
-      "status": "open",
-      "labels": ["deployment", "monitoring", "observability"],
-      "dependsOn": "DEPLOY-003"
+      "priority": 9,
+      "passes": false,
+      "notes": "Depends on US-008 (Caddy config)"
     },
     {
-      "id": "DEPLOY-005",
+      "id": "US-010",
       "title": "Documentation - Deployment Guide Validation",
-      "description": "Validate and test the production deployment documentation.\n\n**Tasks:**\n1. Review `docs/PRODUCTION_DEPLOYMENT.md` for accuracy\n2. Test deployment commands in documentation\n3. Verify troubleshooting section covers common issues\n4. Ensure rollback procedures are documented\n5. Update any outdated information",
+      "description": "As a DevOps engineer, I want to validate the production deployment documentation so that anyone can deploy the application.\n\n**Tasks:**\n1. Review `docs/PRODUCTION_DEPLOYMENT.md` for accuracy\n2. Test deployment commands in documentation\n3. Verify troubleshooting section covers common issues\n4. Ensure rollback procedures are documented\n5. Update any outdated information\n\n**Key File:**\n- `docs/PRODUCTION_DEPLOYMENT.md`",
       "acceptanceCriteria": [
         "Deployment guide is complete and accurate",
         "All commands in guide work as documented",
@@ -170,16 +149,14 @@
         "External service setup documented",
         "Rollback procedures tested and documented"
       ],
-      "type": "task",
-      "priority": 2,
-      "status": "open",
-      "labels": ["documentation", "deployment", "operations"],
-      "dependsOn": "DEPLOY-004"
+      "priority": 10,
+      "passes": false,
+      "notes": "Depends on US-009 (monitoring config)"
     },
     {
-      "id": "DEPLOY-006",
+      "id": "US-011",
       "title": "Final Validation - Deployment Dry Run",
-      "description": "Perform a complete deployment dry run to validate readiness.\n\n**Tasks:**\n1. Start full production stack locally: `docker compose -f docker-compose.yml -f compose.production.yaml up -d`\n2. Run database migrations\n3. Verify all services are healthy\n4. Test critical user flows (auth, data creation, etc.)\n5. Verify monitoring and logging work correctly\n6. Document any issues found and resolutions",
+      "description": "As a DevOps engineer, I want to perform a complete deployment dry run so that we can verify the project is production-ready.\n\n**Tasks:**\n1. Start full production stack locally\n2. Run database migrations\n3. Verify all services are healthy\n4. Test critical user flows (auth, data creation, etc.)\n5. Verify monitoring and logging work correctly\n6. Document any issues found and resolutions\n\n**Commands:**\n```bash\ndocker compose -f docker-compose.yml -f compose.production.yaml up -d\ndocker compose exec backend npm run db:migrate\ndocker compose ps\ncurl -f http://localhost:3000/health\n```\n\n**Target Deployment:**\n- Self-hosted VM OR DigitalOcean VPS\n- Minimum: 4 vCPU, 8GB RAM, 100GB SSD\n- OS: Ubuntu 22.04 LTS\n- Cost: ~$48/month (DigitalOcean s-4vcpu-8gb)",
       "acceptanceCriteria": [
         "All Docker services start successfully",
         "Database migrations complete without errors",
@@ -189,11 +166,9 @@
         "Logs appear in Loki/Grafana",
         "Project is ready to deploy to production VPS"
       ],
-      "type": "task",
-      "priority": 0,
-      "status": "open",
-      "labels": ["deployment", "validation", "production"],
-      "dependsOn": "DEPLOY-005"
+      "priority": 11,
+      "passes": false,
+      "notes": "FINAL TASK - Project is deployment-ready when this passes"
     }
   ]
 }

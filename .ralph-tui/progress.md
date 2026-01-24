@@ -48,6 +48,26 @@ Content here is automatically injected into prompts via `{{recentProgress}}` and
 
 ## Recent Progress
 
+### Current PRD: Code Review & Deployment Preparation
+
+**Project:** FrostGuard (FreshTrack Pro)
+**Branch:** feature/deployment-readiness
+**Total Stories:** 11
+
+| Story | Status | Notes |
+|-------|--------|-------|
+| US-001 | Pending | Security Audit - Auth |
+| US-002 | Pending | Security Audit - API |
+| US-003 | Pending | Code Quality |
+| US-004 | Pending | Test Coverage |
+| US-005 | Pending | Database Review |
+| US-006 | Pending | Environment Config |
+| US-007 | Pending | Docker Build |
+| US-008 | Pending | Caddy Config |
+| US-009 | Pending | Monitoring Stack |
+| US-010 | Pending | Documentation |
+| US-011 | Pending | Final Dry Run |
+
 ### Iteration Log
 
 _Progress entries will be automatically appended below during task iterations._
@@ -65,6 +85,7 @@ _Progress entries will be automatically appended below during task iterations._
 1. **Drizzle Migrations:** Always run `npm run db:check` before deploying schema changes
 2. **Stack Auth:** Ensure CORS is configured for the frontend domain
 3. **MinIO:** Production should use TLS (set `MINIO_USE_SSL=true`)
+4. **Caddy:** Auto-renews HTTPS certificates - ensure DNS is configured first
 
 ---
 
@@ -92,17 +113,16 @@ _Progress entries will be automatically appended below during task iterations._
 
 ## Deployment Readiness Checklist
 
-- [ ] All tests passing
-- [ ] Lint and typecheck clean
-- [ ] Environment variables documented
-- [ ] Secrets generation scripts tested
-- [ ] Docker images build successfully
-- [ ] Database migrations run cleanly
-- [ ] Health checks responding
-- [ ] Monitoring dashboards configured
-- [ ] SSL certificates issuing correctly
-- [ ] Backup procedures documented
+- [ ] All tests passing (US-004)
+- [ ] Lint and typecheck clean (US-003)
+- [ ] Security audit complete (US-001, US-002)
+- [ ] Environment variables documented (US-006)
+- [ ] Docker images build successfully (US-007)
+- [ ] Caddy configuration validated (US-008)
+- [ ] Monitoring stack configured (US-009)
+- [ ] Documentation updated (US-010)
+- [ ] Full dry run successful (US-011)
 
 ---
 
-_Last updated: {{currentDate}}_
+_Last updated: Auto-updated by Ralph TUI_
