@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 14 of 22 (Real-Time Foundation) — In Progress
-Plan: 2 of 5 complete
-Status: WebSocket authentication and Redis adapter configured
-Last activity: 2026-01-24 — Completed 14-02-PLAN.md
+Plan: 3 of 5 complete
+Status: React Socket.io client with TanStack Query integration complete
+Last activity: 2026-01-24 — Completed 14-04-PLAN.md
 
-Progress: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 3% (2/79 plans)
+Progress: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 4% (3/79 plans)
 
 ## Completed Milestones
 
@@ -50,7 +50,7 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 2
+- Plans completed: 3
 - Phases in progress: 1 (14-real-time-foundation)
 
 **Combined:**
@@ -71,6 +71,13 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | REALTIME-05 | Organization-scoped room naming convention | 14-02 | Prevents cross-organization message leakage, enables targeted broadcasting |
 | REALTIME-06 | Redis adapter optional for local development | 14-02 | Graceful fallback to single-instance mode, no Redis infrastructure required locally |
 | REALTIME-07 | Auto-join organization room on connection | 14-02 | Enables org-wide broadcasts, site/unit subscriptions explicit via client events |
+| REALTIME-08 | 1-second flush interval for batched broadcasts | 14-03 | Balances real-time feel with network/UI performance, configurable for future tuning |
+| REALTIME-09 | Buffer keyed by organization:unit combination | 14-03 | Organization-scoped isolation with per-unit logical batching, efficient memory usage |
+| REALTIME-10 | Latest reading cache for instant client feedback | 14-03 | New connections query latest cached reading via get:latest event without waiting |
+| REALTIME-11 | Transparent streaming integration | 14-03 | Streaming added as side effect after ingestion, no API response changes |
+| REALTIME-12 | Stack Auth getAccessToken() for WebSocket JWT | 14-04 | Async token retrieval from Stack Auth user object |
+| REALTIME-13 | TanStack Query cache updates via setQueryData | 14-04 | Multiple query keys updated per sensor batch event with 100-item history limit |
+| REALTIME-14 | RealtimeProvider after QueryClientProvider | 14-04 | Ensures auth context and query client available for connection setup |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -86,11 +93,11 @@ See also: .planning/PROJECT.md Key Decisions table
 
 ## Session Continuity
 
-**Last session:** 2026-01-24 08:42 UTC
-**Stopped at:** Completed 14-02-PLAN.md (Socket.io JWT Authentication)
+**Last session:** 2026-01-24 08:49 UTC
+**Stopped at:** Completed 14-03-PLAN.md (Real-time Sensor Data Streaming)
 **Resume file:** None
-**Next action:** Execute plan 14-03 (Real-time Sensor Data Streaming)
+**Next action:** Continue with remaining phase 14 plans (14-05, 14-06)
 
 ---
 
-*State updated: 2026-01-24 after completing 14-02*
+*State updated: 2026-01-24 after completing 14-03*
