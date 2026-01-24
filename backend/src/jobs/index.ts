@@ -36,10 +36,21 @@ export interface EmailDigestJobData extends BaseJobData {
   period: 'daily' | 'weekly';
 }
 
+// Meter reporting job data (Phase 18)
+export interface MeterReportJobData extends BaseJobData {
+  /** Event name: 'active_sensors' for gauge, 'temperature_readings' for counter */
+  eventName: 'active_sensors' | 'temperature_readings';
+  /** Usage value to report (whole number) */
+  value: number;
+  /** Optional timestamp for historical reporting (unix seconds) */
+  timestamp?: number;
+}
+
 // Queue name constants (prevents typos)
 export const QueueNames = {
   SMS_NOTIFICATIONS: 'sms-notifications',
   EMAIL_DIGESTS: 'email-digests',
+  METER_REPORTING: 'meter-reporting',
 } as const;
 
 export type QueueName = typeof QueueNames[keyof typeof QueueNames];
@@ -48,6 +59,7 @@ export type QueueName = typeof QueueNames[keyof typeof QueueNames];
 export const JobNames = {
   SMS_SEND: 'sms:send',
   EMAIL_DIGEST: 'email:digest',
+  METER_REPORT: 'meter:report',
 } as const;
 
 export type JobName = typeof JobNames[keyof typeof JobNames];
@@ -55,6 +67,7 @@ export type JobName = typeof JobNames[keyof typeof JobNames];
 // Type helpers for strongly-typed job handling
 export type SmsNotificationJob = Job<SmsNotificationJobData>;
 export type EmailDigestJob = Job<EmailDigestJobData>;
+export type MeterReportJob = Job<MeterReportJobData>;
 
 // Default job options
 export const defaultJobOptions: JobsOptions = {
@@ -108,4 +121,22 @@ export const emailDigestJobOptions: JobsOptions = {
   },
   removeOnComplete: 100,
   removeOnFail: 500,
+};
+
+/**
+ * Meter reporting job options
+ *
+ * Configuration:
+ * - 5 attempts for reliability (Stripe meter events are idempotent)
+ * - 5s initial delay with exponential backoff
+ * - Longer retention for billing debugging
+ */
+export const meterReportJobOptions: JobsOptions = {
+  attempts: 5,
+  backoff: {
+    type: 'exponential',
+    delay: 5000, // 5s initial
+  },
+  removeOnComplete: 200,
+  removeOnFail: 1000,
 };
