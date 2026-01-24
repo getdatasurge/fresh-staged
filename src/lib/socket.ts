@@ -5,7 +5,8 @@ interface ServerToClientEvents {
   'sensor:reading': (data: SensorReading) => void;
   'sensor:readings:batch': (data: { unitId: string; readings: SensorReading[]; count: number }) => void;
   'alert:triggered': (data: AlertNotification) => void;
-  'alert:resolved': (data: { alertId: string; unitId: string }) => void;
+  'alert:resolved': (data: { alertId: string; unitId: string; resolvedAt: string }) => void;
+  'alert:escalated': (data: { alertId: string; unitId: string; escalationLevel: number }) => void;
 }
 
 interface ClientToServerEvents {
@@ -55,7 +56,9 @@ export interface AlertNotification {
   alertId: string;
   unitId: string;
   alertType: string;
-  severity: string;
+  severity: 'warning' | 'critical';
   message: string;
+  triggerTemperature: number;
+  thresholdViolated: 'min' | 'max';
   triggeredAt: string;
 }
