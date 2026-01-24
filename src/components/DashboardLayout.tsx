@@ -30,6 +30,7 @@ import { useSuperAdmin } from "@/contexts/SuperAdminContext";
 import { SupportModeBanner, ImpersonationBanner } from "@/components/platform/SupportModeBanner";
 import { SupportDiagnosticsPanel } from "@/components/platform/SupportDiagnosticsPanel";
 import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
+import { ConnectionStatus } from "@/components/common/ConnectionStatus";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -266,6 +267,7 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
 
             {/* Right side actions with backplate */}
             <div className="flex items-center gap-2 shrink-0 px-3 py-1.5 rounded-lg bg-muted/40 border border-border/30 transition-colors duration-200 hover:bg-muted/50 focus-within:ring-2 focus-within:ring-ring/20">
+              <ConnectionStatus />
               <ThemeToggle />
               <NotificationDropdown alertCount={alertCount} />
               <Button variant="ghost" size="sm" onClick={handleSignOut} className="hidden sm:flex">
