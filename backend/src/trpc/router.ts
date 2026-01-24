@@ -2,10 +2,11 @@
  * Root tRPC application router
  *
  * This is the main router that merges all domain routers.
- * Currently empty - domain routers will be added in subsequent plans.
+ * Currently contains only health check - domain routers will be added in subsequent plans.
  */
 
-import { router } from './index.js';
+import { z } from 'zod';
+import { router, publicProcedure } from './index.js';
 
 /**
  * Application router
@@ -16,7 +17,16 @@ import { router } from './index.js';
  * - etc.
  */
 export const appRouter = router({
-  // Empty for now - Plan 02 adds organizations router
+  /**
+   * Health check procedure
+   * Public endpoint to verify tRPC infrastructure is working
+   */
+  health: publicProcedure
+    .output(z.object({ status: z.string(), timestamp: z.string() }))
+    .query(() => ({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+    })),
 });
 
 /**
