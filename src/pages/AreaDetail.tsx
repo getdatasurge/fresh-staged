@@ -6,7 +6,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { HierarchyBreadcrumb, BreadcrumbSibling } from "@/components/HierarchyBreadcrumb";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import { usePermissions } from "@/hooks/useUserRole";
-import { softDeleteArea } from "@/hooks/useSoftDelete";
+import { useSoftDelete } from "@/hooks/useSoftDelete";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

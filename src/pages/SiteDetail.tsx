@@ -288,8 +288,8 @@ const SiteDetail = () => {
   };
 
   const handleDeleteSite = async () => {
-    if (!session?.user?.id || !siteId || !site) return;
-    const result = await softDeleteSite(siteId, session.user.id, true);
+    if (!user?.id || !siteId || !site) return;
+    const result = await softDeleteSite(siteId, user.id, true);
     if (result.success) {
       navigate('/sites');
     }

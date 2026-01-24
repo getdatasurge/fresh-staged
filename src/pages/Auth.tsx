@@ -48,15 +48,11 @@ const Auth = () => {
             </TabsList>
 
             <TabsContent value="signin">
-              <SignIn
-                afterSignIn="/auth/callback"
-              />
+              <SignIn />
             </TabsContent>
 
             <TabsContent value="signup">
-              <SignUp
-                afterSignUp="/auth/callback"
-              />
+              <SignUp />
             </TabsContent>
           </Tabs>
         </CardContent>

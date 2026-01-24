@@ -1232,7 +1232,7 @@ const UnitDetail = () => {
       </Tabs>
 
       {/* Log Temp Modal */}
-      {unit && session && (
+      {unit && user && (
         <LogTempModal
           unit={{
             id: unit.id,

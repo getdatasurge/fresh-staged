@@ -50,6 +50,7 @@ export interface OrganizationResponse {
   complianceMode: ComplianceMode;
   sensorLimit: number;
   logoUrl: string | null;
+  accentColor: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

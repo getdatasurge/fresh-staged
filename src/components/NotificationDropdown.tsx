@@ -127,10 +127,22 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
       if (error) throw error;
 
       // Map alerts to notification format
-      const mappedNotifications = (alerts || []).map((alert: AlertWithContext & { unit?: { id: string; name: string; area?: { id: string; name: string; site?: { id: string; name: string } } } }) => {
+      const mappedNotifications = (alerts || []).map((alert) => {
         // Transform the nested unit data structure
         const alertWithContext: AlertWithContext = {
-          ...alert,
+          id: alert.id,
+          title: alert.title,
+          message: alert.message,
+          alert_type: alert.alert_type,
+          severity: alert.severity as "critical" | "warning" | "info",
+          status: alert.status,
+          temp_reading: alert.temp_reading,
+          temp_limit: alert.temp_limit,
+          triggered_at: alert.triggered_at,
+          metadata: (typeof alert.metadata === 'object' && alert.metadata !== null && !Array.isArray(alert.metadata))
+            ? alert.metadata as Record<string, unknown>
+            : null,
+          unit_id: alert.unit_id,
           unit: alert.unit ? {
             id: alert.unit.id,
             name: alert.unit.name,

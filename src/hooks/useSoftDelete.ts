@@ -259,15 +259,15 @@ export async function softDeleteArea(
     if (cascade) {
       const { data: units } = await supabase
         .from("units")
-        .select("id, area_id, site_id, organization_id")
+        .select("id, area_id")
         .eq("area_id", areaId)
         .eq("is_active", true);
 
       if (units) {
         for (const unit of units) {
           await unitsApi.deleteUnit(
-            unit.organization_id,
-            unit.site_id,
+            info.organizationId,
+            info.siteId!,
             unit.area_id,
             unit.id,
             accessToken

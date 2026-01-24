@@ -267,7 +267,7 @@ export function useFetchUnitAlerts(
     queryFn: async (): Promise<AlertResponse[]> => {
       if (!orgId || !unitId) return [];
 
-      const accessToken = await user.getAuthJson().accessToken;
+      const { accessToken } = await user.getAuthJson();
 
       return alertsApi.listUnitAlerts(
         orgId,
@@ -312,7 +312,7 @@ export function useFetchAlerts(
     queryFn: async (): Promise<AlertResponse[]> => {
       if (!orgId) return [];
 
-      const accessToken = await user.getAuthJson().accessToken;
+      const { accessToken } = await user.getAuthJson();
 
       return alertsApi.listAlerts(
         orgId,
@@ -344,7 +344,7 @@ export function useAcknowledgeAlert() {
     mutationFn: async ({ alertId, notes }: { alertId: string; notes?: string }) => {
       if (!orgId) throw new Error("No organization context");
 
-      const accessToken = await user.getAuthJson().accessToken;
+      const { accessToken } = await user.getAuthJson();
       return alertsApi.acknowledgeAlert(orgId, alertId, notes, accessToken);
     },
     onSuccess: () => {
@@ -375,7 +375,7 @@ export function useResolveAlert() {
     }) => {
       if (!orgId) throw new Error("No organization context");
 
-      const accessToken = await user.getAuthJson().accessToken;
+      const { accessToken } = await user.getAuthJson();
       return alertsApi.resolveAlert(orgId, alertId, resolution, correctiveAction, accessToken);
     },
     onSuccess: () => {
