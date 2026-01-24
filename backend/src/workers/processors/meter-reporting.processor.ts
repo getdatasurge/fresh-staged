@@ -7,11 +7,15 @@
  *
  * Jobs are queued by:
  * - reading-ingestion.service.ts (temperature readings)
- * - scheduled sensor count job (active sensors)
+ * - sensor-count-scheduler.service.ts (active sensors via scheduler job)
+ *
+ * Also handles the scheduled sensor count job (SENSOR_COUNT_SCHEDULER)
+ * which triggers batch reporting for all billable organizations.
  */
 
 import type { Job, Processor } from 'bullmq';
 import type { MeterReportJobData } from '../../jobs/index.js';
+import { JobNames } from '../../jobs/index.js';
 import { getStripeMeterService } from '../../services/stripe-meter.service.js';
 
 /**
@@ -24,6 +28,22 @@ export async function processMeterReport(
   job: Job<MeterReportJobData>
 ): Promise<void> {
   const { organizationId, eventName, value, timestamp } = job.data;
+
+  // Handle scheduler job - triggers batch reporting for all billable orgs
+  // Scheduler job uses SENSOR_COUNT_SCHEDULER name with placeholder data
+  if (job.name === JobNames.SENSOR_COUNT_SCHEDULER) {
+    console.log('[MeterProcessor] Processing scheduled sensor count reporting');
+    // Import dynamically to avoid circular dependency
+    const { getSensorCountScheduler } = await import(
+      '../../services/sensor-count-scheduler.service.js'
+    );
+    const scheduler = getSensorCountScheduler();
+    const result = await scheduler.reportAllSensorCounts();
+    console.log(
+      `[MeterProcessor] Scheduler completed: ${result.reported} reported, ${result.errors} errors`
+    );
+    return;
+  }
 
   console.log(
     `[MeterProcessor] Processing ${eventName} job for org ${organizationId}, value: ${value}`
