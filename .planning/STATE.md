@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 18 of 22 (Stripe Billing) — IN PROGRESS
-Plan: 3 of 6 complete
-Status: Plan 18-03 complete
-Last activity: 2026-01-24 — Completed 18-03 (subscription enforcement middleware)
+Plan: 4 of 6 complete
+Status: Plan 18-04 complete
+Last activity: 2026-01-24 — Completed 18-04 (meter reporting processor)
 
-Progress: [████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 28% (24/85 plans)
+Progress: [█████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 29% (25/85 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,12 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 24
+- Plans completed: 25
 - Phases completed: 5 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests)
-- Current phase: 18-stripe-billing (3/6 plans complete)
+- Current phase: 18-stripe-billing (4/6 plans complete)
 
 **Combined:**
-- Total plans completed: 24/85
+- Total plans completed: 25/85
 - Total phases: 17 (5 complete in v2.0)
 - Milestones shipped: 2 (v1.0, v1.1)
 
@@ -124,6 +124,8 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | WEBHOOK-02 | Record event after all handlers complete | 18-02 | Ensures partial processing doesn't mark event as done |
 | SUBSCR-01 | ACTIVE_STATUSES = ['active', 'trial'] only | 18-03 | Canceled/past_due/etc block access, only active/trial allow |
 | SUBSCR-02 | Hierarchical device count via join chain | 18-03 | devices -> units -> areas -> sites ensures multi-tenant isolation |
+| METER-03 | Fire-and-forget pattern for meter jobs | 18-04 | Queue meter events without awaiting to avoid blocking ingestion API |
+| METER-04 | Report insertedCount not requested count | 18-04 | Accurate billing based on actual inserted readings |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -151,10 +153,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-24
-**Stopped at:** Completed 18-03-PLAN.md
+**Stopped at:** Completed 18-04-PLAN.md
 **Resume file:** None
-**Next action:** Execute 18-04-PLAN.md (scheduled jobs)
+**Next action:** Execute 18-05-PLAN.md (scheduled sensor count reporting)
 
 ---
 
-*State updated: 2026-01-24 after completing 18-03-PLAN.md*
+*State updated: 2026-01-24 after completing 18-04-PLAN.md*
