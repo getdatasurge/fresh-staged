@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
-Phase: 14 of 22 (Real-Time Foundation) — In Progress
-Plan: 5 of 6 complete
-Status: Real-time alert notification streaming complete
-Last activity: 2026-01-24 — Completed 14-05-PLAN.md
+Phase: 14 of 22 (Real-Time Foundation) — COMPLETE
+Plan: 6 of 6 complete
+Status: Connection status indicator and E2E verification complete
+Last activity: 2026-01-24 — Completed 14-06-PLAN.md
 
-Progress: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 6% (5/79 plans)
+Progress: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 8% (6/79 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,12 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 5
-- Phases in progress: 1 (14-real-time-foundation)
+- Plans completed: 6
+- Phases completed: 1 (14-real-time-foundation)
 
 **Combined:**
 - Total plans: 79
-- Total phases: 13
+- Total phases: 14
 - Milestones shipped: 2 (v1.0, v1.1)
 
 ## Accumulated Context
@@ -82,6 +82,8 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | REALTIME-16 | Emit events after database mutations in transaction | 14-05 | Events emitted after successful alert creation/resolution/escalation |
 | REALTIME-17 | Toast duration based on severity | 14-05 | Critical alerts: 10s, warning/resolved: 5s for appropriate user attention |
 | REALTIME-18 | Query cache strategy for alerts | 14-05 | Invalidate lists, update details via setQueryData for instant UI feedback |
+| REALTIME-19 | Connection status via tooltip pattern | 14-06 | Non-intrusive status indicator in dashboard header with icon + tooltip |
+| REALTIME-20 | E2E verification deferred to staging | 14-06 | Full real-time testing postponed until local development environment available |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -94,14 +96,15 @@ See also: .planning/PROJECT.md Key Decisions table
 
 - AUTH-02 blocked until database queries migrate to backend API (v2.0 scope)
 - Production data migration requires Supabase access (DEFERRED)
+- Real-time E2E verification requires local staging environment (Phase 01 plans pending)
 
 ## Session Continuity
 
-**Last session:** 2026-01-24 08:59 UTC
-**Stopped at:** Completed 14-05-PLAN.md (Alert Notification Streaming)
+**Last session:** 2026-01-24 09:11 UTC
+**Stopped at:** Completed 14-06-PLAN.md (Connection Status & E2E Verification)
 **Resume file:** None
-**Next action:** Complete phase 14 with plan 14-06
+**Next action:** Begin Phase 15 (Billing Foundation) or Phase 01 (Local Development Environment)
 
 ---
 
-*State updated: 2026-01-24 after completing 14-05*
+*State updated: 2026-01-24 after completing Phase 14*
