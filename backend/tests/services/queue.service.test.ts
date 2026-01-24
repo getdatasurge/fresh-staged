@@ -102,9 +102,10 @@ describe('QueueService', () => {
     it('should return all registered queues', () => {
       const queues = queueService.getAllQueues();
 
-      expect(queues.size).toBe(2);
+      expect(queues.size).toBe(3);
       expect(queues.has(QueueNames.SMS_NOTIFICATIONS)).toBe(true);
       expect(queues.has(QueueNames.EMAIL_DIGESTS)).toBe(true);
+      expect(queues.has(QueueNames.METER_REPORTING)).toBe(true);
     });
   });
 

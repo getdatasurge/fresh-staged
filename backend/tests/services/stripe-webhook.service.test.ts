@@ -432,6 +432,7 @@ describe('Stripe Webhook Service', () => {
   describe('handleWebhookEvent', () => {
     it('should route checkout.session.completed to handler', async () => {
       const event = {
+        id: 'evt_test_checkout',
         type: 'checkout.session.completed',
         data: {
           object: {
@@ -451,7 +452,8 @@ describe('Stripe Webhook Service', () => {
       mockDb.select.mockReturnValue(mockSelectChain as any);
 
       const mockInsertChain = {
-        values: vi.fn().mockResolvedValue(undefined),
+        values: vi.fn().mockReturnThis(),
+        onConflictDoNothing: vi.fn().mockResolvedValue(undefined),
       };
       mockDb.insert.mockReturnValue(mockInsertChain as any);
 
@@ -468,11 +470,27 @@ describe('Stripe Webhook Service', () => {
 
     it('should handle unrecognized event types without error', async () => {
       const event = {
+        id: 'evt_test_unrecognized',
         type: 'customer.created',
         data: {
           object: { id: 'cus_test' },
         },
       } as unknown as Stripe.Event;
+
+      // Mock for idempotency check (isEventProcessed)
+      const mockSelectChain = {
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockResolvedValue([]),
+      };
+      mockDb.select.mockReturnValue(mockSelectChain as any);
+
+      // Mock for recording processed event
+      const mockInsertChain = {
+        values: vi.fn().mockReturnThis(),
+        onConflictDoNothing: vi.fn().mockResolvedValue(undefined),
+      };
+      mockDb.insert.mockReturnValue(mockInsertChain as any);
 
       // Should not throw
       await stripeWebhookService.handleWebhookEvent(event);
