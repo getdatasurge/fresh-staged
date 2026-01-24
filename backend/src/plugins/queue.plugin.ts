@@ -24,6 +24,7 @@ import { QueueService } from '../services/queue.service.js';
 import { createBullBoard } from '@bull-board/api';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { FastifyAdapter } from '@bull-board/fastify';
+import { requireAuth } from '../middleware/index.js';
 
 /**
  * Queue plugin options
@@ -77,6 +78,9 @@ const queuePlugin: FastifyPluginAsync<QueuePluginOptions> = async (
  * job details, and managing failed jobs. Dashboard shows all registered
  * queues with real-time updates.
  *
+ * Authentication: All routes under /admin/queues require JWT validation
+ * via requireAuth middleware applied using onRequest hook.
+ *
  * @param fastify - Fastify instance to mount dashboard on
  * @param queueService - QueueService with registered queues
  * @param basePath - Dashboard mount path (default: /admin/queues)
@@ -103,12 +107,19 @@ function setupBullBoard(
     serverAdapter,
   });
 
-  // Register Bull Board routes with Fastify
-  fastify.register(serverAdapter.registerPlugin(), {
-    prefix: basePath,
+  // Register Bull Board routes with authentication
+  // Create a new plugin context to add authentication hook
+  fastify.register(async (fastifyInstance) => {
+    // Add authentication requirement to all routes in this context
+    fastifyInstance.addHook('onRequest', requireAuth);
+
+    // Register Bull Board routes within authenticated context
+    fastifyInstance.register(serverAdapter.registerPlugin(), {
+      prefix: basePath,
+    });
   });
 
-  fastify.log.info(`[BullBoard] Dashboard available at ${basePath}`);
+  fastify.log.info(`[BullBoard] Dashboard available at ${basePath} (authenticated)`);
 }
 
 export default fastifyPlugin(queuePlugin, {
