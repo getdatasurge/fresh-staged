@@ -7,6 +7,7 @@ import {
 } from 'fastify-type-provider-zod';
 import authPlugin from './plugins/auth.plugin.js';
 import socketPlugin from './plugins/socket.plugin.js';
+import queuePlugin from './plugins/queue.plugin.js';
 import { requireAuth, requireOrgContext, requireRole } from './middleware/index.js';
 import { healthRoutes } from './routes/health.js';
 import authRoutes from './routes/auth.js';
@@ -16,6 +17,7 @@ import areaRoutes from './routes/areas.js';
 import unitRoutes from './routes/units.js';
 import readingsRoutes from './routes/readings.js';
 import alertRoutes from './routes/alerts.js';
+import ttnDeviceRoutes from './routes/ttn-devices.js';
 
 export interface AppOptions {
   logger?: boolean;
@@ -54,6 +56,9 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
     },
   });
 
+  // Register Queue plugin for background job processing
+  app.register(queuePlugin);
+
   // Register auth plugin (decorates request.user)
   app.register(authPlugin);
 
@@ -72,6 +77,9 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
 
   // Register alert routes
   app.register(alertRoutes, { prefix: '/api/orgs/:organizationId/alerts' });
+
+  // Register TTN device routes
+  app.register(ttnDeviceRoutes, { prefix: '/api/orgs/:organizationId/ttn/devices' });
 
   // Example protected route for testing
   app.get('/api/protected', {
