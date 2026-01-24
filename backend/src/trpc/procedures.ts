@@ -47,12 +47,13 @@ export const protectedProcedure = publicProcedure.use(isAuthed);
  * IMPORTANT: Procedures using this MUST include organizationId in their input schema
  * This middleware assumes user is authenticated (used after protectedProcedure)
  */
-const hasOrgAccess = middleware(async ({ ctx, input, next }) => {
+const hasOrgAccess = middleware(async ({ ctx, getRawInput, next }) => {
   // User is guaranteed to be non-null when used with protectedProcedure
   const user = ctx.user as AuthUser;
 
-  // Input should have organizationId (enforced by procedure schema)
-  const { organizationId } = input as { organizationId: string };
+  // Get raw input (before validation) - procedures must have organizationId
+  const rawInput = (await getRawInput()) as { organizationId?: string };
+  const organizationId = rawInput?.organizationId;
 
   if (!organizationId) {
     throw new TRPCError({
