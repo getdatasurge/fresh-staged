@@ -1,0 +1,119 @@
+# FreshTrack Pro Self-Hosted Deployment Overlay
+# Usage: docker compose -f docker-compose.yml -f compose.prod.yaml -f compose.selfhosted.yaml up -d
+#
+# Self-hosted specific settings:
+# - Localhost-only bindings for internal services
+# - Secrets from Infisical file mounts
+# - All services run locally (no managed services)
+
+services:
+  # ===========================================
+  # PostgreSQL Database
+  # ===========================================
+  postgres:
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+
+  # ===========================================
+  # PgBouncer Connection Pooler
+  # ===========================================
+  pgbouncer:
+    ports:
+      - "127.0.0.1:6432:6432"
+    environment:
+      POSTGRESQL_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+
+  # ===========================================
+  # Redis (Cache, Jobs, PubSub)
+  # ===========================================
+  redis:
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  # ===========================================
+  # MinIO (S3-Compatible Object Storage)
+  # ===========================================
+  minio:
+    ports:
+      - "127.0.0.1:9000:9000"   # S3 API
+      - "127.0.0.1:9001:9001"   # MinIO Console
+
+  # ===========================================
+  # Caddy (Reverse Proxy)
+  # ===========================================
+  # Note: Only Caddy should be externally accessible
+  # All other services are bound to localhost
+  # Uncomment when backend service is defined in base compose:
+  # caddy:
+  #   image: caddy:latest
+  #   container_name: freshtrack-caddy
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+  #     - caddy_data:/data
+  #     - caddy_config:/config
+  #   depends_on:
+  #     - backend
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "0.5"
+  #         memory: 256M
+  #       reservations:
+  #         cpus: "0.25"
+  #         memory: 128M
+  #     restart_policy:
+  #       condition: on-failure
+  #       delay: 5s
+  #       max_attempts: 5
+  #       window: 120s
+  #   logging:
+  #     driver: loki
+  #     options:
+  #       loki-url: "http://loki:3100/loki/api/v1/push"
+  #       loki-batch-size: "400"
+  #       loki-retries: "3"
+  #       loki-external-labels: "service={{.Name}},environment=production"
+
+  # ===========================================
+  # Backend API
+  # ===========================================
+  # Uncomment when backend service is defined in base compose:
+  # backend:
+  #   environment:
+  #     DATABASE_URL_FILE: /run/secrets/database_url
+  #     STACK_AUTH_SECRET_KEY_FILE: /run/secrets/stack_auth_secret
+  #   secrets:
+  #     - database_url
+  #     - stack_auth_secret
+
+# ===========================================
+# Secrets Configuration
+# ===========================================
+# Secrets are provided by Infisical Agent which exports them to /var/infisical/secrets/
+# See Phase 11 deployment documentation for Infisical setup
+secrets:
+  postgres_password:
+    file: /var/infisical/secrets/postgres_password
+  database_url:
+    file: /var/infisical/secrets/database_url
+  stack_auth_secret:
+    file: /var/infisical/secrets/stack_auth_secret
+
+# ===========================================
+# Volumes
+# ===========================================
+# Uncomment when Caddy is enabled:
+# volumes:
+#   caddy_data:
+#     name: freshtrack_caddy_data
+#   caddy_config:
+#     name: freshtrack_caddy_config

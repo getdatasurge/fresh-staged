@@ -1,0 +1,21 @@
+# Environment and secrets
+.env
+.env.local
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Data exports (may contain sensitive data)
+data/
+*.json.gz
+
+# Logs
+*.log
+migration.log
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,75 @@
+# FreshTrack Pro Caddy Configuration
+# Automatic HTTPS via Let's Encrypt
+
+{
+    # Admin email for Let's Encrypt notifications
+    email admin@freshtrackpro.com
+
+    # Access logging
+    log {
+        output file /var/log/caddy/access.log
+        format json
+    }
+}
+
+# Main application
+{$DOMAIN:localhost} {
+    # Reverse proxy to backend API
+    reverse_proxy /api/* backend:3000 {
+        # Health check for load balancing
+        health_uri /health
+        health_interval 30s
+        health_timeout 10s
+
+        # Pass client info headers
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # Health endpoint for external monitoring
+    reverse_proxy /health backend:3000
+
+    # Static frontend files (when frontend is containerized)
+    # For now, proxy to frontend dev server or serve static
+    reverse_proxy /* frontend:5173 {
+        # Fallback if frontend not running
+        @frontend_down {
+            not host backend
+        }
+    }
+
+    # Response compression
+    encode gzip zstd
+
+    # Security headers
+    header {
+        # HSTS (1 year, include subdomains)
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Prevent content type sniffing
+        X-Content-Type-Options "nosniff"
+        # Clickjacking protection
+        X-Frame-Options "DENY"
+        # Referrer policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Remove server identification
+        -Server
+    }
+}
+
+# Monitoring subdomain (Grafana)
+monitoring.{$DOMAIN:localhost} {
+    reverse_proxy grafana:3000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+    }
+}
+
+# Status page subdomain (Uptime Kuma)
+status.{$DOMAIN:localhost} {
+    reverse_proxy uptime-kuma:3001 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+    }
+}

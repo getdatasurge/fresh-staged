@@ -1,0 +1,114 @@
+version: '3.8'
+
+name: frostguard-infisical
+
+networks:
+  frostguard_infisical_network:
+    name: frostguard_infisical_network
+    driver: bridge
+
+volumes:
+  infisical_db_data:
+    name: infisical_db_data
+  infisical_redis_data:
+    name: infisical_redis_data
+
+services:
+  infisical-db:
+    image: postgres:15-alpine
+    container_name: infisical-db
+    restart: unless-stopped
+    networks:
+      - frostguard_infisical_network
+    environment:
+      POSTGRES_USER: ${INFISICAL_DB_USER:-infisical}
+      POSTGRES_PASSWORD: ${INFISICAL_DB_PASSWORD:?INFISICAL_DB_PASSWORD must be set}
+      POSTGRES_DB: ${INFISICAL_DB_NAME:-infisical}
+    volumes:
+      - infisical_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${INFISICAL_DB_USER:-infisical}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  infisical-redis:
+    image: redis:7-alpine
+    container_name: infisical-redis
+    restart: unless-stopped
+    networks:
+      - frostguard_infisical_network
+    volumes:
+      - infisical_redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+  infisical:
+    image: infisical/infisical:latest-postgres
+    container_name: infisical
+    restart: unless-stopped
+    networks:
+      - frostguard_infisical_network
+    ports:
+      - "8080:8080"
+    depends_on:
+      infisical-db:
+        condition: service_healthy
+      infisical-redis:
+        condition: service_healthy
+    environment:
+      # Database configuration
+      DB_CONNECTION_URI: postgresql://${INFISICAL_DB_USER:-infisical}:${INFISICAL_DB_PASSWORD}@infisical-db:5432/${INFISICAL_DB_NAME:-infisical}
+
+      # Redis configuration
+      REDIS_URL: redis://infisical-redis:6379
+
+      # Security keys (REQUIRED - must be generated)
+      ENCRYPTION_KEY: ${INFISICAL_ENCRYPTION_KEY:?INFISICAL_ENCRYPTION_KEY must be set}
+      AUTH_SECRET: ${INFISICAL_AUTH_SECRET:?INFISICAL_AUTH_SECRET must be set}
+
+      # Site configuration
+      SITE_URL: ${INFISICAL_SITE_URL:-http://localhost:8080}
+
+      # Optional: Email configuration (for production)
+      # SMTP_HOST: ${SMTP_HOST:-}
+      # SMTP_PORT: ${SMTP_PORT:-587}
+      # SMTP_USERNAME: ${SMTP_USERNAME:-}
+      # SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      # SMTP_FROM_ADDRESS: ${SMTP_FROM_ADDRESS:-noreply@example.com}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/status || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
+        reservations:
+          cpus: '0.5'
+          memory: 512M

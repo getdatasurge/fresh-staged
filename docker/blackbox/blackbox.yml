@@ -1,0 +1,34 @@
+# Blackbox Exporter Configuration
+# Used for SSL certificate monitoring and HTTP/TCP probing
+
+modules:
+  # HTTP probe requiring SSL
+  http_2xx:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200, 201, 301, 302]
+      method: GET
+      follow_redirects: true
+      fail_if_ssl: false
+      fail_if_not_ssl: true
+      tls_config:
+        insecure_skip_verify: false
+
+  # HTTP probe without SSL requirement
+  http_2xx_no_ssl:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200, 201, 301, 302]
+      method: GET
+      follow_redirects: true
+      fail_if_ssl: false
+      fail_if_not_ssl: false
+
+  # TCP connectivity check
+  tcp_connect:
+    prober: tcp
+    timeout: 10s
