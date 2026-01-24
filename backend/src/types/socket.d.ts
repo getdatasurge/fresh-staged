@@ -7,6 +7,7 @@ import type { FastifyInstance } from 'fastify';
  */
 export interface SocketData {
   userId: string;
+  profileId: string;
   organizationId: string;
   role: 'owner' | 'admin' | 'manager' | 'staff' | 'viewer';
   email: string;
@@ -89,10 +90,11 @@ export type TypedSocketIOServer = SocketIOServer<
 >;
 
 /**
- * Extend Fastify instance to include Socket.io server
+ * Extend Fastify instance to include Socket.io server and service
  */
 declare module 'fastify' {
   interface FastifyInstance {
     io: TypedSocketIOServer;
+    socketService: import('../services/socket.service.js').SocketService;
   }
 }

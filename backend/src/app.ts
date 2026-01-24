@@ -6,7 +6,7 @@ import {
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod';
 import authPlugin from './plugins/auth.plugin.js';
-import socketPlugin, { setupSocketHandlers } from './plugins/socket.plugin.js';
+import socketPlugin from './plugins/socket.plugin.js';
 import { requireAuth, requireOrgContext, requireRole } from './middleware/index.js';
 import { healthRoutes } from './routes/health.js';
 import authRoutes from './routes/auth.js';
@@ -105,12 +105,6 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
       return { deleted: true };
     }
   );
-
-  // Setup Socket.io event handlers after server is ready
-  void app.ready().then(() => {
-    setupSocketHandlers(app.io);
-    app.log.info('Socket.io ready');
-  });
 
   return app;
 }

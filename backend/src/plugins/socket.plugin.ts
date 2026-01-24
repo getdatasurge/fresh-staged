@@ -2,6 +2,8 @@ import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fastifyPlugin from 'fastify-plugin';
 import { Server as SocketIOServer } from 'socket.io';
 import type { TypedSocketIOServer } from '../types/socket.js';
+import { setupSocketAuth } from '../middleware/socket-auth.js';
+import { SocketService } from '../services/socket.service.js';
 
 /**
  * Socket.io plugin for Fastify
@@ -25,7 +27,7 @@ import type { TypedSocketIOServer } from '../types/socket.js';
 
 export interface SocketPluginOptions {
   cors?: {
-    origin: string | string[] | RegExp | RegExp[];
+    origin?: string | string[] | RegExp | RegExp[] | (string | RegExp)[];
     credentials?: boolean;
   };
 }
@@ -55,30 +57,113 @@ const socketPlugin: FastifyPluginAsync<SocketPluginOptions> = async (
     pingInterval: 25000, // 25 seconds
   });
 
-  // Decorate Fastify instance with io
+  // Create SocketService instance (initialize later in ready hook)
+  const socketService = new SocketService(io);
+
+  // Decorate Fastify instance with io and socketService
   fastify.decorate('io', io);
+  fastify.decorate('socketService', socketService);
 
-  // Setup basic connection logging
-  io.on('connection', (socket) => {
-    fastify.log.info({
-      event: 'socket:connected',
-      socketId: socket.id,
-      transport: socket.conn.transport.name,
-    });
+  // Setup authentication, service, and handlers after server is ready
+  fastify.ready(async () => {
+    // Setup JWT authentication middleware
+    setupSocketAuth(io);
 
-    socket.on('disconnect', (reason) => {
+    // Initialize SocketService with Redis adapter
+    await socketService.initialize();
+
+    // Setup connection logging and room management
+    io.on('connection', (socket) => {
       fastify.log.info({
-        event: 'socket:disconnected',
+        event: 'socket:connected',
         socketId: socket.id,
-        reason,
+        userId: socket.data.userId,
+        organizationId: socket.data.organizationId,
+        role: socket.data.role,
+        transport: socket.conn.transport.name,
+      });
+
+      // Auto-join organization room
+      socketService.joinOrganization(socket);
+
+      // Send connection acknowledgment
+      socket.emit('connection:ack', {
+        socketId: socket.id,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Ping/pong for connection health monitoring
+      socket.on('ping', (callback) => {
+        callback(Date.now());
+      });
+
+      // Handle client subscription events
+      socket.on('subscribe:site', (siteId: string) => {
+        socketService.joinSite(socket, siteId);
+        fastify.log.info({
+          event: 'socket:subscribe:site',
+          socketId: socket.id,
+          userId: socket.data.userId,
+          siteId,
+        });
+      });
+
+      socket.on('subscribe:unit', (unitId: string) => {
+        socketService.joinUnit(socket, unitId);
+        fastify.log.info({
+          event: 'socket:subscribe:unit',
+          socketId: socket.id,
+          userId: socket.data.userId,
+          unitId,
+        });
+      });
+
+      socket.on('unsubscribe:site', (siteId: string) => {
+        const room = `org:${socket.data.organizationId}:site:${siteId}`;
+        socketService.leaveRoom(socket, room);
+        fastify.log.info({
+          event: 'socket:unsubscribe:site',
+          socketId: socket.id,
+          userId: socket.data.userId,
+          siteId,
+        });
+      });
+
+      socket.on('unsubscribe:unit', (unitId: string) => {
+        const room = `org:${socket.data.organizationId}:unit:${unitId}`;
+        socketService.leaveRoom(socket, room);
+        fastify.log.info({
+          event: 'socket:unsubscribe:unit',
+          socketId: socket.id,
+          userId: socket.data.userId,
+          unitId,
+        });
+      });
+
+      socket.on('disconnect', (reason) => {
+        // Clean up listeners to prevent memory leaks
+        socket.removeAllListeners();
+
+        fastify.log.info({
+          event: 'socket:disconnected',
+          socketId: socket.id,
+          userId: socket.data.userId,
+          reason,
+        });
       });
     });
   });
 
-  // Graceful shutdown: disconnect all sockets before closing
+  // Graceful shutdown: disconnect sockets and Redis before closing
   fastify.addHook('onClose', async () => {
     fastify.log.info('Disconnecting all Socket.io clients...');
     io.local.disconnectSockets(true);
+
+    // Shutdown SocketService Redis clients
+    if (fastify.socketService) {
+      await fastify.socketService.shutdown();
+    }
+
     await new Promise<void>((resolve) => {
       io.close(() => {
         fastify.log.info('Socket.io server closed');
@@ -94,65 +179,3 @@ export default fastifyPlugin(socketPlugin, {
   name: 'socket-io',
   fastify: '5.x',
 });
-
-/**
- * Setup Socket.io event handlers
- *
- * Call this function after app.ready() to configure Socket.io handlers.
- * Must be called after the Fastify server is ready because Socket.io
- * needs access to the HTTP server.
- *
- * @param io - The Socket.io server instance from fastify.io
- */
-export function setupSocketHandlers(io: TypedSocketIOServer): void {
-  // Handler will be enhanced in subsequent plans with:
-  // - JWT authentication middleware
-  // - Room subscription management
-  // - Real-time sensor data streaming
-  // - Alert notifications
-
-  io.on('connection', (socket) => {
-    // Send connection acknowledgment
-    socket.emit('connection:ack', {
-      socketId: socket.id,
-      timestamp: new Date().toISOString(),
-    });
-
-    // Handle subscription events (placeholder for now)
-    socket.on('subscribe:organization', (organizationId: string) => {
-      socket.join(`org:${organizationId}`);
-      console.log(`Socket ${socket.id} joined organization ${organizationId}`);
-    });
-
-    socket.on('unsubscribe:organization', (organizationId: string) => {
-      socket.leave(`org:${organizationId}`);
-      console.log(`Socket ${socket.id} left organization ${organizationId}`);
-    });
-
-    socket.on('subscribe:site', (siteId: string) => {
-      // Room name will include org ID when auth is added
-      socket.join(`site:${siteId}`);
-      console.log(`Socket ${socket.id} subscribed to site ${siteId}`);
-    });
-
-    socket.on('unsubscribe:site', (siteId: string) => {
-      socket.leave(`site:${siteId}`);
-      console.log(`Socket ${socket.id} unsubscribed from site ${siteId}`);
-    });
-
-    socket.on('subscribe:unit', (unitId: string) => {
-      socket.join(`unit:${unitId}`);
-      console.log(`Socket ${socket.id} subscribed to unit ${unitId}`);
-    });
-
-    socket.on('unsubscribe:unit', (unitId: string) => {
-      socket.leave(`unit:${unitId}`);
-      console.log(`Socket ${socket.id} unsubscribed from unit ${unitId}`);
-    });
-
-    // Ping/pong for connection health monitoring
-    socket.on('ping', (callback) => {
-      callback(Date.now());
-    });
-  });
-}
