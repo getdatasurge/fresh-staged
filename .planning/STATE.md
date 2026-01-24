@@ -13,7 +13,7 @@ Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 16 of 22 (SMS Notifications) — COMPLETE
 Plan: 3 of 3 complete
 Status: All Phase 16 success criteria verified
-Last activity: 2026-01-24 — Completed quick-001 (README/ARCHITECTURE doc updates)
+Last activity: 2026-01-24 — Completed quick-002 (installed Stripe AI and TypeScript skills)
 
 Progress: [█████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 18% (15/85 plans)
 
@@ -128,11 +128,12 @@ See also: .planning/PROJECT.md Key Decisions table
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 001 | Remove Supabase references from README and project configuration | 2026-01-24 | 62c8e17 | [001-remove-supabase-references-from-readme-a](./quick/001-remove-supabase-references-from-readme-a/) |
+| 002 | Install Stripe AI and wshobson/agents skills for Phase 18 billing and TypeScript patterns | 2026-01-24 | 5d75913 | [002-install-relevant-skills-from-skills-sh-f](./quick/002-install-relevant-skills-from-skills-sh-f/) |
 
 ## Session Continuity
 
 **Last session:** 2026-01-24
-**Stopped at:** Completed quick task 001: Remove Supabase references from docs
+**Stopped at:** Completed quick task 002: Install relevant skills from skills.sh
 **Resume file:** None
 **Next action:** Plan Phase 17 (Email Digests) or Phase 18 (Stripe Billing)
 
