@@ -139,13 +139,20 @@ Plans:
 **Goal:** tRPC infrastructure and pilot migration (organizations domain)
 **Depends on:** Phase 13
 **Requirements:** API-01, API-02
+**Plans:** 4 plans
+
+Plans:
+- [ ] 19-01-PLAN.md — tRPC infrastructure setup (Fastify plugin, context, procedures)
+- [ ] 19-02-PLAN.md — Organizations router with CRUD procedures
+- [ ] 19-03-PLAN.md — Frontend tRPC client integration
+- [ ] 19-04-PLAN.md — Organizations API migration and E2E verification
 
 **Success Criteria:**
 1. tRPC router configured on Fastify backend
 2. Type sharing working between frontend and backend
 3. Organizations domain migrated to tRPC
-4. Feature flags enabling incremental rollout
-5. Parallel run validation passing
+4. Frontend hooks use tRPC procedures
+5. E2E verification passing
 
 ---
 
@@ -253,7 +260,7 @@ Plans:
 | 16. SMS Notifications | v2.0 | 3/3 | Complete | 2026-01-24 |
 | 17. Email Digests | v2.0 | 3/3 | Complete | 2026-01-24 |
 | 18. Stripe Billing | v2.0 | 6/6 | Complete | 2026-01-24 |
-| 19. Backend API Migration - Foundation | v2.0 | 0/? | Not Started | - |
+| 19. Backend API Migration - Foundation | v2.0 | 0/4 | Not Started | - |
 | 20. Backend API Migration - Core | v2.0 | 0/? | Not Started | - |
 | 21. Backend API Migration - Completion | v2.0 | 0/? | Not Started | - |
 | 22. AWS ECS Deployment (Optional) | v2.0 | 0/? | Not Started | - |
