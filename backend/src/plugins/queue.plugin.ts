@@ -21,6 +21,7 @@
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fastifyPlugin from 'fastify-plugin';
 import { QueueService } from '../services/queue.service.js';
+import { TelnyxService, setTelnyxService } from '../services/telnyx.service.js';
 import { createBullBoard } from '@bull-board/api';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { FastifyAdapter } from '@bull-board/fastify';
@@ -47,6 +48,16 @@ const queuePlugin: FastifyPluginAsync<QueuePluginOptions> = async (
   // Decorate Fastify instance with queueService
   fastify.decorate('queueService', queueService);
 
+  // Initialize TelnyxService for SMS notifications
+  // Note: TelnyxService handles missing env vars gracefully (logs warning, doesn't crash)
+  const telnyxService = new TelnyxService();
+  setTelnyxService(telnyxService);
+  if (telnyxService.isEnabled()) {
+    fastify.log.info('[Queue Plugin] TelnyxService initialized and enabled');
+  } else {
+    fastify.log.info('[Queue Plugin] TelnyxService initialized (disabled - no API key)');
+  }
+
   // Initialize QueueService with Redis connection after server is ready
   fastify.ready(async () => {
     await queueService.initialize();
@@ -66,6 +77,9 @@ const queuePlugin: FastifyPluginAsync<QueuePluginOptions> = async (
     }
 
     fastify.log.info('QueueService shutdown complete');
+
+    // TelnyxService doesn't need explicit cleanup (stateless HTTP client)
+    fastify.log.info('[Queue Plugin] TelnyxService shutdown');
   });
 
   fastify.log.info('Queue plugin registered');

@@ -54,9 +54,11 @@ export interface SendSmsResult {
  * - Telnyx SDK initialization with API key
  * - SMS sending with typed parameters
  * - Response parsing for message ID and status
+ * - Graceful handling when not configured
  */
 export class TelnyxService {
-  private client: Telnyx;
+  private client: Telnyx | null = null;
+  private enabled = false;
 
   /**
    * Initialize TelnyxService with environment configuration
@@ -66,16 +68,19 @@ export class TelnyxService {
    * - TELNYX_PHONE_NUMBER: Required source phone number
    * - TELNYX_MESSAGING_PROFILE_ID: Optional messaging profile
    *
-   * @throws Error if TELNYX_API_KEY is not configured
+   * If TELNYX_API_KEY is not configured, service operates in disabled mode
+   * and logs a warning. This allows API startup without SMS functionality.
    */
   constructor() {
     const apiKey = process.env.TELNYX_API_KEY;
 
     if (!apiKey) {
-      throw new Error(
-        '[TelnyxService] TELNYX_API_KEY not configured. ' +
+      console.warn(
+        '[TelnyxService] TELNYX_API_KEY not configured - SMS sending disabled. ' +
         'Set environment variable for SMS functionality.'
       );
+      this.enabled = false;
+      return;
     }
 
     // Initialize Telnyx SDK
@@ -86,6 +91,16 @@ export class TelnyxService {
       maxRetries: 0,
       timeout: 30000,
     });
+    this.enabled = true;
+  }
+
+  /**
+   * Check if TelnyxService is enabled and configured
+   *
+   * @returns true if TELNYX_API_KEY is configured and service is ready
+   */
+  isEnabled(): boolean {
+    return this.enabled;
   }
 
   /**
@@ -103,6 +118,13 @@ export class TelnyxService {
    * console.log('Sent:', result.messageId, 'Status:', result.status);
    */
   async sendSms(params: SendSmsParams): Promise<SendSmsResult> {
+    // Check if service is enabled
+    if (!this.enabled || !this.client) {
+      throw new Error(
+        '[TelnyxService] Service not configured - set TELNYX_API_KEY environment variable'
+      );
+    }
+
     const { to, message, messagingProfileId } = params;
 
     const fromNumber = process.env.TELNYX_PHONE_NUMBER;
