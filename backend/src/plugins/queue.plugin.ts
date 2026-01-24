@@ -7,6 +7,7 @@
  * Features:
  * - Initializes QueueService with Redis connection
  * - Decorates Fastify instance with queueService
+ * - Bull Board dashboard for queue monitoring
  * - Graceful shutdown on application close
  * - Multi-tenant job isolation via organizationId
  *
@@ -20,6 +21,9 @@
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fastifyPlugin from 'fastify-plugin';
 import { QueueService } from '../services/queue.service.js';
+import { createBullBoard } from '@bull-board/api';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { FastifyAdapter } from '@bull-board/fastify';
 
 /**
  * Queue plugin options
@@ -28,6 +32,8 @@ import { QueueService } from '../services/queue.service.js';
 export interface QueuePluginOptions {
   // Future: Allow custom Redis configuration
   // redis?: { host: string; port: number; };
+  // Bull Board dashboard path (default: /admin/queues)
+  dashboardPath?: string;
 }
 
 const queuePlugin: FastifyPluginAsync<QueuePluginOptions> = async (
@@ -43,6 +49,11 @@ const queuePlugin: FastifyPluginAsync<QueuePluginOptions> = async (
   // Initialize QueueService with Redis connection after server is ready
   fastify.ready(async () => {
     await queueService.initialize();
+
+    // Setup Bull Board dashboard if Redis is enabled
+    if (queueService.isRedisEnabled()) {
+      setupBullBoard(fastify, queueService, opts.dashboardPath);
+    }
   });
 
   // Graceful shutdown: close all queues and Redis connection
@@ -58,6 +69,47 @@ const queuePlugin: FastifyPluginAsync<QueuePluginOptions> = async (
 
   fastify.log.info('Queue plugin registered');
 };
+
+/**
+ * Setup Bull Board dashboard for queue monitoring
+ *
+ * Creates a web UI at the specified path for viewing queue status,
+ * job details, and managing failed jobs. Dashboard shows all registered
+ * queues with real-time updates.
+ *
+ * @param fastify - Fastify instance to mount dashboard on
+ * @param queueService - QueueService with registered queues
+ * @param basePath - Dashboard mount path (default: /admin/queues)
+ */
+function setupBullBoard(
+  fastify: FastifyInstance,
+  queueService: QueueService,
+  basePath = '/admin/queues'
+): void {
+  // Get all registered queues from QueueService
+  const queues = Array.from(queueService.getAllQueues().values());
+
+  if (queues.length === 0) {
+    fastify.log.warn('[BullBoard] No queues registered - dashboard not created');
+    return;
+  }
+
+  // Wrap queues in BullMQAdapter for Bull Board
+  const serverAdapter = new FastifyAdapter();
+  serverAdapter.setBasePath(basePath);
+
+  createBullBoard({
+    queues: queues.map((queue) => new BullMQAdapter(queue)),
+    serverAdapter,
+  });
+
+  // Register Bull Board routes with Fastify
+  fastify.register(serverAdapter.registerPlugin(), {
+    prefix: basePath,
+  });
+
+  fastify.log.info(`[BullBoard] Dashboard available at ${basePath}`);
+}
 
 export default fastifyPlugin(queuePlugin, {
   name: 'queue',
