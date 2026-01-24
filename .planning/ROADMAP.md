@@ -114,6 +114,15 @@ Plans:
 **Goal:** Subscription management with usage-based metering
 **Depends on:** Phase 13
 **Requirements:** BILL-01, BILL-02, BILL-03, BILL-04, BILL-05, BILL-06
+**Plans:** 6 plans
+
+Plans:
+- [ ] 18-01-PLAN.md — stripeEvents table and meter job types
+- [ ] 18-02-PLAN.md — StripeMeterService and webhook idempotency
+- [ ] 18-03-PLAN.md — Subscription enforcement middleware
+- [ ] 18-04-PLAN.md — Meter reporting processor and ingestion integration
+- [ ] 18-05-PLAN.md — Worker registration and sensor count scheduler
+- [ ] 18-06-PLAN.md — Integration tests and E2E verification
 
 **Success Criteria:**
 1. Stripe checkout flow creates subscriptions
@@ -243,7 +252,7 @@ Plans:
 | 15. Background Jobs Infrastructure | v2.0 | 4/4 | Complete | 2026-01-24 |
 | 16. SMS Notifications | v2.0 | 3/3 | Complete | 2026-01-24 |
 | 17. Email Digests | v2.0 | 3/3 | Complete | 2026-01-24 |
-| 18. Stripe Billing | v2.0 | 0/? | Not Started | - |
+| 18. Stripe Billing | v2.0 | 0/6 | Planned | - |
 | 19. Backend API Migration - Foundation | v2.0 | 0/? | Not Started | - |
 | 20. Backend API Migration - Core | v2.0 | 0/? | Not Started | - |
 | 21. Backend API Migration - Completion | v2.0 | 0/? | Not Started | - |
@@ -251,4 +260,4 @@ Plans:
 
 ---
 
-*v2.0 milestone active — 9 phases defined, Phases 14-17 complete, ready for Phase 18*
+*v2.0 milestone active — 9 phases defined, Phases 14-17 complete, Phase 18 planned and ready for execution*
