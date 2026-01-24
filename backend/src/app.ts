@@ -7,6 +7,7 @@ import {
   validatorCompiler,
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod';
+import { fastifyTRPCPlugin, FastifyTRPCPluginOptions } from '@trpc/server/adapters/fastify';
 import { getFastifyLoggerConfig } from './utils/logger.js';
 import errorHandlerPlugin from './plugins/error-handler.plugin.js';
 import authPlugin from './plugins/auth.plugin.js';
@@ -14,6 +15,8 @@ import socketPlugin from './plugins/socket.plugin.js';
 import queuePlugin from './plugins/queue.plugin.js';
 import { emailPlugin } from './plugins/email.plugin.js';
 import { requireAuth, requireOrgContext, requireRole } from './middleware/index.js';
+import { createContext } from './trpc/context.js';
+import { appRouter, type AppRouter } from './trpc/router.js';
 import { healthRoutes } from './routes/health.js';
 import authRoutes from './routes/auth.js';
 import organizationRoutes from './routes/organizations.js';
@@ -49,6 +52,8 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
     // Add request ID header to responses for correlation
     requestIdHeader: 'x-request-id',
     requestIdLogLabel: 'requestId',
+    // Support batched tRPC requests with longer URLs
+    maxParamLength: 5000,
   });
 
   // Enable CORS for frontend
@@ -119,6 +124,18 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
 
   // Register auth plugin (decorates request.user)
   app.register(authPlugin);
+
+  // Register tRPC router
+  app.register(fastifyTRPCPlugin, {
+    prefix: '/trpc',
+    trpcOptions: {
+      router: appRouter,
+      createContext,
+      onError({ path, error }) {
+        app.log.error({ path, error: error.message }, 'tRPC error');
+      },
+    } satisfies FastifyTRPCPluginOptions<AppRouter>['trpcOptions'],
+  });
 
   // Health check routes (no auth required - before auth middleware)
   app.register(healthRoutes);
