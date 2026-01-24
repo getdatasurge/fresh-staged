@@ -21,7 +21,9 @@ FrostGuard is a comprehensive IoT-based refrigeration monitoring platform that p
 |----------|--------------|
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui |
 | State Management | TanStack Query, React Context |
-| Backend | Supabase (PostgreSQL, Auth, Edge Functions) |
+| Backend | Fastify 5, PostgreSQL, Drizzle ORM |
+| Auth | Stack Auth |
+| Database | PostgreSQL (self-hosted or Supabase) |
 | IoT | The Things Network (TTN), LoRaWAN |
 | Notifications | Email, Telnyx SMS, Push Notifications |
 | Payments | Stripe |
@@ -34,7 +36,7 @@ npm install
 
 # Set up environment variables
 cp .env.example .env
-# Edit .env with your Supabase credentials
+# Edit .env with your Stack Auth and API configuration
 
 # Start development server
 npm run dev
@@ -121,9 +123,11 @@ Full documentation is available in the `/docs` directory:
 
 | Variable | Description |
 |----------|-------------|
-| `VITE_SUPABASE_URL` | Supabase project URL |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon key |
-| `VITE_SUPABASE_PROJECT_ID` | Supabase project ID |
+| `VITE_API_URL` | Backend API URL (default: http://localhost:3000) |
+| `VITE_STACK_AUTH_PROJECT_ID` | Stack Auth project ID |
+| `VITE_STACK_AUTH_PUBLISHABLE_CLIENT_KEY` | Stack Auth client key |
+
+> **Note:** Legacy Supabase variables are documented in `.env.example` for the ongoing database migration.
 
 ## Contributing
 
