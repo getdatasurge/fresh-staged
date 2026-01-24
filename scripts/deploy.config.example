@@ -1,0 +1,185 @@
+# FreshTrack Pro Self-Hosted Deployment Configuration
+#
+# Copy this file to deploy.config and fill in your values:
+#   cp scripts/deploy.config.example scripts/deploy.config
+#
+# The deploy.config file is gitignored to protect secrets.
+# Never commit real credentials to version control.
+
+# ===========================================
+# Domain Configuration
+# ===========================================
+# Your production domain name (required for SSL certificates)
+# Example: freshtrackpro.com
+DOMAIN=
+
+# Email for Let's Encrypt SSL certificate notifications
+# You'll receive expiry warnings and renewal notifications here
+# Example: admin@freshtrackpro.com
+ADMIN_EMAIL=
+
+# ===========================================
+# Database Credentials
+# ===========================================
+# PostgreSQL database password (required)
+# Generate a strong password: openssl rand -base64 32
+# Example: Zx9kL3m2Pq8vN4rT1wY6sC7dF5gH8jK0
+POSTGRES_PASSWORD=
+
+# Database name (default: freshtrack)
+POSTGRES_DB=freshtrack
+
+# Database user (default: freshtrack_user)
+POSTGRES_USER=freshtrack_user
+
+# ===========================================
+# Application Secrets
+# ===========================================
+# Stack Auth credentials from https://app.stack-auth.com/
+# Required for authentication to work
+
+# Stack Auth Project ID
+# Found in: Stack Auth Dashboard → Project Settings → Project ID
+# Example: prj_abc123def456
+STACK_AUTH_PROJECT_ID=
+
+# Stack Auth Publishable Key
+# Found in: Stack Auth Dashboard → API Keys → Publishable Key
+# Example: pk_test_abc123def456
+STACK_AUTH_PUBLISHABLE_KEY=
+
+# Stack Auth Secret Key
+# Found in: Stack Auth Dashboard → API Keys → Secret Key
+# Example: sk_live_abc123def456
+STACK_AUTH_SECRET_KEY=
+
+# ===========================================
+# Optional Services
+# ===========================================
+# Grafana admin password (default: auto-generated on first run)
+# If not set, script will generate a random password
+# Example: MySecureGrafanaPassword123!
+GRAFANA_ADMIN_PASSWORD=
+
+# MinIO Access Key (default: auto-generated)
+# Used for S3-compatible object storage
+# Example: minioadmin
+MINIO_ACCESS_KEY=
+
+# MinIO Secret Key (default: auto-generated)
+# Example: minioadmin123
+MINIO_SECRET_KEY=
+
+# ===========================================
+# Notification Settings
+# ===========================================
+# Webhook URL for deployment notifications (optional)
+# Supports Slack, Discord, or generic webhook endpoints
+# Leave empty to disable notifications
+# Example: https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+BACKUP_WEBHOOK_URL=
+
+# ===========================================
+# Deployment Settings
+# ===========================================
+# Number of previous versions to keep for rollback capability
+# Default: 3 (recommended for weekly deployments)
+# Range: 1-10
+VERSION_RETENTION=3
+
+# Health check timeout in seconds per retry
+# How long to wait between health check attempts
+# Default: 30 seconds
+HEALTH_CHECK_TIMEOUT=30
+
+# Health check maximum retries
+# Total attempts before declaring deployment failed
+# Default: 30 (15 minutes total with 30s timeout)
+# Total wait time = HEALTH_CHECK_TIMEOUT * HEALTH_CHECK_RETRIES
+HEALTH_CHECK_RETRIES=30
+
+# ===========================================
+# Git Repository (for initial deployment)
+# ===========================================
+# Git repository URL to clone
+# Default: https://github.com/yourusername/freshtrack-pro.git
+GIT_REPO_URL=https://github.com/yourusername/freshtrack-pro.git
+
+# Git branch to deploy
+# Default: main
+GIT_BRANCH=main
+
+# ===========================================
+# DigitalOcean Configuration (Optional)
+# ===========================================
+# Only required when deploying to DigitalOcean Droplet
+# Skip this section for generic self-hosted deployments
+
+# DigitalOcean API Token
+# Create at: https://cloud.digitalocean.com/account/api/tokens
+# Required permissions: Read and Write
+# Example: dop_v1_abc123def456...
+DO_API_TOKEN=
+
+# SSH Key Name (as shown in DigitalOcean dashboard)
+# Found at: https://cloud.digitalocean.com/account/security
+# Example: my-laptop-key
+DO_SSH_KEY_NAME=
+
+# Droplet region (choose closest to your users)
+# Options: nyc1, nyc3, sfo3, ams3, sgp1, lon1, fra1, tor1, blr1, syd1
+# Default: nyc3
+DO_REGION=nyc3
+
+# Droplet size (determines CPU/RAM)
+# Common options:
+#   s-1vcpu-1gb   ($6/mo)   - Development/testing
+#   s-2vcpu-2gb   ($18/mo)  - Small production
+#   s-2vcpu-4gb   ($24/mo)  - Recommended for production
+#   s-4vcpu-8gb   ($48/mo)  - High traffic
+# Default: s-2vcpu-4gb
+DO_DROPLET_SIZE=s-2vcpu-4gb
+
+# ===========================================
+# DigitalOcean Managed Database (Optional)
+# ===========================================
+# Set USE_MANAGED_DB=true to use DigitalOcean Managed PostgreSQL
+# instead of self-hosted PostgreSQL container.
+# Cost: $15-60/month depending on tier
+
+# Use managed PostgreSQL instead of self-hosted
+# Default: false (uses containerized PostgreSQL)
+USE_MANAGED_DB=false
+
+# Managed database size (only if USE_MANAGED_DB=true)
+# Options:
+#   db-s-1vcpu-1gb   ($15/mo)  - Development
+#   db-s-1vcpu-2gb   ($30/mo)  - Small production
+#   db-s-2vcpu-4gb   ($60/mo)  - Production with HA standby
+# Default: db-s-1vcpu-2gb
+DO_DB_SIZE=db-s-1vcpu-2gb
+
+# ===========================================
+# DigitalOcean Spaces (Optional)
+# ===========================================
+# Set USE_DO_SPACES=true to use DigitalOcean Spaces
+# instead of self-hosted MinIO container.
+# Cost: $5/month for 250GB + 1TB bandwidth
+
+# Use DigitalOcean Spaces instead of MinIO
+# Default: false (uses containerized MinIO)
+USE_DO_SPACES=false
+
+# Spaces access key (only if USE_DO_SPACES=true)
+# Create at: https://cloud.digitalocean.com/account/api/spaces
+DO_SPACES_ACCESS_KEY=
+
+# Spaces secret key
+DO_SPACES_SECRET_KEY=
+
+# Spaces region (same as Droplet region recommended)
+# Options: nyc3, sfo3, ams3, sgp1, fra1
+DO_SPACES_REGION=nyc3
+
+# Spaces bucket name
+DO_SPACES_BUCKET=freshtrack-media

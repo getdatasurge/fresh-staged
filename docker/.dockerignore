@@ -1,0 +1,40 @@
+# ===========================================
+# Docker Context .dockerignore
+# ===========================================
+# This file protects against accidental secret inclusion
+# if docker/ is used as a build context
+
+# Infisical secrets (CRITICAL)
+infisical/.env
+infisical/*.secret
+infisical/secrets/
+
+# Local environment files
+*.env
+.env.*
+!*.env.example
+
+# Private keys and certificates
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# Data volumes (should never be in context)
+data/
+volumes/
+*.data
+
+# Logs
+*.log
+logs/
+
+# Editor files
+.vscode/
+.idea/

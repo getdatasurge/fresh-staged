@@ -1,0 +1,101 @@
+# ===========================================
+# Secrets and Credentials (CRITICAL)
+# ===========================================
+# Environment files
+.env
+.env.*
+.env.local
+.env.*.local
+!.env.example
+
+# Private keys and certificates
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+secrets/
+*.secret
+*.secrets
+
+# Cloud credentials
+.aws/
+.gcp/
+.azure/
+credentials.json
+service-account*.json
+
+# SSH keys
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.pub
+
+# Config files that may contain secrets
+config/*.secret.*
+config/production.*
+
+# ===========================================
+# Dependencies
+# ===========================================
+node_modules
+
+# ===========================================
+# Build Output
+# ===========================================
+dist
+
+# ===========================================
+# Development Artifacts
+# ===========================================
+.vscode/
+.idea/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log
+
+# Test and coverage
+tests/
+*.test.ts
+*.spec.ts
+coverage/
+.nyc_output/
+jest.config.*
+
+# Documentation (not needed in image)
+docs/
+*.md
+!README.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.circleci/
+Jenkinsfile
+
+# ===========================================
+# OS and Editor
+# ===========================================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ===========================================
+# Git
+# ===========================================
+.git
+.gitignore
+
+# ===========================================
+# Drizzle
+# ===========================================
+# Drizzle backup files only (keep drizzle/ and drizzle/meta/ for migrations)
+*.sql.bak

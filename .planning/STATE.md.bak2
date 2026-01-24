@@ -1,0 +1,110 @@
+# Project State: FreshTrack Pro Migration
+
+## Project Reference
+
+See: .planning/PROJECT.md (updated 2026-01-23)
+
+**Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
+**Current focus:** v1.1 Production Ready — Phase 9 (Production Environment Hardening)
+
+## Current Position
+
+Milestone: v1.1 Production Ready
+Phase: 9 of 13 (Production Environment Hardening)
+Plan: 5 of 6
+Status: In progress
+Last activity: 2026-01-24 — Completed 09-05-PLAN.md
+
+Progress: [████████████████████░░░░░░░░░░░░░░░░░░] 74% (37/50 plans estimated)
+
+## Completed Phases (v1.1)
+
+### Phase 8: Frontend Auth Cleanup ✓
+- **Completed:** 2026-01-23
+- **Plans:** 6 (all complete)
+- **Key results:**
+  - Zero `supabase.auth.*` calls remain in frontend
+  - 174 Stack Auth hook usages across 62 files
+  - instrumentedSupabase.ts deleted
+  - TypeScript compiles clean
+- **Verification:** PASSED (4/4 must-haves)
+
+## Previous Milestone
+
+**Milestone v1.0 SHIPPED** — 2026-01-23 (7 phases, 27 plans)
+- Complete migration from Supabase to self-hosted stack
+- Fastify API, Drizzle ORM, Stack Auth, Docker Compose infrastructure
+- Production observability with Prometheus/Grafana/Loki
+
+Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
+
+## Performance Metrics
+
+**v1.0 Milestone:**
+- Total plans completed: 27
+- Phases completed: 7
+- Total execution time: [tracked in v1.0 audit]
+
+**v1.1 Milestone:**
+- Plans completed: 9 (6 in Phase 8, 3 in Phase 9)
+- Phases completed: 1 (Phase 8)
+- Phases in progress: 1 (Phase 9: 3/6 plans complete)
+- Plans remaining: ~14 estimated
+
+Note: 09-03 completed but STATE.md shows 09-05 - concurrent execution detected.
+
+*Metrics updated after each plan completion*
+
+## Accumulated Context
+
+### Decisions
+
+See: .planning/PROJECT.md Key Decisions table
+
+Recent decisions affecting v1.1:
+- Docker Compose override pattern for multi-target deployment (base + compose.{target}.yaml)
+- Start with self-hosted/DigitalOcean Droplet before AWS ECS (lower complexity)
+- PgBouncer transaction pooling mode (must audit backend code compatibility)
+- Hook wrapper pattern for auth-dependent functions (08-01)
+- useStackApp for auth actions, useUser for identity (08-02)
+- Stack Auth useUser() reactivity replaces onAuthStateChange subscriptions (08-03)
+- Removed Session state management in complex pages - Stack Auth is reactive (08-05)
+- Components should use internal useUser() hooks instead of receiving session props (08-06)
+- Separate Docker Compose stack for Infisical secrets manager (independent lifecycle) (09-01)
+- Named Docker volumes for Infisical persistence (infisical_db_data, infisical_redis_data) (09-01)
+- Health check-based dependency orchestration with service_healthy conditions (09-01)
+- Tiered resource allocation for production services based on role (09-02)
+- Loki logging driver for centralized logs, except Loki itself uses json-file (09-02)
+- Self-hosted uses localhost-only bindings (127.0.0.1:PORT) for internal services (09-03)
+- Infisical secrets via file mounts at /var/infisical/secrets/ (09-03)
+- DigitalOcean overlay supports managed PostgreSQL option (09-03)
+- Exit 0 on notification failure to prevent deployment rollback (09-05)
+- Slack-compatible payload format for Discord via /slack endpoint (09-05)
+- Retry 3 times with exponential backoff for webhook notifications (09-05)
+
+### Tech Debt Carried Forward
+
+From v1.0 audit:
+- FE-03: ~30 hooks still use Supabase auth (marked with TODO Phase 6) — **RESOLVED by Phase 8**
+- PROD-05: Data migration pending Supabase access — **DEFERRED (no access)**
+- verify.ts checksum not tested against production data — **ADDRESSES TEST-03**
+
+New from Phase 8:
+- AUTH-02: @supabase/supabase-js still in package.json (100+ files use for database queries)
+
+### Blockers/Concerns
+
+- Backend API server required for full local testing (Stack Auth token validation)
+- AUTH-02 blocked until database queries migrate to backend API (future phase)
+- Observability config files (Loki, Promtail, Prometheus) referenced in compose.prod.yaml but not created yet (need 09-03+)
+
+## Session Continuity
+
+**Last session:** 2026-01-24
+**Stopped at:** Completed 09-02-PLAN.md
+**Resume file:** None
+**Next action:** Continue Phase 9 execution (plans 09-03 through 09-06)
+
+---
+
+*State updated: 2026-01-24 after 09-05 completion*

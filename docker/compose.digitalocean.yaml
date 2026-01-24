@@ -1,0 +1,188 @@
+# FreshTrack Pro DigitalOcean Deployment Overlay
+# Usage: docker compose -f docker-compose.yml -f compose.prod.yaml -f compose.digitalocean.yaml up -d
+#
+# This overlay supports two database modes:
+# 1. Self-hosted PostgreSQL (default) - Uses containerized PostgreSQL + PgBouncer
+# 2. Managed PostgreSQL - Uses DigitalOcean Managed Database (set USE_MANAGED_DB=true)
+#
+# To switch modes, set environment variable before deployment:
+#   export USE_MANAGED_DB=true
+#   docker compose -f ... up -d
+
+# ===========================================
+# MANAGED POSTGRESQL MODE
+# ===========================================
+# When using DigitalOcean Managed PostgreSQL:
+# 1. Comment out postgres and pgbouncer services below (or let them fail to start)
+# 2. Ensure do_database_url secret contains the pooler connection string
+# 3. Connection string format: postgresql://user:pass@host-pooler:25060/db?sslmode=require
+#
+# IMPORTANT: Always use the -pooler endpoint for managed databases!
+# Direct connections bypass PgBouncer and exhaust the connection limit.
+
+services:
+  # ===========================================
+  # PostgreSQL Database (Self-Hosted Mode)
+  # ===========================================
+  # These services are used when USE_MANAGED_DB=false (default)
+  # When using managed database, these can be commented out or will be overridden
+  postgres:
+    profiles:
+      - self-hosted-db
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1GB
+        reservations:
+          cpus: '0.5'
+          memory: 512MB
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 120s
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  # PostgreSQL backup service (must be in same profile as postgres and minio)
+  postgres_backup:
+    profiles:
+      - self-hosted-db
+      - self-hosted-storage
+
+  # ===========================================
+  # PgBouncer Connection Pooler (Self-Hosted Mode)
+  # ===========================================
+  pgbouncer:
+    profiles:
+      - self-hosted-db
+    ports:
+      - "127.0.0.1:6432:6432"
+
+  # PgBouncer metrics exporter (must be in same profile as pgbouncer)
+  pgbouncer_exporter:
+    profiles:
+      - self-hosted-db
+
+  # ===========================================
+  # Redis (Cache, Jobs, PubSub)
+  # ===========================================
+  redis:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512MB
+        reservations:
+          cpus: '0.25'
+          memory: 256MB
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 120s
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  # ===========================================
+  # MinIO (S3-Compatible Object Storage)
+  # ===========================================
+  # For DigitalOcean Spaces alternative, set USE_DO_SPACES=true
+  # and configure S3_ENDPOINT in backend environment
+  minio:
+    profiles:
+      - self-hosted-storage
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1GB
+        reservations:
+          cpus: '0.25'
+          memory: 512MB
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 120s
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+
+  # MinIO setup service (must be in same profile as minio)
+  minio-setup:
+    profiles:
+      - self-hosted-storage
+
+  # ===========================================
+  # Backend API
+  # ===========================================
+  # Database connection is determined by secrets:
+  # - Self-hosted: Uses database_url secret (connects to local pgbouncer)
+  # - Managed: Uses do_database_url secret (connects to DO managed pooler)
+  #
+  # The deploy script sets up the appropriate secret based on USE_MANAGED_DB
+  # backend:
+  #   environment:
+  #     # Self-hosted PostgreSQL (via PgBouncer):
+  #     # DATABASE_URL_FILE: /run/secrets/database_url
+  #     #
+  #     # Managed PostgreSQL (via DO PgBouncer):
+  #     # DATABASE_URL_FILE: /run/secrets/do_database_url
+  #     #
+  #     # The deployment script copies the correct URL to database_url
+  #     DATABASE_URL_FILE: /run/secrets/database_url
+  #
+  #     # Stack Auth
+  #     STACK_AUTH_SECRET_KEY_FILE: /run/secrets/stack_auth_secret
+  #
+  #     # DigitalOcean Spaces (if USE_DO_SPACES=true)
+  #     # S3_ENDPOINT: https://${DO_SPACES_REGION}.digitaloceanspaces.com
+  #     # S3_REGION: ${DO_SPACES_REGION}
+  #     # S3_BUCKET: ${DO_SPACES_BUCKET}
+  #     # S3_ACCESS_KEY_FILE: /run/secrets/spaces_access_key
+  #     # S3_SECRET_KEY_FILE: /run/secrets/spaces_secret_key
+  #   secrets:
+  #     - database_url
+  #     - stack_auth_secret
+  #     # Uncomment for DigitalOcean Spaces:
+  #     # - spaces_access_key
+  #     # - spaces_secret_key
+
+# ===========================================
+# Secrets Configuration
+# ===========================================
+# Secrets are provided by Infisical Agent which exports them to /var/infisical/secrets/
+# See deployment documentation for Infisical setup
+#
+# For managed PostgreSQL, the deployment script:
+# 1. Creates the managed database cluster
+# 2. Retrieves the pooler connection string
+# 3. Saves it to /var/infisical/secrets/database_url (or do_database_url)
+secrets:
+  postgres_password:
+    file: /var/infisical/secrets/postgres_password
+  database_url:
+    file: /var/infisical/secrets/database_url
+  stack_auth_secret:
+    file: /var/infisical/secrets/stack_auth_secret
+  # DigitalOcean Managed PostgreSQL connection string
+  # Contains: postgresql://user:pass@host-pooler:25060/db?sslmode=require
+  do_database_url:
+    file: /var/infisical/secrets/do_database_url
+  # DigitalOcean Spaces credentials (if USE_DO_SPACES=true)
+  spaces_access_key:
+    file: /var/infisical/secrets/spaces_access_key
+  spaces_secret_key:
+    file: /var/infisical/secrets/spaces_secret_key
+
+# ===========================================
+# DigitalOcean VPC Private Networking
+# ===========================================
+# When Droplet and managed database are in the same VPC:
+# - Traffic uses private network (no bandwidth charges)
+# - Lower latency (~1ms vs 5-10ms)
+# - Improved security (not exposed to public internet)
+#
+# The deployment script automatically places both in the same VPC.

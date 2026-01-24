@@ -1,0 +1,34 @@
+{
+  "name": "freshtrack-migration",
+  "version": "1.0.0",
+  "description": "Data migration scripts for FreshTrack Pro: Supabase to self-hosted PostgreSQL",
+  "type": "module",
+  "scripts": {
+    "export": "tsx src/export.ts",
+    "import": "tsx src/import.ts",
+    "verify": "tsx src/verify.ts",
+    "map-users": "tsx map-users.ts",
+    "migrate-users": "tsx migrate-users.ts",
+    "test-connections": "tsx test-connections.ts",
+    "test-user-mapping": "tsx test-user-mapping.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.1",
+    "pg": "^8.11.3",
+    "pg-query-stream": "^4.5.3",
+    "pino": "^8.18.0",
+    "pino-pretty": "^10.3.1",
+    "zod": "^3.22.4",
+    "commander": "^12.0.0",
+    "ora": "^8.0.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.0",
+    "@types/node": "^20.11.5",
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,11 @@
+;; FreshTrack Pro PgBouncer User List
+;; Format: "username" "md5{md5hash}"
+;; Where md5hash = md5(password + username)
+;;
+;; NOTE: In production, these hashes will be replaced by Infisical secrets
+
+;; Main application user (matches PostgreSQL user)
+"frostguard" "md5f8299855993e4ef98358e47f132b8ba8"
+
+;; PgBouncer exporter user for Prometheus metrics
+"pgbouncer_exporter" "md50d91a4f490d578aca2bbc4dd81f9f095"

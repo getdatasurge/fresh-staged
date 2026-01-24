@@ -1,0 +1,56 @@
+# FreshTrack Pro Prometheus Configuration
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Alert rule files
+rule_files:
+  - /etc/prometheus/alerts/*.yml
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node exporter (host metrics)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # Backend application metrics
+  - job_name: 'backend'
+    static_configs:
+      - targets: ['backend:3000']
+    metrics_path: '/metrics'
+
+  # Caddy metrics
+  - job_name: 'caddy'
+    static_configs:
+      - targets: ['caddy:2019']
+
+  # SSL Certificate monitoring via Blackbox Exporter
+  - job_name: 'ssl-certs'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://localhost  # Placeholder - replace with actual domain in deployment
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+  # Blackbox Exporter self-metrics
+  - job_name: 'blackbox'
+    static_configs:
+      - targets: ['blackbox:9115']
+
+  # PgBouncer metrics
+  - job_name: 'pgbouncer'
+    static_configs:
+      - targets: ['pgbouncer_exporter:9127']

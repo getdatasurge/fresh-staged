@@ -1,0 +1,113 @@
+/**
+ * TODO: Full migration to new backend
+ * - Replace edge function calls with backend job queue
+ *
+ * Current status: Stack Auth for identity, edge functions for operations (Phase 5)
+ */
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useUser } from "@stackframe/react";
+import { supabase } from "@/integrations/supabase/client";  // TEMPORARY
+import { toast } from "sonner";
+import { qk } from "@/lib/queryKeys";
+import { useOrgScope } from "./useOrgScope";
+
+export type TtnProvisioningState =
+  | "not_configured"
+  | "unknown"
+  | "exists_in_ttn"
+  | "missing_in_ttn"
+  | "error";
+
+export type ProvisionedSource = "emulator" | "app" | "unknown" | "manual";
+
+export interface CheckTtnResult {
+  sensor_id: string;
+  organization_id: string;
+  provisioning_state: TtnProvisioningState;
+  ttn_device_id?: string;
+  ttn_app_id?: string;
+  ttn_cluster?: string;
+  error?: string;
+  checked_at: string;
+}
+
+export interface CheckTtnResponse {
+  success: boolean;
+  checked_count: number;
+  results: CheckTtnResult[];
+}
+
+/**
+ * Hook to check TTN device existence for one or more sensors.
+ * Updates the sensor's provisioning_state in the database.
+ */
+export function useCheckTtnProvisioningState() {
+  const user = useUser();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (sensorIds: string[]): Promise<CheckTtnResponse> => {
+      if (sensorIds.length === 0) {
+        throw new Error("No sensor IDs provided");
+      }
+
+      if (!user) throw new Error("Not authenticated");
+      const { accessToken } = await user.getAuthJson();
+
+      // TODO Phase 6: Replace with backend API endpoint
+      const { data, error } = await supabase.functions.invoke("check-ttn-device-exists", {
+        body: { sensor_ids: sensorIds },
+        headers: { 'x-stack-access-token': accessToken },
+      });
+
+      if (error) {
+        console.error("[useCheckTtnProvisioningState] Error:", error);
+        throw new Error(error.message || "Failed to check TTN device status");
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || "Unknown error checking TTN status");
+      }
+
+      return data as CheckTtnResponse;
+    },
+    onSuccess: (data) => {
+      // Invalidate sensor queries using correct org-scoped keys
+      const orgIds = [...new Set(data.results.map(r => r.organization_id).filter(Boolean))];
+      orgIds.forEach(orgId => {
+        queryClient.invalidateQueries({ queryKey: qk.org(orgId).loraSensors() });
+      });
+      // Also invalidate legacy flat key for backwards compatibility
+      queryClient.invalidateQueries({ queryKey: ["lora-sensors"] });
+
+      // Show summary toast
+      const existsCount = data.results.filter((r) => r.provisioning_state === "exists_in_ttn").length;
+      const missingCount = data.results.filter((r) => r.provisioning_state === "missing_in_ttn").length;
+      const errorCount = data.results.filter((r) => r.provisioning_state === "error").length;
+
+      if (data.checked_count === 1) {
+        const result = data.results[0];
+        if (result.provisioning_state === "exists_in_ttn") {
+          toast.success("Device found in TTN", { description: "Sensor is provisioned" });
+        } else if (result.provisioning_state === "missing_in_ttn") {
+          toast.info("Device not in TTN", { description: "Sensor can be provisioned" });
+        } else if (result.provisioning_state === "error") {
+          toast.error("Check failed", { description: result.error });
+        } else {
+          toast.warning("Not configured", { description: result.error });
+        }
+      } else {
+        const parts: string[] = [];
+        if (existsCount > 0) parts.push(`${existsCount} provisioned`);
+        if (missingCount > 0) parts.push(`${missingCount} not in TTN`);
+        if (errorCount > 0) parts.push(`${errorCount} errors`);
+        toast.success(`Checked ${data.checked_count} sensors`, {
+          description: parts.join(", "),
+        });
+      }
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to check TTN status", { description: error.message });
+    },
+  });
+}

@@ -1,0 +1,47 @@
+# PostgreSQL Backup Monitoring Alert Rules
+# These rules fire alerts when backups fail, are stale, or storage is running high
+
+groups:
+  - name: postgres_backups
+    rules:
+      # Critical: No successful backup in last 25 hours (should run daily at 2 AM)
+      - alert: BackupAgeTooOld
+        expr: (time() - timestamp(backup_last_success_timestamp)) > 90000
+        for: 1h
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL backup is too old or missing"
+          description: "No successful backup detected in the last 25+ hours. Last backup was {{ $value | humanizeDuration }} ago. Check backup container logs."
+
+      # Warning: Backup container is not running
+      - alert: BackupContainerDown
+        expr: absent(container_last_seen{name="freshtrack-postgres-backup"})
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL backup container is not running"
+          description: "The postgres_backup container has not been seen for 15+ minutes. Automated backups may not be executing."
+
+      # Warning: Too many backup files stored (potential cleanup failure)
+      - alert: BackupStorageHigh
+        expr: sum(s3_objects{bucket="postgres-backups"}) > 40
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Too many PostgreSQL backup files stored"
+          description: "Found {{ $value }} backup files in MinIO. Expected ~30 with daily backups and 30-day retention. Cleanup may be failing."
+
+      # Critical: Backup script execution failed (derived from logs or custom metrics)
+      # Note: This requires custom metrics exporter or log-based alerting via Loki
+      # Placeholder for when metrics are instrumented
+      - alert: BackupExecutionFailed
+        expr: increase(backup_failures_total[1h]) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL backup execution failed"
+          description: "Backup script reported {{ $value }} failures in the last hour. Check /var/log/backup.log for details."

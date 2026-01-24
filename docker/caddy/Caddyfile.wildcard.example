@@ -1,0 +1,184 @@
+# FreshTrack Pro Caddy Configuration - Wildcard Certificates
+#
+# This configuration uses DNS-01 challenge for wildcard certificates.
+# Requires DNS provider API credentials.
+#
+# USAGE:
+# 1. Copy this file to Caddyfile: cp Caddyfile.wildcard.example Caddyfile
+# 2. Set environment variables in .env:
+#    - DOMAIN=freshtrackpro.com
+#    - ADMIN_EMAIL=admin@freshtrackpro.com
+#    - DNS provider token (see provider examples below)
+# 3. Update the 'dns' directive below with your provider
+# 4. Restart Caddy: docker-compose restart caddy
+#
+# SUPPORTED DNS PROVIDERS:
+# - Cloudflare: https://github.com/caddy-dns/cloudflare
+# - DigitalOcean: https://github.com/caddy-dns/digitalocean
+# - Route53 (AWS): https://github.com/caddy-dns/route53
+# - See full list: https://caddyserver.com/docs/modules/
+#
+# TESTING:
+# Before production, test with Let's Encrypt staging to avoid rate limits:
+# Uncomment the acme_ca line in the global options block below.
+
+{
+    # Admin email for Let's Encrypt notifications
+    email {$ADMIN_EMAIL:admin@example.com}
+
+    # TESTING ONLY: Use Let's Encrypt staging to avoid rate limits
+    # Staging issues untrusted certificates - remove this line for production
+    # acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+
+    # Access logging
+    log {
+        output file /var/log/caddy/access.log
+        format json
+    }
+}
+
+# Wildcard certificate covering all subdomains
+# Covers: example.com, *.example.com (api.example.com, monitoring.example.com, etc.)
+*.{$DOMAIN} {$DOMAIN} {
+    tls {
+        # DNS CHALLENGE CONFIGURATION
+        # Uncomment ONE provider below and set the required environment variables
+
+        # --- CLOUDFLARE (Recommended) ---
+        # Requires: CLOUDFLARE_API_TOKEN
+        # Create token at: https://dash.cloudflare.com/profile/api-tokens
+        # Permissions needed: Zone > DNS > Edit
+        # Scope: Include > Specific zone > your domain
+        dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+
+        # --- DIGITALOCEAN ---
+        # Requires: DO_AUTH_TOKEN
+        # Create token at: https://cloud.digitalocean.com/account/api/tokens
+        # Scopes needed: Read and Write
+        # dns digitalocean {env.DO_AUTH_TOKEN}
+
+        # --- ROUTE53 (AWS) ---
+        # Requires: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
+        # IAM permissions: route53:ListHostedZones, route53:GetChange, route53:ChangeResourceRecordSets
+        # dns route53
+
+        # --- OTHER PROVIDERS ---
+        # Namecheap: dns namecheap {env.NAMECHEAP_API_USER} {env.NAMECHEAP_API_KEY}
+        # Google Cloud DNS: dns gcp {env.GCP_PROJECT}
+        # Azure DNS: dns azure
+        # Linode: dns linode {env.LINODE_TOKEN}
+        # Vultr: dns vultr {env.VULTR_API_KEY}
+        # See https://caddyserver.com/docs/modules/ for full provider list
+
+        # DNS PROPAGATION SETTINGS
+        # Increase these if DNS propagation is slow in your region/provider
+        # propagation_timeout: How long to wait for DNS record to be visible (default: 2m)
+        # propagation_delay: Delay before checking DNS propagation (default: 0s)
+        propagation_timeout 5m
+        propagation_delay 30s
+
+        # RESOLVERS (Optional)
+        # Custom DNS resolvers to check for propagation
+        # Useful if default resolvers are slow or unreliable
+        # resolvers 1.1.1.1 8.8.8.8
+    }
+
+    # ROUTE DIFFERENT SUBDOMAINS TO DIFFERENT SERVICES
+
+    # API subdomain
+    @api host api.{$DOMAIN}
+    handle @api {
+        reverse_proxy backend:3000 {
+            health_uri /health
+            health_interval 30s
+            health_timeout 10s
+
+            # Pass client info headers
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Monitoring subdomain (Grafana)
+    @monitoring host monitoring.{$DOMAIN}
+    handle @monitoring {
+        reverse_proxy grafana:3000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+        }
+    }
+
+    # Status page subdomain (Uptime Kuma)
+    @status host status.{$DOMAIN}
+    handle @status {
+        reverse_proxy uptime-kuma:3001 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+        }
+    }
+
+    # Main application (apex domain and www)
+    @main host {$DOMAIN} www.{$DOMAIN}
+    handle @main {
+        # API routes
+        reverse_proxy /api/* backend:3000 {
+            health_uri /health
+            health_interval 30s
+            health_timeout 10s
+
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+
+        # Health endpoint for external monitoring
+        reverse_proxy /health backend:3000
+
+        # Frontend (all other routes)
+        reverse_proxy /* frontend:5173 {
+            # For production, change to nginx serving static files
+            # reverse_proxy /* frontend:80
+        }
+    }
+
+    # Fallback for unmatched subdomains
+    handle {
+        respond "Subdomain not configured" 404
+    }
+
+    # Response compression (gzip/zstd)
+    encode gzip zstd
+
+    # Security headers
+    header {
+        # HSTS: Force HTTPS for 1 year, include all subdomains
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+        # Prevent content type sniffing
+        X-Content-Type-Options "nosniff"
+
+        # Clickjacking protection
+        X-Frame-Options "DENY"
+
+        # Referrer policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+
+        # Remove server identification
+        -Server
+    }
+}
+
+# OPTIONAL: Redirect bare domain to www
+# Uncomment if you want example.com -> www.example.com
+# {$DOMAIN} {
+#     redir https://www.{$DOMAIN}{uri} permanent
+# }
+
+# OPTIONAL: Redirect www to bare domain
+# Uncomment if you want www.example.com -> example.com
+# www.{$DOMAIN} {
+#     redir https://{$DOMAIN}{uri} permanent
+# }

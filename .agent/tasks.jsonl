@@ -1,0 +1,2 @@
+{"id":"task-1769165031-5716","title":"Fix CRLF line endings in dev scripts","status":"closed","priority":1,"blocked_by":[],"created":"2026-01-23T10:43:51.349976282+00:00","closed":"2026-01-23T10:44:48.759875296+00:00"}
+{"id":"task-1769173238-2870","title":"Fix pgbouncer Docker image in docker-compose.yml","status":"closed","priority":1,"blocked_by":[],"created":"2026-01-23T13:00:38.469105922+00:00","closed":"2026-01-23T13:10:36.199687102+00:00"}
