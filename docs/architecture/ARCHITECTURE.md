@@ -2,6 +2,15 @@
 
 > Complete system architecture documentation
 
+> **Architecture Migration in Progress**
+>
+> This documentation describes the original Supabase-based architecture. The project is migrating to:
+> - **Authentication**: Stack Auth (replacing Supabase Auth)
+> - **Backend API**: Fastify 5 with Drizzle ORM (replacing Edge Functions)
+> - **Database**: PostgreSQL (Supabase or self-hosted)
+>
+> See `.planning/STATE.md` for current migration status. The frontend codebase still uses `@supabase/supabase-js` for database queries during migration.
+
 ---
 
 ## Table of Contents
