@@ -95,9 +95,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 17-01-PLAN.md — Schema & scheduler enhancement (digestDailyTime, digestSiteIds, user-configurable schedule)
-- [ ] 17-02-PLAN.md — Grouped digest data & templates (site/unit hierarchy, plain text support)
-- [ ] 17-03-PLAN.md — Unsubscribe & API integration (JWT tokens, /unsubscribe endpoint, processor updates)
+- [x] 17-01-PLAN.md — Schema & scheduler enhancement (digestDailyTime, digestSiteIds, user-configurable schedule)
+- [x] 17-02-PLAN.md — Grouped digest data & templates (site/unit hierarchy, plain text support)
+- [x] 17-03-PLAN.md — Unsubscribe & API integration (JWT tokens, /unsubscribe endpoint, processor updates)
 
 **Success Criteria:**
 1. Job schedulers use user-configurable daily time (not hardcoded 9 AM)
@@ -242,7 +242,7 @@ Plans:
 | 14. Real-Time Foundation | v2.0 | 6/6 | Complete | 2026-01-24 |
 | 15. Background Jobs Infrastructure | v2.0 | 4/4 | Complete | 2026-01-24 |
 | 16. SMS Notifications | v2.0 | 3/3 | Complete | 2026-01-24 |
-| 17. Email Digests | v2.0 | 0/3 | Planned | - |
+| 17. Email Digests | v2.0 | 3/3 | Complete | 2026-01-24 |
 | 18. Stripe Billing | v2.0 | 0/? | Not Started | - |
 | 19. Backend API Migration - Foundation | v2.0 | 0/? | Not Started | - |
 | 20. Backend API Migration - Core | v2.0 | 0/? | Not Started | - |
@@ -251,4 +251,4 @@ Plans:
 
 ---
 
-*v2.0 milestone active — 9 phases defined, Phases 14-16 complete, Phase 17 planned*
+*v2.0 milestone active — 9 phases defined, Phases 14-17 complete, ready for Phase 18*
