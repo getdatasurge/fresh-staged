@@ -1,0 +1,56 @@
+# Ralph TUI Configuration for FrostGuard (FreshTrack Pro)
+# =======================================================
+#
+# This configuration sets up Ralph TUI for code review and deployment
+# preparation tasks using Claude Code as the AI agent.
+
+# Agent Configuration
+# -------------------
+# Claude Code is the recommended agent for this project due to:
+# - Subagent tracing support
+# - Full tool access (file operations, bash, web search)
+# - Iteration context preservation
+agent = "claude"
+model = "claude-sonnet-4-20250514"
+
+# Tracker Configuration
+# ---------------------
+# Using JSON tracker for structured task management
+tracker = "json"
+
+[tracker.json]
+path = ".ralph-tui/prd.json"
+
+# Template Configuration
+# ----------------------
+# Custom prompt template for code review and deployment tasks
+[templates]
+custom_prompt = ".ralph-tui/templates/frostguard-review-deploy.hbs"
+
+# Skills Configuration
+# --------------------
+# Skills directory for project-specific automation skills
+skills_dir = ".ralph-tui/skills"
+
+# Progress Tracking
+# -----------------
+# Enable cross-iteration progress tracking for context preservation
+[progress]
+enabled = true
+file = ".ralph-tui/progress.md"
+max_entries = 50
+
+# Quality Gates
+# -------------
+# Ensure tasks meet quality standards before marking complete
+[quality]
+require_tests = true
+require_lint = true
+require_typecheck = true
+
+# Iteration Settings
+# ------------------
+[iteration]
+max_iterations = 100
+timeout_minutes = 30
+auto_commit = false
