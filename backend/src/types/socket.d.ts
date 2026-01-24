@@ -64,6 +64,21 @@ export interface ServerToClientEvents {
 }
 
 /**
+ * Sensor reading data structure (matches SensorStreamService)
+ */
+export interface SensorReading {
+  id: string;
+  unitId: string;
+  deviceId: string | null;
+  temperature: number;
+  humidity: number | null;
+  battery: number | null;
+  signalStrength: number | null;
+  recordedAt: Date;
+  source: string;
+}
+
+/**
  * Events sent from client to server
  */
 export interface ClientToServerEvents {
@@ -74,6 +89,9 @@ export interface ClientToServerEvents {
   'unsubscribe:site': (siteId: string) => void;
   'subscribe:unit': (unitId: string) => void;
   'unsubscribe:unit': (unitId: string) => void;
+
+  // Get latest cached reading for a unit
+  'get:latest': (unitId: string, callback: (reading: SensorReading | null) => void) => void;
 
   // Ping/heartbeat
   ping: (callback: (timestamp: number) => void) => void;
@@ -90,11 +108,12 @@ export type TypedSocketIOServer = SocketIOServer<
 >;
 
 /**
- * Extend Fastify instance to include Socket.io server and service
+ * Extend Fastify instance to include Socket.io server and services
  */
 declare module 'fastify' {
   interface FastifyInstance {
     io: TypedSocketIOServer;
     socketService: import('../services/socket.service.js').SocketService;
+    sensorStreamService: import('../services/sensor-stream.service.js').SensorStreamService;
   }
 }

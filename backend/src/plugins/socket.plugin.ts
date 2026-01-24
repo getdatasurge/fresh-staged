@@ -4,6 +4,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import type { TypedSocketIOServer } from '../types/socket.js';
 import { setupSocketAuth } from '../middleware/socket-auth.js';
 import { SocketService } from '../services/socket.service.js';
+import { SensorStreamService } from '../services/sensor-stream.service.js';
 
 /**
  * Socket.io plugin for Fastify
@@ -60,9 +61,13 @@ const socketPlugin: FastifyPluginAsync<SocketPluginOptions> = async (
   // Create SocketService instance (initialize later in ready hook)
   const socketService = new SocketService(io);
 
-  // Decorate Fastify instance with io and socketService
+  // Create SensorStreamService instance
+  const sensorStreamService = new SensorStreamService(socketService);
+
+  // Decorate Fastify instance with io, socketService, and sensorStreamService
   fastify.decorate('io', io);
   fastify.decorate('socketService', socketService);
+  fastify.decorate('sensorStreamService', sensorStreamService);
 
   // Setup authentication, service, and handlers after server is ready
   fastify.ready(async () => {
@@ -95,6 +100,12 @@ const socketPlugin: FastifyPluginAsync<SocketPluginOptions> = async (
       // Ping/pong for connection health monitoring
       socket.on('ping', (callback) => {
         callback(Date.now());
+      });
+
+      // Get latest cached sensor reading for a unit
+      socket.on('get:latest', (unitId: string, callback) => {
+        const latest = sensorStreamService.getLatestReading(unitId);
+        callback(latest || null);
       });
 
       // Handle client subscription events
@@ -158,6 +169,11 @@ const socketPlugin: FastifyPluginAsync<SocketPluginOptions> = async (
   fastify.addHook('onClose', async () => {
     fastify.log.info('Disconnecting all Socket.io clients...');
     io.local.disconnectSockets(true);
+
+    // Stop SensorStreamService flush interval
+    if (fastify.sensorStreamService) {
+      fastify.sensorStreamService.stop();
+    }
 
     // Shutdown SocketService Redis clients
     if (fastify.socketService) {
