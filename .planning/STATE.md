@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 15 of 22 (Background Jobs Infrastructure) — IN PROGRESS
-Plan: 2 of 6 complete
-Status: BullMQ queue infrastructure and QueueService ready
-Last activity: 2026-01-24 — Completed 15-01-PLAN.md
+Plan: 3 of 6 complete
+Status: Bull Board dashboard ready with authentication
+Last activity: 2026-01-24 — Completed 15-03-PLAN.md
 
-Progress: [██░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 10% (8/79 plans)
+Progress: [██░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 11% (9/79 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,12 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 8
+- Plans completed: 9
 - Phases completed: 1 (14-real-time-foundation)
-- In progress: 15-background-jobs-infrastructure (2/6 plans)
+- In progress: 15-background-jobs-infrastructure (3/6 plans)
 
 **Combined:**
-- Total plans: 79
+- Total plans completed: 9/79
 - Total phases: 15 (1 complete, 1 in progress)
 - Milestones shipped: 2 (v1.0, v1.1)
 
@@ -94,6 +94,9 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | QUEUE-02 | QueueService follows SocketService pattern | 15-01 | Consistency with existing codebase, familiar pattern for team |
 | QUEUE-03 | BaseJobData enforces organizationId for all jobs | 15-01 | Multi-tenant isolation at type level prevents cross-org job leakage |
 | QUEUE-04 | Redis connection optional with graceful fallback | 15-01 | Enables local development without Redis infrastructure |
+| BOARD-01 | Wrap Bull Board in plugin context with onRequest auth hook | 15-03 | Ensures all dashboard routes require JWT validation without modifying Bull Board internals |
+| BOARD-02 | Mount dashboard at /admin/queues (not /api/admin/queues) | 15-03 | Follows Bull Board conventions and plan requirements for clean dashboard path |
+| BOARD-03 | Separate health check endpoints at /api/admin | 15-03 | Provides API-friendly JSON endpoints for programmatic queue monitoring |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -112,11 +115,11 @@ See also: .planning/PROJECT.md Key Decisions table
 
 ## Session Continuity
 
-**Last session:** 2026-01-24 09:47 UTC
-**Stopped at:** Completed 15-01-PLAN.md (BullMQ Queue Infrastructure)
+**Last session:** 2026-01-24 09:55 UTC
+**Stopped at:** Completed 15-03-PLAN.md (Bull Board Dashboard Integration)
 **Resume file:** None
-**Next action:** Execute 15-03-PLAN.md (Bull Board Dashboard) or continue with Phase 15 plans
+**Next action:** Continue with Phase 15 remaining plans (15-04, 15-05, 15-06)
 
 ---
 
-*State updated: 2026-01-24 after completing Plan 15-01*
+*State updated: 2026-01-24 after completing Plan 15-03*
