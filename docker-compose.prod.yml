@@ -155,6 +155,7 @@ services:
   # Backend API Service
   # ===========================================
   backend:
+    image: ${BACKEND_IMAGE:-ghcr.io/getdatasurge/frostguard-backend:latest}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -234,6 +235,7 @@ services:
   # Frontend (Nginx Static Serving)
   # ===========================================
   frontend:
+    image: ${FRONTEND_IMAGE:-ghcr.io/getdatasurge/frostguard-frontend:latest}
     build:
       context: .
       dockerfile: docker/frontend/Dockerfile
