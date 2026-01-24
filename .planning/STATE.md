@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 18 of 22 (Stripe Billing) — IN PROGRESS
-Plan: 4 of 6 complete
-Status: Plan 18-04 complete
-Last activity: 2026-01-24 — Completed 18-04 (meter reporting processor)
+Plan: 5 of 6 complete
+Status: Plan 18-05 complete
+Last activity: 2026-01-24 — Completed 18-05 (worker & scheduler registration)
 
-Progress: [█████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 29% (25/85 plans)
+Progress: [██████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 30% (26/85 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,12 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 25
+- Plans completed: 26
 - Phases completed: 5 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests)
-- Current phase: 18-stripe-billing (4/6 plans complete)
+- Current phase: 18-stripe-billing (5/6 plans complete)
 
 **Combined:**
-- Total plans completed: 25/85
+- Total plans completed: 26/85
 - Total phases: 17 (5 complete in v2.0)
 - Milestones shipped: 2 (v1.0, v1.1)
 
@@ -126,6 +126,10 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | SUBSCR-02 | Hierarchical device count via join chain | 18-03 | devices -> units -> areas -> sites ensures multi-tenant isolation |
 | METER-03 | Fire-and-forget pattern for meter jobs | 18-04 | Queue meter events without awaiting to avoid blocking ingestion API |
 | METER-04 | Report insertedCount not requested count | 18-04 | Accurate billing based on actual inserted readings |
+| SCHED-01 | Hourly cron '0 * * * *' for sensor count | 18-05 | Consistent hourly reporting aligned with billing periods |
+| SCHED-02 | Dynamic import in processor for scheduler | 18-05 | Avoids circular dependency between processor and scheduler service |
+| SCHED-03 | Remove existing repeatable job before creating | 18-05 | Prevents duplicate scheduler jobs on API restart |
+| SCHED-04 | Initial report on startup | 18-05 | Ensures sensor counts are current when API starts |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -153,10 +157,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-24
-**Stopped at:** Completed 18-04-PLAN.md
+**Stopped at:** Completed 18-05-PLAN.md
 **Resume file:** None
-**Next action:** Execute 18-05-PLAN.md (scheduled sensor count reporting)
+**Next action:** Execute 18-06-PLAN.md (Stripe checkout integration)
 
 ---
 
-*State updated: 2026-01-24 after completing 18-04-PLAN.md*
+*State updated: 2026-01-24 after completing 18-05-PLAN.md*
