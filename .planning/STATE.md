@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 14 of 22 (Real-Time Foundation) — In Progress
-Plan: 3 of 5 complete
-Status: React Socket.io client with TanStack Query integration complete
-Last activity: 2026-01-24 — Completed 14-04-PLAN.md
+Plan: 5 of 6 complete
+Status: Real-time alert notification streaming complete
+Last activity: 2026-01-24 — Completed 14-05-PLAN.md
 
-Progress: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 4% (3/79 plans)
+Progress: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 6% (5/79 plans)
 
 ## Completed Milestones
 
@@ -50,7 +50,7 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 3
+- Plans completed: 5
 - Phases in progress: 1 (14-real-time-foundation)
 
 **Combined:**
@@ -78,6 +78,10 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | REALTIME-12 | Stack Auth getAccessToken() for WebSocket JWT | 14-04 | Async token retrieval from Stack Auth user object |
 | REALTIME-13 | TanStack Query cache updates via setQueryData | 14-04 | Multiple query keys updated per sensor batch event with 100-item history limit |
 | REALTIME-14 | RealtimeProvider after QueryClientProvider | 14-04 | Ensures auth context and query client available for connection setup |
+| REALTIME-15 | Optional socketService parameter for alert evaluator | 14-05 | Enables testing without Socket.io dependency, clear dependency injection pattern |
+| REALTIME-16 | Emit events after database mutations in transaction | 14-05 | Events emitted after successful alert creation/resolution/escalation |
+| REALTIME-17 | Toast duration based on severity | 14-05 | Critical alerts: 10s, warning/resolved: 5s for appropriate user attention |
+| REALTIME-18 | Query cache strategy for alerts | 14-05 | Invalidate lists, update details via setQueryData for instant UI feedback |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -93,11 +97,11 @@ See also: .planning/PROJECT.md Key Decisions table
 
 ## Session Continuity
 
-**Last session:** 2026-01-24 08:49 UTC
-**Stopped at:** Completed 14-03-PLAN.md (Real-time Sensor Data Streaming)
+**Last session:** 2026-01-24 08:59 UTC
+**Stopped at:** Completed 14-05-PLAN.md (Alert Notification Streaming)
 **Resume file:** None
-**Next action:** Continue with remaining phase 14 plans (14-05, 14-06)
+**Next action:** Complete phase 14 with plan 14-06
 
 ---
 
-*State updated: 2026-01-24 after completing 14-03*
+*State updated: 2026-01-24 after completing 14-05*
