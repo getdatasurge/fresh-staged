@@ -133,6 +133,24 @@ services:
       - redis
     restart: unless-stopped
 
+  # ===========================================
+  # Background Job Worker
+  # ===========================================
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.worker
+      target: production
+    container_name: frostguard-worker
+    environment:
+      NODE_ENV: production
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres_data:
     name: frostguard_postgres_data
