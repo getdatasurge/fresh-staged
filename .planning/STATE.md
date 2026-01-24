@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
-Phase: 15 of 22 (Background Jobs Infrastructure) — IN PROGRESS
-Plan: 4 of 6 complete
-Status: Integration tests and E2E verification complete
-Last activity: 2026-01-24 — Completed 15-04-PLAN.md
+Phase: 15 of 22 (Background Jobs Infrastructure) — COMPLETE
+Plan: 4 of 4 complete
+Status: All Phase 15 success criteria verified
+Last activity: 2026-01-24 — Phase 15 verified complete
 
-Progress: [███░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 13% (10/79 plans)
+Progress: [████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 15% (12/82 plans)
 
 ## Completed Milestones
 
@@ -50,13 +50,13 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 10
-- Phases completed: 1 (14-real-time-foundation)
-- In progress: 15-background-jobs-infrastructure (4/6 plans)
+- Plans completed: 12
+- Phases completed: 2 (14-real-time-foundation, 15-background-jobs-infrastructure)
+- Next phase: 16-sms-notifications
 
 **Combined:**
-- Total plans completed: 10/79
-- Total phases: 15 (1 complete, 1 in progress)
+- Total plans completed: 12/82
+- Total phases: 15 (2 complete in v2.0)
 - Milestones shipped: 2 (v1.0, v1.1)
 
 ## Accumulated Context
@@ -117,11 +117,11 @@ See also: .planning/PROJECT.md Key Decisions table
 
 ## Session Continuity
 
-**Last session:** 2026-01-24 10:05 UTC
-**Stopped at:** Completed 15-04-PLAN.md (Queue Integration Tests)
+**Last session:** 2026-01-24 10:15 UTC
+**Stopped at:** Phase 15 verified complete
 **Resume file:** None
-**Next action:** Continue with Phase 15 remaining plans (15-05, 15-06)
+**Next action:** Plan Phase 16 (SMS Notifications) or Phase 17 (Email Digests)
 
 ---
 
-*State updated: 2026-01-24 after completing Plan 15-04*
+*State updated: 2026-01-24 after completing Phase 15*
