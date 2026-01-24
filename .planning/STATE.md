@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
-Phase: 16 of 22 (SMS Notifications) — COMPLETE
-Plan: 3 of 3 complete
-Status: All Phase 16 success criteria verified
-Last activity: 2026-01-24 — Completed quick-003 (installed 21 additional Claude Code skills)
+Phase: 17 of 22 (Email Digests) — IN PROGRESS
+Plan: 1 of 3 complete
+Status: Completed 17-01-PLAN.md (digest preferences)
+Last activity: 2026-01-24 — Completed 17-01-PLAN.md
 
-Progress: [█████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 18% (15/85 plans)
+Progress: [█████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 19% (16/85 plans)
 
 ## Completed Milestones
 
@@ -50,13 +50,13 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 15
+- Plans completed: 16
 - Phases completed: 3 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications)
-- Next phase: 17-email-digests
+- Current phase: 17-email-digests (1/3 plans)
 
 **Combined:**
-- Total plans completed: 15/85
-- Total phases: 16 (3 complete in v2.0)
+- Total plans completed: 16/85
+- Total phases: 16 (3 complete in v2.0, 1 in progress)
 - Milestones shipped: 2 (v1.0, v1.1)
 
 ## Accumulated Context
@@ -107,6 +107,9 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | SMS-06 | Queue SMS async after escalation to avoid blocking | 16-03 | Don't await queueAlertSms - use fire-and-forget with .catch() |
 | SMS-07 | Rate limit by user via notification_deliveries lookup | 16-03 | Check sent/delivered SMS in 15-minute window per user |
 | SMS-08 | Filter recipients by smsEnabled profile flag | 16-03 | Only users with smsEnabled=true receive SMS alerts |
+| DIGEST-01 | Store digestSiteIds as JSON text | 17-01 | Simpler than junction table for UUID array, fast enough for preferences |
+| DIGEST-02 | HH:MM format for digestDailyTime (varchar(5)) | 17-01 | Compact and human-readable, validated via regex |
+| DIGEST-03 | Weekly digest uses same dailyTime as daily | 17-01 | Consistent user experience, Monday at user's preferred time |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -134,10 +137,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-24
-**Stopped at:** Completed quick task 002: Install relevant skills from skills.sh
+**Stopped at:** Completed 17-01-PLAN.md (digest preferences)
 **Resume file:** None
-**Next action:** Plan Phase 17 (Email Digests) or Phase 18 (Stripe Billing)
+**Next action:** Execute 17-02-PLAN.md (digest builder grouping) or 17-03-PLAN.md
 
 ---
 
-*State updated: 2026-01-24 after completing Phase 16*
+*State updated: 2026-01-24 after completing 17-01*
