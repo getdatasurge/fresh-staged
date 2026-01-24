@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 16 of 22 (SMS Notifications) — IN PROGRESS
-Plan: 2 of 4 complete
-Status: Plan 16-02 complete (SMS Notification Processor)
-Last activity: 2026-01-24 — Completed 16-02-PLAN.md
+Plan: 3 of 4 complete
+Status: Plan 16-03 complete (Alert Integration)
+Last activity: 2026-01-24 — Completed 16-03-PLAN.md
 
-Progress: [█████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 17% (14/82 plans)
+Progress: [██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 18% (15/82 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,12 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 14
+- Plans completed: 15
 - Phases completed: 2 (14-real-time-foundation, 15-background-jobs-infrastructure)
-- Current phase: 16-sms-notifications (2/4 plans)
+- Current phase: 16-sms-notifications (3/4 plans)
 
 **Combined:**
-- Total plans completed: 14/82
+- Total plans completed: 15/82
 - Total phases: 15 (2 complete in v2.0)
 - Milestones shipped: 2 (v1.0, v1.1)
 
@@ -104,6 +104,9 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | SMS-03 | Standard exponential backoff without jitter | 16-01 | BullMQ doesn't natively support jitter; can add custom backoff if needed |
 | SMS-04 | Mask phone numbers in logs (first 5, last 2 chars) | 16-02 | Privacy protection while maintaining debuggability |
 | SMS-05 | Delivery record updates don't throw on failure | 16-02 | Database update failure shouldn't fail successful SMS send |
+| SMS-06 | Queue SMS async after escalation to avoid blocking | 16-03 | Don't await queueAlertSms - use fire-and-forget with .catch() |
+| SMS-07 | Rate limit by user via notification_deliveries lookup | 16-03 | Check sent/delivered SMS in 15-minute window per user |
+| SMS-08 | Filter recipients by smsEnabled profile flag | 16-03 | Only users with smsEnabled=true receive SMS alerts |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -122,11 +125,11 @@ See also: .planning/PROJECT.md Key Decisions table
 
 ## Session Continuity
 
-**Last session:** 2026-01-24 10:36 UTC
-**Stopped at:** Completed 16-02-PLAN.md (SMS Notification Processor)
+**Last session:** 2026-01-24 06:08 UTC
+**Stopped at:** Completed 16-03-PLAN.md (Alert Integration)
 **Resume file:** None
-**Next action:** Execute 16-03-PLAN.md (Alert Integration)
+**Next action:** Execute 16-04-PLAN.md (Delivery Webhooks)
 
 ---
 
-*State updated: 2026-01-24 after completing 16-02*
+*State updated: 2026-01-24 after completing 16-03*
