@@ -25,6 +25,7 @@
     "@react-email/components": "^0.0.34",
     "@react-email/render": "^1.0.5",
     "@socket.io/redis-adapter": "^8.3.0",
+    "@trpc/server": "^11.8.1",
     "bullmq": "^5.67.0",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.38.0",
