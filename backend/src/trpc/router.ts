@@ -2,19 +2,18 @@
  * Root tRPC application router
  *
  * This is the main router that merges all domain routers.
- * Currently contains only health check - domain routers will be added in subsequent plans.
  */
 
 import { z } from 'zod';
 import { router, publicProcedure } from './index.js';
+import { organizationsRouter } from '../routers/organizations.router.js';
 
 /**
  * Application router
- * Domain routers will be added here:
- * - organizations (Plan 02)
- * - sites, areas, units (Plan 03)
- * - readings, alerts (Plan 04)
- * - etc.
+ * Domain routers:
+ * - organizations: Organization CRUD and member management
+ * - sites, areas, units: Coming in Plan 03
+ * - readings, alerts: Coming in Plan 04
  */
 export const appRouter = router({
   /**
@@ -27,6 +26,12 @@ export const appRouter = router({
       status: 'ok',
       timestamp: new Date().toISOString(),
     })),
+
+  /**
+   * Organizations domain router
+   * Procedures: get, update, listMembers, stats
+   */
+  organizations: organizationsRouter,
 });
 
 /**
