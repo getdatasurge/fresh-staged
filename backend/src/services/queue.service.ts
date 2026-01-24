@@ -27,7 +27,14 @@
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
 import type { JobsOptions } from 'bullmq';
-import { QueueNames, defaultJobOptions, type BaseJobData } from '../jobs/index.js';
+import {
+  QueueNames,
+  JobNames,
+  defaultJobOptions,
+  smsJobOptions,
+  type BaseJobData,
+  type SmsNotificationJobData,
+} from '../jobs/index.js';
 
 /**
  * QueueService class for managing BullMQ queues
@@ -191,6 +198,32 @@ export class QueueService {
       );
       throw error;
     }
+  }
+
+  /**
+   * Add an SMS notification job with SMS-specific options
+   *
+   * Convenience method that applies smsJobOptions (5 attempts, exponential backoff)
+   * automatically. Use this instead of addJob for SMS notifications.
+   *
+   * @param data - SMS job data (must include organizationId, phoneNumber, message)
+   * @returns Job ID if queued, null if queues disabled
+   *
+   * @example
+   * await queueService.addSmsJob({
+   *   organizationId: 'org-123',
+   *   phoneNumber: '+15551234567',
+   *   message: 'Temperature alert!',
+   *   alertId: 'alert-456',
+   * });
+   */
+  async addSmsJob(data: SmsNotificationJobData): Promise<string | null> {
+    return this.addJob<SmsNotificationJobData>(
+      QueueNames.SMS_NOTIFICATIONS,
+      JobNames.SMS_SEND,
+      data,
+      smsJobOptions
+    );
   }
 
   /**
