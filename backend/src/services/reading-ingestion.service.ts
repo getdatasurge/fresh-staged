@@ -26,6 +26,8 @@ import * as readingsService from './readings.service.js';
 import * as alertEvaluator from './alert-evaluator.service.js';
 import type { SensorStreamService } from './sensor-stream.service.js';
 import type { SocketService } from './socket.service.js';
+import { getQueueService } from './queue.service.js';
+import { QueueNames, JobNames, type MeterReportJobData } from '../jobs/index.js';
 
 /**
  * Result of complete reading ingestion pipeline
@@ -378,6 +380,30 @@ export async function ingestReadings(
     readings,
     organizationId
   );
+
+  // Step 1.5: Queue meter event for reading volume (async, fire-and-forget)
+  try {
+    const queueService = getQueueService();
+    if (queueService?.isEnabled()) {
+      const meterJobData: MeterReportJobData = {
+        organizationId,
+        eventName: 'temperature_readings',
+        value: insertResult.insertedCount,
+      };
+
+      queueService.addJob(
+        QueueNames.METER_REPORTING,
+        JobNames.METER_REPORT,
+        meterJobData
+      ).catch((err) => {
+        // Log but don't fail ingestion if queue is unavailable
+        console.warn(`[Ingestion] Failed to queue meter event: ${err.message}`);
+      });
+    }
+  } catch (err) {
+    // Queue service not available - skip metering silently
+    console.warn('[Ingestion] Queue service unavailable for metering');
+  }
 
   // Step 2: Stream readings to real-time dashboards
   if (streamService) {
