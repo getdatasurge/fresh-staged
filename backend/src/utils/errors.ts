@@ -62,3 +62,15 @@ export function conflict(reply: FastifyReply, message: string): FastifyReply {
     },
   } satisfies ErrorResponse);
 }
+
+/**
+ * Send 500 Internal Server Error response
+ */
+export function serverError(reply: FastifyReply, message: string): FastifyReply {
+  return reply.code(500).send({
+    error: {
+      code: ErrorCodes.INTERNAL_ERROR,
+      message,
+    },
+  } satisfies ErrorResponse);
+}

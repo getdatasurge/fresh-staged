@@ -1,13 +1,17 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
 import {
   serializerCompiler,
   validatorCompiler,
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod';
+import { getFastifyLoggerConfig } from './utils/logger.js';
+import errorHandlerPlugin from './plugins/error-handler.plugin.js';
 import authPlugin from './plugins/auth.plugin.js';
 import socketPlugin from './plugins/socket.plugin.js';
 import queuePlugin from './plugins/queue.plugin.js';
+import { emailPlugin } from './plugins/email.plugin.js';
 import { requireAuth, requireOrgContext, requireRole } from './middleware/index.js';
 import { healthRoutes } from './routes/health.js';
 import authRoutes from './routes/auth.js';
@@ -20,6 +24,14 @@ import alertRoutes from './routes/alerts.js';
 import ttnDeviceRoutes from './routes/ttn-devices.js';
 import ttnGatewayRoutes from './routes/ttn-gateways.js';
 import ttnWebhookRoutes from './routes/ttn-webhooks.js';
+import stripeWebhookRoutes from './routes/stripe-webhooks.js';
+import telnyxWebhookRoutes from './routes/telnyx-webhooks.js';
+import paymentRoutes from './routes/payments.js';
+import smsConfigRoutes from './routes/sms-config.js';
+import preferencesRoutes from './routes/preferences.js';
+import assetRoutes from './routes/assets.js';
+import availabilityRoutes from './routes/availability.js';
+import devRoutes from './routes/dev.js';
 import { adminRoutes } from './routes/admin.js';
 
 export interface AppOptions {
@@ -27,8 +39,14 @@ export interface AppOptions {
 }
 
 export function buildApp(opts: AppOptions = {}): FastifyInstance {
+  // Use structured JSON logging configuration
+  const loggerConfig = opts.logger ? getFastifyLoggerConfig() : false;
+
   const app = Fastify({
-    logger: opts.logger ?? false,
+    logger: loggerConfig,
+    // Add request ID header to responses for correlation
+    requestIdHeader: 'x-request-id',
+    requestIdLogLabel: 'requestId',
   });
 
   // Enable CORS for frontend
@@ -47,9 +65,19 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
     allowedHeaders: ['Content-Type', 'Authorization', 'x-stack-access-token', 'x-stack-refresh-token'],
   });
 
+  // Register multipart plugin for file uploads (5MB limit)
+  app.register(multipart, {
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB
+    },
+  });
+
   // Configure Zod validation and serialization
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
+
+  // Register global error handler (includes Sentry integration if configured)
+  app.register(errorHandlerPlugin);
 
   // Register Socket.io plugin (must be registered before routes)
   app.register(socketPlugin, {
@@ -61,6 +89,9 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
 
   // Register Queue plugin for background job processing
   app.register(queuePlugin);
+
+  // Register Email plugin for email delivery
+  app.register(emailPlugin);
 
   // Register auth plugin (decorates request.user)
   app.register(authPlugin);
@@ -89,6 +120,30 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
 
   // Register TTN webhook routes (receives uplink messages from TTN)
   app.register(ttnWebhookRoutes, { prefix: '/api/webhooks/ttn' });
+
+  // Register Stripe webhook routes (receives events from Stripe)
+  app.register(stripeWebhookRoutes, { prefix: '/api/webhooks/stripe' });
+
+  // Register Telnyx webhook routes (receives SMS delivery status from Telnyx)
+  app.register(telnyxWebhookRoutes, { prefix: '/api/webhooks/telnyx' });
+
+  // Register payment routes
+  app.register(paymentRoutes, { prefix: '/api/orgs/:organizationId/payments' });
+
+  // Register SMS config routes (Telnyx SMS alerting configuration)
+  app.register(smsConfigRoutes, { prefix: '/api/orgs/:organizationId/alerts/sms/config' });
+
+  // Register user preferences routes (digest settings, notification preferences)
+  app.register(preferencesRoutes, { prefix: '/api/preferences' });
+
+  // Register asset upload routes (images for sites, units, etc.)
+  app.register(assetRoutes, { prefix: '/api/orgs/:organizationId/assets' });
+
+  // Register availability check routes (public, no auth required)
+  app.register(availabilityRoutes, { prefix: '/api/availability' });
+
+  // Register development routes (simulation, testing utilities - dev mode only)
+  app.register(devRoutes, { prefix: '/api/dev' });
 
   // Register admin routes (includes Bull Board dashboard and health checks)
   app.register(adminRoutes, { prefix: '/api/admin' });

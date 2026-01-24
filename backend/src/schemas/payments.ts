@@ -48,7 +48,56 @@ export const CheckoutSessionResponseSchema = z.object({
   url: z.string().url(),
 });
 
+// POST /api/payments/portal - Create portal session
+export const CreatePortalSessionSchema = z.object({
+  returnUrl: z.string().url().optional(),
+});
+
+// Portal session response
+export const PortalSessionResponseSchema = z.object({
+  url: z.string().url(),
+});
+
+// --- Webhook Schemas ---
+
+// Webhook response
+export const WebhookResponseSchema = z.object({
+  received: z.boolean(),
+});
+
+// --- Subscription Schemas ---
+
+// Subscription status enum
+export const SubscriptionStatusSchema = z.enum(['trial', 'active', 'past_due', 'canceled', 'paused']);
+
+// Subscription plan enum (includes enterprise for display, but not for checkout)
+export const SubscriptionPlanSchema = z.enum(['starter', 'pro', 'haccp', 'enterprise']);
+
+// Subscription response (GET endpoint)
+export const SubscriptionResponseSchema = z.object({
+  id: z.string().uuid(),
+  organizationId: z.string().uuid(),
+  plan: SubscriptionPlanSchema,
+  status: SubscriptionStatusSchema,
+  sensorLimit: z.number(),
+  currentSensorCount: z.number(),
+  stripeCustomerId: z.string().nullable(),
+  stripeSubscriptionId: z.string().nullable(),
+  currentPeriodStart: z.coerce.date().nullable(),
+  currentPeriodEnd: z.coerce.date().nullable(),
+  trialEndsAt: z.coerce.date().nullable(),
+  canceledAt: z.coerce.date().nullable(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+
 // --- Type Exports ---
 
 export type CreateCheckoutSession = z.infer<typeof CreateCheckoutSessionSchema>;
 export type CheckoutSessionResponse = z.infer<typeof CheckoutSessionResponseSchema>;
+export type CreatePortalSession = z.infer<typeof CreatePortalSessionSchema>;
+export type PortalSessionResponse = z.infer<typeof PortalSessionResponseSchema>;
+export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
+export type SubscriptionStatus = z.infer<typeof SubscriptionStatusSchema>;
+export type SubscriptionPlan = z.infer<typeof SubscriptionPlanSchema>;
+export type SubscriptionResponse = z.infer<typeof SubscriptionResponseSchema>;

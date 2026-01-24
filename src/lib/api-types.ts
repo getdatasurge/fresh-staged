@@ -291,3 +291,45 @@ export interface AlertResolveRequest {
   resolution: string;
   correctiveAction?: string;
 }
+
+// ===== Subscription/Payment Types =====
+
+export type SubscriptionPlan = 'starter' | 'pro' | 'haccp' | 'enterprise';
+
+export type SubscriptionStatus = 'trial' | 'active' | 'past_due' | 'canceled' | 'paused';
+
+export interface SubscriptionResponse {
+  id: UUID;
+  organizationId: UUID;
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  sensorLimit: number;
+  currentSensorCount: number;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
+  trialEndsAt: Date | null;
+  canceledAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CheckoutSessionRequest {
+  plan: Exclude<SubscriptionPlan, 'enterprise'>;
+  successUrl?: string;
+  cancelUrl?: string;
+}
+
+export interface CheckoutSessionResponse {
+  sessionId: string;
+  url: string;
+}
+
+export interface PortalSessionRequest {
+  returnUrl?: string;
+}
+
+export interface PortalSessionResponse {
+  url: string;
+}

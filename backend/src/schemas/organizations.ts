@@ -40,6 +40,36 @@ export const MemberSchema = z.object({
 // Members list response
 export const MembersListSchema = z.array(MemberSchema);
 
+// Dashboard state enum matching unit-state.config.ts
+const UnitDashboardStateSchema = z.enum(['normal', 'warning', 'critical', 'offline']);
+
+// Unit counts by state
+export const UnitStateCountsSchema = z.object({
+  total: z.number().int().min(0),
+  normal: z.number().int().min(0),
+  warning: z.number().int().min(0),
+  critical: z.number().int().min(0),
+  offline: z.number().int().min(0),
+});
+
+// Alert counts by status
+export const AlertStatusCountsSchema = z.object({
+  pending: z.number().int().min(0),
+  acknowledged: z.number().int().min(0),
+  resolved: z.number().int().min(0),
+  total: z.number().int().min(0),
+});
+
+// Organization stats response schema
+export const OrganizationStatsSchema = z.object({
+  organizationId: UuidSchema,
+  unitCounts: UnitStateCountsSchema,
+  alertCounts: AlertStatusCountsSchema,
+  compliancePercentage: z.number().min(0).max(100),
+  worstState: UnitDashboardStateSchema,
+  lastUpdated: TimestampSchema,
+});
+
 // Re-export params for routes
 export { OrgParamsSchema };
 
@@ -47,3 +77,4 @@ export { OrgParamsSchema };
 export type OrganizationResponse = z.infer<typeof OrganizationSchema>;
 export type UpdateOrganizationRequest = z.infer<typeof UpdateOrganizationSchema>;
 export type MemberResponse = z.infer<typeof MemberSchema>;
+export type OrganizationStatsResponse = z.infer<typeof OrganizationStatsSchema>;

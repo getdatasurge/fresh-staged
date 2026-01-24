@@ -16,6 +16,7 @@ vi.mock('../../src/services/user.service.js', () => ({
 // Mock checkout service
 vi.mock('../../src/services/checkout.service.js', () => ({
   createCheckoutSession: vi.fn(),
+  createPortalSession: vi.fn(),
   StripeConfigError: class StripeConfigError extends Error {
     constructor(message: string) {
       super(message);
@@ -28,6 +29,12 @@ vi.mock('../../src/services/checkout.service.js', () => ({
       this.name = 'CheckoutError';
     }
   },
+  PortalError: class PortalError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'PortalError';
+    }
+  },
 }));
 
 import { verifyAccessToken } from '../../src/utils/jwt.js';
@@ -38,6 +45,7 @@ const mockVerify = vi.mocked(verifyAccessToken);
 const mockGetRole = vi.mocked(getUserRoleInOrg);
 const mockGetOrCreateProfile = vi.mocked(getOrCreateProfile);
 const mockCreateCheckoutSession = vi.mocked(checkoutService.createCheckoutSession);
+const mockCreatePortalSession = vi.mocked(checkoutService.createPortalSession);
 
 // Valid UUIDs (RFC 4122 v4 compliant)
 const TEST_ORG_ID = 'bfc91766-90f0-4caf-b428-06cdcc49866a';
@@ -437,6 +445,187 @@ describe('Payments API', () => {
         url: `/api/orgs/not-a-uuid/payments/checkout`,
         headers: { authorization: 'Bearer test-token' },
         payload: validCheckoutRequest,
+      });
+
+      // Schema validation errors return error status
+      expect(response.statusCode).toBeGreaterThanOrEqual(400);
+    });
+  });
+
+  describe('POST /api/orgs/:organizationId/payments/portal', () => {
+    const mockPortalResponse = {
+      url: 'https://billing.stripe.com/session/test_abc123',
+    };
+
+    it('should create portal session for authenticated user', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('viewer');
+      mockCreatePortalSession.mockResolvedValue(mockPortalResponse);
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/payments/portal`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {},
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toMatchObject({
+        url: expect.stringContaining('billing.stripe.com'),
+      });
+    });
+
+    it('should accept custom return URL', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('viewer');
+      mockCreatePortalSession.mockResolvedValue(mockPortalResponse);
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/payments/portal`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {
+          returnUrl: 'https://example.com/billing',
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(mockCreatePortalSession).toHaveBeenCalledWith(
+        TEST_ORG_ID,
+        expect.objectContaining({
+          returnUrl: 'https://example.com/billing',
+        })
+      );
+    });
+
+    it('should reject invalid returnUrl format', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('viewer');
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/payments/portal`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {
+          returnUrl: 'not-a-valid-url',
+        },
+      });
+
+      // Schema validation errors return error status
+      expect(response.statusCode).toBeGreaterThanOrEqual(400);
+    });
+
+    it('should return 401 without auth token', async () => {
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/payments/portal`,
+        payload: {},
+      });
+
+      expect(response.statusCode).toBe(401);
+    });
+
+    it('should return 403 for non-member', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue(null);
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/payments/portal`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {},
+      });
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('should return 400 when no subscription exists', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('viewer');
+      mockCreatePortalSession.mockRejectedValue(
+        new checkoutService.PortalError('No subscription found for organization')
+      );
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/payments/portal`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {},
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json().error.message).toContain('No subscription found');
+    });
+
+    it('should return 400 when no Stripe customer exists', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('viewer');
+      mockCreatePortalSession.mockRejectedValue(
+        new checkoutService.PortalError('No Stripe customer found for organization. Please complete a checkout first.')
+      );
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/payments/portal`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {},
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json().error.message).toContain('No Stripe customer found');
+    });
+
+    it('should return 400 when Stripe is not configured', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('viewer');
+      mockCreatePortalSession.mockRejectedValue(
+        new checkoutService.StripeConfigError('STRIPE_SECRET_KEY environment variable is not set')
+      );
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/payments/portal`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {},
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json().error.message).toContain('STRIPE_SECRET_KEY');
+    });
+
+    it('should allow any org member to access portal', async () => {
+      mockValidAuth();
+      mockCreatePortalSession.mockResolvedValue(mockPortalResponse);
+
+      // Viewer can access portal
+      mockGetRole.mockResolvedValue('viewer');
+      let response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/payments/portal`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {},
+      });
+      expect(response.statusCode).toBe(200);
+
+      // Owner can access portal
+      mockGetRole.mockResolvedValue('owner');
+      response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/payments/portal`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {},
+      });
+      expect(response.statusCode).toBe(200);
+    });
+
+    it('should reject invalid organizationId format', async () => {
+      mockValidAuth();
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/not-a-uuid/payments/portal`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {},
       });
 
       // Schema validation errors return error status

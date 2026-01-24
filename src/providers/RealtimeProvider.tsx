@@ -3,6 +3,7 @@ import { socket, connectSocket, disconnectSocket } from '@/lib/socket';
 import { useUser } from '@stackframe/react';
 import { useRealtimeSensorData } from '@/hooks/useRealtimeSensorData';
 import { useRealtimeAlerts } from '@/hooks/useRealtimeAlerts';
+import { useRealtimeUnitState } from '@/hooks/useRealtimeUnitState';
 import { useOrgScope } from '@/hooks/useOrgScope';
 
 interface RealtimeContextValue {
@@ -31,6 +32,7 @@ function RealtimeHandlers() {
   // Set up real-time data handlers
   useRealtimeSensorData(orgId);
   useRealtimeAlerts(orgId);
+  useRealtimeUnitState(orgId);
 
   return null;
 }

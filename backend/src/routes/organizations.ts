@@ -2,12 +2,14 @@ import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { requireAuth, requireOrgContext, requireRole } from '../middleware/index.js';
 import * as orgService from '../services/organization.service.js';
+import { getOrganizationStatsService } from '../services/organization-stats.service.js';
 import { notFound } from '../utils/errors.js';
 import {
   OrganizationSchema,
   UpdateOrganizationSchema,
   MembersListSchema,
   OrgParamsSchema,
+  OrganizationStatsSchema,
 } from '../schemas/organizations.js';
 import { ErrorResponseSchema } from '../schemas/common.js';
 
@@ -70,5 +72,31 @@ export default async function organizationRoutes(fastify: FastifyInstance) {
   }, async (request) => {
     const members = await orgService.listMembers(request.user!.organizationId!);
     return members;
+  });
+
+  // GET /api/orgs/:organizationId/stats - Get organization stats for dashboard
+  app.get('/:organizationId/stats', {
+    preHandler: [requireAuth, requireOrgContext],
+    schema: {
+      params: OrgParamsSchema,
+      response: {
+        200: OrganizationStatsSchema,
+        503: ErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
+    const statsService = getOrganizationStatsService();
+
+    if (!statsService) {
+      return reply.status(503).send({
+        error: {
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'Organization stats service not initialized',
+        },
+      });
+    }
+
+    const stats = await statsService.getOrganizationStats(request.user!.organizationId!);
+    return stats;
   });
 }

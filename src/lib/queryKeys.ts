@@ -22,7 +22,11 @@ export const qk = {
     
     // Navigation & hierarchy
     sites: () => ['org', orgId, 'sites'] as const,
+    units: () => ['org', orgId, 'units'] as const,
     navTree: () => ['org', orgId, 'nav-tree'] as const,
+
+    // Organization stats (unit counts, compliance, etc.)
+    stats: () => ['org', orgId, 'stats'] as const,
     
     // Sensors & devices
     loraSensors: () => ['org', orgId, 'lora-sensors'] as const,

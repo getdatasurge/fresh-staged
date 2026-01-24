@@ -49,6 +49,9 @@ export const profiles = pgTable(
     pushEnabled: boolean('push_enabled').notNull().default(true),
     emailEnabled: boolean('email_enabled').notNull().default(true),
     smsEnabled: boolean('sms_enabled').notNull().default(false),
+    digestDaily: boolean('digest_daily').notNull().default(false),
+    digestWeekly: boolean('digest_weekly').notNull().default(false),
+    timezone: varchar('timezone', { length: 64 }).notNull().default('UTC'),
     ...timestamps,
   },
   (table) => [

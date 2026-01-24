@@ -29,11 +29,11 @@ export interface SmsNotificationJobData extends BaseJobData {
 }
 
 // Email digest job data (Phase 17)
+// Note: startDate and endDate are calculated at execution time by the processor
+// This allows scheduler creation without pre-computing dates
 export interface EmailDigestJobData extends BaseJobData {
   userId: string;
   period: 'daily' | 'weekly';
-  startDate: string;
-  endDate: string;
 }
 
 // Queue name constants (prevents typos)
@@ -84,6 +84,27 @@ export const smsJobOptions: JobsOptions = {
   backoff: {
     type: 'exponential',
     delay: 2000, // 2s initial, then 4s, 8s, 16s, 32s
+  },
+  removeOnComplete: 100,
+  removeOnFail: 500,
+};
+
+/**
+ * Email digest job options
+ *
+ * Configuration:
+ * - 3 attempts for reliability
+ * - 2s initial delay with exponential backoff (2s, 4s, 8s)
+ * - Standard history retention
+ *
+ * Email digests are less time-sensitive than SMS,
+ * so fewer attempts with longer delays are acceptable.
+ */
+export const emailDigestJobOptions: JobsOptions = {
+  attempts: 3,
+  backoff: {
+    type: 'exponential',
+    delay: 2000, // 2s initial
   },
   removeOnComplete: 100,
   removeOnFail: 500,

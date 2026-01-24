@@ -6,6 +6,7 @@ export { areasApi } from './areas';
 export { unitsApi } from './units';
 export { readingsApi } from './readings';
 export { alertsApi } from './alerts';
+export { paymentsApi } from './payments';
 
 // Re-export types for convenience
 export type * from '../api-types';

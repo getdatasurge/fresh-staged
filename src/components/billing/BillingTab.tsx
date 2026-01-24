@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@stackframe/react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { 
-  CreditCard, 
-  Loader2, 
-  ExternalLink, 
+import {
+  CreditCard,
+  Loader2,
+  ExternalLink,
   Zap,
   AlertTriangle,
   CheckCircle,
@@ -17,22 +18,8 @@ import {
 import { PlanCard } from "./PlanCard";
 import { InvoiceHistory } from "./InvoiceHistory";
 import { STRIPE_PLANS, PlanKey } from "@/lib/stripe";
-import type { Database } from "@/integrations/supabase/types";
-
-type SubscriptionStatus = Database["public"]["Enums"]["subscription_status"];
-type SubscriptionPlan = Database["public"]["Enums"]["subscription_plan"];
-
-interface Subscription {
-  id: string;
-  plan: SubscriptionPlan;
-  status: SubscriptionStatus;
-  sensor_limit: number;
-  current_sensor_count: number;
-  current_period_end: string | null;
-  trial_ends_at: string | null;
-  stripe_customer_id: string | null;
-  stripe_subscription_id: string | null;
-}
+import { paymentsApi } from "@/lib/api";
+import type { SubscriptionResponse, SubscriptionStatus, SubscriptionPlan } from "@/lib/api-types";
 
 interface BillingTabProps {
   organizationId: string;
@@ -48,28 +35,53 @@ const statusConfig: Record<SubscriptionStatus, { label: string; color: string; i
 };
 
 export const BillingTab = ({ organizationId, canManageBilling }: BillingTabProps) => {
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const user = useUser();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [subscription, setSubscription] = useState<SubscriptionResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState<string | null>(null);
   const [isPortalLoading, setIsPortalLoading] = useState(false);
 
+  // Handle Stripe redirect results
+  useEffect(() => {
+    const sessionId = searchParams.get("session_id");
+    const canceled = searchParams.get("canceled");
+
+    if (sessionId) {
+      // Checkout was successful
+      toast.success("Payment successful! Your subscription has been updated.");
+      // Clean up URL params
+      setSearchParams({});
+      // Reload subscription to show updated status
+      loadSubscription();
+    } else if (canceled) {
+      // Checkout was canceled
+      toast.info("Checkout canceled. Your subscription remains unchanged.");
+      // Clean up URL params
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
+
   useEffect(() => {
     loadSubscription();
-  }, [organizationId]);
+  }, [organizationId, user]);
 
   const loadSubscription = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("subscriptions")
-        .select("*")
-        .eq("organization_id", organizationId)
-        .maybeSingle();
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
 
-      if (error) throw error;
+    try {
+      const { accessToken } = await user.getAuthJson();
+      const data = await paymentsApi.getSubscription(organizationId, accessToken);
       setSubscription(data);
     } catch (error) {
       console.error("Error loading subscription:", error);
-      toast.error("Failed to load subscription");
+      // Don't show error toast for 404 - organization may not have a subscription yet
+      if (error instanceof Error && !error.message.includes("404")) {
+        toast.error("Failed to load subscription");
+      }
     }
     setIsLoading(false);
   };
@@ -81,34 +93,46 @@ export const BillingTab = ({ organizationId, canManageBilling }: BillingTabProps
       return;
     }
 
+    if (!user) {
+      toast.error("Please sign in to upgrade");
+      return;
+    }
+
     setIsCheckoutLoading(planKey);
     try {
-      const { data, error } = await supabase.functions.invoke("stripe-checkout", {
-        body: { priceId: plan.priceId, organizationId },
-      });
+      const { accessToken } = await user.getAuthJson();
+      const { url } = await paymentsApi.createCheckoutSession(
+        organizationId,
+        { plan: planKey as Exclude<SubscriptionPlan, 'enterprise'> },
+        accessToken
+      );
 
-      if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, "_blank");
-      }
+      // Redirect to Stripe checkout in the same tab for better UX
+      window.location.href = url;
     } catch (error) {
       console.error("Error creating checkout:", error);
       toast.error("Failed to start checkout");
+      setIsCheckoutLoading(null);
     }
-    setIsCheckoutLoading(null);
   };
 
   const handleManageBilling = async () => {
+    if (!user) {
+      toast.error("Please sign in to manage billing");
+      return;
+    }
+
     setIsPortalLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("stripe-portal", {
-        body: { organizationId },
-      });
+      const { accessToken } = await user.getAuthJson();
+      const { url } = await paymentsApi.createPortalSession(
+        organizationId,
+        {},
+        accessToken
+      );
 
-      if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, "_blank");
-      }
+      // Open portal in new tab so user can return easily
+      window.open(url, "_blank");
     } catch (error) {
       console.error("Error opening portal:", error);
       toast.error("Failed to open billing portal");
@@ -128,12 +152,14 @@ export const BillingTab = ({ organizationId, canManageBilling }: BillingTabProps
   const status = subscription?.status || "trial";
   const statusInfo = statusConfig[status];
   const StatusIcon = statusInfo.icon;
-  const sensorUsage = subscription 
-    ? Math.round((subscription.current_sensor_count / subscription.sensor_limit) * 100)
+  const sensorLimit = subscription?.sensorLimit || 5;
+  const currentSensorCount = subscription?.currentSensorCount || 0;
+  const sensorUsage = sensorLimit > 0
+    ? Math.round((currentSensorCount / sensorLimit) * 100)
     : 0;
-  const isTrialEnding = status === "trial" && subscription?.trial_ends_at;
-  const trialDaysLeft = isTrialEnding 
-    ? Math.max(0, Math.ceil((new Date(subscription.trial_ends_at!).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+  const isTrialEnding = status === "trial" && subscription?.trialEndsAt;
+  const trialDaysLeft = isTrialEnding
+    ? Math.max(0, Math.ceil((new Date(subscription.trialEndsAt!).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
 
   return (
@@ -162,15 +188,15 @@ export const BillingTab = ({ organizationId, canManageBilling }: BillingTabProps
             <div>
               <h3 className="text-2xl font-bold capitalize">{currentPlan} Plan</h3>
               <p className="text-muted-foreground">
-                {STRIPE_PLANS[currentPlan as PlanKey]?.price 
+                {STRIPE_PLANS[currentPlan as PlanKey]?.price
                   ? `$${STRIPE_PLANS[currentPlan as PlanKey].price}/month`
                   : "Custom pricing"
                 }
               </p>
             </div>
-            {canManageBilling && subscription?.stripe_customer_id && (
-              <Button 
-                variant="outline" 
+            {canManageBilling && subscription?.stripeCustomerId && (
+              <Button
+                variant="outline"
                 onClick={handleManageBilling}
                 disabled={isPortalLoading}
               >
@@ -202,7 +228,7 @@ export const BillingTab = ({ organizationId, canManageBilling }: BillingTabProps
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Sensor Usage</span>
               <span className="font-medium">
-                {subscription?.current_sensor_count || 0} / {subscription?.sensor_limit || 5}
+                {currentSensorCount} / {sensorLimit}
               </span>
             </div>
             <Progress value={sensorUsage} className="h-2" />
@@ -213,9 +239,9 @@ export const BillingTab = ({ organizationId, canManageBilling }: BillingTabProps
             )}
           </div>
 
-          {subscription?.current_period_end && status === "active" && (
+          {subscription?.currentPeriodEnd && status === "active" && (
             <p className="text-sm text-muted-foreground">
-              Next billing date: {new Date(subscription.current_period_end).toLocaleDateString()}
+              Next billing date: {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
             </p>
           )}
         </CardContent>
@@ -241,8 +267,8 @@ export const BillingTab = ({ organizationId, canManageBilling }: BillingTabProps
                   onUpgrade={() => handleUpgrade(key)}
                   isLoading={isCheckoutLoading === key}
                   disabled={
-                    currentPlan === key || 
-                    (subscription?.stripe_subscription_id && !plan.priceId)
+                    currentPlan === key ||
+                    !!(subscription?.stripeSubscriptionId && !plan.priceId)
                   }
                 />
               ))}

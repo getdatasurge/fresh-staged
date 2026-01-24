@@ -118,6 +118,34 @@ export const ttnConnections = pgTable(
   ]
 );
 
+// SMS Configurations - Telnyx SMS integration per organization
+export const smsConfigs = pgTable(
+  'sms_configs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: uuid('organization_id')
+      .references(() => organizations.id, { onDelete: 'cascade' })
+      .notNull(),
+    // Telnyx credentials (encrypted at rest via column-level encryption in production)
+    telnyxApiKey: varchar('telnyx_api_key', { length: 512 }).notNull(),
+    telnyxPhoneNumber: varchar('telnyx_phone_number', { length: 32 }).notNull(),
+    telnyxMessagingProfileId: varchar('telnyx_messaging_profile_id', { length: 256 }),
+    // Configuration
+    isEnabled: boolean('is_enabled').notNull().default(true),
+    // Audit
+    lastTestAt: timestamp('last_test_at', {
+      mode: 'date',
+      precision: 3,
+      withTimezone: true,
+    }),
+    ...timestamps,
+  },
+  (table) => [
+    index('sms_configs_org_idx').on(table.organizationId),
+    uniqueIndex('sms_configs_org_unique_idx').on(table.organizationId),
+  ]
+);
+
 // Type exports
 export type Organization = typeof organizations.$inferSelect;
 export type InsertOrganization = typeof organizations.$inferInsert;
@@ -125,3 +153,5 @@ export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = typeof subscriptions.$inferInsert;
 export type TtnConnection = typeof ttnConnections.$inferSelect;
 export type InsertTtnConnection = typeof ttnConnections.$inferInsert;
+export type SmsConfig = typeof smsConfigs.$inferSelect;
+export type InsertSmsConfig = typeof smsConfigs.$inferInsert;

@@ -1,11 +1,17 @@
 import Stripe from 'stripe';
 import { db } from '../db/client.js';
 import { organizations, subscriptions } from '../db/schema/tenancy.js';
-import { eq } from 'drizzle-orm';
+import { devices } from '../db/schema/devices.js';
+import { units } from '../db/schema/hierarchy.js';
+import { areas } from '../db/schema/hierarchy.js';
+import { sites } from '../db/schema/hierarchy.js';
+import { eq, sql, and } from 'drizzle-orm';
 import {
   STRIPE_PLANS,
   type PlanKey,
   type CheckoutSessionResponse,
+  type PortalSessionResponse,
+  type SubscriptionResponse,
 } from '../schemas/payments.js';
 
 // Initialize Stripe client
@@ -31,6 +37,13 @@ export class CheckoutError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'CheckoutError';
+  }
+}
+
+export class PortalError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PortalError';
   }
 }
 
@@ -117,5 +130,117 @@ export async function createCheckoutSession(
   return {
     sessionId: session.id,
     url: session.url,
+  };
+}
+
+interface CreatePortalSessionParams {
+  returnUrl?: string;
+}
+
+/**
+ * Create a Stripe billing portal session for subscription management
+ */
+export async function createPortalSession(
+  organizationId: string,
+  params: CreatePortalSessionParams
+): Promise<PortalSessionResponse> {
+  const { returnUrl } = params;
+
+  // Get organization's subscription with Stripe customer ID
+  const [subscription] = await db
+    .select()
+    .from(subscriptions)
+    .where(eq(subscriptions.organizationId, organizationId))
+    .limit(1);
+
+  if (!subscription) {
+    throw new PortalError('No subscription found for organization');
+  }
+
+  if (!subscription.stripeCustomerId) {
+    throw new PortalError('No Stripe customer found for organization. Please complete a checkout first.');
+  }
+
+  const stripe = getStripeClient();
+
+  // Base URL for return - default to frontend billing page
+  const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const defaultReturnUrl = `${baseUrl}/settings/billing`;
+
+  // Create Stripe billing portal session
+  const session = await stripe.billingPortal.sessions.create({
+    customer: subscription.stripeCustomerId,
+    return_url: returnUrl || defaultReturnUrl,
+  });
+
+  return {
+    url: session.url,
+  };
+}
+
+/**
+ * Get subscription details for an organization
+ */
+export async function getSubscription(
+  organizationId: string
+): Promise<SubscriptionResponse | null> {
+  // Get subscription with organization sensor limit
+  const result = await db
+    .select({
+      id: subscriptions.id,
+      organizationId: subscriptions.organizationId,
+      plan: subscriptions.plan,
+      status: subscriptions.status,
+      stripeCustomerId: subscriptions.stripeCustomerId,
+      stripeSubscriptionId: subscriptions.stripeSubscriptionId,
+      currentPeriodStart: subscriptions.currentPeriodStart,
+      currentPeriodEnd: subscriptions.currentPeriodEnd,
+      trialEndsAt: subscriptions.trialEndsAt,
+      canceledAt: subscriptions.canceledAt,
+      createdAt: subscriptions.createdAt,
+      updatedAt: subscriptions.updatedAt,
+      sensorLimit: organizations.sensorLimit,
+    })
+    .from(subscriptions)
+    .innerJoin(organizations, eq(subscriptions.organizationId, organizations.id))
+    .where(eq(subscriptions.organizationId, organizationId))
+    .limit(1);
+
+  if (result.length === 0) {
+    return null;
+  }
+
+  const sub = result[0];
+
+  // Count active devices (sensors) for this organization through hierarchy:
+  // devices → units → areas → sites → organizations
+  const deviceCountResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(devices)
+    .innerJoin(units, eq(devices.unitId, units.id))
+    .innerJoin(areas, eq(units.areaId, areas.id))
+    .innerJoin(sites, eq(areas.siteId, sites.id))
+    .where(and(
+      eq(sites.organizationId, organizationId),
+      eq(devices.isActive, true)
+    ));
+
+  const currentSensorCount = Number(deviceCountResult[0]?.count ?? 0);
+
+  return {
+    id: sub.id,
+    organizationId: sub.organizationId,
+    plan: sub.plan,
+    status: sub.status,
+    sensorLimit: sub.sensorLimit,
+    currentSensorCount,
+    stripeCustomerId: sub.stripeCustomerId,
+    stripeSubscriptionId: sub.stripeSubscriptionId,
+    currentPeriodStart: sub.currentPeriodStart,
+    currentPeriodEnd: sub.currentPeriodEnd,
+    trialEndsAt: sub.trialEndsAt,
+    canceledAt: sub.canceledAt,
+    createdAt: sub.createdAt,
+    updatedAt: sub.updatedAt,
   };
 }

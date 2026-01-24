@@ -19,6 +19,9 @@ export * from './devices.js';
 // Telemetry data (depends on hierarchy, devices, users)
 export * from './telemetry.js';
 
+// Reading metrics (depends on hierarchy)
+export * from './reading-metrics.js';
+
 // Alerting system (depends on tenancy, hierarchy, users)
 export * from './alerts.js';
 

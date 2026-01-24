@@ -7,6 +7,8 @@ interface ServerToClientEvents {
   'alert:triggered': (data: AlertNotification) => void;
   'alert:resolved': (data: { alertId: string; unitId: string; resolvedAt: string }) => void;
   'alert:escalated': (data: { alertId: string; unitId: string; escalationLevel: number }) => void;
+  'unit:state:changed': (data: UnitStateChangeEvent) => void;
+  'connection:ack': (data: { socketId: string; timestamp: string }) => void;
 }
 
 interface ClientToServerEvents {
@@ -61,4 +63,14 @@ export interface AlertNotification {
   triggerTemperature: number;
   thresholdViolated: 'min' | 'max';
   triggeredAt: string;
+}
+
+export type UnitDashboardState = 'normal' | 'warning' | 'critical' | 'offline';
+
+export interface UnitStateChangeEvent {
+  unitId: string;
+  previousState: UnitDashboardState;
+  newState: UnitDashboardState;
+  timestamp: string;
+  reason: string;
 }

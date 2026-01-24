@@ -58,15 +58,14 @@ const queuePlugin: FastifyPluginAsync<QueuePluginOptions> = async (
     fastify.log.info('[Queue Plugin] TelnyxService initialized (disabled - no API key)');
   }
 
-  // Initialize QueueService with Redis connection after server is ready
-  fastify.ready(async () => {
-    await queueService.initialize();
+  // Initialize QueueService with Redis connection
+  await queueService.initialize();
 
-    // Setup Bull Board dashboard if Redis is enabled
-    if (queueService.isRedisEnabled()) {
-      setupBullBoard(fastify, queueService, opts.dashboardPath);
-    }
-  });
+  // Setup Bull Board dashboard if Redis is enabled
+  // Note: Must be done during plugin registration, not after ready()
+  if (queueService.isRedisEnabled()) {
+    setupBullBoard(fastify, queueService, opts.dashboardPath);
+  }
 
   // Graceful shutdown: close all queues and Redis connection
   fastify.addHook('onClose', async () => {
