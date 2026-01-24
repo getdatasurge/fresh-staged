@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { requireAuth, requireOrgContext, requireRole } from '../middleware/index.js';
+import { requireSensorCapacity } from '../middleware/subscription.js';
 import * as ttnDeviceService from '../services/ttn-device.service.js';
 import { notFound, validationError } from '../utils/errors.js';
 import {
@@ -35,7 +36,7 @@ export default async function ttnDeviceRoutes(fastify: FastifyInstance) {
 
   // POST /api/orgs/:organizationId/ttn/devices - Provision a new device
   app.post('/', {
-    preHandler: [requireAuth, requireOrgContext, requireRole('manager')],
+    preHandler: [requireAuth, requireOrgContext, requireRole('manager'), requireSensorCapacity],
     schema: {
       params: OrgParamsSchema,
       body: ProvisionTTNDeviceSchema,
@@ -65,7 +66,7 @@ export default async function ttnDeviceRoutes(fastify: FastifyInstance) {
 
   // POST /api/orgs/:organizationId/ttn/devices/bootstrap - Bootstrap a new device with auto-generated credentials
   app.post('/bootstrap', {
-    preHandler: [requireAuth, requireOrgContext, requireRole('manager')],
+    preHandler: [requireAuth, requireOrgContext, requireRole('manager'), requireSensorCapacity],
     schema: {
       params: OrgParamsSchema,
       body: BootstrapTTNDeviceSchema,
