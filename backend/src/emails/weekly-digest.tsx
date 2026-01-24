@@ -11,12 +11,12 @@ import {
   Section,
   Link,
 } from '@react-email/components';
-import type { DigestData } from '../services/digest-builder.service.js';
+import type { GroupedDigestData } from '../services/digest-builder.service.js';
 import { AlertRow } from './components/alert-row.js';
 
 interface WeeklyDigestProps {
   userName: string;
-  digest: DigestData;
+  digest: GroupedDigestData;
   unsubscribeUrl: string;
   dashboardUrl: string;
 }
@@ -27,10 +27,7 @@ export function WeeklyDigest({
   unsubscribeUrl,
   dashboardUrl,
 }: WeeklyDigestProps) {
-  const { alerts, summary, organizationName } = digest;
-  const displayAlerts = alerts.slice(0, 10);
-  const hasMore = alerts.length > 10;
-  const remainingCount = alerts.length - 10;
+  const { sites, summary, organizationName } = digest;
 
   return (
     <Html>
@@ -141,8 +138,8 @@ export function WeeklyDigest({
               </Text>
             </Section>
 
-            {/* Alert List */}
-            {displayAlerts.length > 0 ? (
+            {/* Alert List - Grouped by Site > Unit */}
+            {sites.length > 0 ? (
               <>
                 <Heading
                   as="h2"
@@ -152,41 +149,92 @@ export function WeeklyDigest({
                     color: '#212529',
                   }}
                 >
-                  Recent Alerts
+                  Alerts by Location
                 </Heading>
-                <Section
-                  style={{
-                    border: '1px solid #dee2e6',
-                    borderRadius: '6px',
-                    overflow: 'hidden',
-                    marginBottom: '16px',
-                  }}
-                >
-                  {displayAlerts.map((alert) => (
-                    <AlertRow
-                      key={alert.id}
-                      severity={alert.severity}
-                      message={alert.message || 'Alert triggered'}
-                      unitName={alert.unitName}
-                      siteName={alert.siteName}
-                      triggeredAt={alert.triggeredAt}
-                    />
-                  ))}
-                </Section>
 
-                {hasMore && (
-                  <Text
+                {sites.map((site) => (
+                  <Section
+                    key={site.siteId}
                     style={{
-                      margin: '0 0 16px 0',
-                      fontSize: '13px',
-                      color: '#6c757d',
-                      textAlign: 'center',
+                      marginBottom: '20px',
                     }}
                   >
-                    + {remainingCount} more alert
-                    {remainingCount !== 1 ? 's' : ''}
-                  </Text>
-                )}
+                    {/* Site Header */}
+                    <Heading
+                      as="h3"
+                      style={{
+                        margin: '0 0 8px 0',
+                        fontSize: '16px',
+                        color: '#6f42c1',
+                        borderBottom: '2px solid #6f42c1',
+                        paddingBottom: '4px',
+                      }}
+                    >
+                      {site.siteName}
+                    </Heading>
+
+                    {site.units.map((unit) => {
+                      const displayAlerts = unit.alerts.slice(0, 5);
+                      const hasMore = unit.alerts.length > 5;
+                      const remainingCount = unit.alerts.length - 5;
+
+                      return (
+                        <Section
+                          key={unit.unitId}
+                          style={{
+                            marginBottom: '12px',
+                            marginLeft: '12px',
+                          }}
+                        >
+                          {/* Unit Header */}
+                          <Text
+                            style={{
+                              margin: '0 0 6px 0',
+                              fontSize: '14px',
+                              fontWeight: 'bold',
+                              color: '#495057',
+                            }}
+                          >
+                            {unit.unitName}
+                          </Text>
+
+                          {/* Unit Alerts */}
+                          <Section
+                            style={{
+                              border: '1px solid #dee2e6',
+                              borderRadius: '6px',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            {displayAlerts.map((alert) => (
+                              <AlertRow
+                                key={alert.id}
+                                severity={alert.severity}
+                                message={alert.message || 'Alert triggered'}
+                                unitName={alert.unitName}
+                                siteName={alert.siteName}
+                                triggeredAt={alert.triggeredAt}
+                              />
+                            ))}
+                          </Section>
+
+                          {hasMore && (
+                            <Text
+                              style={{
+                                margin: '4px 0 0 0',
+                                fontSize: '12px',
+                                color: '#6c757d',
+                              }}
+                            >
+                              + {remainingCount} more alert
+                              {remainingCount !== 1 ? 's' : ''} from this unit
+                            </Text>
+                          )}
+                        </Section>
+                      );
+                    })}
+                  </Section>
+                ))}
 
                 {/* CTA Button */}
                 <Section style={{ textAlign: 'center', margin: '24px 0' }}>
@@ -217,7 +265,7 @@ export function WeeklyDigest({
                   padding: '24px',
                 }}
               >
-                No alerts in the last 7 days. Great work! ✓
+                No alerts in the last 7 days. Great work!
               </Text>
             )}
           </Section>

@@ -85,17 +85,28 @@ export async function processEmailDigest(
     startDate.setDate(startDate.getDate() - 7);
   }
 
-  // Build digest data
-  const digestData = await digestBuilder.buildDigestData(
+  // Parse site IDs from user preferences (stored as JSON text)
+  let siteIds: string[] | null = null;
+  if (user.digestSiteIds) {
+    try {
+      siteIds = JSON.parse(user.digestSiteIds);
+    } catch {
+      console.warn(`[Email Digest] Failed to parse digestSiteIds for user ${userId}`);
+    }
+  }
+
+  // Build grouped digest data with site filtering
+  const digestData = await digestBuilder.buildGroupedDigestData(
     userId,
     organizationId,
     period,
     startDate,
-    endDate
+    endDate,
+    siteIds
   );
 
   // Skip if no alerts (don't send empty digests)
-  if (digestData.alerts.length === 0) {
+  if (digestData.sites.length === 0) {
     console.log(`[Email Digest] No alerts for user ${userId} in period - skipping send`);
     return { success: true, reason: 'no_content' };
   }
