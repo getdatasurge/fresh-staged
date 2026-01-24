@@ -23,3 +23,6 @@ dist-docs
 *.njsproj
 *.sln
 *.sw?
+
+# Skills (developer-local context)
+.skills/
