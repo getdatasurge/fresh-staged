@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
-Phase: 14 of 22 (Real-Time Foundation) — COMPLETE
-Plan: 6 of 6 complete
-Status: Connection status indicator and E2E verification complete
-Last activity: 2026-01-24 — Completed 14-06-PLAN.md
+Phase: 15 of 22 (Background Jobs Infrastructure) — IN PROGRESS
+Plan: 1 of 6 complete
+Status: Worker container infrastructure deployed
+Last activity: 2026-01-24 — Completed 15-02-PLAN.md
 
-Progress: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 8% (6/79 plans)
+Progress: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 9% (7/79 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,13 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 6
+- Plans completed: 7
 - Phases completed: 1 (14-real-time-foundation)
+- In progress: 15-background-jobs-infrastructure
 
 **Combined:**
 - Total plans: 79
-- Total phases: 14
+- Total phases: 15
 - Milestones shipped: 2 (v1.0, v1.1)
 
 ## Accumulated Context
@@ -84,6 +85,11 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | REALTIME-18 | Query cache strategy for alerts | 14-05 | Invalidate lists, update details via setQueryData for instant UI feedback |
 | REALTIME-19 | Connection status via tooltip pattern | 14-06 | Non-intrusive status indicator in dashboard header with icon + tooltip |
 | REALTIME-20 | E2E verification deferred to staging | 14-06 | Full real-time testing postponed until local development environment available |
+| JOBS-01 | Workers use IORedis with maxRetriesPerRequest: null | 15-02 | BullMQ workers require this setting for blocking Redis operations |
+| JOBS-02 | Separate Dockerfile.worker from API Dockerfile | 15-02 | Enables independent deployment and scaling of workers vs API |
+| JOBS-03 | Process-based health check for workers | 15-02 | Workers don't expose HTTP endpoints, pgrep verifies process running |
+| JOBS-04 | stop_grace_period of 30s in production | 15-02 | Allows in-flight jobs to complete before container shutdown |
+| JOBS-05 | Redis configured with appendfsync everysec and noeviction | 15-02 | Balances performance with persistence, prevents data loss from eviction |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -97,14 +103,15 @@ See also: .planning/PROJECT.md Key Decisions table
 - AUTH-02 blocked until database queries migrate to backend API (v2.0 scope)
 - Production data migration requires Supabase access (DEFERRED)
 - Real-time E2E verification requires local staging environment (Phase 01 plans pending)
+- Plan 15-01 (Queue plugin) needs execution before 15-03 for API-side queue integration
 
 ## Session Continuity
 
-**Last session:** 2026-01-24 09:11 UTC
-**Stopped at:** Completed 14-06-PLAN.md (Connection Status & E2E Verification)
+**Last session:** 2026-01-24 09:44 UTC
+**Stopped at:** Completed 15-02-PLAN.md (Worker Container Infrastructure)
 **Resume file:** None
-**Next action:** Begin Phase 15 (Billing Foundation) or Phase 01 (Local Development Environment)
+**Next action:** Execute 15-01-PLAN.md (Queue Plugin) then 15-03-PLAN.md (Bull Board Dashboard)
 
 ---
 
-*State updated: 2026-01-24 after completing Phase 14*
+*State updated: 2026-01-24 after completing Plan 15-02*
