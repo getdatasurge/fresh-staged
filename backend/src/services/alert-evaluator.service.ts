@@ -1,4 +1,4 @@
-import { eq, and, or, inArray, isNull } from 'drizzle-orm';
+import { eq, and, or, inArray, isNull, gte } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import {
   alerts,
@@ -6,11 +6,140 @@ import {
   units,
   areas,
   sites,
+  profiles,
+  notificationDeliveries,
   type Alert,
   type InsertAlert,
   type Unit,
 } from '../db/schema/index.js';
 import type { SocketService } from './socket.service.js';
+import { getQueueService } from './queue.service.js';
+
+// Rate limit window in milliseconds (15 minutes)
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+
+/**
+ * Get users with phone numbers in an organization who should receive SMS alerts
+ *
+ * @param organizationId - Organization to get recipients for
+ * @returns Array of { userId, phoneNumber } for users with valid E.164 phone numbers
+ */
+async function getAlertRecipients(
+  organizationId: string
+): Promise<Array<{ userId: string; phoneNumber: string }>> {
+  // Get users with phone numbers who should receive alerts
+  // For now, get all users in org with phone numbers and smsEnabled
+  // Future: Add notification preferences filtering, escalation contact priority
+  const recipients = await db
+    .select({
+      userId: profiles.id,
+      phoneNumber: profiles.phone,
+    })
+    .from(profiles)
+    .where(
+      and(
+        eq(profiles.organizationId, organizationId),
+        eq(profiles.smsEnabled, true)
+      )
+    );
+
+  // Filter to only valid E.164 phone numbers
+  return recipients.filter(
+    (r): r is { userId: string; phoneNumber: string } =>
+      r.phoneNumber !== null && r.phoneNumber.startsWith('+')
+  );
+}
+
+/**
+ * Check if a user has received an SMS alert recently (within rate limit window)
+ *
+ * @param userId - User profile ID to check
+ * @returns True if rate limited (should not send), false if OK to send
+ */
+async function isRateLimited(userId: string): Promise<boolean> {
+  const rateLimitCutoff = new Date(Date.now() - RATE_LIMIT_WINDOW_MS);
+
+  const [recentDelivery] = await db
+    .select({ id: notificationDeliveries.id })
+    .from(notificationDeliveries)
+    .where(
+      and(
+        eq(notificationDeliveries.profileId, userId),
+        eq(notificationDeliveries.channel, 'sms'),
+        inArray(notificationDeliveries.status, ['sent', 'delivered']),
+        gte(notificationDeliveries.sentAt, rateLimitCutoff)
+      )
+    )
+    .limit(1);
+
+  return !!recentDelivery;
+}
+
+/**
+ * Queue SMS notifications for all eligible recipients when an alert escalates
+ *
+ * This function:
+ * 1. Gets all users in the org with valid phone numbers and SMS enabled
+ * 2. Checks rate limiting for each user (15-minute window)
+ * 3. Creates notification_deliveries records
+ * 4. Queues SMS jobs for processing
+ *
+ * @param organizationId - Organization the alert belongs to
+ * @param alertId - Alert that escalated
+ * @param message - SMS message to send
+ * @param alertType - Type of alert for rate limiting grouping
+ */
+async function queueAlertSms(
+  organizationId: string,
+  alertId: string,
+  message: string,
+  alertType: string
+): Promise<void> {
+  const queueService = getQueueService();
+  if (!queueService || !queueService.isRedisEnabled()) {
+    console.log('[Alert SMS] Queue service not available - SMS not sent');
+    return;
+  }
+
+  const recipients = await getAlertRecipients(organizationId);
+  console.log(`[Alert SMS] Found ${recipients.length} recipients for org ${organizationId}`);
+
+  for (const recipient of recipients) {
+    // Check rate limit
+    if (await isRateLimited(recipient.userId)) {
+      console.log(`[Alert SMS] Rate limited for user ${recipient.userId} - skipping`);
+      continue;
+    }
+
+    // Create notification delivery record
+    const [delivery] = await db
+      .insert(notificationDeliveries)
+      .values({
+        alertId,
+        profileId: recipient.userId,
+        channel: 'sms',
+        recipient: recipient.phoneNumber,
+        status: 'pending',
+      })
+      .returning();
+
+    // Queue SMS job
+    await queueService.addSmsJob({
+      organizationId,
+      phoneNumber: recipient.phoneNumber,
+      message,
+      alertId,
+      deliveryId: delivery.id,
+      userId: recipient.userId,
+      alertType,
+    });
+
+    // Log with masked phone number for privacy
+    console.log(
+      `[Alert SMS] Queued SMS for user ${recipient.userId} to ${recipient.phoneNumber.slice(0, 5)}***${recipient.phoneNumber.slice(-2)}`
+    );
+  }
+}
 
 /**
  * Result of evaluating a unit after a new temperature reading
@@ -306,6 +435,18 @@ export async function evaluateUnitAfterReading(
             unitId: escalatedAlert.unitId,
             escalationLevel: escalatedAlert.escalationLevel || 1,
           });
+        }
+
+        // Queue SMS notifications for critical alert
+        if (escalatedAlert) {
+          const alertMessage = `CRITICAL: Temperature alert for unit. ${result.stateChange?.reason || 'Temperature excursion confirmed.'}`;
+
+          // Queue asynchronously - don't await to avoid blocking the reading pipeline
+          queueAlertSms(organizationId, escalatedAlert.id, alertMessage, 'alarm_active').catch(
+            (err) => {
+              console.error('[Alert SMS] Failed to queue SMS:', err);
+            }
+          );
         }
       }
     }
