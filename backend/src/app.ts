@@ -34,6 +34,7 @@ import assetRoutes from './routes/assets.js';
 import availabilityRoutes from './routes/availability.js';
 import devRoutes from './routes/dev.js';
 import { adminRoutes } from './routes/admin.js';
+import unsubscribeRoutes from './routes/unsubscribe.js';
 
 export interface AppOptions {
   logger?: boolean;
@@ -170,6 +171,9 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
 
   // Register admin routes (includes Bull Board dashboard and health checks)
   app.register(adminRoutes, { prefix: '/api/admin' });
+
+  // Register unsubscribe routes (public, token-based auth - no /api prefix for email links)
+  app.register(unsubscribeRoutes, { prefix: '/unsubscribe' });
 
   // Example protected route for testing
   app.get('/api/protected', {

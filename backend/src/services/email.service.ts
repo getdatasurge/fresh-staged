@@ -37,6 +37,8 @@ export interface SendDigestParams {
   subject: string;
   /** HTML email body content */
   html: string;
+  /** Plain text email body (optional, recommended for deliverability) */
+  text?: string;
 }
 
 /**
@@ -125,7 +127,7 @@ export class EmailService {
       return null;
     }
 
-    const { to, subject, html } = params;
+    const { to, subject, html, text } = params;
 
     console.log(
       `[EmailService] Sending digest email from ${this.fromAddress} to ${to}`
@@ -137,6 +139,7 @@ export class EmailService {
       to,
       subject,
       html,
+      text, // Include plain text version if provided
       tags: [
         {
           name: 'type',
