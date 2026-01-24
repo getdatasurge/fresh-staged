@@ -60,6 +60,7 @@ export const JobNames = {
   SMS_SEND: 'sms:send',
   EMAIL_DIGEST: 'email:digest',
   METER_REPORT: 'meter:report',
+  SENSOR_COUNT_SCHEDULER: 'meter:sensor-count-scheduler',
 } as const;
 
 export type JobName = typeof JobNames[keyof typeof JobNames];
