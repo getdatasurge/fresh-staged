@@ -6,7 +6,7 @@
  *
  * Features:
  * - Connects to Redis with maxRetriesPerRequest: null (CRITICAL for workers)
- * - Registers workers for SMS and email queues
+ * - Registers workers for SMS, email, and meter reporting queues
  * - Graceful shutdown on SIGTERM/SIGINT
  * - Event logging for monitoring
  */
@@ -16,6 +16,7 @@ import { Redis } from 'ioredis';
 import { QueueNames } from '../jobs/index.js';
 import { processSmsNotification } from './processors/sms-notification.processor.js';
 import { processEmailDigest } from './processors/email-digest.processor.js';
+import { createMeterReportingProcessor } from './processors/meter-reporting.processor.js';
 
 // CRITICAL: Workers MUST use maxRetriesPerRequest: null
 // This is required for BullMQ workers to handle blocking Redis operations correctly
@@ -69,8 +70,18 @@ const emailWorker = new Worker(
   }
 );
 
-// Event handlers for both workers
-const workers = [smsWorker, emailWorker];
+// Meter reporting worker (Stripe billing meters)
+const meterWorker = new Worker(
+  QueueNames.METER_REPORTING,
+  createMeterReportingProcessor(),
+  {
+    connection,
+    concurrency: 5, // Handle multiple orgs in parallel
+  }
+);
+
+// Event handlers for all workers
+const workers = [smsWorker, emailWorker, meterWorker];
 
 workers.forEach((worker) => {
   worker.on('completed', (job) => {
@@ -116,4 +127,4 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
 console.log('[Worker] Started and ready to process jobs');
-console.log(`[Worker] Registered queues: ${QueueNames.SMS_NOTIFICATIONS}, ${QueueNames.EMAIL_DIGESTS}`);
+console.log(`[Worker] Registered queues: ${QueueNames.SMS_NOTIFICATIONS}, ${QueueNames.EMAIL_DIGESTS}, ${QueueNames.METER_REPORTING}`);

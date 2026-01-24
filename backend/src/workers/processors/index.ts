@@ -6,4 +6,4 @@
 
 export { processSmsNotification } from './sms-notification.processor.js';
 export { processEmailDigest } from './email-digest.processor.js';
-export { processMeterReport } from './meter-reporting.processor.js';
+export { processMeterReport, createMeterReportingProcessor } from './meter-reporting.processor.js';
