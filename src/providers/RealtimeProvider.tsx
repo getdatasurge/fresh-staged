@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { socket, connectSocket, disconnectSocket } from '@/lib/socket';
 import { useUser } from '@stackframe/react';
+import { useRealtimeSensorData } from '@/hooks/useRealtimeSensorData';
+import { useRealtimeAlerts } from '@/hooks/useRealtimeAlerts';
+import { useOrgScope } from '@/hooks/useOrgScope';
 
 interface RealtimeContextValue {
   isConnected: boolean;
@@ -16,6 +19,20 @@ const RealtimeContext = createContext<RealtimeContextValue>({
 
 export function useRealtimeStatus() {
   return useContext(RealtimeContext);
+}
+
+/**
+ * Internal component that sets up real-time event handlers
+ * Separated to cleanly handle organization scope hooks
+ */
+function RealtimeHandlers() {
+  const { orgId } = useOrgScope();
+
+  // Set up real-time data handlers
+  useRealtimeSensorData(orgId);
+  useRealtimeAlerts(orgId);
+
+  return null;
 }
 
 export function RealtimeProvider({ children }: { children: ReactNode }) {
@@ -91,6 +108,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
 
   return (
     <RealtimeContext.Provider value={{ isConnected, isConnecting, connectionError }}>
+      {isConnected && <RealtimeHandlers />}
       {children}
     </RealtimeContext.Provider>
   );
