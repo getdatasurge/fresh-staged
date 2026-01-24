@@ -1,15 +1,16 @@
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { StackProvider, StackTheme } from "@stackframe/react";
+import { StackProvider, StackTheme, useUser } from "@stackframe/react";
 import { stackClientApp } from "@/lib/stack/client";
 import { DebugProvider } from "@/contexts/DebugContext";
 import { TTNConfigProvider } from "@/contexts/TTNConfigContext";
 import { SuperAdminProvider } from "@/contexts/SuperAdminContext";
 import { RealtimeProvider } from "@/providers/RealtimeProvider";
+import { TRPCProvider, createTRPCClientInstance } from "@/lib/trpc";
 import { DebugTerminal, RouteLogger } from "@/components/debug";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -61,13 +62,39 @@ const queryClient = new QueryClient({
   },
 });
 
+/**
+ * TRPCWrapper creates the tRPC client with authentication
+ * Must be inside StackProvider (for useUser) and QueryClientProvider (for queryClient)
+ */
+function TRPCWrapper({ children }: { children: React.ReactNode }) {
+  const user = useUser();
+  const queryClient = useQueryClient();
+
+  const trpcClient = useMemo(() => {
+    return createTRPCClientInstance(async () => {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      const { accessToken } = await user.getAuthJson();
+      return accessToken;
+    });
+  }, [user]);
+
+  return (
+    <TRPCProvider client={trpcClient} queryClient={queryClient}>
+      {children}
+    </TRPCProvider>
+  );
+}
+
 const App = () => (
   <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
     <StackProvider app={stackClientApp}>
       <StackTheme>
         <QueryClientProvider client={queryClient}>
-          <RealtimeProvider>
-            <TooltipProvider>
+          <TRPCWrapper>
+            <RealtimeProvider>
+              <TooltipProvider>
               <DebugProvider>
                 <TTNConfigProvider>
                   <Toaster />
@@ -124,6 +151,7 @@ const App = () => (
               </DebugProvider>
             </TooltipProvider>
           </RealtimeProvider>
+          </TRPCWrapper>
         </QueryClientProvider>
       </StackTheme>
     </StackProvider>
