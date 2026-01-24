@@ -20,6 +20,7 @@ vi.mock('../../src/services/ttn-device.service.js', () => ({
   provisionTTNDevice: vi.fn(),
   updateTTNDevice: vi.fn(),
   deprovisionTTNDevice: vi.fn(),
+  bootstrapTTNDevice: vi.fn(),
   TTNConfigError: class TTNConfigError extends Error {
     constructor(message: string) {
       super(message);
@@ -46,6 +47,7 @@ const mockGetDevice = vi.mocked(ttnDeviceService.getTTNDevice);
 const mockProvisionDevice = vi.mocked(ttnDeviceService.provisionTTNDevice);
 const mockUpdateDevice = vi.mocked(ttnDeviceService.updateTTNDevice);
 const mockDeprovisionDevice = vi.mocked(ttnDeviceService.deprovisionTTNDevice);
+const mockBootstrapDevice = vi.mocked(ttnDeviceService.bootstrapTTNDevice);
 
 // Valid UUIDs (RFC 4122 v4 compliant)
 const TEST_ORG_ID = 'bfc91766-90f0-4caf-b428-06cdcc49866a';
@@ -583,6 +585,305 @@ describe('TTN Devices API', () => {
       });
 
       expect(response.statusCode).toBe(404);
+    });
+  });
+
+  describe('POST /api/orgs/:organizationId/ttn/devices/bootstrap', () => {
+    const TEST_SITE_ID = 'c419185a-ccd5-4a1c-b1ac-8b4dfc6a01df';
+
+    const validBootstrapRequest = {
+      name: 'New Temperature Sensor',
+      description: 'Walk-in cooler sensor',
+    };
+
+    const mockBootstrapResponse = {
+      id: TEST_DEVICE_ID,
+      deviceId: 'new-temperature-sensor-abc123',
+      devEui: 'AABBCCDDEEFF0011',
+      joinEui: '0011223344556677',
+      appKey: 'AABBCCDDEEFF00112233445566778899',
+      name: 'New Temperature Sensor',
+      description: 'Walk-in cooler sensor',
+      unitId: null,
+      siteId: null,
+      status: 'inactive' as const,
+      ttnSynced: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    it('should bootstrap device with auto-generated credentials', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('manager');
+      mockBootstrapDevice.mockResolvedValue(mockBootstrapResponse);
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: validBootstrapRequest,
+      });
+
+      expect(response.statusCode).toBe(201);
+      const body = response.json();
+      expect(body).toMatchObject({
+        name: 'New Temperature Sensor',
+        devEui: expect.any(String),
+        joinEui: expect.any(String),
+        appKey: expect.any(String),
+      });
+      // Verify credentials are 16/16/32 hex chars
+      expect(body.devEui).toHaveLength(16);
+      expect(body.joinEui).toHaveLength(16);
+      expect(body.appKey).toHaveLength(32);
+    });
+
+    it('should bootstrap device with custom deviceId', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('manager');
+      mockBootstrapDevice.mockResolvedValue({
+        ...mockBootstrapResponse,
+        deviceId: 'custom-device-id',
+      });
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {
+          ...validBootstrapRequest,
+          deviceId: 'custom-device-id',
+        },
+      });
+
+      expect(response.statusCode).toBe(201);
+      expect(response.json().deviceId).toBe('custom-device-id');
+    });
+
+    it('should bootstrap device with site association', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('manager');
+      mockBootstrapDevice.mockResolvedValue({
+        ...mockBootstrapResponse,
+        siteId: TEST_SITE_ID,
+      });
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {
+          ...validBootstrapRequest,
+          siteId: TEST_SITE_ID,
+        },
+      });
+
+      expect(response.statusCode).toBe(201);
+      expect(response.json().siteId).toBe(TEST_SITE_ID);
+    });
+
+    it('should bootstrap device with unit association', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('manager');
+      mockBootstrapDevice.mockResolvedValue({
+        ...mockBootstrapResponse,
+        unitId: TEST_UNIT_ID,
+      });
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {
+          ...validBootstrapRequest,
+          unitId: TEST_UNIT_ID,
+        },
+      });
+
+      expect(response.statusCode).toBe(201);
+      expect(response.json().unitId).toBe(TEST_UNIT_ID);
+    });
+
+    it('should bootstrap device with custom frequency plan', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('manager');
+      mockBootstrapDevice.mockResolvedValue(mockBootstrapResponse);
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {
+          ...validBootstrapRequest,
+          frequencyPlanId: 'EU_863_870',
+        },
+      });
+
+      expect(response.statusCode).toBe(201);
+      expect(mockBootstrapDevice).toHaveBeenCalledWith(
+        TEST_ORG_ID,
+        expect.objectContaining({
+          frequencyPlanId: 'EU_863_870',
+        })
+      );
+    });
+
+    it('should return 403 for staff (below manager)', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('staff');
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: validBootstrapRequest,
+      });
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('should return 403 for viewer', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('viewer');
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: validBootstrapRequest,
+      });
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    it('should return 400 for missing name', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('manager');
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {
+          description: 'Missing name',
+        },
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('should return 400 for invalid deviceId format', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('manager');
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {
+          ...validBootstrapRequest,
+          deviceId: 'INVALID_ID!', // Invalid: uppercase and special chars
+        },
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('should return 400 when TTN is not configured', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('manager');
+      mockBootstrapDevice.mockRejectedValue(
+        new ttnDeviceService.TTNConfigError('TTN connection not configured for organization')
+      );
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: validBootstrapRequest,
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json().error.message).toContain('TTN connection not configured');
+    });
+
+    it('should return 400 when TTN provisioning fails', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('manager');
+      mockBootstrapDevice.mockRejectedValue(
+        new ttnDeviceService.TTNProvisioningError('Failed to provision device in TTN')
+      );
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: validBootstrapRequest,
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json().error.message).toContain('Failed to provision');
+    });
+
+    it('should return 400 when site does not belong to organization', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('manager');
+      mockBootstrapDevice.mockRejectedValue(
+        new ttnDeviceService.TTNProvisioningError('Site not found or does not belong to organization')
+      );
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: {
+          ...validBootstrapRequest,
+          siteId: 'd419185a-ccd5-4a1c-b1ac-8b4dfc6a01df',
+        },
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json().error.message).toContain('Site not found');
+    });
+
+    it('should allow admin to bootstrap device', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('admin');
+      mockBootstrapDevice.mockResolvedValue(mockBootstrapResponse);
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: validBootstrapRequest,
+      });
+
+      expect(response.statusCode).toBe(201);
+    });
+
+    it('should allow owner to bootstrap device', async () => {
+      mockValidAuth();
+      mockGetRole.mockResolvedValue('owner');
+      mockBootstrapDevice.mockResolvedValue(mockBootstrapResponse);
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: validBootstrapRequest,
+      });
+
+      expect(response.statusCode).toBe(201);
+    });
+
+    it('should return 401 without auth token', async () => {
+      const response = await app.inject({
+        method: 'POST',
+        url: `/api/orgs/${TEST_ORG_ID}/ttn/devices/bootstrap`,
+        payload: validBootstrapRequest,
+      });
+
+      expect(response.statusCode).toBe(401);
     });
   });
 });

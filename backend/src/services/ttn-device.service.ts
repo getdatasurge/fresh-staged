@@ -20,7 +20,9 @@ import {
   type TTNDevice,
   type TTNConfig,
 } from './ttn.service.js';
-import type { ProvisionTTNDeviceRequest, UpdateTTNDeviceRequest } from '../schemas/ttn-devices.js';
+import crypto from 'node:crypto';
+import type { ProvisionTTNDeviceRequest, UpdateTTNDeviceRequest, BootstrapTTNDeviceRequest } from '../schemas/ttn-devices.js';
+import { sites } from '../db/schema/hierarchy.js';
 
 // Combined device response for API
 export interface TTNDeviceWithLora {
@@ -36,6 +38,67 @@ export interface TTNDeviceWithLora {
   ttnSynced: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Bootstrap response includes credentials for device configuration
+export interface BootstrapDeviceResponse {
+  id: string;
+  deviceId: string;
+  devEui: string;
+  joinEui: string;
+  appKey: string;
+  name: string;
+  description: string | null;
+  unitId: string | null;
+  siteId: string | null;
+  status: 'active' | 'inactive' | 'pairing' | 'error';
+  ttnSynced: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Generate a cryptographically secure random hex string
+ */
+function generateHex(bytes: number): string {
+  return crypto.randomBytes(bytes).toString('hex').toUpperCase();
+}
+
+/**
+ * Generate a TTN-compatible device ID from a name
+ * Device IDs must be lowercase alphanumeric with hyphens, 3-36 chars
+ */
+function generateDeviceId(name: string): string {
+  // Convert to lowercase, replace spaces and underscores with hyphens
+  let deviceId = name
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  // Ensure minimum length of 3
+  if (deviceId.length < 3) {
+    deviceId = deviceId + '-' + generateHex(2).toLowerCase();
+  }
+
+  // Truncate to max 36 chars
+  if (deviceId.length > 36) {
+    deviceId = deviceId.substring(0, 36);
+  }
+
+  // Ensure it doesn't end with a hyphen after truncation
+  deviceId = deviceId.replace(/-$/, '');
+
+  // Add random suffix to ensure uniqueness
+  const suffix = '-' + generateHex(3).toLowerCase();
+  if (deviceId.length + suffix.length <= 36) {
+    deviceId = deviceId + suffix;
+  } else {
+    deviceId = deviceId.substring(0, 36 - suffix.length) + suffix;
+    deviceId = deviceId.replace(/--+/g, '-');
+  }
+
+  return deviceId;
 }
 
 /**
@@ -413,6 +476,115 @@ export async function deprovisionTTNDevice(
     .where(eq(devices.id, deviceId));
 
   return true;
+}
+
+/**
+ * Bootstrap a new device with auto-generated credentials
+ *
+ * This function:
+ * 1. Generates DevEUI, JoinEUI, and AppKey
+ * 2. Creates the device in TTN
+ * 3. Stores the device in the local database
+ * 4. Returns all credentials for device configuration
+ */
+export async function bootstrapTTNDevice(
+  organizationId: string,
+  data: BootstrapTTNDeviceRequest
+): Promise<BootstrapDeviceResponse> {
+  const ttnConfig = await getTTNConfigForOrg(organizationId);
+  if (!ttnConfig) {
+    throw new TTNConfigError('TTN connection not configured for organization');
+  }
+
+  // Validate site belongs to organization if provided
+  let validatedSiteId: string | null = null;
+  if (data.siteId) {
+    const [site] = await db
+      .select()
+      .from(sites)
+      .where(
+        and(
+          eq(sites.id, data.siteId),
+          eq(sites.organizationId, organizationId),
+          eq(sites.isActive, true)
+        )
+      )
+      .limit(1);
+
+    if (!site) {
+      throw new TTNProvisioningError('Site not found or does not belong to organization');
+    }
+    validatedSiteId = site.id;
+  }
+
+  // Generate credentials
+  const devEui = generateHex(8);   // 16 hex chars (8 bytes)
+  const joinEui = generateHex(8);  // 16 hex chars (8 bytes)
+  const appKey = generateHex(16);  // 32 hex chars (16 bytes)
+
+  // Generate or use provided device ID
+  const deviceId = data.deviceId || generateDeviceId(data.name);
+
+  const client = createTTNClient(ttnConfig);
+
+  // Provision in TTN first
+  try {
+    await client.provisionDevice({
+      deviceId,
+      devEui,
+      joinEui,
+      appKey,
+      name: data.name,
+      description: data.description,
+      frequencyPlanId: data.frequencyPlanId,
+      lorawanVersion: data.lorawanVersion,
+      lorawanPhyVersion: data.lorawanPhyVersion,
+    });
+  } catch (error) {
+    if (error instanceof TTNApiError) {
+      throw new TTNProvisioningError(`Failed to provision device in TTN: ${error.message}`);
+    }
+    throw error;
+  }
+
+  // Create local device record
+  const [device] = await db
+    .insert(devices)
+    .values({
+      deviceEui: devEui,
+      name: data.name,
+      deviceType: 'lora',
+      status: 'inactive', // Will become active on first uplink
+      unitId: data.unitId || null,
+    })
+    .returning();
+
+  // Create LoRa sensor configuration
+  await db.insert(loraSensors).values({
+    deviceId: device.id,
+    devEui,
+    appEui: joinEui,
+    joinEui,
+    appKey, // Store encrypted in production
+    networkServerId: ttnConfig.applicationId,
+    activationType: 'OTAA',
+  });
+
+  return {
+    id: device.id,
+    deviceId,
+    devEui,
+    joinEui,
+    appKey,
+    name: device.name!,
+    description: data.description || null,
+    unitId: device.unitId,
+    siteId: validatedSiteId,
+    status: device.status,
+    ttnSynced: true,
+    createdAt: device.createdAt,
+    updatedAt: device.updatedAt,
+  };
 }
 
 /**

@@ -115,10 +115,47 @@ export const TTNDeviceResponseSchema = z.object({
 // List response
 export const TTNDevicesListSchema = z.array(TTNDeviceResponseSchema);
 
+// Bootstrap device request - credentials are auto-generated
+export const BootstrapTTNDeviceSchema = z.object({
+  // Required: human-readable name for the device
+  name: z.string().min(1).max(256),
+  // Optional: description
+  description: z.string().max(2048).optional(),
+  // Optional: TTN device ID (auto-generated if not provided)
+  deviceId: TTNDeviceIdSchema.optional(),
+  // LoRaWAN configuration (defaults handled in service)
+  frequencyPlanId: FrequencyPlanIdSchema.optional(),
+  lorawanVersion: LoRaWANVersionSchema.optional(),
+  lorawanPhyVersion: LoRaWANPhyVersionSchema.optional(),
+  // Optional: associate with a unit
+  unitId: UuidSchema.optional(),
+  // Optional: associate with a site (for organization)
+  siteId: UuidSchema.optional(),
+});
+
+// Bootstrap response includes generated credentials
+export const BootstrapTTNDeviceResponseSchema = z.object({
+  id: UuidSchema,
+  deviceId: z.string(),
+  devEui: z.string(),
+  joinEui: z.string(),
+  appKey: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  unitId: UuidSchema.nullable(),
+  siteId: UuidSchema.nullable(),
+  status: z.enum(['active', 'inactive', 'pairing', 'error']),
+  ttnSynced: z.boolean(),
+  createdAt: TimestampSchema,
+  updatedAt: TimestampSchema,
+});
+
 // Type exports
 export type ProvisionTTNDeviceRequest = z.infer<typeof ProvisionTTNDeviceSchema>;
 export type UpdateTTNDeviceRequest = z.infer<typeof UpdateTTNDeviceSchema>;
 export type TTNDeviceResponse = z.infer<typeof TTNDeviceResponseSchema>;
+export type BootstrapTTNDeviceRequest = z.infer<typeof BootstrapTTNDeviceSchema>;
+export type BootstrapTTNDeviceResponse = z.infer<typeof BootstrapTTNDeviceResponseSchema>;
 export type FrequencyPlanId = z.infer<typeof FrequencyPlanIdSchema>;
 export type LoRaWANVersion = z.infer<typeof LoRaWANVersionSchema>;
 export type LoRaWANPhyVersion = z.infer<typeof LoRaWANPhyVersionSchema>;

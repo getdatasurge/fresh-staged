@@ -9,6 +9,8 @@ import {
   ProvisionTTNDeviceSchema,
   UpdateTTNDeviceSchema,
   TTNDeviceParamsSchema,
+  BootstrapTTNDeviceSchema,
+  BootstrapTTNDeviceResponseSchema,
 } from '../schemas/ttn-devices.js';
 import { OrgParamsSchema, ErrorResponseSchema } from '../schemas/common.js';
 
@@ -53,6 +55,35 @@ export default async function ttnDeviceRoutes(fastify: FastifyInstance) {
       return device;
     } catch (error) {
       // Check by name to work with mocked error classes in tests
+      if (error instanceof Error &&
+          (error.name === 'TTNConfigError' || error.name === 'TTNProvisioningError')) {
+        return validationError(reply, error.message);
+      }
+      throw error;
+    }
+  });
+
+  // POST /api/orgs/:organizationId/ttn/devices/bootstrap - Bootstrap a new device with auto-generated credentials
+  app.post('/bootstrap', {
+    preHandler: [requireAuth, requireOrgContext, requireRole('manager')],
+    schema: {
+      params: OrgParamsSchema,
+      body: BootstrapTTNDeviceSchema,
+      response: {
+        201: BootstrapTTNDeviceResponseSchema,
+        404: ErrorResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
+    try {
+      const device = await ttnDeviceService.bootstrapTTNDevice(
+        request.user!.organizationId!,
+        request.body
+      );
+
+      reply.code(201);
+      return device;
+    } catch (error) {
       if (error instanceof Error &&
           (error.name === 'TTNConfigError' || error.name === 'TTNProvisioningError')) {
         return validationError(reply, error.message);
