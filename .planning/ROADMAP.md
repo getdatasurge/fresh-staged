@@ -117,12 +117,12 @@ Plans:
 **Plans:** 6 plans
 
 Plans:
-- [ ] 18-01-PLAN.md — stripeEvents table and meter job types
-- [ ] 18-02-PLAN.md — StripeMeterService and webhook idempotency
-- [ ] 18-03-PLAN.md — Subscription enforcement middleware
-- [ ] 18-04-PLAN.md — Meter reporting processor and ingestion integration
-- [ ] 18-05-PLAN.md — Worker registration and sensor count scheduler
-- [ ] 18-06-PLAN.md — Integration tests and E2E verification
+- [x] 18-01-PLAN.md — stripeEvents table and meter job types
+- [x] 18-02-PLAN.md — StripeMeterService and webhook idempotency
+- [x] 18-03-PLAN.md — Subscription enforcement middleware
+- [x] 18-04-PLAN.md — Meter reporting processor and ingestion integration
+- [x] 18-05-PLAN.md — Worker registration and sensor count scheduler
+- [x] 18-06-PLAN.md — Integration tests and E2E verification
 
 **Success Criteria:**
 1. Stripe checkout flow creates subscriptions
@@ -252,7 +252,7 @@ Plans:
 | 15. Background Jobs Infrastructure | v2.0 | 4/4 | Complete | 2026-01-24 |
 | 16. SMS Notifications | v2.0 | 3/3 | Complete | 2026-01-24 |
 | 17. Email Digests | v2.0 | 3/3 | Complete | 2026-01-24 |
-| 18. Stripe Billing | v2.0 | 0/6 | Planned | - |
+| 18. Stripe Billing | v2.0 | 6/6 | Complete | 2026-01-24 |
 | 19. Backend API Migration - Foundation | v2.0 | 0/? | Not Started | - |
 | 20. Backend API Migration - Core | v2.0 | 0/? | Not Started | - |
 | 21. Backend API Migration - Completion | v2.0 | 0/? | Not Started | - |
@@ -260,4 +260,4 @@ Plans:
 
 ---
 
-*v2.0 milestone active — 9 phases defined, Phases 14-17 complete, Phase 18 planned and ready for execution*
+*v2.0 milestone active — 9 phases defined, Phases 14-18 complete, Phase 19 next*
