@@ -49,6 +49,27 @@ async function registerIngestRoutes(app: FastifyInstance) {
           organizationId
         );
 
+        // Add readings to real-time streaming service
+        // Convert result.readingIds (which is in the same order as result)
+        // to map to the original readings for streaming
+        for (let i = 0; i < readings.length && i < result.readingIds.length; i++) {
+          const reading = readings[i];
+          const readingId = result.readingIds[i];
+
+          // Convert to SensorReading format for streaming
+          request.server.sensorStreamService.addReading(organizationId, {
+            id: readingId,
+            unitId: reading.unitId,
+            deviceId: reading.deviceId || null,
+            temperature: reading.temperature,
+            humidity: reading.humidity ?? null,
+            battery: reading.battery ?? null,
+            signalStrength: reading.signalStrength ?? null,
+            recordedAt: new Date(reading.recordedAt),
+            source: reading.source,
+          });
+        }
+
         // Evaluate alerts for each unique unit
         const uniqueUnitIds = [...new Set(readings.map((r) => r.unitId))];
         let alertsTriggered = 0;
