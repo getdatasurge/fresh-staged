@@ -1,11 +1,18 @@
 #!/bin/bash
 
 # Setup TTN Secrets for Production
-# This script sets the TTN credentials as Supabase secrets for the production environment.
+# This script helps set TTN credentials as Supabase secrets for production.
+#
+# SECURITY: Never commit actual API keys to this file!
+# Set credentials via environment variables or pass as arguments.
 #
 # Usage:
-#   chmod +x scripts/setup-ttn-secrets.sh
+#   export TTN_USER_ID="your-user-id"
+#   export TTN_ADMIN_API_KEY="NNSXS.your-key-here"
 #   ./scripts/setup-ttn-secrets.sh
+#
+# Or with arguments:
+#   ./scripts/setup-ttn-secrets.sh --user-id=frostguard --api-key=NNSXS.xxx
 
 set -e
 
@@ -25,9 +32,51 @@ if ! command -v supabase &> /dev/null; then
     exit 1
 fi
 
-# TTN credentials
-TTN_USER_ID="frostguard"
-TTN_ADMIN_API_KEY="NNSXS.BMG4N2AJ43HN4YVPZ6DLQAPHVHUZBVPTOB37JFQ.FHBMPAB26Q2XM4QVBE4GBQ772NBIYP5MGOKCBBOM5NTCCMCJZRWQ"
+# Parse command line arguments
+for arg in "$@"; do
+    case $arg in
+        --user-id=*)
+            TTN_USER_ID="${arg#*=}"
+            shift
+            ;;
+        --api-key=*)
+            TTN_ADMIN_API_KEY="${arg#*=}"
+            shift
+            ;;
+    esac
+done
+
+# Validate required environment variables
+if [ -z "$TTN_USER_ID" ]; then
+    echo "❌ Error: TTN_USER_ID is not set."
+    echo ""
+    echo "Set it via environment variable:"
+    echo "  export TTN_USER_ID='your-ttn-user-id'"
+    echo ""
+    echo "Or pass as argument:"
+    echo "  ./scripts/setup-ttn-secrets.sh --user-id=your-user-id --api-key=NNSXS.xxx"
+    echo ""
+    exit 1
+fi
+
+if [ -z "$TTN_ADMIN_API_KEY" ]; then
+    echo "❌ Error: TTN_ADMIN_API_KEY is not set."
+    echo ""
+    echo "Set it via environment variable:"
+    echo "  export TTN_ADMIN_API_KEY='NNSXS.your-key-here'"
+    echo ""
+    echo "Or pass as argument:"
+    echo "  ./scripts/setup-ttn-secrets.sh --user-id=your-user-id --api-key=NNSXS.xxx"
+    echo ""
+    exit 1
+fi
+
+# Validate API key format
+if [[ ! "$TTN_ADMIN_API_KEY" =~ ^NNSXS\. ]]; then
+    echo "⚠️  Warning: TTN_ADMIN_API_KEY doesn't start with 'NNSXS.'"
+    echo "   TTN API keys typically start with 'NNSXS.'"
+    echo ""
+fi
 
 echo "📝 Setting TTN_USER_ID..."
 supabase secrets set TTN_USER_ID="$TTN_USER_ID"
@@ -40,7 +89,7 @@ echo "✅ TTN secrets configured successfully!"
 echo ""
 echo "📊 Verifying configuration..."
 echo "You can verify the edge function is ready by running:"
-echo "  curl https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/ttn-provision-org"
+echo "  curl https://your-project.supabase.co/functions/v1/ttn-provision-org"
 echo ""
 echo "Look for: \"ready\": true"
 echo ""

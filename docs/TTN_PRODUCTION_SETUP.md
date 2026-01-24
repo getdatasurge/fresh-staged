@@ -4,15 +4,34 @@ Your TTN credentials are configured for local development in `supabase/.env.loca
 
 ## Your TTN Credentials
 
-- **TTN User ID**: `frostguard`
-- **TTN Admin API Key**: `NNSXS.BMG4N2AJ43HN4YVPZ6DLQAPHVHUZBVPTOB37JFQ.FHBMPAB26Q2XM4QVBE4GBQ772NBIYP5MGOKCBBOM5NTCCMCJZRWQ`
+Obtain your TTN credentials from The Things Stack Console:
+
+1. Log in to [The Things Stack Console](https://console.cloud.thethings.network/)
+2. Navigate to your organization or application
+3. Go to **API Keys** and create a new key with required permissions
+4. Note your **User ID** and **API Key**
+
+**Credential format:**
+- **TTN User ID**: Your organization/user name (e.g., `frostguard`)
+- **TTN Admin API Key**: Starts with `NNSXS.` followed by encoded credentials
 
 ## Option 1: Using the Setup Script (Recommended)
 
 If you have the Supabase CLI installed:
 
 ```bash
+# Set credentials via environment variables
+export TTN_USER_ID="your-ttn-user-id"
+export TTN_ADMIN_API_KEY="NNSXS.your-api-key-here"
+
+# Run the setup script
 ./scripts/setup-ttn-secrets.sh
+```
+
+Or pass credentials as arguments:
+
+```bash
+./scripts/setup-ttn-secrets.sh --user-id=your-user-id --api-key=NNSXS.your-key
 ```
 
 This will automatically set both secrets in your Supabase project.
@@ -21,26 +40,26 @@ This will automatically set both secrets in your Supabase project.
 
 ```bash
 # Set TTN User ID
-supabase secrets set TTN_USER_ID="frostguard"
+supabase secrets set TTN_USER_ID="your-ttn-user-id"
 
 # Set TTN Admin API Key
-supabase secrets set TTN_ADMIN_API_KEY="NNSXS.BMG4N2AJ43HN4YVPZ6DLQAPHVHUZBVPTOB37JFQ.FHBMPAB26Q2XM4QVBE4GBQ772NBIYP5MGOKCBBOM5NTCCMCJZRWQ"
+supabase secrets set TTN_ADMIN_API_KEY="NNSXS.your-api-key-here"
 ```
 
 ## Option 3: Using Supabase Dashboard (If CLI is not available)
 
 1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
-2. Select your project: **mfwyiifehsvwnjwqoxht**
+2. Select your project
 3. Navigate to **Project Settings** → **Edge Functions** → **Manage secrets**
 4. Click **Add new secret** and add:
 
    **Secret 1:**
    - Name: `TTN_USER_ID`
-   - Value: `frostguard`
+   - Value: Your TTN user/organization ID
 
    **Secret 2:**
    - Name: `TTN_ADMIN_API_KEY`
-   - Value: `NNSXS.BMG4N2AJ43HN4YVPZ6DLQAPHVHUZBVPTOB37JFQ.FHBMPAB26Q2XM4QVBE4GBQ772NBIYP5MGOKCBBOM5NTCCMCJZRWQ`
+   - Value: Your TTN API key (starts with `NNSXS.`)
 
 5. Click **Save** for each secret
 
@@ -49,7 +68,7 @@ supabase secrets set TTN_ADMIN_API_KEY="NNSXS.BMG4N2AJ43HN4YVPZ6DLQAPHVHUZBVPTOB
 After setting the secrets, verify they're working:
 
 ```bash
-curl https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/ttn-provision-org
+curl https://your-project.supabase.co/functions/v1/ttn-provision-org
 ```
 
 You should see a response like:
@@ -69,11 +88,14 @@ You should see a response like:
 
 ## Security Note
 
-⚠️ **Keep these credentials secure!**
+**Keep these credentials secure!**
 
-- Never commit `.env.local` to git (it's already in `.gitignore`)
+- Never commit API keys to version control
+- Never share `.env.local` files
 - The TTN Admin API Key has platform-level access to create/delete applications
-- Only share these credentials with trusted administrators
+- Only share credentials with trusted administrators
+- Rotate API keys periodically
+- Use separate keys for development and production
 
 ## Next Steps
 
