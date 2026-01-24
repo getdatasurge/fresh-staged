@@ -19,6 +19,7 @@ import readingsRoutes from './routes/readings.js';
 import alertRoutes from './routes/alerts.js';
 import ttnDeviceRoutes from './routes/ttn-devices.js';
 import ttnGatewayRoutes from './routes/ttn-gateways.js';
+import ttnWebhookRoutes from './routes/ttn-webhooks.js';
 import { adminRoutes } from './routes/admin.js';
 
 export interface AppOptions {
@@ -85,6 +86,9 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
 
   // Register TTN gateway routes
   app.register(ttnGatewayRoutes, { prefix: '/api/orgs/:organizationId/ttn/gateways' });
+
+  // Register TTN webhook routes (receives uplink messages from TTN)
+  app.register(ttnWebhookRoutes, { prefix: '/api/webhooks/ttn' });
 
   // Register admin routes (includes Bull Board dashboard and health checks)
   app.register(adminRoutes, { prefix: '/api/admin' });
