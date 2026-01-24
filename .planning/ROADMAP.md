@@ -51,6 +51,13 @@ Plans:
 **Goal:** BullMQ job queue with worker containers and monitoring dashboard
 **Depends on:** Phase 13
 **Requirements:** BG-01, BG-02, BG-06
+**Plans:** 4 plans
+
+Plans:
+- [ ] 15-01-PLAN.md — BullMQ core setup (plugin + service + types)
+- [ ] 15-02-PLAN.md — Worker container entry point and Dockerfile
+- [ ] 15-03-PLAN.md — Bull Board dashboard with authentication
+- [ ] 15-04-PLAN.md — E2E verification and integration tests
 
 **Success Criteria:**
 1. BullMQ integrated with Fastify backend
@@ -218,7 +225,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 14. Real-Time Foundation | v2.0 | 0/6 | Planned | - |
+| 14. Real-Time Foundation | v2.0 | 6/6 | Complete | 2026-01-24 |
 | 15. Background Jobs Infrastructure | v2.0 | 0/? | Not Started | - |
 | 16. SMS Notifications | v2.0 | 0/? | Not Started | - |
 | 17. Email Digests | v2.0 | 0/? | Not Started | - |
