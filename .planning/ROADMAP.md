@@ -89,15 +89,23 @@ Plans:
 
 #### Phase 17: Email Digests
 
-**Goal:** Scheduled email digest generation via BullMQ job schedulers
+**Goal:** User-configurable digest scheduling with site filtering and grouped alert display
 **Depends on:** Phase 15
 **Requirements:** BG-05
+**Plans:** 3 plans
+
+Plans:
+- [ ] 17-01-PLAN.md — Schema & scheduler enhancement (digestDailyTime, digestSiteIds, user-configurable schedule)
+- [ ] 17-02-PLAN.md — Grouped digest data & templates (site/unit hierarchy, plain text support)
+- [ ] 17-03-PLAN.md — Unsubscribe & API integration (JWT tokens, /unsubscribe endpoint, processor updates)
 
 **Success Criteria:**
-1. Job schedulers configured with cron patterns
-2. Daily/weekly digest jobs running
-3. Timezone-aware scheduling working
-4. Email templates rendered and delivered
+1. Job schedulers use user-configurable daily time (not hardcoded 9 AM)
+2. Daily/weekly digest jobs running with timezone-aware scheduling
+3. Alerts grouped by site then unit in email templates
+4. Site filtering based on user preferences
+5. One-click unsubscribe with secure JWT tokens
+6. Plain text email fallback for deliverability
 
 ---
 
@@ -234,7 +242,7 @@ Plans:
 | 14. Real-Time Foundation | v2.0 | 6/6 | Complete | 2026-01-24 |
 | 15. Background Jobs Infrastructure | v2.0 | 4/4 | Complete | 2026-01-24 |
 | 16. SMS Notifications | v2.0 | 3/3 | Complete | 2026-01-24 |
-| 17. Email Digests | v2.0 | 0/? | Not Started | - |
+| 17. Email Digests | v2.0 | 0/3 | Planned | - |
 | 18. Stripe Billing | v2.0 | 0/? | Not Started | - |
 | 19. Backend API Migration - Foundation | v2.0 | 0/? | Not Started | - |
 | 20. Backend API Migration - Core | v2.0 | 0/? | Not Started | - |
@@ -243,4 +251,4 @@ Plans:
 
 ---
 
-*v2.0 milestone active — 9 phases defined, Phases 14-16 complete*
+*v2.0 milestone active — 9 phases defined, Phases 14-16 complete, Phase 17 planned*
