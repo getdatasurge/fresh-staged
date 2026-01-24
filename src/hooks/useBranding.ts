@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useUser } from "@stackframe/react";
 import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { organizationsApi } from "@/lib/api";
-import { qk } from "@/lib/queryKeys";
+import { useTRPC } from "@/lib/trpc";
 
 export interface OrgBranding {
   name: string;
@@ -15,39 +13,33 @@ const DEFAULT_ACCENT = "#0097a7";
 /**
  * Hook to fetch organization branding settings
  * Uses effectiveOrgId to support impersonation
+ *
+ * Migrated to tRPC - uses organizations.get procedure via queryOptions pattern
  */
 export function useBranding() {
   const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
-  const user = useUser();
+  const trpc = useTRPC();
 
-  const { data: branding, isLoading: loading } = useQuery({
-    queryKey: qk.org(effectiveOrgId).branding(),
-    queryFn: async () => {
-      if (!effectiveOrgId) return null;
-      if (!user) return null;
+  // Use tRPC's queryOptions pattern for TanStack Query integration
+  const queryOptions = trpc.organizations.get.queryOptions(
+    { organizationId: effectiveOrgId! },
+    {
+      enabled: isInitialized && !!effectiveOrgId,
+      staleTime: 1000 * 60 * 5, // 5 min cache for branding
+    }
+  );
 
-      // Get access token from Stack Auth
-      const { accessToken } = await user.getAuthJson();
+  const { data: org, isLoading: loading } = useQuery(queryOptions);
 
-      // Fetch organization via new API
-      const org = await organizationsApi.getOrganization(effectiveOrgId, accessToken);
-
-      const brandingData: OrgBranding = {
+  // Derive branding from organization data
+  const branding: OrgBranding | null = org
+    ? {
         name: org.name,
         logoUrl: org.logoUrl ?? null,
-        accentColor: org.accentColor || DEFAULT_ACCENT,
-      };
-
-      // Apply accent color as CSS variable if different from default
-      if (org.accentColor && org.accentColor !== DEFAULT_ACCENT) {
-        applyAccentColor(org.accentColor);
+        // Organization schema doesn't have accentColor - use default
+        accentColor: DEFAULT_ACCENT,
       }
-
-      return brandingData;
-    },
-    enabled: isInitialized && !!effectiveOrgId && !!user,
-    staleTime: 1000 * 60 * 5, // 5 min cache for branding
-  });
+    : null;
 
   return { branding, loading };
 }
