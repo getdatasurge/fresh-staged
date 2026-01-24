@@ -6,6 +6,8 @@ import {
   validatorCompiler,
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod';
+import { getFastifyLoggerConfig } from './utils/logger.js';
+import errorHandlerPlugin from './plugins/error-handler.plugin.js';
 import authPlugin from './plugins/auth.plugin.js';
 import socketPlugin from './plugins/socket.plugin.js';
 import queuePlugin from './plugins/queue.plugin.js';
@@ -37,8 +39,14 @@ export interface AppOptions {
 }
 
 export function buildApp(opts: AppOptions = {}): FastifyInstance {
+  // Use structured JSON logging configuration
+  const loggerConfig = opts.logger ? getFastifyLoggerConfig() : false;
+
   const app = Fastify({
-    logger: opts.logger ?? false,
+    logger: loggerConfig,
+    // Add request ID header to responses for correlation
+    requestIdHeader: 'x-request-id',
+    requestIdLogLabel: 'requestId',
   });
 
   // Enable CORS for frontend
@@ -67,6 +75,9 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
   // Configure Zod validation and serialization
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
+
+  // Register global error handler (includes Sentry integration if configured)
+  app.register(errorHandlerPlugin);
 
   // Register Socket.io plugin (must be registered before routes)
   app.register(socketPlugin, {

@@ -255,6 +255,43 @@ export class QueueService {
   }
 
   /**
+   * Alias for isRedisEnabled - used by health checks
+   *
+   * @returns True if queue service is enabled (Redis connected)
+   */
+  isEnabled(): boolean {
+    return this.redisEnabled;
+  }
+
+  /**
+   * Health check for Redis connectivity
+   *
+   * Performs a ping to Redis and measures latency.
+   * Used by health check endpoints for monitoring.
+   *
+   * @returns Health check result with ok status and latency in milliseconds
+   */
+  async healthCheck(): Promise<{ ok: boolean; latencyMs: number }> {
+    if (!this.connection || !this.redisEnabled) {
+      return { ok: false, latencyMs: 0 };
+    }
+
+    const start = Date.now();
+    try {
+      await this.connection.ping();
+      return {
+        ok: true,
+        latencyMs: Date.now() - start,
+      };
+    } catch {
+      return {
+        ok: false,
+        latencyMs: Date.now() - start,
+      };
+    }
+  }
+
+  /**
    * Gracefully shutdown queues and Redis connection
    *
    * Called during application shutdown to:
