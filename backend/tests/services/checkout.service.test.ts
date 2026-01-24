@@ -1,16 +1,17 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // Mock Stripe before importing the service
+const mockSessionCreate = vi.fn();
 vi.mock('stripe', () => {
-  const mockCreate = vi.fn();
   return {
-    default: vi.fn(() => ({
-      checkout: {
+    default: class MockStripe {
+      checkout = {
         sessions: {
-          create: mockCreate,
+          create: mockSessionCreate,
         },
-      },
-    })),
+      };
+      constructor() {}
+    },
   };
 });
 
@@ -32,15 +33,12 @@ vi.mock('drizzle-orm', () => ({
   eq: vi.fn((col, val) => ({ col, val })),
 }));
 
-import Stripe from 'stripe';
 import { db } from '../../src/db/client.js';
 import {
   createCheckoutSession,
   StripeConfigError,
   CheckoutError,
 } from '../../src/services/checkout.service.js';
-
-const mockStripeSessionCreate = vi.mocked(Stripe).mock.results[0]?.value?.checkout.sessions.create;
 
 describe('Checkout Service', () => {
   const TEST_ORG_ID = 'bfc91766-90f0-4caf-b428-06cdcc49866a';
@@ -63,16 +61,6 @@ describe('Checkout Service', () => {
     // Set up environment
     process.env.STRIPE_SECRET_KEY = 'sk_test_123';
     process.env.FRONTEND_URL = 'http://localhost:5173';
-
-    // Mock Stripe class and session create
-    const mockCreate = vi.fn();
-    vi.mocked(Stripe).mockImplementation(() => ({
-      checkout: {
-        sessions: {
-          create: mockCreate,
-        },
-      },
-    }) as unknown as Stripe);
   });
 
   afterEach(() => {
@@ -80,28 +68,23 @@ describe('Checkout Service', () => {
     delete process.env.FRONTEND_URL;
   });
 
+  // Helper to set up org lookup mock
+  function mockOrgLookup(org: typeof mockOrg | null) {
+    const mockLimit = vi.fn().mockResolvedValue(org ? [org] : []);
+    const mockWhere = vi.fn(() => ({ limit: mockLimit }));
+    const mockFrom = vi.fn(() => ({ where: mockWhere }));
+    vi.mocked(db.select).mockReturnValue({ from: mockFrom } as ReturnType<typeof db.select>);
+  }
+
   describe('createCheckoutSession', () => {
     it('should create checkout session for starter plan', async () => {
-      // Mock org lookup
-      const mockLimit = vi.fn().mockResolvedValue([mockOrg]);
-      const mockWhere = vi.fn(() => ({ limit: mockLimit }));
-      const mockFrom = vi.fn(() => ({ where: mockWhere }));
-      vi.mocked(db.select).mockReturnValue({ from: mockFrom } as ReturnType<typeof db.select>);
+      mockOrgLookup(mockOrg);
 
-      // Mock Stripe session creation
       const mockSession = {
         id: 'cs_test_123',
         url: 'https://checkout.stripe.com/pay/cs_test_123',
       };
-
-      const mockCreate = vi.fn().mockResolvedValue(mockSession);
-      vi.mocked(Stripe).mockImplementation(() => ({
-        checkout: {
-          sessions: {
-            create: mockCreate,
-          },
-        },
-      }) as unknown as Stripe);
+      mockSessionCreate.mockResolvedValue(mockSession);
 
       const result = await createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, {
         plan: 'starter',
@@ -112,7 +95,7 @@ describe('Checkout Service', () => {
         url: 'https://checkout.stripe.com/pay/cs_test_123',
       });
 
-      expect(mockCreate).toHaveBeenCalledWith(
+      expect(mockSessionCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           mode: 'subscription',
           payment_method_types: ['card'],
@@ -134,31 +117,20 @@ describe('Checkout Service', () => {
     });
 
     it('should create checkout session for pro plan', async () => {
-      const mockLimit = vi.fn().mockResolvedValue([mockOrg]);
-      const mockWhere = vi.fn(() => ({ limit: mockLimit }));
-      const mockFrom = vi.fn(() => ({ where: mockWhere }));
-      vi.mocked(db.select).mockReturnValue({ from: mockFrom } as ReturnType<typeof db.select>);
+      mockOrgLookup(mockOrg);
 
       const mockSession = {
         id: 'cs_test_456',
         url: 'https://checkout.stripe.com/pay/cs_test_456',
       };
-
-      const mockCreate = vi.fn().mockResolvedValue(mockSession);
-      vi.mocked(Stripe).mockImplementation(() => ({
-        checkout: {
-          sessions: {
-            create: mockCreate,
-          },
-        },
-      }) as unknown as Stripe);
+      mockSessionCreate.mockResolvedValue(mockSession);
 
       const result = await createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, {
         plan: 'pro',
       });
 
       expect(result.sessionId).toBe('cs_test_456');
-      expect(mockCreate).toHaveBeenCalledWith(
+      expect(mockSessionCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           line_items: [
             expect.objectContaining({
@@ -173,31 +145,20 @@ describe('Checkout Service', () => {
     });
 
     it('should create checkout session for haccp plan', async () => {
-      const mockLimit = vi.fn().mockResolvedValue([mockOrg]);
-      const mockWhere = vi.fn(() => ({ limit: mockLimit }));
-      const mockFrom = vi.fn(() => ({ where: mockWhere }));
-      vi.mocked(db.select).mockReturnValue({ from: mockFrom } as ReturnType<typeof db.select>);
+      mockOrgLookup(mockOrg);
 
       const mockSession = {
         id: 'cs_test_789',
         url: 'https://checkout.stripe.com/pay/cs_test_789',
       };
-
-      const mockCreate = vi.fn().mockResolvedValue(mockSession);
-      vi.mocked(Stripe).mockImplementation(() => ({
-        checkout: {
-          sessions: {
-            create: mockCreate,
-          },
-        },
-      }) as unknown as Stripe);
+      mockSessionCreate.mockResolvedValue(mockSession);
 
       const result = await createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, {
         plan: 'haccp',
       });
 
       expect(result.sessionId).toBe('cs_test_789');
-      expect(mockCreate).toHaveBeenCalledWith(
+      expect(mockSessionCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           line_items: [
             expect.objectContaining({
@@ -212,24 +173,13 @@ describe('Checkout Service', () => {
     });
 
     it('should use custom success and cancel URLs when provided', async () => {
-      const mockLimit = vi.fn().mockResolvedValue([mockOrg]);
-      const mockWhere = vi.fn(() => ({ limit: mockLimit }));
-      const mockFrom = vi.fn(() => ({ where: mockWhere }));
-      vi.mocked(db.select).mockReturnValue({ from: mockFrom } as ReturnType<typeof db.select>);
+      mockOrgLookup(mockOrg);
 
       const mockSession = {
         id: 'cs_test_custom',
         url: 'https://checkout.stripe.com/pay/cs_test_custom',
       };
-
-      const mockCreate = vi.fn().mockResolvedValue(mockSession);
-      vi.mocked(Stripe).mockImplementation(() => ({
-        checkout: {
-          sessions: {
-            create: mockCreate,
-          },
-        },
-      }) as unknown as Stripe);
+      mockSessionCreate.mockResolvedValue(mockSession);
 
       const customSuccessUrl = 'https://example.com/success';
       const customCancelUrl = 'https://example.com/cancel';
@@ -240,7 +190,7 @@ describe('Checkout Service', () => {
         cancelUrl: customCancelUrl,
       });
 
-      expect(mockCreate).toHaveBeenCalledWith(
+      expect(mockSessionCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           success_url: customSuccessUrl,
           cancel_url: customCancelUrl,
@@ -249,10 +199,7 @@ describe('Checkout Service', () => {
     });
 
     it('should throw CheckoutError when organization not found', async () => {
-      const mockLimit = vi.fn().mockResolvedValue([]);
-      const mockWhere = vi.fn(() => ({ limit: mockLimit }));
-      const mockFrom = vi.fn(() => ({ where: mockWhere }));
-      vi.mocked(db.select).mockReturnValue({ from: mockFrom } as ReturnType<typeof db.select>);
+      mockOrgLookup(null);
 
       await expect(
         createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' })
@@ -264,25 +211,14 @@ describe('Checkout Service', () => {
     });
 
     it('should throw CheckoutError when Stripe returns no URL', async () => {
-      const mockLimit = vi.fn().mockResolvedValue([mockOrg]);
-      const mockWhere = vi.fn(() => ({ limit: mockLimit }));
-      const mockFrom = vi.fn(() => ({ where: mockWhere }));
-      vi.mocked(db.select).mockReturnValue({ from: mockFrom } as ReturnType<typeof db.select>);
+      mockOrgLookup(mockOrg);
 
       // Return session without URL
       const mockSession = {
         id: 'cs_test_no_url',
         url: null,
       };
-
-      const mockCreate = vi.fn().mockResolvedValue(mockSession);
-      vi.mocked(Stripe).mockImplementation(() => ({
-        checkout: {
-          sessions: {
-            create: mockCreate,
-          },
-        },
-      }) as unknown as Stripe);
+      mockSessionCreate.mockResolvedValue(mockSession);
 
       await expect(
         createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' })
@@ -295,11 +231,7 @@ describe('Checkout Service', () => {
 
     it('should throw StripeConfigError when STRIPE_SECRET_KEY is not set', async () => {
       delete process.env.STRIPE_SECRET_KEY;
-
-      const mockLimit = vi.fn().mockResolvedValue([mockOrg]);
-      const mockWhere = vi.fn(() => ({ limit: mockLimit }));
-      const mockFrom = vi.fn(() => ({ where: mockWhere }));
-      vi.mocked(db.select).mockReturnValue({ from: mockFrom } as ReturnType<typeof db.select>);
+      mockOrgLookup(mockOrg);
 
       await expect(
         createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' })
@@ -311,28 +243,17 @@ describe('Checkout Service', () => {
     });
 
     it('should include subscription metadata with organization and plan', async () => {
-      const mockLimit = vi.fn().mockResolvedValue([mockOrg]);
-      const mockWhere = vi.fn(() => ({ limit: mockLimit }));
-      const mockFrom = vi.fn(() => ({ where: mockWhere }));
-      vi.mocked(db.select).mockReturnValue({ from: mockFrom } as ReturnType<typeof db.select>);
+      mockOrgLookup(mockOrg);
 
       const mockSession = {
         id: 'cs_test_meta',
         url: 'https://checkout.stripe.com/pay/cs_test_meta',
       };
-
-      const mockCreate = vi.fn().mockResolvedValue(mockSession);
-      vi.mocked(Stripe).mockImplementation(() => ({
-        checkout: {
-          sessions: {
-            create: mockCreate,
-          },
-        },
-      }) as unknown as Stripe);
+      mockSessionCreate.mockResolvedValue(mockSession);
 
       await createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'pro' });
 
-      expect(mockCreate).toHaveBeenCalledWith(
+      expect(mockSessionCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           subscription_data: {
             metadata: {

@@ -260,8 +260,11 @@ export function inferPayloadType(payload: Record<string, unknown> | null | undef
                   (schema.requiredFields.length * 2 + schema.optionalFields.length);
     
     candidates.push({ type, score, matchedFields });
-    
-    if (score > bestScore) {
+
+    // Use score as primary, matched field count as tiebreaker
+    // This prefers schemas that match more of the payload's fields
+    if (score > bestScore ||
+        (score === bestScore && matchedFields.length > bestMatchedFields.length)) {
       bestScore = score;
       bestMatch = type;
       bestMatchedFields = matchedFields;
@@ -284,10 +287,13 @@ export function inferPayloadType(payload: Record<string, unknown> | null | undef
     };
   }
 
-  // Check for ambiguity - multiple schemas with similar scores
+  // Check for ambiguity - multiple schemas with similar scores AND similar field counts
+  // A schema that matches more fields is clearly a better match, even with same score
   const threshold = 0.1;
   const alternates = candidates
-    .filter(c => c.type !== bestMatch && Math.abs(c.score - bestScore) < threshold)
+    .filter(c => c.type !== bestMatch &&
+                 Math.abs(c.score - bestScore) < threshold &&
+                 c.matchedFields.length >= bestMatchedFields.length)
     .map(c => ({ type: c.type, score: c.score }));
 
   const isAmbiguous = alternates.length > 0;

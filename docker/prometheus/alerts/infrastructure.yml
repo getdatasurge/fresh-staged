@@ -1,0 +1,131 @@
+# Infrastructure Monitoring Alert Rules
+# Covers basic service health, resource usage, and availability
+
+groups:
+  - name: service_health
+    rules:
+      # Critical: Service is down
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute."
+
+      # Warning: High CPU usage on host
+      - alert: HighCPUUsage
+        expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for more than 5 minutes. Current value: {{ $value | printf \"%.2f\" }}%"
+
+      # Critical: Very high CPU usage
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical CPU usage detected"
+          description: "CPU usage is above 95% for more than 2 minutes. Current value: {{ $value | printf \"%.2f\" }}%"
+
+      # Warning: High memory usage
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85% for more than 5 minutes. Current value: {{ $value | printf \"%.2f\" }}%"
+
+      # Critical: Very high memory usage
+      - alert: CriticalMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Memory usage is above 95% for more than 2 minutes. System may become unstable."
+
+      # Warning: Disk space running low
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 20
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk space is running low"
+          description: "Root filesystem has less than 20% free space. Current available: {{ $value | printf \"%.2f\" }}%"
+
+      # Critical: Disk space critically low
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space is critically low"
+          description: "Root filesystem has less than 10% free space. Immediate action required."
+
+  - name: backend_health
+    rules:
+      # Warning: Backend health check failing
+      - alert: BackendHealthCheckFailing
+        expr: probe_success{job="backend"} == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backend health check is failing"
+          description: "Backend service health check has been failing for more than 2 minutes."
+
+      # Critical: Backend is completely unreachable
+      - alert: BackendUnreachable
+        expr: up{job="backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend service is unreachable"
+          description: "Backend service is not responding to Prometheus scrapes for more than 1 minute."
+
+  - name: caddy_health
+    rules:
+      # Warning: Caddy reverse proxy down
+      - alert: CaddyDown
+        expr: up{job="caddy"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Caddy reverse proxy is down"
+          description: "Caddy is not responding. All external traffic is blocked."
+
+  - name: observability_health
+    rules:
+      # Warning: Prometheus storage filling up
+      - alert: PrometheusStorageFilling
+        expr: predict_linear(prometheus_tsdb_storage_blocks_bytes[6h], 24*60*60) > prometheus_tsdb_storage_blocks_bytes * 2
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus storage growing rapidly"
+          description: "Prometheus storage is predicted to double within 24 hours. Consider increasing retention or disk space."
+
+      # Warning: Loki not receiving logs
+      - alert: LokiNotReceivingLogs
+        expr: sum(rate(loki_ingester_chunks_created_total[5m])) == 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Loki is not receiving logs"
+          description: "No new log chunks have been created in the last 15 minutes. Check Promtail or log drivers."

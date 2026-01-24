@@ -8,6 +8,20 @@
       "when": 1769180026166,
       "tag": "0000_polite_gunslinger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1769266500000,
+      "tag": "0001_silky_rhodey",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769266500001,
+      "tag": "0002_reading_metrics",
+      "breakpoints": true
     }
   ]
 }

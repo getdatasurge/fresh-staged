@@ -1,9 +1,23 @@
 # FreshTrack Pro Caddy Configuration
 # Automatic HTTPS via Let's Encrypt
+#
+# PRODUCTION DOMAIN SETUP:
+# Set the DOMAIN environment variable before starting Caddy:
+#   export DOMAIN=freshtrackpro.com
+# Or in Docker Compose:
+#   environment:
+#     DOMAIN: freshtrackpro.com
+#
+# Default: localhost (for development)
+# Examples: app.freshtrackpro.com, freshtrack.example.com
+#
+# For wildcard certificates (multiple subdomains with single cert),
+# see Caddyfile.wildcard.example
 
 {
     # Admin email for Let's Encrypt notifications
-    email admin@freshtrackpro.com
+    # PRODUCTION: Update to your actual admin email
+    email {$ADMIN_EMAIL:admin@freshtrackpro.com}
 
     # Access logging
     log {
@@ -26,18 +40,21 @@
         header_up X-Real-IP {remote_host}
         header_up X-Forwarded-For {remote_host}
         header_up X-Forwarded-Proto {scheme}
+
+        # WebSocket support for real-time features
+        header_up Connection {>Connection}
+        header_up Upgrade {>Upgrade}
     }
 
     # Health endpoint for external monitoring
     reverse_proxy /health backend:3000
 
-    # Static frontend files (when frontend is containerized)
-    # For now, proxy to frontend dev server or serve static
+    # Static frontend files (served by nginx in production)
+    # Change frontend:5173 to frontend:80 for production nginx
     reverse_proxy /* frontend:5173 {
-        # Fallback if frontend not running
-        @frontend_down {
-            not host backend
-        }
+        # WebSocket support for HMR (dev) or real-time features
+        header_up Connection {>Connection}
+        header_up Upgrade {>Upgrade}
     }
 
     # Response compression
@@ -45,14 +62,30 @@
 
     # Security headers
     header {
-        # HSTS (1 year, include subdomains)
+        # HSTS (1 year, include subdomains, preload-ready)
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
         # Prevent content type sniffing
         X-Content-Type-Options "nosniff"
+
         # Clickjacking protection
         X-Frame-Options "DENY"
+
         # Referrer policy
         Referrer-Policy "strict-origin-when-cross-origin"
+
+        # XSS protection (legacy browsers)
+        X-XSS-Protection "1; mode=block"
+
+        # Permissions policy (restrict browser features)
+        Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=()"
+
+        # Content Security Policy
+        # NOTE: Adjust 'self' sources based on your domain
+        # Stack Auth requires: api.stack-auth.com
+        # Google Fonts requires: fonts.googleapis.com, fonts.gstatic.com
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://api.stack-auth.com wss:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+
         # Remove server identification
         -Server
     }
@@ -63,6 +96,19 @@ monitoring.{$DOMAIN:localhost} {
     reverse_proxy grafana:3000 {
         header_up Host {host}
         header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+
+        # WebSocket support for Grafana live features
+        header_up Connection {>Connection}
+        header_up Upgrade {>Upgrade}
+    }
+
+    # Security headers for monitoring subdomain
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        -Server
     }
 }
 
@@ -71,5 +117,18 @@ status.{$DOMAIN:localhost} {
     reverse_proxy uptime-kuma:3001 {
         header_up Host {host}
         header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+
+        # WebSocket support for real-time status updates
+        header_up Connection {>Connection}
+        header_up Upgrade {>Upgrade}
+    }
+
+    # Security headers for status subdomain
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        -Server
     }
 }

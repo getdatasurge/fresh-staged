@@ -11,7 +11,8 @@
     "declarationMap": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "react-jsx"
   },
   "include": ["src/**/*", "drizzle.config.ts"],
   "exclude": ["node_modules", "dist"]

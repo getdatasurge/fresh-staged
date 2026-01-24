@@ -1,5 +1,6 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 import multipart from '@fastify/multipart';
 import {
   serializerCompiler,
@@ -50,19 +51,41 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
   });
 
   // Enable CORS for frontend
-  const corsOrigins: (string | RegExp)[] = [
-    'http://localhost:8080',
-    'http://localhost:5173',
-    'http://127.0.0.1:8080',
-    'http://127.0.0.1:5173',
-    /^http:\/\/172\.\d+\.\d+\.\d+:\d+$/, // WSL IP addresses
-  ];
+  // In production, use CORS_ORIGINS env var (comma-separated list)
+  // In development, allow localhost origins
+  const corsOrigins: (string | RegExp)[] = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
+    : [
+        'http://localhost:8080',
+        'http://localhost:5173',
+        'http://127.0.0.1:8080',
+        'http://127.0.0.1:5173',
+        /^http:\/\/172\.\d+\.\d+\.\d+:\d+$/, // WSL IP addresses
+      ];
 
   app.register(cors, {
     origin: corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-stack-access-token', 'x-stack-refresh-token'],
+  });
+
+  // Register rate limiting for auth endpoints protection
+  // Uses RATE_LIMIT_WINDOW (ms) and RATE_LIMIT_MAX from env, with sensible defaults
+  const rateLimitWindow = parseInt(process.env.RATE_LIMIT_WINDOW || '60000', 10);
+  const rateLimitMax = parseInt(process.env.RATE_LIMIT_MAX || '100', 10);
+  app.register(rateLimit, {
+    max: rateLimitMax,
+    timeWindow: rateLimitWindow,
+    // More restrictive limits for auth endpoints to prevent brute force
+    keyGenerator: (request) => {
+      // Use IP + user agent for rate limit key
+      return `${request.ip}-${request.headers['user-agent'] || 'unknown'}`;
+    },
+    // Skip rate limiting for health checks
+    allowList: (request) => {
+      return request.url.startsWith('/health');
+    },
   });
 
   // Register multipart plugin for file uploads (5MB limit)

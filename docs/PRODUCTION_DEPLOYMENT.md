@@ -48,6 +48,16 @@ Before deployment, set up accounts and obtain credentials for:
   - DNS provider with API support (Cloudflare recommended)
 
 **Optional but Recommended:**
+- [ ] **Stripe** - Payment processing (for subscriptions)
+  - Sign up: https://stripe.com
+  - Obtain: Secret Key, Webhook Secret
+  - Dashboard: https://dashboard.stripe.com/apikeys
+
+- [ ] **Resend** - Email delivery (for notifications, digests)
+  - Sign up: https://resend.com
+  - Obtain: API Key
+  - Dashboard: https://resend.com/api-keys
+
 - [ ] **Telnyx** - SMS notifications
   - Sign up: https://telnyx.com
   - Obtain: API Key, Messaging Profile ID, Phone Number
@@ -198,7 +208,8 @@ cd /opt/freshtrack-pro
 openssl rand -base64 32 > secrets/postgres_password.txt
 openssl rand -base64 32 > secrets/jwt_secret.txt
 openssl rand -base64 32 > secrets/minio_password.txt
-echo "frostguard-minio-admin" > secrets/minio_user.txt
+openssl rand -base64 32 > secrets/grafana_password.txt
+echo "freshtrack-minio-admin" > secrets/minio_user.txt
 
 # Add Stack Auth secret (from Stack Auth dashboard)
 echo "YOUR_STACK_AUTH_SECRET" > secrets/stack_auth_secret.txt
@@ -212,6 +223,7 @@ ls -la secrets/
 
 **Expected output:**
 ```
+-rw------- 1 freshtrack freshtrack   45 Jan 23 10:00 grafana_password.txt
 -rw------- 1 freshtrack freshtrack   45 Jan 23 10:00 jwt_secret.txt
 -rw------- 1 freshtrack freshtrack   45 Jan 23 10:00 minio_password.txt
 -rw------- 1 freshtrack freshtrack   30 Jan 23 10:00 minio_user.txt
@@ -235,70 +247,78 @@ nano .env.production
 
 ```bash
 # Domain configuration
-FRONTEND_URL=https://freshtrackpro.com
+DOMAIN=freshtrackpro.com
+FRONTEND_URL=https://app.freshtrackpro.com
 API_URL=https://api.freshtrackpro.com
+APP_URL=https://app.freshtrackpro.com
 MONITORING_URL=https://monitoring.freshtrackpro.com
 STATUS_URL=https://status.freshtrackpro.com
 
-# Stack Auth
+# Stack Auth (REQUIRED - compose will fail without these)
 STACK_AUTH_PROJECT_ID=your-actual-project-id
 STACK_AUTH_PUBLISHABLE_KEY=your-actual-publishable-key
 
-# TTN (if using)
-TTN_APP_ID=your-ttn-app-id
-TTN_WEBHOOK_URL=https://api.freshtrackpro.com/api/ttn/webhook
+# Database credentials (read from secrets files)
+POSTGRES_PASSWORD=$(cat secrets/postgres_password.txt)
+
+# Grafana (REQUIRED - compose will fail without this)
+GF_SECURITY_ADMIN_PASSWORD=$(cat secrets/grafana_password.txt)
+
+# TTN (if using IoT devices)
+TTN_APPLICATION_ID=your-ttn-app-id
+TTN_API_URL=https://eu1.cloud.thethings.network
+TTN_API_KEY=your-ttn-api-key
+TTN_WEBHOOK_URL=https://api.freshtrackpro.com/api/webhooks/ttn
+
+# Stripe (if using payments)
+STRIPE_SECRET_KEY=sk_live_your-stripe-key
+STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
+
+# Resend (if using email notifications)
+RESEND_API_KEY=re_your-resend-api-key
+EMAIL_FROM_ADDRESS=noreply@freshtrackpro.com
 
 # Telnyx (if using SMS)
 TELNYX_API_KEY=your-telnyx-api-key
 TELNYX_MESSAGING_PROFILE_ID=your-messaging-profile-id
-TELNYX_FROM_NUMBER=+15551234567
+TELNYX_PHONE_NUMBER=+15551234567
 
 # CORS
-CORS_ORIGINS=https://freshtrackpro.com,https://www.freshtrackpro.com
+CORS_ORIGINS=https://app.freshtrackpro.com,https://freshtrackpro.com
 ```
 
 Save and exit (Ctrl+O, Ctrl+X in nano).
 
+**Note:** `STACK_AUTH_PROJECT_ID`, `STACK_AUTH_PUBLISHABLE_KEY`, `POSTGRES_PASSWORD`, and `GF_SECURITY_ADMIN_PASSWORD` are **required** - Docker Compose will fail to start if these are missing.
+
 ### 3. Configure Caddy (Reverse Proxy)
 
-Caddy configuration should already exist in `docker/caddy/Caddyfile`. Verify it matches your domains:
+Caddy configuration exists in `docker/caddy/Caddyfile`. The configuration uses the `DOMAIN` environment variable for dynamic domain configuration.
 
 ```bash
+# Verify the Caddyfile exists
 cat docker/caddy/Caddyfile
 ```
 
-**Expected content:**
-```
-# API Server
-api.freshtrackpro.com {
-    reverse_proxy backend:3000
-}
+**Key features of the Caddyfile:**
+- Uses `{$DOMAIN:localhost}` pattern for environment-based domain configuration
+- Automatic HTTPS via Let's Encrypt
+- WebSocket support for real-time features
+- Security headers (HSTS, CSP, X-Frame-Options, etc.)
 
-# Frontend Application
-freshtrackpro.com {
-    reverse_proxy frontend:80
-}
-
-# Monitoring (Grafana)
-monitoring.freshtrackpro.com {
-    reverse_proxy grafana:3001
-
-    # Basic auth for security (optional)
-    basicauth /* {
-        admin $2a$14$...  # Generated hash
-    }
-}
-
-# Status Page (Uptime Kuma)
-status.freshtrackpro.com {
-    reverse_proxy uptime-kuma:3001
-}
+**To set your production domain:**
+```bash
+# Set in .env.production
+echo "DOMAIN=freshtrackpro.com" >> .env.production
+echo "ADMIN_EMAIL=admin@freshtrackpro.com" >> .env.production
 ```
 
-**If you need to generate basicauth hash:**
+**If you need to generate basicauth hash for Grafana:**
 ```bash
 docker run --rm caddy caddy hash-password --plaintext "your-password"
 ```
+
+**Note:** The Caddy service is defined in `compose.production.yaml` and handles all external HTTPS traffic, proxying to internal services.
 
 ### 4. Configure DNS
 
@@ -360,42 +380,56 @@ docker images | grep freshtrack-backend
 ```bash
 cd /opt/freshtrack-pro
 
+# Load environment variables
+set -a
+source .env.production
+set +a
+
 # Start all services (production configuration)
 docker compose -f docker-compose.yml -f compose.production.yaml up -d
 
 # This starts:
-# - PostgreSQL database
-# - Redis cache
-# - MinIO object storage
-# - Backend API
-# - Caddy reverse proxy (with auto HTTPS)
+# - PostgreSQL database (internal network only)
+# - Redis cache (internal network only)
+# - MinIO object storage (localhost:9000)
+# - Backend API (localhost:3000)
+# - Worker (background job processor)
+# - Caddy reverse proxy (ports 80, 443 - auto HTTPS)
 # - Uptime Kuma status page
 # - Prometheus, Loki, Promtail, Grafana (monitoring stack)
+# - Node Exporter, Blackbox Exporter (metrics)
 ```
 
 ### 3. Verify Deployment
 
 ```bash
 # Check all containers running
-docker compose ps
+docker compose -f docker-compose.yml -f compose.production.yaml ps
 
 # Expected output:
-# NAME                    STATUS      PORTS
-# frostguard-backend      Up          127.0.0.1:3000->3000/tcp
-# frostguard-postgres     Up          127.0.0.1:5432->5432/tcp
-# frostguard-redis        Up          127.0.0.1:6379->6379/tcp
-# frostguard-minio        Up          127.0.0.1:9000-9001->9000-9001/tcp
-# frostguard-caddy        Up          80/tcp, 443/tcp
-# frostguard-uptime-kuma  Up          127.0.0.1:3002->3001/tcp
-# frostguard-grafana      Up          127.0.0.1:3001->3000/tcp
-# (+ monitoring services)
+# NAME                          STATUS      PORTS
+# frostguard-backend            Up          127.0.0.1:3000->3000/tcp
+# frostguard-postgres           Up          (internal only)
+# frostguard-redis              Up          (internal only)
+# frostguard-minio              Up          127.0.0.1:9000->9000/tcp
+# frostguard-caddy              Up          0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp
+# frostguard-worker             Up          (no ports)
+# frostguard-uptime-kuma        Up          127.0.0.1:3002->3001/tcp
+# frostguard-grafana            Up          127.0.0.1:3001->3000/tcp
+# frostguard-prometheus         Up          127.0.0.1:9090->9090/tcp
+# frostguard-loki               Up          127.0.0.1:3100->3100/tcp
+# frostguard-promtail           Up          (no ports)
+# frostguard-node-exporter      Up          127.0.0.1:9100->9100/tcp
+# frostguard-blackbox           Up          127.0.0.1:9115->9115/tcp
 
 # Check backend health
-docker compose exec backend curl -f http://localhost:3000/health
+docker compose -f docker-compose.yml -f compose.production.yaml exec backend curl -f http://localhost:3000/health
 
 # Check logs
-docker compose logs -f backend
+docker compose -f docker-compose.yml -f compose.production.yaml logs -f backend
 ```
+
+**Note:** PostgreSQL and Redis ports are internal-only in production for security. Access them via Docker exec if needed.
 
 ### 4. Database Initialization
 
@@ -656,8 +690,14 @@ cd /opt/freshtrack-pro
 git fetch origin
 git checkout tags/v1.1.0  # or git pull origin main
 
-# Rebuild backend image
+# Load environment variables
+set -a
+source .env.production
+set +a
+
+# Rebuild backend and worker images
 docker build -t freshtrack-backend:latest --target production ./backend
+docker build -f backend/Dockerfile.worker -t freshtrack-worker:latest --target production ./backend
 
 # Restart services (rolling restart)
 docker compose -f docker-compose.yml -f compose.production.yaml up -d
@@ -666,7 +706,7 @@ docker compose -f docker-compose.yml -f compose.production.yaml up -d
 curl https://api.freshtrackpro.com/health
 
 # Check logs for errors
-docker compose logs -f backend
+docker compose -f docker-compose.yml -f compose.production.yaml logs -f backend
 ```
 
 **Zero-downtime deployment (advanced):**
@@ -809,10 +849,10 @@ docker compose logs backend | grep "slow query"
 **Debug steps:**
 ```bash
 # Check Promtail is running
-docker compose ps promtail
+docker compose -f docker-compose.yml -f compose.production.yaml ps promtail
 
 # Check Promtail logs
-docker compose logs promtail
+docker compose -f docker-compose.yml -f compose.production.yaml logs promtail
 
 # Verify Loki endpoint
 curl http://localhost:3100/ready
@@ -825,6 +865,60 @@ curl http://localhost:3100/ready
 - Promtail can't read Docker logs (permissions issue)
 - Loki not configured as Grafana data source
 - Log paths misconfigured in promtail config
+
+### Environment Variable Errors
+
+**Symptom:** Docker Compose fails with "variable is required" error
+
+**Example error:**
+```
+ERROR: Missing required variable: STACK_AUTH_PROJECT_ID is required
+```
+
+**Solution:**
+```bash
+# Ensure .env.production is loaded
+set -a
+source .env.production
+set +a
+
+# Verify required variables are set
+echo $STACK_AUTH_PROJECT_ID
+echo $STACK_AUTH_PUBLISHABLE_KEY
+echo $POSTGRES_PASSWORD
+echo $GF_SECURITY_ADMIN_PASSWORD
+
+# Then retry compose command
+docker compose -f docker-compose.yml -f compose.production.yaml up -d
+```
+
+**Required variables (compose will fail without these):**
+- `STACK_AUTH_PROJECT_ID` - Stack Auth project ID
+- `STACK_AUTH_PUBLISHABLE_KEY` - Stack Auth publishable key
+- `POSTGRES_PASSWORD` - PostgreSQL password
+- `GF_SECURITY_ADMIN_PASSWORD` - Grafana admin password
+
+### Caddy Certificate Issues
+
+**Symptom:** Caddy fails to obtain Let's Encrypt certificate
+
+**Debug steps:**
+```bash
+# Check Caddy logs
+docker compose -f docker-compose.yml -f compose.production.yaml logs caddy
+
+# Verify DOMAIN environment variable is set
+docker compose -f docker-compose.yml -f compose.production.yaml exec caddy printenv DOMAIN
+
+# Test DNS resolution from server
+dig api.freshtrackpro.com +short
+```
+
+**Common causes:**
+- DNS not pointing to server IP
+- Firewall blocking port 80 (Let's Encrypt HTTP-01 challenge)
+- Rate limited (too many certificate requests)
+- DOMAIN environment variable not set correctly
 
 ---
 
@@ -853,6 +947,9 @@ curl http://localhost:3100/ready
 1. **Stop current deployment:**
    ```bash
    cd /opt/freshtrack-pro
+   # Stop services but preserve volumes (database data)
+   docker compose -f docker-compose.yml -f compose.production.yaml stop
+   # Or completely remove containers (keeps volumes):
    docker compose -f docker-compose.yml -f compose.production.yaml down
    ```
 
@@ -996,4 +1093,4 @@ services:
 - Stack Auth Support: support@stack-auth.com
 - Community Forum: (if available)
 
-**Last Updated:** 2026-01-23
+**Last Updated:** 2026-01-24

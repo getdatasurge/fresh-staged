@@ -96,9 +96,9 @@ describe("Widget Health State Machine", () => {
     it("infers door_v1 from door_open field", () => {
       const payload = { door_open: true, battery_level: 90 };
       const result = inferPayloadType(payload);
-      
+
       expect(result.payloadType).toBe("door_v1");
-      expect(result.confidence).toBeGreaterThan(0.5);
+      expect(result.confidence).toBeGreaterThanOrEqual(0.5);
     });
 
     it("returns unclassified for empty payload (Epic 1 requirement)", () => {

@@ -12,12 +12,18 @@
     "db:migrate:prod": "node dist/src/db/migrate.js",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:check": "drizzle-kit check"
+    "db:check": "drizzle-kit check",
+    "lint": "cd .. && npx eslint backend/src backend/tests --ext .ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.750.0",
     "@bull-board/api": "^6.16.4",
     "@bull-board/fastify": "^6.16.4",
     "@fastify/cors": "^11.2.0",
+    "@fastify/multipart": "^9.4.0",
+    "@fastify/rate-limit": "^10.3.0",
+    "@react-email/components": "^0.0.34",
+    "@react-email/render": "^1.0.5",
     "@socket.io/redis-adapter": "^8.3.0",
     "bullmq": "^5.67.0",
     "dotenv": "^16.4.7",
@@ -28,14 +34,18 @@
     "ioredis": "^5.9.2",
     "jose": "^6.1.3",
     "pg": "^8.13.0",
+    "react": "^19.1.0",
     "redis": "^5.10.0",
+    "resend": "^4.2.0",
     "socket.io": "^4.8.3",
+    "stripe": "^20.2.0",
     "telnyx": "^5.11.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "@types/pg": "^8.11.10",
+    "@types/react": "^19.1.0",
     "drizzle-kit": "^0.30.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",

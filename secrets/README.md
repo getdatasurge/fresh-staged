@@ -47,6 +47,43 @@ MinIO root password for S3-compatible object storage.
 openssl rand -base64 32 > minio_password.txt
 ```
 
+### 6. `grafana_password.txt`
+Grafana admin password for monitoring dashboard.
+
+```bash
+openssl rand -base64 32 > grafana_password.txt
+```
+
+## Quick Setup Script
+
+Generate all secrets at once:
+
+```bash
+#!/bin/bash
+# Run from project root: bash secrets/generate-all.sh
+
+cd secrets
+
+# Generate random secrets
+openssl rand -base64 32 > postgres_password.txt
+openssl rand -base64 32 > jwt_secret.txt
+openssl rand -base64 32 > minio_password.txt
+openssl rand -base64 32 > grafana_password.txt
+
+# Create MinIO username
+echo "freshtrack-minio-admin" > minio_user.txt
+
+# Prompt for external service secrets
+echo "Enter your Stack Auth secret key (from dashboard):"
+read -s stack_secret
+echo "$stack_secret" > stack_auth_secret.txt
+
+# Set permissions
+chmod 600 *.txt
+
+echo "All secrets generated! Remember to save stack_auth_secret.txt value."
+```
+
 ## Generating Secure Secrets
 
 ### Using OpenSSL (recommended)
@@ -84,6 +121,7 @@ ls -la secrets/
 
 Expected output:
 ```
+-rw------- 1 user user   45 Jan 23 10:00 grafana_password.txt
 -rw------- 1 user user   45 Jan 23 10:00 jwt_secret.txt
 -rw------- 1 user user   45 Jan 23 10:00 minio_password.txt
 -rw------- 1 user user   30 Jan 23 10:00 minio_user.txt
@@ -110,6 +148,7 @@ In containers, secrets are available at:
 - `/run/secrets/stack_auth_secret`
 - `/run/secrets/minio_user`
 - `/run/secrets/minio_password`
+- `/run/secrets/grafana_password`
 
 ## Backup and Recovery
 

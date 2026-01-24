@@ -1,0 +1,14 @@
+{
+  "id": "f579dc6b-8436-4c62-b2e3-4f9583f854f7",
+  "status": "completed",
+  "startedAt": "2026-01-24T15:31:46.298Z",
+  "updatedAt": "2026-01-24T15:32:26.525Z",
+  "agentPlugin": "claude",
+  "trackerPlugin": "json",
+  "currentIteration": 0,
+  "maxIterations": 10,
+  "totalTasks": 0,
+  "tasksCompleted": 0,
+  "cwd": "/home/skynet/freshtrack-pro-local/fresh-staged",
+  "endedAt": "2026-01-24T15:32:26.524Z"
+}

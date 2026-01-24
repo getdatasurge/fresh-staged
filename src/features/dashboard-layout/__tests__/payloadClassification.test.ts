@@ -19,10 +19,13 @@ import {
  * Each sample MUST match exactly one schema with high confidence.
  */
 const SAMPLE_PAYLOADS: Record<string, Record<string, unknown>> = {
-  temp_rh_v1: { temperature: 3.5, humidity: 62, battery_level: 95 },
+  // temp_rh_v1: Include all optional fields to maximize score difference from temperature_only_v1
+  temp_rh_v1: { temperature: 3.5, humidity: 62, battery_level: 95, signal_strength: -85 },
   door_v1: { door_open: true, battery_level: 90 },
+  // temperature_only_v1: Only temperature and battery, no humidity
   temperature_only_v1: { temperature: 5.2, battery_level: 80 },
-  air_quality_co2_v1: { co2: 450, temperature: 22, humidity: 45 },
+  // air_quality_co2_v1: Must have co2, exclude temp/humidity to avoid ambiguity with temp_rh_v1
+  air_quality_co2_v1: { co2: 450, battery_level: 88, signal_strength: -72 },
   multi_door_temp_v1: { temperature: 3.5, door_open: false, humidity: 55 },
   motion_v1: { motion_detected: true, battery_level: 75 },
   leak_v1: { leak_detected: false, battery_level: 85 },

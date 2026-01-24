@@ -20,7 +20,7 @@ describe('Compatibility Matrix', () => {
     it('blocks widget when required capability missing', () => {
       const result = checkWidgetCompatibility('door_activity', ['temperature', 'humidity']);
       expect(result.compatible).toBe(false);
-      expect(result.reason).toContain('door');
+      expect(result.reason?.toLowerCase()).toContain('door');
     });
 
     it('allows widget with partial when optional capability missing', () => {

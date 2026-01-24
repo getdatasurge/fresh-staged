@@ -8,6 +8,7 @@ import { useBranding } from '../useBranding';
 vi.mock('@stackframe/react', () => ({
   useUser: () => ({
     id: 'test-user-id',
+    getAuthJson: vi.fn().mockResolvedValue({ accessToken: 'test-token' }),
   }),
 }));
 

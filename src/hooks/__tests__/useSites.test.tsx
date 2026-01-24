@@ -2,6 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
+
+// Mock Stack Auth before importing hook
+vi.mock('@stackframe/react', () => ({
+  useUser: vi.fn(() => ({
+    getAuthJson: vi.fn().mockResolvedValue({ accessToken: 'test-token' }),
+  })),
+  useStackApp: vi.fn(() => ({})),
+}));
+
 import { useNavTree } from '../useNavTree';
 
 // Mock dependencies
