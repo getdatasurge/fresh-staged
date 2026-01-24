@@ -1,0 +1,77 @@
+# ===========================================
+# Stage 1: Install dependencies (for caching)
+# ===========================================
+FROM node:20-alpine AS deps
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Copy dependency manifests
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies with frozen lockfile
+RUN pnpm install --frozen-lockfile
+
+# ===========================================
+# Stage 2: Build TypeScript
+# ===========================================
+FROM node:20-alpine AS builder
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json pnpm-lock.yaml ./
+
+# Copy source files
+COPY tsconfig.json ./
+COPY src ./src
+
+# Build TypeScript to JavaScript
+RUN pnpm build
+
+# ===========================================
+# Stage 3: Production Worker (minimal)
+# ===========================================
+FROM node:20-alpine AS production
+
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+WORKDIR /app
+
+# Set environment
+ENV NODE_ENV=production
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install production dependencies only
+RUN pnpm install --frozen-lockfile --prod
+
+# Copy built artifacts from builder (only what workers need)
+COPY --from=builder --chown=nodejs:nodejs /app/dist/src/workers ./dist/src/workers
+COPY --from=builder --chown=nodejs:nodejs /app/dist/src/jobs ./dist/src/jobs
+
+# Switch to non-root user
+USER nodejs
+
+# Health check - verify worker process is running
+# Note: Workers don't have HTTP endpoints, so we check the process
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=40s \
+  CMD pgrep -f "node.*workers/index.js" || exit 1
+
+# Start worker process
+CMD ["node", "dist/src/workers/index.js"]
