@@ -61,9 +61,8 @@ COPY package.json pnpm-lock.yaml ./
 # Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy built artifacts from builder (only what workers need)
-COPY --from=builder --chown=nodejs:nodejs /app/dist/workers ./dist/workers
-COPY --from=builder --chown=nodejs:nodejs /app/dist/jobs ./dist/jobs
+# Copy built artifacts from builder
+COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 
 # Switch to non-root user
 USER nodejs

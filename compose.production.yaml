@@ -117,8 +117,7 @@ services:
   # MinIO Object Storage
   # ===========================================
   minio:
-    ports:
-      - "127.0.0.1:9000:9000"  # Bind localhost only, accessed via backend only
+    ports: []  # Internal-only in local production stack
       # Console port (9001) removed in production for security
     environment:
       # Use file-based secrets instead of plain env vars

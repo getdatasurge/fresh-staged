@@ -42,7 +42,9 @@ CREATE TABLE "ttn_connections" (
 	"updated_at" timestamp (3) with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "units" ALTER COLUMN "temp_unit" SET DATA TYPE temp_unit;--> statement-breakpoint
+ALTER TABLE "units" ALTER COLUMN "temp_unit" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "units" ALTER COLUMN "temp_unit" SET DATA TYPE temp_unit USING "temp_unit"::temp_unit;--> statement-breakpoint
+ALTER TABLE "units" ALTER COLUMN "temp_unit" SET DEFAULT 'F';--> statement-breakpoint
 ALTER TABLE "profiles" ADD COLUMN "digest_daily" boolean DEFAULT false NOT NULL;--> statement-breakpoint
 ALTER TABLE "profiles" ADD COLUMN "digest_weekly" boolean DEFAULT false NOT NULL;--> statement-breakpoint
 ALTER TABLE "profiles" ADD COLUMN "timezone" varchar(64) DEFAULT 'UTC' NOT NULL;--> statement-breakpoint
