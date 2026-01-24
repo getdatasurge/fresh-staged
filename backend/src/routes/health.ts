@@ -102,4 +102,17 @@ export const healthRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get('/health/live', async () => {
     return { alive: true };
   });
+
+  // Real-time WebSocket connection status
+  fastify.get('/health/realtime', async () => {
+    // Count active WebSocket connections
+    const connectionCount = fastify.io?.engine?.clientsCount ?? 0;
+
+    return {
+      websocket: {
+        enabled: true,
+        connections: connectionCount,
+      },
+    };
+  });
 };

@@ -6,6 +6,7 @@ import {
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod';
 import authPlugin from './plugins/auth.plugin.js';
+import socketPlugin, { setupSocketHandlers } from './plugins/socket.plugin.js';
 import { requireAuth, requireOrgContext, requireRole } from './middleware/index.js';
 import { healthRoutes } from './routes/health.js';
 import authRoutes from './routes/auth.js';
@@ -26,14 +27,16 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
   });
 
   // Enable CORS for frontend
+  const corsOrigins: (string | RegExp)[] = [
+    'http://localhost:8080',
+    'http://localhost:5173',
+    'http://127.0.0.1:8080',
+    'http://127.0.0.1:5173',
+    /^http:\/\/172\.\d+\.\d+\.\d+:\d+$/, // WSL IP addresses
+  ];
+
   app.register(cors, {
-    origin: [
-      'http://localhost:8080',
-      'http://localhost:5173',
-      'http://127.0.0.1:8080',
-      'http://127.0.0.1:5173',
-      /^http:\/\/172\.\d+\.\d+\.\d+:\d+$/, // WSL IP addresses
-    ],
+    origin: corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-stack-access-token', 'x-stack-refresh-token'],
@@ -42,6 +45,14 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
   // Configure Zod validation and serialization
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
+
+  // Register Socket.io plugin (must be registered before routes)
+  app.register(socketPlugin, {
+    cors: {
+      origin: corsOrigins as (string | RegExp)[],
+      credentials: true,
+    },
+  });
 
   // Register auth plugin (decorates request.user)
   app.register(authPlugin);
@@ -94,6 +105,12 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
       return { deleted: true };
     }
   );
+
+  // Setup Socket.io event handlers after server is ready
+  void app.ready().then(() => {
+    setupSocketHandlers(app.io);
+    app.log.info('Socket.io ready');
+  });
 
   return app;
 }
