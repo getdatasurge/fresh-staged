@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
-Phase: 18 of 22 (Stripe Billing) — IN PROGRESS
-Plan: 5 of 6 complete
-Status: Plan 18-05 complete
-Last activity: 2026-01-24 — Completed 18-05 (worker & scheduler registration)
+Phase: 18 of 22 (Stripe Billing) — COMPLETE
+Plan: 6 of 6 complete
+Status: Phase 18 verified and complete
+Last activity: 2026-01-24 — Completed 18-06 (integration tests & verification)
 
-Progress: [██████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 30% (26/85 plans)
+Progress: [███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 32% (27/85 plans)
 
 ## Completed Milestones
 
@@ -50,13 +50,13 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 26
-- Phases completed: 5 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests)
-- Current phase: 18-stripe-billing (5/6 plans complete)
+- Plans completed: 27
+- Phases completed: 6 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing)
+- Ready for: Phase 19
 
 **Combined:**
-- Total plans completed: 26/85
-- Total phases: 17 (5 complete in v2.0)
+- Total plans completed: 27/85
+- Total phases: 18 (6 complete in v2.0)
 - Milestones shipped: 2 (v1.0, v1.1)
 
 ## Accumulated Context
@@ -130,6 +130,8 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | SCHED-02 | Dynamic import in processor for scheduler | 18-05 | Avoids circular dependency between processor and scheduler service |
 | SCHED-03 | Remove existing repeatable job before creating | 18-05 | Prevents duplicate scheduler jobs on API restart |
 | SCHED-04 | Initial report on startup | 18-05 | Ensures sensor counts are current when API starts |
+| TEST-03 | Mock Stripe API for unit tests | 18-06 | Vitest mocks keep tests fast and deterministic |
+| TEST-04 | Update queue test count after METER_REPORTING | 18-06 | Queue service now has 3 queues after billing phase |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -143,7 +145,7 @@ See also: .planning/PROJECT.md Key Decisions table
 - AUTH-02 blocked until database queries migrate to backend API (v2.0 scope)
 - Production data migration requires Supabase access (DEFERRED)
 - Real-time E2E verification requires local staging environment (Phase 01 plans pending)
-- TTN device tests failing: 10 tests in ttn-devices.test.ts returning 500 errors (needs debugging)
+- TTN device tests failing: 15 tests in ttn-devices.test.ts returning 500 errors (needs debugging)
 - Worker container verified working locally, deployment pending for production
 
 ### Quick Tasks Completed
@@ -157,10 +159,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-24
-**Stopped at:** Completed 18-05-PLAN.md
+**Stopped at:** Completed Phase 18 (Stripe Billing)
 **Resume file:** None
-**Next action:** Execute 18-06-PLAN.md (Stripe checkout integration)
+**Next action:** Begin Phase 19 or review roadmap for next priority
 
 ---
 
-*State updated: 2026-01-24 after completing 18-05-PLAN.md*
+*State updated: 2026-01-24 after completing Phase 18 Stripe Billing*
