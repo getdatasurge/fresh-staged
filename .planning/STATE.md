@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 15 of 22 (Background Jobs Infrastructure) — IN PROGRESS
-Plan: 1 of 6 complete
-Status: Worker container infrastructure deployed
-Last activity: 2026-01-24 — Completed 15-02-PLAN.md
+Plan: 2 of 6 complete
+Status: BullMQ queue infrastructure and QueueService ready
+Last activity: 2026-01-24 — Completed 15-01-PLAN.md
 
-Progress: [█░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 9% (7/79 plans)
+Progress: [██░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 10% (8/79 plans)
 
 ## Completed Milestones
 
@@ -50,13 +50,13 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 7
+- Plans completed: 8
 - Phases completed: 1 (14-real-time-foundation)
-- In progress: 15-background-jobs-infrastructure
+- In progress: 15-background-jobs-infrastructure (2/6 plans)
 
 **Combined:**
 - Total plans: 79
-- Total phases: 15
+- Total phases: 15 (1 complete, 1 in progress)
 - Milestones shipped: 2 (v1.0, v1.1)
 
 ## Accumulated Context
@@ -90,6 +90,10 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | JOBS-03 | Process-based health check for workers | 15-02 | Workers don't expose HTTP endpoints, pgrep verifies process running |
 | JOBS-04 | stop_grace_period of 30s in production | 15-02 | Allows in-flight jobs to complete before container shutdown |
 | JOBS-05 | Redis configured with appendfsync everysec and noeviction | 15-02 | Balances performance with persistence, prevents data loss from eviction |
+| QUEUE-01 | Use BullMQ over Bull or Agenda | 15-01 | BullMQ is actively maintained with better TypeScript support and Redis 6+ compatibility |
+| QUEUE-02 | QueueService follows SocketService pattern | 15-01 | Consistency with existing codebase, familiar pattern for team |
+| QUEUE-03 | BaseJobData enforces organizationId for all jobs | 15-01 | Multi-tenant isolation at type level prevents cross-org job leakage |
+| QUEUE-04 | Redis connection optional with graceful fallback | 15-01 | Enables local development without Redis infrastructure |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -103,15 +107,16 @@ See also: .planning/PROJECT.md Key Decisions table
 - AUTH-02 blocked until database queries migrate to backend API (v2.0 scope)
 - Production data migration requires Supabase access (DEFERRED)
 - Real-time E2E verification requires local staging environment (Phase 01 plans pending)
-- Plan 15-01 (Queue plugin) needs execution before 15-03 for API-side queue integration
+- TTN device tests failing: 10 tests in ttn-devices.test.ts returning 500 errors (needs debugging)
+- Worker deployment pending: Workers defined but not running in any environment
 
 ## Session Continuity
 
-**Last session:** 2026-01-24 09:44 UTC
-**Stopped at:** Completed 15-02-PLAN.md (Worker Container Infrastructure)
+**Last session:** 2026-01-24 09:47 UTC
+**Stopped at:** Completed 15-01-PLAN.md (BullMQ Queue Infrastructure)
 **Resume file:** None
-**Next action:** Execute 15-01-PLAN.md (Queue Plugin) then 15-03-PLAN.md (Bull Board Dashboard)
+**Next action:** Execute 15-03-PLAN.md (Bull Board Dashboard) or continue with Phase 15 plans
 
 ---
 
-*State updated: 2026-01-24 after completing Plan 15-02*
+*State updated: 2026-01-24 after completing Plan 15-01*
