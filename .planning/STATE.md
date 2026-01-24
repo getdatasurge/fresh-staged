@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
-Phase: 17 of 22 (Email Digests) — COMPLETE
-Plan: 3 of 3 complete
-Status: Phase 17 verified complete
-Last activity: 2026-01-24 — Phase 17 verified, all must-haves passed
+Phase: 18 of 22 (Stripe Billing) — IN PROGRESS
+Plan: 1 of 6 complete
+Status: Plan 18-01 complete
+Last activity: 2026-01-24 — Completed 18-01 (billing foundation)
 
-Progress: [████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 25% (21/85 plans)
+Progress: [████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 26% (22/85 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,12 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 21
+- Plans completed: 22
 - Phases completed: 5 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests)
-- Current phase: None (ready for Phase 18)
+- Current phase: 18-stripe-billing (1/6 plans complete)
 
 **Combined:**
-- Total plans completed: 21/85
+- Total plans completed: 22/85
 - Total phases: 17 (5 complete in v2.0)
 - Milestones shipped: 2 (v1.0, v1.1)
 
@@ -115,6 +115,9 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | UNSUB-01 | JWT token for unsubscribe with 30-day expiry | 17-03 | Secure, stateless, no DB lookup needed for validation |
 | UNSUB-02 | UNSUBSCRIBE_SECRET with JWT_SECRET fallback | 17-03 | Dedicated secret optional, works with existing setup |
 | UNSUB-03 | Endpoint at /unsubscribe (no /api prefix) | 17-03 | Public user-facing link from emails |
+| BILLING-01 | Manual migration SQL for stripe_events | 18-01 | drizzle-kit ESM resolution issues, follows existing pattern |
+| BILLING-02 | Meter event names as literal union type | 18-01 | 'active_sensors' | 'temperature_readings' for compile-time safety |
+| BILLING-03 | 5 attempts with 5s backoff for meter reporting | 18-01 | Stripe meter events are idempotent, longer delays safe |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -142,10 +145,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-24
-**Stopped at:** Phase 17 verified complete
+**Stopped at:** Completed 18-01-PLAN.md
 **Resume file:** None
-**Next action:** Phase 18 (Stripe Billing Integration)
+**Next action:** Execute 18-02-PLAN.md (webhook endpoint)
 
 ---
 
-*State updated: 2026-01-24 after Phase 17 verification passed*
+*State updated: 2026-01-24 after completing 18-01-PLAN.md*
