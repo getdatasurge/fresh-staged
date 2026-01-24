@@ -72,6 +72,12 @@ Plans:
 **Goal:** Telnyx SMS delivery via BullMQ workers with retry strategies
 **Depends on:** Phase 15
 **Requirements:** BG-03, BG-04
+**Plans:** 3 plans
+
+Plans:
+- [ ] 16-01-PLAN.md — TelnyxService + error categorization config
+- [ ] 16-02-PLAN.md — SMS processor implementation
+- [ ] 16-03-PLAN.md — Alert integration + tests
 
 **Success Criteria:**
 1. Telnyx integration migrated from Edge Function to BullMQ worker
@@ -227,7 +233,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 14. Real-Time Foundation | v2.0 | 6/6 | Complete | 2026-01-24 |
 | 15. Background Jobs Infrastructure | v2.0 | 4/4 | Complete | 2026-01-24 |
-| 16. SMS Notifications | v2.0 | 0/? | Not Started | - |
+| 16. SMS Notifications | v2.0 | 0/3 | Planned | - |
 | 17. Email Digests | v2.0 | 0/? | Not Started | - |
 | 18. Stripe Billing | v2.0 | 0/? | Not Started | - |
 | 19. Backend API Migration - Foundation | v2.0 | 0/? | Not Started | - |
@@ -237,4 +243,4 @@ Plans:
 
 ---
 
-*v2.0 milestone active — 9 phases defined, Phases 14-15 complete*
+*v2.0 milestone active — 9 phases defined, Phases 14-15 complete, Phase 16 planned*
