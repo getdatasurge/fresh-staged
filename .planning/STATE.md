@@ -11,12 +11,12 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 
 Milestone: v2.1 Streamlined Deployment — IN PROGRESS
 Phase: 22 of 26 (Foundation & Pre-Flight)
-Plan: 1 of 5 in current phase
+Plan: 2 of 5 in current phase
 Status: In progress
-Last activity: 2026-01-25 — Completed 22-01-PLAN.md (Error Handling Infrastructure)
+Last activity: 2026-01-25 — Completed 22-02-PLAN.md (System Validation Functions)
 
-Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 119 plans total
-[=                   ] 1/5 plans in Phase 22
+Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 120 plans total
+[==                  ] 2/5 plans in Phase 22
 
 ## v2.1 Phase Overview
 
@@ -33,7 +33,7 @@ Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 119 plans total
 | Plan | Name | Status | Commit |
 |------|------|--------|--------|
 | 22-01 | Error Handling Infrastructure | Complete | 317c35a |
-| 22-02 | System Validation Functions | Pending | - |
+| 22-02 | System Validation Functions | Complete | eea2d9c |
 | 22-03 | Checkpoint & Progress Functions | Pending | - |
 | 22-04 | Pre-Flight Orchestrator | Pending | - |
 | 22-05 | Verification & Integration | Pending | - |
@@ -95,6 +95,9 @@ Recent decisions affecting v2.1:
 - [v2.0]: Docker Compose override pattern for multi-target deployment
 - [22-01]: Color helpers matching deploy-selfhosted.sh pattern for consistency
 - [22-01]: Exit code 1 categorized as recoverable:permission for common failures
+- [22-02]: MemAvailable fallback for older kernels (MemFree+Buffers+Cached)
+- [22-02]: CPU check warning-only (non-blocking for minimal VMs)
+- [22-02]: HTTP 401 accepted for Docker registry (unauthenticated expected)
 
 ### Tech Debt Carried Forward
 
@@ -109,10 +112,10 @@ None for v2.1.
 ## Session Continuity
 
 **Last session:** 2026-01-25
-**Stopped at:** Completed 22-01-PLAN.md (Error Handling Infrastructure)
+**Stopped at:** Completed 22-02-PLAN.md (System Validation Functions)
 **Resume file:** None
-**Next action:** `/gsd:execute-phase 22-02` to add system validation functions
+**Next action:** `/gsd:execute-phase 22-03` to add checkpoint & progress functions
 
 ---
 
-*State updated: 2026-01-25 after 22-01-PLAN.md completion*
+*State updated: 2026-01-25 after 22-02-PLAN.md completion*
