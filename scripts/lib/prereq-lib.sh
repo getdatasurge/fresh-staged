@@ -20,6 +20,80 @@ source "${SCRIPT_DIR}/preflight-lib.sh"
 LIB_VERSION="1.0.0"
 
 # ===========================================
+# APT Lock Handling
+# Prevents race conditions with unattended-upgrades
+# ===========================================
+
+# Maximum wait time for apt lock (seconds)
+APT_LOCK_TIMEOUT="${APT_LOCK_TIMEOUT:-300}"
+
+# Wait for apt locks to be released
+# Args: $1 = timeout in seconds (default: APT_LOCK_TIMEOUT)
+# Returns: 0 if lock acquired, 1 if timeout
+wait_for_apt_lock() {
+    local timeout="${1:-$APT_LOCK_TIMEOUT}"
+    local waited=0
+    local interval=5
+
+    # Lock files to check
+    local lock_files=(
+        "/var/lib/dpkg/lock"
+        "/var/lib/dpkg/lock-frontend"
+        "/var/lib/apt/lists/lock"
+        "/var/cache/apt/archives/lock"
+    )
+
+    while [[ $waited -lt $timeout ]]; do
+        local locked=false
+
+        for lock_file in "${lock_files[@]}"; do
+            if [[ -f "$lock_file" ]] && fuser "$lock_file" &>/dev/null; then
+                locked=true
+                break
+            fi
+        done
+
+        if [[ "$locked" == "false" ]]; then
+            return 0
+        fi
+
+        if [[ $waited -eq 0 ]]; then
+            warning "Waiting for apt lock (another process is using apt)..."
+            echo "  This is common during automatic updates"
+            echo "  Will wait up to ${timeout}s for lock to be released"
+        fi
+
+        sleep "$interval"
+        waited=$((waited + interval))
+
+        if [[ $((waited % 30)) -eq 0 ]]; then
+            echo "  Still waiting... (${waited}s / ${timeout}s)"
+        fi
+    done
+
+    error "Timeout waiting for apt lock after ${timeout}s"
+    echo "  Another process is holding the apt lock."
+    echo "  You can check what's running with: ps aux | grep -E 'apt|dpkg'"
+    echo "  If safe, you can kill the process or wait for it to complete."
+    return 1
+}
+
+# Update apt package lists with lock handling
+# Returns: 0 on success, 1 on failure
+apt_update() {
+    wait_for_apt_lock || return 1
+
+    step "Updating apt package lists..."
+    if apt-get update -qq; then
+        success "Package lists updated"
+        return 0
+    else
+        error "Failed to update package lists"
+        return 1
+    fi
+}
+
+# ===========================================
 # Package Management Helpers
 # ===========================================
 
@@ -242,6 +316,95 @@ verify_docker_compose() {
         echo ""
         echo "Note: The standalone 'docker-compose' command is deprecated."
         echo "      Use 'docker compose' (space) instead."
+        return 1
+    fi
+}
+
+# ===========================================
+# APT Lock Handling
+# Wait for apt locks to be released (e.g., unattended-upgrades)
+# ===========================================
+
+# Wait for apt locks to be released
+# Returns: 0 when locks are free
+wait_for_apt_lock() {
+    local max_wait=120  # 2 minutes
+    local waited=0
+
+    while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || \
+          fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || \
+          fuser /var/cache/apt/archives/lock >/dev/null 2>&1; do
+        if [[ $waited -eq 0 ]]; then
+            warning "Waiting for apt locks (another package manager is running)..."
+        fi
+        sleep 5
+        waited=$((waited + 5))
+        if [[ $waited -ge $max_wait ]]; then
+            error "Timeout waiting for apt locks after ${max_wait}s"
+            return 1
+        fi
+    done
+
+    if [[ $waited -gt 0 ]]; then
+        success "APT locks released after ${waited}s"
+    fi
+    return 0
+}
+
+# Run apt-get update with lock handling
+apt_update() {
+    wait_for_apt_lock
+    apt-get update -qq
+}
+
+# ===========================================
+# Firewall Configuration (UFW)
+# ===========================================
+
+# Configure UFW firewall with required ports
+# Allows: 22/tcp (SSH), 80/tcp (HTTP), 443/tcp (HTTPS)
+# Denies: all other incoming traffic
+# Returns: 0 on success, 1 on failure
+configure_firewall() {
+    step "Configuring UFW firewall..."
+
+    # Check if UFW is already properly configured
+    if command -v ufw &>/dev/null && ufw status 2>/dev/null | grep -q "Status: active"; then
+        if ufw status 2>/dev/null | grep -qE "22/tcp.*ALLOW" && \
+           ufw status 2>/dev/null | grep -qE "80/tcp.*ALLOW" && \
+           ufw status 2>/dev/null | grep -qE "443/tcp.*ALLOW"; then
+            success "UFW firewall already configured (ports 22, 80, 443)"
+            return 0
+        fi
+    fi
+
+    # Install UFW if not present
+    ensure_package ufw
+
+    # Set default policies
+    step "Setting default firewall policies..."
+    ufw default deny incoming
+    ufw default allow outgoing
+
+    # Allow required ports (idempotent - ufw handles duplicates gracefully)
+    step "Opening required ports..."
+    ufw allow 22/tcp comment 'SSH'
+    ufw allow 80/tcp comment 'HTTP - Lets Encrypt ACME'
+    ufw allow 443/tcp comment 'HTTPS - Production traffic'
+
+    # Enable firewall non-interactively
+    step "Enabling firewall..."
+    ufw --force enable
+
+    # Verify configuration
+    if ufw status | grep -q "Status: active"; then
+        success "UFW firewall configured (ports 22, 80, 443 allowed)"
+        echo ""
+        echo "Firewall status:"
+        ufw status verbose | head -15
+        return 0
+    else
+        error "UFW failed to enable"
         return 1
     fi
 }
