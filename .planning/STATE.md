@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 21 of 22 (Backend API Migration - Completion)
-Plan: 7 of 9 complete
+Plan: 8 of 9 complete
 Status: In progress
-Last activity: 2026-01-25 — Completed 21-07-PLAN.md (Escalation Contacts Router)
+Last activity: 2026-01-25 — Completed 21-09-PLAN.md (Document Remaining TTN Hooks)
 
-Progress: [████████████████████░░░░░░░░░░░░░░░░░░░░░░] 50% (43/86 plans)
+Progress: [████████████████████░░░░░░░░░░░░░░░░░░░░░░] 51% (44/86 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,12 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 43
+- Plans completed: 44
 - Phases completed: 8 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing, 19-backend-api-migration-foundation, 20-backend-api-migration-core)
-- Current: Phase 21 plan 7 of 9 complete
+- Current: Phase 21 plan 8 of 9 complete
 
 **Combined:**
-- Total plans completed: 43/86
+- Total plans completed: 44/86
 - Total phases: 21 (8 complete in v2.0, Phase 21 in progress)
 - Milestones shipped: 2 (v1.0, v1.1)
 
@@ -172,6 +172,8 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | ESCALATION-01 | Use raw SQL via drizzle-orm sql template (table not in Drizzle schema) | 21-07 | Follows ttn-settings.service.ts pattern |
 | ESCALATION-02 | Manager+ role required for mutations (create/update/delete) | 21-07 | Managers can manage escalation contacts |
 | ESCALATION-03 | Soft delete via is_active = false | 21-07 | Preserves audit trail, matches existing hook behavior |
+| HOOKS-03 | Mark 6 TTN hooks as BLOCKED requiring backend TTN SDK integration | 21-09 | Backend TTN SDK integration not yet available |
+| HOOKS-04 | Document direct DB access in useTTNDeprovision (ttn_deprovision_jobs table) | 21-09 | Table not in Drizzle schema, needs backend procedures |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -199,10 +201,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-25
-**Stopped at:** Completed Plan 21-07 (Escalation Contacts Router)
+**Stopped at:** Completed Plan 21-09 (Document Remaining TTN Hooks)
 **Resume file:** None
-**Next action:** Execute Plan 21-08 or 21-09 to complete Phase 21
+**Next action:** Execute Plan 21-08 to complete Phase 21
 
 ---
 
-*State updated: 2026-01-25 after completing Plan 21-07 (Escalation Contacts Router)*
+*State updated: 2026-01-25 after completing Plan 21-09 (Document Remaining TTN Hooks)*
