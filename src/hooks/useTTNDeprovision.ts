@@ -1,12 +1,33 @@
 /**
  * TTN Deprovision Hooks
  *
- * TODO: Migrate to tRPC when TTN deprovision router is available
- * - Currently uses ttn-list-devices Supabase edge function and ttn_deprovision_jobs table
- * - Backend router for TTN deprovision operations not yet created
- * - Planned for future migration when backend routes are available
+ * Status: BLOCKED - Requires backend job queue implementation
  *
- * Current status: Stack Auth for identity, Supabase for data (Phase 21)
+ * Current implementation:
+ * - Queries ttn_deprovision_jobs table directly via Supabase
+ * - Uses ttn-list-devices edge function to scan for orphaned devices
+ * - Inserts jobs directly into ttn_deprovision_jobs table
+ *
+ * Migration blockers:
+ * - Backend needs BullMQ job queue integration for deprovision workflow
+ * - Backend needs TTN SDK integration to list devices and delete devices
+ * - Backend needs procedures to manage deprovision jobs (list, create, retry)
+ *
+ * Edge functions used:
+ * - ttn-list-devices (scans TTN for devices, identifies orphans)
+ *
+ * Direct DB access:
+ * - ttn_deprovision_jobs table (read/write)
+ * - get_deprovision_job_stats RPC function
+ *
+ * Migration path:
+ * 1. Add TTN SDK to backend
+ * 2. Create ttn-deprovision.service.ts with BullMQ job management
+ * 3. Create ttnDeprovision router with procedures (listJobs, createJob, retryJob, scanOrphans)
+ * 4. Migrate this hook to use tRPC procedures
+ *
+ * Estimated effort: Large (requires BullMQ job queue + TTN SDK integration)
+ * Priority: Low (deprovision is infrequent admin operation)
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@stackframe/react";
@@ -67,7 +88,8 @@ export function useTTNDeprovisionJobs(orgId: string | null, statusFilter?: strin
     queryFn: async (): Promise<DeprovisionJob[]> => {
       if (!orgId || !user) return [];
 
-      // TODO Phase 6: Migrate to backend job queue API
+      // TODO: Replace with tRPC when backend deprovision job queue is implemented
+      // Requires: ttnDeprovision.listJobs procedure with BullMQ integration
       let query = supabase
         .from("ttn_deprovision_jobs")
         .select("*")
@@ -102,7 +124,8 @@ export function useTTNJobStats(orgId: string | null) {
         pending: 0, running: 0, retrying: 0, failed: 0, blocked: 0, succeeded: 0, needs_attention: 0
       };
 
-      // TODO Phase 6: Migrate to backend job queue API
+      // TODO: Replace with tRPC when backend deprovision job queue is implemented
+      // Requires: ttnDeprovision.getJobStats procedure
       const { data, error } = await supabase.rpc("get_deprovision_job_stats", {
         p_organization_id: orgId,
       });
@@ -131,7 +154,8 @@ export function useScanTTNOrphans() {
       if (!user) throw new Error("Not authenticated");
       const { accessToken } = await user.getAuthJson();
 
-      // TODO Phase 6: Replace with backend API endpoint
+      // TODO: Replace with tRPC when backend TTN SDK integration is available
+      // Requires: ttnDeprovision.scanOrphans procedure with TTN device listing
       const { data, error } = await supabase.functions.invoke("ttn-list-devices", {
         body: { organization_id: organizationId },
         headers: { 'x-stack-access-token': accessToken },
@@ -164,7 +188,8 @@ export function useEnqueueOrphanCleanup() {
     }): Promise<number> => {
       if (!user) throw new Error("Not authenticated");
 
-      // TODO Phase 6: Replace with backend job queue API
+      // TODO: Replace with tRPC when backend deprovision job queue is implemented
+      // Requires: ttnDeprovision.createJobs procedure with BullMQ job creation
       const jobs = orphans.map(orphan => ({
         organization_id: organizationId,
         dev_eui: orphan.dev_eui,
@@ -206,7 +231,8 @@ export function useRetryDeprovisionJob(orgId: string | null) {
     mutationFn: async (jobId: string): Promise<void> => {
       if (!user) throw new Error("Not authenticated");
 
-      // TODO Phase 6: Replace with backend job queue API
+      // TODO: Replace with tRPC when backend deprovision job queue is implemented
+      // Requires: ttnDeprovision.retryJob procedure with BullMQ job reset
       const { error } = await supabase
         .from("ttn_deprovision_jobs")
         .update({
