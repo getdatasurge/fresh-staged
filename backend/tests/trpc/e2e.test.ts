@@ -143,12 +143,18 @@ const mockArea = {
 const mockUnit = {
   id: TEST_UNIT_ID,
   areaId: TEST_AREA_ID,
-  name: 'Sensor Unit 1',
-  deviceType: 'temperature_sensor',
-  deviceId: 'device-001',
-  minTemp: 2.0,
-  maxTemp: 8.0,
+  name: 'Walk-in Cooler 1',
+  unitType: 'walk_in_cooler',
+  status: 'ok',
+  tempMin: 34,
+  tempMax: 40,
+  tempUnit: 'F',
+  manualMonitoringRequired: false,
+  manualMonitoringInterval: null,
+  lastReadingAt: new Date('2024-01-15T10:00:00Z'),
+  lastTemperature: 36,
   isActive: true,
+  sortOrder: 0,
   createdAt: new Date('2024-01-01'),
   updatedAt: new Date('2024-01-01'),
 };
@@ -156,27 +162,35 @@ const mockUnit = {
 const mockReading = {
   id: '77777777-7777-4777-a777-777777777777',
   unitId: TEST_UNIT_ID,
-  temperature: 4.5,
+  deviceId: null,
+  temperature: 36.5,
   humidity: 65,
+  battery: 95,
+  signalStrength: -70,
+  rawPayload: null,
   recordedAt: new Date('2024-01-15T10:00:00Z'),
-  createdAt: new Date('2024-01-15T10:00:00Z'),
+  receivedAt: new Date('2024-01-15T10:00:01Z'),
+  source: 'api',
 };
 
 const mockAlert = {
   id: TEST_ALERT_ID,
-  organizationId: TEST_ORG_ID,
   unitId: TEST_UNIT_ID,
-  type: 'temperature_high',
+  alertRuleId: null,
+  alertType: 'alarm_active',
   severity: 'warning',
   status: 'active',
-  message: 'Temperature exceeded threshold',
+  message: 'Temperature exceeded upper threshold',
+  triggerTemperature: 42,
+  thresholdViolated: 'tempMax',
   triggeredAt: new Date('2024-01-15T10:00:00Z'),
   acknowledgedAt: null,
-  resolvedAt: null,
   acknowledgedBy: null,
+  resolvedAt: null,
   resolvedBy: null,
-  resolution: null,
-  correctiveAction: null,
+  escalatedAt: null,
+  escalationLevel: 0,
+  metadata: null,
   createdAt: new Date('2024-01-15T10:00:00Z'),
   updatedAt: new Date('2024-01-15T10:00:00Z'),
 };
@@ -784,6 +798,428 @@ describe('tRPC End-to-End Tests', () => {
       });
 
       expect(response.statusCode).toBe(404);
+    });
+  });
+
+  describe('Units Router E2E', () => {
+    it('should list units for area', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('admin');
+      mockListUnits.mockResolvedValue([mockUnit]);
+
+      const input = JSON.stringify({
+        organizationId: TEST_ORG_ID,
+        siteId: TEST_SITE_ID,
+        areaId: TEST_AREA_ID,
+      });
+      const response = await app.inject({
+        method: 'GET',
+        url: `/trpc/units.list?input=${encodeURIComponent(input)}`,
+        headers: {
+          'x-stack-access-token': 'valid-admin-token',
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const data = JSON.parse(response.body);
+      expect(data.result.data).toHaveLength(1);
+      expect(data.result.data[0].name).toBe('Walk-in Cooler 1');
+    });
+
+    it('should get unit by ID', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('admin');
+      mockGetUnit.mockResolvedValue(mockUnit);
+
+      const input = JSON.stringify({
+        organizationId: TEST_ORG_ID,
+        siteId: TEST_SITE_ID,
+        areaId: TEST_AREA_ID,
+        unitId: TEST_UNIT_ID,
+      });
+      const response = await app.inject({
+        method: 'GET',
+        url: `/trpc/units.get?input=${encodeURIComponent(input)}`,
+        headers: {
+          'x-stack-access-token': 'valid-admin-token',
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const data = JSON.parse(response.body);
+      expect(data.result.data.id).toBe(TEST_UNIT_ID);
+    });
+
+    it('should create unit as manager', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('manager');
+      mockCreateUnit.mockResolvedValue(mockUnit);
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/trpc/units.create',
+        headers: {
+          'content-type': 'application/json',
+          'x-stack-access-token': 'valid-admin-token',
+        },
+        payload: {
+          organizationId: TEST_ORG_ID,
+          siteId: TEST_SITE_ID,
+          areaId: TEST_AREA_ID,
+          data: {
+            name: 'New Unit',
+            unitType: 'fridge',
+            tempMin: 32,
+            tempMax: 40,
+            tempUnit: 'F',
+          },
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+    });
+
+    it('should reject create unit for staff role (FORBIDDEN)', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('staff');
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/trpc/units.create',
+        headers: {
+          'content-type': 'application/json',
+          'x-stack-access-token': 'valid-staff-token',
+        },
+        payload: {
+          organizationId: TEST_ORG_ID,
+          siteId: TEST_SITE_ID,
+          areaId: TEST_AREA_ID,
+          data: {
+            name: 'New Unit',
+            unitType: 'fridge',
+            tempMin: 32,
+            tempMax: 40,
+          },
+        },
+      });
+
+      expect(response.statusCode).toBe(403);
+      const data = JSON.parse(response.body);
+      expect(data.error.message).toContain('Only managers');
+    });
+
+    it('should update unit as manager', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('manager');
+      mockUpdateUnit.mockResolvedValue({ ...mockUnit, name: 'Updated Unit' });
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/trpc/units.update',
+        headers: {
+          'content-type': 'application/json',
+          'x-stack-access-token': 'valid-admin-token',
+        },
+        payload: {
+          organizationId: TEST_ORG_ID,
+          siteId: TEST_SITE_ID,
+          areaId: TEST_AREA_ID,
+          unitId: TEST_UNIT_ID,
+          data: { name: 'Updated Unit' },
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+    });
+
+    it('should delete unit as admin', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('admin');
+      mockDeleteUnit.mockResolvedValue(mockUnit);
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/trpc/units.delete',
+        headers: {
+          'content-type': 'application/json',
+          'x-stack-access-token': 'valid-admin-token',
+        },
+        payload: {
+          organizationId: TEST_ORG_ID,
+          siteId: TEST_SITE_ID,
+          areaId: TEST_AREA_ID,
+          unitId: TEST_UNIT_ID,
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+    });
+
+    it('should return NOT_FOUND for non-existent unit', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('admin');
+      mockGetUnit.mockResolvedValue(null);
+
+      const input = JSON.stringify({
+        organizationId: TEST_ORG_ID,
+        siteId: TEST_SITE_ID,
+        areaId: TEST_AREA_ID,
+        unitId: '99999999-9999-4999-a999-999999999999',
+      });
+      const response = await app.inject({
+        method: 'GET',
+        url: `/trpc/units.get?input=${encodeURIComponent(input)}`,
+        headers: {
+          'x-stack-access-token': 'valid-admin-token',
+        },
+      });
+
+      expect(response.statusCode).toBe(404);
+      const data = JSON.parse(response.body);
+      expect(data.error.message).toContain('not found');
+    });
+  });
+
+  describe('Readings Router E2E', () => {
+    it('should list readings with pagination', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('admin');
+      mockQueryReadings.mockResolvedValue([mockReading]);
+
+      const input = JSON.stringify({
+        organizationId: TEST_ORG_ID,
+        unitId: TEST_UNIT_ID,
+        page: 1,
+        limit: 50,
+      });
+      const response = await app.inject({
+        method: 'GET',
+        url: `/trpc/readings.list?input=${encodeURIComponent(input)}`,
+        headers: {
+          'x-stack-access-token': 'valid-admin-token',
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const data = JSON.parse(response.body);
+      expect(data.result.data).toHaveLength(1);
+      expect(data.result.data[0].temperature).toBe(36.5);
+    });
+
+    it('should get latest reading', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('admin');
+      mockQueryReadings.mockResolvedValue([mockReading]);
+
+      const input = JSON.stringify({
+        organizationId: TEST_ORG_ID,
+        unitId: TEST_UNIT_ID,
+      });
+      const response = await app.inject({
+        method: 'GET',
+        url: `/trpc/readings.latest?input=${encodeURIComponent(input)}`,
+        headers: {
+          'x-stack-access-token': 'valid-admin-token',
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const data = JSON.parse(response.body);
+      expect(data.result.data.temperature).toBe(36.5);
+    });
+
+    it('should return null for latest when no readings', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('admin');
+      mockQueryReadings.mockResolvedValue([]);
+
+      const input = JSON.stringify({
+        organizationId: TEST_ORG_ID,
+        unitId: TEST_UNIT_ID,
+      });
+      const response = await app.inject({
+        method: 'GET',
+        url: `/trpc/readings.latest?input=${encodeURIComponent(input)}`,
+        headers: {
+          'x-stack-access-token': 'valid-admin-token',
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const data = JSON.parse(response.body);
+      expect(data.result.data).toBeNull();
+    });
+
+    it('should return NOT_FOUND for invalid unit in readings list', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('admin');
+      mockQueryReadings.mockRejectedValue(new Error('Unit not found or access denied'));
+
+      const input = JSON.stringify({
+        organizationId: TEST_ORG_ID,
+        unitId: '99999999-9999-4999-a999-999999999999',
+      });
+      const response = await app.inject({
+        method: 'GET',
+        url: `/trpc/readings.list?input=${encodeURIComponent(input)}`,
+        headers: {
+          'x-stack-access-token': 'valid-admin-token',
+        },
+      });
+
+      expect(response.statusCode).toBe(404);
+    });
+  });
+
+  describe('Alerts Router E2E', () => {
+    it('should list alerts for organization', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('admin');
+      mockListAlerts.mockResolvedValue([mockAlert]);
+
+      const input = JSON.stringify({
+        organizationId: TEST_ORG_ID,
+      });
+      const response = await app.inject({
+        method: 'GET',
+        url: `/trpc/alerts.list?input=${encodeURIComponent(input)}`,
+        headers: {
+          'x-stack-access-token': 'valid-admin-token',
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const data = JSON.parse(response.body);
+      expect(data.result.data).toHaveLength(1);
+      expect(data.result.data[0].alertType).toBe('alarm_active');
+    });
+
+    it('should get alert by ID', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('admin');
+      mockGetAlert.mockResolvedValue(mockAlert);
+
+      const input = JSON.stringify({
+        organizationId: TEST_ORG_ID,
+        alertId: TEST_ALERT_ID,
+      });
+      const response = await app.inject({
+        method: 'GET',
+        url: `/trpc/alerts.get?input=${encodeURIComponent(input)}`,
+        headers: {
+          'x-stack-access-token': 'valid-admin-token',
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const data = JSON.parse(response.body);
+      expect(data.result.data.id).toBe(TEST_ALERT_ID);
+    });
+
+    it('should acknowledge alert as staff', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('staff');
+      const acknowledgedAlert = {
+        ...mockAlert,
+        status: 'acknowledged',
+        acknowledgedAt: new Date(),
+        acknowledgedBy: TEST_PROFILE_ID,
+      };
+      mockAcknowledgeAlert.mockResolvedValue(acknowledgedAlert);
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/trpc/alerts.acknowledge',
+        headers: {
+          'content-type': 'application/json',
+          'x-stack-access-token': 'valid-staff-token',
+        },
+        payload: {
+          organizationId: TEST_ORG_ID,
+          alertId: TEST_ALERT_ID,
+          notes: 'Investigating temperature spike',
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+    });
+
+    it('should reject acknowledge for viewer role (FORBIDDEN)', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('viewer');
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/trpc/alerts.acknowledge',
+        headers: {
+          'content-type': 'application/json',
+          'x-stack-access-token': 'valid-viewer-token',
+        },
+        payload: {
+          organizationId: TEST_ORG_ID,
+          alertId: TEST_ALERT_ID,
+        },
+      });
+
+      expect(response.statusCode).toBe(403);
+      const data = JSON.parse(response.body);
+      expect(data.error.message).toContain('Only staff');
+    });
+
+    it('should resolve alert as staff', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('staff');
+      const resolvedAlert = {
+        ...mockAlert,
+        status: 'resolved',
+        resolvedAt: new Date(),
+        resolvedBy: TEST_PROFILE_ID,
+      };
+      mockResolveAlert.mockResolvedValue(resolvedAlert);
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/trpc/alerts.resolve',
+        headers: {
+          'content-type': 'application/json',
+          'x-stack-access-token': 'valid-staff-token',
+        },
+        payload: {
+          organizationId: TEST_ORG_ID,
+          alertId: TEST_ALERT_ID,
+          resolution: 'Temperature returned to normal range',
+          correctiveAction: 'Adjusted thermostat setting',
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+    });
+
+    it('should return NOT_FOUND for non-existent alert', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('admin');
+      mockGetAlert.mockResolvedValue(null);
+
+      const input = JSON.stringify({
+        organizationId: TEST_ORG_ID,
+        alertId: '99999999-9999-4999-a999-999999999999',
+      });
+      const response = await app.inject({
+        method: 'GET',
+        url: `/trpc/alerts.get?input=${encodeURIComponent(input)}`,
+        headers: {
+          'x-stack-access-token': 'valid-admin-token',
+        },
+      });
+
+      expect(response.statusCode).toBe(404);
+      const data = JSON.parse(response.body);
+      expect(data.error.message).toContain('not found');
+    });
+
+    it('should return CONFLICT for already acknowledged alert', async () => {
+      mockGetUserRoleInOrg.mockResolvedValue('staff');
+      mockAcknowledgeAlert.mockResolvedValue('already_acknowledged');
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/trpc/alerts.acknowledge',
+        headers: {
+          'content-type': 'application/json',
+          'x-stack-access-token': 'valid-staff-token',
+        },
+        payload: {
+          organizationId: TEST_ORG_ID,
+          alertId: TEST_ALERT_ID,
+        },
+      });
+
+      expect(response.statusCode).toBe(409);
+      const data = JSON.parse(response.body);
+      expect(data.error.message).toContain('already acknowledged');
     });
   });
 });
