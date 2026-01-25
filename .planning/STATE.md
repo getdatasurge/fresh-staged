@@ -52,7 +52,7 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 **v2.0 Milestone:**
 - Plans completed: 36
 - Phases completed: 8 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing, 19-backend-api-migration-foundation, 20-backend-api-migration-core)
-- Next: Phase 21 (Frontend API Migration)
+- Next: Phase 21 (Backend API Migration - Completion)
 
 **Combined:**
 - Total plans completed: 36/86
@@ -186,7 +186,7 @@ See also: .planning/PROJECT.md Key Decisions table
 **Last session:** 2026-01-25
 **Stopped at:** Completed 20-05-PLAN.md (Frontend Type Alignment) - Phase 20 complete
 **Resume file:** None
-**Next action:** Begin Phase 21 (Frontend API Migration)
+**Next action:** Begin Phase 21 (Backend API Migration - Completion)
 
 ---
 

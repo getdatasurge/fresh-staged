@@ -168,7 +168,7 @@ Plans:
 - [x] 20-02-PLAN.md — Units, Readings, and Alerts tRPC routers with tests
 - [x] 20-03-PLAN.md — Frontend hooks migration for all domains
 - [x] 20-04-PLAN.md — E2E integration tests for all routers
-- [ ] 20-05-PLAN.md — Gap closure: Fix frontend hook TypeScript types
+- [x] 20-05-PLAN.md — Gap closure: Fix frontend hook TypeScript types
 
 **Success Criteria:**
 1. Sites domain migrated to tRPC
@@ -272,10 +272,10 @@ Plans:
 | 17. Email Digests | v2.0 | 3/3 | Complete | 2026-01-24 |
 | 18. Stripe Billing | v2.0 | 6/6 | Complete | 2026-01-24 |
 | 19. Backend API Migration - Foundation | v2.0 | 4/4 | Complete | 2026-01-24 |
-| 20. Backend API Migration - Core | v2.0 | 4/5 | In Progress | - |
+| 20. Backend API Migration - Core | v2.0 | 5/5 | Complete | 2026-01-25 |
 | 21. Backend API Migration - Completion | v2.0 | 0/? | Not Started | - |
 | 22. AWS ECS Deployment (Optional) | v2.0 | 0/? | Not Started | - |
 
 ---
 
-*v2.0 milestone active — 9 phases defined, Phases 14-19 complete, Phase 20 in progress (gap closure plan added)*
+*v2.0 milestone active — 9 phases defined, Phases 14-20 complete, Phase 21 next*
