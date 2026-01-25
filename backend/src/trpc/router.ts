@@ -19,6 +19,7 @@ import { adminRouter } from '../routers/admin.router.js';
 import { assetsRouter } from '../routers/assets.router.js';
 import { ttnGatewaysRouter } from '../routers/ttn-gateways.router.js';
 import { ttnDevicesRouter } from '../routers/ttn-devices.router.js';
+import { ttnSettingsRouter } from '../routers/ttn-settings.router.js';
 import { availabilityRouter } from '../routers/availability.router.js';
 import { notificationPoliciesRouter } from '../routers/notification-policies.router.js';
 
@@ -122,6 +123,12 @@ export const appRouter = router({
    * Procedures: list, get, provision, bootstrap, update, deprovision
    */
   ttnDevices: ttnDevicesRouter,
+
+  /**
+   * TTN Settings domain router
+   * Procedures: get, update, test
+   */
+  ttnSettings: ttnSettingsRouter,
 
   /**
    * Availability domain router (PUBLIC - no auth required)
