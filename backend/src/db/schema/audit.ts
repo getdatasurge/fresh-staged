@@ -1,13 +1,15 @@
 import {
+  boolean,
+  index,
+  jsonb,
   pgTable,
-  uuid,
-  varchar,
   text,
   timestamp,
-  index,
-} from 'drizzle-orm/pg-core';
-import { organizations } from './tenancy.js';
-import { profiles } from './users.js';
+  uuid,
+  varchar
+} from 'drizzle-orm/pg-core'
+import { organizations } from './tenancy.js'
+import { profiles } from './users.js'
 
 // Event Logs - tamper-evident audit trail
 export const eventLogs = pgTable(
@@ -17,31 +19,42 @@ export const eventLogs = pgTable(
     organizationId: uuid('organization_id')
       .references(() => organizations.id, { onDelete: 'cascade' })
       .notNull(),
-    // Actor who triggered the event
+    
+    // Actor info
     actorId: uuid('actor_id').references(() => profiles.id, {
       onDelete: 'set null',
     }),
     actorType: varchar('actor_type', { length: 32 }).notNull(), // 'user', 'system', 'api'
+    
     // Event classification
-    eventType: varchar('event_type', { length: 64 }).notNull(), // 'create', 'update', 'delete', 'login', etc.
-    eventCategory: varchar('event_category', { length: 64 }), // 'auth', 'data', 'config', 'alert'
-    // Entity affected
-    entityType: varchar('entity_type', { length: 64 }).notNull(), // 'unit', 'site', 'alert_rule', etc.
-    entityId: uuid('entity_id'),
+    eventType: varchar('event_type', { length: 64 }).notNull(),
+    category: varchar('category', { length: 64 }), // Note: column is 'category' not 'event_category' in DB
+    severity: varchar('severity', { length: 32 }), // 'info', 'warning', 'critical', 'success'
+    title: text('title'),
+
+    // Target entities (denormalized for easier querying)
+    siteId: uuid('site_id'), // .references(() => sites.id) - avoiding circular import if possible, or add import
+    areaId: uuid('area_id'),
+    unitId: uuid('unit_id'), // .references(() => units.id)
+
     // Event details
-    description: text('description'),
-    payload: text('payload'), // JSON with event-specific data
-    // Change tracking (for update events)
-    oldValues: text('old_values'), // JSON of previous values
-    newValues: text('new_values'), // JSON of new values
-    // Request context
-    ipAddress: varchar('ip_address', { length: 45 }), // IPv6 compatible
+    eventData: jsonb('event_data'),
+    
+    // Request context (legacy/standard)
+    ipAddress: varchar('ip_address', { length: 45 }),
     userAgent: text('user_agent'),
-    // Hash chain for tamper evidence
+
+    // Impersonation audit trail
+    actingUserId: uuid('acting_user_id'), // The admin doing the impersonation
+    impersonationSessionId: uuid('impersonation_session_id'),
+    wasImpersonated: boolean('was_impersonated').default(false),
+
+    // Tamper evidence
+    eventHash: varchar('event_hash', { length: 64 }),
     previousHash: varchar('previous_hash', { length: 64 }),
-    hash: varchar('hash', { length: 64 }).notNull(),
+
     // Timestamp
-    occurredAt: timestamp('occurred_at', {
+    recordedAt: timestamp('recorded_at', {
       mode: 'date',
       precision: 3,
       withTimezone: true,
@@ -53,15 +66,12 @@ export const eventLogs = pgTable(
     index('event_logs_org_idx').on(table.organizationId),
     index('event_logs_actor_idx').on(table.actorId),
     index('event_logs_type_idx').on(table.eventType),
-    index('event_logs_entity_idx').on(table.entityType, table.entityId),
-    index('event_logs_occurred_idx').on(table.occurredAt),
+    index('event_logs_recorded_idx').on(table.recordedAt),
     // Composite for audit queries
     index('event_logs_org_date_idx').on(
       table.organizationId,
-      table.occurredAt
+      table.recordedAt
     ),
-    // For hash chain verification
-    index('event_logs_hash_idx').on(table.hash),
   ]
 );
 

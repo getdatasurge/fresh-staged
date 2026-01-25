@@ -1,5 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
 import type { EventCategory, EventSeverity } from "./eventTypeMapper";
+import { createTRPCClientInstance } from "./trpc";
 
 export interface ImpersonationContext {
   isImpersonating: boolean;
@@ -26,58 +26,32 @@ export interface LogEventParams {
 /**
  * Log an event to the event_logs table for audit trail.
  * 
- * When impersonation context is provided and active, this uses the server-side
- * `log_impersonated_action` RPC which validates cross-tenant writes and records
- * full audit trail including acting_user_id and impersonation_session_id.
+ * Uses tRPC to communicate with the backend.
+ * Requires accessToken for authentication.
  */
-export async function logEvent(params: LogEventParams): Promise<{ error: Error | null }> {
+export async function logEvent(params: LogEventParams, accessToken?: string): Promise<{ error: Error | null }> {
   try {
-    // If impersonating, use the server-side RPC for security validation
-    if (params.impersonationContext?.isImpersonating) {
-      const { error } = await supabase.rpc('log_impersonated_action', {
-        p_event_type: params.event_type,
-        p_category: params.category || 'system',
-        p_severity: params.severity || 'info',
-        p_title: params.title,
-        p_organization_id: params.organization_id,
-        p_site_id: params.site_id || null,
-        p_area_id: params.area_id || null,
-        p_unit_id: params.unit_id || null,
-        p_event_data: {
-          ...params.event_data,
-          impersonation_session_id: params.impersonationContext.sessionId,
-          acting_admin_id: params.impersonationContext.actingUserId,
-        },
-      });
-
-      if (error) {
-        console.error("Failed to log impersonated event:", error);
-        return { error: new Error(error.message) };
-      }
-
-      return { error: null };
+    if (!accessToken) {
+      console.warn("logEvent called without accessToken - skipping audit log");
+      return { error: new Error("Authentication required for audit logging") };
     }
 
-    // Regular path for non-impersonated writes
-    const { error } = await supabase.from("event_logs").insert({
-      event_type: params.event_type,
-      category: params.category || "system",
-      severity: params.severity || "info",
+    const trpc = createTRPCClientInstance(async () => accessToken);
+
+    // Map legacy params to new tRPC input format
+    await trpc.audit.logEvent.mutate({
+      eventType: params.event_type,
+      category: params.category || 'system',
+      severity: params.severity || 'info',
       title: params.title,
-      organization_id: params.organization_id,
-      site_id: params.site_id || null,
-      area_id: params.area_id || null,
-      unit_id: params.unit_id || null,
-      actor_id: params.actor_id || null,
-      actor_type: params.actor_type || "user",
-      event_data: params.event_data || {},
-      recorded_at: new Date().toISOString(),
+      organizationId: params.organization_id,
+      siteId: params.site_id || null,
+      areaId: params.area_id || null,
+      unitId: params.unit_id || null,
+      eventData: params.event_data,
+      impersonationSessionId: params.impersonationContext?.sessionId,
+      actingAdminId: params.impersonationContext?.actingUserId,
     });
-
-    if (error) {
-      console.error("Failed to log event:", error);
-      return { error: new Error(error.message) };
-    }
 
     return { error: null };
   } catch (err) {

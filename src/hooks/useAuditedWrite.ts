@@ -25,11 +25,11 @@
  * ```
  */
 
-import { useCallback } from 'react';
 import { useUser } from '@stackframe/react';
-import { useOrgScope } from './useOrgScope';
+import { useCallback } from 'react';
+import { useTRPC } from '../lib/trpc';
 import { useEffectiveIdentity } from './useEffectiveIdentity';
-import { supabase } from '@/integrations/supabase/client';  // TEMPORARY
+import { useOrgScope } from './useOrgScope';
 
 export interface AuditContext {
   /** The type of event being logged (e.g., 'alert_resolved', 'manual_temp_logged') */
@@ -81,6 +81,8 @@ export function useAuditedWrite(): AuditedWriteResult {
   const user = useUser();
   const { orgId, isImpersonating } = useOrgScope();
   const { impersonationSessionId, realUserId } = useEffectiveIdentity();
+  const trpc = useTRPC();
+  const logEventMutation = trpc.audit.logEvent.useMutation();
 
   const auditedWrite = useCallback(async <T>(
     writeOperation: () => Promise<T>,
@@ -92,33 +94,19 @@ export function useAuditedWrite(): AuditedWriteResult {
     // Log audit trail if impersonating
     if (isImpersonating && orgId && user) {
       try {
-        // Get Stack Auth token for future backend API call
-        const { accessToken } = await user.getAuthJson();
-
-        // TODO: Migrate to new backend API
-        // Backend should handle audit logging automatically via middleware
-        // For now, keep Supabase RPC with Stack Auth user context
-        console.warn('[useAuditedWrite] TODO: migrate to new backend');
-
-        const { error } = await supabase.rpc('log_impersonated_action', {
-          p_event_type: auditContext.eventType,
-          p_category: auditContext.category || 'user_action',
-          p_severity: auditContext.severity || 'info',
-          p_title: auditContext.title,
-          p_organization_id: orgId,
-          p_site_id: auditContext.siteId || null,
-          p_area_id: auditContext.areaId || null,
-          p_unit_id: auditContext.unitId || null,
-          p_event_data: {
-            ...auditContext.additionalData,
-            impersonation_session_id: impersonationSessionId,
-            acting_admin_id: realUserId,
-          },
+        await logEventMutation.mutateAsync({
+          eventType: auditContext.eventType,
+          category: auditContext.category || 'user_action',
+          severity: auditContext.severity || 'info',
+          title: auditContext.title,
+          organizationId: orgId,
+          siteId: auditContext.siteId || null,
+          areaId: auditContext.areaId || null,
+          unitId: auditContext.unitId || null,
+          eventData: auditContext.additionalData,
+          impersonationSessionId: impersonationSessionId,
+          actingAdminId: realUserId,
         });
-
-        if (error) {
-          console.error('[useAuditedWrite] Failed to log impersonated action:', error);
-        }
       } catch (err) {
         // Don't fail the write if audit logging fails
         console.error('[useAuditedWrite] Error logging impersonated action:', err);
@@ -126,7 +114,7 @@ export function useAuditedWrite(): AuditedWriteResult {
     }
 
     return result;
-  }, [user, orgId, isImpersonating, impersonationSessionId, realUserId]);
+  }, [user, orgId, isImpersonating, impersonationSessionId, realUserId, logEventMutation]);
   
   return {
     auditedWrite,
