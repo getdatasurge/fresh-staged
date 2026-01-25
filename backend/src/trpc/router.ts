@@ -7,13 +7,17 @@
 import { z } from 'zod';
 import { router, publicProcedure } from './index.js';
 import { organizationsRouter } from '../routers/organizations.router.js';
+import { sitesRouter } from '../routers/sites.router.js';
+import { areasRouter } from '../routers/areas.router.js';
 
 /**
  * Application router
  * Domain routers:
  * - organizations: Organization CRUD and member management
- * - sites, areas, units: Coming in Plan 03
- * - readings, alerts: Coming in Plan 04
+ * - sites: Site CRUD operations
+ * - areas: Area CRUD operations
+ * - units: Coming in Plan 02
+ * - readings, alerts: Coming in Plan 03-04
  */
 export const appRouter = router({
   /**
@@ -32,6 +36,18 @@ export const appRouter = router({
    * Procedures: get, update, listMembers, stats
    */
   organizations: organizationsRouter,
+
+  /**
+   * Sites domain router
+   * Procedures: list, get, create, update, delete
+   */
+  sites: sitesRouter,
+
+  /**
+   * Areas domain router
+   * Procedures: list, get, create, update, delete
+   */
+  areas: areasRouter,
 });
 
 /**
