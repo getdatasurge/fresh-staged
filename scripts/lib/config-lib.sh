@@ -372,6 +372,176 @@ generate_secrets_files() {
 }
 
 # ===========================================
+# Environment File Generation
+# ===========================================
+
+# Generate .env.production file with all required configuration
+# Args: $1 = output file path (default: ".env.production")
+# Requires: DOMAIN, ADMIN_EMAIL, STACK_AUTH_PROJECT_ID, STACK_AUTH_PUBLISHABLE_KEY
+# Returns: 0 on success, 1 on failure
+generate_env_file() {
+    local output_file="${1:-.env.production}"
+    local backup_file
+
+    # Check required variables
+    if [[ -z "${DOMAIN:-}" ]]; then
+        error "DOMAIN is required for env file generation"
+        return 1
+    fi
+    if [[ -z "${ADMIN_EMAIL:-}" ]]; then
+        error "ADMIN_EMAIL is required for env file generation"
+        return 1
+    fi
+
+    # Backup existing file if it exists
+    if [[ -f "$output_file" ]]; then
+        backup_file="${output_file}.backup.$(date +%Y%m%d-%H%M%S)"
+        cp "$output_file" "$backup_file"
+        warn "Existing file backed up to: $backup_file"
+    fi
+
+    # Generate the .env.production file using heredoc
+    cat > "$output_file" << EOF
+# ===========================================
+# FreshTrack Pro Production Environment
+# ===========================================
+# Generated: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+# WARNING: Do not edit manually - regenerate with deploy script
+# ===========================================
+
+# ===========================================
+# Application
+# ===========================================
+NODE_ENV=production
+LOG_LEVEL=info
+PORT=3000
+HOST=0.0.0.0
+
+# ===========================================
+# Domain Configuration
+# ===========================================
+DOMAIN=${DOMAIN}
+ADMIN_EMAIL=${ADMIN_EMAIL}
+FRONTEND_URL=https://${DOMAIN}
+API_URL=https://${DOMAIN}/api
+APP_URL=https://${DOMAIN}
+MONITORING_URL=https://monitoring.${DOMAIN}
+STATUS_URL=https://status.${DOMAIN}
+CORS_ORIGINS=https://${DOMAIN}
+
+# ===========================================
+# Database (PostgreSQL)
+# ===========================================
+# Password loaded from secrets/postgres_password.txt via Docker secrets
+DATABASE_URL=postgresql://frostguard:\${POSTGRES_PASSWORD}@postgres:5432/frostguard
+DB_POOL_MIN=5
+DB_POOL_MAX=20
+DB_POOL_IDLE_TIMEOUT=30000
+DB_POOL_CONNECTION_TIMEOUT=5000
+
+# ===========================================
+# Redis (Cache & Jobs)
+# ===========================================
+REDIS_URL=redis://redis:6379
+
+# ===========================================
+# MinIO / S3 (Object Storage)
+# ===========================================
+MINIO_ENDPOINT=http://minio:9000
+MINIO_BUCKET_ASSETS=assets
+MINIO_USE_SSL=false
+# Credentials loaded from secrets/minio_user.txt and secrets/minio_password.txt
+
+# ===========================================
+# Stack Auth (Authentication Service)
+# ===========================================
+STACK_AUTH_PROJECT_ID=${STACK_AUTH_PROJECT_ID:-}
+STACK_AUTH_API_URL=https://api.stack-auth.com
+STACK_AUTH_PUBLISHABLE_KEY=${STACK_AUTH_PUBLISHABLE_KEY:-}
+
+# ===========================================
+# Feature Flags
+# ===========================================
+FEATURE_DEVICE_PROVISIONING=true
+FEATURE_SMS_NOTIFICATIONS=true
+FEATURE_EMAIL_NOTIFICATIONS=true
+FEATURE_WEBHOOK_INTEGRATIONS=true
+
+# ===========================================
+# Security
+# ===========================================
+# Rate limiting (requests per minute)
+RATE_LIMIT_WINDOW=60000
+RATE_LIMIT_MAX=100
+
+# Session configuration
+SESSION_COOKIE_SECURE=true
+SESSION_COOKIE_SAMESITE=strict
+SESSION_COOKIE_DOMAIN=.${DOMAIN}
+
+# ===========================================
+# Secrets (Loaded from files)
+# ===========================================
+# These are loaded by Docker from the secrets/ directory:
+#   - secrets/postgres_password.txt  -> POSTGRES_PASSWORD
+#   - secrets/jwt_secret.txt         -> JWT_SECRET
+#   - secrets/stack_auth_secret.txt  -> STACK_AUTH_SECRET_KEY
+#   - secrets/minio_user.txt         -> MINIO_ROOT_USER
+#   - secrets/minio_password.txt     -> MINIO_ROOT_PASSWORD
+#   - secrets/grafana_password.txt   -> GRAFANA_ADMIN_PASSWORD
+EOF
+
+    # Set restrictive permissions
+    chmod 600 "$output_file"
+
+    success "Generated $output_file"
+    return 0
+}
+
+# Master function to create all configuration
+# Returns: 0 on success, 1 on failure
+create_configuration() {
+    local secrets_dir="${1:-secrets}"
+    local env_file="${2:-.env.production}"
+
+    echo ""
+    echo "========================================"
+    echo "Creating FreshTrack Configuration"
+    echo "========================================"
+    echo ""
+
+    # Generate secrets files
+    if ! generate_secrets_files "$secrets_dir"; then
+        error "Failed to generate secrets files"
+        return 1
+    fi
+    echo ""
+
+    # Generate environment file
+    if ! generate_env_file "$env_file"; then
+        error "Failed to generate environment file"
+        return 1
+    fi
+    echo ""
+
+    # Display summary
+    echo "========================================"
+    success "Configuration created successfully!"
+    echo "========================================"
+    echo ""
+    echo "Files created:"
+    echo "  - $env_file (environment configuration)"
+    echo "  - $secrets_dir/ (secret files)"
+    echo ""
+    echo "Next steps:"
+    echo "  1. Verify configuration: cat $env_file"
+    echo "  2. Run deployment: ./deploy.sh"
+    echo ""
+
+    return 0
+}
+
+# ===========================================
 # Self-test when run directly
 # ===========================================
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
@@ -566,8 +736,96 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     rm -rf "$test_secrets_dir"
     echo ""
 
+    # Test generate_env_file
+    echo "7. Testing generate_env_file..."
+    test_env_dir=$(mktemp -d)
+    export DOMAIN="test.example.com"
+    export ADMIN_EMAIL="admin@test.example.com"
+    export STACK_AUTH_PROJECT_ID="test-project-id"
+    export STACK_AUTH_PUBLISHABLE_KEY="pk_test_12345"
+
+    if generate_env_file "$test_env_dir/.env.production" 2>/dev/null; then
+        # Check file exists
+        if [[ -f "$test_env_dir/.env.production" ]]; then
+            echo "PASS: .env.production file created"
+        else
+            echo "FAIL: .env.production file not created"
+            rm -rf "$test_env_dir"
+            exit 1
+        fi
+
+        # Check permissions
+        env_perms=$(stat -c "%a" "$test_env_dir/.env.production" 2>/dev/null)
+        if [[ "$env_perms" == "600" ]]; then
+            echo "PASS: .env.production has 600 permissions"
+        else
+            echo "FAIL: .env.production should have 600 permissions, got $env_perms"
+            rm -rf "$test_env_dir"
+            exit 1
+        fi
+
+        # Check file contains expected variables
+        if grep -q "DOMAIN=test.example.com" "$test_env_dir/.env.production"; then
+            echo "PASS: .env.production contains DOMAIN"
+        else
+            echo "FAIL: .env.production should contain DOMAIN=test.example.com"
+            rm -rf "$test_env_dir"
+            exit 1
+        fi
+
+        if grep -q "ADMIN_EMAIL=admin@test.example.com" "$test_env_dir/.env.production"; then
+            echo "PASS: .env.production contains ADMIN_EMAIL"
+        else
+            echo "FAIL: .env.production should contain ADMIN_EMAIL"
+            rm -rf "$test_env_dir"
+            exit 1
+        fi
+
+        if grep -q 'DATABASE_URL=postgresql://frostguard:\${POSTGRES_PASSWORD}@postgres:5432/frostguard' "$test_env_dir/.env.production"; then
+            echo "PASS: DATABASE_URL uses variable reference (not interpolated)"
+        else
+            echo "FAIL: DATABASE_URL should use \${POSTGRES_PASSWORD} variable reference"
+            rm -rf "$test_env_dir"
+            exit 1
+        fi
+
+        if grep -q "SESSION_COOKIE_DOMAIN=.test.example.com" "$test_env_dir/.env.production"; then
+            echo "PASS: SESSION_COOKIE_DOMAIN uses domain"
+        else
+            echo "FAIL: SESSION_COOKIE_DOMAIN should be .test.example.com"
+            rm -rf "$test_env_dir"
+            exit 1
+        fi
+    else
+        echo "FAIL: generate_env_file failed"
+        rm -rf "$test_env_dir"
+        exit 1
+    fi
+    echo ""
+
+    # Test backup on second run
+    echo "8. Testing backup on existing file..."
+    if generate_env_file "$test_env_dir/.env.production" 2>/dev/null; then
+        # Check backup was created
+        backup_count=$(ls "$test_env_dir/.env.production.backup."* 2>/dev/null | wc -l)
+        if [[ "$backup_count" -ge 1 ]]; then
+            echo "PASS: Backup file created on second run"
+        else
+            echo "FAIL: Backup should be created when file exists"
+            rm -rf "$test_env_dir"
+            exit 1
+        fi
+    else
+        echo "FAIL: generate_env_file failed on second run"
+        rm -rf "$test_env_dir"
+        exit 1
+    fi
+    rm -rf "$test_env_dir"
+    unset DOMAIN ADMIN_EMAIL STACK_AUTH_PROJECT_ID STACK_AUTH_PUBLISHABLE_KEY
+    echo ""
+
     # Test function existence
-    echo "7. Testing function existence..."
+    echo "9. Testing function existence..."
     functions_to_check=(
         "validate_fqdn"
         "validate_email"
@@ -577,6 +835,8 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         "collect_configuration"
         "generate_secret"
         "generate_secrets_files"
+        "generate_env_file"
+        "create_configuration"
     )
     for func in "${functions_to_check[@]}"; do
         if type -t "$func" &>/dev/null; then
@@ -589,7 +849,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     echo ""
 
     # Verify sourcing works
-    echo "8. Testing preflight-lib.sh sourcing..."
+    echo "10. Testing preflight-lib.sh sourcing..."
     if [[ -n "${LIB_VERSION:-}" ]] && type -t step &>/dev/null; then
         echo "PASS: preflight-lib.sh functions available (step, success, error)"
     else
