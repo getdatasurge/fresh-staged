@@ -52,11 +52,13 @@ See MILESTONES.md for details. 40 plans completed.
   3. Running script without network connectivity shows error explaining what URLs must be reachable
   4. Any script failure shows diagnostic context (command, line number, error category) without exposing credentials
   5. Script can resume from failure point without re-running successful steps
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 22-01: TBD
-- [ ] 22-02: TBD
+- [ ] 22-01-PLAN.md — Error handling infrastructure (trap ERR, credential sanitization, error categorization)
+- [ ] 22-02-PLAN.md — System validation functions (RAM, disk, CPU, OS, network)
+- [ ] 22-03-PLAN.md — Checkpoint-based resume system (state tracking, rollback, recovery prompts)
+- [ ] 22-04-PLAN.md — DNS validation (domain resolution, A record guidance)
 
 ### Phase 23: Prerequisites Installation
 **Goal**: Script installs all required dependencies idempotently with proper error handling
@@ -127,7 +129,7 @@ Plans:
 | 1-7 | v1.0 | 47/47 | Complete | 2026-01-23 |
 | 8-13 | v1.1 | 31/31 | Complete | 2026-01-24 |
 | 14-21 | v2.0 | 40/40 | Complete | 2026-01-25 |
-| 22. Foundation & Pre-Flight | v2.1 | 0/? | Not started | - |
+| 22. Foundation & Pre-Flight | v2.1 | 0/4 | Planned | - |
 | 23. Prerequisites Installation | v2.1 | 0/? | Not started | - |
 | 24. Interactive Configuration | v2.1 | 0/? | Not started | - |
 | 25. Deployment Orchestration | v2.1 | 0/? | Not started | - |
@@ -135,4 +137,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-25*
+*Last updated: 2026-01-25 (Phase 22 planned)*
