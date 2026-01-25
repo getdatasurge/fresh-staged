@@ -1,16 +1,12 @@
 /**
  * Escalation Contacts Domain Hooks
  *
- * TODO: Migrate to tRPC when escalationContacts router is available
- * - Backend router not yet created (escalationContacts.router.ts)
- * - Currently uses Supabase for data access
- * - Planned for future Phase when backend router is available
- *
- * Current status: Stack Auth for identity, Supabase for data (Phase 21)
+ * Migrated to tRPC in Phase 21
+ * Uses escalationContacts router for CRUD operations
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";  // TEMPORARY
+import { useTRPC, useTRPCClient } from "@/lib/trpc";
 import { qk } from "@/lib/queryKeys";
 import { invalidateEscalationContacts } from "@/lib/invalidation";
 import { useOrgScope } from "@/hooks/useOrgScope";
@@ -35,27 +31,33 @@ export interface EscalationContact {
 export function useEscalationContacts() {
   const { orgId, isReady } = useOrgScope();
   const user = useUser();
+  const trpc = useTRPC();
 
   return useQuery({
     queryKey: qk.org(orgId).escalationContacts(),
     queryFn: async () => {
       if (!orgId || !user) return [];
 
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      // Using Supabase directly for now (Stack Auth handles identity)
-      const { data, error } = await supabase
-        .from("escalation_contacts")
-        .select("*")
-        .eq("organization_id", orgId)
-        .eq("is_active", true)
-        .order("priority", { ascending: true });
-      if (error) {
-        console.error('[useEscalationContacts] Supabase error:', error);
-        throw error;
-      }
-      return data as EscalationContact[];
+      // Query via tRPC
+      const data = await trpc.client.escalationContacts.list.query({
+        organizationId: orgId,
+      });
+
+      // Map backend response to frontend EscalationContact interface
+      return data.map((contact) => ({
+        id: contact.id,
+        organization_id: contact.organizationId,
+        name: contact.name,
+        email: contact.email ?? null,
+        phone: contact.phone ?? null,
+        priority: contact.priority,
+        notification_channels: contact.notificationChannels,
+        is_active: contact.isActive,
+        user_id: contact.userId ?? null,
+        created_at: contact.createdAt,
+      })) as EscalationContact[];
     },
-    enabled: isReady && !!user,
+    enabled: isReady && !!user && !!orgId,
   });
 }
 
@@ -63,19 +65,24 @@ export function useCreateEscalationContact() {
   const queryClient = useQueryClient();
   const { orgId } = useOrgScope();
   const user = useUser();
+  const client = useTRPCClient();
 
   return useMutation({
     mutationFn: async (contact: Omit<EscalationContact, "id" | "created_at">) => {
       if (!orgId || !user) throw new Error('Not authenticated');
 
-      // TODO Phase 6: Migrate to new API
-      const { data, error } = await supabase
-        .from("escalation_contacts")
-        .insert(contact)
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
+      return client.escalationContacts.create.mutate({
+        organizationId: orgId,
+        data: {
+          name: contact.name,
+          email: contact.email ?? undefined,
+          phone: contact.phone ?? undefined,
+          priority: contact.priority,
+          notificationChannels: contact.notification_channels,
+          isActive: contact.is_active,
+          userId: contact.user_id ?? undefined,
+        },
+      });
     },
     onSuccess: async () => {
       if (orgId) {
@@ -89,17 +96,25 @@ export function useUpdateEscalationContact() {
   const queryClient = useQueryClient();
   const { orgId } = useOrgScope();
   const user = useUser();
+  const client = useTRPCClient();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<EscalationContact> & { id: string }) => {
       if (!orgId || !user) throw new Error('Not authenticated');
 
-      // TODO Phase 6: Migrate to new API
-      const { error } = await supabase
-        .from("escalation_contacts")
-        .update(updates)
-        .eq("id", id);
-      if (error) throw error;
+      return client.escalationContacts.update.mutate({
+        organizationId: orgId,
+        contactId: id,
+        data: {
+          name: updates.name,
+          email: updates.email ?? undefined,
+          phone: updates.phone ?? undefined,
+          priority: updates.priority,
+          notificationChannels: updates.notification_channels,
+          isActive: updates.is_active,
+          userId: updates.user_id ?? undefined,
+        },
+      });
     },
     onSuccess: async () => {
       if (orgId) {
@@ -113,17 +128,16 @@ export function useDeleteEscalationContact() {
   const queryClient = useQueryClient();
   const { orgId } = useOrgScope();
   const user = useUser();
+  const client = useTRPCClient();
 
   return useMutation({
     mutationFn: async (id: string) => {
       if (!orgId || !user) throw new Error('Not authenticated');
 
-      // TODO Phase 6: Migrate to new API
-      const { error } = await supabase
-        .from("escalation_contacts")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
+      return client.escalationContacts.delete.mutate({
+        organizationId: orgId,
+        contactId: id,
+      });
     },
     onSuccess: async () => {
       if (orgId) {
