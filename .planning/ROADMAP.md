@@ -195,18 +195,18 @@ Plans:
 - [x] 21-03-PLAN.md — Admin routers (admin, assets, availability)
 - [x] 21-04-PLAN.md — Notification policies router with inheritance
 - [x] 21-05-PLAN.md — Frontend hook migration (first batch)
-- [ ] 21-06-PLAN.md — TTN settings router (get, update, test)
-- [ ] 21-07-PLAN.md — Escalation contacts router (CRUD)
-- [ ] 21-08-PLAN.md — Migrate useTTNSettings, useTTNOperations, useEscalationContacts to tRPC
-- [ ] 21-09-PLAN.md — Document remaining TTN hooks (edge function blockers)
+- [x] 21-06-PLAN.md — TTN settings router (get, update, test)
+- [x] 21-07-PLAN.md — Escalation contacts router (CRUD)
+- [x] 21-08-PLAN.md — Migrate useTTNSettings, useTTNOperations, useEscalationContacts to tRPC
+- [x] 21-09-PLAN.md — Document remaining TTN hooks (edge function blockers)
 
 **Success Criteria:**
 1. Settings domain migrated (preferences, SMS config, payments) ✓ ACHIEVED
 2. Admin features migrated (queue monitoring, asset uploads, availability) ✓ ACHIEVED
 3. TTN domain migrated (gateways, devices with capacity middleware) ✓ ACHIEVED
 4. Notification policies migrated with inheritance chain ✓ ACHIEVED
-5. 9 frontend hooks migrated to tRPC (6 complete + 3 gap closure)
-6. Remaining TTN hooks documented with migration blockers
+5. 9 frontend hooks migrated to tRPC (6 complete + 3 gap closure) ✓ ACHIEVED
+6. Remaining TTN hooks documented with migration blockers ✓ ACHIEVED
 
 **Note:** Full AUTH-02 completion (Supabase removal) requires additional backend work:
 - TTN SDK integration (@ttn-lw/grpc-web-api-client)
@@ -291,7 +291,7 @@ Plans:
 | 18. Stripe Billing | v2.0 | 6/6 | Complete | 2026-01-24 |
 | 19. Backend API Migration - Foundation | v2.0 | 4/4 | Complete | 2026-01-24 |
 | 20. Backend API Migration - Core | v2.0 | 5/5 | Complete | 2026-01-25 |
-| 21. Backend API Migration - Completion | v2.0 | 5/9 | In Progress | - |
+| 21. Backend API Migration - Completion | v2.0 | 9/9 | Complete | 2026-01-25 |
 | 22. AWS ECS Deployment (Optional) | v2.0 | 0/? | Not Started | - |
 
 ---
