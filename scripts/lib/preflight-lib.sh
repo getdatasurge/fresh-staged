@@ -467,10 +467,110 @@ validate_network() {
     return 0
 }
 
+# PREFLIGHT-06: Validate DNS resolution for domain points to server IP
+# Args: $1 = domain name to validate
+# Returns: 0 if DNS matches server IP, 1 if not
+# Note: This check is optional during preflight (domain may not be configured yet)
+#       Use this when ready to deploy (before SSL provisioning)
+validate_dns() {
+    local domain="$1"
+
+    if [[ -z "$domain" ]]; then
+        error "validate_dns requires domain argument"
+        return 1
+    fi
+
+    # Determine which DNS tool to use (dig preferred, getent fallback)
+    local dns_tool=""
+    if command -v dig &>/dev/null; then
+        dns_tool="dig"
+    elif command -v getent &>/dev/null; then
+        dns_tool="getent"
+    else
+        # Try to install dnsutils if neither is available
+        warning "No DNS lookup tool found, attempting to install dnsutils..."
+        if command -v apt-get &>/dev/null; then
+            # Use subshell to prevent ERR trap from firing on install failure
+            if (set +e; apt-get update -qq && apt-get install -y dnsutils >/dev/null 2>&1); then
+                dns_tool="dig"
+            else
+                error "Could not install dnsutils"
+                echo "Install manually: sudo apt-get install dnsutils"
+                return 1
+            fi
+        else
+            error "Cannot install dig - apt-get not available"
+            return 1
+        fi
+    fi
+
+    # Get server's public IP
+    step "Detecting server public IP..."
+    local server_ip
+    server_ip=$(curl -s --max-time 10 ifconfig.me 2>/dev/null) || \
+    server_ip=$(curl -s --max-time 10 icanhazip.com 2>/dev/null) || \
+    server_ip=$(curl -s --max-time 10 ipinfo.io/ip 2>/dev/null) || \
+    server_ip=""
+
+    if [[ -z "$server_ip" ]]; then
+        error "Could not determine server public IP"
+        echo "  Check internet connectivity"
+        return 1
+    fi
+
+    echo "  Server IP: $server_ip"
+
+    # Resolve domain using available tool
+    step "Resolving DNS for $domain..."
+    local resolved_ip=""
+    if [[ "$dns_tool" == "dig" ]]; then
+        resolved_ip=$(dig +short "$domain" 2>/dev/null | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+    elif [[ "$dns_tool" == "getent" ]]; then
+        resolved_ip=$(getent ahostsv4 "$domain" 2>/dev/null | awk '{print $1}' | head -1)
+    fi
+
+    if [[ -z "$resolved_ip" ]]; then
+        error "DNS lookup failed for $domain"
+        echo "  No A record found."
+        echo ""
+        echo "Configure DNS at your domain registrar:"
+        echo ""
+        echo "  Record Type: A"
+        echo "  Name:        $domain (or @ for root domain)"
+        echo "  Value:       $server_ip"
+        echo "  TTL:         300 (5 minutes)"
+        echo ""
+        echo "Wait for DNS propagation (typically 5-60 minutes) before retrying."
+        echo ""
+        echo "Verify with: dig $domain"
+        return 1
+    fi
+
+    echo "  Domain resolves to: $resolved_ip"
+
+    # Compare IPs
+    if [[ "$resolved_ip" != "$server_ip" ]]; then
+        error "DNS mismatch for $domain"
+        echo "  Domain resolves to: $resolved_ip"
+        echo "  Server IP is:       $server_ip"
+        echo ""
+        echo "Update your DNS A record to point to $server_ip"
+        echo ""
+        echo "If you recently updated DNS, wait for propagation (5-60 minutes)."
+        echo "Check propagation status: dig $domain +trace"
+        return 1
+    fi
+
+    success "DNS: $domain correctly resolves to $server_ip"
+    return 0
+}
+
 # Run all pre-flight validation checks
-# Args: none
+# Args: $1 = domain (optional, for DNS validation)
 # Returns: 0 if all pass, 1 if any critical check fails
 run_preflight_checks() {
+    local domain="${1:-}"
+
     echo "========================================"
     echo "Pre-Flight System Validation"
     echo "========================================"
@@ -506,6 +606,20 @@ run_preflight_checks() {
     fi
     echo ""
 
+    # DNS validation is optional (only if domain provided)
+    if [[ -n "$domain" ]]; then
+        step "Checking DNS resolution for $domain..."
+        if ! validate_dns "$domain"; then
+            failed=1
+        fi
+        echo ""
+    else
+        echo "[INFO] DNS validation skipped (no domain provided)"
+        echo "       Run with domain argument for full validation:"
+        echo "       run_preflight_checks \"yourdomain.com\""
+        echo ""
+    fi
+
     echo "========================================"
     if [[ $failed -eq 1 ]]; then
         error "Pre-flight checks FAILED"
@@ -517,6 +631,34 @@ run_preflight_checks() {
     success "All pre-flight checks PASSED"
     echo ""
     return 0
+}
+
+# Run DNS validation only (useful for checking after DNS changes)
+# Args: $1 = domain name
+run_dns_check() {
+    local domain="${1:-}"
+
+    if [[ -z "$domain" ]]; then
+        error "Usage: run_dns_check <domain>"
+        return 1
+    fi
+
+    echo "========================================"
+    echo "DNS Validation"
+    echo "========================================"
+    echo ""
+
+    if validate_dns "$domain"; then
+        echo ""
+        success "DNS is correctly configured!"
+        echo "You can proceed with deployment."
+        return 0
+    else
+        echo ""
+        error "DNS validation failed"
+        echo "Fix the DNS configuration before proceeding."
+        return 1
+    fi
 }
 
 # ===========================================
@@ -603,6 +745,49 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     else
         echo "SKIP: validate_os (no /etc/os-release)"
     fi
+
+    echo ""
+
+    # Test DNS validation function
+    echo "4. Testing DNS validation..."
+
+    # Test with missing argument (should fail)
+    # Disable ERR trap for this test since we expect failure
+    trap - ERR
+    if validate_dns "" 2>/dev/null; then
+        echo "FAIL: validate_dns should fail with empty domain"
+        exit 1
+    fi
+    echo "PASS: validate_dns rejects empty domain"
+    trap error_handler ERR
+
+    # Test with invalid domain (should fail with "No A record")
+    trap - ERR
+    dns_output=$(validate_dns "this-domain-absolutely-does-not-exist-xyz123.invalid" 2>&1) || true
+    if ! echo "$dns_output" | grep -q "No A record\|DNS lookup failed"; then
+        echo "FAIL: validate_dns should report 'No A record' for invalid domain"
+        echo "Output was: $dns_output"
+        exit 1
+    fi
+    echo "PASS: validate_dns handles non-existent domains"
+    trap error_handler ERR
+
+    # Test with valid domain (will fail DNS mismatch but proves resolution works)
+    # Skip if no DNS tool is available
+    trap - ERR
+    if command -v dig &>/dev/null || command -v getent &>/dev/null; then
+        dns_output=$(validate_dns "google.com" 2>&1) || true
+        if echo "$dns_output" | grep -q "Could not determine server public IP\|DNS lookup failed"; then
+            echo "SKIP: DNS test needs network (offline mode)"
+        elif echo "$dns_output" | grep -q "DNS mismatch\|correctly resolves"; then
+            echo "PASS: validate_dns resolves real domains"
+        else
+            echo "WARN: Unexpected DNS output: $dns_output"
+        fi
+    else
+        echo "SKIP: DNS test (no DNS tool available)"
+    fi
+    trap error_handler ERR
 
     echo ""
     echo "========================================"
