@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 21 of 22 (Backend API Migration - Completion) — IN PROGRESS
-Plan: 1 of 5 complete
+Plan: 3 of 5 complete
 Status: In progress
-Last activity: 2026-01-25 — Completed 21-01-PLAN.md (Settings Domain tRPC Routers)
+Last activity: 2026-01-25 — Completed 21-03-PLAN.md (Admin/Utility Domain tRPC Routers)
 
-Progress: [████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░] 43% (37/86 plans)
+Progress: [█████████████████░░░░░░░░░░░░░░░░░░░░░░░░░] 45% (39/86 plans)
 
 ## Completed Milestones
 
@@ -160,6 +160,9 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | ROUTER-10 | protectedProcedure for user-scoped preferences | 21-01 | No org context needed for digest preferences |
 | ROUTER-11 | Fire-and-forget scheduler sync for preferences | 21-01 | Don't block response waiting for BullMQ scheduler update |
 | ROUTER-12 | SMS config upsert admin/owner gated | 21-01 | Billing-related config restricted to org admins |
+| ASSETS-01 | Pre-signed URL pattern for asset uploads | 21-03 | Avoids tRPC body size limits, enables direct S3/MinIO uploads |
+| ASSETS-02 | Generated keys include timestamp + random | 21-03 | Ensures unique keys without collisions |
+| AVAIL-01 | Public procedures for availability checks | 21-03 | No auth required for registration validation |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -187,10 +190,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-25
-**Stopped at:** Completed 21-01-PLAN.md (Settings Domain tRPC Routers)
+**Stopped at:** Completed 21-03-PLAN.md (Admin/Utility Domain tRPC Routers)
 **Resume file:** None
 **Next action:** Execute 21-02-PLAN.md (TTN Integration tRPC Routers)
 
 ---
 
-*State updated: 2026-01-25 after completing Plan 21-01 (Settings Domain tRPC Routers)*
+*State updated: 2026-01-25 after completing Plan 21-03 (Admin/Utility Domain tRPC Routers)*
