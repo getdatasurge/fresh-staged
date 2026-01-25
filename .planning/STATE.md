@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** Phase 24 - Interactive Configuration (v2.1 Streamlined Deployment)
+**Current focus:** Phase 25 - Deployment Orchestration (v2.1 Streamlined Deployment)
 
 ## Current Position
 
 Milestone: v2.1 Streamlined Deployment — IN PROGRESS
-Phase: 24 of 26 (Interactive Configuration) — COMPLETE
-Plan: 3 of 3 in current phase
-Status: Phase complete, verified
-Last activity: 2026-01-25 — Phase 24 verified and complete
+Phase: 25 of 26 (Deployment Orchestration) — IN PROGRESS
+Plan: 1 of 2 in current phase
+Status: Plan 25-01 complete
+Last activity: 2026-01-25 — Completed 25-01-PLAN.md (Deployment Orchestrator)
 
-Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 127 plans total
-[████████████████████] 3/3 plans in Phase 24
+Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 128 plans total
+[██████████          ] 1/2 plans in Phase 25
 
 ## v2.1 Phase Overview
 
@@ -28,7 +28,14 @@ Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 127 plans total
 | 25 | Deployment Orchestration | 5 | Integration with existing deploy.sh |
 | 26 | Verification & Completion | 15 | Health checks, E2E, post-deploy, docs |
 
-## Phase 24 Progress — COMPLETE ✓
+## Phase 25 Progress — IN PROGRESS
+
+| Plan | Name | Status | Commit |
+|------|------|--------|--------|
+| 25-01 | Deployment Orchestrator | Complete | aa4d797 |
+| 25-02 | Health Verification | Pending | - |
+
+## Phase 24 — COMPLETE ✓
 
 | Plan | Name | Status | Commit |
 |------|------|--------|--------|
@@ -142,6 +149,9 @@ Recent decisions affecting v2.1:
 - [24-03]: Secrets shown as placeholders only, never actual values
 - [24-03]: validate_dns_before_deploy calls existing validate_dns from preflight-lib.sh
 - [24-03]: run_interactive_configuration uses 4-step flow: collect -> create -> summary -> DNS
+- [25-01]: DEPLOY_SCRIPT_DIR avoids collision with libraries that redefine SCRIPT_DIR
+- [25-01]: deploy.sh called via exec (not duplicated) for single source of truth
+- [25-01]: Checkpoint names use 'deploy-' prefix to avoid collision with library checkpoints
 
 ### Tech Debt Carried Forward
 
@@ -156,10 +166,10 @@ None for v2.1.
 ## Session Continuity
 
 **Last session:** 2026-01-25
-**Stopped at:** Phase 24 complete and verified
+**Stopped at:** Plan 25-01 complete
 **Resume file:** None
-**Next action:** `/gsd:plan-phase 25` for Deployment Orchestration
+**Next action:** Execute Plan 25-02 for Health Verification
 
 ---
 
-*State updated: 2026-01-25 after Phase 24 completion*
+*State updated: 2026-01-25 after Plan 25-01 completion*
