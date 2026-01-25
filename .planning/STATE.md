@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
-Phase: 19 of 22 (Backend API Migration Foundation) — COMPLETE
-Plan: 4 of 4 complete
-Status: Phase 19 verified and complete
-Last activity: 2026-01-24 — Completed Phase 19 (tRPC infrastructure + organizations migration)
+Phase: 20 of 22 (Backend API Migration - Core) — IN PROGRESS
+Plan: 1 of 5 complete
+Status: In progress
+Last activity: 2026-01-24 — Completed 20-01-PLAN.md (Sites & Areas tRPC Routers)
 
-Progress: [███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 36% (31/85 plans)
+Progress: [████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 37% (32/86 plans)
 
 ## Completed Milestones
 
@@ -50,13 +50,13 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 31
+- Plans completed: 32
 - Phases completed: 7 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing, 19-backend-api-migration-foundation)
-- Ready for: Phase 20
+- In progress: Phase 20 (Backend API Migration - Core)
 
 **Combined:**
-- Total plans completed: 31/85
-- Total phases: 19 (7 complete in v2.0)
+- Total plans completed: 32/86
+- Total phases: 20 (7 complete in v2.0, 1 in progress)
 - Milestones shipped: 2 (v1.0, v1.1)
 
 ## Accumulated Context
@@ -148,6 +148,9 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | TRPC-11 | Deprecated wrapper pattern for backward compatibility | 19-04 | Allow gradual component migration without breaking existing code |
 | TRPC-12 | queryOptions pattern for TanStack React Query | 19-04 | Allows custom cache configuration while maintaining type inference |
 | TRPC-13 | Mock JWT verification in E2E tests | 19-04 | Avoid Stack Auth API calls and environment setup in test environment |
+| ROUTER-03 | Sites/areas follow organizations.router.ts pattern | 20-01 | Consistency across all domain routers for CRUD operations |
+| ROUTER-04 | Admin/owner role check for mutations | 20-01 | Matches existing REST route authorization using ['admin', 'owner'].includes() |
+| ROUTER-05 | Areas validate site access via service layer | 20-01 | Returns NOT_FOUND for invalid site, consistent error handling |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -175,10 +178,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-24
-**Stopped at:** Completed Phase 19 (Backend API Migration Foundation)
+**Stopped at:** Completed 20-01-PLAN.md (Sites & Areas tRPC Routers)
 **Resume file:** None
-**Next action:** Begin Phase 20 (Backend API Migration - Core)
+**Next action:** Continue Phase 20, Plan 02 (Units tRPC Router)
 
 ---
 
-*State updated: 2026-01-24 after completing Phase 19 Backend API Migration Foundation*
+*State updated: 2026-01-24 after completing Plan 20-01 (Sites & Areas tRPC Routers)*
