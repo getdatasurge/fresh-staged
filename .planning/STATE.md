@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** Phase 22 - Foundation & Pre-Flight (v2.1 Streamlined Deployment)
+**Current focus:** Phase 23 - Prerequisites Installation (v2.1 Streamlined Deployment)
 
 ## Current Position
 
 Milestone: v2.1 Streamlined Deployment — IN PROGRESS
-Phase: 22 of 26 (Foundation & Pre-Flight) — COMPLETE
-Plan: 4 of 4 in current phase
-Status: Phase complete, verified
-Last activity: 2026-01-25 — Phase 22 verified and complete
+Phase: 23 of 26 (Prerequisites Installation) — IN PROGRESS
+Plan: 1 of 2 in current phase
+Status: Plan 23-01 complete
+Last activity: 2026-01-25 — Completed 23-01-PLAN.md (Docker Installation)
 
-Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 122 plans total
-[████████████████████] 4/4 plans in Phase 22 ✓
+Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 123 plans total
+[██░░░░░░░░░░░░░░░░░░] 1/2 plans in Phase 23
 
 ## v2.1 Phase Overview
 
@@ -28,7 +28,14 @@ Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 122 plans total
 | 25 | Deployment Orchestration | 5 | Integration with existing deploy.sh |
 | 26 | Verification & Completion | 15 | Health checks, E2E, post-deploy, docs |
 
-## Phase 22 Progress — COMPLETE ✓
+## Phase 23 Progress — IN PROGRESS
+
+| Plan | Name | Status | Commit |
+|------|------|--------|--------|
+| 23-01 | Docker Installation | Complete | 2257d6f |
+| 23-02 | Firewall Configuration | Pending | - |
+
+## Phase 22 — COMPLETE ✓
 
 | Plan | Name | Status | Commit |
 |------|------|--------|--------|
@@ -71,8 +78,8 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 ## Performance Metrics
 
 **Combined:**
-- Total plans completed: 119
-- Total phases: 21 complete + 1 in progress
+- Total plans completed: 123
+- Total phases: 22 complete + 1 in progress
 - Milestones shipped: 3 (v1.0, v1.1, v2.0)
 
 **By Milestone:**
@@ -82,7 +89,7 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | v1.0 MVP | 1-7 | 47 | ~2 days |
 | v1.1 Production | 8-13 | 31 | ~2 days |
 | v2.0 Real-Time | 14-21 | 40 | ~2 days |
-| v2.1 Deployment | 22-26 | 4/TBD | Phase 22 complete |
+| v2.1 Deployment | 22-26 | 5/TBD | Phase 22-23 in progress |
 
 ## Accumulated Context
 
@@ -105,6 +112,9 @@ Recent decisions affecting v2.1:
 - [22-04]: getent ahostsv4 fallback when dig unavailable for DNS resolution portability
 - [22-04]: DNS validation optional in run_preflight_checks (domain may not be configured during preflight)
 - [22-04]: Multiple IP detection services cascade (ifconfig.me, icanhazip.com, ipinfo.io)
+- [23-01]: Apt repository method over get.docker.com for idempotent Docker installs
+- [23-01]: 300s default apt lock timeout (configurable via APT_LOCK_TIMEOUT)
+- [23-01]: Check 4 apt lock files before any package operation
 
 ### Tech Debt Carried Forward
 
@@ -118,11 +128,11 @@ None for v2.1.
 
 ## Session Continuity
 
-**Last session:** 2026-01-25
-**Stopped at:** Phase 22 complete and verified
+**Last session:** 2026-01-25 16:22 UTC
+**Stopped at:** Completed 23-01-PLAN.md
 **Resume file:** None
-**Next action:** `/gsd:plan-phase 23` for Prerequisites Installation
+**Next action:** Execute 23-02-PLAN.md (Firewall Configuration)
 
 ---
 
-*State updated: 2026-01-25 after Phase 22 completion*
+*State updated: 2026-01-25 after 23-01-PLAN.md completion*
