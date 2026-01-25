@@ -1,352 +1,275 @@
-# Research Summary: v1.1 Production Ready
+# Project Research Summary
 
-**Project:** FreshTrack Pro v1.1 - Production Deployment Readiness
-**Domain:** Self-Hosted IoT Temperature Monitoring System
-**Researched:** 2026-01-23
+**Project:** FreshTrack Pro v2.1 Streamlined Deployment Automation
+**Domain:** Infrastructure deployment automation (self-hosted Docker Compose)
+**Researched:** 2026-01-25
 **Confidence:** HIGH
 
 ## Executive Summary
 
-FreshTrack Pro v1.0 validated the Docker Compose stack for local development and staging. Research for v1.1 Production Ready reveals that deploying this IoT monitoring system to production requires minimal stack additions but critical configuration hardening. The core need is enabling PgBouncer connection pooling (currently disabled), implementing proper secrets management (currently using environment variables), and establishing deployment procedures for three distinct targets: AWS (ECS/Fargate), DigitalOcean (Droplet), and self-hosted VMs.
+FreshTrack Pro v2.1 aims to transform multi-step deployment into a one-script automated experience. The existing v1.1 deployment infrastructure (Docker Compose orchestration, health checks, SSL automation, automatic rollback) provides a solid foundation—this milestone is about refinement, not reinvention. The research reveals that the current scripts implement approximately 80% of needed patterns; the missing 20% centers on interactive configuration generation, comprehensive pre-flight validation, and tiered error recovery with clear diagnostics.
 
-The recommended approach is Docker Compose with environment-specific override files (compose.{target}.yaml pattern), which avoids maintaining separate codebases while supporting managed vs self-hosted service trade-offs per target. Critical risks center on PgBouncer transaction mode compatibility (breaks applications using prepared statements or SET commands), secrets exposure in Docker images (one 2026 incident exposed credentials for 247 days), and inadequate health checks preventing zero-downtime deployments for 24/7 IoT monitoring.
+The recommended approach is pure Bash with no additional runtime dependencies, using a modular phase architecture with checkpoint-based state management. The critical path starts with comprehensive pre-flight checks (OS, resources, DNS), progresses through interactive configuration generation (eliminating manual file editing), executes deployment via existing proven scripts, and concludes with progressive verification from health endpoints through optional E2E testing. This order prevents the most dangerous pitfall: silent failures that exhaust Let's Encrypt rate limits or leave systems in inconsistent states without clear recovery paths.
 
-For v1.1, the stack additions are minimal (enable existing PgBouncer, add Docker Secrets), but operational practices require significant hardening: automated SSL certificate management (200-day certificate lifespan starting March 2026 makes automation non-negotiable), database backup automation, resource limits to prevent runaway containers, and comprehensive health checks for zero-downtime deployments. The research strongly recommends starting with self-hosted DigitalOcean Droplet deployment (lowest complexity, $40-50/month) before graduating to AWS ECS when scaling demands justify the additional complexity and cost ($110-200/month).
+Key risks center on non-idempotent operations causing partial state corruption, DNS/SSL certificate failures hitting rate limits (5 failures/hour), and shallow health checks passing while the system is fundamentally broken. Prevention requires trap-based error handling with categorized recovery, DNS validation before any SSL operations, and multi-layer verification that exercises actual data flows beyond simple process checks.
 
 ## Key Findings
 
 ### Recommended Stack
 
-FreshTrack Pro's v1.0 stack (Fastify, PostgreSQL, Redis, MinIO, Caddy, Prometheus/Grafana/Loki) requires no breaking changes for production deployment. The focus is on enabling deferred components and hardening configurations rather than introducing new technologies.
+Pure Bash approach leveraging existing Ubuntu/Debian system tools. No npm, Node.js, Python, or configuration management overhead—deployment automation runs on pre-installed utilities.
 
-**Stack additions needed:**
+**Core technologies:**
+- **Bash 5.x**: Script execution runtime (Ubuntu 24.04 default) — pre-installed on all targets, existing scripts already use it, no dependencies to install
+- **Docker Engine 29.x**: Container runtime via get.docker.com — official convenience script handles Ubuntu/Debian, includes Compose v2 plugin automatically
+- **Docker Compose v2**: Multi-container orchestration (bundled with Docker) — `docker compose` syntax, no separate installation needed
+- **curl + jq**: HTTP health checks and JSON parsing — curl pre-installed, jq is 1MB addition enabling reliable JSON validation in health checks
+- **openssl**: Secure password/secret generation — pre-installed, already used for `openssl rand -base64 32` pattern
 
-- **PgBouncer 1.24.1** (Bitnami image): Connection pooling for production PostgreSQL. Currently disabled in docker-compose.yml due to image issues, but bitnami/pgbouncer:1.24.1-debian-12-r5 is available and production-ready. Use transaction pooling mode (best for web apps), configure max_client_conn=1000 and default_pool_size=25 for production traffic.
+**Development quality tools:**
+- **ShellCheck**: Static analysis for Bash — catches common errors, use in CI and pre-commit hooks
+- **trap ERR**: Error handling pattern — provides diagnostic context with `$BASH_LINENO` and `$BASH_COMMAND`
 
-- **Docker Secrets** (file-based): Replace environment variable secrets with Docker Compose secrets mounted at /run/secrets. Self-hosted deployments use file-based secrets (chmod 600 secrets/*.txt). AWS deployments integrate with AWS Secrets Manager. DigitalOcean Droplets use encrypted file storage.
+**What NOT to use:**
+- Ansible/Puppet/Chef: Over-engineering for single-server deployment
+- whiptail/dialog: Adds dependency for marginal UX improvement over native `read`
+- Terraform: Wrong tool—provisions infrastructure, not applications
+- docker-compose v1: Deprecated since July 2023
 
-- **Caddy with Let's Encrypt** (already implemented): Automatic SSL certificate management is critical given March 2026 changes reducing certificate lifespan to 200 days (down to 47 days by 2029). Caddy's automatic HTTPS with Let's Encrypt renewal is already configured in v1.0 stack - no changes needed for self-hosted/DigitalOcean Droplet deployments. AWS deployments use ACM (AWS Certificate Manager) instead.
+### Expected Features
 
-- **Deployment scripts**: Target-specific deployment automation (deploy-aws.sh, deploy-do.sh, deploy-vm.sh) with pre-flight health checks, rollback procedures, and monitoring integration.
+The v1.1 deployment already implements most table stakes features. The v2.1 enhancement focuses on the "one-script" user experience and recovery capabilities.
 
-**Configuration strategy (no new technologies):**
+**Must have (table stakes - v1.1 already complete):**
+- DNS validation pre-SSL to prevent Let's Encrypt rate limits
+- Firewall configuration (UFW ports 22, 80, 443)
+- Secrets secure storage with 600 permissions
+- Health check validation with 30-retry window
+- Automatic rollback on health check failure (code-only, preserves data)
+- SSL certificate automation via Caddy + Let's Encrypt
+- Database backup automation (daily pg_dump to MinIO)
+- Idempotent operations (safe to rerun after failures)
 
-- Base docker-compose.yml + environment overrides (compose.{target}.yaml)
-- Production compose files add resource limits, remove dev volume mounts, pin image versions
-- Managed service substitution per target (RDS vs self-hosted PostgreSQL, ElastiCache vs self-hosted Redis)
+**Must have for v2.1 (one-script goal):**
+- Single script entry point (no manual git clone first)
+- Comprehensive pre-flight checks (RAM, CPU, OS version, network connectivity)
+- Interactive config file generation (eliminate manual .env editing)
+- Diagnostic/verbose mode for troubleshooting
+- Complete URL/credential summary at deployment end
+- Recovery guidance when failures occur
 
-**Critical version note:**
+**Should have (add after validation):**
+- Estimated time remaining during deployment
+- Integrated E2E validation (sensor pipeline test)
+- Checkpoint resume (continue from failure point)
 
-- PostgreSQL: Keep postgres:15-alpine for development (validated in v1.0), consider postgres:15 (Debian) for production if using extensions beyond contrib (Alpine uses musl libc which can cause extension compatibility issues).
+**Defer (v2+):**
+- Sample data population (demo use case)
+- Web-based installer dashboard
+- Multi-VM orchestration
+- First admin user creation (requires Stack Auth automation)
 
-### Expected Features (Deployment Capabilities)
-
-This is a deployment milestone, not a feature milestone. Research identified production-readiness capabilities as "features" that make the system deployable and maintainable.
-
-**Must have (table stakes for production deployment):**
-
-- **Automated SSL/TLS certificate management**: Starting March 2026, certificates valid only 200 days. Manual renewal is non-viable. Caddy with auto-HTTPS already implemented in v1.0 - mark as COMPLETE.
-- **Zero-downtime deployment**: IoT monitoring requires 24/7 uptime. Food safety violations occur if monitoring goes offline. Existing health endpoints (/health, /health/ready, /health/live) support this.
-- **Database backup & restore**: Historical sensor data is legally required for HACCP compliance. Need automated daily backups with retention policy. NEEDS IMPLEMENTATION.
-- **Secrets management**: Production credentials must never be in git or environment variables. Currently using env vars - NEEDS MIGRATION to Docker secrets.
-- **Resource limits & constraints**: Prevent runaway containers from consuming all memory/CPU. NEEDS ADDITION to production compose files.
-- **Observability stack**: Prometheus, Loki, Grafana already implemented in v1.0 - mark as COMPLETE.
-- **Rollback procedure**: rollback.sh already implemented in v1.0 - mark as COMPLETE.
-
-**Should have (low-complexity differentiators):**
-
-- **Deployment notifications**: Slack/email webhook on deploy/rollback events. Low complexity, high operational value.
-- **Certificate rotation monitoring**: Prometheus alert for cert expiry < 30 days. Critical given 2026 SSL lifespan changes.
-
-**Defer to v2.0+ (explicitly out of scope for v1.1):**
-
-- **Kubernetes orchestration**: Massive operational overhead for small teams. Docker Compose is sufficient for single-server or small cluster deployments.
-- **Microservices decomposition**: Would create "distributed monolith" anti-pattern. Keep monolithic backend with modular code structure.
-- **Blue-green/canary deployments**: High complexity, requires traffic splitting infrastructure. Only justified when customer base requires SLA guarantees.
-- **Multi-region deployment**: Very high complexity. Only if customers demand global availability.
+**Anti-features (deliberately NOT building):**
+- Fully automatic with no user input: Hides critical decisions (domain, passwords, auth keys)
+- Database schema rollback: Data loss risk too high, forward-only migrations
+- Auto-generate Stack Auth project: Can't securely store API keys, auth too critical
+- Configuration management for single server: Ansible/Puppet massive overhead
+- Automatic OS updates: Reboot timing and breaking changes
 
 ### Architecture Approach
 
-Multi-target Docker Compose deployment uses a single base configuration (docker-compose.yml) with environment-specific override files (compose.{env}.yaml). This approach avoids maintaining multiple codebases while supporting AWS, DigitalOcean, and self-hosted VM deployments with different managed vs self-hosted service trade-offs.
+Modular phase architecture with checkpoint-based state management, integrating existing v1.1 scripts rather than duplicating logic. Each phase is self-contained and idempotent, enabling resume-on-failure without starting from scratch.
 
-**Pattern:** Base + Override Files
+**Major components:**
+1. **Entry script (deploy-one-click.sh)** — Single entry point under 100 lines, orchestrates phase execution with checkpoint tracking, handles argument parsing and main flow control
+2. **Phase modules (phases/01-05)** — Self-contained deployment phases (preflight, install, configure, deploy, verify) with clear entry/exit contracts
+3. **Function libraries (lib/)** — Reusable functions shared across phases: common.sh (colors, logging), system.sh (OS detection, packages), docker.sh (Docker install), config.sh (prompting), health.sh (verification), rollback.sh (recovery)
+4. **Integration shim** — Thin wrappers calling existing v1.1 scripts (deploy.sh, rollback.sh, health-check.sh, e2e-sensor-pipeline.sh) to avoid code duplication
+5. **State manager** — `.deployment-state` file with checkpoint markers enabling intelligent resume and rollback decisions
 
-```
-docker-compose.yml              # Base (all services)
-compose.dev.yaml                # Local development
-compose.production.yaml         # Self-hosted production
-compose.aws.yaml                # AWS ECS + managed services
-compose.digitalocean.yaml       # DigitalOcean hybrid
-```
+**Data flow:**
+User input/config file → interactive prompting with validation → config file generation (.env.production, secrets/) → Docker Compose deployment → progressive verification (health endpoints → SSL check → browser test → optional E2E)
 
-**Invocation:**
-- Local: `docker compose -f docker-compose.yml -f compose.dev.yaml up`
-- Self-hosted: `docker compose -f docker-compose.yml -f compose.production.yaml up -d`
-- AWS: `docker compose -f docker-compose.yml -f compose.aws.yaml up` (via docker context create ecs)
-
-**Service substitution strategy:**
-
-Self-hosted targets run all services in Docker Compose (PostgreSQL, Redis, MinIO containerized). AWS targets disable self-hosted databases via profiles (profiles: ["disabled"]) and use managed services (RDS, ElastiCache, S3). DigitalOcean hybrid approach uses managed PostgreSQL but self-hosted Redis/MinIO for cost optimization.
-
-**Major deployment components:**
-
-1. **Self-Hosted VM (DigitalOcean Droplet, bare metal)**: Full Docker Compose stack on single server, Caddy for reverse proxy + SSL, identical to v1.0 staging environment. Lowest complexity, $40-80/month, best for < 1000 users.
-
-2. **AWS ECS with Fargate**: Backend as ECS tasks, managed RDS PostgreSQL, ElastiCache Redis, S3 storage, ALB for SSL termination with ACM certificates. Higher complexity, $110-200+/month, best for > 5000 users with auto-scaling requirements.
-
-3. **DigitalOcean Droplet with Managed DB**: Hybrid approach using managed PostgreSQL ($15/month) but self-hosting Redis/MinIO on Droplet ($24/month). Total $44/month, balanced cost/ops trade-off for 1000-5000 users.
-
-**Critical architectural decision:**
-
-Start with self-hosted DigitalOcean Droplet or VM deployment (matches validated v1.0 stack, lowest complexity, cost-effective). Graduate to AWS ECS when scaling demands justify the additional complexity. The Docker Compose override pattern ensures smooth migration path without rewriting infrastructure.
+**Error recovery flow:**
+Each deployment step categorizes failures into transient (retry with backoff), recoverable (prompt user for fix), critical (automatic rollback), or fatal (halt with diagnostics). State tracking allows intelligent rollback decisions based on how far deployment progressed.
 
 ### Critical Pitfalls
 
-Production deployment research identified six critical pitfalls that would cause data loss or service outages for 24/7 IoT monitoring:
+The research identified seven critical failure modes with prevention strategies:
 
-1. **Health Checks Missing or Inadequate (CRIT-01)**: Without proper health checks, zero-downtime deployment is impossible. depends_on only ensures containers start, not that services are ready. PostgreSQL takes 3-8 seconds to initialize while applications try to connect immediately, causing race conditions. For FreshTrack Pro, this means sensor readings lost during deployment. **Prevention:** Add healthcheck to all services with condition: service_healthy in depends_on. Implement /health endpoint that checks database/Redis/MinIO connectivity. Use docker-rollout for zero-downtime deployments.
+1. **Non-idempotent scripts cause partial state corruption** — Scripts fail partway through, leaving system inconsistent. Re-running fails with "already exists" errors or duplicates actions. Prevention: Every action checks state first, use `mkdir -p` instead of `mkdir`, test by running script twice in succession.
 
-2. **PgBouncer Pool Mode Misconfiguration (CRIT-02)**: Transaction pooling (recommended) breaks applications using prepared statements, temporary tables, or SET commands. Session pooling can hang with high connection concurrency. **Prevention:** Use transaction pooling (PGBOUNCER_POOL_MODE: transaction), audit backend code to eliminate prepared statements (use parameterized queries instead), avoid SET SESSION (use SET LOCAL), calculate connection limits carefully (max_client_conn + pool_size * num_dbs < PostgreSQL max_connections).
+2. **Silent failures hide root causes** — Script reports "success" but system doesn't work. Users get cryptic errors or none at all. 60% of production scripts lacking strict error handling encountered silent data loss. Prevention: Always use `set -euo pipefail`, capture stderr in error messages, never redirect to `/dev/null` without explicit reason, define unique exit codes per failure type.
 
-3. **Secrets Exposed in Docker Images (CRIT-03)**: COPY . . command copies entire directory including .env files. One 2026 incident exposed credentials for 247 days in public Docker image. Even private registries retain secrets in image layers forever. **Prevention:** Complete .dockerignore BEFORE first build (.env, .env.*, secrets/, *.pem, *.key), use Docker Secrets for production (file-based mounts at /run/secrets), use BuildKit secrets for build-time secrets (not persisted in layers), scan images with GitGuardian/TruffleHog in CI/CD.
+3. **DNS/SSL certificate failures exhaust rate limits** — Let's Encrypt allows only 5 failed validations/hour. Users request certificate before DNS configured, hit rate limit, blocked for hours. Prevention: Validate DNS resolves to correct IP before certificate request (existing check_dns_resolution() pattern is good), display rate limit warnings prominently, consider staging certificates for testing.
 
-4. **Using Development Configuration in Production (CRIT-04)**: Single docker-compose.yml for all environments causes long-term issues: volume mounts for code reloading, dev ports exposed, verbose logging, missing restart policies, no resource limits. **Prevention:** Separate compose files (docker-compose.yml base + compose.production.yaml overrides), pin image versions (never :latest), remove volume mounts for code, add restart: unless-stopped, add resource limits (deploy.resources.limits), reduce logging to info/warn level.
+4. **Health checks pass but system is broken** — Health endpoint returns 200 OK but database connections fail, external integrations broken, WebSocket connections fail, background workers not processing. Before implementing proper health checks, approximately 30% of first-time deployments failed. Prevention: Health endpoint must verify all critical dependencies (database, Redis, external APIs), separate readiness check from liveness check, include functional test exercising real code path, verify WebSocket connections, wait for 3 consecutive passes not just 1.
 
-5. **Volume Data Loss or Corruption (CRIT-05)**: Named volumes vulnerable to accidental deletion, backup failures, permission issues. PostgreSQL data corruption during unexpected container crashes. For FreshTrack Pro, losing sensor readings violates HACCP compliance. **Prevention:** Always use named volumes (not anonymous), NEVER use docker compose down -v in production, implement automated daily backups (pg_dump to MinIO with 30-day retention), test backup restoration regularly, set proper shutdown (stop_signal: SIGTERM, stop_grace_period: 30s).
+5. **Credentials exposed in logs or error messages** — Deployment scripts or Docker logs contain database passwords, API keys, secrets in error messages. 88% of data breaches involved compromised credentials. Prevention: Never echo variables containing secrets, use Docker secrets (files) instead of environment variables, configure log shipping to redact patterns, audit with `./deploy.sh 2>&1 | grep -i password`.
 
-6. **SSL/TLS Certificate Failures (CRIT-06)**: Let's Encrypt certificates expire every 90 days - without automated renewal, production goes down. Certificate path misconfigurations in nginx prevent HTTPS. For FreshTrack Pro, failed SSL = users can't access monitoring dashboard. **Prevention:** Use Let's Encrypt + Certbot with automated renewal (runs every 12 hours), configure nginx with correct certificate paths (/etc/letsencrypt/live/{domain}/fullchain.pem), ensure HTTP to HTTPS redirect, monitor certificate expiry with Prometheus alerts.
+6. **Partial deployment without rollback path** — Database migrations succeed but application code deployment fails. New schema incompatible with old code, no clear restore path. Prevention: Tag current state before changes, write reversible migrations (add column as nullable first), deploy in order (backward compatible schema → new code → schema cleanup), test rollback procedure regularly.
 
-**Additional medium-priority pitfall:**
-
-7. **Database Migration Downtime Not Tested (MED-02)**: PostgreSQL migrations can take hours for large databases. Traditional dump/restore causes long downtime. For FreshTrack Pro, 4-hour freeze window target may be missed without testing. **Prevention:** Test migration with production-sized dataset in staging, benchmark pg_dump/pg_restore times, consider logical replication for near-zero downtime.
+7. **Insufficient resource pre-checks** — Deployment starts but fails due to disk full during image pull, memory exhaustion during startup, port conflicts with existing services. Prevention: Check disk space before starting (minimum 10GB), verify available memory (minimum 2GB for FreshTrack stack), confirm ports available, clean Docker system before deployment, set resource limits on containers.
 
 ## Implications for Roadmap
 
-Based on research, v1.1 Production Ready should focus on closing table stakes gaps and establishing deployment procedures for three targets. This is NOT a feature milestone - it's a cleanup and deployment readiness milestone.
+Based on research, the deployment automation milestone should be structured into 5 sequential phases that address pitfalls at appropriate points and build on existing v1.1 infrastructure.
 
-### Recommended Phase Structure
-
-The research suggests organizing v1.1 around deployment target preparation rather than traditional feature phases:
-
-### Phase 1: Production Environment Hardening
-**Rationale:** Must close critical gaps before any production deployment. These are foundational for all three deployment targets (AWS, DigitalOcean, self-hosted).
-
+### Phase 1: Foundation & Pre-Flight Validation
+**Rationale:** Fail fast before any system modifications. Prevents wasted time on systems that can't support deployment.
 **Delivers:**
-- Secrets management migration (env vars → Docker Secrets)
-- Resource limits in compose.production.yaml
-- Comprehensive health checks for all services
-- .dockerignore with secrets excluded
-- Production-grade docker-compose.yml + override files pattern
+- lib/common.sh (colors, logging, output helpers)
+- lib/state.sh (checkpoint/state management)
+- lib/system.sh (OS detection, package installation)
+- phases/01-preflight.sh (comprehensive system requirements)
+**Addresses:**
+- Table stakes: System requirements check
+- Pitfall 7: Insufficient resource pre-checks (RAM, CPU, OS, disk, network)
+**Avoids:** Starting deployment on incompatible OS or under-resourced VM
 
-**Addresses (from FEATURES.md):**
-- Secrets management (table stakes P0)
-- Resource limits (table stakes P0)
-- Health checks (table stakes, already implemented, needs verification)
-
-**Avoids (from PITFALLS.md):**
-- CRIT-03: Secrets exposed in Docker images
-- CRIT-04: Using development configuration in production
-- CRIT-01: Inadequate health checks preventing zero-downtime deployment
-
-**Stack elements:** Docker Secrets (file-based), Compose override files
-
-### Phase 2: Database Production Readiness
-**Rationale:** PgBouncer and database backups are critical for production but require careful testing. PgBouncer transaction mode may require backend code changes.
-
+### Phase 2: Prerequisites Installation
+**Rationale:** Install dependencies idempotently with comprehensive error handling before deployment logic.
 **Delivers:**
-- PgBouncer enabled and configured (transaction pooling mode)
-- Backend code audited for PgBouncer compatibility
-- Automated database backup system (pg_dump daily to MinIO)
-- Backup restoration testing
-- Database migration procedure tested with production-sized data
+- lib/docker.sh (Docker/Compose installation with version verification)
+- phases/02-install.sh (Docker, firewall, fail2ban, jq)
+**Addresses:**
+- Table stakes: Firewall configuration, Docker installation
+- Pitfall 1: Non-idempotent operations (all installs check existing state)
+- Pitfall 2: Silent failures (trap ERR with diagnostic context)
+**Uses:** get.docker.com convenience script, UFW for firewall
+**Implements:** Idempotent helper pattern from existing ensure_package() function
 
-**Addresses (from FEATURES.md):**
-- Database backup & restore (table stakes P0)
-- Zero-downtime deployment support (depends on health checks)
-
-**Avoids (from PITFALLS.md):**
-- CRIT-02: PgBouncer pool mode misconfiguration
-- CRIT-05: Volume data loss or corruption
-- MED-02: Database migration downtime not tested
-
-**Stack elements:** PgBouncer (Bitnami 1.24.1), PostgreSQL connection pooling
-
-### Phase 3: Self-Hosted Deployment (Primary Target)
-**Rationale:** Start with simplest deployment target that matches validated v1.0 stack. DigitalOcean Droplet or self-hosted VM has lowest complexity and cost.
-
+### Phase 3: Interactive Configuration & DNS Validation
+**Rationale:** Gather all required inputs upfront, validate DNS before any SSL operations to prevent rate limits.
 **Delivers:**
-- compose.production.yaml tested on staging VM
-- Deployment script (deploy-selfhosted.sh) with health checks
-- SSL/TLS setup with Caddy + Let's Encrypt
-- Certificate rotation monitoring (Prometheus alert)
-- Deployment runbook and rollback procedures
-- Observability stack deployed (Prometheus/Grafana/Loki)
+- lib/config.sh (interactive prompting with validation)
+- lib/secrets.sh (secure password generation, file creation)
+- lib/dns.sh (DNS resolution checking)
+- phases/03-configure.sh (full configuration flow)
+**Addresses:**
+- Differentiator: Configuration file auto-generation (eliminates manual .env editing)
+- Table stakes: Interactive configuration prompts, DNS validation pre-SSL
+- Pitfall 3: DNS/SSL certificate failures (validate DNS resolves to server IP first)
+- Pitfall 5: Credentials exposed (write secrets to files with 600 permissions)
+**Avoids:** Let's Encrypt rate limit exhaustion (5 failures/hour)
 
-**Addresses (from FEATURES.md):**
-- Automated SSL/TLS certificate management (table stakes, verify)
-- Certificate rotation monitoring (differentiator)
-- Deployment notifications (differentiator, low-complexity)
-
-**Avoids (from PITFALLS.md):**
-- CRIT-06: SSL/TLS certificate failures
-- MED-01: Inadequate monitoring
-- MED-05: No deployment testing in staging
-
-**Architecture:** Self-hosted VM target (DigitalOcean Droplet recommended)
-
-### Phase 4: AWS Deployment (Enterprise Target)
-**Rationale:** AWS ECS/Fargate provides auto-scaling and managed services for enterprise customers with higher budgets and scaling requirements.
-
+### Phase 4: Deployment Orchestration
+**Rationale:** Execute deployment via proven existing scripts, integrating rollback infrastructure.
 **Delivers:**
-- compose.aws.yaml with managed service integration
-- Terraform configuration for ECS cluster + RDS + ElastiCache + S3
-- ECS task definitions with proper resource limits
-- ACM certificate for SSL termination at ALB
-- Deployment script (deploy-aws.sh)
-- Cost monitoring and alerts
+- Integration with deploy.sh, Docker Compose orchestration
+- Enhanced rollback.sh with state awareness
+- phases/04-deploy.sh (deployment with existing scripts integration)
+**Addresses:**
+- Table stakes: Automatic rollback on failure, service restart policies
+- Pitfall 6: Partial deployment without rollback path (tag images before deployment)
+**Uses:** Existing docker-compose.yml + compose.production.yaml + compose.selfhosted.yaml overlays
+**Implements:** Version tagging for rollback, checkpoint tracking for resume
 
-**Addresses (from FEATURES.md):**
-- Multi-target deployment support
-- Scalability for > 5000 users (deferred from v1.0)
-
-**Avoids (from PITFALLS.md):**
-- CRIT-04: Development config in production (uses compose.aws.yaml)
-- CRIT-05: Volume backups (uses RDS automated backups)
-
-**Architecture:** AWS ECS with Fargate target, managed services
-
-### Phase 5: DigitalOcean Deployment (Balanced Target)
-**Rationale:** DigitalOcean Droplet with managed PostgreSQL provides balanced cost/ops trade-off between self-hosted and AWS.
-
+### Phase 5: Progressive Verification & Documentation
+**Rationale:** Prove system works through multi-layer verification, not just process checks. Complete the user experience.
 **Delivers:**
-- compose.digitalocean.yaml (hybrid: managed DB, self-hosted Redis/MinIO)
-- DigitalOcean Managed Database integration
-- DigitalOcean Spaces (S3-compatible) integration
-- Deployment script (deploy-do.sh)
-- Cost comparison documentation
-
-**Addresses (from FEATURES.md):**
-- Multi-target deployment complete (3 targets supported)
-
-**Architecture:** DigitalOcean Droplet + Managed DB hybrid target
-
-### Phase 6: Production Cutover Preparation
-**Rationale:** Final testing and documentation before production deployment announcement.
-
-**Delivers:**
-- Staging rehearsal for production deployment
-- Deployment runbooks for all three targets
-- Disaster recovery procedures documented and tested
-- Monitoring dashboards configured for production
-- Deployment decision flowchart (which target to choose)
-- Team training on deployment procedures
-
-**Addresses (from FEATURES.md):**
-- Deployment documentation (table stakes for production)
-
-**Avoids (from PITFALLS.md):**
-- MED-05: No deployment testing in staging
-- MED-02: Migration downtime exceeds window
+- lib/health.sh (health check functions with JSON validation)
+- lib/verification.sh (SSL, browser, E2E wrappers)
+- phases/05-verify.sh (progressive verification pipeline)
+- Complete URL/credential summary output
+**Addresses:**
+- Differentiator: Post-deployment E2E validation (optional sensor pipeline test)
+- Table stakes: Health check validation, SSL certificate automation verification
+- Pitfall 4: Health checks pass but system is broken (verify database, Redis, WebSocket connections)
+**Uses:** curl + jq for JSON parsing, existing e2e-sensor-pipeline.sh test
+**Implements:** Progressive verification stages (health → SSL → browser → E2E → monitoring)
 
 ### Phase Ordering Rationale
 
-- **Phase 1 first** because secrets management, health checks, and resource limits are required for ALL deployment targets. Fixing these in base configuration prevents repeating work across targets.
-
-- **Phase 2 before deployment phases** because PgBouncer and database backups are target-agnostic and may require backend code changes. Discovering PgBouncer incompatibilities during AWS deployment would be costly.
-
-- **Phase 3 (self-hosted) before Phase 4 (AWS)** because self-hosted deployment matches the validated v1.0 stack (lowest risk). Success here validates the override file pattern before tackling AWS complexity. DigitalOcean Droplet is recommended for actual production deployment due to cost-effectiveness.
-
-- **Phase 4 (AWS) before Phase 5 (DigitalOcean)** because AWS represents the most complex deployment target (Terraform, ECS, managed services). Solving AWS complexity makes DigitalOcean hybrid approach trivial. However, teams may choose to skip AWS entirely if self-hosted meets needs.
-
-- **Phase 6 last** because it requires all deployment targets functional to create comparison documentation and decision flowcharts.
+- **Pre-flight before installation**: Prevents wasting time installing Docker on incompatible systems
+- **Installation before configuration**: Can't validate Docker availability during config prompts until it's installed
+- **Configuration before deployment**: All required inputs gathered and validated (especially DNS) before modifying system
+- **DNS validation in Phase 3 before SSL in Phase 5**: Prevents Let's Encrypt rate limit exhaustion
+- **Deployment before verification**: Can't verify health of non-running services
+- **Checkpoint tracking throughout**: Any phase failure allows resume from last successful checkpoint
 
 ### Research Flags
 
-**Phases needing deeper research during planning:**
-- **Phase 4 (AWS Deployment):** Complex Terraform configuration, ECS task definitions, managed service integration. May benefit from targeted AWS ECS research if team unfamiliar with Fargate.
-
 **Phases with well-documented patterns (skip research-phase):**
-- **Phase 1 (Environment Hardening):** Docker Compose production best practices are well-documented. Official Docker docs + recent 2026 articles provide clear guidance.
-- **Phase 2 (Database Readiness):** PgBouncer configuration is well-documented on pgbouncer.org. PostgreSQL backup/restore patterns are standard.
-- **Phase 3 (Self-Hosted):** Matches validated v1.0 stack exactly. No research needed.
-- **Phase 5 (DigitalOcean):** Similar to self-hosted with managed DB integration. DigitalOcean docs are clear.
+- **Phase 1 (Pre-flight):** Standard OS detection and resource checking, existing patterns proven
+- **Phase 2 (Installation):** Docker installation via get.docker.com is official, UFW configuration standard
+- **Phase 3 (Configuration):** Native Bash `read` prompting well-documented, DNS validation existing pattern
+- **Phase 4 (Deployment):** Integrates existing working scripts, Docker Compose patterns established
+- **Phase 5 (Verification):** Health check and E2E test patterns already exist in codebase
 
-## Out of Scope for v1.1
-
-**Explicitly NOT building (anti-features from research):**
-
-- **Kubernetes orchestration**: Massive operational overhead. Docker Compose is sufficient for single-server or small cluster deployments. Only consider when managing 10+ servers.
-- **Microservices decomposition**: Would create "distributed monolith" anti-pattern: complexity of microservices without benefits. Keep monolithic backend with modular code structure.
-- **Multiple staging environments**: Single production-like staging environment is sufficient. Multiple environments add cost without confidence boost.
-- **Custom secret rotation system**: Reinventing HashiCorp Vault. Use Docker secrets for v1.1, integrate Vault in v2.0 if enterprise customers demand it.
-- **Building custom SSL certificate manager**: Caddy + Let's Encrypt solve this completely.
-- **Blue-green/canary deployments**: High complexity, requires traffic splitting infrastructure (Envoy/Linkerd). Defer to v2.0.
-- **Multi-region deployment**: Very high complexity. Defer to v3.0 when customer base justifies operational burden.
-
-**Why explicitly called out:**
-
-These are common deployment features teams prematurely add, creating complexity without proportional value. Research identified these as anti-patterns for v1.1 scale (< 1000 users, single geographic region, budget-conscious).
+**No phases require deeper research** — all patterns verified against official documentation and existing v1.1 codebase analysis. Implementation can proceed directly to planning.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Official Bitnami/Docker documentation, PgBouncer production-standard. PostgreSQL Alpine caveat noted (use Debian for production if extensions needed). |
-| Features | HIGH | Based on official Docker production docs, recent 2025-2026 SSL certificate changes (200-day lifespan), IoT monitoring best practices. Table stakes vs differentiators clearly identified. |
-| Architecture | HIGH | Docker Compose override pattern is official best practice. Multi-target deployment strategies verified with AWS, DigitalOcean official docs. Cost estimates from 2026 pricing. |
-| Pitfalls | HIGH | Critical pitfalls sourced from official Docker docs + recent 2026 production incidents (secrets exposure, PgBouncer hangs). Medium pitfalls from IoT edge deployment guides. |
+| Stack | HIGH | All recommendations use pre-installed system tools or official Docker installation. No experimental dependencies. |
+| Features | HIGH | Table stakes verified against existing v1.1 scripts which already implement them. Differentiators based on documented user pain points. |
+| Architecture | HIGH | Modular phase pattern analyzed from existing lib/ structure. Integration points verified against all existing scripts. |
+| Pitfalls | HIGH | All critical pitfalls documented with official sources (Docker docs, OWASP, AWS Builder Library, Red Hat). Existing script analysis confirmed gaps. |
 
 **Overall confidence:** HIGH
 
-All recommendations verified with official documentation (Docker, PgBouncer, AWS, DigitalOcean) or recent community consensus (2025-2026 articles, production war stories). No reliance on unverified sources for critical claims.
+All recommendations build on existing working v1.1 scripts with targeted enhancements. No unverified technologies, experimental patterns, or untested approaches.
 
-### Gaps to Address During Planning
+### Gaps to Address
 
-**PostgreSQL Alpine vs Debian:** Research notes Alpine works for simpler workloads but Debian is safer for production if using extensions beyond postgres-contrib. Decision needed during Phase 2 based on actual extension usage. Recommendation: Keep Alpine for development, test in staging, switch to Debian if any extension compatibility issues surface.
+No major research gaps. Minor implementation details to resolve during planning:
 
-**PgBouncer backend code compatibility:** Phase 2 must audit backend code for transaction pooling compatibility (prepared statements, SET commands, temporary tables). Research provides clear prevention strategies, but actual code audit may discover app-specific issues requiring refactoring. Budget extra time for potential backend changes.
-
-**AWS cost optimization:** Research provides baseline cost estimates ($110-200/month) but actual costs depend on traffic patterns, auto-scaling behavior, and RDS instance sizing. Recommendation: Start with smaller instances (t4g family), monitor with AWS Cost Explorer, scale up based on actual usage.
-
-**Backup retention policy:** Research recommends 30-day retention for database backups but actual policy depends on HACCP compliance requirements and customer contracts. Verify retention requirements during Phase 2 planning.
-
-**Certificate monitoring threshold:** Research recommends Prometheus alert for cert expiry < 30 days, but Caddy auto-renews at 60 days. Consider lower threshold (7-14 days) to catch renewal failures earlier. Test in staging during Phase 3.
+- **Specific error codes**: Define unique exit codes for each failure category (2=config, 3=dependency, 4=permission, etc.) during Phase 2 implementation
+- **Health endpoint contract**: Verify exact JSON schema of /health and /health/ready endpoints during Phase 5 (likely already documented in backend API)
+- **E2E test execution time**: Measure actual e2e-sensor-pipeline.sh duration to inform estimated time remaining feature
+- **Minimum resource thresholds**: Test deployment on minimum spec VM (2 vCPU, 4GB RAM) to confirm pre-flight validation thresholds
 
 ## Sources
 
-### Stack Research (HIGH confidence)
-- Bitnami PgBouncer Docker Hub (verified image availability)
-- PgBouncer Official Configuration (pgbouncer.org)
-- Docker Secrets Official Documentation
-- AWS: Deploy Applications on Amazon ECS using Docker Compose
-- Terraform AWS ECS Module (updated Jan 13, 2026)
-- DigitalOcean: App Platform vs DOKS vs Droplets
-- Caddy vs Traefik comparison (Dec 2025)
+### Primary (HIGH confidence - official documentation)
 
-### Features Research (HIGH confidence)
-- 200-day TLS Certificate Change 2026 (Sectigo, FullProxy announcements)
-- Docker Compose Production Guide (Official Docker Docs)
-- AWS Production Deployment Checklist
-- GitGuardian: 4 Ways to Securely Store Secrets in Docker
-- AWS/Azure Disaster Recovery Whitepapers
-- InfoQ: Seven Microservices Anti-patterns
+**Docker & Infrastructure:**
+- [Docker Engine Install - Ubuntu](https://docs.docker.com/engine/install/ubuntu/) — Docker 29.x packages, Compose v2 bundled
+- [Docker Compose v2 Migration](https://docs.docker.com/compose/releases/migrate/) — V1 deprecated July 2023
+- [docker-install GitHub](https://github.com/docker/docker-install) — get.docker.com source code
+- [Use Compose in Production - Docker Docs](https://docs.docker.com/compose/production/) — Restart policies, logging, environment config
 
-### Architecture Research (HIGH confidence)
-- Use Compose in production (Official Docker Docs)
-- Merge Compose files (Official Docker Docs)
-- AWS ECS vs EC2 Complete Comparison Guide (2026)
-- Best Practices Around Production Ready Web Apps with Docker Compose
-- Docker Compose Advanced Techniques: Production Deployments
+**Bash & Scripting:**
+- [ShellCheck GitHub](https://github.com/koalaman/shellcheck) — Official static analysis tool
+- [Red Hat: Bash Error Handling](https://www.redhat.com/en/blog/bash-error-handling) — trap ERR patterns
+- [Red Hat: Error Handling in Bash Scripting](https://www.redhat.com/en/blog/error-handling-bash-scripting) — Best practices
 
-### Pitfalls Research (HIGH confidence)
-- .env Files Ended Up in Docker Images (Jan 2026 incident)
-- Zero Downtime with docker-rollout (GitHub)
-- Django + PgBouncer Pitfalls in Production
-- PgBouncer Session Pooling Hangs (GitHub issue #384)
-- Docker Compose Best Practices (2026)
-- 5 Docker Compose Mistakes That Break Production
-- 100 GB PostgreSQL Migration Near-Zero Downtime
+**Security & Operations:**
+- [OWASP Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html) — Credential security
+- [AWS Builders Library: Implementing Health Checks](https://aws.amazon.com/builders-library/implementing-health-checks/) — Multi-layer verification
+- [AWS Builders Library: Ensuring Rollback Safety](https://aws.amazon.com/builders-library/ensuring-rollback-safety-during-deployments/) — Backwards compatibility patterns
+- [DORA Deployment Automation Capabilities](https://dora.dev/capabilities/deployment-automation/) — Industry benchmarks
 
-**All sources accessed:** 2026-01-23
-**Research completed:** 2026-01-23
-**Ready for roadmap:** Yes
+### Secondary (MEDIUM confidence - verified community patterns)
+
+**Best Practices:**
+- [Building Production-Grade Deployment Scripts - DEV](https://dev.to/ursulaonyi/building-a-production-grade-automated-deployment-script-3fgj) — `set -euo pipefail`, trap functions
+- [Deployment Scripts Best Practices - MOSS](https://moss.sh/reviews/deployment-scripts-best-practices/) — Script structure and automation
+- [How to Write Idempotent Bash Scripts](https://arslan.io/2019/07/03/how-to-write-idempotent-bash-scripts/) — State checking patterns
+- [Bash Mastery: Production Challenges - DEV](https://dev.to/sameerimtiaz/bash-mastery-lessons-from-a-decade-of-production-challenges-3ko3) — Real-world pitfalls
+
+**Verification & Testing:**
+- [Smoke Testing in CI/CD - CircleCI](https://circleci.com/blog/smoke-tests-in-cicd-pipelines/) — Post-deployment validation
+- [Post Deployment Verification - Google Cloud](https://cloud.google.com/blog/topics/developers-practitioners/google-cloud-deploy-introduces-post-deployment-verification) — PDV patterns
+- [Docker Compose Health Checks - Last9](https://last9.io/blog/docker-compose-health-checks/) — Health check implementation
+
+**Rollback & Recovery:**
+- [Modern Rollback Strategies - Octopus](https://octopus.com/blog/modern-rollback-strategies) — Time-based recovery, database considerations
+- [Handling Rollback Strategies - Agile Seekers](https://agileseekers.com/blog/handling-rollback-strategies-for-failed-product-deployments) — Deployment failure recovery
+
+### Tertiary (existing codebase analysis - HIGH confidence for current state)
+
+**FreshTrack Pro v1.1 Scripts:**
+- `/home/skynet/freshtrack-pro-local/fresh-staged/scripts/deploy-selfhosted.sh` — Idempotent helpers, DNS validation, rollback patterns
+- `/home/skynet/freshtrack-pro-local/fresh-staged/scripts/deploy.sh` — Production deployment orchestration
+- `/home/skynet/freshtrack-pro-local/fresh-staged/scripts/health-check.sh` — Pre-flight validation with counters
+- `/home/skynet/freshtrack-pro-local/fresh-staged/scripts/rollback.sh` — Data export, manifest generation, version restoration
+- `/home/skynet/freshtrack-pro-local/fresh-staged/scripts/lib/doctl-helpers.sh` — Library pattern example
+- `/home/skynet/freshtrack-pro-local/fresh-staged/scripts/test/e2e-sensor-pipeline.sh` — E2E verification pattern
+- `/home/skynet/freshtrack-pro-local/fresh-staged/docs/SELFHOSTED_DEPLOYMENT.md` — Current documentation baseline
+
+---
+*Research completed: 2026-01-25*
+*Ready for roadmap: yes*

@@ -1,488 +1,547 @@
-# Stack Research: Multi-Target Deployment
+# Stack Research: One-Script Deployment Automation (v2.1)
 
-**Project:** FreshTrack Pro v1.1
-**Researched:** 2026-01-23
+**Domain:** Infrastructure deployment automation (Bash scripting)
+**Researched:** 2026-01-25
 **Confidence:** HIGH
 
-## Summary
+## Executive Summary
 
-FreshTrack Pro v1.0 validated the Docker Compose stack (Fastify, PostgreSQL, Redis, MinIO, Caddy) for local development and staging. v1.1 requires minimal stack additions for production-ready multi-target deployment. The core need is resolving PgBouncer connection pooling (currently disabled) and choosing deployment approaches for AWS, DigitalOcean, and self-hosted targets. SSL/TLS management strategy differs by deployment target: Caddy's automatic Let's Encrypt for self-hosted, cloud-managed certificates for AWS/DigitalOcean.
+The existing v1.1 deployment scripts (`deploy-selfhosted.sh`, `deploy-digitalocean.sh`) already use solid patterns. The one-script automation milestone requires **refinement**, not reinvention. The recommended approach is pure Bash with targeted enhancements for error handling, interactive configuration, and verification -- no additional runtime dependencies.
 
-## Connection Pooling
+**Key insight:** Your existing scripts already implement 80% of the patterns needed. This research identifies the missing 20% for one-script automation.
 
-### Recommendation: PgBouncer (bitnami/pgbouncer)
+---
 
-**Why:** Connection pooling is critical for production. Without it, high concurrent connections exhaust PostgreSQL's limited connection slots (default 100), causing connection failures and degraded performance. PgBouncer sits between application and database, maintaining a smaller pool of actual database connections while handling thousands of client connections.
+## Recommended Stack
 
-**Version:** `bitnami/pgbouncer:1.24.1-debian-12-r5` (latest as of June 2025)
-- Use `bitnami/pgbouncer:latest` for automated updates in development
-- Pin specific version for production: `bitnami/pgbouncer:1.24.1-debian-12-r5`
+### Core Technologies
 
-**Current Status in Project:**
-Your `docker/docker-compose.yml` already has PgBouncer configured but was noted as "disabled due to image issues." The `bitnami/pgbouncer:latest` image is available and actively maintained by Broadcom (acquired Bitnami). The image issue has been resolved.
+| Technology | Version | Purpose | Why Recommended |
+|------------|---------|---------|-----------------|
+| **Bash** | 5.x (Ubuntu 24.04 default) | Script execution runtime | Pre-installed on all target systems. Existing scripts already use Bash. No additional runtime dependencies. |
+| **curl** | System default | HTTP requests for health checks, Docker install | Pre-installed on Ubuntu/Debian. More feature-rich than wget for health check responses. Already used in existing scripts. |
+| **Docker Engine** | 5:29.x via get.docker.com | Container runtime | Official convenience script handles Ubuntu 24.04/22.04 and Debian. Includes Docker Compose v2 plugin automatically. |
+| **Docker Compose v2** | 2.x plugin (bundled) | Multi-container orchestration | Bundled with Docker Engine install. No separate installation needed. `docker compose` syntax (not `docker-compose`). |
 
-**Configuration (Production-Ready):**
+### Supporting Tools (Already Available on Target)
 
-```yaml
-pgbouncer:
-  image: bitnami/pgbouncer:1.24.1-debian-12-r5
-  environment:
-    POSTGRESQL_HOST: postgres
-    POSTGRESQL_PORT: 5432
-    POSTGRESQL_USERNAME: frostguard
-    POSTGRESQL_PASSWORD: ${DB_PASSWORD}  # Use secrets, not plaintext
-    POSTGRESQL_DATABASE: frostguard
-    PGBOUNCER_DATABASE: frostguard
-    PGBOUNCER_POOL_MODE: transaction      # Best for web apps
-    PGBOUNCER_MAX_CLIENT_CONN: 1000       # Increase for production
-    PGBOUNCER_DEFAULT_POOL_SIZE: 25       # 2x CPU cores (assuming 12 vCPU)
-    PGBOUNCER_MIN_POOL_SIZE: 10           # Baseline during idle
-    PGBOUNCER_RESERVE_POOL_SIZE: 5        # Handle bursts
-  ports:
-    - "6432:6432"
-  healthcheck:
-    test: ["CMD-SHELL", "pg_isready -h localhost -p 6432 -U frostguard"]
-    interval: 5s
-    timeout: 5s
-    retries: 5
-  restart: unless-stopped
-```
+| Tool | Purpose | Installation | Notes |
+|------|---------|--------------|-------|
+| **openssl** | Password/secret generation | Pre-installed | `openssl rand -base64 32` for secure random strings. Already used in existing scripts. |
+| **dig** | DNS resolution verification | `apt install dnsutils` | Existing scripts already install this. |
+| **ufw** | Firewall configuration | Pre-installed on Ubuntu | Existing scripts already configure this. |
+| **jq** | JSON parsing for health checks | `apt install jq` | Optional but useful. ~1MB. Enables reliable JSON parsing in health checks. |
+| **lsof** | Port availability checking | Pre-installed | Used in existing health-check.sh for port validation. |
 
-**Pool Mode Selection:**
-- **transaction** (RECOMMENDED): Server released after transaction completes. Best for web applications, maximizes connection efficiency. Your current config correctly uses this.
-- **session**: Server held for entire client session. Safest but least efficient.
-- **statement**: Server released after each query. Disallows multi-statement transactions — avoid for this application.
+### Development/Quality Tools (For Script Authors)
 
-**Sizing Formula:**
-```
-(number_of_pools × default_pool_size) < max_connections - 15
-```
-For PostgreSQL with `max_connections=100`:
-- Reserve 15 for admin/monitoring
-- Maximum pool size across all databases/users: 85
-- With one database: `default_pool_size = 25` leaves headroom
+| Tool | Purpose | Installation | Notes |
+|------|---------|--------------|-------|
+| **ShellCheck** | Static analysis/linting | `apt install shellcheck` | Catches common Bash errors. Use in CI and pre-commit. |
+| **shfmt** | Script formatting | Go binary or `snap install shfmt` | Optional. Consistent code style. |
+| **bats-core** | Test framework | `apt install bats` | Optional. For testing script functions. TAP-compliant. |
 
-**Production Tuning:**
-- Monitor actual connection usage in Grafana (Prometheus already configured)
-- Start conservative (default_pool_size=25), increase if connection queuing occurs
-- max_client_conn=1000 handles bursty traffic without overwhelming PostgreSQL
-- reserve_pool_size=5 provides burst capacity without over-provisioning
+## Installation Commands
 
-**Integration with Existing Stack:**
-- Fastify API connects to PgBouncer port 6432 instead of PostgreSQL port 5432
-- Update backend `.env`: `DATABASE_URL=postgresql://user:pass@pgbouncer:6432/frostguard`
-- Drizzle ORM works transparently through PgBouncer in transaction mode
-- Migrations should run directly against PostgreSQL (port 5432), not PgBouncer
-
-**Confidence:** HIGH (official Bitnami image, PgBouncer is production-standard for PostgreSQL)
-
-## Deployment Tooling
-
-### Deployment Target Comparison
-
-| Target | Best For | Complexity | Estimated Cost | Recommended Approach |
-|--------|----------|------------|----------------|---------------------|
-| AWS ECS/Fargate | Enterprise, scalability | Medium | $80-200/month | Terraform + ECS Fargate |
-| AWS EC2 | Full control, existing AWS | Low | $50-120/month | Docker Compose on EC2 |
-| DigitalOcean App Platform | Fast deployment, PaaS | Low | $60-150/month | Native App Platform |
-| DigitalOcean Droplet | Cost-effective, simple | Low | $30-80/month | Docker Compose on Droplet |
-| Self-Hosted VM/Bare Metal | Maximum control, compliance | Low | Hardware cost only | Docker Compose |
-
-### AWS Deployment
-
-**Recommended: Terraform + ECS Fargate**
-
-**Why:** Infrastructure-as-Code for repeatability, Fargate eliminates server management, ALB provides SSL termination with ACM certificates. Can reduce infrastructure costs by ~70% vs EC2 while maintaining production reliability.
-
-**Stack Components:**
-```hcl
-# Terraform modules (terraform-aws-modules/ecs/aws)
-- VPC with public/private subnets
-- ECS Cluster (Fargate capacity provider)
-- ECS Task Definitions (API, Redis, PostgreSQL, MinIO)
-- Application Load Balancer (ALB) with ACM certificate
-- Security Groups (least-privilege)
-- CloudWatch Logs integration (already using Loki, can send to both)
-```
-
-**PostgreSQL Options for AWS:**
-1. **RDS PostgreSQL** (RECOMMENDED for production):
-   - Managed, automated backups, point-in-time recovery
-   - PgBouncer runs in ECS task, connects to RDS
-   - Cost: ~$50-150/month for db.t4g.medium
-   - HIGH confidence: AWS-native, production-proven
-
-2. **Self-hosted PostgreSQL in ECS**:
-   - Requires EBS volume for persistence
-   - More complex but keeps stack portable
-   - Cost: ~$20-40/month for volume + task
-   - MEDIUM confidence: Requires careful volume management
-
-**Alternative: Docker Compose on EC2**
-- Simpler: Upload docker-compose.yml, run `docker compose up -d`
-- Lower cost: Single t3.medium ($30-40/month)
-- Manual scaling, less elastic
-- MEDIUM confidence: Simpler but less "cloud-native"
-
-**Confidence:** HIGH for Terraform+Fargate (official modules updated Jan 2026, widely adopted)
-
-### DigitalOcean Deployment
-
-**Recommended: Docker Compose on Droplet**
-
-**Why:** DigitalOcean App Platform has networking limitations (can't easily integrate VPNs, load balancers, or private database credentials). For your IoT monitoring system with TTN webhooks and external integrations, full network control is valuable. Droplets provide this at lower cost.
-
-**Stack Components:**
 ```bash
-# Droplet setup (Ubuntu 22.04 LTS)
-1. Create Droplet ($24/month for 2vCPU 4GB, up to $96/month for 8vCPU 16GB)
-2. Install Docker + Docker Compose
-3. Copy docker-compose.yml to server
-4. Run docker compose up -d
-5. Configure Caddy for SSL (auto Let's Encrypt)
+# No npm/node installation needed - pure Bash approach
+
+# Development machine (for script quality)
+sudo apt install shellcheck  # Static analysis
+
+# Target VM prerequisites installed by the deployment script itself
+# The script installs: Docker, curl, dig (dnsutils), ufw, fail2ban, jq
 ```
 
-**PostgreSQL Options for DigitalOcean:**
-1. **Self-hosted in Docker Compose** (RECOMMENDED for simplicity):
-   - Portable, identical to local dev
-   - Use Volume for persistence
-   - Cost: Included in Droplet price
-   - HIGH confidence: Matches your validated v1.0 stack
+---
 
-2. **Managed PostgreSQL**:
-   - DigitalOcean Managed Database ($15/month single node, $60/month HA)
-   - Automated backups, point-in-time recovery, SSL
-   - Adds $15-60/month cost
-   - MEDIUM confidence: Reduces management, increases cost
+## Error Handling Patterns
 
-**When to Choose App Platform Instead:**
-- Simple stateless API without complex networking
-- Want zero-config deployments from GitHub
-- Willing to accept networking limitations
-- Budget allows $60-150/month vs $30-80/month for Droplet
+### Current State (Existing Scripts)
 
-**Confidence:** HIGH for Droplet approach (community-recommended for Docker workloads, matches your existing stack)
-
-### Self-Hosted Bare Metal / VM
-
-**Recommended: Docker Compose (Existing Stack)**
-
-**Why:** Your v1.0 stack already works with Docker Compose. Production deployment to self-hosted is identical to your staging environment. No cloud vendor lock-in, full control, optimal for compliance requirements.
-
-**Stack Components:**
+Your `deploy-selfhosted.sh` uses:
 ```bash
-# Identical to development stack
-- docker/docker-compose.yml (already validated)
-- Caddy for reverse proxy + SSL
-- Prometheus/Grafana/Loki for observability (already configured)
-- All services containerized, portable
+set -e  # Exit on error
 ```
 
-**Infrastructure Requirements:**
-- **Minimum:** 2 vCPU, 4GB RAM, 50GB SSD
-- **Recommended:** 4 vCPU, 8GB RAM, 100GB SSD
-- **Ubuntu Server 22.04 LTS** (most tested with Docker)
-- **Docker Engine 24.x + Docker Compose v2**
-- **Open ports:** 80 (HTTP), 443 (HTTPS), 22 (SSH admin)
+This is correct but incomplete. Errors exit without diagnostics or rollback decisions.
 
-**Advantages:**
-- Zero cloud costs (hardware only)
-- Full data control (critical for some food safety compliance scenarios)
-- Identical to development environment (lowest deployment complexity)
-- No vendor lock-in
+### Recommended Enhancement: trap ERR with Context
 
-**Disadvantages:**
-- Manual hardware maintenance
-- You handle backups, monitoring, security patches
-- Limited geographic redundancy unless multi-site
+```bash
+#!/bin/bash
+set -euo pipefail
 
-**Confidence:** HIGH (validated in v1.0, Docker Compose is production-ready)
+# Track deployment state for intelligent rollback
+DEPLOYMENT_STARTED=false
+DEPLOYMENT_COMPLETE=false
+SERVICES_RUNNING=false
 
-## SSL/TLS Management
+# Error handler with context
+handle_error() {
+    local exit_code=$?
+    local line_number=${BASH_LINENO[0]}
+    local command="$BASH_COMMAND"
 
-### Self-Hosted: Caddy with Let's Encrypt (RECOMMENDED)
+    echo ""
+    echo -e "${RED}=======================================${NC}"
+    echo -e "${RED}ERROR DETECTED${NC}"
+    echo -e "${RED}=======================================${NC}"
+    echo "Exit code:   $exit_code"
+    echo "Line:        $line_number"
+    echo "Command:     $command"
+    echo ""
 
-**Why:** Caddy automatically obtains and renews Let's Encrypt certificates with zero configuration. Your existing Caddy setup already does this. No additional tooling needed.
+    # Decide: rollback vs diagnostic mode
+    if [[ "$SERVICES_RUNNING" == "true" ]]; then
+        warning "Services were started. Attempting automatic rollback..."
+        rollback_deployment
+    elif [[ "$DEPLOYMENT_STARTED" == "true" ]]; then
+        warning "Deployment was in progress. Partial state may exist."
+        echo "Review errors above. Manual cleanup may be needed."
+        show_diagnostic_commands
+    else
+        echo "Deployment had not started. No rollback needed."
+        echo "Fix the issue above and rerun the script."
+    fi
 
-**Configuration:**
-```Caddyfile
-api.freshtrack.example.com {
-    reverse_proxy backend:3000
-    # Caddy automatically handles:
-    # - HTTPS redirect
-    # - TLS certificate from Let's Encrypt
-    # - Auto-renewal every 60 days
+    exit "$exit_code"
+}
+
+trap handle_error ERR
+
+# Cleanup on any exit (success or failure)
+cleanup() {
+    rm -f /tmp/freshtrack-*.tmp 2>/dev/null || true
+}
+
+trap cleanup EXIT
+```
+
+**Why this pattern:**
+- Works with existing `set -e` approach
+- `$BASH_LINENO` and `$BASH_COMMAND` provide diagnostic context
+- State tracking allows intelligent rollback decisions
+- EXIT trap ensures cleanup regardless of exit reason
+
+### Diagnostic Helper Function
+
+```bash
+show_diagnostic_commands() {
+    echo ""
+    echo "Diagnostic commands:"
+    echo "  docker compose ps              # Check container status"
+    echo "  docker compose logs backend    # View backend logs"
+    echo "  docker compose logs postgres   # View database logs"
+    echo "  curl http://localhost:3000/health  # Check API health"
+    echo ""
 }
 ```
 
-**Advantages:**
-- Zero configuration (Caddy's default behavior)
-- Automatic renewal (never expires)
-- Works identically for self-hosted VM, DigitalOcean Droplet
-- Proven reliability (better than Traefik for simple setups per 2025-2026 consensus)
+---
 
-**Confidence:** HIGH (Caddy is already in your stack, Let's Encrypt is production-standard)
+## Interactive Configuration Patterns
 
-### AWS: ACM (AWS Certificate Manager)
+### Current State (Existing Scripts)
 
-**Why:** Free SSL certificates for AWS services (ALB, CloudFront). Tightly integrated, automatic renewal, no external dependencies.
+Your scripts already use `read -rp` for prompts. This is correct and portable:
 
-**Configuration:**
-```hcl
-# Terraform
-resource "aws_acm_certificate" "api" {
-  domain_name       = "api.freshtrack.example.com"
-  validation_method = "DNS"
+```bash
+if [ -z "$DOMAIN" ]; then
+    read -rp "Enter your domain name (e.g., freshtrackpro.com): " DOMAIN
+fi
+```
 
-  lifecycle {
-    create_before_destroy = true
-  }
+### Enhancement: Validation and Defaults
+
+```bash
+# Domain with validation
+prompt_domain() {
+    local default="${1:-}"
+
+    while true; do
+        if [[ -n "$default" ]]; then
+            read -rp "Enter domain name [$default]: " input
+            DOMAIN="${input:-$default}"
+        else
+            read -rp "Enter domain name: " DOMAIN
+        fi
+
+        # Basic domain validation
+        if [[ "$DOMAIN" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
+            break
+        else
+            warning "Invalid domain format. Please try again."
+        fi
+    done
 }
 
-resource "aws_lb_listener" "https" {
-  load_balancer_arn = aws_lb.main.arn
-  port              = "443"
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  certificate_arn   = aws_acm_certificate.api.arn
+# Password with auto-generate option
+prompt_password() {
+    local var_name="$1"
+    local prompt_text="$2"
+
+    read -rsp "$prompt_text (or press Enter to auto-generate): " input
+    echo ""
+
+    if [[ -z "$input" ]]; then
+        input=$(openssl rand -base64 32)
+        success "Generated secure random password"
+    fi
+
+    eval "$var_name='$input'"
+}
+
+# Yes/No confirmation
+confirm() {
+    local prompt="$1"
+    local default="${2:-n}"
+
+    if [[ "$AUTO_YES" == "true" ]]; then
+        return 0
+    fi
+
+    local yn_prompt
+    if [[ "$default" == "y" ]]; then
+        yn_prompt="[Y/n]"
+    else
+        yn_prompt="[y/N]"
+    fi
+
+    read -rp "$prompt $yn_prompt: " response
+    response="${response:-$default}"
+
+    [[ "$response" =~ ^[Yy] ]]
 }
 ```
 
-**Limitations:**
-- ACM certificates ONLY work with AWS services (ELB, CloudFront, API Gateway)
-- Cannot export private key
-- Cannot use outside AWS
+### Why NOT whiptail/dialog
 
-**Alternative: Let's Encrypt on EC2**
-If deploying Docker Compose directly on EC2, use Caddy with Let's Encrypt (same as self-hosted approach).
+| Factor | whiptail/dialog | Native read |
+|--------|-----------------|-------------|
+| Dependencies | Must install | Pre-installed |
+| UX | Prettier dialogs | Simple text prompts |
+| Scriptability | Complex fd redirection | Straightforward |
+| Automation | Harder with `--yes` flags | Simple skipping |
+| Error handling | Exit codes need care | Direct |
 
-**Confidence:** HIGH (ACM is AWS-native, zero cost, automatic renewal)
+**Verdict:** For a one-time deployment script, native `read` is simpler and sufficient. whiptail adds complexity without proportional value.
 
-### DigitalOcean: Let's Encrypt (Caddy or App Platform)
+---
 
-**Droplet Deployment:**
-Use Caddy with Let's Encrypt (same as self-hosted). DigitalOcean provides DNS management for validation.
+## Verification Tools and Patterns
 
-**App Platform Deployment:**
-App Platform automatically provisions and manages Let's Encrypt certificates for custom domains. Zero configuration.
+### Health Check Enhancements
 
-**Confidence:** HIGH (both approaches production-proven)
+Your existing `validate_deployment_health()` is solid. Enhance with jq for reliable JSON:
 
-## Secrets Management
-
-### Development: .env Files (Current Approach)
-
-Your existing `.env` files work for development but are INSECURE for production.
-
-**Current Security Issues:**
-- Plaintext passwords in docker-compose.yml
-- Risk of committing .env to git
-- No rotation mechanism
-
-### Production: Docker Secrets (Self-Hosted) or Cloud Secret Managers (AWS/DigitalOcean)
-
-**Docker Compose with Secrets (Self-Hosted/Droplet):**
-```yaml
-secrets:
-  db_password:
-    file: ./secrets/db_password.txt
-  minio_password:
-    file: ./secrets/minio_password.txt
-
-services:
-  postgres:
-    secrets:
-      - db_password
-    environment:
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-```
-
-**AWS: AWS Secrets Manager or SSM Parameter Store**
-```hcl
-# Terraform
-resource "aws_secretsmanager_secret" "db_password" {
-  name = "freshtrack/db_password"
+```bash
+# Install jq if not present (small footprint)
+ensure_jq() {
+    if ! command -v jq &> /dev/null; then
+        step "Installing jq for JSON parsing..."
+        apt-get install -y -qq jq
+        success "jq installed"
+    fi
 }
 
-# ECS task pulls secret at runtime
+# Enhanced health check with JSON validation
+check_backend_health() {
+    local url="${1:-http://localhost:3000/health}"
+    local timeout="${2:-10}"
+
+    local response
+    response=$(curl -sf --max-time "$timeout" "$url" 2>/dev/null) || return 1
+
+    # Validate JSON and check status
+    local status
+    status=$(echo "$response" | jq -r '.status' 2>/dev/null) || return 1
+
+    if [[ "$status" == "healthy" ]]; then
+        return 0
+    else
+        warning "Health check returned status: $status"
+        return 1
+    fi
+}
+
+# Full readiness check (database, redis, etc.)
+check_backend_ready() {
+    local url="${1:-http://localhost:3000/health/ready}"
+    local timeout="${2:-10}"
+
+    local response
+    response=$(curl -sf --max-time "$timeout" "$url" 2>/dev/null) || return 1
+
+    local db_status
+    db_status=$(echo "$response" | jq -r '.database' 2>/dev/null) || return 1
+
+    if [[ "$db_status" == "connected" ]]; then
+        return 0
+    else
+        warning "Database status: $db_status"
+        return 1
+    fi
+}
 ```
 
-**DigitalOcean: Environment Variables in App Platform or Encrypted Files on Droplet**
+### Comprehensive Verification Checklist
 
-**Best Practices:**
-- Never commit secrets to git (.gitignore all secret files)
-- Use Docker BuildKit secrets for build-time secrets (avoid leaking in layers)
-- Rotate database passwords quarterly
-- Use different secrets for dev/staging/production
+| Verification | Command | What It Checks |
+|--------------|---------|----------------|
+| Docker running | `docker info > /dev/null 2>&1` | Docker daemon accessible |
+| Compose v2 | `docker compose version > /dev/null 2>&1` | Plugin installed |
+| Backend health | `curl -sf localhost:3000/health \| jq -r '.status'` | API responding |
+| Database connected | `curl -sf localhost:3000/health/ready \| jq -r '.database'` | PostgreSQL accessible |
+| DNS resolution | `dig +short $DOMAIN \| tail -1` | DNS points to server |
+| SSL certificate | `curl -sI https://$DOMAIN \| grep "HTTP.*200"` | HTTPS working |
+| All containers | `docker compose ps --format json \| jq -r '.[].State'` | No exited containers |
 
-**Confidence:** HIGH (Docker secrets are production-standard, cloud secret managers are native solutions)
+### E2E Smoke Test Pattern
 
-## Database Considerations
+```bash
+run_smoke_test() {
+    step "Running E2E smoke test..."
 
-### PostgreSQL 15 Alpine
+    local base_url="https://${DOMAIN}"
+    local failures=0
 
-**Current:** `postgres:15-alpine`
+    # Test 1: Frontend loads
+    if curl -sf --max-time 10 "$base_url" > /dev/null; then
+        success "Frontend accessible"
+    else
+        error "Frontend not accessible"
+        ((failures++))
+    fi
 
-**Production Readiness:** MEDIUM confidence with caveats
+    # Test 2: API health
+    if check_backend_health "${base_url}/api/health"; then
+        success "API healthy"
+    else
+        error "API not healthy"
+        ((failures++))
+    fi
 
-**Pros:**
-- Smaller image size (~80MB vs ~140MB for Debian-based)
-- PostgreSQL 15 on Alpine supports ICU locales (fixed in v15)
-- Works well for simpler production workloads
+    # Test 3: WebSocket connection (if applicable)
+    # Skip for basic deployment verification
 
-**Cons:**
-- Alpine uses musl libc instead of glibc (can cause issues with some extensions)
-- Any postgres extension not in postgres-contrib requires compilation
-- Best practice: Use Debian-based for production unless you need the size reduction
-
-**Recommendation:**
-- **Keep `postgres:15-alpine` for development** (faster pulls, matches your validated stack)
-- **Consider `postgres:15` (Debian) for production** if using extensions beyond contrib
-- **If using cloud-managed PostgreSQL** (RDS, DigitalOcean Managed), this is moot
-
-**Migration Path:**
-```yaml
-# Production docker-compose.yml
-postgres:
-  image: postgres:15  # Debian-based, broader compatibility
-  # Same configuration as alpine version
+    if [[ $failures -eq 0 ]]; then
+        success "All smoke tests passed"
+        return 0
+    else
+        error "$failures smoke test(s) failed"
+        return 1
+    fi
+}
 ```
 
-**Confidence:** MEDIUM (Alpine works but Debian is safer for unknown future extension needs)
+---
 
-## What NOT to Add
+## OS Detection Pattern
 
-### 1. Kubernetes / Docker Swarm
-**Why Avoid:** Your PROJECT.md explicitly defers this as out-of-scope. Docker Compose is simpler, adequate for initial production deployment, and avoids significant complexity overhead. Kubernetes adds orchestration, service mesh, and operational burden that isn't justified until multi-region or massive scale.
+```bash
+detect_os() {
+    if [[ ! -f /etc/os-release ]]; then
+        error "Cannot detect OS. /etc/os-release not found."
+        error "This script requires Ubuntu or Debian."
+        exit 1
+    fi
 
-**When to Reconsider:** Multi-region deployment, 100+ concurrent deployments, or need for advanced auto-scaling.
+    # shellcheck source=/dev/null
+    source /etc/os-release
 
-### 2. Multiple Reverse Proxies
-**Why Avoid:** Caddy already works. Adding Traefik or Nginx Proxy Manager introduces complexity without benefit. 2025-2026 consensus: Caddy is simpler and more reliable for automatic SSL than Traefik.
+    OS_ID="$ID"
+    OS_VERSION="${VERSION_ID:-unknown}"
+    OS_CODENAME="${VERSION_CODENAME:-unknown}"
 
-**When to Reconsider:** If you need Traefik's automatic service discovery in a container-heavy, dynamic environment (not your use case).
+    case "$OS_ID" in
+        ubuntu)
+            case "$OS_VERSION" in
+                22.04|24.04)
+                    success "Detected: Ubuntu $OS_VERSION LTS ($OS_CODENAME)"
+                    ;;
+                *)
+                    warning "Ubuntu $OS_VERSION detected. Tested with 22.04 and 24.04 LTS."
+                    ;;
+            esac
+            ;;
+        debian)
+            case "$OS_VERSION" in
+                11|12)
+                    success "Detected: Debian $OS_VERSION ($OS_CODENAME)"
+                    ;;
+                *)
+                    warning "Debian $OS_VERSION detected. Tested with 11 (bullseye) and 12 (bookworm)."
+                    ;;
+            esac
+            ;;
+        *)
+            error "Unsupported OS: $OS_ID"
+            error "This script requires Ubuntu (22.04/24.04) or Debian (11/12)."
+            exit 1
+            ;;
+    esac
+}
+```
 
-### 3. Native Docker-to-ECS Integration (Deprecated)
-**Why Avoid:** Docker's ECS and ACI integrations were deprecated. Don't rely on `docker context create ecs` or `docker compose --context ecs`. Use Terraform or ECS Compose-X instead.
+---
 
-**Alternative:** Terraform with `terraform-aws-modules/ecs` (updated Jan 2026, 415K+ downloads/month).
+## Docker Installation Pattern
 
-### 4. Over-Engineered Secrets Management
-**Why Avoid:** HashiCorp Vault, external KMS, or complex rotation systems are overkill for v1.1. Docker secrets (self-hosted) or AWS Secrets Manager (cloud) are sufficient.
+Your existing `install_docker()` is correct. Minor enhancement for idempotency:
 
-**When to Reconsider:** SOC 2 compliance requirements, multi-team access control, or regulatory mandates.
+```bash
+install_docker() {
+    step "Installing Docker..."
 
-### 5. Managed Redis/MinIO in Cloud
-**Why Avoid:** Redis and MinIO are lightweight, work well in Docker Compose. AWS ElastiCache or DigitalOcean Managed Redis add cost ($15-50/month) without significant benefit for your scale. MinIO is already S3-compatible and portable.
+    # Already installed check
+    if command -v docker &> /dev/null; then
+        local version
+        version=$(docker --version | awk '{print $3}' | tr -d ',')
+        success "Docker already installed: v$version"
 
-**When to Reconsider:** If storage exceeds 500GB or Redis memory exceeds 8GB.
+        # Verify Docker Compose v2 plugin
+        if docker compose version &> /dev/null; then
+            local compose_version
+            compose_version=$(docker compose version --short)
+            success "Docker Compose v2 available: v$compose_version"
+            return 0
+        else
+            warning "Docker Compose v2 plugin missing. Installing..."
+        fi
+    fi
 
-## Integration with v1.0 Stack
+    # Install using official convenience script
+    step "Downloading Docker installation script..."
+    curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
 
-### No Breaking Changes Required
+    step "Running Docker installation (this may take 2-3 minutes)..."
+    sh /tmp/get-docker.sh
+    rm /tmp/get-docker.sh
 
-Your existing v1.0 stack components remain unchanged:
-- Fastify API
-- Drizzle ORM (works through PgBouncer transparently)
-- Stack Auth JWT (hosted service, deployment-agnostic)
-- Redis, MinIO (containerized, portable)
-- Prometheus/Grafana/Loki (containerized, portable)
+    # Enable and start
+    systemctl enable docker
+    systemctl start docker
 
-### Required Changes
+    # Add user to docker group if running via sudo
+    if [[ -n "${SUDO_USER:-}" ]]; then
+        usermod -aG docker "$SUDO_USER"
+        success "Added $SUDO_USER to docker group"
+        warning "User must log out and back in for docker group to take effect"
+    fi
 
-**1. Enable PgBouncer:**
-- Update backend `DATABASE_URL` to use port 6432 (PgBouncer) instead of 5432 (direct PostgreSQL)
-- Run migrations directly against PostgreSQL (port 5432), not through PgBouncer
+    # Verify installation
+    local version
+    version=$(docker --version | awk '{print $3}' | tr -d ',')
+    success "Docker installed: v$version"
 
-**2. Secrets Management:**
-- Replace plaintext passwords in docker-compose.yml with Docker secrets (self-hosted) or environment variables from cloud secret managers (AWS/DigitalOcean)
+    local compose_version
+    compose_version=$(docker compose version --short)
+    success "Docker Compose v2 available: v$compose_version"
+}
+```
 
-**3. SSL/TLS Configuration:**
-- Self-hosted/Droplet: Configure Caddy with your domain (already done in v1.0)
-- AWS: Set up ACM certificate + ALB (Terraform)
-- DigitalOcean App Platform: Configure custom domain in UI
+---
 
-**4. Deployment Scripts:**
-- Add deploy scripts for each target (deploy-aws.sh, deploy-do.sh, deploy-vm.sh)
-- Include health checks before marking deployment successful
+## Alternatives Considered
 
-## Recommended Deployment Path for v1.1
+| Recommended | Alternative | When to Use Alternative |
+|-------------|-------------|-------------------------|
+| Bash native `read` | whiptail/dialog | Only if UX polish is critical and team accepts dependency |
+| `set -e` + `trap ERR` | Manual `\|\| exit 1` on each command | Never -- trap is more maintainable |
+| curl for health checks | wget | Only if curl unavailable (rare on Ubuntu) |
+| get.docker.com script | Manual apt repo setup | Only if reproducibility concerns outweigh convenience |
+| Pure Bash | Ansible/Terraform | Only if managing multiple servers at scale |
+| ShellCheck | No linting | Never -- ShellCheck catches real bugs |
 
-**Phase 1: Validate PgBouncer Locally**
-1. Enable PgBouncer in local docker-compose.yml
-2. Update backend DATABASE_URL to port 6432
-3. Run test suite, verify performance
-4. Document connection pool metrics in Grafana
+## What NOT to Use
 
-**Phase 2: Deploy to DigitalOcean Droplet (Simplest)**
-1. Create Droplet ($24-48/month for 2-4 vCPU)
-2. Install Docker + Docker Compose
-3. Copy docker-compose.yml, configure secrets
-4. Run `docker compose up -d`
-5. Configure Caddy with domain, automatic SSL
-6. Monitor with existing Prometheus/Grafana stack
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| **Ansible** | Over-engineering for single-server deployment. Adds Python dependency. Existing Bash scripts work well. | Bash scripts |
+| **Terraform for deployment** | Wrong tool -- Terraform provisions infrastructure, not applications. Already have doctl for DO provisioning. | Bash + Docker Compose |
+| **Configuration management (Puppet/Chef/Salt)** | Massive overhead for Docker Compose deployment. Learning curve not justified. | Bash scripts |
+| **docker-compose (v1)** | Deprecated since July 2023. Uses `docker-compose` binary instead of `docker compose` plugin. | `docker compose` (v2) |
+| **Node.js/Python deployment scripts** | Adds runtime dependency. Bash is simpler, portable, and what the existing scripts use. | Bash |
+| **whiptail/dialog** | Adds dependency for marginal UX improvement. Deployment runs once, not daily. | Native `read` |
 
-**Phase 3: Deploy to Self-Hosted VM (If Compliance Requires)**
-1. Use existing hardware or provision VM
-2. Identical process to DigitalOcean Droplet
-3. Emphasize backup strategy (database dumps, volume snapshots)
+---
 
-**Phase 4: Deploy to AWS ECS (If Scalability Required)**
-1. Write Terraform configuration (use terraform-aws-modules/ecs)
-2. Configure ACM certificate for domain
-3. Deploy RDS PostgreSQL (managed) or ECS task (self-hosted)
-4. Deploy API, Redis, MinIO as ECS tasks
-5. Configure ALB for HTTPS termination
-6. Point domain to ALB DNS
+## Version Compatibility
 
-**Start with DigitalOcean Droplet or self-hosted VM.** Lowest complexity, matches your validated v1.0 stack, cost-effective. Graduate to AWS ECS when scaling demands justify the additional complexity.
+| Component | Minimum Version | Recommended | Notes |
+|-----------|-----------------|-------------|-------|
+| Ubuntu | 22.04 LTS | 24.04 LTS | Both fully supported by get.docker.com |
+| Debian | 11 (bullseye) | 12 (bookworm) | Same Docker installation script works |
+| Docker Engine | 24.x | 29.x (latest) | get.docker.com installs latest stable |
+| Docker Compose | v2.20+ | v2.29+ | Bundled with Docker Engine |
+| Bash | 5.0+ | 5.2 (Ubuntu 24.04) | Standard on Ubuntu 22.04+ |
+
+---
+
+## Integration with Existing Scripts
+
+### Files to Enhance (Not Replace)
+
+| File | Current State | Enhancement Needed |
+|------|---------------|-------------------|
+| `deploy-selfhosted.sh` | Good foundation | Add trap ERR handler, enhance verification |
+| `deploy-digitalocean.sh` | Delegates to selfhosted | Integrate one-script flow |
+| `health-check.sh` | Pre-flight checks | Add post-deployment verification |
+| `rollback.sh` | Manual rollback | Integrate with auto-rollback |
+| `lib/doctl-helpers.sh` | DO provisioning | No changes needed |
+
+### New Files to Create
+
+| File | Purpose |
+|------|---------|
+| `install.sh` | One-script entry point (sources others, orchestrates flow) |
+| `lib/error-handlers.sh` | Shared error handling functions |
+| `lib/verification.sh` | Health check and verification functions |
+| `lib/config-prompts.sh` | Interactive configuration prompts |
+
+---
 
 ## Sources
 
-### Connection Pooling
-- [Bitnami PgBouncer Docker Hub](https://hub.docker.com/r/bitnami/pgbouncer)
-- [PgBouncer Official Configuration](https://www.pgbouncer.org/config.html)
-- [Microsoft: PostgreSQL Connection Pooling Best Practices](https://learn.microsoft.com/en-us/azure/postgresql/connectivity/concepts-connection-pooling-best-practices)
-- [ScaleGrid: PostgreSQL Connection Pooling Part 2 - PgBouncer](https://scalegrid.io/blog/postgresql-connection-pooling-part-2-pgbouncer/)
+### HIGH Confidence (Official Documentation)
 
-### AWS Deployment
-- [AWS: Deploy Applications on Amazon ECS using Docker Compose](https://aws.amazon.com/blogs/containers/deploy-applications-on-amazon-ecs-using-docker-compose/)
-- [Terraform AWS ECS Module (updated Jan 13, 2026)](https://registry.terraform.io/modules/terraform-aws-modules/ecs/aws/latest)
-- [AWS Developer Tools: Provision AWS Infrastructure with Terraform](https://aws.amazon.com/blogs/developer/provision-aws-infrastructure-using-terraform-by-hashicorp-an-example-of-running-amazon-ecs-tasks-on-aws-fargate/)
-- [GitHub: compose-x/ecs_composex](https://github.com/compose-x/ecs_composex)
+- [Docker Engine Install - Ubuntu](https://docs.docker.com/engine/install/ubuntu/) -- Docker 29.x packages, Compose v2 bundled
+- [Docker Compose v2 Migration](https://docs.docker.com/compose/releases/migrate/) -- V1 deprecated July 2023
+- [docker-install GitHub](https://github.com/docker/docker-install) -- get.docker.com source
+- [ShellCheck GitHub](https://github.com/koalaman/shellcheck) -- Static analysis for Bash
 
-### DigitalOcean Deployment
-- [DigitalOcean: App Platform vs DOKS vs Droplets](https://www.digitalocean.com/community/conceptual-articles/digitalocean-app-platform-vs-doks-vs-droplets)
-- [DigitalOcean: What's the Difference Between a Droplet and App Platform?](https://www.digitalocean.com/community/questions/what-s-the-difference-between-a-droplet-and-app-platform)
-- [DigitalOcean: Managed vs Self-Managed Databases](https://www.digitalocean.com/resources/articles/managed-vs-self-managed-databases)
+### MEDIUM Confidence (Verified Community Patterns)
 
-### SSL/TLS Management
-- [Medium: Caddy vs Traefik (Dec 2025)](https://medium.com/@thomas.byern/npm-traefik-or-caddy-how-to-pick-the-reverse-proxy-youll-still-like-in-6-months-1e1101815e07)
-- [Programonaut: Reverse Proxy Comparison - Traefik vs Caddy vs Nginx](https://www.programonaut.com/reverse-proxies-compared-traefik-vs-caddy-vs-nginx-docker/)
-- [StackShare: AWS Certificate Manager vs Let's Encrypt](https://stackshare.io/stackups/aws-certificate-manager-vs-lets-encrypt)
-- [Puppeteers: Let's Encrypt on AWS - When, Where, and Why](https://www.puppeteers.net/blog/lets-encrypt-on-aws-when-where-and-why/)
+- [Red Hat: Bash Error Handling](https://www.redhat.com/en/blog/bash-error-handling) -- trap ERR patterns
+- [Red Hat: Error Handling in Bash Scripting](https://www.redhat.com/en/blog/error-handling-bash-scripting) -- Best practices
+- [citizen428.net: Bash Error Handling with Trap](https://citizen428.net/blog/bash-error-handling-with-trap/) -- Practical examples
+- [nixCraft: Detect OS in Bash](https://www.cyberciti.biz/faq/how-to-check-os-version-in-linux-command-line/) -- /etc/os-release patterns
+- [Red Hat: Whiptail Interactive Scripts](https://www.redhat.com/sysadmin/use-whiptail) -- Why we chose NOT to use it
 
-### Secrets Management
-- [Docker Docs: Manage Sensitive Data with Docker Secrets](https://docs.docker.com/engine/swarm/secrets/)
-- [GitGuardian: 4 Ways to Securely Store & Manage Secrets in Docker](https://blog.gitguardian.com/how-to-handle-secrets-in-docker/)
-- [Wiz: Docker Secrets - Guide to Secure Container Secrets Management](https://www.wiz.io/academy/container-security/docker-secrets)
+### LOW Confidence (Reference Only)
 
-### PostgreSQL
-- [Docker Hub: postgres Official Image](https://hub.docker.com/_/postgres)
-- [Docker Blog: How to Use the Postgres Docker Official Image](https://www.docker.com/blog/how-to-use-the-postgres-docker-official-image/)
+- [bats-core GitHub](https://github.com/bats-core/bats-core) -- Bash testing framework
+
+---
 
 ## Confidence Assessment
 
 | Area | Confidence | Rationale |
 |------|------------|-----------|
-| PgBouncer | HIGH | Official Bitnami image verified available, configuration validated against official docs, production-standard for PostgreSQL pooling |
-| AWS Deployment | HIGH | Terraform modules updated Jan 2026, Fargate widely adopted, official AWS documentation |
-| DigitalOcean | HIGH | Community consensus on Droplet for Docker workloads, validated approach |
-| Self-Hosted | HIGH | Matches validated v1.0 stack, Docker Compose is production-ready |
-| SSL/TLS | HIGH | Caddy's Let's Encrypt automation proven, ACM is AWS-native standard |
-| Secrets | HIGH | Docker secrets and cloud secret managers are production-standard |
-| PostgreSQL Alpine | MEDIUM | Works but Debian safer for unknown future extensions |
+| Bash error handling | HIGH | trap ERR is standard POSIX pattern, verified with official docs |
+| Docker installation | HIGH | get.docker.com is official, verified against Docker docs |
+| OS detection | HIGH | /etc/os-release is standardized across Ubuntu/Debian |
+| Health checks | HIGH | curl + jq pattern is production-standard |
+| Interactive prompts | HIGH | Native read is POSIX, no dependencies |
+| ShellCheck | HIGH | Official tool, actively maintained |
+| Verification patterns | MEDIUM | Based on existing working scripts + enhancements |
 
 **Overall Research Confidence:** HIGH
 
-All recommendations verified with official documentation (Docker, PgBouncer, AWS, DigitalOcean) or recent community consensus (2025-2026). No reliance on unverified web search results for critical claims.
+All recommendations build on existing working scripts with targeted enhancements. No unverified technologies or experimental patterns.
+
+---
+*Stack research for: FreshTrack Pro v2.1 One-Script Deployment Automation*
+*Researched: 2026-01-25*
+*Builds on: v1.1 Multi-Target Deployment infrastructure*
