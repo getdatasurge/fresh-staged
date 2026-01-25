@@ -1,12 +1,26 @@
 /**
  * Gateway Provisioning Preflight Hooks
  *
- * TODO: Migrate to tRPC when gateway preflight router is available
- * - Currently uses ttn-gateway-preflight Supabase edge function
- * - Backend router for gateway preflight checks not yet created
- * - Planned for future migration when backend routes are available
+ * Status: BLOCKED - Requires backend implementation
  *
- * Current status: Stack Auth for identity, Supabase edge functions (Phase 21)
+ * Current implementation:
+ * - Uses ttn-gateway-preflight edge function to validate API key permissions
+ * - Checks if API key has gateway provisioning rights (personal/org key vs app key)
+ *
+ * Migration blockers:
+ * - Backend needs TTN SDK integration to validate API key type and permissions
+ * - Backend needs procedure to inspect API key rights
+ *
+ * Edge functions used:
+ * - ttn-gateway-preflight (validates API key type and gateway rights)
+ *
+ * Migration path:
+ * 1. Add TTN SDK to backend
+ * 2. Create ttnSettings.validateGatewayRights procedure
+ * 3. Migrate this hook to use tRPC procedure
+ *
+ * Estimated effort: Medium (requires TTN API integration)
+ * Priority: Low (only used for gateway provisioning validation)
  */
 import { useState, useCallback, useEffect } from "react";
 import { useUser } from "@stackframe/react";
@@ -70,7 +84,8 @@ export function useGatewayProvisioningPreflight(
     try {
       const { accessToken } = await user.getAuthJson();
 
-      // TODO Phase 6: Replace with backend validation endpoint
+      // TODO: Replace with tRPC when backend TTN SDK integration is available
+      // Requires: ttnSettings.validateGatewayRights procedure to check API key type
       const { data, error } = await supabase.functions.invoke("ttn-gateway-preflight", {
         body: { organization_id: organizationId },
         headers: { 'x-stack-access-token': accessToken },

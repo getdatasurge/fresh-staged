@@ -1,12 +1,26 @@
 /**
  * TTN Provisioning State Check Hooks
  *
- * TODO: Migrate to tRPC when TTN status check router is available
- * - Currently uses check-ttn-device-exists Supabase edge function
- * - Backend router for TTN device status checks not yet created
- * - Planned for future migration when backend routes are available
+ * Status: BLOCKED - Requires backend implementation
  *
- * Current status: Stack Auth for identity, Supabase edge functions (Phase 21)
+ * Current implementation:
+ * - Uses check-ttn-device-exists edge function to verify device in TTN
+ * - Updates sensor provisioning_state in database after check
+ *
+ * Migration blockers:
+ * - Backend needs TTN SDK integration to query device existence
+ * - Backend needs procedure to check device in TTN and update sensor state
+ *
+ * Edge functions used:
+ * - check-ttn-device-exists (queries TTN API, updates sensors table)
+ *
+ * Migration path:
+ * 1. Add TTN SDK to backend
+ * 2. Create ttnDevices.checkExistence procedure
+ * 3. Migrate this hook to use tRPC procedure
+ *
+ * Estimated effort: Medium (requires TTN API integration)
+ * Priority: Medium (used for sensor status validation)
  */
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@stackframe/react";
@@ -58,7 +72,8 @@ export function useCheckTtnProvisioningState() {
       if (!user) throw new Error("Not authenticated");
       const { accessToken } = await user.getAuthJson();
 
-      // TODO Phase 6: Replace with backend API endpoint
+      // TODO: Replace with tRPC when backend TTN SDK integration is available
+      // Requires: ttnDevices.checkExistence procedure with TTN API device lookup
       const { data, error } = await supabase.functions.invoke("check-ttn-device-exists", {
         body: { sensor_ids: sensorIds },
         headers: { 'x-stack-access-token': accessToken },

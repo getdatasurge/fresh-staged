@@ -1,12 +1,28 @@
 /**
  * TTN Setup Wizard Hooks
  *
- * TODO: Migrate to tRPC when TTN wizard router is available
- * - Currently uses manage-ttn-settings Supabase edge function
- * - Backend router for TTN wizard operations not yet created
- * - Planned for future migration when backend routes are available
+ * Status: BLOCKED - Requires backend implementation
  *
- * Current status: Stack Auth for identity, Supabase edge functions (Phase 21)
+ * Current implementation:
+ * - Uses manage-ttn-settings edge function for wizard state management
+ * - Edge function handles: get settings, update region, save API key, test connection
+ *
+ * Migration blockers:
+ * - Depends on useTTNApiKey migration (API key validation)
+ * - Depends on useTTNSettings migration (settings CRUD) - DONE in Plan 21-06
+ * - Depends on backend TTN connection testing
+ *
+ * Edge functions used:
+ * - manage-ttn-settings (get, update, test actions)
+ *
+ * Migration path:
+ * 1. Partially migrate to use ttnSettings.get from Plan 21-06 (DONE)
+ * 2. Use ttnSettings.update for region/enabled toggle (DONE)
+ * 3. Wait for API key validation backend implementation
+ * 4. Migrate remaining wizard steps to tRPC
+ *
+ * Estimated effort: Small (mostly uses already-migrated procedures)
+ * Priority: High (blocks wizard UX improvements)
  */
 
 import { useState, useCallback } from "react";
@@ -79,7 +95,8 @@ export function useTTNSetupWizard(organizationId: string | null) {
     try {
       const { accessToken } = await user.getAuthJson();
 
-      // TODO Phase 6: Replace with backend API call
+      // TODO: Replace with tRPC when backend TTN SDK integration is available
+      // Requires: ttnSettings procedures for wizard state management
       const { data, error } = await supabase.functions.invoke("manage-ttn-settings", {
         body: { action: "get", organization_id: organizationId },
         headers: { 'x-stack-access-token': accessToken },
@@ -178,7 +195,8 @@ export function useTTNSetupWizard(organizationId: string | null) {
     try {
       const { accessToken } = await user.getAuthJson();
 
-      // TODO Phase 6: Replace with backend API call
+      // TODO: Replace with tRPC when backend TTN SDK integration is available
+      // Requires: ttnSettings procedures for wizard state management
       const { data, error } = await supabase.functions.invoke("manage-ttn-settings", {
         body: {
           action: "test",
