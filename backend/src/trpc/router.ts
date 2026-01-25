@@ -20,6 +20,7 @@ import { assetsRouter } from '../routers/assets.router.js';
 import { ttnGatewaysRouter } from '../routers/ttn-gateways.router.js';
 import { ttnDevicesRouter } from '../routers/ttn-devices.router.js';
 import { availabilityRouter } from '../routers/availability.router.js';
+import { notificationPoliciesRouter } from '../routers/notification-policies.router.js';
 
 /**
  * Application router
@@ -127,6 +128,12 @@ export const appRouter = router({
    * Procedures: checkEmail, checkPhone
    */
   availability: availabilityRouter,
+
+  /**
+   * Notification Policies domain router
+   * Procedures: listByOrg, listBySite, listByUnit, getEffective, upsert, delete
+   */
+  notificationPolicies: notificationPoliciesRouter,
 });
 
 /**
