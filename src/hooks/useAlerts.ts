@@ -8,7 +8,7 @@
  * ```tsx
  * // Query alerts with filters
  * const { data: alerts } = useAlerts(organizationId, {
- *   status: 'pending',
+ *   status: 'active',
  *   siteId: 'uuid'
  * });
  *
@@ -35,7 +35,7 @@ import { useTRPC, useTRPCClient } from '@/lib/trpc';
 /**
  * Alert status values for filtering
  */
-export type AlertStatusFilter = 'pending' | 'acknowledged' | 'resolved' | 'escalated';
+export type AlertStatusFilter = 'active' | 'acknowledged' | 'resolved' | 'escalated';
 
 /**
  * Alert severity values for filtering
