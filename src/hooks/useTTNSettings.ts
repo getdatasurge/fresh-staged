@@ -1,10 +1,12 @@
 /**
- * TODO: Full migration to new backend
- * - Create TTN integration endpoints in backend
- * - Replace Supabase data calls with API calls
- * - Remove supabase import
+ * TTN Settings Hooks
  *
- * Current status: Stack Auth for identity, Supabase for data (Phase 5)
+ * TODO: Migrate to tRPC when TTN settings router is available
+ * - Currently uses manage-ttn-settings Supabase edge function
+ * - Backend router for TTN settings not yet created
+ * - Planned for future migration when backend routes are available
+ *
+ * Current status: Stack Auth for identity, Supabase edge functions (Phase 21)
  */
 import { useState, useCallback, useEffect } from "react";
 import { useUser } from "@stackframe/react";

@@ -1,20 +1,21 @@
 /**
- * TODO: Full migration to new backend
- * - Create /api/orgs/:orgId/gateways endpoint
- * - Replace Supabase data calls with API calls
- * - Remove supabase import
+ * Gateways Domain Hooks
  *
- * Current status: Stack Auth for identity, Supabase for data (Phase 5)
+ * tRPC-based hooks for gateway management operations.
+ * Uses direct useTRPC() hooks per Phase 19 patterns.
+ *
+ * Migrated to tRPC in Phase 21 (Plan 05).
+ *
+ * Note: Some operations still use Supabase edge functions (provision, deprovision)
+ * until backend routers for those operations are available.
  */
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";  // TEMPORARY
-import { Gateway, GatewayInsert } from "@/types/ttn";
+import { useTRPC, useTRPCClient } from "@/lib/trpc";
+import { Gateway } from "@/types/ttn";
 import { toast } from "sonner";
 import { debugLog } from "@/lib/debugLogger";
-import { qk } from "@/lib/queryKeys";
-import { invalidateGateways } from "@/lib/invalidation";
 import { useOrgScope } from "./useOrgScope";
 
 /**
@@ -22,89 +23,80 @@ import { useOrgScope } from "./useOrgScope";
  */
 export function useGateways(orgIdParam?: string | null) {
   const { orgId: scopeOrgId, isReady } = useOrgScope();
-  const user = useUser();
+  const trpc = useTRPC();
   const orgId = orgIdParam ?? scopeOrgId;
 
+  const queryOptions = trpc.ttnGateways.list.queryOptions({
+    organizationId: orgId!,
+  });
+
   return useQuery({
-    queryKey: qk.org(orgId).gateways(),
-    queryFn: async (): Promise<Gateway[]> => {
-      if (!orgId || !user) return [];
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      console.warn('[useGateways] Using Supabase - TODO: migrate to new API');
-
-      const { data, error } = await supabase
-        .from("gateways")
-        .select("*")
-        .eq("organization_id", orgId)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data as Gateway[];
-    },
-    enabled: isReady && !!user && !!orgId,
+    ...queryOptions,
+    enabled: isReady && !!orgId,
+    staleTime: 60_000, // 1 minute
   });
 }
 
 /**
  * Hook to fetch a single gateway by ID
  */
-export function useGateway(gatewayId: string | null) {
-  const user = useUser();
+export function useGateway(gatewayId: string | null, orgId?: string | null) {
+  const { orgId: scopeOrgId } = useOrgScope();
+  const trpc = useTRPC();
+  const effectiveOrgId = orgId ?? scopeOrgId;
+
+  const queryOptions = trpc.ttnGateways.get.queryOptions({
+    organizationId: effectiveOrgId!,
+    gatewayId: gatewayId!,
+  });
 
   return useQuery({
-    queryKey: qk.gateway(gatewayId).details(),
-    queryFn: async (): Promise<Gateway | null> => {
-      if (!gatewayId || !user) return null;
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      console.warn('[useGateway] Using Supabase - TODO: migrate to new API');
-
-      const { data, error } = await supabase
-        .from("gateways")
-        .select("*")
-        .eq("id", gatewayId)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data as Gateway | null;
-    },
-    enabled: !!gatewayId && !!user,
+    ...queryOptions,
+    enabled: !!gatewayId && !!effectiveOrgId,
+    staleTime: 60_000, // 1 minute
   });
 }
 
 /**
- * Hook to create a new gateway
+ * Hook to register a new gateway
  */
 export function useCreateGateway() {
+  const trpc = useTRPC();
+  const client = useTRPCClient();
   const queryClient = useQueryClient();
-  const user = useUser();
 
   return useMutation({
-    mutationFn: async (gateway: GatewayInsert): Promise<Gateway> => {
-      if (!user) throw new Error('Not authenticated');
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      console.warn('[useCreateGateway] Using Supabase - TODO: migrate to new API');
-
-      const { data, error } = await supabase
-        .from("gateways")
-        .insert({
-          ...gateway,
-          created_by: user.id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as Gateway;
+    mutationFn: async (variables: {
+      organizationId: string;
+      data: {
+        name: string;
+        gatewayEui: string;
+        description?: string;
+        frequencyPlanId?: string;
+        location?: {
+          latitude: number;
+          longitude: number;
+          altitude?: number;
+        };
+      };
+    }) => {
+      return client.ttnGateways.register.mutate({
+        organizationId: variables.organizationId,
+        data: variables.data,
+      });
     },
-    onSuccess: async (data) => {
-      await invalidateGateways(queryClient, data.organization_id);
-      toast.success("Gateway created successfully");
+    onSuccess: (_data, variables) => {
+      // Invalidate gateways list to refetch updated data
+      const listOptions = trpc.ttnGateways.list.queryOptions({
+        organizationId: variables.organizationId,
+      });
+      queryClient.invalidateQueries({
+        queryKey: listOptions.queryKey,
+      });
+      toast.success("Gateway registered successfully");
     },
     onError: (error: Error) => {
-      toast.error(`Failed to create gateway: ${error.message}`);
+      toast.error(`Failed to register gateway: ${error.message}`);
     },
   });
 }
@@ -113,37 +105,46 @@ export function useCreateGateway() {
  * Hook to update a gateway
  */
 export function useUpdateGateway() {
+  const trpc = useTRPC();
+  const client = useTRPCClient();
   const queryClient = useQueryClient();
-  const user = useUser();
 
   return useMutation({
-    mutationFn: async ({
-      id,
-      updates
-    }: {
-      id: string;
-      updates: Partial<Gateway>
-    }): Promise<Gateway> => {
-      if (!user) throw new Error('Not authenticated');
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      console.warn('[useUpdateGateway] Using Supabase - TODO: migrate to new API');
-
-      const { data, error } = await supabase
-        .from("gateways")
-        .update(updates)
-        .eq("id", id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as Gateway;
+    mutationFn: async (variables: {
+      organizationId: string;
+      gatewayId: string;
+      data: {
+        name?: string;
+        description?: string;
+        location?: {
+          latitude: number;
+          longitude: number;
+          altitude?: number;
+        };
+      };
+    }) => {
+      return client.ttnGateways.update.mutate({
+        organizationId: variables.organizationId,
+        gatewayId: variables.gatewayId,
+        data: variables.data,
+      });
     },
-    onSuccess: async (data) => {
-      await Promise.all([
-        invalidateGateways(queryClient, data.organization_id),
-        queryClient.invalidateQueries({ queryKey: qk.gateway(data.id).all }),
-      ]);
+    onSuccess: (_data, variables) => {
+      // Invalidate gateways list
+      const listOptions = trpc.ttnGateways.list.queryOptions({
+        organizationId: variables.organizationId,
+      });
+      queryClient.invalidateQueries({
+        queryKey: listOptions.queryKey,
+      });
+      // Invalidate specific gateway query
+      const getOptions = trpc.ttnGateways.get.queryOptions({
+        organizationId: variables.organizationId,
+        gatewayId: variables.gatewayId,
+      });
+      queryClient.invalidateQueries({
+        queryKey: getOptions.queryKey,
+      });
       toast.success("Gateway updated successfully");
     },
     onError: (error: Error) => {
@@ -156,29 +157,67 @@ export function useUpdateGateway() {
  * Hook to delete a gateway
  */
 export function useDeleteGateway() {
+  const trpc = useTRPC();
+  const client = useTRPCClient();
   const queryClient = useQueryClient();
-  const user = useUser();
 
   return useMutation({
-    mutationFn: async ({ id, orgId }: { id: string; orgId: string }): Promise<void> => {
-      if (!user) throw new Error('Not authenticated');
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      console.warn('[useDeleteGateway] Using Supabase - TODO: migrate to new API');
-
-      const { error } = await supabase
-        .from("gateways")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
+    mutationFn: async (variables: {
+      organizationId: string;
+      gatewayId: string;
+    }) => {
+      return client.ttnGateways.deregister.mutate({
+        organizationId: variables.organizationId,
+        gatewayId: variables.gatewayId,
+      });
     },
-    onSuccess: async (_, variables) => {
-      await invalidateGateways(queryClient, variables.orgId);
+    onSuccess: (_data, variables) => {
+      // Invalidate gateways list to refetch updated data
+      const listOptions = trpc.ttnGateways.list.queryOptions({
+        organizationId: variables.organizationId,
+      });
+      queryClient.invalidateQueries({
+        queryKey: listOptions.queryKey,
+      });
       toast.success("Gateway deleted successfully");
     },
     onError: (error: Error) => {
       toast.error(`Failed to delete gateway: ${error.message}`);
+    },
+  });
+}
+
+/**
+ * Hook to refresh gateway status from TTN
+ */
+export function useRefreshGatewayStatus() {
+  const trpc = useTRPC();
+  const client = useTRPCClient();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (variables: {
+      organizationId: string;
+      gatewayId: string;
+    }) => {
+      return client.ttnGateways.refreshStatus.mutate({
+        organizationId: variables.organizationId,
+        gatewayId: variables.gatewayId,
+      });
+    },
+    onSuccess: (_data, variables) => {
+      // Invalidate specific gateway query
+      const getOptions = trpc.ttnGateways.get.queryOptions({
+        organizationId: variables.organizationId,
+        gatewayId: variables.gatewayId,
+      });
+      queryClient.invalidateQueries({
+        queryKey: getOptions.queryKey,
+      });
+      toast.success("Gateway status refreshed");
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to refresh gateway status: ${error.message}`);
     },
   });
 }
@@ -196,16 +235,16 @@ function parseGatewayProvisionError(error: unknown): ProvisionErrorDetails {
   // Try to extract structured error from response
   if (typeof error === 'object' && error !== null) {
     const err = error as Record<string, unknown>;
-    
+
     // Check for hint and request_id from edge function response
     const hint = typeof err.hint === 'string' ? err.hint : undefined;
     const requestId = typeof err.request_id === 'string' ? err.request_id : undefined;
     const errorCode = typeof err.error_code === 'string' ? err.error_code : undefined;
     const errorMessage = typeof err.error === 'string' ? err.error : undefined;
-    
+
     if (errorCode || errorMessage) {
       let message = errorMessage || 'Provisioning failed';
-      
+
       // Map error codes to user-friendly messages
       switch (errorCode) {
         case 'TTN_PERMISSION_DENIED':
@@ -224,54 +263,62 @@ function parseGatewayProvisionError(error: unknown): ProvisionErrorDetails {
           message = 'TTN API key not configured';
           break;
       }
-      
+
       return { message, hint, requestId };
     }
   }
-  
+
   // Fallback for string errors
   const errorStr = error instanceof Error ? error.message : String(error);
-  
+
   if (errorStr.includes('PERMISSION') || errorStr.includes('403')) {
-    return { 
+    return {
       message: 'TTN API key lacks gateway permissions',
       hint: "Regenerate your TTN API key with 'Write gateway access' permission"
     };
   }
   if (errorStr.includes('CONFLICT') || errorStr.includes('409')) {
-    return { 
+    return {
       message: 'Gateway EUI already registered',
       hint: 'This EUI is registered to another account. Use TTN Console to claim or delete it.'
     };
   }
   if (errorStr.includes('401')) {
-    return { 
+    return {
       message: 'TTN API key invalid',
       hint: 'Generate a new API key in TTN Console'
     };
   }
-  
+
   return { message: errorStr };
 }
 
 /**
  * Hook to provision a gateway to TTN
+ *
+ * Note: This uses the tRPC register mutation which handles TTN provisioning.
  */
 export function useProvisionGateway() {
+  const trpc = useTRPC();
+  const client = useTRPCClient();
   const queryClient = useQueryClient();
   const [provisioningId, setProvisioningId] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: async ({ 
-      gatewayId, 
-      organizationId 
-    }: { 
-      gatewayId: string; 
+    mutationFn: async ({
+      gatewayId,
+      organizationId,
+      gatewayEui,
+      name,
+    }: {
+      gatewayId: string;
       organizationId: string;
+      gatewayEui: string;
+      name: string;
     }) => {
       const requestId = crypto.randomUUID().slice(0, 8);
       const startTime = Date.now();
-      
+
       setProvisioningId(gatewayId);
 
       debugLog.info('ttn', 'TTN_PROVISION_GATEWAY_REQUEST', {
@@ -281,65 +328,49 @@ export function useProvisionGateway() {
       });
 
       try {
-        const { data, error } = await supabase.functions.invoke("ttn-provision-gateway", {
-          body: { 
-            action: "create", 
-            gateway_id: gatewayId, 
-            organization_id: organizationId 
-          }
+        const result = await client.ttnGateways.register.mutate({
+          organizationId,
+          data: {
+            name,
+            gatewayEui,
+          },
         });
 
         const durationMs = Date.now() - startTime;
 
-        if (error) {
-          debugLog.error('ttn', 'TTN_PROVISION_GATEWAY_ERROR', {
-            request_id: requestId,
-            gateway_id: gatewayId,
-            error: error.message,
-            duration_ms: durationMs,
-          });
-          throw new Error(error.message);
-        }
-
-        if (data && !data.success && !data.ok) {
-          debugLog.error('ttn', 'TTN_PROVISION_GATEWAY_ERROR', {
-            request_id: data.request_id || requestId,
-            gateway_id: gatewayId,
-            error_code: data.error_code,
-            error: data.error,
-            hint: data.hint,
-            duration_ms: durationMs,
-          });
-          // Throw error object with structured data for better error handling
-          const errorObj = new Error(data.error || "Provisioning failed");
-          (errorObj as Error & { details?: unknown }).details = data;
-          throw errorObj;
-        }
-
         debugLog.info('ttn', 'TTN_PROVISION_GATEWAY_SUCCESS', {
           request_id: requestId,
           gateway_id: gatewayId,
-          ttn_gateway_id: data?.gateway_id,
-          outcome: data?.already_exists ? 'already_exists' : 'created',
+          ttn_gateway_id: result.gatewayId,
           duration_ms: durationMs,
         });
 
-        return data;
+        return result;
+      } catch (error) {
+        const durationMs = Date.now() - startTime;
+        debugLog.error('ttn', 'TTN_PROVISION_GATEWAY_ERROR', {
+          request_id: requestId,
+          gateway_id: gatewayId,
+          error: error instanceof Error ? error.message : String(error),
+          duration_ms: durationMs,
+        });
+        throw error;
       } finally {
         setProvisioningId(null);
       }
     },
-    onSuccess: async (data, variables) => {
-      await invalidateGateways(queryClient, variables.organizationId);
-      if (data?.already_exists) {
-        toast.success("Gateway already registered in TTN - ready to use");
-      } else {
-        toast.success("Gateway registered in TTN successfully");
-      }
+    onSuccess: async (_data, variables) => {
+      const listOptions = trpc.ttnGateways.list.queryOptions({
+        organizationId: variables.organizationId,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: listOptions.queryKey,
+      });
+      toast.success("Gateway registered in TTN successfully");
     },
     onError: (error: Error & { details?: unknown }) => {
-      const parsed = parseGatewayProvisionError(error.details || error);
-      
+      const parsed = parseGatewayProvisionError(error.cause || error);
+
       // Build toast message with hint if available
       let toastMessage = `Gateway registration failed: ${parsed.message}`;
       if (parsed.hint) {
@@ -348,7 +379,7 @@ export function useProvisionGateway() {
       if (parsed.requestId) {
         toastMessage += ` (ref: ${parsed.requestId})`;
       }
-      
+
       toast.error(toastMessage, {
         duration: 8000, // Longer duration for actionable errors
       });

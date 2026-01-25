@@ -1,9 +1,12 @@
 /**
- * TODO: Full migration to new backend
- * - Replace edge function calls with backend job queue
- * - Replace Supabase data calls with API calls
+ * TTN Deprovision Hooks
  *
- * Current status: Stack Auth for identity, Supabase+edge functions for operations (Phase 5)
+ * TODO: Migrate to tRPC when TTN deprovision router is available
+ * - Currently uses ttn-list-devices Supabase edge function and ttn_deprovision_jobs table
+ * - Backend router for TTN deprovision operations not yet created
+ * - Planned for future migration when backend routes are available
+ *
+ * Current status: Stack Auth for identity, Supabase for data (Phase 21)
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@stackframe/react";

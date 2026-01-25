@@ -1,20 +1,18 @@
 /**
- * TODO: Full migration to new backend
- * - Create /api/orgs/:orgId/sensors endpoint
- * - Replace Supabase data calls with API calls
- * - Remove supabase import
+ * LoRa Sensors Domain Hooks
  *
- * Current status: Stack Auth for identity, Supabase for data (Phase 5)
+ * tRPC-based hooks for LoRa sensor management operations.
+ * Uses direct useTRPC() hooks per Phase 19 patterns.
+ *
+ * Migrated to tRPC in Phase 21 (Plan 05).
  */
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";  // TEMPORARY
-import { LoraSensor, LoraSensorInsert } from "@/types/ttn";
+import { useTRPC, useTRPCClient } from "@/lib/trpc";
+import { LoraSensor } from "@/types/ttn";
 import { toast } from "sonner";
 import { useState } from "react";
 import { debugLog } from "@/lib/debugLogger";
-import { qk } from "@/lib/queryKeys";
-import { invalidateSensorAssignment } from "@/lib/invalidation";
 import { useOrgScope } from "./useOrgScope";
 
 /**
@@ -22,161 +20,126 @@ import { useOrgScope } from "./useOrgScope";
  */
 export function useLoraSensors(orgIdParam?: string | null) {
   const { orgId: scopeOrgId, isReady } = useOrgScope();
-  const user = useUser();
+  const trpc = useTRPC();
   const orgId = orgIdParam ?? scopeOrgId;
 
+  const queryOptions = trpc.ttnDevices.list.queryOptions({
+    organizationId: orgId!,
+  });
+
   return useQuery({
-    queryKey: qk.org(orgId).loraSensors(),
-    queryFn: async (): Promise<LoraSensor[]> => {
-      if (!orgId || !user) return [];
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      console.warn('[useLoraSensors] Using Supabase - TODO: migrate to new API');
-
-      const { data, error } = await supabase
-        .from("lora_sensors")
-        .select("*")
-        .eq("organization_id", orgId)
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
+    ...queryOptions,
+    enabled: isReady && !!orgId,
+    staleTime: 60_000, // 1 minute
+    select: (data) => {
       // Debug logging for sensor sync diagnostics
       debugLog.info('query', 'LORA_SENSORS_FETCH', {
         org_id: orgId,
         count: data?.length ?? 0,
-        statuses: data?.reduce((acc, s) => {
-          acc[s.status] = (acc[s.status] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
-        unassigned_count: data?.filter(s => !s.site_id || !s.unit_id).length ?? 0,
-        missing_appkey_count: data?.filter(s => !s.app_key).length ?? 0,
       });
-
-      return data as LoraSensor[];
+      return data;
     },
-    enabled: isReady && !!user && !!orgId,
   });
 }
 
 /**
  * Hook to fetch a single LoRa sensor by ID
  */
-export function useLoraSensor(sensorId: string | null) {
-  const user = useUser();
+export function useLoraSensor(sensorId: string | null, orgId?: string | null) {
+  const { orgId: scopeOrgId } = useOrgScope();
+  const trpc = useTRPC();
+  const effectiveOrgId = orgId ?? scopeOrgId;
+
+  const queryOptions = trpc.ttnDevices.get.queryOptions({
+    organizationId: effectiveOrgId!,
+    deviceId: sensorId!,
+  });
 
   return useQuery({
-    queryKey: qk.sensor(sensorId).details(),
-    queryFn: async (): Promise<LoraSensor | null> => {
-      if (!sensorId || !user) return null;
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      console.warn('[useLoraSensor] Using Supabase - TODO: migrate to new API');
-
-      const { data, error } = await supabase
-        .from("lora_sensors")
-        .select("*")
-        .eq("id", sensorId)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data as LoraSensor | null;
-    },
-    enabled: !!sensorId && !!user,
+    ...queryOptions,
+    enabled: !!sensorId && !!effectiveOrgId,
+    staleTime: 60_000, // 1 minute
   });
 }
 
 /**
  * Hook to fetch a LoRa sensor by DevEUI
+ *
+ * Note: This is a convenience wrapper that filters the device list by DevEUI.
+ * For individual device lookup, consider using useLoraSensor with the device ID.
  */
-export function useLoraSensorByDevEui(devEui: string | null) {
-  const user = useUser();
+export function useLoraSensorByDevEui(devEui: string | null, orgId?: string | null) {
+  const { orgId: scopeOrgId, isReady } = useOrgScope();
+  const trpc = useTRPC();
+  const effectiveOrgId = orgId ?? scopeOrgId;
+
+  const queryOptions = trpc.ttnDevices.list.queryOptions({
+    organizationId: effectiveOrgId!,
+  });
 
   return useQuery({
-    queryKey: qk.sensorByEui(devEui),
-    queryFn: async (): Promise<LoraSensor | null> => {
-      if (!devEui || !user) return null;
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      console.warn('[useLoraSensorByDevEui] Using Supabase - TODO: migrate to new API');
-
-      const { data, error } = await supabase
-        .from("lora_sensors")
-        .select("*")
-        .eq("dev_eui", devEui)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data as LoraSensor | null;
-    },
-    enabled: !!devEui && !!user,
+    ...queryOptions,
+    enabled: !!devEui && !!effectiveOrgId && isReady,
+    select: (data) => data?.find(d => d.devEui === devEui) ?? null,
+    staleTime: 60_000, // 1 minute
   });
 }
 
 /**
  * Hook to fetch LoRa sensors linked to a specific unit
+ *
+ * Note: This filters the device list by unitId.
  */
-export function useLoraSensorsByUnit(unitId: string | null) {
-  const user = useUser();
+export function useLoraSensorsByUnit(unitId: string | null, orgId?: string | null) {
+  const { orgId: scopeOrgId, isReady } = useOrgScope();
+  const trpc = useTRPC();
+  const effectiveOrgId = orgId ?? scopeOrgId;
+
+  const queryOptions = trpc.ttnDevices.list.queryOptions({
+    organizationId: effectiveOrgId!,
+  });
 
   return useQuery({
-    queryKey: qk.unit(unitId).loraSensors(),
-    queryFn: async (): Promise<LoraSensor[]> => {
-      if (!unitId || !user) return [];
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      console.warn('[useLoraSensorsByUnit] Using Supabase - TODO: migrate to new API');
-
-      const { data, error } = await supabase
-        .from("lora_sensors")
-        .select("*")
-        .eq("unit_id", unitId)
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data as LoraSensor[];
-    },
-    enabled: !!unitId && !!user,
+    ...queryOptions,
+    enabled: !!unitId && !!effectiveOrgId && isReady,
+    select: (data) => data?.filter(d => d.unitId === unitId) ?? [],
+    staleTime: 60_000, // 1 minute
   });
 }
 
 /**
- * Hook to create a new LoRa sensor
+ * Hook to provision a LoRa sensor (create in TTN with provided credentials)
  */
 export function useCreateLoraSensor() {
+  const trpc = useTRPC();
+  const client = useTRPCClient();
   const queryClient = useQueryClient();
-  const user = useUser();
 
   return useMutation({
-    mutationFn: async (sensor: LoraSensorInsert): Promise<LoraSensor> => {
-      if (!user) throw new Error('Not authenticated');
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      console.warn('[useCreateLoraSensor] Using Supabase - TODO: migrate to new API');
-
-      const sensorWithCreator = {
-        ...sensor,
-        created_by: user.id,
+    mutationFn: async (variables: {
+      organizationId: string;
+      data: {
+        name: string;
+        devEui: string;
+        joinEui: string;
+        appKey: string;
+        siteId?: string;
+        unitId?: string;
       };
-
-      const { data, error } = await supabase
-        .from("lora_sensors")
-        .insert(sensorWithCreator)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as LoraSensor;
+    }) => {
+      return client.ttnDevices.provision.mutate({
+        organizationId: variables.organizationId,
+        data: variables.data,
+      });
     },
-    onSuccess: async (data) => {
-      await invalidateSensorAssignment(
-        queryClient,
-        data.id,
-        data.organization_id,
-        data.unit_id
-      );
+    onSuccess: (_data, variables) => {
+      // Invalidate devices list
+      const listOptions = trpc.ttnDevices.list.queryOptions({
+        organizationId: variables.organizationId,
+      });
+      queryClient.invalidateQueries({
+        queryKey: listOptions.queryKey,
+      });
       toast.success("LoRa sensor created successfully");
     },
     onError: (error: Error) => {
@@ -189,42 +152,44 @@ export function useCreateLoraSensor() {
  * Hook to update a LoRa sensor
  */
 export function useUpdateLoraSensor() {
+  const trpc = useTRPC();
+  const client = useTRPCClient();
   const queryClient = useQueryClient();
-  const user = useUser();
 
   return useMutation({
-    mutationFn: async ({
-      id,
-      updates,
-      previousUnitId,
-    }: {
-      id: string;
-      updates: Partial<LoraSensor>;
+    mutationFn: async (variables: {
+      organizationId: string;
+      deviceId: string;
+      data: {
+        name?: string;
+        siteId?: string;
+        unitId?: string;
+      };
       previousUnitId?: string | null;
-    }): Promise<{ sensor: LoraSensor; previousUnitId?: string | null }> => {
-      if (!user) throw new Error('Not authenticated');
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      console.warn('[useUpdateLoraSensor] Using Supabase - TODO: migrate to new API');
-
-      const { data, error } = await supabase
-        .from("lora_sensors")
-        .update(updates)
-        .eq("id", id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return { sensor: data as LoraSensor, previousUnitId };
+    }) => {
+      const result = await client.ttnDevices.update.mutate({
+        organizationId: variables.organizationId,
+        deviceId: variables.deviceId,
+        data: variables.data,
+      });
+      return { ...result, previousUnitId: variables.previousUnitId };
     },
-    onSuccess: async ({ sensor, previousUnitId }) => {
-      await invalidateSensorAssignment(
-        queryClient,
-        sensor.id,
-        sensor.organization_id,
-        sensor.unit_id,
-        previousUnitId
-      );
+    onSuccess: (_data, variables) => {
+      // Invalidate devices list
+      const listOptions = trpc.ttnDevices.list.queryOptions({
+        organizationId: variables.organizationId,
+      });
+      queryClient.invalidateQueries({
+        queryKey: listOptions.queryKey,
+      });
+      // Invalidate specific device query
+      const getOptions = trpc.ttnDevices.get.queryOptions({
+        organizationId: variables.organizationId,
+        deviceId: variables.deviceId,
+      });
+      queryClient.invalidateQueries({
+        queryKey: getOptions.queryKey,
+      });
       toast.success("LoRa sensor updated successfully");
     },
     onError: (error: Error) => {
@@ -234,46 +199,33 @@ export function useUpdateLoraSensor() {
 }
 
 /**
- * Hook to archive (soft delete) a LoRa sensor
- * TTN de-provisioning is handled by the database trigger 'trg_enqueue_deprovision_on_archive'
+ * Hook to archive (deprovision) a LoRa sensor
  */
 export function useDeleteLoraSensor() {
+  const trpc = useTRPC();
+  const client = useTRPCClient();
   const queryClient = useQueryClient();
-  const user = useUser();
 
   return useMutation({
-    mutationFn: async ({ id, orgId, unitId }: { id: string; orgId: string; unitId?: string | null }): Promise<{ orgId: string; unitId?: string | null }> => {
-      if (!user) throw new Error('Not authenticated');
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      console.warn('[useDeleteLoraSensor] Using Supabase - TODO: migrate to new API');
-
-      // Soft delete - the database trigger 'trg_enqueue_deprovision_on_archive'
-      // automatically creates a deprovisioning job for TTN cleanup
-      const { error } = await supabase
-        .from("lora_sensors")
-        .update({
-          deleted_at: new Date().toISOString(),
-          deleted_by: user.id,
-        })
-        .eq("id", id);
-
-      if (error) throw error;
-      return { orgId, unitId };
+    mutationFn: async (variables: {
+      organizationId: string;
+      deviceId: string;
+      unitId?: string | null;
+    }) => {
+      await client.ttnDevices.deprovision.mutate({
+        organizationId: variables.organizationId,
+        deviceId: variables.deviceId,
+      });
+      return { orgId: variables.organizationId, unitId: variables.unitId };
     },
-    onSuccess: async ({ orgId, unitId }) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: qk.org(orgId).loraSensors(),
-          refetchType: 'active'
-        }),
-        queryClient.invalidateQueries({ queryKey: qk.org(orgId).ttnDeprovisionJobs() }),
-        unitId ? queryClient.invalidateQueries({
-          queryKey: qk.unit(unitId).loraSensors(),
-          refetchType: 'active'
-        }) : Promise.resolve(),
-        queryClient.invalidateQueries({ queryKey: qk.org(orgId).navTree() }),
-      ]);
+    onSuccess: (data) => {
+      // Invalidate devices list
+      const listOptions = trpc.ttnDevices.list.queryOptions({
+        organizationId: data.orgId,
+      });
+      queryClient.invalidateQueries({
+        queryKey: listOptions.queryKey,
+      });
       toast.success("Sensor archived. TTN cleanup will run in the background.");
     },
     onError: (error: Error) => {
@@ -286,45 +238,39 @@ export function useDeleteLoraSensor() {
  * Hook to link a LoRa sensor to a unit
  */
 export function useLinkSensorToUnit() {
+  const trpc = useTRPC();
+  const client = useTRPCClient();
   const queryClient = useQueryClient();
-  const user = useUser();
 
   return useMutation({
-    mutationFn: async ({
-      sensorId,
-      unitId,
-      previousUnitId,
-      orgId,
-    }: {
+    mutationFn: async (variables: {
+      organizationId: string;
       sensorId: string;
       unitId: string | null;
       previousUnitId?: string | null;
-      orgId: string;
-    }): Promise<{ sensor: LoraSensor; previousUnitId?: string | null; orgId: string }> => {
-      if (!user) throw new Error('Not authenticated');
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      console.warn('[useLinkSensorToUnit] Using Supabase - TODO: migrate to new API');
-
-      const { data, error } = await supabase
-        .from("lora_sensors")
-        .update({ unit_id: unitId })
-        .eq("id", sensorId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return { sensor: data as LoraSensor, previousUnitId, orgId };
+    }) => {
+      const result = await client.ttnDevices.update.mutate({
+        organizationId: variables.organizationId,
+        deviceId: variables.sensorId,
+        data: {
+          unitId: variables.unitId ?? undefined,
+        },
+      });
+      return {
+        ...result,
+        organizationId: variables.organizationId,
+        previousUnitId: variables.previousUnitId,
+      };
     },
-    onSuccess: async ({ sensor, previousUnitId, orgId }) => {
-      await invalidateSensorAssignment(
-        queryClient,
-        sensor.id,
-        orgId,
-        sensor.unit_id,
-        previousUnitId
-      );
-      toast.success(sensor.unit_id ? "Sensor linked to unit" : "Sensor unlinked from unit");
+    onSuccess: (data, variables) => {
+      // Invalidate devices list
+      const listOptions = trpc.ttnDevices.list.queryOptions({
+        organizationId: variables.organizationId,
+      });
+      queryClient.invalidateQueries({
+        queryKey: listOptions.queryKey,
+      });
+      toast.success(data.unitId ? "Sensor linked to unit" : "Sensor unlinked from unit");
     },
     onError: (error: Error) => {
       toast.error(`Failed to link sensor: ${error.message}`);
@@ -346,16 +292,16 @@ const getProvisionErrorMessage = (error: string): string => {
   if (error.includes('SENSOR_KEYS_MISSING')) {
     return "Sensor missing OTAA credentials (AppKey). Edit sensor to add credentials.";
   }
-  
+
   // Parse specific TTN "already registered" errors with device/application details
   if (error.includes('end_device_euis_taken') || error.includes('already registered')) {
     // Try to extract device_id and application from the error message
     const deviceIdMatch = error.match(/device[_\s]?id[:\s]+['"]?([a-z0-9-]+)['"]?/i);
     const applicationMatch = error.match(/application[_\s]?(?:id)?[:\s]+['"]?([a-z0-9-]+)['"]?/i);
     const devEuiMatch = error.match(/DevEUI[:\s]+['"]?([A-Fa-f0-9]+)['"]?/i);
-    
+
     let details = "Device already registered in TTN";
-    
+
     if (deviceIdMatch || applicationMatch) {
       details = "Device already exists in TTN";
       if (deviceIdMatch) {
@@ -368,152 +314,94 @@ const getProvisionErrorMessage = (error: string): string => {
     } else if (devEuiMatch) {
       details = `DevEUI ${devEuiMatch[1]} is already registered in TTN. Use 'Check Status' to sync.`;
     }
-    
+
     return details;
   }
-  
+
   if (error.includes('409')) {
     return "Device already registered in TTN. Use 'Check Status' to sync.";
   }
-  
+
   return error;
 };
 
 /**
  * Hook to provision a LoRa sensor to TTN
+ *
+ * Uses ttnDevices.provision for creating new devices in TTN.
  */
 export function useProvisionLoraSensor() {
+  const trpc = useTRPC();
+  const client = useTRPCClient();
   const queryClient = useQueryClient();
   const [provisioningId, setProvisioningId] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: async ({
-      sensorId,
-      organizationId,
-    }: {
+    mutationFn: async (variables: {
       sensorId: string;
       organizationId: string;
-    }): Promise<{ success: boolean; message?: string; already_exists?: boolean; device_id?: string; orgId: string; sensorId: string }> => {
-      setProvisioningId(sensorId);
+      devEui: string;
+      joinEui: string;
+      appKey: string;
+      name: string;
+    }) => {
+      setProvisioningId(variables.sensorId);
       const requestId = crypto.randomUUID().slice(0, 8);
       const startTime = Date.now();
 
       debugLog.info('ttn', 'TTN_PROVISION_SENSOR_REQUEST', {
         request_id: requestId,
-        sensor_id: sensorId,
-        org_id: organizationId,
+        sensor_id: variables.sensorId,
+        org_id: variables.organizationId,
       });
-      
+
       try {
-        const { data, error } = await supabase.functions.invoke("ttn-provision-device", {
-          body: { 
-            action: "create", 
-            sensor_id: sensorId, 
-            organization_id: organizationId 
+        const result = await client.ttnDevices.provision.mutate({
+          organizationId: variables.organizationId,
+          data: {
+            name: variables.name,
+            devEui: variables.devEui,
+            joinEui: variables.joinEui,
+            appKey: variables.appKey,
           },
         });
 
         const durationMs = Date.now() - startTime;
 
-        // Extract detailed error from edge function response
-        if (error) {
-          const errorContext = (error as any)?.context;
-          let detailedMessage = error.message;
-          
-          if (errorContext) {
-            try {
-              const clonedContext = errorContext.clone ? errorContext.clone() : errorContext;
-              if (typeof clonedContext.json === 'function') {
-                const responseBody = await clonedContext.json();
-                if (responseBody?.details) {
-                  detailedMessage = responseBody.details;
-                } else if (responseBody?.error) {
-                  detailedMessage = responseBody.error;
-                }
-              }
-            } catch {
-              try {
-                const clonedContext = errorContext.clone ? errorContext.clone() : errorContext;
-                if (typeof clonedContext.text === 'function') {
-                  const textBody = await clonedContext.text();
-                  if (textBody) detailedMessage = textBody;
-                }
-              } catch {
-                // Keep original message
-              }
-            }
-          }
-          
-          debugLog.error('ttn', 'TTN_PROVISION_SENSOR_ERROR', {
-            request_id: requestId,
-            sensor_id: sensorId,
-            error_code: 'FUNCTION_ERROR',
-            message: detailedMessage,
-            duration_ms: durationMs,
-          });
-          
-          throw new Error(detailedMessage);
-        }
-        
-        // Check if data indicates failure
-        if (data && !data.success && data.error) {
-          let errorMessage = data.error;
-          if (data.hint) {
-            errorMessage = `${data.error}\n\n${data.hint}`;
-          } else if (data.details) {
-            errorMessage = `${data.error}: ${data.details}`;
-          }
-          
-          debugLog.error('ttn', 'TTN_PROVISION_SENSOR_ERROR', {
-            request_id: requestId,
-            sensor_id: sensorId,
-            error_code: data.error_code || 'UNKNOWN',
-            message: errorMessage,
-            hint: data.hint,
-            duration_ms: durationMs,
-          });
-          
-          throw new Error(errorMessage);
-        }
-        
-        // Success
         debugLog.info('ttn', 'TTN_PROVISION_SENSOR_SUCCESS', {
           request_id: requestId,
-          sensor_id: sensorId,
-          ttn_device_id: data?.device_id,
-          ttn_application_id: data?.application_id,
-          outcome: data?.already_exists ? 'already_exists' : 'created',
+          sensor_id: variables.sensorId,
+          ttn_device_id: result.deviceId,
           duration_ms: durationMs,
         });
-        
-        return { ...data, orgId: organizationId, sensorId };
+
+        return {
+          ...result,
+          orgId: variables.organizationId,
+          sensorId: variables.sensorId,
+        };
       } catch (err) {
         const durationMs = Date.now() - startTime;
-        
-        // Only log if not already logged above
-        if (!(err instanceof Error && err.message)) {
-          debugLog.error('ttn', 'TTN_PROVISION_SENSOR_ERROR', {
-            request_id: requestId,
-            sensor_id: sensorId,
-            error: String(err),
-            duration_ms: durationMs,
-          });
-        }
-        
+
+        debugLog.error('ttn', 'TTN_PROVISION_SENSOR_ERROR', {
+          request_id: requestId,
+          sensor_id: variables.sensorId,
+          error: err instanceof Error ? err.message : String(err),
+          duration_ms: durationMs,
+        });
+
         throw err;
       }
     },
     onSuccess: async (data) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: qk.org(data.orgId).loraSensors() }),
-        queryClient.invalidateQueries({ queryKey: qk.sensor(data.sensorId).details() }),
-      ]);
-      
-      if (data?.already_exists) {
-        toast.success("Sensor already registered in TTN - ready to use");
-      } else {
-        toast.success("Sensor provisioned to TTN - awaiting network join");
-      }
+      const listOptions = trpc.ttnDevices.list.queryOptions({
+        organizationId: data.orgId,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: listOptions.queryKey,
+      });
+
+      toast.success("Sensor provisioned to TTN - awaiting network join");
       setProvisioningId(null);
     },
     onError: (error: Error) => {
@@ -527,5 +415,89 @@ export function useProvisionLoraSensor() {
     ...mutation,
     provisioningId,
     isProvisioning: (sensorId: string) => provisioningId === sensorId,
+  };
+}
+
+/**
+ * Hook to bootstrap a LoRa sensor with auto-generated credentials
+ */
+export function useBootstrapLoraSensor() {
+  const trpc = useTRPC();
+  const client = useTRPCClient();
+  const queryClient = useQueryClient();
+  const [bootstrappingId, setBootstrappingId] = useState<string | null>(null);
+
+  const mutation = useMutation({
+    mutationFn: async (variables: {
+      organizationId: string;
+      name: string;
+      siteId?: string;
+      unitId?: string;
+    }) => {
+      setBootstrappingId(crypto.randomUUID());
+      const requestId = crypto.randomUUID().slice(0, 8);
+      const startTime = Date.now();
+
+      debugLog.info('ttn', 'TTN_BOOTSTRAP_SENSOR_REQUEST', {
+        request_id: requestId,
+        org_id: variables.organizationId,
+      });
+
+      try {
+        const result = await client.ttnDevices.bootstrap.mutate({
+          organizationId: variables.organizationId,
+          data: {
+            name: variables.name,
+            siteId: variables.siteId,
+            unitId: variables.unitId,
+          },
+        });
+
+        const durationMs = Date.now() - startTime;
+
+        debugLog.info('ttn', 'TTN_BOOTSTRAP_SENSOR_SUCCESS', {
+          request_id: requestId,
+          ttn_device_id: result.deviceId,
+          duration_ms: durationMs,
+        });
+
+        return {
+          ...result,
+          orgId: variables.organizationId,
+        };
+      } catch (err) {
+        const durationMs = Date.now() - startTime;
+
+        debugLog.error('ttn', 'TTN_BOOTSTRAP_SENSOR_ERROR', {
+          request_id: requestId,
+          error: err instanceof Error ? err.message : String(err),
+          duration_ms: durationMs,
+        });
+
+        throw err;
+      }
+    },
+    onSuccess: async (data) => {
+      const listOptions = trpc.ttnDevices.list.queryOptions({
+        organizationId: data.orgId,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: listOptions.queryKey,
+      });
+
+      toast.success("Sensor bootstrapped with auto-generated credentials");
+      setBootstrappingId(null);
+    },
+    onError: (error: Error) => {
+      const friendlyMessage = getProvisionErrorMessage(error.message);
+      toast.error(`TTN bootstrap failed: ${friendlyMessage}`);
+      setBootstrappingId(null);
+    },
+  });
+
+  return {
+    ...mutation,
+    bootstrappingId,
+    isBootstrapping: bootstrappingId !== null,
   };
 }

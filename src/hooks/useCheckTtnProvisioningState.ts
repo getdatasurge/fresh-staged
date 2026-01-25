@@ -1,8 +1,12 @@
 /**
- * TODO: Full migration to new backend
- * - Replace edge function calls with backend job queue
+ * TTN Provisioning State Check Hooks
  *
- * Current status: Stack Auth for identity, edge functions for operations (Phase 5)
+ * TODO: Migrate to tRPC when TTN status check router is available
+ * - Currently uses check-ttn-device-exists Supabase edge function
+ * - Backend router for TTN device status checks not yet created
+ * - Planned for future migration when backend routes are available
+ *
+ * Current status: Stack Auth for identity, Supabase edge functions (Phase 21)
  */
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@stackframe/react";

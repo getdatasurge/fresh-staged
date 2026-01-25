@@ -1,9 +1,12 @@
 /**
- * TODO: Full migration to new backend
- * - Replace edge function calls with BullMQ jobs
- * - Replace Supabase data calls with API calls
+ * TTN API Key Hooks
  *
- * Current status: Stack Auth for identity, Supabase for data/edge functions (Phase 5)
+ * TODO: Migrate to tRPC when TTN config router is available
+ * - Currently uses ttn-bootstrap Supabase edge function
+ * - Backend router for TTN API key validation not yet created
+ * - Planned for future migration when backend routes are available
+ *
+ * Current status: Stack Auth for identity, Supabase edge functions (Phase 21)
  */
 import { useState, useCallback } from "react";
 import { useUser } from "@stackframe/react";

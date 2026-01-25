@@ -1,8 +1,12 @@
 /**
- * TODO: Full migration to new backend
- * - Replace edge function with backend validation endpoint
+ * Gateway Provisioning Preflight Hooks
  *
- * Current status: Stack Auth for identity, edge functions for validation (Phase 5)
+ * TODO: Migrate to tRPC when gateway preflight router is available
+ * - Currently uses ttn-gateway-preflight Supabase edge function
+ * - Backend router for gateway preflight checks not yet created
+ * - Planned for future migration when backend routes are available
+ *
+ * Current status: Stack Auth for identity, Supabase edge functions (Phase 21)
  */
 import { useState, useCallback, useEffect } from "react";
 import { useUser } from "@stackframe/react";

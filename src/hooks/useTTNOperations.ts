@@ -1,8 +1,12 @@
 /**
- * TODO: Full migration to new backend
- * - Replace edge function calls with backend job queue
+ * TTN Operations Hooks
  *
- * Current status: Stack Auth for identity, edge functions for operations (Phase 5)
+ * TODO: Migrate to tRPC when TTN operations router is available
+ * - Currently uses ttn-provision-org and manage-ttn-settings Supabase edge functions
+ * - Backend router for TTN provisioning operations not yet created
+ * - Planned for future migration when backend routes are available
+ *
+ * Current status: Stack Auth for identity, Supabase edge functions (Phase 21)
  */
 import { useState, useCallback } from "react";
 import { useUser } from "@stackframe/react";

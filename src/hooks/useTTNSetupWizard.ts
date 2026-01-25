@@ -1,11 +1,12 @@
 /**
- * Hook for managing TTN Setup Wizard state
+ * TTN Setup Wizard Hooks
  *
- * TODO: Full migration to new backend
- * - Replace edge function calls with backend job queue
- * - Replace Supabase data calls with API calls
+ * TODO: Migrate to tRPC when TTN wizard router is available
+ * - Currently uses manage-ttn-settings Supabase edge function
+ * - Backend router for TTN wizard operations not yet created
+ * - Planned for future migration when backend routes are available
  *
- * Current status: Stack Auth for identity, edge functions for operations (Phase 5)
+ * Current status: Stack Auth for identity, Supabase edge functions (Phase 21)
  */
 
 import { useState, useCallback } from "react";
