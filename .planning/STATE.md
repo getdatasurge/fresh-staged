@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
-Phase: 20 of 22 (Backend API Migration - Core) — COMPLETE
-Plan: 5 of 5 complete
-Status: Phase complete
-Last activity: 2026-01-25 — Completed 20-05-PLAN.md (Frontend Type Alignment)
+Phase: 21 of 22 (Backend API Migration - Completion) — IN PROGRESS
+Plan: 1 of 5 complete
+Status: In progress
+Last activity: 2026-01-25 — Completed 21-01-PLAN.md (Settings Domain tRPC Routers)
 
-Progress: [███████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░] 42% (36/86 plans)
+Progress: [████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░] 43% (37/86 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,12 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 36
+- Plans completed: 37
 - Phases completed: 8 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing, 19-backend-api-migration-foundation, 20-backend-api-migration-core)
-- Next: Phase 21 (Backend API Migration - Completion)
+- Current: Phase 21, Plan 1 of 5 complete
 
 **Combined:**
-- Total plans completed: 36/86
+- Total plans completed: 37/86
 - Total phases: 20 (8 complete in v2.0)
 - Milestones shipped: 2 (v1.0, v1.1)
 
@@ -157,6 +157,9 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | ROUTER-09 | CONFLICT error for already-acknowledged alerts | 20-02 | Matches REST 409 response for state transition errors |
 | TYPE-01 | AlertStatusFilter uses 'active' not 'pending' | 20-05 | Frontend type aligned with backend AlertStatusSchema |
 | TYPE-02 | Unit mutation types use tempMin/tempMax | 20-05 | Field names match backend CreateUnitSchema/UpdateUnitSchema |
+| ROUTER-10 | protectedProcedure for user-scoped preferences | 21-01 | No org context needed for digest preferences |
+| ROUTER-11 | Fire-and-forget scheduler sync for preferences | 21-01 | Don't block response waiting for BullMQ scheduler update |
+| ROUTER-12 | SMS config upsert admin/owner gated | 21-01 | Billing-related config restricted to org admins |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -184,10 +187,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-25
-**Stopped at:** Completed 20-05-PLAN.md (Frontend Type Alignment) - Phase 20 complete
+**Stopped at:** Completed 21-01-PLAN.md (Settings Domain tRPC Routers)
 **Resume file:** None
-**Next action:** Begin Phase 21 (Backend API Migration - Completion)
+**Next action:** Execute 21-02-PLAN.md (TTN Integration tRPC Routers)
 
 ---
 
-*State updated: 2026-01-25 after completing Plan 20-05 (Frontend Type Alignment) - Phase 20 complete*
+*State updated: 2026-01-25 after completing Plan 21-01 (Settings Domain tRPC Routers)*
