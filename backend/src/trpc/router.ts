@@ -21,6 +21,7 @@ import { ttnGatewaysRouter } from '../routers/ttn-gateways.router.js';
 import { ttnDevicesRouter } from '../routers/ttn-devices.router.js';
 import { ttnSettingsRouter } from '../routers/ttn-settings.router.js';
 import { availabilityRouter } from '../routers/availability.router.js';
+import { escalationContactsRouter } from '../routers/escalation-contacts.router.js';
 import { notificationPoliciesRouter } from '../routers/notification-policies.router.js';
 
 /**
@@ -135,6 +136,12 @@ export const appRouter = router({
    * Procedures: checkEmail, checkPhone
    */
   availability: availabilityRouter,
+
+  /**
+   * Escalation Contacts domain router
+   * Procedures: list, create, update, delete
+   */
+  escalationContacts: escalationContactsRouter,
 
   /**
    * Notification Policies domain router
