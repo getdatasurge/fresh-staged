@@ -10,13 +10,13 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 ## Current Position
 
 Milestone: v2.1 Streamlined Deployment — IN PROGRESS
-Phase: 25 of 26 (Deployment Orchestration) — IN PROGRESS
-Plan: 1 of 2 in current phase
-Status: Plan 25-01 complete
-Last activity: 2026-01-25 — Completed 25-01-PLAN.md (Deployment Orchestrator)
+Phase: 25 of 26 (Deployment Orchestration) — COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase 25 complete
+Last activity: 2026-01-25 — Completed 25-02-PLAN.md (Health Verification)
 
-Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 128 plans total
-[██████████          ] 1/2 plans in Phase 25
+Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 129 plans total
+[████████████████████] 2/2 plans in Phase 25
 
 ## v2.1 Phase Overview
 
@@ -28,12 +28,14 @@ Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 128 plans total
 | 25 | Deployment Orchestration | 5 | Integration with existing deploy.sh |
 | 26 | Verification & Completion | 15 | Health checks, E2E, post-deploy, docs |
 
-## Phase 25 Progress — IN PROGRESS
+## Phase 25 Progress — COMPLETE
 
 | Plan | Name | Status | Commit |
 |------|------|--------|--------|
 | 25-01 | Deployment Orchestrator | Complete | aa4d797 |
-| 25-02 | Health Verification | Pending | - |
+| 25-02 | Health Verification | Complete | 4701f66 |
+
+**Verification:** All 7 success criteria met (see 25-02-SUMMARY.md)
 
 ## Phase 24 — COMPLETE ✓
 
@@ -152,6 +154,9 @@ Recent decisions affecting v2.1:
 - [25-01]: DEPLOY_SCRIPT_DIR avoids collision with libraries that redefine SCRIPT_DIR
 - [25-01]: deploy.sh called via exec (not duplicated) for single source of truth
 - [25-01]: Checkpoint names use 'deploy-' prefix to avoid collision with library checkpoints
+- [25-02]: Changed exec to regular call in do_deployment() to allow continuation
+- [25-02]: Health checks verify services in criticality order (postgres -> redis -> backend -> caddy)
+- [25-02]: display_completion_summary not checkpointed (always shows on success)
 
 ### Tech Debt Carried Forward
 
@@ -166,10 +171,10 @@ None for v2.1.
 ## Session Continuity
 
 **Last session:** 2026-01-25
-**Stopped at:** Plan 25-01 complete
+**Stopped at:** Plan 25-02 complete (Phase 25 complete)
 **Resume file:** None
-**Next action:** Execute Plan 25-02 for Health Verification
+**Next action:** Execute Phase 26 (Verification & Completion)
 
 ---
 
-*State updated: 2026-01-25 after Plan 25-01 completion*
+*State updated: 2026-01-25 after Plan 25-02 completion*
