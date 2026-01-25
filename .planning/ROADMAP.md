@@ -69,10 +69,11 @@ Plans:
   2. Running script twice produces same result (second run detects existing installations)
   3. UFW firewall allows only ports 22, 80, 443 after script completes
   4. fail2ban protects SSH from brute-force attacks
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 23-01: TBD
+- [ ] 23-01-PLAN.md — Docker Engine installation via apt repository (idempotent, not get.docker.com)
+- [ ] 23-02-PLAN.md — Security & utilities (UFW firewall, fail2ban, jq, orchestration)
 
 ### Phase 24: Interactive Configuration
 **Goal**: User can configure deployment through guided prompts without editing files manually
@@ -130,11 +131,11 @@ Plans:
 | 8-13 | v1.1 | 31/31 | Complete | 2026-01-24 |
 | 14-21 | v2.0 | 40/40 | Complete | 2026-01-25 |
 | 22. Foundation & Pre-Flight | v2.1 | 4/4 | Complete | 2026-01-25 |
-| 23. Prerequisites Installation | v2.1 | 0/? | Not started | - |
+| 23. Prerequisites Installation | v2.1 | 0/2 | Planned | - |
 | 24. Interactive Configuration | v2.1 | 0/? | Not started | - |
 | 25. Deployment Orchestration | v2.1 | 0/? | Not started | - |
 | 26. Verification & Completion | v2.1 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-25 (Phase 22 complete)*
+*Last updated: 2026-01-25 (Phase 23 planned)*
