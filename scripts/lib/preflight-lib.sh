@@ -44,6 +44,96 @@ warning() {
 }
 
 # ===========================================
+# Checkpoint State Management
+# ===========================================
+# STATE_DIR can be overridden for testing
+STATE_DIR="${STATE_DIR:-/var/lib/freshtrack-deploy}"
+
+# Ensure state directory exists (called during checkpoint operations)
+ensure_state_dir() {
+    if [[ ! -d "$STATE_DIR" ]]; then
+        mkdir -p "$STATE_DIR" 2>/dev/null || {
+            # If can't create in /var/lib, fall back to local directory
+            STATE_DIR="${SCRIPT_DIR:-.}/.deploy-state"
+            mkdir -p "$STATE_DIR"
+        }
+    fi
+}
+
+# Check if a checkpoint has been completed
+# Args: $1 = checkpoint name
+# Returns: 0 if done, 1 if not done
+checkpoint_done() {
+    local checkpoint="$1"
+    [[ -f "${STATE_DIR}/.checkpoint-${checkpoint}" ]]
+}
+
+# Get timestamp of when checkpoint was completed
+# Args: $1 = checkpoint name
+# Returns: timestamp or empty string
+checkpoint_time() {
+    local checkpoint="$1"
+    local file="${STATE_DIR}/.checkpoint-${checkpoint}"
+    if [[ -f "$file" ]]; then
+        cat "$file"
+    fi
+}
+
+# Mark a checkpoint as complete
+# Args: $1 = checkpoint name
+checkpoint_set() {
+    local checkpoint="$1"
+    ensure_state_dir
+    date -Iseconds > "${STATE_DIR}/.checkpoint-${checkpoint}"
+}
+
+# Clear a checkpoint (mark as incomplete)
+# Args: $1 = checkpoint name
+checkpoint_clear() {
+    local checkpoint="$1"
+    rm -f "${STATE_DIR}/.checkpoint-${checkpoint}"
+}
+
+# Clear all checkpoints (full reset)
+checkpoint_clear_all() {
+    ensure_state_dir
+    rm -f "${STATE_DIR}"/.checkpoint-*
+    rm -f "${STATE_DIR}"/.last-error
+    success "All checkpoints cleared"
+}
+
+# Run a deployment step with checkpoint tracking
+# Args: $1 = step name (used as checkpoint)
+#       $2 = function to run
+#       $3+ = arguments to function
+# Returns: 0 on success (including skip), function's exit code on failure
+run_step() {
+    local step_name="$1"
+    local step_func="$2"
+    shift 2
+
+    if checkpoint_done "$step_name"; then
+        local completed_at
+        completed_at=$(checkpoint_time "$step_name")
+        echo "[SKIP] $step_name (completed at: $completed_at)"
+        return 0
+    fi
+
+    step "[RUN] $step_name"
+
+    # Run the function
+    if "$step_func" "$@"; then
+        checkpoint_set "$step_name"
+        success "$step_name completed"
+        return 0
+    else
+        local exit_code=$?
+        error "$step_name failed (exit code: $exit_code)"
+        return $exit_code
+    fi
+}
+
+# ===========================================
 # Credential Sanitization
 # Prevents sensitive data from appearing in logs
 # ===========================================
