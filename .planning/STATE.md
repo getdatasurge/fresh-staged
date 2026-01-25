@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 20 of 22 (Backend API Migration - Core) — IN PROGRESS
-Plan: 1 of 5 complete
+Plan: 2 of 5 complete
 Status: In progress
-Last activity: 2026-01-24 — Completed 20-01-PLAN.md (Sites & Areas tRPC Routers)
+Last activity: 2026-01-25 — Completed 20-02-PLAN.md (Units, Readings & Alerts tRPC Routers)
 
-Progress: [████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 37% (32/86 plans)
+Progress: [█████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 38% (33/86 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,12 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 32
+- Plans completed: 33
 - Phases completed: 7 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing, 19-backend-api-migration-foundation)
 - In progress: Phase 20 (Backend API Migration - Core)
 
 **Combined:**
-- Total plans completed: 32/86
+- Total plans completed: 33/86
 - Total phases: 20 (7 complete in v2.0, 1 in progress)
 - Milestones shipped: 2 (v1.0, v1.1)
 
@@ -151,6 +151,10 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | ROUTER-03 | Sites/areas follow organizations.router.ts pattern | 20-01 | Consistency across all domain routers for CRUD operations |
 | ROUTER-04 | Admin/owner role check for mutations | 20-01 | Matches existing REST route authorization using ['admin', 'owner'].includes() |
 | ROUTER-05 | Areas validate site access via service layer | 20-01 | Returns NOT_FOUND for invalid site, consistent error handling |
+| ROUTER-06 | Manager role for unit mutations | 20-02 | Matches REST requireRole('manager') for unit CRUD operations |
+| ROUTER-07 | Staff role for alert mutations | 20-02 | Matches REST requireRole('staff') for acknowledge/resolve operations |
+| ROUTER-08 | Readings router is query-only | 20-02 | Bulk ingest stays REST with API key auth, tRPC for queries only |
+| ROUTER-09 | CONFLICT error for already-acknowledged alerts | 20-02 | Matches REST 409 response for state transition errors |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -177,11 +181,11 @@ See also: .planning/PROJECT.md Key Decisions table
 
 ## Session Continuity
 
-**Last session:** 2026-01-24
-**Stopped at:** Completed 20-01-PLAN.md (Sites & Areas tRPC Routers)
+**Last session:** 2026-01-25
+**Stopped at:** Completed 20-02-PLAN.md (Units, Readings & Alerts tRPC Routers)
 **Resume file:** None
-**Next action:** Continue Phase 20, Plan 02 (Units tRPC Router)
+**Next action:** Continue Phase 20, Plan 03 (Devices & Profiles tRPC Routers)
 
 ---
 
-*State updated: 2026-01-24 after completing Plan 20-01 (Sites & Areas tRPC Routers)*
+*State updated: 2026-01-25 after completing Plan 20-02 (Units, Readings & Alerts tRPC Routers)*
