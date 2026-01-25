@@ -101,10 +101,11 @@ Plans:
   2. Script creates checkpoint markers tracking deployment progress
   3. Script can resume from last successful checkpoint after failure
   4. All Docker services reach healthy state before script reports success
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 25-01: TBD
+- [ ] 25-01-PLAN.md — Thin deployment orchestrator script (sources libs, calls deploy.sh, checkpoint tracking)
+- [ ] 25-02-PLAN.md — All-services-healthy verification and completion summary display
 
 ### Phase 26: Verification & Completion
 **Goal**: System is verified working end-to-end and user has everything needed for operations
@@ -135,9 +136,9 @@ Plans:
 | 22. Foundation & Pre-Flight | v2.1 | 4/4 | Complete | 2026-01-25 |
 | 23. Prerequisites Installation | v2.1 | 2/2 | Complete | 2026-01-25 |
 | 24. Interactive Configuration | v2.1 | 3/3 | Complete | 2026-01-25 |
-| 25. Deployment Orchestration | v2.1 | 0/? | Not started | - |
+| 25. Deployment Orchestration | v2.1 | 0/2 | Not started | - |
 | 26. Verification & Completion | v2.1 | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-25 (Phase 24 complete)*
+*Last updated: 2026-01-25 (Phase 25 planned)*
