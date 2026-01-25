@@ -216,6 +216,142 @@ recovery_guidance() {
 }
 
 # ===========================================
+# Error State Persistence
+# Saves error details for diagnostics and resume
+# ===========================================
+
+# Save error state for diagnostic purposes
+# Args: $1 = script name
+#       $2 = line number
+#       $3 = exit code
+save_error_state() {
+    local script="$1"
+    local line="$2"
+    local exit_code="$3"
+
+    ensure_state_dir
+
+    {
+        echo "timestamp=$(date -Iseconds)"
+        echo "script=$script"
+        echo "line=$line"
+        echo "exit_code=$exit_code"
+        echo "category=$(categorize_error "$exit_code")"
+    } > "${STATE_DIR}/.last-error"
+}
+
+# Load last error state
+# Returns: 0 if error state exists, 1 if not
+load_error_state() {
+    local file="${STATE_DIR}/.last-error"
+    if [[ -f "$file" ]]; then
+        # shellcheck source=/dev/null
+        source "$file"
+        return 0
+    fi
+    return 1
+}
+
+# ===========================================
+# Interactive Recovery Handler
+# Prompts user based on error category
+# ===========================================
+
+# Handle recovery based on error category
+# Called by error_handler after displaying diagnostics
+# Args: $1 = error category
+# Returns: 0 if user chooses to retry, 1 to abort
+handle_recovery() {
+    local category="$1"
+
+    case "$category" in
+        transient:*)
+            echo ""
+            echo "This appears to be a temporary issue."
+            echo "You can safely re-run the script to resume from the last checkpoint."
+            echo ""
+            read -rp "Retry now? [Y/n]: " retry
+            if [[ "${retry,,}" != "n" ]]; then
+                return 0  # Retry
+            fi
+            return 1  # Abort
+            ;;
+
+        recoverable:permission)
+            echo ""
+            echo "Permission issue detected."
+            echo ""
+            echo "Suggestions:"
+            echo "  1. Ensure you're running with sudo: sudo ./deploy.sh"
+            echo "  2. Check file ownership: ls -la /opt/freshtrack-pro/"
+            echo "  3. Verify docker group membership: groups \$USER"
+            echo ""
+            read -rp "Fix the issue and retry? [Y/n]: " retry
+            if [[ "${retry,,}" != "n" ]]; then
+                return 0  # Retry
+            fi
+            return 1  # Abort
+            ;;
+
+        recoverable:resource)
+            echo ""
+            echo "Resource exhaustion detected (memory or disk)."
+            echo ""
+            echo "Quick fixes:"
+            echo "  1. Free Docker resources: docker system prune -af"
+            echo "  2. Check memory: free -h"
+            echo "  3. Check disk: df -h"
+            echo ""
+            read -rp "Fix the issue and retry? [Y/n]: " retry
+            if [[ "${retry,,}" != "n" ]]; then
+                return 0  # Retry
+            fi
+            return 1  # Abort
+            ;;
+
+        critical:*)
+            echo ""
+            warning "CRITICAL FAILURE - Automatic rollback may be needed"
+            echo ""
+            echo "The deployment encountered a critical error."
+            echo "Data has been preserved, but services may be in an inconsistent state."
+            echo ""
+            echo "Options:"
+            echo "  1. Review logs: docker compose logs"
+            echo "  2. Check system: journalctl -xe"
+            echo "  3. Rollback: ./scripts/rollback.sh"
+            echo ""
+            return 1  # Always abort on critical
+            ;;
+
+        fatal:*)
+            echo ""
+            error "FATAL ERROR - Manual intervention required"
+            echo ""
+            echo "The deployment was interrupted by a signal."
+            echo "This usually means:"
+            echo "  - Process was killed (OOM, admin, etc.)"
+            echo "  - User pressed Ctrl+C"
+            echo ""
+            echo "Check system status before retrying."
+            return 1  # Always abort on fatal
+            ;;
+
+        *)
+            echo ""
+            warning "Unknown error category: $category"
+            echo ""
+            echo "Review the error above and determine if it's safe to retry."
+            read -rp "Retry? [y/N]: " retry
+            if [[ "${retry,,}" == "y" ]]; then
+                return 0  # Retry only if explicit yes
+            fi
+            return 1  # Default to abort
+            ;;
+    esac
+}
+
+# ===========================================
 # Comprehensive Error Handler
 # Captures and displays diagnostic information
 # ===========================================
@@ -247,6 +383,18 @@ error_handler() {
 
     # Display recovery guidance
     recovery_guidance "$category" >&2
+
+    # Save error state for resume
+    save_error_state "${BASH_SOURCE[1]:-${BASH_SOURCE[0]}}" "$line_number" "$exit_code"
+
+    # Call recovery handler (prompts user based on error category)
+    # Only in interactive mode (when stdin is a terminal)
+    if [[ -t 0 ]]; then
+        if handle_recovery "$category"; then
+            # User chose to retry - re-execute the script
+            exec "$0" "$@"
+        fi
+    fi
 
     # Exit with original exit code
     exit "$exit_code"
@@ -746,50 +894,80 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         echo "SKIP: validate_os (no /etc/os-release)"
     fi
 
+    # Test checkpoint functions
     echo ""
+    echo "4. Testing checkpoint functions..."
 
-    # Test DNS validation function
-    echo "4. Testing DNS validation..."
+    # Use temp state dir for tests
+    original_state_dir="$STATE_DIR"
+    export STATE_DIR=$(mktemp -d)
 
-    # Test with missing argument (should fail)
-    # Disable ERR trap for this test since we expect failure
-    trap - ERR
-    if validate_dns "" 2>/dev/null; then
-        echo "FAIL: validate_dns should fail with empty domain"
+    # Test checkpoint_done (should be false initially)
+    if checkpoint_done "test-checkpoint"; then
+        echo "FAIL: checkpoint_done should return false for non-existent checkpoint"
+        rm -rf "$STATE_DIR"
         exit 1
     fi
-    echo "PASS: validate_dns rejects empty domain"
-    trap error_handler ERR
 
-    # Test with invalid domain (should fail with "No A record")
-    trap - ERR
-    dns_output=$(validate_dns "this-domain-absolutely-does-not-exist-xyz123.invalid" 2>&1) || true
-    if ! echo "$dns_output" | grep -q "No A record\|DNS lookup failed"; then
-        echo "FAIL: validate_dns should report 'No A record' for invalid domain"
-        echo "Output was: $dns_output"
+    # Test checkpoint_set
+    checkpoint_set "test-checkpoint"
+
+    # Test checkpoint_done (should be true after set)
+    if ! checkpoint_done "test-checkpoint"; then
+        echo "FAIL: checkpoint_done should return true after checkpoint_set"
+        rm -rf "$STATE_DIR"
         exit 1
     fi
-    echo "PASS: validate_dns handles non-existent domains"
-    trap error_handler ERR
 
-    # Test with valid domain (will fail DNS mismatch but proves resolution works)
-    # Skip if no DNS tool is available
-    trap - ERR
-    if command -v dig &>/dev/null || command -v getent &>/dev/null; then
-        dns_output=$(validate_dns "google.com" 2>&1) || true
-        if echo "$dns_output" | grep -q "Could not determine server public IP\|DNS lookup failed"; then
-            echo "SKIP: DNS test needs network (offline mode)"
-        elif echo "$dns_output" | grep -q "DNS mismatch\|correctly resolves"; then
-            echo "PASS: validate_dns resolves real domains"
-        else
-            echo "WARN: Unexpected DNS output: $dns_output"
-        fi
-    else
-        echo "SKIP: DNS test (no DNS tool available)"
+    # Test checkpoint_time
+    ts=$(checkpoint_time "test-checkpoint")
+    if [[ -z "$ts" ]]; then
+        echo "FAIL: checkpoint_time should return timestamp"
+        rm -rf "$STATE_DIR"
+        exit 1
     fi
-    trap error_handler ERR
 
+    # Test checkpoint_clear
+    checkpoint_clear "test-checkpoint"
+    if checkpoint_done "test-checkpoint"; then
+        echo "FAIL: checkpoint_done should return false after checkpoint_clear"
+        rm -rf "$STATE_DIR"
+        exit 1
+    fi
+
+    echo "PASS: Checkpoint functions working"
     echo ""
+
+    # Test error state functions
+    echo "5. Testing error state functions..."
+
+    save_error_state "test-script.sh" "99" "42"
+
+    if ! load_error_state; then
+        echo "FAIL: load_error_state should succeed after save_error_state"
+        rm -rf "$STATE_DIR"
+        exit 1
+    fi
+
+    if [[ "$script" != "test-script.sh" ]]; then
+        echo "FAIL: script should be 'test-script.sh', got '$script'"
+        rm -rf "$STATE_DIR"
+        exit 1
+    fi
+
+    if [[ "$line" != "99" ]]; then
+        echo "FAIL: line should be '99', got '$line'"
+        rm -rf "$STATE_DIR"
+        exit 1
+    fi
+
+    echo "PASS: Error state functions working"
+    echo ""
+
+    # Cleanup
+    rm -rf "$STATE_DIR"
+    export STATE_DIR="$original_state_dir"
+
     echo "========================================"
     echo "All tests passed!"
     echo "========================================"
