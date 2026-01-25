@@ -19,6 +19,7 @@ import { adminRouter } from '../routers/admin.router.js';
 import { assetsRouter } from '../routers/assets.router.js';
 import { ttnGatewaysRouter } from '../routers/ttn-gateways.router.js';
 import { ttnDevicesRouter } from '../routers/ttn-devices.router.js';
+import { availabilityRouter } from '../routers/availability.router.js';
 
 /**
  * Application router
@@ -120,6 +121,12 @@ export const appRouter = router({
    * Procedures: list, get, provision, bootstrap, update, deprovision
    */
   ttnDevices: ttnDevicesRouter,
+
+  /**
+   * Availability domain router (PUBLIC - no auth required)
+   * Procedures: checkEmail, checkPhone
+   */
+  availability: availabilityRouter,
 });
 
 /**
