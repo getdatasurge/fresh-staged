@@ -7,12 +7,16 @@
 #   source "$(dirname "$0")/lib/prereq-lib.sh"
 #
 # Functions provided:
-#   - install_docker()        Install Docker Engine via apt repository
-#   - verify_docker_compose() Verify Docker Compose v2 is available
-#   - is_package_installed()  Check if apt package is installed
-#   - ensure_package()        Install package if not present (idempotent)
-#   - wait_for_apt_lock()     Wait for apt locks to be released
-#   - apt_update()            Run apt-get update with lock handling
+#   - install_docker()            Install Docker Engine via apt repository
+#   - verify_docker_compose()     Verify Docker Compose v2 is available
+#   - configure_firewall()        Configure UFW firewall (22, 80, 443)
+#   - install_fail2ban()          Install and configure fail2ban SSH protection
+#   - install_jq()                Install jq JSON processor
+#   - install_all_prerequisites() Master function to install all prerequisites
+#   - is_package_installed()      Check if apt package is installed
+#   - ensure_package()            Install package if not present (idempotent)
+#   - wait_for_apt_lock()         Wait for apt locks to be released
+#   - apt_update()                Run apt-get update with lock handling
 # ===========================================
 
 # Source preflight-lib.sh for error handling and checkpoint system
@@ -328,6 +332,180 @@ verify_docker_compose() {
 }
 
 # ===========================================
+# Firewall Configuration (UFW)
+# ===========================================
+
+# Configure UFW firewall with required ports
+# Allows: 22/tcp (SSH), 80/tcp (HTTP), 443/tcp (HTTPS)
+# Denies: all other incoming traffic
+# Returns: 0 on success, 1 on failure
+configure_firewall() {
+    step "Configuring UFW firewall..."
+
+    # Check if UFW is already properly configured
+    if command -v ufw &>/dev/null && ufw status 2>/dev/null | grep -q "Status: active"; then
+        if ufw status 2>/dev/null | grep -qE "22/tcp.*ALLOW" && \
+           ufw status 2>/dev/null | grep -qE "80/tcp.*ALLOW" && \
+           ufw status 2>/dev/null | grep -qE "443/tcp.*ALLOW"; then
+            success "UFW firewall already configured (ports 22, 80, 443)"
+            return 0
+        fi
+    fi
+
+    # Install UFW if not present
+    ensure_package ufw
+
+    # Set default policies
+    step "Setting default firewall policies..."
+    ufw default deny incoming
+    ufw default allow outgoing
+
+    # Allow required ports (idempotent - ufw handles duplicates gracefully)
+    step "Opening required ports..."
+    ufw allow 22/tcp comment 'SSH'
+    ufw allow 80/tcp comment 'HTTP - Lets Encrypt ACME'
+    ufw allow 443/tcp comment 'HTTPS - Production traffic'
+
+    # Enable firewall non-interactively
+    step "Enabling firewall..."
+    ufw --force enable
+
+    # Verify configuration
+    if ufw status | grep -q "Status: active"; then
+        success "UFW firewall configured (ports 22, 80, 443 allowed)"
+        echo ""
+        echo "Firewall status:"
+        ufw status verbose | head -15
+        return 0
+    else
+        error "UFW failed to enable"
+        return 1
+    fi
+}
+
+# ===========================================
+# fail2ban SSH Protection
+# ===========================================
+
+# Install and configure fail2ban for SSH protection
+# Creates jail.local with sshd jail enabled
+# Returns: 0 on success, 1 on failure
+install_fail2ban() {
+    step "Configuring fail2ban SSH protection..."
+
+    # Install fail2ban package
+    ensure_package fail2ban
+
+    # Create jail.local only if it doesn't exist (idempotent)
+    if [[ ! -f /etc/fail2ban/jail.local ]]; then
+        step "Creating fail2ban SSH jail configuration..."
+        cat > /etc/fail2ban/jail.local <<'EOF'
+[DEFAULT]
+# Ban for 1 hour (3600 seconds)
+bantime = 3600
+# Check window of 10 minutes (600 seconds)
+findtime = 600
+# Ban after 5 failed attempts
+maxretry = 5
+
+[sshd]
+enabled = true
+port = 22
+# Use auto-detected log path and backend for portability
+logpath = %(sshd_log)s
+backend = %(sshd_backend)s
+EOF
+        success "Created /etc/fail2ban/jail.local"
+    else
+        success "fail2ban jail.local already exists"
+    fi
+
+    # Enable and start fail2ban service
+    step "Enabling fail2ban service..."
+    systemctl enable fail2ban
+    systemctl restart fail2ban  # Use restart to apply any config changes
+
+    # Verify fail2ban is running
+    if systemctl is-active --quiet fail2ban; then
+        success "fail2ban is active and protecting SSH"
+        echo ""
+        echo "fail2ban status:"
+        fail2ban-client status sshd 2>/dev/null || echo "  (sshd jail status not yet available)"
+        return 0
+    else
+        error "fail2ban failed to start"
+        echo "  Check: systemctl status fail2ban"
+        return 1
+    fi
+}
+
+# ===========================================
+# jq Installation
+# ===========================================
+
+# Install jq JSON processor
+# Returns: 0 on success, 1 on failure
+install_jq() {
+    if command -v jq &>/dev/null; then
+        success "jq is already installed ($(jq --version 2>/dev/null || echo 'version unknown'))"
+        return 0
+    fi
+
+    step "Installing jq..."
+    wait_for_apt_lock || return 1
+    apt-get install -y jq >/dev/null 2>&1
+
+    if command -v jq &>/dev/null; then
+        success "jq installed ($(jq --version))"
+        return 0
+    else
+        error "jq installation failed"
+        return 1
+    fi
+}
+
+# ===========================================
+# Master Prerequisites Installation
+# ===========================================
+
+# Install all prerequisites with checkpoint tracking
+# Uses run_step() from preflight-lib.sh for resume capability
+# Returns: 0 on success, 1 on failure
+install_all_prerequisites() {
+    echo "========================================"
+    echo "Prerequisites Installation"
+    echo "========================================"
+    echo ""
+
+    # Run apt-get update once at the beginning
+    step "Updating package lists..."
+    apt_update || return 1
+
+    # Install each prerequisite with checkpoint tracking
+    run_step "docker" install_docker || return 1
+    run_step "firewall" configure_firewall || return 1
+    run_step "fail2ban" install_fail2ban || return 1
+    run_step "jq" install_jq || return 1
+
+    echo ""
+    echo "========================================"
+    success "All prerequisites installed successfully!"
+    echo "========================================"
+
+    # Summary
+    echo ""
+    echo "Installed components:"
+    echo "  - Docker Engine: $(docker version --format '{{.Server.Version}}' 2>/dev/null || echo 'N/A')"
+    echo "  - Docker Compose: $(docker compose version --short 2>/dev/null || echo 'N/A')"
+    echo "  - UFW Firewall: $(ufw status | head -1)"
+    echo "  - fail2ban: $(systemctl is-active fail2ban 2>/dev/null || echo 'N/A')"
+    echo "  - jq: $(jq --version 2>/dev/null || echo 'N/A')"
+    echo ""
+
+    return 0
+}
+
+# ===========================================
 # Self-test when run directly
 # ===========================================
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
@@ -401,6 +579,22 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         echo "PASS: apt_update function exists"
     else
         echo "FAIL: apt_update function should exist"
+        exit 1
+    fi
+    echo ""
+
+    # Test security functions exist
+    echo "6. Testing security functions..."
+    all_defined=true
+    for func in configure_firewall install_fail2ban install_jq install_all_prerequisites; do
+        if type -t "$func" &>/dev/null; then
+            echo "PASS: $func is defined"
+        else
+            echo "FAIL: $func is not defined"
+            all_defined=false
+        fi
+    done
+    if [[ "$all_defined" != "true" ]]; then
         exit 1
     fi
     echo ""
