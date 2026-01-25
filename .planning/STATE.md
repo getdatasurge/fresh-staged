@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** Phase 23 - Prerequisites Installation (v2.1 Streamlined Deployment)
+**Current focus:** Phase 24 - Interactive Configuration (v2.1 Streamlined Deployment)
 
 ## Current Position
 
 Milestone: v2.1 Streamlined Deployment — IN PROGRESS
-Phase: 23 of 26 (Prerequisites Installation) — COMPLETE
-Plan: 2 of 2 in current phase
-Status: Phase complete, verified
-Last activity: 2026-01-25 — Phase 23 verified and complete
+Phase: 24 of 26 (Interactive Configuration) — IN PROGRESS
+Plan: 1 of 3 in current phase
+Status: Plan 24-01 complete
+Last activity: 2026-01-25 — Completed 24-01-PLAN.md (Input Collection & Validation)
 
-Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 124 plans total
-[████████████████████] 2/2 plans in Phase 23
+Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 125 plans total
+[██████░░░░░░░░░░░░░░] 1/3 plans in Phase 24
 
 ## v2.1 Phase Overview
 
@@ -28,7 +28,15 @@ Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 124 plans total
 | 25 | Deployment Orchestration | 5 | Integration with existing deploy.sh |
 | 26 | Verification & Completion | 15 | Health checks, E2E, post-deploy, docs |
 
-## Phase 23 Progress — COMPLETE ✓
+## Phase 24 Progress — IN PROGRESS
+
+| Plan | Name | Status | Commit |
+|------|------|--------|--------|
+| 24-01 | Input Collection & Validation | Complete | dcd0af1 |
+| 24-02 | Secret Generation | Pending | - |
+| 24-03 | DNS Verification | Pending | - |
+
+## Phase 23 — COMPLETE
 
 | Plan | Name | Status | Commit |
 |------|------|--------|--------|
@@ -121,6 +129,9 @@ Recent decisions affecting v2.1:
 - [23-02]: fail2ban uses jail.local (not jail.conf) to survive package updates
 - [23-02]: fail2ban uses %(sshd_log)s and %(sshd_backend)s for OS portability
 - [23-02]: install_all_prerequisites() uses run_step() for checkpoint resume
+- [24-01]: RFC 1123 FQDN regex for strict domain validation
+- [24-01]: MAX_INPUT_ATTEMPTS=5 default prevents infinite input loops
+- [24-01]: read -rsp for hidden Stack Auth secret key input
 
 ### Tech Debt Carried Forward
 
@@ -135,10 +146,10 @@ None for v2.1.
 ## Session Continuity
 
 **Last session:** 2026-01-25
-**Stopped at:** Phase 23 complete and verified
+**Stopped at:** Completed 24-01-PLAN.md (Input Collection & Validation)
 **Resume file:** None
-**Next action:** `/gsd:plan-phase 24` for Interactive Configuration
+**Next action:** Execute 24-02-PLAN.md (Secret Generation)
 
 ---
 
-*State updated: 2026-01-25 after Phase 23 completion*
+*State updated: 2026-01-25 after 24-01 completion*
