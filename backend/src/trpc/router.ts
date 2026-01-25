@@ -15,6 +15,8 @@ import { alertsRouter } from '../routers/alerts.router.js';
 import { preferencesRouter } from '../routers/preferences.router.js';
 import { adminRouter } from '../routers/admin.router.js';
 import { assetsRouter } from '../routers/assets.router.js';
+import { ttnGatewaysRouter } from '../routers/ttn-gateways.router.js';
+import { ttnDevicesRouter } from '../routers/ttn-devices.router.js';
 
 /**
  * Application router
@@ -80,6 +82,30 @@ export const appRouter = router({
    * Procedures: getDigest, updateDigest, disableAllDigests
    */
   preferences: preferencesRouter,
+
+  /**
+   * Admin domain router
+   * Procedures: queueHealth, systemStatus
+   */
+  admin: adminRouter,
+
+  /**
+   * Assets domain router
+   * Procedures: getUploadUrl
+   */
+  assets: assetsRouter,
+
+  /**
+   * TTN Gateways domain router
+   * Procedures: list, get, register, update, deregister, refreshStatus
+   */
+  ttnGateways: ttnGatewaysRouter,
+
+  /**
+   * TTN Devices domain router
+   * Procedures: list, get, provision, bootstrap, update, deprovision
+   */
+  ttnDevices: ttnDevicesRouter,
 });
 
 /**

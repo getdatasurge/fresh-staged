@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.750.0",
+    "@aws-sdk/s3-request-presigner": "^3.975.0",
     "@bull-board/api": "^6.16.4",
     "@bull-board/fastify": "^6.16.4",
     "@fastify/cors": "^11.2.0",
