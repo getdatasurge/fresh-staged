@@ -35,8 +35,8 @@ import {
   EscalationStep,
   AppRole,
   DEFAULT_NOTIFICATION_POLICY,
-  upsertNotificationPolicy,
-  deleteNotificationPolicy,
+  useUpsertNotificationPolicy,
+  useDeleteNotificationPolicy,
   AlertType,
 } from "@/hooks/useNotificationPolicies";
 import { useEscalationContacts } from "@/hooks/useEscalationContacts";
@@ -75,11 +75,13 @@ export function AlertTypePolicyCard({
   canEdit,
   onSave,
 }: AlertTypePolicyCardProps) {
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const isOrgScope = !!scope.organization_id && !scope.site_id && !scope.unit_id;
+
+  // Mutation hooks for saving and deleting policies
+  const upsertMutation = useUpsertNotificationPolicy();
+  const deleteMutation = useDeleteNotificationPolicy();
 
   // Form state
   const [initialChannels, setInitialChannels] = useState<NotificationChannel[]>([]);
@@ -228,7 +230,13 @@ export function AlertTypePolicyCard({
   };
 
   const handleSave = async () => {
-    setIsSaving(true);
+    // Get the org ID from any available scope identifier
+    const orgId = scope.organization_id || "";
+    if (!orgId) {
+      toast.error("Organization ID is required");
+      return;
+    }
+
     try {
       const policy: Partial<NotificationPolicy> = {
         initial_channels: initialChannels.length > 0 ? initialChannels : DEFAULT_NOTIFICATION_POLICY.initial_channels,
@@ -248,8 +256,12 @@ export function AlertTypePolicyCard({
         notify_assigned_users: notifyAssignedUsers,
       };
 
-      const { error } = await upsertNotificationPolicy(scope, alertType, policy);
-      if (error) throw error;
+      await upsertMutation.mutateAsync({
+        scope,
+        alertType,
+        policy,
+        orgId,
+      });
 
       toast.success(`Notification policy saved for ${alertTypeLabel}`);
       onSave?.();
@@ -257,15 +269,24 @@ export function AlertTypePolicyCard({
       console.error("Error saving notification policy:", error);
       toast.error("Failed to save notification policy");
     }
-    setIsSaving(false);
   };
 
   const handleClearOverride = async () => {
     if (!existingPolicy) return;
-    setIsDeleting(true);
+
+    // Get the org ID from any available scope identifier
+    const orgId = scope.organization_id || "";
+    if (!orgId) {
+      toast.error("Organization ID is required");
+      return;
+    }
+
     try {
-      const { error } = await deleteNotificationPolicy(scope, alertType);
-      if (error) throw error;
+      await deleteMutation.mutateAsync({
+        scope,
+        alertType,
+        orgId,
+      });
 
       // Clear form
       setInitialChannels([]);
@@ -289,7 +310,6 @@ export function AlertTypePolicyCard({
       console.error("Error clearing override:", error);
       toast.error("Failed to clear override");
     }
-    setIsDeleting(false);
   };
 
   // Get effective values for display
@@ -711,9 +731,9 @@ export function AlertTypePolicyCard({
               variant="outline"
               size="sm"
               onClick={handleClearOverride}
-              disabled={isDeleting}
+              disabled={deleteMutation.isPending}
             >
-              {isDeleting ? (
+              {deleteMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <X className="w-4 h-4 mr-2" />
@@ -722,8 +742,8 @@ export function AlertTypePolicyCard({
             </Button>
           )}
           <div className="ml-auto">
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? (
+            <Button onClick={handleSave} disabled={upsertMutation.isPending}>
+              {upsertMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <Save className="w-4 h-4 mr-2" />
