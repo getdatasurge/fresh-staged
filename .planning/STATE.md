@@ -9,13 +9,14 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 
 ## Current Position
 
-Milestone: v2.1 Streamlined Deployment — ROADMAP CREATED
+Milestone: v2.1 Streamlined Deployment — IN PROGRESS
 Phase: 22 of 26 (Foundation & Pre-Flight)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-01-25 — v2.1 roadmap created (5 phases, 37 requirements mapped)
+Plan: 1 of 5 in current phase
+Status: In progress
+Last activity: 2026-01-25 — Completed 22-01-PLAN.md (Error Handling Infrastructure)
 
-Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 118 plans total
+Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 119 plans total
+[=                   ] 1/5 plans in Phase 22
 
 ## v2.1 Phase Overview
 
@@ -26,6 +27,16 @@ Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 118 plans total
 | 24 | Interactive Configuration | 7 | Domain prompts, secrets, DNS validation |
 | 25 | Deployment Orchestration | 5 | Integration with existing deploy.sh |
 | 26 | Verification & Completion | 15 | Health checks, E2E, post-deploy, docs |
+
+## Phase 22 Progress
+
+| Plan | Name | Status | Commit |
+|------|------|--------|--------|
+| 22-01 | Error Handling Infrastructure | Complete | 317c35a |
+| 22-02 | System Validation Functions | Pending | - |
+| 22-03 | Checkpoint & Progress Functions | Pending | - |
+| 22-04 | Pre-Flight Orchestrator | Pending | - |
+| 22-05 | Verification & Integration | Pending | - |
 
 ## Completed Milestones
 
@@ -59,8 +70,8 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 ## Performance Metrics
 
 **Combined:**
-- Total plans completed: 118
-- Total phases: 21 (all complete)
+- Total plans completed: 119
+- Total phases: 21 complete + 1 in progress
 - Milestones shipped: 3 (v1.0, v1.1, v2.0)
 
 **By Milestone:**
@@ -70,7 +81,7 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | v1.0 MVP | 1-7 | 47 | ~2 days |
 | v1.1 Production | 8-13 | 31 | ~2 days |
 | v2.0 Real-Time | 14-21 | 40 | ~2 days |
-| v2.1 Deployment | 22-26 | TBD | Starting |
+| v2.1 Deployment | 22-26 | 1/TBD | In progress |
 
 ## Accumulated Context
 
@@ -82,6 +93,8 @@ Recent decisions affecting v2.1:
 - [v1.1]: Bash E2E tests over Jest for portability across deployment targets
 - [v1.1]: Health check-based deployments for zero-downtime (>95% success rate)
 - [v2.0]: Docker Compose override pattern for multi-target deployment
+- [22-01]: Color helpers matching deploy-selfhosted.sh pattern for consistency
+- [22-01]: Exit code 1 categorized as recoverable:permission for common failures
 
 ### Tech Debt Carried Forward
 
@@ -91,15 +104,15 @@ Recent decisions affecting v2.1:
 
 ### Blockers/Concerns
 
-None yet for v2.1.
+None for v2.1.
 
 ## Session Continuity
 
 **Last session:** 2026-01-25
-**Stopped at:** v2.1 roadmap created with 5 phases (22-26), 37 requirements mapped
+**Stopped at:** Completed 22-01-PLAN.md (Error Handling Infrastructure)
 **Resume file:** None
-**Next action:** `/gsd:plan-phase 22` to create plans for Foundation & Pre-Flight phase
+**Next action:** `/gsd:execute-phase 22-02` to add system validation functions
 
 ---
 
-*State updated: 2026-01-25 after v2.1 roadmap creation*
+*State updated: 2026-01-25 after 22-01-PLAN.md completion*
