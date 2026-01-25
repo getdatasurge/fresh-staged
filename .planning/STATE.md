@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 21 of 22 (Backend API Migration - Completion)
-Plan: 8 of 9 complete
+Plan: 9 of 9 complete (21-08 just completed)
 Status: In progress
-Last activity: 2026-01-25 — Completed 21-09-PLAN.md (Document Remaining TTN Hooks)
+Last activity: 2026-01-25 — Completed 21-08-PLAN.md (Migrate TTN and Escalation Hooks to tRPC)
 
-Progress: [████████████████████░░░░░░░░░░░░░░░░░░░░░░] 51% (44/86 plans)
+Progress: [█████████████████████░░░░░░░░░░░░░░░░░░░░░] 52% (45/86 plans)
 
 ## Completed Milestones
 
@@ -50,12 +50,12 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 44
+- Plans completed: 45
 - Phases completed: 8 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing, 19-backend-api-migration-foundation, 20-backend-api-migration-core)
-- Current: Phase 21 plan 8 of 9 complete
+- Current: Phase 21 plan 9 of 9 complete
 
 **Combined:**
-- Total plans completed: 44/86
+- Total plans completed: 45/86
 - Total phases: 21 (8 complete in v2.0, Phase 21 in progress)
 - Milestones shipped: 2 (v1.0, v1.1)
 
@@ -174,6 +174,9 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | ESCALATION-03 | Soft delete via is_active = false | 21-07 | Preserves audit trail, matches existing hook behavior |
 | HOOKS-03 | Mark 6 TTN hooks as BLOCKED requiring backend TTN SDK integration | 21-09 | Backend TTN SDK integration not yet available |
 | HOOKS-04 | Document direct DB access in useTTNDeprovision (ttn_deprovision_jobs table) | 21-09 | Table not in Drizzle schema, needs backend procedures |
+| HOOKS-05 | Use useTRPCClient for callback-based queries | 21-08 | useTTNSettings needs imperative query calls in callbacks |
+| HOOKS-06 | Keep TTN provisioning edge function for now | 21-08 | Provisioning requires BullMQ job migration in future phase |
+| HOOKS-07 | Backend escalation contacts schema uses snake_case | 21-08 | Frontend interface already matches, no mapping needed |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -201,10 +204,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-25
-**Stopped at:** Completed Plan 21-09 (Document Remaining TTN Hooks)
+**Stopped at:** Completed Plan 21-08 (Migrate TTN and Escalation Hooks to tRPC)
 **Resume file:** None
-**Next action:** Execute Plan 21-08 to complete Phase 21
+**Next action:** Phase 21 complete - ready for Phase 22 or milestone review
 
 ---
 
-*State updated: 2026-01-25 after completing Plan 21-09 (Document Remaining TTN Hooks)*
+*State updated: 2026-01-25 after completing Plan 21-08 (Migrate TTN and Escalation Hooks to tRPC)*
