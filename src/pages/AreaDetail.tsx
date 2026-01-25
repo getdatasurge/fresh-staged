@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/DashboardLayout";
 import { HierarchyBreadcrumb, BreadcrumbSibling } from "@/components/HierarchyBreadcrumb";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import { usePermissions } from "@/hooks/useUserRole";
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
 import { useSoftDelete } from "@/hooks/useSoftDelete";
+import { useTRPC, useTRPCClient } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,9 +39,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { Database } from "@/integrations/supabase/types";
 
-type UnitType = Database["public"]["Enums"]["unit_type"];
+type UnitType = "fridge" | "freezer" | "walk_in_cooler" | "walk_in_freezer" | "display_case" | "blast_chiller";
 
 interface Unit {
   id: string;
@@ -79,12 +79,12 @@ const AreaDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const user = useUser();
+  const trpc = useTRPC();
+  const trpcClient = useTRPCClient();
+  const { effectiveOrgId, isInitialized: identityInitialized } = useEffectiveIdentity();
   const { canDeleteEntities, isLoading: permissionsLoading } = usePermissions();
   const { softDeleteArea } = useSoftDelete();
-  const [area, setArea] = useState<AreaData | null>(null);
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [siblingAreas, setSiblingAreas] = useState<BreadcrumbSibling[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -97,89 +97,81 @@ const AreaDetail = () => {
   const [editFormData, setEditFormData] = useState({ name: "", description: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (areaId) {
-      loadAreaData();
-    }
-  }, [areaId]);
+  // tRPC queries
+  const areaQuery = trpc.areas.get.useQuery(
+    { organizationId: effectiveOrgId!, siteId: siteId!, areaId: areaId! },
+    { enabled: !!areaId && !!siteId && !!effectiveOrgId && identityInitialized }
+  );
 
-  const loadAreaData = async () => {
-    setIsLoading(true);
-    
-    // Load area with site info
-    const { data: areaData, error: areaError } = await supabase
-      .from("areas")
-      .select(`
-        id,
-        name,
-        description,
-        site:sites!inner(id, name)
-      `)
-      .eq("id", areaId)
-      .maybeSingle();
+  const unitsQuery = trpc.units.list.useQuery(
+    { organizationId: effectiveOrgId!, siteId: siteId!, areaId: areaId! },
+    { enabled: !!areaId && !!siteId && !!effectiveOrgId && identityInitialized }
+  );
 
-    if (areaError || !areaData) {
-      console.error("Error loading area:", areaError);
-      toast({ title: "Failed to load area", variant: "destructive" });
-      setIsLoading(false);
-      return;
-    }
+  const siblingAreasQuery = trpc.areas.list.useQuery(
+    { organizationId: effectiveOrgId!, siteId: siteId! },
+    { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
+  );
 
-    setArea({
-      id: areaData.id,
-      name: areaData.name,
-      description: areaData.description,
+  const siteQuery = trpc.sites.get.useQuery(
+    { organizationId: effectiveOrgId!, siteId: siteId! },
+    { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
+  );
+
+  const isLoading = areaQuery.isLoading || !identityInitialized;
+
+  // Derived data
+  const area = useMemo((): AreaData | null => {
+    if (!areaQuery.data || !siteQuery.data) return null;
+    return {
+      id: areaQuery.data.id,
+      name: areaQuery.data.name,
+      description: areaQuery.data.description,
       site: {
-        id: areaData.site.id,
-        name: areaData.site.name,
+        id: siteQuery.data.id,
+        name: siteQuery.data.name,
       },
-    });
-    setEditFormData({
-      name: areaData.name,
-      description: areaData.description || "",
-    });
+    };
+  }, [areaQuery.data, siteQuery.data]);
 
-    // Load sibling areas for breadcrumb dropdown (only active)
-    const { data: siblingsData } = await supabase
-      .from("areas")
-      .select("id, name")
-      .eq("site_id", areaData.site.id)
-      .eq("is_active", true)
-      .neq("id", areaId)
-      .order("name");
+  const units = useMemo((): Unit[] => {
+    return (unitsQuery.data || []).map(u => ({
+      id: u.id,
+      name: u.name,
+      unit_type: u.unitType,
+      status: u.status,
+      last_temp_reading: u.lastTemperature,
+      last_reading_at: u.lastReadingAt?.toISOString() || null,
+      temp_limit_high: u.tempMax,
+      temp_limit_low: u.tempMin,
+    }));
+  }, [unitsQuery.data]);
 
-    if (siblingsData) {
-      setSiblingAreas(siblingsData.map(a => ({
+  const siblingAreas = useMemo((): BreadcrumbSibling[] => {
+    if (!siblingAreasQuery.data) return [];
+    return siblingAreasQuery.data
+      .filter(a => a.id !== areaId)
+      .map(a => ({
         id: a.id,
         name: a.name,
-        href: `/sites/${areaData.site.id}/areas/${a.id}`,
-      })));
+        href: `/sites/${siteId}/areas/${a.id}`,
+      }));
+  }, [siblingAreasQuery.data, siteId, areaId]);
+
+  // Set edit form data when area loads
+  useMemo(() => {
+    if (areaQuery.data) {
+      setEditFormData({
+        name: areaQuery.data.name,
+        description: areaQuery.data.description || "",
+      });
     }
+  }, [areaQuery.data]);
 
-    // Load units
-    const { data: unitsData, error: unitsError } = await supabase
-      .from("units")
-      .select(`
-        id,
-        name,
-        unit_type,
-        status,
-        last_temp_reading,
-        last_reading_at,
-        temp_limit_high,
-        temp_limit_low
-      `)
-      .eq("area_id", areaId)
-      .eq("is_active", true)
-      .order("name");
-
-    if (unitsError) {
-      console.error("Error loading units:", unitsError);
-    } else {
-      setUnits(unitsData || []);
-    }
-
-    setIsLoading(false);
+  const refreshAreaData = () => {
+    areaQuery.refetch();
+    unitsQuery.refetch();
+    siblingAreasQuery.refetch();
   };
 
   const handleCreateUnit = async () => {
@@ -189,22 +181,25 @@ const AreaDetail = () => {
     }
 
     setIsSubmitting(true);
-    const { error } = await supabase.rpc("create_unit_for_area", {
-      p_area_id: areaId!,
-      p_name: formData.name,
-      p_unit_type: formData.unit_type,
-      p_temp_limit_high: parseFloat(formData.temp_limit_high) || 41,
-      p_temp_limit_low: formData.temp_limit_low ? parseFloat(formData.temp_limit_low) : null,
-    });
-
-    if (error) {
-      console.error("Error creating unit:", error);
-      toast({ title: "Failed to create unit", variant: "destructive" });
-    } else {
+    try {
+      await trpcClient.units.create.mutate({
+        organizationId: effectiveOrgId!,
+        siteId: siteId!,
+        areaId: areaId!,
+        data: {
+          name: formData.name,
+          unitType: formData.unit_type,
+          tempMax: parseFloat(formData.temp_limit_high) || 41,
+          tempMin: formData.temp_limit_low ? parseFloat(formData.temp_limit_low) : null,
+        }
+      });
       toast({ title: "Unit created successfully" });
       setFormData({ name: "", unit_type: "fridge", temp_limit_high: "41", temp_limit_low: "" });
       setDialogOpen(false);
-      loadAreaData();
+      refreshAreaData();
+    } catch (error) {
+      console.error("Error creating unit:", error);
+      toast({ title: "Failed to create unit", variant: "destructive" });
     }
     setIsSubmitting(false);
   };
@@ -216,21 +211,22 @@ const AreaDetail = () => {
     }
 
     setIsSubmitting(true);
-    const { error } = await supabase
-      .from("areas")
-      .update({
-        name: editFormData.name,
-        description: editFormData.description || null,
-      })
-      .eq("id", areaId);
-
-    if (error) {
-      console.error("Error updating area:", error);
-      toast({ title: "Failed to update area", variant: "destructive" });
-    } else {
+    try {
+      await trpcClient.areas.update.mutate({
+        organizationId: effectiveOrgId!,
+        siteId: siteId!,
+        areaId: areaId!,
+        data: {
+          name: editFormData.name,
+          description: editFormData.description || null,
+        }
+      });
       toast({ title: "Area updated successfully" });
       setEditDialogOpen(false);
-      loadAreaData();
+      refreshAreaData();
+    } catch (error) {
+      console.error("Error updating area:", error);
+      toast({ title: "Failed to update area", variant: "destructive" });
     }
     setIsSubmitting(false);
   };
@@ -254,7 +250,7 @@ const AreaDetail = () => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    
+
     if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins}m ago`;
     const diffHours = Math.floor(diffMins / 60);
@@ -343,8 +339,8 @@ const AreaDetail = () => {
               </DialogContent>
             </Dialog>
             {canDeleteEntities && !permissionsLoading && (
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 className="text-destructive hover:text-destructive hover:bg-destructive/10"
                 onClick={() => setDeleteDialogOpen(true)}
@@ -435,8 +431,8 @@ const AreaDetail = () => {
                     <Button variant="outline" onClick={() => setDialogOpen(false)}>
                       Cancel
                     </Button>
-                    <Button 
-                      onClick={handleCreateUnit} 
+                    <Button
+                      onClick={handleCreateUnit}
                       disabled={isSubmitting}
                       className="bg-accent hover:bg-accent/90"
                     >
@@ -533,7 +529,7 @@ const AreaDetail = () => {
                 <p className="text-muted-foreground text-center max-w-md mb-4">
                   Add refrigeration units to this area to start monitoring temperatures.
                 </p>
-                <Button 
+                <Button
                   onClick={() => setDialogOpen(true)}
                   className="bg-accent hover:bg-accent/90 text-accent-foreground"
                 >
