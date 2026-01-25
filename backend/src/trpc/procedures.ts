@@ -103,3 +103,58 @@ const hasOrgAccess = middleware(async ({ ctx, getRawInput, next }) => {
  * Your input schema MUST include organizationId field.
  */
 export const orgProcedure = protectedProcedure.use(hasOrgAccess);
+
+/**
+ * Check if organization has sensor capacity available
+ * Replicates logic from requireSensorCapacity REST middleware
+ */
+async function checkSensorCapacity(organizationId: string): Promise<boolean> {
+  // Import dynamically to avoid circular dependencies
+  const { getActiveSensorCount } = await import('../middleware/subscription.js');
+  const { organizations } = await import('../db/schema/tenancy.js');
+  const { db } = await import('../db/client.js');
+  const { eq } = await import('drizzle-orm');
+
+  // Get organization's sensor limit
+  const [org] = await db
+    .select({ sensorLimit: organizations.sensorLimit })
+    .from(organizations)
+    .where(eq(organizations.id, organizationId))
+    .limit(1);
+
+  if (!org) {
+    return false;
+  }
+
+  const currentCount = await getActiveSensorCount(organizationId);
+  return currentCount < org.sensorLimit;
+}
+
+/**
+ * Sensor capacity middleware
+ * Checks subscription sensor capacity before device provisioning operations
+ */
+const hasSensorCapacity = middleware(async ({ ctx, next }) => {
+  // User is guaranteed to have organizationId when used with orgProcedure
+  const user = ctx.user as AuthUser & { organizationId: string };
+
+  const hasCapacity = await checkSensorCapacity(user.organizationId);
+  if (!hasCapacity) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'Sensor capacity exceeded. Upgrade your plan to add more sensors.',
+    });
+  }
+
+  return next();
+});
+
+/**
+ * Sensor capacity procedure - requires auth + org membership + sensor capacity
+ *
+ * Use for device provisioning operations that add new sensors.
+ * Extends orgProcedure to check subscription sensor limits.
+ *
+ * Your input schema MUST include organizationId field.
+ */
+export const sensorCapacityProcedure = orgProcedure.use(hasSensorCapacity);
