@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
-Phase: 20 of 22 (Backend API Migration - Core) — IN PROGRESS
-Plan: 4 of 5 complete
-Status: In progress
-Last activity: 2026-01-25 — Completed 20-04-PLAN.md (tRPC E2E Integration Tests)
+Phase: 20 of 22 (Backend API Migration - Core) — COMPLETE
+Plan: 5 of 5 complete
+Status: Phase complete
+Last activity: 2026-01-25 — Completed 20-05-PLAN.md (Frontend Type Alignment)
 
-Progress: [██████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 41% (35/86 plans)
+Progress: [███████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░] 42% (36/86 plans)
 
 ## Completed Milestones
 
@@ -50,13 +50,13 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 35
-- Phases completed: 7 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing, 19-backend-api-migration-foundation)
-- In progress: Phase 20 (Backend API Migration - Core)
+- Plans completed: 36
+- Phases completed: 8 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing, 19-backend-api-migration-foundation, 20-backend-api-migration-core)
+- Next: Phase 21 (Frontend API Migration)
 
 **Combined:**
-- Total plans completed: 35/86
-- Total phases: 20 (7 complete in v2.0, 1 in progress)
+- Total plans completed: 36/86
+- Total phases: 20 (8 complete in v2.0)
 - Milestones shipped: 2 (v1.0, v1.1)
 
 ## Accumulated Context
@@ -155,6 +155,8 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | ROUTER-07 | Staff role for alert mutations | 20-02 | Matches REST requireRole('staff') for acknowledge/resolve operations |
 | ROUTER-08 | Readings router is query-only | 20-02 | Bulk ingest stays REST with API key auth, tRPC for queries only |
 | ROUTER-09 | CONFLICT error for already-acknowledged alerts | 20-02 | Matches REST 409 response for state transition errors |
+| TYPE-01 | AlertStatusFilter uses 'active' not 'pending' | 20-05 | Frontend type aligned with backend AlertStatusSchema |
+| TYPE-02 | Unit mutation types use tempMin/tempMax | 20-05 | Field names match backend CreateUnitSchema/UpdateUnitSchema |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -182,10 +184,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-25
-**Stopped at:** Completed 20-04-PLAN.md (tRPC E2E Integration Tests)
+**Stopped at:** Completed 20-05-PLAN.md (Frontend Type Alignment) - Phase 20 complete
 **Resume file:** None
-**Next action:** Continue Phase 20, Plan 05 (if exists) or complete phase
+**Next action:** Begin Phase 21 (Frontend API Migration)
 
 ---
 
-*State updated: 2026-01-25 after completing Plan 20-04 (tRPC E2E Integration Tests)*
+*State updated: 2026-01-25 after completing Plan 20-05 (Frontend Type Alignment) - Phase 20 complete*
