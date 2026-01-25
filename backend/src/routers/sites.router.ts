@@ -11,17 +11,18 @@
  * All procedures use orgProcedure which enforces authentication and org membership.
  */
 
-import { z } from 'zod';
-import { TRPCError } from '@trpc/server';
-import { router } from '../trpc/index.js';
-import { orgProcedure } from '../trpc/procedures.js';
-import * as siteService from '../services/site.service.js';
+import { TRPCError } from '@trpc/server'
+import { z } from 'zod'
 import {
+  CreateSiteSchema,
   SiteSchema,
   SitesListSchema,
-  CreateSiteSchema,
   UpdateSiteSchema,
-} from '../schemas/sites.js';
+} from '../schemas/sites.js'
+import { AuditService } from '../services/AuditService.js'
+import * as siteService from '../services/site.service.js'
+import { router } from '../trpc/index.js'
+import { orgProcedure } from '../trpc/procedures.js'
 
 /**
  * Input schema for org-scoped procedures
@@ -145,6 +146,18 @@ export const sitesRouter = router({
           message: 'Site not found',
         });
       }
+
+      // Log audit event
+      await AuditService.logEvent({
+        eventType: 'site_updated',
+        category: 'settings',
+        title: `Site Updated: ${site.name}`,
+        organizationId: ctx.user.organizationId,
+        siteId: site.id,
+        actorId: ctx.user.id,
+        actorType: 'user',
+        eventData: { changes: input.data }
+      });
 
       return site;
     }),

@@ -1,17 +1,16 @@
 import {
-  pgTable,
-  uuid,
-  varchar,
-  text,
-  integer,
-  boolean,
-  timestamp,
-  index,
-  uniqueIndex,
+    boolean,
+    index,
+    integer,
+    pgTable,
+    text,
+    timestamp,
+    uniqueIndex,
+    uuid,
+    varchar,
 } from 'drizzle-orm/pg-core';
-import { unitTypeEnum, unitStatusEnum, tempUnitEnum, gatewayStatusEnum } from './enums.js';
-import { ttnConnections } from './tenancy.js';
-import { organizations } from './tenancy.js';
+import { complianceModeEnum, gatewayStatusEnum, tempUnitEnum, unitStatusEnum, unitTypeEnum } from './enums.js';
+import { organizations, ttnConnections } from './tenancy.js';
 
 // Reusable timestamp columns
 const timestamps = {
@@ -47,6 +46,9 @@ export const sites = pgTable(
     postalCode: varchar('postal_code', { length: 20 }),
     country: varchar('country', { length: 64 }),
     timezone: varchar('timezone', { length: 100 }).notNull().default('UTC'),
+    complianceMode: complianceModeEnum('compliance_mode').default('standard'),
+    manualLogCadenceSeconds: integer('manual_log_cadence_seconds'),
+    correctiveActionRequired: boolean('corrective_action_required').default(false),
     latitude: varchar('latitude', { length: 32 }),
     longitude: varchar('longitude', { length: 32 }),
     isActive: boolean('is_active').notNull().default(true),

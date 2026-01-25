@@ -1,57 +1,54 @@
-import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useEntityDashboardUrl } from "@/hooks/useEntityDashboardUrl";
 import DashboardLayout from "@/components/DashboardLayout";
-import { HierarchyBreadcrumb, BreadcrumbSibling } from "@/components/HierarchyBreadcrumb";
+import { BreadcrumbSibling, HierarchyBreadcrumb } from "@/components/HierarchyBreadcrumb";
+import { LayoutHeaderDropdown } from "@/components/LayoutHeaderDropdown";
 import { SiteComplianceSettings } from "@/components/site/SiteComplianceSettings";
 import { SiteGatewaysCard } from "@/components/site/SiteGatewaysCard";
-import { AlertRulesEditor } from "@/components/settings/AlertRulesEditor";
-import { AlertRulesHistoryModal } from "@/components/settings/AlertRulesHistoryModal";
-import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
-import { LayoutHeaderDropdown } from "@/components/LayoutHeaderDropdown";
-import { useSiteAlertRules, useOrgAlertRules } from "@/hooks/useAlertRules";
-import { usePermissions } from "@/hooks/useUserRole";
-import { useSoftDelete } from "@/hooks/useSoftDelete";
-import { EntityDashboard } from "@/features/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { 
-  Plus, 
-  ChevronRight, 
-  Building2,
-  Loader2,
-  Thermometer,
-  MapPin,
-  Pencil,
-  Download,
-  AlertTriangle,
-  FileText,
-  History,
-  LayoutGrid,
-  Trash2,
-  LayoutDashboard,
-  Settings,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Textarea } from "@/components/ui/textarea";
+import { EntityDashboard } from "@/features/dashboard-layout";
 import { useToast } from "@/hooks/use-toast";
+import { useOrgAlertRules, useSiteAlertRules } from "@/hooks/useAlertRules";
+import { useEntityDashboardUrl } from "@/hooks/useEntityDashboardUrl";
+import { useSoftDelete } from "@/hooks/useSoftDelete";
+import { usePermissions } from "@/hooks/useUserRole";
+import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@stackframe/react";
+import {
+    AlertTriangle,
+    Building2,
+    ChevronRight,
+    Download,
+    FileText,
+    LayoutDashboard,
+    LayoutGrid,
+    Loader2,
+    MapPin,
+    Pencil,
+    Plus,
+    Settings,
+    Thermometer,
+    Trash2
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 interface Area {
   id: string;
@@ -658,6 +655,7 @@ const SiteDetail = () => {
           <SiteComplianceSettings
             siteId={site.id}
             siteName={site.name}
+            organizationId={site.organization_id}
             timezone={site.timezone}
             complianceMode={site.compliance_mode}
             manualLogCadenceSeconds={site.manual_log_cadence_seconds}

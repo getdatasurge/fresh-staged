@@ -1,29 +1,30 @@
-import { useState, useEffect } from "react";
-import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { toast } from "sonner";
-import { Settings, ChevronDown, ChevronUp, Loader2, Save, Shield, Clock, Globe } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { usePermissions } from "@/hooks/useUserRole";
+import { useTRPC } from "@/lib/trpc";
+import { useUser } from "@stackframe/react";
+import { ChevronDown, ChevronUp, Clock, Globe, Loader2, Save, Settings, Shield } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface SiteComplianceSettingsProps {
   siteId: string;
   siteName: string;
+  organizationId: string;
   timezone: string;
   complianceMode: string;
   manualLogCadenceSeconds: number;
@@ -57,6 +58,7 @@ const cadenceOptions = [
 export function SiteComplianceSettings({
   siteId,
   siteName,
+  organizationId,
   timezone,
   complianceMode,
   manualLogCadenceSeconds,
@@ -64,6 +66,8 @@ export function SiteComplianceSettings({
   onSettingsUpdated,
 }: SiteComplianceSettingsProps) {
   const user = useUser();
+  const trpc = useTRPC();
+  const updateSiteMutation = trpc.sites.update.useMutation();
   const [isOpen, setIsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { canEditComplianceSettings, isLoading: permLoading } = usePermissions();
@@ -83,45 +87,16 @@ export function SiteComplianceSettings({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const { error } = await supabase
-        .from("sites")
-        .update({
+      await updateSiteMutation.mutateAsync({
+        organizationId: organizationId,
+        siteId: siteId,
+        data: {
           timezone: localTimezone,
-          compliance_mode: localComplianceMode,
-          manual_log_cadence_seconds: localCadence,
-          corrective_action_required: localCorrectiveAction,
-        })
-        .eq("id", siteId);
-
-      if (error) throw error;
-
-      // Log the change
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("organization_id")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        if (profile?.organization_id) {
-          await supabase.from("event_logs").insert({
-            organization_id: profile.organization_id,
-            site_id: siteId,
-            event_type: "site_compliance_settings_updated",
-            actor_id: user.id,
-            actor_type: "user",
-            event_data: {
-              site_name: siteName,
-              changes: {
-                timezone: { from: timezone, to: localTimezone },
-                compliance_mode: { from: complianceMode, to: localComplianceMode },
-                manual_log_cadence_seconds: { from: manualLogCadenceSeconds, to: localCadence },
-                corrective_action_required: { from: correctiveActionRequired, to: localCorrectiveAction },
-              },
-            },
-          });
-        }
-      }
+          complianceMode: localComplianceMode,
+          manualLogCadenceSeconds: localCadence,
+          correctiveActionRequired: localCorrectiveAction,
+        },
+      });
 
       toast.success("Compliance settings updated");
       onSettingsUpdated();

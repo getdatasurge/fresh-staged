@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UuidSchema, TimestampSchema, OrgParamsSchema, SiteParamsSchema } from './common.js';
+import { SiteParamsSchema, TimestampSchema, UuidSchema } from './common.js';
 
 // Re-export SiteParamsSchema from common for convenience
 export { SiteParamsSchema };
@@ -15,6 +15,9 @@ export const SiteSchema = z.object({
   postalCode: z.string().nullable(),
   country: z.string().nullable(),
   timezone: z.string(),
+  complianceMode: z.string().nullable().optional(),
+  manualLogCadenceSeconds: z.number().int().nullable().optional(),
+  correctiveActionRequired: z.boolean().nullable().optional(),
   latitude: z.string().nullable(),
   longitude: z.string().nullable(),
   isActive: z.boolean(),
@@ -31,6 +34,9 @@ export const CreateSiteSchema = z.object({
   postalCode: z.string().max(20).nullable().optional(),
   country: z.string().max(64).nullable().optional(),
   timezone: z.string().max(100).default('UTC'),
+  complianceMode: z.string().optional(),
+  manualLogCadenceSeconds: z.number().int().optional(),
+  correctiveActionRequired: z.boolean().optional(),
   latitude: z.string().max(32).nullable().optional(),
   longitude: z.string().max(32).nullable().optional(),
 });
