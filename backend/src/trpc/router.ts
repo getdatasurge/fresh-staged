@@ -12,6 +12,9 @@ import { areasRouter } from '../routers/areas.router.js';
 import { unitsRouter } from '../routers/units.router.js';
 import { readingsRouter } from '../routers/readings.router.js';
 import { alertsRouter } from '../routers/alerts.router.js';
+import { preferencesRouter } from '../routers/preferences.router.js';
+import { adminRouter } from '../routers/admin.router.js';
+import { assetsRouter } from '../routers/assets.router.js';
 
 /**
  * Application router
@@ -71,6 +74,12 @@ export const appRouter = router({
    * Procedures: list, get, acknowledge, resolve
    */
   alerts: alertsRouter,
+
+  /**
+   * Preferences domain router
+   * Procedures: getDigest, updateDigest, disableAllDigests
+   */
+  preferences: preferencesRouter,
 });
 
 /**
