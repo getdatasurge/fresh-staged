@@ -137,19 +137,18 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Blue-green/canary deployments — Over-engineering for current scale
 - Data migration from Supabase — No access to production Supabase data
 
-## Current Milestone: Next Milestone (To Be Planned)
+## Current Milestone: v2.1 Streamlined Deployment
 
-**Last shipped:** v2.0 Real-Time & Billing (2026-01-25)
+**Goal:** Transform deployment from multi-step documentation-following to one-script automated experience
 
-**v2.0 delivered:**
-- Real-time dashboard updates via Socket.io with Redis adapter
-- Background job processing with BullMQ and worker containers
-- SMS notifications via Telnyx with custom retry strategies
-- Email digest scheduling with site filtering and unsubscribe support
-- Stripe billing with usage-based metering and Customer Portal
-- Backend API migration: 15 tRPC routers, 9 hooks migrated from Supabase
-
-**Next milestone:** Awaiting planning via `/gsd:new-milestone`
+**Target features:**
+- One-script deployment from fresh Ubuntu/Debian VM to production-ready system
+- Interactive configuration (domain, admin email, database passwords)
+- Automated prerequisite installation (Docker, Docker Compose, firewall rules)
+- Comprehensive deployment verification (health checks, browser access, E2E test, monitoring)
+- Intelligent error handling (auto-rollback for critical failures, diagnostics for fixable issues)
+- Complete deployment documentation (prerequisites, walkthrough, troubleshooting, operations)
+- Post-deployment setup (admin user invitation, sample data, configured dashboards)
 
 ## Current State (v2.0 Shipped)
 

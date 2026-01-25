@@ -5,13 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** Next milestone planning
+**Current focus:** v2.1 Streamlined Deployment
 
 ## Current Position
 
-Milestone: Next milestone (to be planned)
-Status: v2.0 shipped — awaiting `/gsd:new-milestone` to start next planning cycle
-Last activity: 2026-01-25 — v2.0 Real-Time & Billing milestone complete
+Milestone: v2.1 Streamlined Deployment — DEFINING REQUIREMENTS
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-01-25 — Milestone v2.1 started
 
 Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 118 plans total
 
