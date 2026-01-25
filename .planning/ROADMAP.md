@@ -158,16 +158,25 @@ Plans:
 
 #### Phase 20: Backend API Migration - Core
 
-**Goal:** Migrate sites, units, readings, and alerts domains to tRPC
+**Goal:** Migrate sites, areas, units, readings, and alerts domains to tRPC
 **Depends on:** Phase 19
 **Requirements:** API-03, API-04, API-05, API-06
+**Plans:** 4 plans
+
+Plans:
+- [ ] 20-01-PLAN.md — Sites and Areas tRPC routers with tests
+- [ ] 20-02-PLAN.md — Units, Readings, and Alerts tRPC routers with tests
+- [ ] 20-03-PLAN.md — Frontend hooks migration for all domains
+- [ ] 20-04-PLAN.md — E2E integration tests for all routers
 
 **Success Criteria:**
-1. Sites domain migrated with feature flag
-2. Units domain migrated with feature flag
-3. Readings domain migrated with feature flag
-4. Alerts domain migrated with feature flag
-5. All parallel run validations passing
+1. Sites domain migrated to tRPC
+2. Areas domain migrated to tRPC
+3. Units domain migrated to tRPC
+4. Readings domain migrated to tRPC (query only, bulk ingest stays REST)
+5. Alerts domain migrated to tRPC
+6. Frontend hooks using tRPC directly
+7. E2E tests passing for all domains
 
 ---
 
@@ -261,7 +270,7 @@ Plans:
 | 17. Email Digests | v2.0 | 3/3 | Complete | 2026-01-24 |
 | 18. Stripe Billing | v2.0 | 6/6 | Complete | 2026-01-24 |
 | 19. Backend API Migration - Foundation | v2.0 | 4/4 | Complete | 2026-01-24 |
-| 20. Backend API Migration - Core | v2.0 | 0/? | Not Started | - |
+| 20. Backend API Migration - Core | v2.0 | 0/4 | Planned | - |
 | 21. Backend API Migration - Completion | v2.0 | 0/? | Not Started | - |
 | 22. AWS ECS Deployment (Optional) | v2.0 | 0/? | Not Started | - |
 
