@@ -11,6 +11,8 @@
 #   - verify_docker_compose() Verify Docker Compose v2 is available
 #   - is_package_installed()  Check if apt package is installed
 #   - ensure_package()        Install package if not present (idempotent)
+#   - wait_for_apt_lock()     Wait for apt locks to be released
+#   - apt_update()            Run apt-get update with lock handling
 # ===========================================
 
 # Source preflight-lib.sh for error handling and checkpoint system
@@ -116,6 +118,9 @@ ensure_package() {
         return 0
     fi
 
+    # Wait for apt lock before installing
+    wait_for_apt_lock || return 1
+
     step "Installing $package..."
     if apt-get install -y "$package" >/dev/null 2>&1; then
         success "$package installed"
@@ -183,9 +188,10 @@ install_docker() {
     done
     success "Conflicting packages removed"
 
-    # Install prerequisites
+    # Install prerequisites (with lock handling)
     step "Installing prerequisites..."
-    apt-get update -qq
+    apt_update || return 1
+    wait_for_apt_lock || return 1
     apt-get install -y ca-certificates curl >/dev/null 2>&1
     success "Prerequisites installed"
 
@@ -228,9 +234,10 @@ install_docker() {
 
     success "Docker repository added for Ubuntu ${codename} (${repo_arch})"
 
-    # Update apt and install Docker packages
+    # Update apt and install Docker packages (with lock handling)
     step "Installing Docker Engine packages..."
-    apt-get update -qq
+    apt_update || return 1
+    wait_for_apt_lock || return 1
 
     local docker_packages=(
         docker-ce
@@ -321,95 +328,6 @@ verify_docker_compose() {
 }
 
 # ===========================================
-# APT Lock Handling
-# Wait for apt locks to be released (e.g., unattended-upgrades)
-# ===========================================
-
-# Wait for apt locks to be released
-# Returns: 0 when locks are free
-wait_for_apt_lock() {
-    local max_wait=120  # 2 minutes
-    local waited=0
-
-    while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || \
-          fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || \
-          fuser /var/cache/apt/archives/lock >/dev/null 2>&1; do
-        if [[ $waited -eq 0 ]]; then
-            warning "Waiting for apt locks (another package manager is running)..."
-        fi
-        sleep 5
-        waited=$((waited + 5))
-        if [[ $waited -ge $max_wait ]]; then
-            error "Timeout waiting for apt locks after ${max_wait}s"
-            return 1
-        fi
-    done
-
-    if [[ $waited -gt 0 ]]; then
-        success "APT locks released after ${waited}s"
-    fi
-    return 0
-}
-
-# Run apt-get update with lock handling
-apt_update() {
-    wait_for_apt_lock
-    apt-get update -qq
-}
-
-# ===========================================
-# Firewall Configuration (UFW)
-# ===========================================
-
-# Configure UFW firewall with required ports
-# Allows: 22/tcp (SSH), 80/tcp (HTTP), 443/tcp (HTTPS)
-# Denies: all other incoming traffic
-# Returns: 0 on success, 1 on failure
-configure_firewall() {
-    step "Configuring UFW firewall..."
-
-    # Check if UFW is already properly configured
-    if command -v ufw &>/dev/null && ufw status 2>/dev/null | grep -q "Status: active"; then
-        if ufw status 2>/dev/null | grep -qE "22/tcp.*ALLOW" && \
-           ufw status 2>/dev/null | grep -qE "80/tcp.*ALLOW" && \
-           ufw status 2>/dev/null | grep -qE "443/tcp.*ALLOW"; then
-            success "UFW firewall already configured (ports 22, 80, 443)"
-            return 0
-        fi
-    fi
-
-    # Install UFW if not present
-    ensure_package ufw
-
-    # Set default policies
-    step "Setting default firewall policies..."
-    ufw default deny incoming
-    ufw default allow outgoing
-
-    # Allow required ports (idempotent - ufw handles duplicates gracefully)
-    step "Opening required ports..."
-    ufw allow 22/tcp comment 'SSH'
-    ufw allow 80/tcp comment 'HTTP - Lets Encrypt ACME'
-    ufw allow 443/tcp comment 'HTTPS - Production traffic'
-
-    # Enable firewall non-interactively
-    step "Enabling firewall..."
-    ufw --force enable
-
-    # Verify configuration
-    if ufw status | grep -q "Status: active"; then
-        success "UFW firewall configured (ports 22, 80, 443 allowed)"
-        echo ""
-        echo "Firewall status:"
-        ufw status verbose | head -15
-        return 0
-    else
-        error "UFW failed to enable"
-        return 1
-    fi
-}
-
-# ===========================================
 # Self-test when run directly
 # ===========================================
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
@@ -467,6 +385,22 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         echo "PASS: preflight-lib.sh functions available (step, success, error)"
     else
         echo "FAIL: preflight-lib.sh not properly sourced"
+        exit 1
+    fi
+    echo ""
+
+    # Test apt lock functions exist
+    echo "5. Testing apt lock handling functions..."
+    if type -t wait_for_apt_lock &>/dev/null; then
+        echo "PASS: wait_for_apt_lock function exists"
+    else
+        echo "FAIL: wait_for_apt_lock function should exist"
+        exit 1
+    fi
+    if type -t apt_update &>/dev/null; then
+        echo "PASS: apt_update function exists"
+    else
+        echo "FAIL: apt_update function should exist"
         exit 1
     fi
     echo ""
