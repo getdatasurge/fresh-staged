@@ -1,10 +1,22 @@
 import { createAuthenticatedClient } from '../api-client';
 import type { UnitResponse, CreateUnitRequest, UpdateUnitRequest } from '../api-types';
 
+/**
+ * @deprecated Use tRPC hooks from src/hooks/useUnits.ts instead.
+ * These Ky-based API wrappers are being migrated to tRPC for type safety.
+ *
+ * Migration:
+ * - listUnits -> useUnits() hook
+ * - getUnit -> useUnit() hook
+ * - createUnit -> useCreateUnit() hook
+ * - updateUnit -> useUpdateUnit() hook
+ * - deleteUnit -> useDeleteUnit() hook
+ */
 export const unitsApi = {
   /**
    * List units for area
    * GET /api/orgs/:orgId/sites/:siteId/areas/:areaId/units
+   * @deprecated Use useUnits() hook from src/hooks/useUnits.ts
    */
   listUnits: async (
     orgId: string,
@@ -21,6 +33,7 @@ export const unitsApi = {
   /**
    * Get unit by ID
    * GET /api/orgs/:orgId/sites/:siteId/areas/:areaId/units/:unitId
+   * @deprecated Use useUnit() hook from src/hooks/useUnits.ts
    */
   getUnit: async (
     orgId: string,
@@ -39,6 +52,7 @@ export const unitsApi = {
    * Create unit
    * POST /api/orgs/:orgId/sites/:siteId/areas/:areaId/units
    * Requires manager role
+   * @deprecated Use useCreateUnit() hook from src/hooks/useUnits.ts
    */
   createUnit: async (
     orgId: string,
@@ -57,6 +71,7 @@ export const unitsApi = {
    * Update unit
    * PUT /api/orgs/:orgId/sites/:siteId/areas/:areaId/units/:unitId
    * Requires manager role
+   * @deprecated Use useUpdateUnit() hook from src/hooks/useUnits.ts
    */
   updateUnit: async (
     orgId: string,
@@ -76,6 +91,7 @@ export const unitsApi = {
    * Delete unit (soft delete)
    * DELETE /api/orgs/:orgId/sites/:siteId/areas/:areaId/units/:unitId
    * Requires manager role
+   * @deprecated Use useDeleteUnit() hook from src/hooks/useUnits.ts
    */
   deleteUnit: async (
     orgId: string,
