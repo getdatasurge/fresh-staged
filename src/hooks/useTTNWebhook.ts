@@ -1,12 +1,29 @@
 /**
  * TTN Webhook Hooks
  *
- * TODO: Migrate to tRPC when TTN webhook router is available
- * - Currently uses update-ttn-webhook and ttn-provision-org Supabase edge functions
- * - Backend router for TTN webhook management not yet created
- * - Planned for future migration when backend routes are available
+ * Status: BLOCKED - Requires backend implementation
  *
- * Current status: Stack Auth for identity, Supabase edge functions (Phase 21)
+ * Current implementation:
+ * - Uses update-ttn-webhook edge function to update webhook configuration in TTN
+ * - Uses ttn-provision-org edge function to regenerate webhook secret
+ *
+ * Migration blockers:
+ * - Backend needs TTN SDK integration (@ttn-lw/grpc-web-api-client)
+ * - Backend needs webhook update procedures (call TTN API to update webhook events/URL)
+ * - Backend needs webhook secret regeneration procedures
+ *
+ * Edge functions used:
+ * - update-ttn-webhook (updates webhook events and URL in TTN)
+ * - ttn-provision-org (regenerate_webhook_secret action)
+ *
+ * Migration path:
+ * 1. Add TTN SDK to backend dependencies
+ * 2. Create webhook service with TTN API integration
+ * 3. Add procedures to ttnSettings router (updateWebhook, regenerateWebhookSecret)
+ * 4. Migrate this hook to use tRPC procedures
+ *
+ * Estimated effort: Medium (requires external API integration)
+ * Priority: Low (webhook config is one-time setup)
  */
 import { useState, useCallback } from "react";
 import { useUser } from "@stackframe/react";
@@ -154,7 +171,8 @@ export function useTTNWebhook({
     try {
       const { accessToken } = await user.getAuthJson();
 
-      // TODO Phase 6: Migrate to new backend API endpoint
+      // TODO: Replace with tRPC when backend TTN SDK integration is available
+      // Requires: ttnSettings.updateWebhook procedure to call TTN API
       const { data, error } = await supabase.functions.invoke("update-ttn-webhook", {
         body: {
           organization_id: organizationId,
@@ -204,7 +222,8 @@ export function useTTNWebhook({
     try {
       const { accessToken } = await user.getAuthJson();
 
-      // TODO Phase 6: Migrate to new backend API endpoint
+      // TODO: Replace with tRPC when backend TTN SDK integration is available
+      // Requires: ttnSettings.regenerateWebhookSecret procedure to regenerate secret in TTN
       const { data, error } = await supabase.functions.invoke("ttn-provision-org", {
         body: {
           action: "regenerate_webhook_secret",

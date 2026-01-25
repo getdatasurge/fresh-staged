@@ -1,12 +1,29 @@
 /**
  * TTN API Key Hooks
  *
- * TODO: Migrate to tRPC when TTN config router is available
- * - Currently uses ttn-bootstrap Supabase edge function
- * - Backend router for TTN API key validation not yet created
- * - Planned for future migration when backend routes are available
+ * Status: BLOCKED - Requires backend implementation
  *
- * Current status: Stack Auth for identity, Supabase edge functions (Phase 21)
+ * Current implementation:
+ * - Uses ttn-bootstrap edge function for API key validation and webhook setup
+ * - Edge function performs: TTN API key validation, permissions check, webhook configuration
+ *
+ * Migration blockers:
+ * - Backend needs TTN SDK integration (@ttn-lw/grpc-web-api-client)
+ * - Backend needs TTN API key validation procedures
+ * - Backend needs webhook configuration procedures (create/update webhook in TTN)
+ * - Backend needs bootstrap service/job for provisioning workflow
+ *
+ * Edge functions used:
+ * - ttn-bootstrap (validate_only, save_and_configure actions)
+ *
+ * Migration path:
+ * 1. Add TTN SDK to backend dependencies
+ * 2. Create ttn-bootstrap.service.ts with validation and webhook config logic
+ * 3. Create procedures in ttnSettings router (validateApiKey, configureWebhook)
+ * 4. Migrate this hook to use tRPC procedures
+ *
+ * Estimated effort: Medium (requires external API integration)
+ * Priority: Medium (affects TTN setup wizard UX)
  */
 import { useState, useCallback } from "react";
 import { useUser } from "@stackframe/react";
@@ -141,7 +158,8 @@ export function useTTNApiKey({
     try {
       const { accessToken } = await user.getAuthJson();
 
-      // TODO Phase 6: Migrate to new backend API endpoint
+      // TODO: Replace with tRPC when backend TTN SDK integration is available
+      // Requires: ttnSettings.validateApiKey procedure with TTN API key validation logic
       const { data, error } = await supabase.functions.invoke("ttn-bootstrap", {
         body: {
           action: "validate_only",
@@ -267,7 +285,8 @@ export function useTTNApiKey({
     try {
       const { accessToken } = await user.getAuthJson();
 
-      // TODO Phase 6: Migrate to new backend API endpoint
+      // TODO: Replace with tRPC when backend TTN SDK integration is available
+      // Requires: ttnSettings.saveAndConfigure procedure with webhook setup logic
       const { data, error } = await supabase.functions.invoke("ttn-bootstrap", {
         body: {
           action: "save_and_configure",
