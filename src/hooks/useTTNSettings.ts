@@ -1,16 +1,12 @@
 /**
  * TTN Settings Hooks
  *
- * TODO: Migrate to tRPC when TTN settings router is available
- * - Currently uses manage-ttn-settings Supabase edge function
- * - Backend router for TTN settings not yet created
- * - Planned for future migration when backend routes are available
- *
- * Current status: Stack Auth for identity, Supabase edge functions (Phase 21)
+ * Migrated to tRPC in Phase 21
+ * Uses ttnSettings router for settings management
  */
 import { useState, useCallback, useEffect } from "react";
 import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";  // TEMPORARY
+import { useTRPCClient } from "@/lib/trpc";
 import { toast } from "sonner";
 import { hashConfigValues } from "@/types/ttnState";
 import { useTTNConfig } from "@/contexts/TTNConfigContext";
@@ -95,6 +91,7 @@ interface UseTTNSettingsReturn {
  * Hook to manage TTN settings loading and state
  */
 export function useTTNSettings({ organizationId }: UseTTNSettingsOptions): UseTTNSettingsReturn {
+  const client = useTRPCClient();
   const [settings, setSettings] = useState<TTNSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEnabled, setIsEnabled] = useState(false);
@@ -112,29 +109,20 @@ export function useTTNSettings({ organizationId }: UseTTNSettingsOptions): UseTT
 
     setIsLoading(true);
     try {
-      const { accessToken } = await user.getAuthJson();
-
-      // TODO Phase 6: Migrate to new backend API endpoint
-      const { data, error } = await supabase.functions.invoke("manage-ttn-settings", {
-        body: { action: "get", organization_id: organizationId },
-        headers: { 'x-stack-access-token': accessToken },
+      // Query via tRPC
+      const data = await client.ttnSettings.get.query({
+        organizationId: organizationId,
       });
 
-      if (error) throw error;
-
       if (data) {
-        // Map legacy status values
-        let status = data.provisioning_status ?? 'idle';
-        if (status === 'not_started') status = 'idle';
-        if (status === 'completed') status = 'ready';
-
+        // Map legacy status values (already handled by backend)
         const loadedSettings: TTNSettings = {
-          exists: data.exists ?? false,
+          exists: true,
           is_enabled: data.is_enabled ?? false,
           ttn_region: data.ttn_region ?? null,
           ttn_application_id: data.ttn_application_id ?? null,
-          provisioning_status: status as TTNSettings['provisioning_status'],
-          provisioning_step: data.provisioning_step ?? data.provisioning_last_step ?? null,
+          provisioning_status: data.provisioning_status as TTNSettings['provisioning_status'],
+          provisioning_step: data.provisioning_step ?? null,
           provisioning_started_at: data.provisioning_started_at ?? null,
           provisioning_last_heartbeat_at: data.provisioning_last_heartbeat_at ?? null,
           provisioning_attempt_count: data.provisioning_attempt_count ?? 0,
@@ -153,7 +141,7 @@ export function useTTNSettings({ organizationId }: UseTTNSettingsOptions): UseTT
           webhook_id: data.webhook_id ?? null,
           webhook_events: data.webhook_events ?? null,
           last_connection_test_at: data.last_connection_test_at ?? null,
-          last_connection_test_result: data.last_connection_test_result ?? null,
+          last_connection_test_result: data.last_connection_test_result as TTNTestResult | null,
           last_updated_source: data.last_updated_source ?? null,
           last_test_source: data.last_test_source ?? null,
         };
@@ -162,7 +150,7 @@ export function useTTNSettings({ organizationId }: UseTTNSettingsOptions): UseTT
         setIsEnabled(data.is_enabled ?? false);
 
         // Mark context as canonical if we have valid settings from DB
-        if (data.exists && data.ttn_application_id && data.has_api_key) {
+        if (data.ttn_application_id && data.has_api_key) {
           const hash = hashConfigValues({
             cluster: 'nam1',
             application_id: data.ttn_application_id,
@@ -176,9 +164,14 @@ export function useTTNSettings({ organizationId }: UseTTNSettingsOptions): UseTT
             hash
           });
           setCanonical(hash);
-        } else if (data.exists) {
+        } else {
           resetToDraft();
         }
+      } else {
+        // No settings exist yet
+        setSettings(null);
+        setIsEnabled(false);
+        resetToDraft();
       }
     } catch (err) {
       console.error("Error loading TTN settings:", err);
@@ -187,7 +180,7 @@ export function useTTNSettings({ organizationId }: UseTTNSettingsOptions): UseTT
     } finally {
       setIsLoading(false);
     }
-  }, [organizationId, user, setCanonical, setInvalid, resetToDraft]);
+  }, [organizationId, user, client, setCanonical, setInvalid, resetToDraft]);
 
   const checkBootstrapHealth = useCallback(async () => {
     try {
