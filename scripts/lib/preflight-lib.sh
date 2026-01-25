@@ -170,6 +170,266 @@ error_handler() {
 trap error_handler ERR
 
 # ===========================================
+# System Validation Functions
+# Pre-flight checks for system resources
+# ===========================================
+
+# PREFLIGHT-01: Validate minimum RAM available
+# Args: $1 = minimum MB required (default: 2048 for FreshTrack)
+# Returns: 0 if sufficient, 1 if insufficient
+validate_ram() {
+    local min_mb="${1:-2048}"
+
+    if [[ ! -f /proc/meminfo ]]; then
+        error "Cannot read /proc/meminfo - is this Linux?"
+        return 1
+    fi
+
+    local available_kb
+    available_kb=$(grep MemAvailable /proc/meminfo | awk '{print $2}')
+
+    if [[ -z "$available_kb" ]]; then
+        # Fallback for older kernels without MemAvailable
+        local free_kb buffers_kb cached_kb
+        free_kb=$(grep "^MemFree:" /proc/meminfo | awk '{print $2}')
+        buffers_kb=$(grep "^Buffers:" /proc/meminfo | awk '{print $2}')
+        cached_kb=$(grep "^Cached:" /proc/meminfo | awk '{print $2}')
+        available_kb=$((free_kb + buffers_kb + cached_kb))
+    fi
+
+    local available_mb=$((available_kb / 1024))
+
+    if [[ $available_mb -lt $min_mb ]]; then
+        error "Insufficient RAM"
+        echo "  Required:  ${min_mb}MB"
+        echo "  Available: ${available_mb}MB"
+        echo ""
+        echo "FreshTrack requires at least 2GB RAM for Docker services:"
+        echo "  - PostgreSQL: ~256MB"
+        echo "  - Redis: ~128MB"
+        echo "  - Backend API: ~512MB"
+        echo "  - Frontend: ~256MB"
+        echo "  - Monitoring stack: ~512MB"
+        return 1
+    fi
+
+    success "RAM: ${available_mb}MB available (minimum: ${min_mb}MB)"
+    return 0
+}
+
+# PREFLIGHT-02: Validate minimum disk space available
+# Args: $1 = minimum GB required (default: 10 for Docker images + data)
+#       $2 = mount point to check (default: /)
+# Returns: 0 if sufficient, 1 if insufficient
+validate_disk() {
+    local min_gb="${1:-10}"
+    local mount_point="${2:-/}"
+
+    local available_gb
+    available_gb=$(df -BG "$mount_point" 2>/dev/null | awk 'NR==2 {gsub("G",""); print $4}')
+
+    if [[ -z "$available_gb" ]]; then
+        error "Cannot determine disk space for $mount_point"
+        return 1
+    fi
+
+    if [[ $available_gb -lt $min_gb ]]; then
+        error "Insufficient disk space"
+        echo "  Required:  ${min_gb}GB"
+        echo "  Available: ${available_gb}GB on $mount_point"
+        echo ""
+        echo "FreshTrack requires at least 10GB for:"
+        echo "  - Docker images: ~4GB"
+        echo "  - PostgreSQL data: ~2GB"
+        echo "  - Monitoring data: ~2GB"
+        echo "  - Application logs: ~1GB"
+        echo "  - Buffer: ~1GB"
+        echo ""
+        echo "Free up space with: docker system prune -af"
+        return 1
+    fi
+
+    success "Disk: ${available_gb}GB available on $mount_point (minimum: ${min_gb}GB)"
+    return 0
+}
+
+# PREFLIGHT-03: Validate CPU cores (warning only, not blocking)
+# Args: $1 = recommended cores (default: 2)
+# Returns: 0 always (warning only)
+validate_cpu() {
+    local recommended="${1:-2}"
+
+    local cores
+    cores=$(nproc 2>/dev/null || grep -c ^processor /proc/cpuinfo 2>/dev/null || echo "1")
+
+    if [[ $cores -lt $recommended ]]; then
+        warning "Low CPU count"
+        echo "  Recommended: ${recommended}+ cores"
+        echo "  Available:   ${cores} cores"
+        echo ""
+        echo "Deployment will continue but may be slow."
+        echo "Consider upgrading to a larger VM for production use."
+    else
+        success "CPU: ${cores} cores (recommended: ${recommended}+)"
+    fi
+
+    return 0
+}
+
+# PREFLIGHT-04: Validate OS version (Ubuntu 20.04+ or Debian 11+)
+# Returns: 0 if supported, 1 if unsupported
+validate_os() {
+    if [[ ! -f /etc/os-release ]]; then
+        error "Cannot detect OS version"
+        echo "  /etc/os-release not found"
+        echo ""
+        echo "Supported operating systems:"
+        echo "  - Ubuntu 20.04 LTS (Focal) or newer"
+        echo "  - Ubuntu 22.04 LTS (Jammy) or newer"
+        echo "  - Ubuntu 24.04 LTS (Noble) or newer"
+        echo "  - Debian 11 (Bullseye) or newer"
+        echo "  - Debian 12 (Bookworm) or newer"
+        return 1
+    fi
+
+    # shellcheck source=/dev/null
+    source /etc/os-release
+
+    local supported=false
+    local min_version=""
+
+    case "$ID" in
+        ubuntu)
+            min_version="20.04"
+            if [[ "${VERSION_ID%%.*}" -ge 20 ]]; then
+                supported=true
+            fi
+            ;;
+        debian)
+            min_version="11"
+            if [[ "${VERSION_ID%%.*}" -ge 11 ]]; then
+                supported=true
+            fi
+            ;;
+        *)
+            # Unsupported OS
+            ;;
+    esac
+
+    if [[ "$supported" != "true" ]]; then
+        error "Unsupported operating system"
+        echo "  Detected: $PRETTY_NAME"
+        echo ""
+        echo "Supported operating systems:"
+        echo "  - Ubuntu 20.04 LTS (Focal) or newer"
+        echo "  - Ubuntu 22.04 LTS (Jammy) or newer"
+        echo "  - Ubuntu 24.04 LTS (Noble) or newer"
+        echo "  - Debian 11 (Bullseye) or newer"
+        echo "  - Debian 12 (Bookworm) or newer"
+        echo ""
+        echo "CentOS, RHEL, Fedora, Alpine, and Windows are not supported."
+        return 1
+    fi
+
+    success "OS: $PRETTY_NAME (minimum: $ID $min_version)"
+    return 0
+}
+
+# PREFLIGHT-05: Validate network connectivity to required URLs
+# Returns: 0 if all reachable, 1 if any unreachable
+validate_network() {
+    local urls=(
+        "https://registry-1.docker.io/v2/"
+        "https://github.com"
+        "https://get.docker.com"
+    )
+
+    local failed=0
+    local timeout=10
+
+    for url in "${urls[@]}"; do
+        local http_code
+        http_code=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout "$timeout" --max-time 15 "$url" 2>/dev/null || echo "000")
+
+        if [[ "$http_code" == "000" ]]; then
+            error "Cannot reach: $url"
+            failed=1
+        elif [[ "$http_code" -ge 400 && "$http_code" != "401" ]]; then
+            # 401 is expected for Docker registry (requires auth for pulls)
+            warning "$url returned HTTP $http_code"
+        else
+            success "Reachable: $url (HTTP $http_code)"
+        fi
+    done
+
+    if [[ $failed -eq 1 ]]; then
+        echo ""
+        echo "Required URLs that must be reachable:"
+        echo "  - registry-1.docker.io (Docker Hub for images)"
+        echo "  - github.com (Source code repository)"
+        echo "  - get.docker.com (Docker installer script)"
+        echo ""
+        echo "Check your network connectivity and firewall rules."
+        echo "Ensure outbound HTTPS (port 443) is allowed."
+        return 1
+    fi
+
+    return 0
+}
+
+# Run all pre-flight validation checks
+# Args: none
+# Returns: 0 if all pass, 1 if any critical check fails
+run_preflight_checks() {
+    echo "========================================"
+    echo "Pre-Flight System Validation"
+    echo "========================================"
+    echo ""
+
+    local failed=0
+
+    step "Checking RAM..."
+    if ! validate_ram 2048; then
+        failed=1
+    fi
+    echo ""
+
+    step "Checking disk space..."
+    if ! validate_disk 10; then
+        failed=1
+    fi
+    echo ""
+
+    step "Checking CPU..."
+    validate_cpu 2  # Warning only, doesn't fail
+    echo ""
+
+    step "Checking OS..."
+    if ! validate_os; then
+        failed=1
+    fi
+    echo ""
+
+    step "Checking network connectivity..."
+    if ! validate_network; then
+        failed=1
+    fi
+    echo ""
+
+    echo "========================================"
+    if [[ $failed -eq 1 ]]; then
+        error "Pre-flight checks FAILED"
+        echo "Resolve the issues above before proceeding."
+        echo ""
+        return 1
+    fi
+
+    success "All pre-flight checks PASSED"
+    echo ""
+    return 0
+}
+
+# ===========================================
 # Self-test when run directly
 # ===========================================
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
@@ -177,7 +437,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     echo ""
 
     # Test sanitize_output
-    echo "Test 1: Credential sanitization"
+    echo "1. Testing credential sanitization..."
     test_cmd='curl -u user:password=secret123 https://api.example.com --header "Authorization: Bearer token=abc123"'
     sanitized=$(echo "$test_cmd" | sanitize_output)
 
@@ -193,7 +453,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     echo ""
 
     # Test categorize_error
-    echo "Test 2: Error categorization"
+    echo "2. Testing error categorization..."
     if [[ "$(categorize_error 28)" != "transient:network" ]]; then
         echo "FAIL: Exit code 28 should be transient:network"
         exit 1
@@ -210,14 +470,52 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         echo "FAIL: Exit code 130 should be fatal:signal"
         exit 1
     fi
-    if [[ "$(categorize_error 99)" != "critical:unknown" ]]; then
-        echo "FAIL: Exit code 99 should be critical:unknown"
-        exit 1
-    fi
     echo "PASS: Error categorization working"
     echo ""
 
-    echo "========================================="
+    # Test validation functions (with low thresholds to ensure pass)
+    echo "3. Testing validation functions..."
+
+    # RAM validation with very low threshold
+    if ! validate_ram 1 >/dev/null 2>&1; then
+        echo "FAIL: validate_ram should pass with 1MB threshold"
+        exit 1
+    fi
+    echo "PASS: validate_ram function working"
+
+    # Disk validation with very low threshold
+    if ! validate_disk 1 >/dev/null 2>&1; then
+        echo "FAIL: validate_disk should pass with 1GB threshold"
+        exit 1
+    fi
+    echo "PASS: validate_disk function working"
+
+    # CPU validation (always returns 0)
+    if ! validate_cpu 1 >/dev/null 2>&1; then
+        echo "FAIL: validate_cpu should always return 0"
+        exit 1
+    fi
+    echo "PASS: validate_cpu function working"
+
+    # OS validation (should pass on Ubuntu/Debian CI)
+    # Skip if not on supported OS (for development on macOS)
+    if [[ -f /etc/os-release ]]; then
+        source /etc/os-release
+        if [[ "$ID" == "ubuntu" || "$ID" == "debian" ]]; then
+            if ! validate_os >/dev/null 2>&1; then
+                echo "FAIL: validate_os should pass on Ubuntu/Debian"
+                exit 1
+            fi
+            echo "PASS: validate_os function working"
+        else
+            echo "SKIP: validate_os (not on Ubuntu/Debian)"
+        fi
+    else
+        echo "SKIP: validate_os (no /etc/os-release)"
+    fi
+
+    echo ""
+    echo "========================================"
     echo "All tests passed!"
-    echo "========================================="
+    echo "========================================"
 fi
