@@ -10,13 +10,13 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 ## Current Position
 
 Milestone: v2.1 Streamlined Deployment — IN PROGRESS
-Phase: 23 of 26 (Prerequisites Installation) — IN PROGRESS
-Plan: 1 of 2 in current phase
-Status: Plan 23-01 complete
-Last activity: 2026-01-25 — Completed 23-01-PLAN.md (Docker Installation)
+Phase: 23 of 26 (Prerequisites Installation) — COMPLETE
+Plan: 2 of 2 in current phase
+Status: Phase 23 complete
+Last activity: 2026-01-25 — Completed 23-02-PLAN.md (Firewall, fail2ban, jq)
 
-Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 123 plans total
-[██░░░░░░░░░░░░░░░░░░] 1/2 plans in Phase 23
+Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 124 plans total
+[████████████████████] 2/2 plans in Phase 23
 
 ## v2.1 Phase Overview
 
@@ -28,12 +28,12 @@ Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 123 plans total
 | 25 | Deployment Orchestration | 5 | Integration with existing deploy.sh |
 | 26 | Verification & Completion | 15 | Health checks, E2E, post-deploy, docs |
 
-## Phase 23 Progress — IN PROGRESS
+## Phase 23 Progress — COMPLETE
 
 | Plan | Name | Status | Commit |
 |------|------|--------|--------|
 | 23-01 | Docker Installation | Complete | 2257d6f |
-| 23-02 | Firewall Configuration | Pending | - |
+| 23-02 | Firewall, fail2ban, jq | Complete | b47f16d |
 
 ## Phase 22 — COMPLETE ✓
 
@@ -115,6 +115,10 @@ Recent decisions affecting v2.1:
 - [23-01]: Apt repository method over get.docker.com for idempotent Docker installs
 - [23-01]: 300s default apt lock timeout (configurable via APT_LOCK_TIMEOUT)
 - [23-01]: Check 4 apt lock files before any package operation
+- [23-02]: UFW allows only ports 22, 80, 443 - deny all other incoming
+- [23-02]: fail2ban uses jail.local (not jail.conf) to survive package updates
+- [23-02]: fail2ban uses %(sshd_log)s and %(sshd_backend)s for OS portability
+- [23-02]: install_all_prerequisites() uses run_step() for checkpoint resume
 
 ### Tech Debt Carried Forward
 
@@ -128,11 +132,11 @@ None for v2.1.
 
 ## Session Continuity
 
-**Last session:** 2026-01-25 16:22 UTC
-**Stopped at:** Completed 23-01-PLAN.md
+**Last session:** 2026-01-25 16:45 UTC
+**Stopped at:** Completed 23-02-PLAN.md (Phase 23 complete)
 **Resume file:** None
-**Next action:** Execute 23-02-PLAN.md (Firewall Configuration)
+**Next action:** Execute Phase 24 (Interactive Configuration)
 
 ---
 
-*State updated: 2026-01-25 after 23-01-PLAN.md completion*
+*State updated: 2026-01-25 after 23-02-PLAN.md completion*
