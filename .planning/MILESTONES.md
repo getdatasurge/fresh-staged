@@ -1,5 +1,50 @@
 # Project Milestones: FreshTrack Pro Migration
 
+## v2.0 Real-Time & Billing (Shipped: 2026-01-25)
+
+**Delivered:** Real-time dashboard updates, background job processing, SMS/email notifications, Stripe billing integration, and comprehensive backend API migration from Supabase to tRPC.
+
+**Phases completed:** 14-21 (40 plans total)
+
+**Key accomplishments:**
+
+- Real-Time Foundation — Socket.io server with Redis adapter for horizontal scaling, multi-tenant room architecture with organization-based isolation, JWT authentication on WebSocket connections, and live sensor data streaming to connected dashboard clients
+- Background Jobs Infrastructure — BullMQ job queue integrated with Fastify backend, worker containers deployable separately from API, Bull Board dashboard with authentication for queue monitoring, and E2E verification of job processing
+- SMS & Email Notifications — Telnyx SMS integration migrated from Edge Function to BullMQ worker with custom retry strategies based on error codes, user-configurable email digest scheduling with site filtering and grouped alert display, one-click unsubscribe with secure JWT tokens, and plain text email fallback for deliverability
+- Stripe Billing — Subscription checkout flow, usage-based metering for active sensor count (last_during_period) and temperature reading volume (sum aggregation), webhook handler with signature verification and idempotent processing, Customer Portal for self-service billing, and subscription status enforcement middleware
+- Backend API Migration — tRPC v11 with Fastify adapter, 15 domain routers created (organizations, sites, areas, units, readings, alerts, preferences, admin, assets, availability, smsConfig, payments, notificationPolicies, ttnSettings, escalationContacts), 169 backend tests passing, type safety across frontend-backend boundary, 9 frontend hooks migrated from Supabase edge functions/queries to tRPC procedures, and clear documentation of 6 TTN hooks requiring future TTN SDK integration
+
+**Stats:**
+
+- 83 commits across v2.0 development
+- 472 files changed, +94,295 insertions, -5,816 deletions
+- 8 phases, 40 plans
+- 2 days from milestone start to ship (2026-01-24 → 2026-01-25)
+
+**Git range:** `256c909` → `48a6e98`
+
+**Requirements shipped:**
+
+- RT-01 through RT-05 (Real-Time Foundation)
+- BG-01 through BG-06 (Background Jobs & Notifications)
+- BILL-01 through BILL-06 (Stripe Billing)
+- API-01 through API-07 partial (Backend API Migration — first batch complete, TTN SDK integration deferred)
+
+**Tech debt resolved:**
+
+- Significant progress on AUTH-02: 9 frontend hooks migrated from Supabase to tRPC (organizations, sites, areas, units, readings, alerts, preferences, escalation contacts, TTN settings read/write)
+- Backend now provides 15 tRPC routers with 169 passing tests
+- Type safety enforced across frontend-backend boundary
+
+**Tech debt carried forward:**
+
+- AUTH-02 partial: 6 TTN hooks require backend TTN SDK integration (@ttn-lw/grpc-web-api-client) and BullMQ job queue for provisioning workflow (useTTNApiKey, useTTNWebhook, useTTNSetupWizard, useCheckTtnProvisioningState, useGatewayProvisioningPreflight, useTTNDeprovision)
+- 11 additional hooks outside Phase 21 scope still use Supabase (to be addressed in future milestone)
+
+**What's next:** Next milestone planning — potential areas include TTN SDK integration for complete Supabase removal, additional real-time features, advanced billing analytics, or new product capabilities
+
+---
+
 ## v1.1 Production Ready (Shipped: 2026-01-24)
 
 **Delivered:** Production-ready deployment infrastructure with PgBouncer connection pooling, automated backups, multi-target deployment (self-hosted + DigitalOcean), and comprehensive E2E validation suite.

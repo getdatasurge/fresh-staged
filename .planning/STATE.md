@@ -2,22 +2,35 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-24)
+See: .planning/PROJECT.md (updated 2026-01-25)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.0 planning or production cutover
+**Current focus:** Next milestone planning
 
 ## Current Position
 
-Milestone: v2.0 Real-Time & Billing — ACTIVE
-Phase: 21 of 22 (Backend API Migration - Completion) — COMPLETE
-Plan: 9 of 9 complete
-Status: Phase complete
-Last activity: 2026-01-25 — Completed Phase 21 gap closure (Plans 21-06 through 21-09)
+Milestone: Next milestone (to be planned)
+Status: v2.0 shipped — awaiting `/gsd:new-milestone` to start next planning cycle
+Last activity: 2026-01-25 — v2.0 Real-Time & Billing milestone complete
 
-Progress: [█████████████████████░░░░░░░░░░░░░░░░░░░░░] 52% (45/86 plans)
+Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 118 plans total
 
 ## Completed Milestones
+
+### v2.0 Real-Time & Billing (Shipped 2026-01-25)
+
+**8 phases, 40 plans**
+
+- Phase 14: Real-Time Foundation (6 plans)
+- Phase 15: Background Jobs Infrastructure (4 plans)
+- Phase 16: SMS Notifications (3 plans)
+- Phase 17: Email Digests (3 plans)
+- Phase 18: Stripe Billing (6 plans)
+- Phase 19: Backend API Migration - Foundation (4 plans)
+- Phase 20: Backend API Migration - Core (5 plans)
+- Phase 21: Backend API Migration - Completion (9 plans)
+
+Archive: `.planning/milestones/v2.0-ROADMAP.md`
 
 ### v1.1 Production Ready (Shipped 2026-01-24)
 
@@ -50,14 +63,16 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 45
-- Phases completed: 8 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing, 19-backend-api-migration-foundation, 20-backend-api-migration-core)
-- Current: Phase 21 plan 9 of 9 complete
+- Plans completed: 40
+- Phases completed: 8 (14-21: Real-Time, Background Jobs, Notifications, Billing, Backend API Migration)
+- Requirements completed: All v2.0 requirements (RT, BG, BILL, API-01 through API-07 partial)
+- Backend tests: 169 tRPC router tests passing
+- Frontend hooks migrated: 9 from Supabase to tRPC
 
 **Combined:**
-- Total plans completed: 45/86
-- Total phases: 21 (8 complete in v2.0, Phase 21 in progress)
-- Milestones shipped: 2 (v1.0, v1.1)
+- Total plans completed: 118
+- Total phases: 21 (all complete)
+- Milestones shipped: 3 (v1.0, v1.1, v2.0)
 
 ## Accumulated Context
 

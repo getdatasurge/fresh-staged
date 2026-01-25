@@ -2,7 +2,7 @@
 
 ## What This Is
 
-FreshTrack Pro is an IoT-based temperature monitoring system for food safety compliance. v1.1 completed production-ready deployment infrastructure with multi-target support (self-hosted VM, DigitalOcean Droplet), PgBouncer connection pooling, automated backups, and comprehensive E2E validation — deployable on local servers, cloud VMs, or managed services.
+FreshTrack Pro is an IoT-based temperature monitoring system for food safety compliance. v2.0 added real-time dashboard updates via Socket.io, background job processing with BullMQ, SMS/email notifications, Stripe billing integration, and comprehensive backend API migration to tRPC — providing live sensor data streaming, reliable notification delivery, subscription management, and type-safe frontend-backend communication.
 
 ## Core Value
 
@@ -81,27 +81,49 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Migration timing tested with 100K records (TEST-03) — v1.1
 - Zero-downtime deployment validated (TEST-04) — v1.1
 
+**Real-Time Foundation (v2.0)**
+- Socket.io server with Redis adapter for horizontal scaling (RT-01) — v2.0
+- Multi-tenant room architecture with organization-based isolation (RT-02) — v2.0
+- JWT authentication on WebSocket connections (RT-03) — v2.0
+- Live sensor data streaming to dashboard clients (RT-04) — v2.0
+- Real-time alert notifications delivered (RT-05) — v2.0
+
+**Background Jobs Infrastructure (v2.0)**
+- BullMQ integrated with Fastify backend (BG-01) — v2.0
+- Worker containers deployable separately from API (BG-02) — v2.0
+- Bull Board dashboard with authentication (BG-06) — v2.0
+
+**SMS & Email Notifications (v2.0)**
+- Telnyx SMS delivery via BullMQ workers (BG-03) — v2.0
+- Custom retry strategies based on Telnyx error codes (BG-04) — v2.0
+- Email digest scheduling with site filtering (BG-05) — v2.0
+
+**Stripe Billing (v2.0)**
+- Stripe checkout flow creates subscriptions (BILL-01) — v2.0
+- Active sensor count metered (BILL-02) — v2.0
+- Temperature reading volume metered (BILL-03) — v2.0
+- Webhook handler verifies signatures (BILL-04) — v2.0
+- Customer Portal for self-service billing (BILL-05) — v2.0
+- Subscription status enforcement (BILL-06) — v2.0
+
+**Backend API Migration (v2.0)**
+- tRPC v11 infrastructure with Fastify plugin (API-01) — v2.0
+- Type sharing between frontend and backend (API-02) — v2.0
+- Organizations, sites, areas, units migrated (API-03, API-04) — v2.0
+- Readings and alerts migrated (API-05, API-06) — v2.0
+- Settings, admin, TTN domains partially migrated (API-07 partial) — v2.0
+- 15 tRPC routers, 169 backend tests passing — v2.0
+- 9 frontend hooks migrated from Supabase to tRPC — v2.0
+
 ### Active
 
-<!-- Deferred to v2.0 -->
+<!-- Next milestone features - to be planned -->
 
-**v2.0 Real-Time & Background Processing**
-- [ ] Real-time subscriptions via Socket.io (RT-01)
-- [ ] Live sensor reading updates without page refresh (RT-02)
-- [ ] BullMQ job queue for async processing (BG-01)
-- [ ] SMS notifications via Telnyx (BG-02)
-- [ ] Email digest scheduling (BG-03)
-
-**v2.0 Billing**
-- [ ] Stripe subscription integration (BILL-01)
-- [ ] Usage-based billing metering (BILL-02)
-
-**v2.0 Enterprise Deployment**
-- [ ] AWS ECS/Fargate deployment (ENT-01)
-- [ ] Multi-region deployment support (ENT-02)
-
-**v2.0 Backend API Migration**
-- [ ] Migrate frontend database queries to backend API (enables AUTH-02)
+*Awaiting next milestone planning. Potential areas:*
+- TTN SDK integration for complete Supabase removal (AUTH-02 completion)
+- AWS ECS/Fargate deployment option (ENT-01)
+- Advanced billing analytics and reporting
+- Additional real-time features and optimizations
 
 ### Out of Scope
 
@@ -115,38 +137,43 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Blue-green/canary deployments — Over-engineering for current scale
 - Data migration from Supabase — No access to production Supabase data
 
-## Current Milestone: v2.0 Real-Time & Billing
+## Current Milestone: Next Milestone (To Be Planned)
 
-**Focus:** Real-time features, background processing, billing integration, and backend API migration
+**Last shipped:** v2.0 Real-Time & Billing (2026-01-25)
 
-**Target features:**
-- Socket.io real-time subscriptions for live dashboard updates
-- BullMQ job queue for SMS notifications and email digests
-- Telnyx SMS integration for alert notifications
-- Stripe subscription billing
-- Backend API migration to enable Supabase client removal (AUTH-02)
-- AWS ECS/Fargate deployment option
+**v2.0 delivered:**
+- Real-time dashboard updates via Socket.io with Redis adapter
+- Background job processing with BullMQ and worker containers
+- SMS notifications via Telnyx with custom retry strategies
+- Email digest scheduling with site filtering and unsubscribe support
+- Stripe billing with usage-based metering and Customer Portal
+- Backend API migration: 15 tRPC routers, 9 hooks migrated from Supabase
 
-## Current State (v1.1 Shipped)
+**Next milestone:** Awaiting planning via `/gsd:new-milestone`
+
+## Current State (v2.0 Shipped)
 
 **Codebase:**
-- Backend: 37,921 LOC TypeScript (Fastify, Drizzle, PostgreSQL)
-- Frontend: 86,127 LOC TypeScript/TSX (React, TanStack Query, Ky)
+- Backend: ~50K LOC TypeScript (Fastify, Drizzle, PostgreSQL, tRPC, Socket.io, BullMQ)
+- Frontend: ~95K LOC TypeScript/TSX (React, TanStack Query, tRPC client)
 - Migration scripts: 1,354 LOC TypeScript
 - Test/deployment scripts: ~4,500 LOC Shell/TypeScript
-- 13 phases, 78 plans completed across v1.0 and v1.1
-- 91+ backend tests, 45 frontend tests
+- 21 phases, 118 plans completed across v1.0, v1.1, and v2.0
+- 169 backend tests (tRPC routers + original REST), 45 frontend tests
 
 **Infrastructure:**
-- Docker Compose with 12+ services (production overlay)
+- Docker Compose with 15+ services (backend, worker, Socket.io server, production overlay)
 - PgBouncer connection pooling (transaction mode)
+- Redis for Socket.io adapter and BullMQ job queue
 - Prometheus/Grafana/Loki/Blackbox monitoring stack
+- Bull Board dashboard for queue monitoring
 - Automated daily backups with MinIO storage
 - Multi-target deployment (self-hosted, DigitalOcean)
 
 **Tech Debt:**
-- AUTH-02: @supabase/supabase-js in package.json (100+ files use for DB queries)
-- Production data migration pending Supabase access
+- AUTH-02 partial: 9 hooks migrated to tRPC, 6 TTN hooks require backend TTN SDK integration, 11 hooks outside scope still use Supabase
+- TTN provisioning requires @ttn-lw/grpc-web-api-client integration and BullMQ job queue
+- Production data migration pending Supabase access (deferred)
 
 **Known Issues:**
 - None critical — production ready
@@ -168,13 +195,16 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 | Stack Auth over self-hosted | Reduces auth complexity, still portable | Good — JWT validation working |
 | Ky over Axios | Lightweight (157KB), built-in retry | Good — clean API client |
 | Freeze+Backfill over Dual-Write | Simpler, lower risk, acceptable downtime | Pending — not yet executed |
-| Socket.io over raw WebSockets | Built-in reconnection, rooms, Redis adapter | Deferred to v2.0 |
+| Socket.io over raw WebSockets | Built-in reconnection, rooms, Redis adapter | Good — v2.0 real-time streaming working |
 | MinIO for object storage | S3-compatible, works same locally and in cloud | Good — integrated |
-| BullMQ over Agenda/node-cron | Redis-backed, reliable, good DX | Deferred to v2.0 |
+| BullMQ over Agenda/node-cron | Redis-backed, reliable, good DX | Good — v2.0 job processing working |
+| tRPC over REST expansion | Type safety, auto-completion, smaller bundle | Good — 15 routers, 9 hooks migrated |
+| Telnyx for SMS | Reliability, error categorization | Good — custom retry strategies working |
+| Stripe for billing | Industry standard, webhook reliability | Good — metering and subscriptions working |
 | Docker Compose override pattern | Multi-target deployment with shared base | Good — self-hosted + DO working |
 | PgBouncer transaction mode | ORM compatible with max_prepared_statements | Good — validated in 10-04 |
 | Bash E2E tests over Jest | Portable across deployment targets | Good — works locally and remote |
 | Health check-based deployments | Zero-downtime via Docker health checks | Good — >95% success rate |
 
 ---
-*Last updated: 2026-01-24 after v1.1 milestone*
+*Last updated: 2026-01-25 after v2.0 milestone*
