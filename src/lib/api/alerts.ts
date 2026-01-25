@@ -8,10 +8,22 @@ import type {
   AlertResolveRequest,
 } from '../api-types';
 
+/**
+ * @deprecated Use tRPC hooks from src/hooks/useAlerts.ts instead.
+ * These Ky-based API wrappers are being migrated to tRPC for type safety.
+ *
+ * Migration:
+ * - listAlerts -> useAlerts() hook
+ * - getAlert -> useAlert() hook
+ * - acknowledgeAlert -> useAcknowledgeAlert() hook
+ * - resolveAlert -> useResolveAlert() hook
+ * - listUnitAlerts -> useUnitAlerts() hook
+ */
 export const alertsApi = {
   /**
    * List alerts for organization with optional filters
    * GET /api/orgs/:orgId/alerts
+   * @deprecated Use useAlerts() hook from src/hooks/useAlerts.ts
    */
   listAlerts: async (
     orgId: string,
@@ -43,6 +55,7 @@ export const alertsApi = {
   /**
    * Get single alert by ID
    * GET /api/orgs/:orgId/alerts/:alertId
+   * @deprecated Use useAlert() hook from src/hooks/useAlerts.ts
    */
   getAlert: async (
     orgId: string,
@@ -57,6 +70,7 @@ export const alertsApi = {
    * Acknowledge an alert
    * POST /api/orgs/:orgId/alerts/:alertId/acknowledge
    * Requires staff+ role
+   * @deprecated Use useAcknowledgeAlert() hook from src/hooks/useAlerts.ts
    */
   acknowledgeAlert: async (
     orgId: string,
@@ -75,6 +89,7 @@ export const alertsApi = {
    * Resolve an alert with corrective action
    * POST /api/orgs/:orgId/alerts/:alertId/resolve
    * Requires staff+ role
+   * @deprecated Use useResolveAlert() hook from src/hooks/useAlerts.ts
    */
   resolveAlert: async (
     orgId: string,
@@ -96,6 +111,7 @@ export const alertsApi = {
   /**
    * List alerts for a specific unit
    * Convenience method using listAlerts with unitId filter
+   * @deprecated Use useUnitAlerts() hook from src/hooks/useAlerts.ts
    */
   listUnitAlerts: async (
     orgId: string,
