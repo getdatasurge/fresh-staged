@@ -8,11 +8,10 @@
  * All procedures require authentication.
  */
 
-import { z } from 'zod';
-import { TRPCError } from '@trpc/server';
-import { router } from '../trpc/index.js';
-import { protectedProcedure } from '../trpc/procedures.js';
-import { getQueueService } from '../services/queue.service.js';
+import { z } from 'zod'
+import { getQueueService } from '../services/queue.service.js'
+import { router } from '../trpc/index.js'
+import { protectedProcedure } from '../trpc/procedures.js'
 
 /**
  * Queue stats schema for response typing
@@ -104,32 +103,72 @@ export const adminRouter = router({
     }),
 
   /**
-   * Get system status
-   *
-   * Returns overall system status including:
-   * - Queue service availability
-   * - Redis connection status
-   * - Registered queue count
-   *
-   * @requires Authentication (protectedProcedure)
+   * Get system record counts
    */
-  systemStatus: protectedProcedure
+  systemStats: protectedProcedure
     .output(z.object({
-      queues: z.object({
-        enabled: z.boolean(),
-        count: z.number(),
-      }),
+      organizations: z.number(),
+      users: z.number(),
+      sites: z.number(),
+      units: z.number(),
+      readings: z.number(),
+      alerts: z.number(),
       timestamp: z.string(),
     }))
     .query(async () => {
-      const queueService = getQueueService();
+      // In production, these should be cached or retrieved from a stats table
+      const [orgs, profiles, sites, units, readings, alerts] = await Promise.all([
+        db.select({ count: count() }).from(sql`organizations`),
+        db.select({ count: count() }).from(sql`profiles`),
+        db.select({ count: count() }).from(sql`sites`).where(sql`deleted_at IS NULL`),
+        db.select({ count: count() }).from(sql`units`).where(sql`deleted_at IS NULL`),
+        db.select({ count: count() }).from(sql`sensor_readings`),
+        db.select({ count: count() }).from(sql`alerts`),
+      ]);
 
       return {
-        queues: {
-          enabled: queueService?.isRedisEnabled() ?? false,
-          count: queueService?.getAllQueues().size ?? 0,
-        },
+        organizations: Number(orgs[0]?.count || 0),
+        users: Number(profiles[0]?.count || 0),
+        sites: Number(sites[0]?.count || 0),
+        units: Number(units[0]?.count || 0),
+        readings: Number(readings[0]?.count || 0),
+        alerts: Number(alerts[0]?.count || 0),
         timestamp: new Date().toISOString(),
       };
+    }),
+
+  /**
+   * List all TTN connections across all organizations
+   */
+  ttnConnections: protectedProcedure
+    .output(z.array(z.object({
+      id: z.string(),
+      organizationId: z.string(),
+      orgName: z.string().optional(),
+      applicationId: z.string().nullable(),
+      isActive: z.boolean(),
+      createdAt: z.string(),
+    })))
+    .query(async () => {
+      const results = await db
+        .select({
+          id: sql`ttn_connections.id`,
+          organizationId: sql`ttn_connections.organization_id`,
+          orgName: sql`organizations.name`,
+          applicationId: sql`ttn_connections.application_id`,
+          isActive: sql`ttn_connections.is_active`,
+          createdAt: sql`ttn_connections.created_at`,
+        } as any)
+        .from(sql`ttn_connections`)
+        .leftJoin(sql`organizations`, sql`ttn_connections.organization_id = organizations.id`);
+
+      return results.map((r: any) => ({
+        id: r.id,
+        organizationId: r.organizationId,
+        orgName: r.orgName,
+        applicationId: r.applicationId,
+        isActive: r.isActive,
+        createdAt: new Date(r.createdAt).toISOString(),
+      }));
     }),
 });

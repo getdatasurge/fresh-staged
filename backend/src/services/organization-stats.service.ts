@@ -19,12 +19,11 @@
  * ```
  */
 
-import { eq, and, sql, gte, count, or } from 'drizzle-orm';
-import { db } from '../db/client.js';
-import { units, areas, sites, alerts, sensorReadings } from '../db/schema/index.js';
-import type { UnitStateService, UnitStateInfo } from './unit-state.service.js';
-import type { UnitDashboardState } from '../config/unit-state.config.js';
-import { STATE_PRIORITY } from '../config/unit-state.config.js';
+import { and, count, eq, gte, sql } from 'drizzle-orm'
+import type { UnitDashboardState } from '../config/unit-state.config.js'
+import { db } from '../db/client.js'
+import { alerts, areas, sensorReadings, sites, units } from '../db/schema/index.js'
+import type { UnitStateService } from './unit-state.service.js'
 
 /**
  * Configuration for organization stats caching
@@ -81,6 +80,7 @@ export interface OrganizationStats {
   unitCounts: UnitStateCounts;
   alertCounts: AlertStatusCounts;
   compliancePercentage: number;
+  memberCount: number;
   worstState: UnitDashboardState;
   lastUpdated: Date;
 }
@@ -137,10 +137,11 @@ export class OrganizationStatsService {
     }
 
     // Fetch fresh data
-    const [unitCounts, alertCounts, compliancePercentage] = await Promise.all([
+    const [unitCounts, alertCounts, compliancePercentage, memberCount] = await Promise.all([
       this.calculateUnitCounts(organizationId),
       this.calculateAlertCounts(organizationId),
       this.calculateCompliancePercentage(organizationId),
+      this.calculateMemberCount(organizationId),
     ]);
 
     const worstState = this.determineWorstState(unitCounts);
@@ -150,6 +151,7 @@ export class OrganizationStatsService {
       unitCounts,
       alertCounts,
       compliancePercentage,
+      memberCount,
       worstState,
       lastUpdated: new Date(),
     };
@@ -158,6 +160,18 @@ export class OrganizationStatsService {
     this.setCacheEntry(organizationId, stats);
 
     return stats;
+  }
+
+  /**
+   * Calculate total member count for the organization
+   */
+  async calculateMemberCount(organizationId: string): Promise<number> {
+    const [result] = await db
+      .select({ count: count() })
+      .from(sql`user_roles`)
+      .where(sql`organization_id = ${organizationId}`);
+    
+    return Number(result?.count || 0);
   }
 
   /**

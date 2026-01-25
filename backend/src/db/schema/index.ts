@@ -33,3 +33,7 @@ export * from './audit.js';
 
 // Billing (Stripe integration)
 export * from './billing.js';
+
+// Pilot feedback
+export * from './pilot-feedback.js';
+

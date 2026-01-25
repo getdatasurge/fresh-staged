@@ -1,18 +1,18 @@
-import { eq, and, gte, lte, inArray } from 'drizzle-orm';
-import { db } from '../db/client.js';
+import { and, eq, gte, inArray, lte } from 'drizzle-orm'
+import { db } from '../db/client.js'
 import {
-  sensorReadings,
-  units,
   areas,
+  manualTemperatureLogs,
+  sensorReadings,
   sites,
-  type InsertSensorReading,
-  type SensorReading,
-} from '../db/schema/index.js';
+  units,
+  type InsertSensorReading
+} from '../db/schema/index.js'
 import type {
-  SingleReading,
   ReadingQuery,
   ReadingResponse,
-} from '../schemas/readings.js';
+  SingleReading,
+} from '../schemas/readings.js'
 
 // PostgreSQL parameter limit safety margin
 const BATCH_SIZE = 500;
@@ -238,4 +238,30 @@ export async function queryReadings(
     receivedAt: r.receivedAt,
     source: r.source,
   }));
+}
+
+/**
+ * Create a manual temperature reading record
+ */
+export async function createManualReading(
+  data: {
+    unitId: string,
+    profileId: string,
+    temperature: number,
+    notes?: string,
+    recordedAt: Date
+  }
+) {
+  const [result] = await db
+    .insert(manualTemperatureLogs)
+    .values({
+      unitId: data.unitId,
+      profileId: data.profileId,
+      temperature: data.temperature.toString(),
+      notes: data.notes,
+      recordedAt: data.recordedAt,
+    })
+    .returning();
+    
+  return result;
 }

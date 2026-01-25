@@ -1,16 +1,18 @@
-import { useState, useEffect, useCallback } from "react";
-import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";  // TEMPORARY
 import {
-  PendingManualLog,
-  savePendingLog,
+  deleteSyncedLogs,
   getPendingLogs,
   markLogSynced,
-  deleteSyncedLogs,
-} from "@/lib/offlineStorage";
+  PendingManualLog,
+  savePendingLog,
+} from "@/lib/offlineStorage"
+import { useTRPC } from "@/lib/trpc"
+import { useUser } from "@stackframe/react"
+import { useCallback, useEffect, useState } from "react"
 
 export function useOfflineSync() {
   const user = useUser();
+  const trpc = useTRPC();
+  const createManualMutation = trpc.readings.createManual.useMutation();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pendingCount, setPendingCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -65,30 +67,18 @@ export function useOfflineSync() {
 
       for (const log of pending) {
         try {
-          // Get Stack Auth token for future backend API call
-          const { accessToken } = await user.getAuthJson();
-
-          // TODO: Migrate to new backend API
-          // Offline sync should POST to /api/manual-logs endpoint
-          // Backend uses Stack Auth userId from token
-          console.warn('[useOfflineSync] TODO: migrate to new backend');
-
-          // TEMPORARY: Keep Supabase insert with Stack Auth user ID
-          const { error } = await supabase.from("manual_temperature_logs").insert({
-            unit_id: log.unit_id,
+          await createManualMutation.mutateAsync({
+            unitId: log.unit_id,
             temperature: log.temperature,
-            notes: log.notes,
-            logged_at: log.logged_at,
-            logged_by: user.id,  // Use Stack Auth user ID
+            notes: log.notes || undefined,
+            recordedAt: log.logged_at,
           });
 
-          if (!error) {
-            await markLogSynced(log.id);
-          } else {
-            console.error("Failed to sync log:", error);
-          }
+          await markLogSynced(log.id);
         } catch (error) {
           console.error("Error syncing individual log:", error);
+          // If it's a validation error, we might want to discard it? 
+          // For now just stop the loop if it's a network error
         }
       }
 
@@ -99,7 +89,7 @@ export function useOfflineSync() {
     } finally {
       setIsSyncing(false);
     }
-  }, [user, isSyncing, isOnline, refreshPendingCount]);
+  }, [user, isSyncing, isOnline, refreshPendingCount, createManualMutation]);
 
   return {
     isOnline,

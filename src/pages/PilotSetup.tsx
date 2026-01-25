@@ -1,33 +1,30 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
-import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
+import { useTRPC } from "@/lib/trpc";
+import { useUser } from "@stackframe/react";
 import { format, startOfWeek } from "date-fns";
 import {
-  CheckCircle2,
-  Circle,
-  Loader2,
-  Building2,
-  Thermometer,
-  Users,
-  FileText,
-  MessageSquare,
-  ArrowRight,
-  Star,
-  Send
+    ArrowRight,
+    Building2,
+    CheckCircle2,
+    Circle,
+    Loader2,
+    MessageSquare,
+    Send,
+    Star,
+    Thermometer,
+    Users
 } from "lucide-react";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface ChecklistItem {
   id: string;
@@ -45,6 +42,8 @@ interface Site {
 const PilotSetup = () => {
   const navigate = useNavigate();
   const user = useUser();
+  const trpc = useTRPC();
+  const upsertFeedbackMutation = trpc.pilotFeedback.upsert.useMutation();
   const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
   const [isLoading, setIsLoading] = useState(true);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
@@ -83,67 +82,47 @@ const PilotSetup = () => {
     try {
       setOrganizationId(effectiveOrgId);
 
-      // Get sites using effectiveOrgId
-      const { data: sitesData } = await supabase
-        .from("sites")
-        .select("id, name")
-        .eq("organization_id", effectiveOrgId)
-        .eq("is_active", true);
-
+      // Get sites using tRPC
+      const sitesData = await trpc.sites.list.query({ organizationId: effectiveOrgId });
       setSites(sitesData || []);
 
-      // Get unit count
-      const { count: unitsCount } = await supabase
-        .from("units")
-        .select("id", { count: "exact", head: true })
-        .eq("is_active", true);
-
-      setUnitCount(unitsCount || 0);
-
-      // Get user count
-      const { count: usersCount } = await supabase
-        .from("user_roles")
-        .select("id", { count: "exact", head: true })
-        .eq("organization_id", effectiveOrgId);
-
-      setUserCount(usersCount || 0);
+      // Get org stats using tRPC
+      const stats = await trpc.organizations.stats.query({ organizationId: effectiveOrgId });
+      
+      setUnitCount(stats.unitCounts.total);
+      setUserCount(stats.memberCount);
 
       // Update checklist based on data
       setChecklist(prev => prev.map(item => {
         if (item.id === "sites") return { ...item, completed: (sitesData?.length || 0) > 0 };
-        if (item.id === "units") return { ...item, completed: (unitsCount || 0) >= 5 };
-        if (item.id === "roles") return { ...item, completed: (usersCount || 0) >= 2 };
+        if (item.id === "units") return { ...item, completed: (stats.unitCounts.total || 0) >= 5 };
+        if (item.id === "roles") return { ...item, completed: (stats.memberCount || 0) >= 2 };
         return item;
       }));
 
     } catch (error) {
       console.error("Error loading data:", error);
-      toast.error("Failed to load pilot setup data");
+      // toast.error("Failed to load pilot setup data"); // Prevent flashing errors during navigation
     }
     setIsLoading(false);
   };
 
   const handleSubmitFeedback = async () => {
-    if (!organizationId || !user?.id) return;
+    if (!effectiveOrgId || !user?.id) return;
 
     setIsSubmitting(true);
     try {
       const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
 
-      const { error } = await supabase.from("pilot_feedback").upsert({
-        organization_id: organizationId,
-        site_id: feedbackSiteId || null,
-        week_start: format(weekStart, "yyyy-MM-dd"),
-        logging_speed_rating: loggingSpeed[0],
-        alert_fatigue_rating: alertFatigue[0],
-        report_usefulness_rating: reportUsefulness[0],
+      await upsertFeedbackMutation.mutateAsync({
+        organizationId: effectiveOrgId,
+        siteId: feedbackSiteId || null,
+        weekStart: format(weekStart, "yyyy-MM-dd"),
+        loggingSpeedRating: loggingSpeed[0],
+        alertFatigueRating: alertFatigue[0],
+        reportUsefulnessRating: reportUsefulness[0],
         notes: feedbackNotes || null,
-        submitted_by: user.id,
-      }, {
-        onConflict: "organization_id,site_id,week_start",
       });
-
-      if (error) throw error;
 
       toast.success("Feedback submitted successfully!");
       setFeedbackNotes("");

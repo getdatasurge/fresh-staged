@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UuidSchema, TimestampSchema, OrgParamsSchema } from './common.js';
+import { OrgParamsSchema, TimestampSchema, UuidSchema } from './common.js';
 
 // Compliance mode enum matching database
 const ComplianceModeSchema = z.enum(['standard', 'haccp']);
@@ -66,6 +66,7 @@ export const OrganizationStatsSchema = z.object({
   unitCounts: UnitStateCountsSchema,
   alertCounts: AlertStatusCountsSchema,
   compliancePercentage: z.number().min(0).max(100),
+  memberCount: z.number().int().min(0),
   worstState: UnitDashboardStateSchema,
   lastUpdated: TimestampSchema,
 });

@@ -1,33 +1,32 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useSuperAdmin } from '@/contexts/SuperAdminContext';
 import PlatformLayout from '@/components/platform/PlatformLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSuperAdmin } from '@/contexts/SuperAdminContext';
+import { useTRPC } from '@/lib/trpc';
 import {
-  RefreshCw,
-  Server,
-  Activity,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
-  Webhook,
-  Database,
-  Clock,
-  Globe,
-  Zap,
-  Radio,
+    Activity,
+    AlertCircle,
+    CheckCircle,
+    Database,
+    Globe,
+    Radio,
+    RefreshCw,
+    Server,
+    Webhook,
+    XCircle,
+    Zap
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface WebhookDelivery {
   id: string;
@@ -49,6 +48,16 @@ interface SystemHealth {
 
 export default function PlatformDeveloperTools() {
   const { logSuperAdminAction, isSupportModeActive } = useSuperAdmin();
+  const trpc = useTRPC();
+  const statsQuery = trpc.admin.systemStats.useQuery(undefined, {
+    enabled: isSupportModeActive,
+    refetchOnWindowFocus: false,
+  });
+  const ttnQuery = trpc.admin.ttnConnections.useQuery(undefined, {
+    enabled: isSupportModeActive,
+    refetchOnWindowFocus: false,
+  });
+
   const [systemHealth, setSystemHealth] = useState<SystemHealth>({
     database: 'healthy',
     api: 'healthy',
@@ -74,66 +83,43 @@ export default function PlatformDeveloperTools() {
     alerts: 0,
   });
 
-  useEffect(() => {
-    loadDevTools();
-    logSuperAdminAction('VIEWED_DEVELOPER_TOOLS');
-  }, []);
-
   const loadDevTools = async () => {
     setIsLoading(true);
     try {
-      // Check system health by making test queries
-      const healthChecks = await Promise.all([
-        // Database check
-        supabase.from('organizations').select('id', { count: 'exact', head: true }),
-        // TTN connections
-        supabase.from('ttn_connections').select('*').limit(50),
+      const [stats, ttnList] = await Promise.all([
+        statsQuery.refetch(),
+        ttnQuery.refetch(),
       ]);
 
-      // Database stats
-      const [orgResult, userResult, siteResult, unitResult, readingResult, alertResult] = await Promise.all([
-        supabase.from('organizations').select('*', { count: 'exact', head: true }),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('sites').select('*', { count: 'exact', head: true }).is('deleted_at', null),
-        supabase.from('units').select('*', { count: 'exact', head: true }).is('deleted_at', null),
-        supabase.from('sensor_readings').select('*', { count: 'exact', head: true }),
-        supabase.from('alerts').select('*', { count: 'exact', head: true }),
-      ]);
+      if (stats.data) {
+        setDbStats({
+          organizations: stats.data.organizations,
+          users: stats.data.users,
+          sites: stats.data.sites,
+          units: stats.data.units,
+          readings: stats.data.readings,
+          alerts: stats.data.alerts,
+        });
+      }
 
-      setDbStats({
-        organizations: orgResult.count || 0,
-        users: userResult.count || 0,
-        sites: siteResult.count || 0,
-        units: unitResult.count || 0,
-        readings: readingResult.count || 0,
-        alerts: alertResult.count || 0,
-      });
-
-      // Get TTN connections with org names
-      if (healthChecks[1].data) {
-        const orgIds = [...new Set(healthChecks[1].data.map(c => c.organization_id))];
-        const { data: orgs } = await supabase
-          .from('organizations')
-          .select('id, name')
-          .in('id', orgIds);
-
-        const orgMap = new Map(orgs?.map(o => [o.id, o.name]));
-
-        setTtnConnections(healthChecks[1].data.map(conn => ({
-          ...conn,
-          org_name: orgMap.get(conn.organization_id),
+      if (ttnList.data) {
+        setTtnConnections(ttnList.data.map(conn => ({
+          id: conn.id,
+          organization_id: conn.organizationId,
+          org_name: conn.orgName,
+          ttn_application_id: conn.applicationId,
+          provisioning_status: conn.isActive ? 'completed' : 'inactive',
+          created_at: conn.createdAt,
         })));
       }
 
-      // Simulate webhook deliveries (in real app, you'd have a webhook_deliveries table)
       setWebhookDeliveries([]);
 
-      // Update health based on results
       setSystemHealth({
-        database: healthChecks[0].error ? 'degraded' : 'healthy',
+        database: stats.status === 'error' ? 'degraded' : 'healthy',
         api: 'healthy',
         webhooks: 'healthy',
-        ttn: healthChecks[1].data?.some(c => c.provisioning_status === 'failed') ? 'degraded' : 'healthy',
+        ttn: ttnList.status === 'error' ? 'degraded' : 'healthy',
       });
 
     } catch (err) {
@@ -148,6 +134,11 @@ export default function PlatformDeveloperTools() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadDevTools();
+    logSuperAdminAction('VIEWED_DEVELOPER_TOOLS');
+  }, [isSupportModeActive]);
 
   const HealthIndicator = ({ status }: { status: 'healthy' | 'degraded' | 'down' }) => {
     if (status === 'healthy') {

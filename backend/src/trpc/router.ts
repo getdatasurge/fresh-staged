@@ -17,6 +17,7 @@ import { escalationContactsRouter } from '../routers/escalation-contacts.router.
 import { notificationPoliciesRouter } from '../routers/notification-policies.router.js'
 import { organizationsRouter } from '../routers/organizations.router.js'
 import { paymentsRouter } from '../routers/payments.router.js'
+import { pilotFeedbackRouter } from '../routers/pilot-feedback.router.js'
 import { preferencesRouter } from '../routers/preferences.router.js'
 import { readingsRouter } from '../routers/readings.router.js'
 import { sitesRouter } from '../routers/sites.router.js'
@@ -169,6 +170,12 @@ export const appRouter = router({
    * Procedures: get, upsert, delete, clearField
    */
   alertRules: alertRulesRouter,
+
+  /**
+   * Pilot Feedback domain router
+   * Procedures: upsert, list
+   */
+  pilotFeedback: pilotFeedbackRouter,
 });
 
 /**
