@@ -13,6 +13,8 @@ import { unitsRouter } from '../routers/units.router.js';
 import { readingsRouter } from '../routers/readings.router.js';
 import { alertsRouter } from '../routers/alerts.router.js';
 import { preferencesRouter } from '../routers/preferences.router.js';
+import { smsConfigRouter } from '../routers/sms-config.router.js';
+import { paymentsRouter } from '../routers/payments.router.js';
 import { adminRouter } from '../routers/admin.router.js';
 import { assetsRouter } from '../routers/assets.router.js';
 import { ttnGatewaysRouter } from '../routers/ttn-gateways.router.js';
@@ -82,6 +84,18 @@ export const appRouter = router({
    * Procedures: getDigest, updateDigest, disableAllDigests
    */
   preferences: preferencesRouter,
+
+  /**
+   * SMS Configuration domain router
+   * Procedures: get, upsert
+   */
+  smsConfig: smsConfigRouter,
+
+  /**
+   * Payments domain router
+   * Procedures: getSubscription, createCheckoutSession, createPortalSession
+   */
+  payments: paymentsRouter,
 
   /**
    * Admin domain router
