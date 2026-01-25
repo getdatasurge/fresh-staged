@@ -102,13 +102,58 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (To be filled by roadmapper) | | |
+| PREFLIGHT-01 | Phase 22 | Pending |
+| PREFLIGHT-02 | Phase 22 | Pending |
+| PREFLIGHT-03 | Phase 22 | Pending |
+| PREFLIGHT-04 | Phase 22 | Pending |
+| PREFLIGHT-05 | Phase 22 | Pending |
+| PREFLIGHT-06 | Phase 22 | Pending |
+| PREREQ-01 | Phase 23 | Pending |
+| PREREQ-02 | Phase 23 | Pending |
+| PREREQ-03 | Phase 23 | Pending |
+| PREREQ-04 | Phase 23 | Pending |
+| PREREQ-05 | Phase 23 | Pending |
+| PREREQ-06 | Phase 23 | Pending |
+| CONFIG-01 | Phase 24 | Pending |
+| CONFIG-02 | Phase 24 | Pending |
+| CONFIG-03 | Phase 24 | Pending |
+| CONFIG-04 | Phase 24 | Pending |
+| CONFIG-05 | Phase 24 | Pending |
+| CONFIG-06 | Phase 24 | Pending |
+| CONFIG-07 | Phase 24 | Pending |
+| DEPLOY-01 | Phase 25 | Pending |
+| DEPLOY-02 | Phase 25 | Pending |
+| DEPLOY-03 | Phase 25 | Pending |
+| DEPLOY-04 | Phase 25 | Pending |
+| DEPLOY-05 | Phase 25 | Pending |
+| ERROR-01 | Phase 22 | Pending |
+| ERROR-02 | Phase 22 | Pending |
+| ERROR-03 | Phase 22 | Pending |
+| ERROR-04 | Phase 22 | Pending |
+| ERROR-05 | Phase 22 | Pending |
+| ERROR-06 | Phase 22 | Pending |
+| ERROR-07 | Phase 22 | Pending |
+| VERIFY-01 | Phase 26 | Pending |
+| VERIFY-02 | Phase 26 | Pending |
+| VERIFY-03 | Phase 26 | Pending |
+| VERIFY-04 | Phase 26 | Pending |
+| VERIFY-05 | Phase 26 | Pending |
+| VERIFY-06 | Phase 26 | Pending |
+| POST-01 | Phase 26 | Pending |
+| POST-02 | Phase 26 | Pending |
+| POST-03 | Phase 26 | Pending |
+| POST-04 | Phase 26 | Pending |
+| POST-05 | Phase 26 | Pending |
+| DOCS-01 | Phase 26 | Pending |
+| DOCS-02 | Phase 26 | Pending |
+| DOCS-03 | Phase 26 | Pending |
+| DOCS-04 | Phase 26 | Pending |
 
 **Coverage:**
 - v2.1 requirements: 37 total
-- Mapped to phases: (pending roadmap)
-- Unmapped: (pending roadmap)
+- Mapped to phases: 37
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-25*
-*Last updated: 2026-01-25 after initial definition*
+*Last updated: 2026-01-25 after roadmap creation*
