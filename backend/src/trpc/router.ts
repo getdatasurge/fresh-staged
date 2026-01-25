@@ -9,6 +9,9 @@ import { router, publicProcedure } from './index.js';
 import { organizationsRouter } from '../routers/organizations.router.js';
 import { sitesRouter } from '../routers/sites.router.js';
 import { areasRouter } from '../routers/areas.router.js';
+import { unitsRouter } from '../routers/units.router.js';
+import { readingsRouter } from '../routers/readings.router.js';
+import { alertsRouter } from '../routers/alerts.router.js';
 
 /**
  * Application router
@@ -16,8 +19,9 @@ import { areasRouter } from '../routers/areas.router.js';
  * - organizations: Organization CRUD and member management
  * - sites: Site CRUD operations
  * - areas: Area CRUD operations
- * - units: Coming in Plan 02
- * - readings, alerts: Coming in Plan 03-04
+ * - units: Unit CRUD operations (Plan 02)
+ * - readings: Sensor reading queries (Plan 02)
+ * - alerts: Alert management and workflows (Plan 02)
  */
 export const appRouter = router({
   /**
@@ -48,6 +52,25 @@ export const appRouter = router({
    * Procedures: list, get, create, update, delete
    */
   areas: areasRouter,
+
+  /**
+   * Units domain router
+   * Procedures: list, get, create, update, delete
+   */
+  units: unitsRouter,
+
+  /**
+   * Readings domain router
+   * Procedures: list, latest
+   * NOTE: Bulk ingestion stays as REST (API key auth)
+   */
+  readings: readingsRouter,
+
+  /**
+   * Alerts domain router
+   * Procedures: list, get, acknowledge, resolve
+   */
+  alerts: alertsRouter,
 });
 
 /**
