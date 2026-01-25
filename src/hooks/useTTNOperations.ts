@@ -1,16 +1,15 @@
 /**
  * TTN Operations Hooks
  *
- * TODO: Migrate to tRPC when TTN operations router is available
- * - Currently uses ttn-provision-org and manage-ttn-settings Supabase edge functions
- * - Backend router for TTN provisioning operations not yet created
- * - Planned for future migration when backend routes are available
+ * Migrated to tRPC in Phase 21
+ * Uses ttnSettings router for toggle and test operations
  *
- * Current status: Stack Auth for identity, Supabase edge functions (Phase 21)
+ * Note: Provisioning operations still use edge functions (to be migrated in future phase)
  */
 import { useState, useCallback } from "react";
 import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";  // TEMPORARY
+import { supabase } from "@/integrations/supabase/client";  // TEMPORARY - for provisioning only
+import { useTRPCClient } from "@/lib/trpc";
 import { toast } from "sonner";
 import { hashConfigValues } from "@/types/ttnState";
 import { useTTNConfig } from "@/contexts/TTNConfigContext";
@@ -45,6 +44,7 @@ export function useTTNOperations({
   setIsEnabled,
   onSettingsRefresh,
 }: UseTTNOperationsOptions): UseTTNOperationsReturn {
+  const client = useTRPCClient();
   const [isProvisioning, setIsProvisioning] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -52,12 +52,11 @@ export function useTTNOperations({
   const user = useUser();
   const { setCanonical, setInvalid } = useTTNConfig();
 
-  // Helper for edge function calls with Stack Auth token
-  const invokeEdgeFunction = useCallback(async (functionName: string, payload: any) => {
+  // Helper for edge function calls with Stack Auth token (provisioning only)
+  const invokeEdgeFunction = useCallback(async (functionName: string, payload: Record<string, unknown>) => {
     if (!user) throw new Error('Not authenticated');
     const { accessToken } = await user.getAuthJson();
 
-    // TODO Phase 6: Replace with backend API calls
     const { data, error } = await supabase.functions.invoke(functionName, {
       body: { organization_id: organizationId, ...payload },
       headers: { 'x-stack-access-token': accessToken },
@@ -67,12 +66,12 @@ export function useTTNOperations({
     return data;
   }, [user, organizationId]);
 
+  // TODO: Migrate to backend BullMQ job when ttn-provision-org edge function is replaced
   const handleProvision = useCallback(async (isRetry: boolean = false, fromStep?: string) => {
     if (!organizationId || !user) return;
 
     setIsProvisioning(true);
     try {
-      // TODO Phase 6: Replace with backend API job queue
       const data = await invokeEdgeFunction("ttn-provision-org", {
         action: isRetry ? "retry" : "provision",
         ttn_region: region,
@@ -131,15 +130,14 @@ export function useTTNOperations({
 
     setIsTesting(true);
     try {
-      // TODO Phase 6: Replace with backend API endpoint
-      const data = await invokeEdgeFunction("manage-ttn-settings", {
-        action: "test",
+      const result = await client.ttnSettings.test.mutate({
+        organizationId: organizationId,
       });
 
-      if (data?.success) {
+      if (result.success) {
         toast.success("Connection successful!");
       } else {
-        toast.error(data?.error || data?.message || "Connection test failed");
+        toast.error(result.error || "Connection test failed");
       }
       await onSettingsRefresh();
     } catch (err: unknown) {
@@ -149,34 +147,29 @@ export function useTTNOperations({
     } finally {
       setIsTesting(false);
     }
-  }, [organizationId, user, invokeEdgeFunction, onSettingsRefresh]);
+  }, [organizationId, user, client, onSettingsRefresh]);
 
   const handleToggleEnabled = useCallback(async (enabled: boolean) => {
     if (!organizationId || !user) return;
 
     setIsSaving(true);
     try {
-      // TODO Phase 6: Replace with backend API endpoint
-      const data = await invokeEdgeFunction("manage-ttn-settings", {
-        action: "update",
-        is_enabled: enabled
+      await client.ttnSettings.update.mutate({
+        organizationId: organizationId,
+        data: { is_enabled: enabled },
       });
 
-      if (data?.success !== false) {
-        setIsEnabled(enabled);
-        toast.success(enabled ? "TTN integration enabled" : "TTN integration disabled");
+      setIsEnabled(enabled);
+      toast.success(enabled ? "TTN integration enabled" : "TTN integration disabled");
 
-        const hash = hashConfigValues({
-          cluster: region,
-          application_id: settings?.ttn_application_id,
-          api_key_last4: settings?.api_key_last4,
-          is_enabled: enabled,
-        });
-        console.log('[TTN Config] Toggle enabled, setting canonical', { hash, enabled });
-        setCanonical(hash);
-      } else {
-        throw new Error(data?.error || "Failed to update settings");
-      }
+      const hash = hashConfigValues({
+        cluster: region,
+        application_id: settings?.ttn_application_id,
+        api_key_last4: settings?.api_key_last4,
+        is_enabled: enabled,
+      });
+      console.log('[TTN Config] Toggle enabled, setting canonical', { hash, enabled });
+      setCanonical(hash);
     } catch (err: unknown) {
       const errMessage = err instanceof Error ? err.message : "Unknown error";
       console.error("Toggle error:", err);
@@ -185,7 +178,7 @@ export function useTTNOperations({
     } finally {
       setIsSaving(false);
     }
-  }, [organizationId, region, settings?.ttn_application_id, settings?.api_key_last4, user, invokeEdgeFunction, setIsEnabled, setCanonical, setInvalid]);
+  }, [organizationId, region, settings?.ttn_application_id, settings?.api_key_last4, user, client, setIsEnabled, setCanonical, setInvalid]);
 
   return {
     isProvisioning,
