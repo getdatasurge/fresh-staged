@@ -476,6 +476,47 @@ describe('tRPC End-to-End Tests', () => {
     });
   });
 
+  describe('Router Registration Smoke Test', () => {
+    it('should have all 6 domain routers registered', async () => {
+      // Test that each domain router responds (even if with auth error)
+      // This proves the routers are properly mounted in appRouter
+
+      const routers = [
+        { name: 'organizations', path: '/trpc/organizations.get' },
+        { name: 'sites', path: '/trpc/sites.list' },
+        { name: 'areas', path: '/trpc/areas.list' },
+        { name: 'units', path: '/trpc/units.list' },
+        { name: 'readings', path: '/trpc/readings.list' },
+        { name: 'alerts', path: '/trpc/alerts.list' },
+      ];
+
+      for (const { name, path } of routers) {
+        const response = await app.inject({
+          method: 'GET',
+          url: `${path}?input=${encodeURIComponent(JSON.stringify({ organizationId: TEST_ORG_ID }))}`,
+          headers: {
+            'x-stack-access-token': 'fake-token',
+          },
+        });
+
+        // Should return 401 (auth failure) not 404 (route not found)
+        // This proves the router is registered
+        expect(response.statusCode, `Router "${name}" should be registered`).not.toBe(404);
+      }
+    });
+
+    it('should have health endpoint accessible without auth', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/trpc/health',
+      });
+
+      expect(response.statusCode).toBe(200);
+      const data = JSON.parse(response.body);
+      expect(data.result.data.status).toBe('ok');
+    });
+  });
+
   describe('Sites Router E2E', () => {
     it('should list sites for authenticated admin', async () => {
       mockGetUserRoleInOrg.mockResolvedValue('admin');
