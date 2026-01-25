@@ -1,54 +1,54 @@
-import DashboardLayout from "@/components/DashboardLayout";
-import { BreadcrumbSibling, HierarchyBreadcrumb } from "@/components/HierarchyBreadcrumb";
-import { LayoutHeaderDropdown } from "@/components/LayoutHeaderDropdown";
-import { SiteComplianceSettings } from "@/components/site/SiteComplianceSettings";
-import { SiteGatewaysCard } from "@/components/site/SiteGatewaysCard";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
+import DashboardLayout from "@/components/DashboardLayout"
+import { HierarchyBreadcrumb } from "@/components/HierarchyBreadcrumb"
+import { LayoutHeaderDropdown } from "@/components/LayoutHeaderDropdown"
+import { SiteComplianceSettings } from "@/components/site/SiteComplianceSettings"
+import { SiteGatewaysCard } from "@/components/site/SiteGatewaysCard"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog"
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { EntityDashboard } from "@/features/dashboard-layout";
-import { useToast } from "@/hooks/use-toast";
-import { useOrgAlertRules, useSiteAlertRules } from "@/hooks/useAlertRules";
-import { useEntityDashboardUrl } from "@/hooks/useEntityDashboardUrl";
-import { useSoftDelete } from "@/hooks/useSoftDelete";
-import { usePermissions } from "@/hooks/useUserRole";
-import { supabase } from "@/integrations/supabase/client";
-import { useUser } from "@stackframe/react";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
+import { EntityDashboard } from "@/features/dashboard-layout"
+import { useToast } from "@/hooks/use-toast"
+import { useOrgAlertRules, useSiteAlertRules } from "@/hooks/useAlertRules"
+import { useEntityDashboardUrl } from "@/hooks/useEntityDashboardUrl"
+import { useSoftDelete } from "@/hooks/useSoftDelete"
+import { usePermissions } from "@/hooks/useUserRole"
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
+import { useUser } from "@stackframe/react"
 import {
-    AlertTriangle,
-    Building2,
-    ChevronRight,
-    Download,
-    FileText,
-    LayoutDashboard,
-    LayoutGrid,
-    Loader2,
-    MapPin,
-    Pencil,
-    Plus,
-    Settings,
-    Thermometer,
-    Trash2
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+  AlertTriangle,
+  Building2,
+  ChevronRight,
+  Download,
+  FileText,
+  LayoutDashboard,
+  LayoutGrid,
+  Loader2,
+  MapPin,
+  Pencil,
+  Plus,
+  Settings,
+  Thermometer,
+  Trash2
+} from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { Link, useNavigate, useParams } from "react-router-dom"
 
 interface Area {
   id: string;
@@ -73,19 +73,35 @@ interface SiteData {
   longitude: number | null;
 }
 
+import { useTRPC, useTRPCClient } from "@/lib/trpc"
+
 const SiteDetail = () => {
   const { siteId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const user = useUser();
+  const trpc = useTRPC();
+  const trpcClient = useTRPCClient();
+  const { effectiveOrgId, isInitialized: identityInitialized } = useEffectiveIdentity();
   const { layoutKey } = useEntityDashboardUrl();
   const { canDeleteEntities, isLoading: permissionsLoading } = usePermissions();
   const { softDeleteSite } = useSoftDelete();
-  const [site, setSite] = useState<SiteData | null>(null);
-  const [areas, setAreas] = useState<Area[]>([]);
-  const [siblingSites, setSiblingSites] = useState<BreadcrumbSibling[]>([]);
-  const [totalUnits, setTotalUnits] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+
+  const siteQuery = trpc.sites.get.useQuery(
+    { siteId: siteId!, organizationId: effectiveOrgId! },
+    { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
+  );
+
+  const areasQuery = trpc.areas.listWithUnitCount.useQuery(
+    { siteId: siteId!, organizationId: effectiveOrgId! },
+    { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
+  );
+
+  const siblingSitesQuery = trpc.sites.list.useQuery(
+    { organizationId: effectiveOrgId! },
+    { enabled: !!effectiveOrgId && identityInitialized }
+  );
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -101,93 +117,70 @@ const SiteDetail = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [alertHistoryOpen, setAlertHistoryOpen] = useState(false);
 
-  // Alert rules
   const { data: siteRules, refetch: refetchSiteRules } = useSiteAlertRules(siteId || null);
-  const { data: orgRules } = useOrgAlertRules(site?.organization_id || null);
+  const { data: orgRules } = useOrgAlertRules(effectiveOrgId);
 
-  useEffect(() => {
-    if (siteId) {
-      loadSiteData();
-    }
-  }, [siteId]);
+  const isLoading = siteQuery.isLoading || areasQuery.isLoading || !identityInitialized;
 
-  const loadSiteData = async () => {
-    setIsLoading(true);
-    
-    const { data: siteData, error: siteError } = await supabase
-      .from("sites")
-      .select("id, name, address, city, state, postal_code, timezone, compliance_mode, manual_log_cadence_seconds, corrective_action_required, organization_id, latitude, longitude")
-      .eq("id", siteId)
-      .maybeSingle();
+  const site = useMemo(() => {
+    if (!siteQuery.data) return null;
+    return {
+      ...siteQuery.data,
+      organization_id: siteQuery.data.organizationId,
+      address: siteQuery.data.address || "",
+      city: siteQuery.data.city || "",
+      state: siteQuery.data.state || "",
+      postal_code: siteQuery.data.postalCode || "",
+      compliance_mode: siteQuery.data.complianceMode || "fda_food_code",
+      manual_log_cadence_seconds: siteQuery.data.manualLogCadenceSeconds || 14400,
+      corrective_action_required: siteQuery.data.correctiveActionRequired ?? true,
+      latitude: siteQuery.data.latitude ? parseFloat(siteQuery.data.latitude) : null,
+      longitude: siteQuery.data.longitude ? parseFloat(siteQuery.data.longitude) : null,
+    } as any;
+  }, [siteQuery.data]);
 
-    if (siteError || !siteData) {
-      console.error("Error loading site:", siteError);
-      toast({ title: "Failed to load site", variant: "destructive" });
-      setIsLoading(false);
-      return;
-    }
+  const areas = useMemo(() => {
+    return (areasQuery.data || []).map(a => ({
+      id: a.id,
+      name: a.name,
+      description: a.description,
+      unitsCount: a.unitsCount,
+    }));
+  }, [areasQuery.data]);
 
-    setSite({
-      ...siteData,
-      organization_id: siteData.organization_id,
-      timezone: siteData.timezone || "America/New_York",
-      compliance_mode: siteData.compliance_mode || "fda_food_code",
-      manual_log_cadence_seconds: siteData.manual_log_cadence_seconds || 14400,
-      corrective_action_required: siteData.corrective_action_required ?? true,
-      latitude: siteData.latitude,
-      longitude: siteData.longitude,
-    });
-    setEditFormData({
-      name: siteData.name,
-      address: siteData.address || "",
-      city: siteData.city || "",
-      state: siteData.state || "",
-      postal_code: siteData.postal_code || "",
-    });
+  const totalUnits = useMemo(() => {
+    return areas.reduce((sum, a) => sum + a.unitsCount, 0);
+  }, [areas]);
 
-    const { data: siblingsData } = await supabase
-      .from("sites")
-      .select("id, name")
-      .eq("organization_id", siteData.organization_id)
-      .eq("is_active", true)
-      .neq("id", siteId)
-      .order("name");
-
-    if (siblingsData) {
-      setSiblingSites(siblingsData.map(s => ({
+  const siblingSites = useMemo(() => {
+    if (!siblingSitesQuery.data) return [];
+    return siblingSitesQuery.data
+      .filter(s => s.id !== siteId)
+      .map(s => ({
         id: s.id,
         name: s.name,
         href: `/sites/${s.id}`,
-      })));
-    }
-
-    const { data: areasData, error: areasError } = await supabase
-      .from("areas")
-      .select(`
-        id,
-        name,
-        description,
-        units (id)
-      `)
-      .eq("site_id", siteId)
-      .eq("is_active", true)
-      .order("sort_order");
-
-    if (areasError) {
-      console.error("Error loading areas:", areasError);
-    } else {
-      const formatted = (areasData || []).map((a: any) => ({
-        id: a.id,
-        name: a.name,
-        description: a.description,
-        unitsCount: a.units?.length || 0,
       }));
-      setAreas(formatted);
-      setTotalUnits(formatted.reduce((sum, area) => sum + area.unitsCount, 0));
-    }
+  }, [siblingSitesQuery.data, siteId]);
 
-    setIsLoading(false);
+  useEffect(() => {
+    if (site) {
+      setEditFormData({
+        name: site.name,
+        address: site.address || "",
+        city: site.city || "",
+        state: site.state || "",
+        postal_code: site.postal_code || "",
+      });
+    }
+  }, [site]);
+
+  const refreshSiteData = () => {
+    siteQuery.refetch();
+    areasQuery.refetch();
+    siblingSitesQuery.refetch();
   };
+
 
   const handleCreateArea = async () => {
     if (!formData.name.trim()) {
@@ -196,20 +189,22 @@ const SiteDetail = () => {
     }
 
     setIsSubmitting(true);
-    const { error } = await supabase.rpc("create_area_for_site", {
-      p_site_id: siteId!,
-      p_name: formData.name,
-      p_description: formData.description || null,
-    });
-
-    if (error) {
-      console.error("Error creating area:", error);
-      toast({ title: "Failed to create area", variant: "destructive" });
-    } else {
+    try {
+      await trpcClient.areas.create.mutate({
+        organizationId: effectiveOrgId!,
+        siteId: siteId!,
+        data: {
+          name: formData.name,
+          description: formData.description || null,
+        }
+      });
       toast({ title: "Area created successfully" });
       setFormData({ name: "", description: "" });
       setDialogOpen(false);
-      loadSiteData();
+      refreshSiteData();
+    } catch (err) {
+      console.error("Error creating area:", err);
+      toast({ title: "Failed to create area", variant: "destructive" });
     }
     setIsSubmitting(false);
   };
@@ -221,27 +216,28 @@ const SiteDetail = () => {
     }
 
     setIsSubmitting(true);
-    const { error } = await supabase
-      .from("sites")
-      .update({
-        name: editFormData.name,
-        address: editFormData.address || null,
-        city: editFormData.city || null,
-        state: editFormData.state || null,
-        postal_code: editFormData.postal_code || null,
-      })
-      .eq("id", siteId);
-
-    if (error) {
-      console.error("Error updating site:", error);
-      toast({ title: "Failed to update site", variant: "destructive" });
-    } else {
+    try {
+      await trpcClient.sites.update.mutate({
+        organizationId: effectiveOrgId!,
+        siteId: siteId!,
+        data: {
+          name: editFormData.name,
+          address: editFormData.address || null,
+          city: editFormData.city || null,
+          state: editFormData.state || null,
+          postalCode: editFormData.postal_code || null,
+        }
+      });
       toast({ title: "Site updated successfully" });
       setEditDialogOpen(false);
-      loadSiteData();
+      refreshSiteData();
+    } catch (err) {
+      console.error("Error updating site:", err);
+      toast({ title: "Failed to update site", variant: "destructive" });
     }
     setIsSubmitting(false);
   };
+
 
   const handleExport = async (reportType: "daily" | "exceptions") => {
     if (!siteId) return;
@@ -254,29 +250,11 @@ const SiteDetail = () => {
         return;
       }
 
-      const endDate = new Date();
-      const startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-      const { data, error } = await supabase.functions.invoke("export-temperature-logs", {
-        body: {
-          site_id: siteId,
-          start_date: startDate.toISOString().split("T")[0],
-          end_date: endDate.toISOString().split("T")[0],
-          report_type: reportType,
-        },
+      // TODO: Migrate to tRPC export endpoint when available
+      toast({
+        title: "Export in progress",
+        description: "CSV exports are being migrated to the new backend. Please try again soon."
       });
-
-      if (error) throw error;
-
-      const blob = new Blob([data], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `frostguard-site-${reportType}-${site?.name?.replace(/\s+/g, "_") || "export"}-${startDate.toISOString().split("T")[0]}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-
-      toast({ title: `${reportType === "daily" ? "Daily" : "Exception"} report exported` });
     } catch (error) {
       console.error("Export error:", error);
       toast({ title: "Export failed", variant: "destructive" });
@@ -488,7 +466,7 @@ const SiteDetail = () => {
             }}
             areas={areas}
             totalUnits={totalUnits}
-            onSiteLocationChange={loadSiteData}
+            onSiteLocationChange={refreshSiteData}
           />
         </TabsContent>
 
@@ -660,7 +638,7 @@ const SiteDetail = () => {
             complianceMode={site.compliance_mode}
             manualLogCadenceSeconds={site.manual_log_cadence_seconds}
             correctiveActionRequired={site.corrective_action_required}
-            onSettingsUpdated={loadSiteData}
+            onSettingsUpdated={refreshSiteData}
           />
         </TabsContent>
       </Tabs>
