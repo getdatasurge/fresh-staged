@@ -305,6 +305,73 @@ collect_configuration() {
 }
 
 # ===========================================
+# Secret Generation Functions
+# ===========================================
+
+# Generate a cryptographically secure random alphanumeric string
+# Args: $1 = desired length (default: 32)
+# Returns: Alphanumeric string of specified length (no special chars)
+generate_secret() {
+    local length="${1:-32}"
+
+    # Generate extra bytes to account for character removal (base64 includes +/=)
+    # We need ~4/3 ratio due to base64 encoding, plus margin for removal
+    local extra_bytes=$((length * 2))
+
+    # Generate random bytes, base64 encode, remove special chars, truncate
+    openssl rand -base64 "$extra_bytes" 2>/dev/null | tr -d '/+=\n' | head -c "$length"
+}
+
+# Generate all required secret files
+# Args: $1 = secrets directory (default: "secrets")
+# Returns: 0 on success, 1 on failure
+generate_secrets_files() {
+    local secrets_dir="${1:-secrets}"
+
+    # Create secrets directory with restrictive permissions
+    if ! mkdir -p "$secrets_dir"; then
+        error "Failed to create secrets directory: $secrets_dir"
+        return 1
+    fi
+    chmod 700 "$secrets_dir"
+
+    # Generate secrets if not already set (allows override for testing)
+    local postgres_password="${POSTGRES_PASSWORD:-$(generate_secret 32)}"
+    local jwt_secret="${JWT_SECRET:-$(generate_secret 48)}"
+    local grafana_password="${GRAFANA_PASSWORD:-$(generate_secret 32)}"
+    local minio_password="${MINIO_PASSWORD:-$(generate_secret 32)}"
+    local minio_user="${MINIO_USER:-freshtrack-minio-admin}"
+
+    # Write secrets to files (using echo -n to avoid trailing newline)
+    echo -n "$postgres_password" > "$secrets_dir/postgres_password.txt"
+    echo -n "$jwt_secret" > "$secrets_dir/jwt_secret.txt"
+    echo -n "$grafana_password" > "$secrets_dir/grafana_password.txt"
+    echo -n "$minio_password" > "$secrets_dir/minio_password.txt"
+    echo -n "$minio_user" > "$secrets_dir/minio_user.txt"
+
+    # Write Stack Auth secret if provided
+    if [[ -n "${STACK_AUTH_SECRET_KEY:-}" ]]; then
+        echo -n "$STACK_AUTH_SECRET_KEY" > "$secrets_dir/stack_auth_secret.txt"
+    fi
+
+    # Set restrictive permissions on all secret files
+    chmod 600 "$secrets_dir"/*.txt
+
+    # Display success message (do NOT show actual secret values)
+    success "Generated secrets files in $secrets_dir/"
+    echo "  - postgres_password.txt"
+    echo "  - jwt_secret.txt"
+    echo "  - grafana_password.txt"
+    echo "  - minio_password.txt"
+    echo "  - minio_user.txt"
+    if [[ -n "${STACK_AUTH_SECRET_KEY:-}" ]]; then
+        echo "  - stack_auth_secret.txt"
+    fi
+
+    return 0
+}
+
+# ===========================================
 # Self-test when run directly
 # ===========================================
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
@@ -391,8 +458,116 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     done
     echo ""
 
+    # Test generate_secret function
+    echo "5. Testing generate_secret..."
+    test_secret=$(generate_secret 32)
+    if [[ ${#test_secret} -eq 32 ]]; then
+        echo "PASS: generate_secret produces correct length (32)"
+    else
+        echo "FAIL: generate_secret should produce 32 chars, got ${#test_secret}"
+        exit 1
+    fi
+
+    if echo "$test_secret" | grep -qE '^[A-Za-z0-9]+$'; then
+        echo "PASS: generate_secret output is alphanumeric only"
+    else
+        echo "FAIL: generate_secret should produce alphanumeric only"
+        exit 1
+    fi
+
+    # Test different lengths
+    test_secret_48=$(generate_secret 48)
+    if [[ ${#test_secret_48} -eq 48 ]]; then
+        echo "PASS: generate_secret produces correct length (48)"
+    else
+        echo "FAIL: generate_secret should produce 48 chars, got ${#test_secret_48}"
+        exit 1
+    fi
+    echo ""
+
+    # Test generate_secrets_files
+    echo "6. Testing generate_secrets_files..."
+    test_secrets_dir=$(mktemp -d)
+    if generate_secrets_files "$test_secrets_dir/secrets" 2>/dev/null; then
+        # Check all expected files exist
+        expected_files=(
+            "postgres_password.txt"
+            "jwt_secret.txt"
+            "grafana_password.txt"
+            "minio_password.txt"
+            "minio_user.txt"
+        )
+        all_files_exist=true
+        for f in "${expected_files[@]}"; do
+            if [[ ! -f "$test_secrets_dir/secrets/$f" ]]; then
+                echo "FAIL: Expected file $f not created"
+                all_files_exist=false
+            fi
+        done
+
+        if $all_files_exist; then
+            echo "PASS: All secret files created"
+        fi
+
+        # Check permissions (600)
+        file_perms=$(stat -c "%a" "$test_secrets_dir/secrets/postgres_password.txt" 2>/dev/null)
+        if [[ "$file_perms" == "600" ]]; then
+            echo "PASS: Secret files have 600 permissions"
+        else
+            echo "FAIL: Secret files should have 600 permissions, got $file_perms"
+            rm -rf "$test_secrets_dir"
+            exit 1
+        fi
+
+        # Check directory permissions (700)
+        dir_perms=$(stat -c "%a" "$test_secrets_dir/secrets" 2>/dev/null)
+        if [[ "$dir_perms" == "700" ]]; then
+            echo "PASS: Secrets directory has 700 permissions"
+        else
+            echo "FAIL: Secrets directory should have 700 permissions, got $dir_perms"
+            rm -rf "$test_secrets_dir"
+            exit 1
+        fi
+
+        # Check postgres password length
+        postgres_pw=$(cat "$test_secrets_dir/secrets/postgres_password.txt")
+        if [[ ${#postgres_pw} -eq 32 ]]; then
+            echo "PASS: postgres_password is 32 characters"
+        else
+            echo "FAIL: postgres_password should be 32 chars, got ${#postgres_pw}"
+            rm -rf "$test_secrets_dir"
+            exit 1
+        fi
+
+        # Check jwt secret length
+        jwt_sec=$(cat "$test_secrets_dir/secrets/jwt_secret.txt")
+        if [[ ${#jwt_sec} -eq 48 ]]; then
+            echo "PASS: jwt_secret is 48 characters"
+        else
+            echo "FAIL: jwt_secret should be 48 chars, got ${#jwt_sec}"
+            rm -rf "$test_secrets_dir"
+            exit 1
+        fi
+
+        # Check minio_user
+        minio_usr=$(cat "$test_secrets_dir/secrets/minio_user.txt")
+        if [[ "$minio_usr" == "freshtrack-minio-admin" ]]; then
+            echo "PASS: minio_user is 'freshtrack-minio-admin'"
+        else
+            echo "FAIL: minio_user should be 'freshtrack-minio-admin', got '$minio_usr'"
+            rm -rf "$test_secrets_dir"
+            exit 1
+        fi
+    else
+        echo "FAIL: generate_secrets_files failed"
+        rm -rf "$test_secrets_dir"
+        exit 1
+    fi
+    rm -rf "$test_secrets_dir"
+    echo ""
+
     # Test function existence
-    echo "5. Testing function existence..."
+    echo "7. Testing function existence..."
     functions_to_check=(
         "validate_fqdn"
         "validate_email"
@@ -400,6 +575,8 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         "prompt_email"
         "prompt_stack_auth"
         "collect_configuration"
+        "generate_secret"
+        "generate_secrets_files"
     )
     for func in "${functions_to_check[@]}"; do
         if type -t "$func" &>/dev/null; then
@@ -412,7 +589,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     echo ""
 
     # Verify sourcing works
-    echo "6. Testing preflight-lib.sh sourcing..."
+    echo "8. Testing preflight-lib.sh sourcing..."
     if [[ -n "${LIB_VERSION:-}" ]] && type -t step &>/dev/null; then
         echo "PASS: preflight-lib.sh functions available (step, success, error)"
     else
