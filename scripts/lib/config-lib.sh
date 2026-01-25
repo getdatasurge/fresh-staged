@@ -1,25 +1,55 @@
 #!/usr/bin/env bash
 # ===========================================
 # FreshTrack Pro Configuration Library
-# Interactive input collection and validation
+# Interactive configuration collection, validation, and summary display
 # ===========================================
+#
 # Usage: source this file in deployment scripts
 #   source "$(dirname "$0")/lib/config-lib.sh"
 #
-# Functions provided:
-#   - validate_fqdn()            Validate fully qualified domain name
-#   - validate_email()           Validate email address format
-#   - prompt_domain()            Interactive domain input with validation
-#   - prompt_email()             Interactive email input with validation
-#   - prompt_stack_auth()        Interactive Stack Auth credential collection
-#   - collect_configuration()    Master function to collect all config
+# Standalone usage:
+#   ./config-lib.sh test    Run self-tests
+#   ./config-lib.sh         Show usage
+#
+# Required Environment Variables (set by prompts or externally):
+#   DOMAIN                      Fully qualified domain name
+#   ADMIN_EMAIL                 Administrator email address
+#   STACK_AUTH_PROJECT_ID       Stack Auth project identifier
+#   STACK_AUTH_PUBLISHABLE_KEY  Stack Auth client-side key
+#   STACK_AUTH_SECRET_KEY       Stack Auth server-side secret
+#
+# Optional Environment Variables:
+#   MAX_INPUT_ATTEMPTS          Max retries for user input (default: 5)
+#   SECRETS_DIR                 Directory for secret files (default: secrets)
+#   ENV_FILE                    Environment file path (default: .env.production)
+#
+# Exported Functions:
+#   Input Collection:
+#     validate_fqdn()                 Validate fully qualified domain name
+#     validate_email()                Validate email address format
+#     prompt_domain()                 Interactive domain input with validation
+#     prompt_email()                  Interactive email input with validation
+#     prompt_stack_auth()             Interactive Stack Auth credential collection
+#     collect_configuration()         Master function to collect all config
+#
+#   Secret Generation:
+#     generate_secret()               Generate cryptographically secure random string
+#     generate_secrets_files()        Generate all required secret files
+#     generate_env_file()             Generate .env.production file
+#     create_configuration()          Generate secrets and env file
+#
+#   Summary & Validation:
+#     display_configuration_summary() Display config summary for user review (CONFIG-07)
+#     validate_dns_before_deploy()    Validate DNS resolves to server IP (CONFIG-04)
+#     run_interactive_configuration() Master orchestration function
+#
 # ===========================================
 
 # Source preflight-lib.sh for error handling and output helpers
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/preflight-lib.sh"
 
-LIB_VERSION="1.0.0"
+LIB_VERSION="1.1.0"
 
 # ===========================================
 # Configuration
@@ -542,9 +572,197 @@ create_configuration() {
 }
 
 # ===========================================
-# Self-test when run directly
+# Configuration Summary Display
 # ===========================================
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+
+# Display configuration summary for user review
+# Requires: DOMAIN, ADMIN_EMAIL, STACK_AUTH_* variables to be set
+# Args: None (uses global variables)
+# Returns: 0 if user confirms, 1 if user cancels
+# Satisfies: CONFIG-07 (configuration summary)
+display_configuration_summary() {
+    local secrets_dir="${SECRETS_DIR:-secrets}"
+    local env_file="${ENV_FILE:-.env.production}"
+
+    echo ""
+    echo -e "${BLUE}========================================"
+    echo "       Configuration Summary"
+    echo "========================================${NC}"
+    echo ""
+
+    # Domain Configuration section
+    echo -e "${BLUE}Domain Configuration${NC}"
+    echo "----------------------------------------"
+    echo -e "  Main Domain:  ${GREEN}https://${DOMAIN}${NC}"
+    echo -e "  API Endpoint: ${GREEN}https://${DOMAIN}/api${NC}"
+    echo -e "  Monitoring:   ${GREEN}https://monitoring.${DOMAIN}${NC}"
+    echo -e "  Status Page:  ${GREEN}https://status.${DOMAIN}${NC}"
+    echo "  Admin Email:  ${ADMIN_EMAIL}"
+    echo ""
+
+    # Generated Secrets section
+    echo -e "${BLUE}Generated Secrets${NC}"
+    echo "----------------------------------------"
+    echo -e "  ${YELLOW}(Secrets are auto-generated and stored securely)${NC}"
+    echo "  PostgreSQL:     [GENERATED - 32 chars]"
+    echo "  JWT Secret:     [GENERATED - 48 chars]"
+    echo "  Grafana Admin:  [GENERATED - 32 chars]"
+    echo "  MinIO Password: [GENERATED - 32 chars]"
+    echo ""
+
+    # Stack Auth section
+    echo -e "${BLUE}Stack Auth Configuration${NC}"
+    echo "----------------------------------------"
+    if [[ -n "${STACK_AUTH_PROJECT_ID:-}" ]]; then
+        echo "  Project ID:      ${STACK_AUTH_PROJECT_ID:0:20}..."
+    else
+        echo "  Project ID:      [NOT SET]"
+    fi
+    if [[ -n "${STACK_AUTH_PUBLISHABLE_KEY:-}" ]]; then
+        echo "  Publishable Key: ${STACK_AUTH_PUBLISHABLE_KEY:0:20}..."
+    else
+        echo "  Publishable Key: [NOT SET]"
+    fi
+    echo "  Secret Key:      [PROVIDED - hidden]"
+    echo ""
+
+    # File locations
+    echo -e "${BLUE}File Locations${NC}"
+    echo "----------------------------------------"
+    echo "  Environment:   ${env_file}"
+    echo "  Secrets Dir:   ${secrets_dir}/"
+    echo ""
+
+    echo -e "${BLUE}========================================${NC}"
+    echo ""
+
+    # Prompt for confirmation
+    local response
+    read -rp "Proceed with this configuration? [Y/n]: " response
+
+    case "${response,,}" in
+        n|no)
+            echo ""
+            warning "Configuration cancelled by user"
+            return 1
+            ;;
+        *)
+            echo ""
+            success "Configuration confirmed"
+            return 0
+            ;;
+    esac
+}
+
+# ===========================================
+# DNS Validation Before Deployment
+# ===========================================
+
+# Validate DNS resolves to server IP before deployment
+# Requires: DOMAIN to be set
+# Args: None (uses global DOMAIN variable)
+# Returns: 0 if DNS is valid, 1 if DNS validation fails
+# Satisfies: CONFIG-04 (DNS validation)
+validate_dns_before_deploy() {
+    # Check DOMAIN is set
+    if [[ -z "${DOMAIN:-}" ]]; then
+        error "DOMAIN must be set before DNS validation"
+        return 1
+    fi
+
+    step "Validating DNS configuration for $DOMAIN..."
+
+    # Call validate_dns from preflight-lib.sh
+    # validate_dns already provides detailed guidance on failure
+    if ! validate_dns "$DOMAIN"; then
+        echo ""
+        error "DNS validation failed"
+        echo "Please configure your DNS before proceeding with deployment."
+        echo "SSL certificate provisioning will fail without correct DNS."
+        return 1
+    fi
+
+    echo ""
+    success "DNS validation passed - ready for deployment"
+    return 0
+}
+
+# ===========================================
+# Master Orchestration
+# ===========================================
+
+# Run the complete interactive configuration flow
+# Orchestrates: collect -> create -> summary -> DNS validation
+# Args: None
+# Returns: 0 on success, 1 on any failure or user cancellation
+run_interactive_configuration() {
+    echo ""
+    echo -e "${BLUE}========================================"
+    echo "  FreshTrack Pro Interactive Configuration"
+    echo "========================================${NC}"
+    echo ""
+    echo "This wizard will guide you through configuring FreshTrack Pro."
+    echo "You will need:"
+    echo "  - A domain name pointing to this server"
+    echo "  - An administrator email address"
+    echo "  - Stack Auth credentials (from https://app.stack-auth.com)"
+    echo ""
+
+    # Step 1: Collect configuration from user
+    step "Step 1/4: Collecting configuration..."
+    if ! collect_configuration; then
+        error "Configuration collection failed"
+        return 1
+    fi
+
+    # Step 2: Generate secrets and .env.production
+    step "Step 2/4: Creating configuration files..."
+    if ! create_configuration; then
+        error "Configuration file creation failed"
+        return 1
+    fi
+
+    # Step 3: Display summary for user review
+    step "Step 3/4: Review configuration..."
+    if ! display_configuration_summary; then
+        error "Configuration cancelled by user"
+        return 1
+    fi
+
+    # Step 4: Validate DNS
+    step "Step 4/4: Validating DNS..."
+    if ! validate_dns_before_deploy; then
+        error "DNS validation failed"
+        echo ""
+        echo "You can run this configuration again after fixing DNS:"
+        echo "  ./config-lib.sh"
+        return 1
+    fi
+
+    echo ""
+    echo -e "${GREEN}========================================"
+    echo "  Configuration Complete!"
+    echo "========================================${NC}"
+    echo ""
+    success "Configuration complete! Ready for deployment."
+    echo ""
+    echo "Next steps:"
+    echo "  1. Run the deployment script: ./deploy.sh"
+    echo "  2. Wait for services to start (~2-5 minutes)"
+    echo "  3. Visit https://${DOMAIN} to access FreshTrack Pro"
+    echo ""
+
+    return 0
+}
+
+# ===========================================
+# Self-test Functions
+# ===========================================
+
+# Run comprehensive self-tests
+# Args: None
+# Returns: 0 if all tests pass, 1 if any test fails
+run_self_tests() {
     echo "Testing config-lib.sh v${LIB_VERSION}..."
     echo ""
 
@@ -824,7 +1042,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     unset DOMAIN ADMIN_EMAIL STACK_AUTH_PROJECT_ID STACK_AUTH_PUBLISHABLE_KEY
     echo ""
 
-    # Test function existence
+    # Test function existence (including new functions from 24-03)
     echo "9. Testing function existence..."
     functions_to_check=(
         "validate_fqdn"
@@ -837,6 +1055,9 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         "generate_secrets_files"
         "generate_env_file"
         "create_configuration"
+        "display_configuration_summary"
+        "validate_dns_before_deploy"
+        "run_interactive_configuration"
     )
     for func in "${functions_to_check[@]}"; do
         if type -t "$func" &>/dev/null; then
@@ -858,7 +1079,80 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     fi
     echo ""
 
+    # Test display_configuration_summary with mock data (non-interactive)
+    echo "11. Testing display_configuration_summary with mock data..."
+    export DOMAIN="mock.example.com"
+    export ADMIN_EMAIL="mock@example.com"
+    export STACK_AUTH_PROJECT_ID="proj_mock123456789012"
+    export STACK_AUTH_PUBLISHABLE_KEY="pk_mock_abcdefghijklmnop"
+    export STACK_AUTH_SECRET_KEY="sk_mock_secret"
+    export SECRETS_DIR="/tmp/mock-secrets"
+    export ENV_FILE="/tmp/mock.env"
+
+    # Capture output to verify it runs without error (provide 'y' to confirm)
+    if echo "y" | display_configuration_summary &>/dev/null; then
+        echo "PASS: display_configuration_summary runs with mock data"
+    else
+        echo "FAIL: display_configuration_summary should run with mock data"
+        exit 1
+    fi
+
+    # Test cancellation
+    if echo "n" | display_configuration_summary &>/dev/null; then
+        echo "FAIL: display_configuration_summary should return 1 on 'n'"
+        exit 1
+    else
+        echo "PASS: display_configuration_summary returns 1 on cancel"
+    fi
+    unset DOMAIN ADMIN_EMAIL STACK_AUTH_PROJECT_ID STACK_AUTH_PUBLISHABLE_KEY STACK_AUTH_SECRET_KEY SECRETS_DIR ENV_FILE
+    echo ""
+
+    # Test validate_dns_before_deploy requires DOMAIN
+    echo "12. Testing validate_dns_before_deploy requires DOMAIN..."
+    unset DOMAIN
+    if validate_dns_before_deploy 2>/dev/null; then
+        echo "FAIL: validate_dns_before_deploy should fail without DOMAIN"
+        exit 1
+    else
+        echo "PASS: validate_dns_before_deploy fails without DOMAIN"
+    fi
+    echo ""
+
     echo "========================================"
     echo "All config-lib tests passed!"
     echo "========================================"
+}
+
+# ===========================================
+# Entry point when run directly
+# ===========================================
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    case "${1:-}" in
+        test)
+            run_self_tests
+            exit $?
+            ;;
+        "")
+            echo "FreshTrack Pro Configuration Library v${LIB_VERSION}"
+            echo ""
+            echo "Usage:"
+            echo "  $0 test     Run self-tests"
+            echo "  $0          Show this help"
+            echo ""
+            echo "As a library (source this file):"
+            echo "  source config-lib.sh"
+            echo "  run_interactive_configuration"
+            echo ""
+            echo "Or call individual functions:"
+            echo "  collect_configuration          # Collect user input"
+            echo "  create_configuration           # Generate secrets & .env"
+            echo "  display_configuration_summary  # Show summary"
+            echo "  validate_dns_before_deploy     # Check DNS"
+            ;;
+        *)
+            echo "Unknown command: $1"
+            echo "Run '$0' for usage information"
+            exit 1
+            ;;
+    esac
 fi
