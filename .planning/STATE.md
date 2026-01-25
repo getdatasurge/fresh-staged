@@ -34,7 +34,7 @@ Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 122 plans total
 |------|------|--------|--------|
 | 22-01 | Error Handling Infrastructure | Complete | 317c35a |
 | 22-02 | System Validation Functions | Complete | eea2d9c |
-| 22-03 | Checkpoint & Progress Functions | Complete | (prior) |
+| 22-03 | Checkpoint & Progress Functions | Complete | 94d1233 |
 | 22-04 | DNS Validation | Complete | f1ffcaa |
 | 22-05 | Verification & Integration | Pending | - |
 
@@ -98,6 +98,9 @@ Recent decisions affecting v2.1:
 - [22-02]: MemAvailable fallback for older kernels (MemFree+Buffers+Cached)
 - [22-02]: CPU check warning-only (non-blocking for minimal VMs)
 - [22-02]: HTTP 401 accepted for Docker registry (unauthenticated expected)
+- [22-03]: STATE_DIR fallback to SCRIPT_DIR/.deploy-state when /var/lib not writable
+- [22-03]: Interactive recovery only when stdin is terminal ([[ -t 0 ]])
+- [22-03]: Critical/fatal errors always abort; transient/recoverable default to retry
 - [22-04]: getent ahostsv4 fallback when dig unavailable for DNS resolution portability
 - [22-04]: DNS validation optional in run_preflight_checks (domain may not be configured during preflight)
 - [22-04]: Multiple IP detection services cascade (ifconfig.me, icanhazip.com, ipinfo.io)
