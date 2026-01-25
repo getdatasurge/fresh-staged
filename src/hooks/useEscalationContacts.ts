@@ -1,10 +1,12 @@
 /**
- * TODO: Full migration to new backend
- * - Create /api/orgs/:orgId/escalation-contacts endpoint
- * - Replace Supabase data calls with API calls
- * - Remove supabase import
+ * Escalation Contacts Domain Hooks
  *
- * Current status: Stack Auth for identity, Supabase for data (Phase 5)
+ * TODO: Migrate to tRPC when escalationContacts router is available
+ * - Backend router not yet created (escalationContacts.router.ts)
+ * - Currently uses Supabase for data access
+ * - Planned for future Phase when backend router is available
+ *
+ * Current status: Stack Auth for identity, Supabase for data (Phase 21)
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@stackframe/react";

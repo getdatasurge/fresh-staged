@@ -1,16 +1,14 @@
 /**
- * TODO: Full migration to new backend
- * - Create /api/orgs/:orgId/notification-policies endpoint
- * - Replace Supabase data calls with API calls
- * - Remove supabase import
+ * Notification Policies Domain Hooks
  *
- * Current status: Stack Auth for identity, Supabase for data (Phase 5)
+ * tRPC-based hooks for notification policy management.
+ * Uses direct useTRPC() hooks per Phase 19 patterns.
+ *
+ * Migrated to tRPC in Phase 21 (Plan 05).
  */
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";  // TEMPORARY
-import { qk } from "@/lib/queryKeys";
-import { invalidateNotificationPolicies } from "@/lib/invalidation";
+import { useTRPC, useTRPCClient } from "@/lib/trpc";
 
 // Alert types that can have notification policies
 export const ALERT_TYPES = [
@@ -70,11 +68,11 @@ export interface NotificationPolicy {
   notify_roles: AppRole[];
   notify_site_managers: boolean;
   notify_assigned_users: boolean;
-  created_at?: string;
-  updated_at?: string;
+  created_at?: string | Date;
+  updated_at?: string | Date;
 }
 
-export interface EffectiveNotificationPolicy extends Omit<NotificationPolicy, "id" | "organization_id" | "site_id" | "unit_id"> {
+export interface EffectiveNotificationPolicy extends Omit<NotificationPolicy, "id" | "organization_id" | "site_id" | "unit_id" | "created_at" | "updated_at"> {
   source_unit: boolean;
   source_site: boolean;
   source_org: boolean;
@@ -99,283 +97,217 @@ export const DEFAULT_NOTIFICATION_POLICY: Omit<NotificationPolicy, "alert_type">
   notify_assigned_users: false,
 };
 
-// Helper to map DB row to NotificationPolicy
-function mapDbRowToPolicy(row: Record<string, unknown>): NotificationPolicy {
-  return {
-    id: row.id as string,
-    organization_id: row.organization_id as string | null,
-    site_id: row.site_id as string | null,
-    unit_id: row.unit_id as string | null,
-    alert_type: row.alert_type as string,
-    initial_channels: (row.initial_channels || []) as NotificationChannel[],
-    requires_ack: row.requires_ack as boolean,
-    ack_deadline_minutes: row.ack_deadline_minutes as number | null,
-    escalation_steps: (row.escalation_steps || []) as EscalationStep[],
-    send_resolved_notifications: row.send_resolved_notifications as boolean,
-    reminders_enabled: row.reminders_enabled as boolean,
-    reminder_interval_minutes: row.reminder_interval_minutes as number | null,
-    quiet_hours_enabled: row.quiet_hours_enabled as boolean,
-    quiet_hours_start_local: row.quiet_hours_start_local as string | null,
-    quiet_hours_end_local: row.quiet_hours_end_local as string | null,
-    severity_threshold: row.severity_threshold as "INFO" | "WARNING" | "CRITICAL",
-    allow_warning_notifications: row.allow_warning_notifications as boolean,
-    notify_roles: (row.notify_roles || ["owner", "admin"]) as AppRole[],
-    notify_site_managers: row.notify_site_managers as boolean ?? true,
-    notify_assigned_users: row.notify_assigned_users as boolean ?? false,
-    created_at: row.created_at as string,
-    updated_at: row.updated_at as string,
-  };
-}
-
-// Hook to fetch org-level notification policies
+/**
+ * Hook to fetch org-level notification policies
+ */
 export function useOrgNotificationPolicies(orgId: string | null) {
-  const user = useUser();
+  const trpc = useTRPC();
+
+  const queryOptions = trpc.notificationPolicies.listByOrg.queryOptions({
+    organizationId: orgId!,
+  });
 
   return useQuery({
-    queryKey: qk.org(orgId).notificationPolicies(),
-    queryFn: async () => {
-      if (!orgId || !user) return [];
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      const { data, error } = await supabase
-        .from("notification_policies")
-        .select("*")
-        .eq("organization_id", orgId);
-      if (error) {
-        console.error('[useOrgNotificationPolicies] Supabase error:', error);
-        throw error;
-      }
-      return (data || []).map(mapDbRowToPolicy);
-    },
-    enabled: !!orgId && !!user,
+    ...queryOptions,
+    enabled: !!orgId,
+    staleTime: 60_000, // 1 minute
   });
 }
 
-// Hook to fetch site-level notification policies
-export function useSiteNotificationPolicies(siteId: string | null) {
-  const user = useUser();
+/**
+ * Hook to fetch site-level notification policies
+ */
+export function useSiteNotificationPolicies(siteId: string | null, orgId?: string) {
+  const trpc = useTRPC();
+
+  const queryOptions = trpc.notificationPolicies.listBySite.queryOptions({
+    organizationId: orgId!,
+    siteId: siteId!,
+  });
 
   return useQuery({
-    queryKey: ['site', siteId, 'notification-policies'] as const,
-    queryFn: async () => {
-      if (!siteId || !user) return [];
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      const { data, error } = await supabase
-        .from("notification_policies")
-        .select("*")
-        .eq("site_id", siteId);
-      if (error) {
-        console.error('[useSiteNotificationPolicies] Supabase error:', error);
-        throw error;
-      }
-      return (data || []).map(mapDbRowToPolicy);
-    },
-    enabled: !!siteId && !!user,
+    ...queryOptions,
+    enabled: !!siteId && !!orgId,
+    staleTime: 60_000, // 1 minute
   });
 }
 
-// Hook to fetch unit-level notification policies
-export function useUnitNotificationPolicies(unitId: string | null) {
-  const user = useUser();
+/**
+ * Hook to fetch unit-level notification policies
+ */
+export function useUnitNotificationPolicies(unitId: string | null, orgId?: string) {
+  const trpc = useTRPC();
+
+  const queryOptions = trpc.notificationPolicies.listByUnit.queryOptions({
+    organizationId: orgId!,
+    unitId: unitId!,
+  });
 
   return useQuery({
-    queryKey: qk.unit(unitId).notificationPolicies(),
-    queryFn: async () => {
-      if (!unitId || !user) return [];
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      const { data, error } = await supabase
-        .from("notification_policies")
-        .select("*")
-        .eq("unit_id", unitId);
-      if (error) {
-        console.error('[useUnitNotificationPolicies] Supabase error:', error);
-        throw error;
-      }
-      return (data || []).map(mapDbRowToPolicy);
-    },
-    enabled: !!unitId && !!user,
+    ...queryOptions,
+    enabled: !!unitId && !!orgId,
+    staleTime: 60_000, // 1 minute
   });
 }
 
-// Hook to fetch effective notification policy for a unit + alert type
-export function useEffectiveNotificationPolicy(unitId: string | null, alertType: string | null) {
-  const user = useUser();
+/**
+ * Hook to fetch effective notification policy for a unit + alert type
+ * Uses the inheritance chain: unit -> site -> org
+ */
+export function useEffectiveNotificationPolicy(
+  unitId: string | null,
+  alertType: string | null,
+  orgId?: string
+) {
+  const trpc = useTRPC();
+
+  const queryOptions = trpc.notificationPolicies.getEffective.queryOptions({
+    organizationId: orgId!,
+    unitId: unitId!,
+    alertType: alertType!,
+  });
 
   return useQuery({
-    queryKey: qk.unit(unitId).notificationPolicies(alertType ?? undefined),
-    queryFn: async () => {
-      if (!unitId || !alertType || !user) return null;
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      const { data, error } = await supabase.rpc("get_effective_notification_policy", {
-        p_unit_id: unitId,
-        p_alert_type: alertType,
-      });
-      if (error) {
-        console.error('[useEffectiveNotificationPolicy] Supabase error:', error);
-        throw error;
-      }
-      if (!data) return null;
-      // Map the JSONB response
-      const d = data as Record<string, unknown>;
-      return {
-        alert_type: alertType,
-        initial_channels: (d.initial_channels || []) as NotificationChannel[],
-        requires_ack: d.requires_ack as boolean,
-        ack_deadline_minutes: d.ack_deadline_minutes as number | null,
-        escalation_steps: (d.escalation_steps || []) as EscalationStep[],
-        send_resolved_notifications: d.send_resolved_notifications as boolean,
-        reminders_enabled: d.reminders_enabled as boolean,
-        reminder_interval_minutes: d.reminder_interval_minutes as number | null,
-        quiet_hours_enabled: d.quiet_hours_enabled as boolean,
-        quiet_hours_start_local: d.quiet_hours_start_local as string | null,
-        quiet_hours_end_local: d.quiet_hours_end_local as string | null,
-        severity_threshold: (d.severity_threshold || "WARNING") as "INFO" | "WARNING" | "CRITICAL",
-        allow_warning_notifications: d.allow_warning_notifications as boolean,
-        source_unit: d.source_unit as boolean,
-        source_site: d.source_site as boolean,
-        source_org: d.source_org as boolean,
-      } as EffectiveNotificationPolicy;
-    },
-    enabled: !!unitId && !!alertType && !!user,
+    ...queryOptions,
+    enabled: !!unitId && !!alertType && !!orgId,
+    staleTime: 60_000, // 1 minute
   });
 }
 
-// Upsert a notification policy
-export async function upsertNotificationPolicy(
-  scope: { organization_id?: string; site_id?: string; unit_id?: string },
-  alertType: string,
-  policy: Partial<NotificationPolicy>
-): Promise<{ error: Error | null }> {
-  try {
-    // TODO Phase 6: Migrate to new API when backend endpoint available
-    // Build upsert data
-    const upsertData: Record<string, unknown> = {
-      ...scope,
-      alert_type: alertType,
-      initial_channels: policy.initial_channels,
-      requires_ack: policy.requires_ack,
-      ack_deadline_minutes: policy.ack_deadline_minutes,
-      escalation_steps: JSON.stringify(policy.escalation_steps || []),
-      send_resolved_notifications: policy.send_resolved_notifications,
-      reminders_enabled: policy.reminders_enabled,
-      reminder_interval_minutes: policy.reminder_interval_minutes,
-      quiet_hours_enabled: policy.quiet_hours_enabled,
-      quiet_hours_start_local: policy.quiet_hours_start_local,
-      quiet_hours_end_local: policy.quiet_hours_end_local,
-      severity_threshold: policy.severity_threshold,
-      allow_warning_notifications: policy.allow_warning_notifications,
-      notify_roles: policy.notify_roles,
-      notify_site_managers: policy.notify_site_managers,
-      notify_assigned_users: policy.notify_assigned_users,
-    };
-
-    // Use upsert with conflict on unique index
-    const { error } = await supabase
-      .from("notification_policies")
-      .upsert(upsertData as any, {
-        onConflict: scope.organization_id
-          ? "organization_id,alert_type"
-          : scope.site_id
-          ? "site_id,alert_type"
-          : "unit_id,alert_type",
-      });
-
-    if (error) throw error;
-    return { error: null };
-  } catch (err) {
-    return { error: err as Error };
-  }
-}
-
-// Delete a notification policy
-export async function deleteNotificationPolicy(
-  scope: { organization_id?: string; site_id?: string; unit_id?: string },
-  alertType: string
-): Promise<{ error: Error | null }> {
-  try {
-    // TODO Phase 6: Migrate to new API when backend endpoint available
-    let query = supabase.from("notification_policies").delete();
-
-    if (scope.organization_id) {
-      query = query.eq("organization_id", scope.organization_id);
-    } else if (scope.site_id) {
-      query = query.eq("site_id", scope.site_id);
-    } else if (scope.unit_id) {
-      query = query.eq("unit_id", scope.unit_id);
-    }
-
-    const { error } = await query.eq("alert_type", alertType);
-    if (error) throw error;
-    return { error: null };
-  } catch (err) {
-    return { error: err as Error };
-  }
-}
-
-// Hook for upserting notification policy with mutation
+/**
+ * Hook for upserting notification policy with mutation
+ */
 export function useUpsertNotificationPolicy() {
+  const trpc = useTRPC();
+  const client = useTRPCClient();
   const queryClient = useQueryClient();
-  const user = useUser();
 
   return useMutation({
     mutationFn: async ({
       scope,
       alertType,
       policy,
+      orgId,
     }: {
       scope: { organization_id?: string; site_id?: string; unit_id?: string };
       alertType: string;
       policy: Partial<NotificationPolicy>;
+      orgId: string;
     }) => {
-      if (!user) throw new Error('Not authenticated');
-
-      const { error } = await upsertNotificationPolicy(scope, alertType, policy);
-      if (error) throw error;
-      return scope; // Return scope for onSuccess
-    },
-    onSuccess: async (scope) => {
-      await invalidateNotificationPolicies(queryClient, {
-        orgId: scope.organization_id,
-        siteId: scope.site_id,
-        unitId: scope.unit_id,
+      return client.notificationPolicies.upsert.mutate({
+        organizationId: orgId,
+        scope,
+        alertType,
+        policy,
       });
+    },
+    onSuccess: async (_data, variables) => {
+      // Invalidate all notification policy queries for the affected scopes
+      if (variables.scope.organization_id) {
+        const orgQueryOptions = trpc.notificationPolicies.listByOrg.queryOptions({
+          organizationId: variables.scope.organization_id,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: orgQueryOptions.queryKey,
+        });
+      }
+      if (variables.scope.site_id) {
+        const siteQueryOptions = trpc.notificationPolicies.listBySite.queryOptions({
+          organizationId: variables.orgId,
+          siteId: variables.scope.site_id,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: siteQueryOptions.queryKey,
+        });
+      }
+      if (variables.scope.unit_id) {
+        const unitQueryOptions = trpc.notificationPolicies.listByUnit.queryOptions({
+          organizationId: variables.orgId,
+          unitId: variables.scope.unit_id,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: unitQueryOptions.queryKey,
+        });
+        // Also invalidate effective policy queries for this unit
+        queryClient.invalidateQueries({
+          predicate: (query) => {
+            const key = query.queryKey;
+            return Array.isArray(key) &&
+                   key.some(k => typeof k === 'object' && k !== null && 'unitId' in k);
+          },
+        });
+      }
     },
   });
 }
 
-// Hook for deleting notification policy with mutation
+/**
+ * Hook for deleting notification policy with mutation
+ */
 export function useDeleteNotificationPolicy() {
+  const trpc = useTRPC();
+  const client = useTRPCClient();
   const queryClient = useQueryClient();
-  const user = useUser();
 
   return useMutation({
     mutationFn: async ({
       scope,
       alertType,
+      orgId,
     }: {
       scope: { organization_id?: string; site_id?: string; unit_id?: string };
       alertType: string;
+      orgId: string;
     }) => {
-      if (!user) throw new Error('Not authenticated');
-
-      const { error } = await deleteNotificationPolicy(scope, alertType);
-      if (error) throw error;
-      return scope; // Return scope for onSuccess
-    },
-    onSuccess: async (scope) => {
-      await invalidateNotificationPolicies(queryClient, {
-        orgId: scope.organization_id,
-        siteId: scope.site_id,
-        unitId: scope.unit_id,
+      return client.notificationPolicies.delete.mutate({
+        organizationId: orgId,
+        scope,
+        alertType,
       });
+    },
+    onSuccess: async (_data, variables) => {
+      // Invalidate all notification policy queries for the affected scopes
+      if (variables.scope.organization_id) {
+        const orgQueryOptions = trpc.notificationPolicies.listByOrg.queryOptions({
+          organizationId: variables.scope.organization_id,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: orgQueryOptions.queryKey,
+        });
+      }
+      if (variables.scope.site_id) {
+        const siteQueryOptions = trpc.notificationPolicies.listBySite.queryOptions({
+          organizationId: variables.orgId,
+          siteId: variables.scope.site_id,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: siteQueryOptions.queryKey,
+        });
+      }
+      if (variables.scope.unit_id) {
+        const unitQueryOptions = trpc.notificationPolicies.listByUnit.queryOptions({
+          organizationId: variables.orgId,
+          unitId: variables.scope.unit_id,
+        });
+        await queryClient.invalidateQueries({
+          queryKey: unitQueryOptions.queryKey,
+        });
+        // Also invalidate effective policy queries for this unit
+        queryClient.invalidateQueries({
+          predicate: (query) => {
+            const key = query.queryKey;
+            return Array.isArray(key) &&
+                   key.some(k => typeof k === 'object' && k !== null && 'unitId' in k);
+          },
+        });
+      }
     },
   });
 }
 
-// Get policy for specific alert type from array
+/**
+ * Get policy for specific alert type from array
+ */
 export function getPolicyForAlertType(
   policies: NotificationPolicy[] | undefined,
   alertType: string
