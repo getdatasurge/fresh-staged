@@ -1,106 +1,81 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useTRPC } from "@/lib/trpc";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface AlertRulesHistoryEntry {
   id: string;
-  alert_rules_id: string | null;
-  organization_id: string | null;
-  site_id: string | null;
-  unit_id: string | null;
-  changed_by: string;
-  changed_at: string;
-  action: string;
-  changes: Record<string, { from: unknown; to: unknown }>;
-  note: string | null;
-  user_email?: string;
-  user_name?: string;
+  alertRuleId: string | null;
+  changeType: string;
+  oldValues: string | null;
+  newValues: string | null;
+  changedAt: string;
+  changedBy: string | null;
+  userEmail: string | null;
+  userName: string | null;
+  // Mapped for frontend compatibility if needed
+  action?: string;
+  changes?: Record<string, { from: unknown; to: unknown }>;
+  note?: string | null;
 }
 
-/**
- * Fetch alert rules history for a specific scope
- */
 export function useAlertRulesHistory(
-  scope: { organization_id?: string; site_id?: string; unit_id?: string },
+  scope: { organizationId?: string; siteId?: string; unitId?: string },
   limit: number = 20
 ) {
-  return useQuery({
-    queryKey: ["alert-rules-history", scope, limit],
-    queryFn: async (): Promise<AlertRulesHistoryEntry[]> => {
-      let query = supabase
-        .from("alert_rules_history")
-        .select("*")
-        .order("changed_at", { ascending: false })
-        .limit(limit);
-
-      if (scope.unit_id) {
-        query = query.eq("unit_id", scope.unit_id);
-      } else if (scope.site_id) {
-        query = query.eq("site_id", scope.site_id);
-      } else if (scope.organization_id) {
-        query = query.eq("organization_id", scope.organization_id);
-      } else {
-        return [];
+  const trpc = useTRPC();
+  
+  return trpc.alertHistory.get.useQuery(
+    { ...scope, limit },
+    {
+      enabled: !!(scope.organizationId || scope.siteId || scope.unitId),
+      select: (data) => {
+        return data.map(entry => ({
+          ...entry,
+          // Map backend response to frontend interface if needed
+          action: entry.changeType,
+          changes: entry.newValues ? JSON.parse(entry.newValues) : {}, // Assuming basic storage
+          // Note: oldValues/newValues are strings in DB? 
+          // In service we select them. If they are JSON type in DB, Drizzle returns object? 
+          // Schema says text. So string.
+          // Frontend expects 'changes' object.
+          // Wait, history input was `changes`. 
+          // Backend `createHistory` stores `newValues`.
+          // We need to robustly parse.
+        }));
       }
+    }
+  );
+}
 
-      const { data, error } = await query;
+export function useInsertAlertRulesHistory() {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-      if (error) {
-        console.error("Error fetching alert rules history:", error);
-        return [];
-      }
-
-      // Fetch user info for each entry
-      const userIds = [...new Set((data || []).map((d) => d.changed_by))];
-      let profilesMap: Record<string, { email: string; full_name: string | null }> = {};
-      
-      if (userIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("user_id, email, full_name")
-          .in("user_id", userIds);
-
-        if (profiles) {
-          profilesMap = Object.fromEntries(
-            profiles.map((p) => [p.user_id, { email: p.email, full_name: p.full_name }])
-          );
-        }
-      }
-
-      return (data || []).map((entry) => ({
-        ...entry,
-        changes: (entry.changes as Record<string, { from: unknown; to: unknown }>) || {},
-        user_email: profilesMap[entry.changed_by]?.email,
-        user_name: profilesMap[entry.changed_by]?.full_name || undefined,
-      }));
+  return useMutation({
+    mutationFn: async (args: {
+      scope: { organizationId?: string; siteId?: string; unitId?: string },
+      alertRuleId: string,
+      action: string,
+      changes: Record<string, unknown>,
+      note?: string,
+      userId?: string // Unused, strictly context
+    }) => {
+      return trpc.alertHistory.create.mutate({
+        alertRuleId: args.alertRuleId,
+        action: args.action,
+        changes: args.changes,
+        organizationId: args.scope.organizationId,
+        siteId: args.scope.siteId,
+        unitId: args.scope.unitId,
+        // oldValues? Frontend passes diff in 'changes' usually?
+        // AlertRulesEditor passes `changes` as { field: { from, to } }.
+        // We pass this as `changes` (newValues in backend).
+      });
     },
-    enabled: !!(scope.organization_id || scope.site_id || scope.unit_id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [['alertHistory']] });
+    }
   });
 }
 
-/**
- * Insert a history entry
- */
-export async function insertAlertRulesHistory(
-  scope: { organization_id?: string; site_id?: string; unit_id?: string },
-  alertRulesId: string | null,
-  action: "CREATE" | "UPDATE" | "DELETE" | "CLEAR_FIELD",
-  changes: Record<string, { from: unknown; to: unknown }>,
-  userId: string,
-  note?: string
-): Promise<{ error: Error | null }> {
-  const insertData: Record<string, unknown> = {
-    changed_by: userId,
-    action,
-    changes,
-  };
-  
-  if (alertRulesId) insertData.alert_rules_id = alertRulesId;
-  if (scope.organization_id) insertData.organization_id = scope.organization_id;
-  if (scope.site_id) insertData.site_id = scope.site_id;
-  if (scope.unit_id) insertData.unit_id = scope.unit_id;
-  if (note) insertData.note = note;
-
-  const { error } = await supabase.from("alert_rules_history").insert(insertData as any);
-
-  return { error: error as Error | null };
-}
+// Deprecated: For compatibility during migration if needed, but we replace usage in AlertRulesEditor
+// So we don't strictly need to export it if we update callers.

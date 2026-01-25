@@ -4,25 +4,28 @@
  * This is the main router that merges all domain routers.
  */
 
-import { z } from 'zod';
-import { router, publicProcedure } from './index.js';
-import { organizationsRouter } from '../routers/organizations.router.js';
-import { sitesRouter } from '../routers/sites.router.js';
-import { areasRouter } from '../routers/areas.router.js';
-import { unitsRouter } from '../routers/units.router.js';
-import { readingsRouter } from '../routers/readings.router.js';
-import { alertsRouter } from '../routers/alerts.router.js';
-import { preferencesRouter } from '../routers/preferences.router.js';
-import { smsConfigRouter } from '../routers/sms-config.router.js';
-import { paymentsRouter } from '../routers/payments.router.js';
-import { adminRouter } from '../routers/admin.router.js';
-import { assetsRouter } from '../routers/assets.router.js';
-import { ttnGatewaysRouter } from '../routers/ttn-gateways.router.js';
-import { ttnDevicesRouter } from '../routers/ttn-devices.router.js';
-import { ttnSettingsRouter } from '../routers/ttn-settings.router.js';
-import { availabilityRouter } from '../routers/availability.router.js';
-import { escalationContactsRouter } from '../routers/escalation-contacts.router.js';
-import { notificationPoliciesRouter } from '../routers/notification-policies.router.js';
+import { z } from 'zod'
+import { adminRouter } from '../routers/admin.router.js'
+import { alertHistoryRouter } from '../routers/alert-history.router.js'
+import { alertRulesRouter } from '../routers/alert-rules.router.js'
+import { alertsRouter } from '../routers/alerts.router.js'
+import { areasRouter } from '../routers/areas.router.js'
+import { assetsRouter } from '../routers/assets.router.js'
+import { auditRouter } from '../routers/audit.js'
+import { availabilityRouter } from '../routers/availability.router.js'
+import { escalationContactsRouter } from '../routers/escalation-contacts.router.js'
+import { notificationPoliciesRouter } from '../routers/notification-policies.router.js'
+import { organizationsRouter } from '../routers/organizations.router.js'
+import { paymentsRouter } from '../routers/payments.router.js'
+import { preferencesRouter } from '../routers/preferences.router.js'
+import { readingsRouter } from '../routers/readings.router.js'
+import { sitesRouter } from '../routers/sites.router.js'
+import { smsConfigRouter } from '../routers/sms-config.router.js'
+import { ttnDevicesRouter } from '../routers/ttn-devices.router.js'
+import { ttnGatewaysRouter } from '../routers/ttn-gateways.router.js'
+import { ttnSettingsRouter } from '../routers/ttn-settings.router.js'
+import { unitsRouter } from '../routers/units.router.js'
+import { publicProcedure, router } from './index.js'
 
 /**
  * Application router
@@ -148,6 +151,24 @@ export const appRouter = router({
    * Procedures: listByOrg, listBySite, listByUnit, getEffective, upsert, delete
    */
   notificationPolicies: notificationPoliciesRouter,
+
+  /**
+   * Audit domain router
+   * Procedures: logEvent
+   */
+  audit: auditRouter,
+
+  /**
+   * Alert History domain router
+   * Procedures: get
+   */
+  alertHistory: alertHistoryRouter,
+
+  /**
+   * Alert Rules domain router
+   * Procedures: get, upsert, delete, clearField
+   */
+  alertRules: alertRulesRouter,
 });
 
 /**

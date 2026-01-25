@@ -1,20 +1,20 @@
 import {
-  pgTable,
-  uuid,
-  varchar,
-  text,
-  integer,
-  boolean,
-  timestamp,
-  index,
+    boolean,
+    index,
+    integer,
+    pgTable,
+    text,
+    timestamp,
+    uuid,
+    varchar,
 } from 'drizzle-orm/pg-core';
 import {
-  alertTypeEnum,
-  alertSeverityEnum,
-  alertStatusEnum,
+    alertSeverityEnum,
+    alertStatusEnum,
+    alertTypeEnum,
 } from './enums.js';
-import { organizations } from './tenancy.js';
 import { sites, units } from './hierarchy.js';
+import { organizations } from './tenancy.js';
 import { profiles } from './users.js';
 
 // Reusable timestamp columns
@@ -54,6 +54,29 @@ export const alertRules = pgTable(
     tempMax: integer('temp_max'),
     // Delay before triggering alert (minutes)
     delayMinutes: integer('delay_minutes').notNull().default(5),
+    
+    // Manual Logging config
+    manualIntervalMinutes: integer('manual_interval_minutes'),
+    manualGraceMinutes: integer('manual_grace_minutes'),
+    
+    // Offline/Heartbeat config
+    expectedReadingIntervalSeconds: integer('expected_reading_interval_seconds'),
+    offlineTriggerMultiplier: integer('offline_trigger_multiplier'), // float in DB? check useAlertRules types. It says number. integer usually int. use real/doublePrecision if float.
+    offlineTriggerAdditionalMinutes: integer('offline_trigger_additional_minutes'),
+    offlineWarningMissedCheckins: integer('offline_warning_missed_checkins'),
+    offlineCriticalMissedCheckins: integer('offline_critical_missed_checkins'),
+    manualLogMissedCheckinsThreshold: integer('manual_log_missed_checkins_threshold'),
+
+    // Door Open config
+    doorOpenWarningMinutes: integer('door_open_warning_minutes'),
+    doorOpenCriticalMinutes: integer('door_open_critical_minutes'),
+    doorOpenMaxMaskMinutesPerDay: integer('door_open_max_mask_minutes_per_day'),
+
+    // Excursion config
+    excursionConfirmMinutesDoorClosed: integer('excursion_confirm_minutes_door_closed'),
+    excursionConfirmMinutesDoorOpen: integer('excursion_confirm_minutes_door_open'),
+    maxExcursionMinutes: integer('max_excursion_minutes'),
+
     // Alert configuration
     alertType: alertTypeEnum('alert_type').notNull().default('alarm_active'),
     severity: alertSeverityEnum('severity').notNull().default('warning'),

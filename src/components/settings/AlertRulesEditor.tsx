@@ -1,21 +1,21 @@
-import { useState, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner";
-import { Save, RotateCcw, Loader2, AlertTriangle, Clock, Wifi, DoorOpen, Thermometer, X } from "lucide-react";
-import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";
 import {
-  AlertRulesRow,
-  DEFAULT_ALERT_RULES,
-  upsertAlertRules,
-  deleteAlertRules
+    AlertRulesRow,
+    DEFAULT_ALERT_RULES,
+    useClearRuleField,
+    useDeleteAlertRules,
+    useUpsertAlertRules
 } from "@/hooks/useAlertRules";
-import { insertAlertRulesHistory } from "@/hooks/useAlertRulesHistory";
+import { useInsertAlertRulesHistory } from "@/hooks/useAlertRulesHistory";
+import { useUser } from "@stackframe/react";
+import { AlertTriangle, Clock, DoorOpen, Loader2, RotateCcw, Save, Thermometer, Wifi, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface AlertRulesEditorProps {
   scope: { organization_id?: string; site_id?: string; unit_id?: string };
@@ -53,6 +53,11 @@ export function AlertRulesEditor({
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [clearingField, setClearingField] = useState<string | null>(null);
+
+  const upsertMutation = useUpsertAlertRules();
+  const deleteMutation = useDeleteAlertRules();
+  const clearFieldMutation = useClearRuleField();
+  const historyMutation = useInsertAlertRulesHistory();
 
   // Form state
   const [manualIntervalMinutes, setManualIntervalMinutes] = useState<string>("");
@@ -176,19 +181,22 @@ export function AlertRulesEditor({
       addIfChanged("offline_critical_missed_checkins", offlineCriticalMissedCheckins, parseInt);
       addIfChanged("manual_log_missed_checkins_threshold", manualLogMissedCheckinsThreshold, parseInt);
 
-      const { error } = await upsertAlertRules(scope, rules);
+      const result = await upsertMutation.mutateAsync({ scope, rules });
       
-      if (error) throw error;
-
       // Log audit history
       if (userId && Object.keys(changes).length > 0) {
-        await insertAlertRulesHistory(
-          scope,
-          existingRules?.id || null,
-          existingRules ? "UPDATE" : "CREATE",
+        const scopeCamel = {
+          organizationId: scope.organization_id,
+          siteId: scope.site_id,
+          unitId: scope.unit_id
+        };
+        await historyMutation.mutateAsync({
+          scope: scopeCamel,
+          alertRuleId: result.id,
+          action: existingRules ? "UPDATE" : "CREATE",
           changes,
-          userId
-        );
+          userId // kept for compatibility in args but unused
+        });
       }
 
       toast.success("Alert rules saved");
@@ -209,23 +217,22 @@ export function AlertRulesEditor({
       const userId = user.id;
       const oldValue = existingRules[field];
 
-      // Update the rule to set the field to null
-      const { error } = await supabase
-        .from("alert_rules")
-        .update({ [field]: null })
-        .eq("id", existingRules.id);
-
-      if (error) throw error;
+      await clearFieldMutation.mutateAsync({ ruleId: existingRules.id, field });
 
       // Log audit
       if (userId) {
-        await insertAlertRulesHistory(
-          scope,
-          existingRules.id,
-          "CLEAR_FIELD",
-          { [field]: { from: oldValue, to: null } },
-          userId
-        );
+        const scopeCamel = {
+          organizationId: scope.organization_id,
+          siteId: scope.site_id,
+          unitId: scope.unit_id
+        };
+        await historyMutation.mutateAsync({
+          scope: scopeCamel,
+          alertRuleId: existingRules.id,
+          action: "CLEAR_FIELD",
+          changes: { [field]: { from: oldValue, to: null } },
+          userId // unused
+        });
       }
 
       // Clear local state
@@ -268,6 +275,9 @@ export function AlertRulesEditor({
       setExcursionConfirmMinutesDoorClosed("");
       setExcursionConfirmMinutesDoorOpen("");
       setMaxExcursionMinutes("");
+      setOfflineWarningMissedCheckins("");
+      setOfflineCriticalMissedCheckins("");
+      setManualLogMissedCheckinsThreshold("");
       return;
     }
 
@@ -277,8 +287,7 @@ export function AlertRulesEditor({
       const userId = user.id;
 
       const oldRules = { ...existingRules };
-      const { error } = await deleteAlertRules(scope);
-      if (error) throw error;
+      await deleteMutation.mutateAsync(scope);
 
       // Log audit
       if (userId) {
@@ -304,7 +313,18 @@ export function AlertRulesEditor({
           }
         });
         if (Object.keys(changes).length > 0) {
-          await insertAlertRulesHistory(scope, oldRules.id, "DELETE", changes, userId);
+          const scopeCamel = {
+            organizationId: scope.organization_id,
+            siteId: scope.site_id,
+            unitId: scope.unit_id
+          };
+          await historyMutation.mutateAsync({
+            scope: scopeCamel,
+            alertRuleId: oldRules.id,
+            action: "DELETE",
+            changes,
+            userId
+          });
         }
       }
       
@@ -319,7 +339,6 @@ export function AlertRulesEditor({
       setExcursionConfirmMinutesDoorClosed("");
       setExcursionConfirmMinutesDoorOpen("");
       setMaxExcursionMinutes("");
-      // New fields
       setOfflineWarningMissedCheckins("");
       setOfflineCriticalMissedCheckins("");
       setManualLogMissedCheckinsThreshold("");
