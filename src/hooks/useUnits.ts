@@ -18,7 +18,7 @@
  * const createUnit = useCreateUnit();
  * await createUnit.mutateAsync({
  *   organizationId, siteId, areaId,
- *   data: { name: 'Freezer 1', unitType: 'freezer', minTemp: -25, maxTemp: -18 }
+ *   data: { name: 'Freezer 1', unitType: 'freezer', tempMin: -25, tempMax: -18 }
  * });
  * ```
  */
@@ -114,7 +114,7 @@ export function useUnit(
  *   organizationId: 'uuid',
  *   siteId: 'uuid',
  *   areaId: 'uuid',
- *   data: { name: 'Freezer 1', unitType: 'freezer', minTemp: -25, maxTemp: -18 }
+ *   data: { name: 'Freezer 1', unitType: 'freezer', tempMin: -25, tempMax: -18 }
  * });
  * ```
  */
@@ -130,10 +130,13 @@ export function useCreateUnit() {
       areaId: string;
       data: {
         name: string;
-        unitType?: string;
-        minTemp?: number;
-        maxTemp?: number;
-        alertDelayMinutes?: number;
+        unitType: 'fridge' | 'freezer' | 'display_case' | 'walk_in_cooler' | 'walk_in_freezer' | 'blast_chiller';
+        tempMin: number;
+        tempMax: number;
+        tempUnit?: 'F' | 'C';
+        manualMonitoringRequired?: boolean;
+        manualMonitoringInterval?: number | null;
+        sortOrder?: number;
       };
     }) => {
       return client.units.create.mutate(variables);
@@ -167,7 +170,7 @@ export function useCreateUnit() {
  *   siteId: 'uuid',
  *   areaId: 'uuid',
  *   unitId: 'uuid',
- *   data: { name: 'Updated Freezer', maxTemp: -16 }
+ *   data: { name: 'Updated Freezer', tempMax: -16 }
  * });
  * ```
  */
@@ -184,10 +187,13 @@ export function useUpdateUnit() {
       unitId: string;
       data: {
         name?: string;
-        unitType?: string;
-        minTemp?: number;
-        maxTemp?: number;
-        alertDelayMinutes?: number;
+        unitType?: 'fridge' | 'freezer' | 'display_case' | 'walk_in_cooler' | 'walk_in_freezer' | 'blast_chiller';
+        tempMin?: number;
+        tempMax?: number;
+        tempUnit?: 'F' | 'C';
+        manualMonitoringRequired?: boolean;
+        manualMonitoringInterval?: number | null;
+        sortOrder?: number;
       };
     }) => {
       return client.units.update.mutate(variables);
