@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
-Phase: 21 of 22 (Backend API Migration - Completion) — IN PROGRESS
-Plan: 4 of 5 complete
-Status: In progress
-Last activity: 2026-01-25 — Completed 21-04-PLAN.md (Notification Policies tRPC Router)
+Phase: 21 of 22 (Backend API Migration - Completion) — COMPLETE
+Plan: 5 of 5 complete
+Status: Phase complete
+Last activity: 2026-01-25 — Completed 21-05-PLAN.md (Frontend Hook Migration)
 
-Progress: [██████████████████░░░░░░░░░░░░░░░░░░░░░░░░] 46% (40/86 plans)
+Progress: [███████████████████░░░░░░░░░░░░░░░░░░░░░░░] 47% (41/86 plans)
 
 ## Completed Milestones
 
@@ -50,13 +50,13 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 40
-- Phases completed: 8 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing, 19-backend-api-migration-foundation, 20-backend-api-migration-core)
-- Current: Phase 21, Plan 4 of 5 complete
+- Plans completed: 41
+- Phases completed: 9 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing, 19-backend-api-migration-foundation, 20-backend-api-migration-core, 21-backend-api-migration-completion)
+- Current: Phase 21 complete
 
 **Combined:**
-- Total plans completed: 40/86
-- Total phases: 20 (8 complete in v2.0)
+- Total plans completed: 41/86
+- Total phases: 21 (9 complete in v2.0)
 - Milestones shipped: 2 (v1.0, v1.1)
 
 ## Accumulated Context
@@ -164,6 +164,8 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | ASSETS-02 | Generated keys include timestamp + random | 21-03 | Ensures unique keys without collisions |
 | AVAIL-01 | Public procedures for availability checks | 21-03 | No auth required for registration validation |
 | POLICY-01 | Use raw SQL for notification_policies queries | 21-04 | Table exists in Supabase but not Drizzle schema |
+| HOOKS-01 | TTN edge function hooks marked for future migration | 21-05 | Backend routers for edge functions not yet created |
+| HOOKS-02 | useEscalationContacts kept with Supabase | 21-05 | escalationContacts router not yet available in backend |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -191,10 +193,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-25
-**Stopped at:** Completed 21-04-PLAN.md (Notification Policies tRPC Router)
+**Stopped at:** Completed Phase 21 (Backend API Migration - Completion)
 **Resume file:** None
-**Next action:** Execute 21-05-PLAN.md (Frontend Hook Migration)
+**Next action:** Execute Phase 22 or frontend component migration
 
 ---
 
-*State updated: 2026-01-25 after completing Plan 21-04 (Notification Policies tRPC Router)*
+*State updated: 2026-01-25 after completing Plan 21-05 (Frontend Hook Migration)*
