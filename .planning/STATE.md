@@ -11,12 +11,12 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 
 Milestone: v2.1 Streamlined Deployment — IN PROGRESS
 Phase: 24 of 26 (Interactive Configuration) — IN PROGRESS
-Plan: 1 of 3 in current phase
-Status: Plan 24-01 complete
-Last activity: 2026-01-25 — Completed 24-01-PLAN.md (Input Collection & Validation)
+Plan: 2 of 3 in current phase
+Status: Plan 24-02 complete
+Last activity: 2026-01-25 — Completed 24-02-PLAN.md (Secret Generation)
 
-Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 125 plans total
-[██████░░░░░░░░░░░░░░] 1/3 plans in Phase 24
+Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 126 plans total
+[████████████░░░░░░░░] 2/3 plans in Phase 24
 
 ## v2.1 Phase Overview
 
@@ -33,7 +33,7 @@ Progress: 3 milestones shipped (v1.0, v1.1, v2.0) — 125 plans total
 | Plan | Name | Status | Commit |
 |------|------|--------|--------|
 | 24-01 | Input Collection & Validation | Complete | dcd0af1 |
-| 24-02 | Secret Generation | Pending | - |
+| 24-02 | Secret Generation | Complete | 7c86379 |
 | 24-03 | DNS Verification | Pending | - |
 
 ## Phase 23 — COMPLETE
@@ -132,6 +132,10 @@ Recent decisions affecting v2.1:
 - [24-01]: RFC 1123 FQDN regex for strict domain validation
 - [24-01]: MAX_INPUT_ATTEMPTS=5 default prevents infinite input loops
 - [24-01]: read -rsp for hidden Stack Auth secret key input
+- [24-02]: 32-char passwords for Postgres/Grafana/MinIO, 48-char for JWT
+- [24-02]: Secrets dir 700 permissions, files 600 for security
+- [24-02]: DATABASE_URL uses ${POSTGRES_PASSWORD} variable reference
+- [24-02]: Backup .env.production with timestamp before overwrite
 
 ### Tech Debt Carried Forward
 
@@ -146,10 +150,10 @@ None for v2.1.
 ## Session Continuity
 
 **Last session:** 2026-01-25
-**Stopped at:** Completed 24-01-PLAN.md (Input Collection & Validation)
+**Stopped at:** Completed 24-02-PLAN.md (Secret Generation)
 **Resume file:** None
-**Next action:** Execute 24-02-PLAN.md (Secret Generation)
+**Next action:** Execute 24-03-PLAN.md (DNS Verification)
 
 ---
 
-*State updated: 2026-01-25 after 24-01 completion*
+*State updated: 2026-01-25 after 24-02 completion*
