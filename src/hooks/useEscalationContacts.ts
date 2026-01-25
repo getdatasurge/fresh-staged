@@ -6,7 +6,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@stackframe/react";
-import { useTRPC, useTRPCClient } from "@/lib/trpc";
+import { useTRPCClient } from "@/lib/trpc";
 import { qk } from "@/lib/queryKeys";
 import { invalidateEscalationContacts } from "@/lib/invalidation";
 import { useOrgScope } from "@/hooks/useOrgScope";
@@ -31,7 +31,7 @@ export interface EscalationContact {
 export function useEscalationContacts() {
   const { orgId, isReady } = useOrgScope();
   const user = useUser();
-  const trpc = useTRPC();
+  const client = useTRPCClient();
 
   return useQuery({
     queryKey: qk.org(orgId).escalationContacts(),
@@ -39,23 +39,12 @@ export function useEscalationContacts() {
       if (!orgId || !user) return [];
 
       // Query via tRPC
-      const data = await trpc.client.escalationContacts.list.query({
+      const data = await client.escalationContacts.list.query({
         organizationId: orgId,
       });
 
-      // Map backend response to frontend EscalationContact interface
-      return data.map((contact) => ({
-        id: contact.id,
-        organization_id: contact.organizationId,
-        name: contact.name,
-        email: contact.email ?? null,
-        phone: contact.phone ?? null,
-        priority: contact.priority,
-        notification_channels: contact.notificationChannels,
-        is_active: contact.isActive,
-        user_id: contact.userId ?? null,
-        created_at: contact.createdAt,
-      })) as EscalationContact[];
+      // Backend returns snake_case fields matching frontend interface
+      return data as EscalationContact[];
     },
     enabled: isReady && !!user && !!orgId,
   });
@@ -75,12 +64,12 @@ export function useCreateEscalationContact() {
         organizationId: orgId,
         data: {
           name: contact.name,
-          email: contact.email ?? undefined,
-          phone: contact.phone ?? undefined,
+          email: contact.email,
+          phone: contact.phone,
           priority: contact.priority,
-          notificationChannels: contact.notification_channels,
-          isActive: contact.is_active,
-          userId: contact.user_id ?? undefined,
+          notification_channels: contact.notification_channels,
+          is_active: contact.is_active,
+          user_id: contact.user_id,
         },
       });
     },
@@ -107,12 +96,12 @@ export function useUpdateEscalationContact() {
         contactId: id,
         data: {
           name: updates.name,
-          email: updates.email ?? undefined,
-          phone: updates.phone ?? undefined,
+          email: updates.email,
+          phone: updates.phone,
           priority: updates.priority,
-          notificationChannels: updates.notification_channels,
-          isActive: updates.is_active,
-          userId: updates.user_id ?? undefined,
+          notification_channels: updates.notification_channels,
+          is_active: updates.is_active,
+          user_id: updates.user_id,
         },
       });
     },
