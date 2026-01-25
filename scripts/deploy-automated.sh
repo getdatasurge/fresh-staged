@@ -134,7 +134,111 @@ do_configuration() {
 do_deployment() {
     step "Executing deploy.sh..."
     cd "$PROJECT_ROOT"
-    exec "${DEPLOY_SCRIPT_DIR}/deploy.sh"
+    "${DEPLOY_SCRIPT_DIR}/deploy.sh"
+}
+
+# ===========================================
+# Health Verification
+# ===========================================
+wait_for_all_services_healthy() {
+    local max_attempts="${1:-60}"
+    local interval="${2:-5}"
+    local attempt=1
+
+    step "Verifying all services are healthy..."
+
+    while [[ $attempt -le $max_attempts ]]; do
+        local all_healthy=true
+        local failed_service=""
+
+        # Check postgres
+        if ! docker compose -f docker-compose.yml -f compose.production.yaml exec -T postgres pg_isready -U frostguard &>/dev/null; then
+            all_healthy=false
+            failed_service="postgres"
+        # Check redis
+        elif ! docker compose -f docker-compose.yml -f compose.production.yaml exec -T redis redis-cli ping &>/dev/null; then
+            all_healthy=false
+            failed_service="redis"
+        # Check backend health endpoint
+        elif ! curl -sf --max-time 5 http://localhost:3000/health &>/dev/null; then
+            all_healthy=false
+            failed_service="backend"
+        # Check caddy is running
+        elif ! docker compose -f docker-compose.yml -f compose.production.yaml ps caddy --format '{{.State}}' 2>/dev/null | grep -q "running"; then
+            all_healthy=false
+            failed_service="caddy"
+        fi
+
+        if [[ "$all_healthy" == "true" ]]; then
+            success "All critical services are healthy"
+            return 0
+        fi
+
+        echo "Waiting for $failed_service... (attempt $attempt/$max_attempts)"
+        sleep "$interval"
+        attempt=$((attempt + 1))
+    done
+
+    error "Services did not become healthy within timeout"
+    echo "  Failed service: $failed_service"
+    echo "  Check logs: docker compose logs $failed_service"
+    return 1
+}
+
+# ===========================================
+# Completion Summary
+# ===========================================
+display_completion_summary() {
+    local domain="${DOMAIN:-}"
+
+    # If DOMAIN not set, try to read from .env.production
+    if [[ -z "$domain" ]] && [[ -f "${PROJECT_ROOT}/.env.production" ]]; then
+        domain=$(grep "^DOMAIN=" "${PROJECT_ROOT}/.env.production" | cut -d= -f2)
+    fi
+
+    echo ""
+    echo -e "${GREEN}========================================"
+    echo "     FreshTrack Pro Deployment Complete!"
+    echo "========================================${NC}"
+    echo ""
+    echo "End time: $(date '+%Y-%m-%d %H:%M:%S')"
+    echo ""
+
+    if [[ -n "$domain" ]]; then
+        echo -e "${BLUE}Access URLs:${NC}"
+        echo "  Dashboard:    https://${domain}"
+        echo "  API:          https://${domain}/api"
+        echo "  Health:       https://${domain}/api/health"
+        echo "  Monitoring:   https://monitoring.${domain}"
+        echo "  Status:       https://status.${domain}"
+        echo ""
+    else
+        echo -e "${YELLOW}Note: Domain not detected. Check .env.production${NC}"
+        echo ""
+    fi
+
+    echo -e "${BLUE}Service Status:${NC}"
+    docker compose -f docker-compose.yml -f compose.production.yaml ps --format "table {{.Name}}\t{{.Status}}" 2>/dev/null || \
+        docker compose -f docker-compose.yml -f compose.production.yaml ps
+    echo ""
+
+    echo -e "${BLUE}Next Steps:${NC}"
+    echo "  1. Visit the dashboard to verify the application is working"
+    echo "  2. Create your first organization and user"
+    echo "  3. Configure alerting thresholds"
+    echo ""
+    echo -e "${BLUE}Useful Commands:${NC}"
+    echo "  View logs:        docker compose logs -f"
+    echo "  Service status:   docker compose ps"
+    echo "  Backend logs:     docker compose logs -f backend"
+    echo "  Restart:          docker compose restart"
+    echo "  Stop:             docker compose down"
+    echo ""
+    echo -e "${BLUE}Troubleshooting:${NC}"
+    echo "  Re-run deployment:  ./scripts/deploy-automated.sh"
+    echo "  Full reset:         ./scripts/deploy-automated.sh --reset"
+    echo "  Rollback:           ./scripts/rollback.sh"
+    echo ""
 }
 
 # ===========================================
@@ -162,15 +266,10 @@ main() {
     run_step "deploy-prerequisites" do_prerequisites
     run_step "deploy-configuration" do_configuration
     run_step "deploy-deployment" do_deployment
+    run_step "deploy-verify-health" wait_for_all_services_healthy
 
-    # This point is only reached if deploy.sh succeeds
-    echo ""
-    echo "========================================"
-    echo -e "${GREEN}Automated Deployment Complete${NC}"
-    echo "========================================"
-    echo ""
-    echo "End time: $(date '+%Y-%m-%d %H:%M:%S')"
-    echo ""
+    # Display completion summary (not checkpointed - always show on success)
+    display_completion_summary
 }
 
 # Entry point
