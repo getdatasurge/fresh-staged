@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 Milestone: v2.0 Real-Time & Billing — ACTIVE
 Phase: 21 of 22 (Backend API Migration - Completion)
-Plan: 6 of 6 complete
-Status: Phase complete
-Last activity: 2026-01-25 — Completed 21-06-PLAN.md (TTN Settings Router)
+Plan: 7 of 9 complete
+Status: In progress
+Last activity: 2026-01-25 — Completed 21-07-PLAN.md (Escalation Contacts Router)
 
-Progress: [████████████████████░░░░░░░░░░░░░░░░░░░░░░] 49% (42/86 plans)
+Progress: [████████████████████░░░░░░░░░░░░░░░░░░░░░░] 50% (43/86 plans)
 
 ## Completed Milestones
 
@@ -50,13 +50,13 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - Requirements completed: 23/24 (AUTH-02 blocked)
 
 **v2.0 Milestone:**
-- Plans completed: 42
-- Phases completed: 9 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing, 19-backend-api-migration-foundation, 20-backend-api-migration-core, 21-backend-api-migration-completion)
-- Current: Phase 21 complete
+- Plans completed: 43
+- Phases completed: 8 (14-real-time-foundation, 15-background-jobs-infrastructure, 16-sms-notifications, 17-email-digests, 18-stripe-billing, 19-backend-api-migration-foundation, 20-backend-api-migration-core)
+- Current: Phase 21 plan 7 of 9 complete
 
 **Combined:**
-- Total plans completed: 42/86
-- Total phases: 21 (9 complete in v2.0)
+- Total plans completed: 43/86
+- Total phases: 21 (8 complete in v2.0, Phase 21 in progress)
 - Milestones shipped: 2 (v1.0, v1.1)
 
 ## Accumulated Context
@@ -165,10 +165,13 @@ Archive: `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 | AVAIL-01 | Public procedures for availability checks | 21-03 | No auth required for registration validation |
 | POLICY-01 | Use raw SQL for notification_policies queries | 21-04 | Table exists in Supabase but not Drizzle schema |
 | HOOKS-01 | TTN edge function hooks marked for future migration | 21-05 | Backend routers for edge functions not yet created |
-| HOOKS-02 | useEscalationContacts kept with Supabase | 21-05 | escalationContacts router not yet available in backend |
+| HOOKS-02 | useEscalationContacts ready for migration | 21-07 | escalationContactsRouter now available in backend |
 | TTN-SETTINGS-01 | Raw SQL for ttn_settings table (not in Drizzle schema) | 21-06 | Follows notification-policy.service.ts pattern |
 | TTN-SETTINGS-02 | Mock connection test result (TTN API integration planned for future) | 21-06 | Test procedure returns mock success |
 | TTN-SETTINGS-03 | Admin/owner role for update, all roles for get/test | 21-06 | Consistent with other settings routers |
+| ESCALATION-01 | Use raw SQL via drizzle-orm sql template (table not in Drizzle schema) | 21-07 | Follows ttn-settings.service.ts pattern |
+| ESCALATION-02 | Manager+ role required for mutations (create/update/delete) | 21-07 | Managers can manage escalation contacts |
+| ESCALATION-03 | Soft delete via is_active = false | 21-07 | Preserves audit trail, matches existing hook behavior |
 
 See also: .planning/PROJECT.md Key Decisions table
 
@@ -196,10 +199,10 @@ See also: .planning/PROJECT.md Key Decisions table
 ## Session Continuity
 
 **Last session:** 2026-01-25
-**Stopped at:** Completed Plan 21-06 (TTN Settings Router)
+**Stopped at:** Completed Plan 21-07 (Escalation Contacts Router)
 **Resume file:** None
-**Next action:** Execute Phase 22 or frontend component migration
+**Next action:** Execute Plan 21-08 or 21-09 to complete Phase 21
 
 ---
 
-*State updated: 2026-01-25 after completing Plan 21-06 (TTN Settings Router)*
+*State updated: 2026-01-25 after completing Plan 21-07 (Escalation Contacts Router)*
