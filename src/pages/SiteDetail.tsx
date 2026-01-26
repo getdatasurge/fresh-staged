@@ -27,7 +27,6 @@ import { EntityDashboard } from "@/features/dashboard-layout"
 import { useToast } from "@/hooks/use-toast"
 import { useOrgAlertRules, useSiteAlertRules } from "@/hooks/useAlertRules"
 import { useEntityDashboardUrl } from "@/hooks/useEntityDashboardUrl"
-import { useSoftDelete } from "@/hooks/useSoftDelete"
 import { usePermissions } from "@/hooks/useUserRole"
 import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
 import { useUser } from "@stackframe/react"
@@ -85,7 +84,6 @@ const SiteDetail = () => {
   const { effectiveOrgId, isInitialized: identityInitialized } = useEffectiveIdentity();
   const { layoutKey } = useEntityDashboardUrl();
   const { canDeleteEntities, isLoading: permissionsLoading } = usePermissions();
-  const { softDeleteSite } = useSoftDelete();
 
   const siteQuery = trpc.sites.get.useQuery(
     { siteId: siteId!, organizationId: effectiveOrgId! },
@@ -263,10 +261,17 @@ const SiteDetail = () => {
   };
 
   const handleDeleteSite = async () => {
-    if (!user?.id || !siteId || !site) return;
-    const result = await softDeleteSite(siteId, user.id, true);
-    if (result.success) {
-      navigate('/sites');
+    if (!user?.id || !siteId || !effectiveOrgId) return;
+    try {
+      await trpcClient.sites.delete.mutate({
+        organizationId: effectiveOrgId,
+        siteId: siteId,
+      });
+      toast({ title: "Site deleted" });
+      navigate("/sites");
+    } catch (err) {
+      console.error("Error deleting site:", err);
+      toast({ title: "Failed to delete site", variant: "destructive" });
     }
   };
 
