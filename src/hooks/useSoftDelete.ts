@@ -1,57 +1,225 @@
-import { toast } from "sonner";
+import { toast } from 'sonner'
+import { useTRPC } from '../lib/trpc'
 
 export interface SoftDeleteResult {
-  success: boolean;
-  error?: string;
-}
-
-const unavailable = async (): Promise<SoftDeleteResult> => {
-  const message = "Restore/delete actions are unavailable during Supabase removal.";
-  toast.error(message);
-  return { success: false, error: message };
-};
-
-export async function restoreUnit(_unitId: string, _userId: string): Promise<SoftDeleteResult> {
-  return unavailable();
-}
-
-export async function restoreArea(_areaId: string, _userId: string): Promise<SoftDeleteResult> {
-  return unavailable();
-}
-
-export async function restoreSite(_siteId: string, _userId: string): Promise<SoftDeleteResult> {
-  return unavailable();
-}
-
-export async function restoreDevice(_deviceId: string, _userId: string): Promise<SoftDeleteResult> {
-  return unavailable();
-}
-
-export async function restoreSensor(_sensorId: string, _userId: string): Promise<SoftDeleteResult> {
-  return unavailable();
-}
-
-export async function permanentlyDeleteUnit(_unitId: string, _userId: string): Promise<SoftDeleteResult> {
-  return unavailable();
-}
-
-export async function permanentlyDeleteArea(_areaId: string, _userId: string): Promise<SoftDeleteResult> {
-  return unavailable();
-}
-
-export async function permanentlyDeleteSite(_siteId: string, _userId: string): Promise<SoftDeleteResult> {
-  return unavailable();
+	success: boolean
+	error?: string
 }
 
 export function useSoftDelete() {
-  return {
-    restoreUnit,
-    restoreArea,
-    restoreSite,
-    restoreDevice,
-    restoreSensor,
-    permanentlyDeleteUnit,
-    permanentlyDeleteArea,
-    permanentlyDeleteSite,
-  };
+	const trpc = useTRPC()
+
+	const restoreUnitMutation = trpc.units.restore.useMutation()
+	const restoreAreaMutation = trpc.areas.restore.useMutation()
+	const restoreSiteMutation = trpc.sites.restore.useMutation()
+	const restoreDeviceMutation = trpc.ttnDevices.restore.useMutation()
+	const permanentlyDeleteUnitMutation =
+		trpc.units.permanentlyDelete.useMutation()
+	const permanentlyDeleteAreaMutation =
+		trpc.areas.permanentlyDelete.useMutation()
+	const permanentlyDeleteSiteMutation =
+		trpc.sites.permanentlyDelete.useMutation()
+	const permanentlyDeleteDeviceMutation =
+		trpc.ttnDevices.permanentlyDelete.useMutation()
+
+	const restoreUnit = async (
+		unitId: string,
+		areaId: string,
+		siteId: string,
+		organizationId: string,
+	): Promise<SoftDeleteResult> => {
+		try {
+			await restoreUnitMutation.mutateAsync({
+				organizationId,
+				siteId,
+				areaId,
+				unitId,
+			})
+			toast.success('Unit restored successfully')
+			return { success: true }
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : 'Failed to restore unit'
+			toast.error(message)
+			return { success: false, error: message }
+		}
+	}
+
+	const restoreArea = async (
+		areaId: string,
+		siteId: string,
+		organizationId: string,
+	): Promise<SoftDeleteResult> => {
+		try {
+			await restoreAreaMutation.mutateAsync({
+				organizationId,
+				siteId,
+				areaId,
+			})
+			toast.success('Area restored successfully')
+			return { success: true }
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : 'Failed to restore area'
+			toast.error(message)
+			return { success: false, error: message }
+		}
+	}
+
+	const restoreSite = async (
+		siteId: string,
+		organizationId: string,
+	): Promise<SoftDeleteResult> => {
+		try {
+			await restoreSiteMutation.mutateAsync({
+				organizationId,
+				siteId,
+			})
+			toast.success('Site restored successfully')
+			return { success: true }
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : 'Failed to restore site'
+			toast.error(message)
+			return { success: false, error: message }
+		}
+	}
+
+	const restoreDevice = async (
+		deviceId: string,
+		organizationId: string,
+	): Promise<SoftDeleteResult> => {
+		try {
+			await restoreDeviceMutation.mutateAsync({
+				organizationId,
+				deviceId,
+			})
+			toast.success('Device restored successfully')
+			return { success: true }
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : 'Failed to restore device'
+			toast.error(message)
+			return { success: false, error: message }
+		}
+	}
+
+	// Sensors are treated as devices in the codebase
+	const restoreSensor = async (
+		sensorId: string,
+		organizationId: string,
+	): Promise<SoftDeleteResult> => {
+		return restoreDevice(sensorId, organizationId)
+	}
+
+	const permanentlyDeleteUnit = async (
+		unitId: string,
+		areaId: string,
+		siteId: string,
+		organizationId: string,
+	): Promise<SoftDeleteResult> => {
+		try {
+			await permanentlyDeleteUnitMutation.mutateAsync({
+				organizationId,
+				siteId,
+				areaId,
+				unitId,
+			})
+			toast.success('Unit permanently deleted')
+			return { success: true }
+		} catch (error) {
+			const message =
+				error instanceof Error
+					? error.message
+					: 'Failed to permanently delete unit'
+			toast.error(message)
+			return { success: false, error: message }
+		}
+	}
+
+	const permanentlyDeleteArea = async (
+		areaId: string,
+		siteId: string,
+		organizationId: string,
+	): Promise<SoftDeleteResult> => {
+		try {
+			await permanentlyDeleteAreaMutation.mutateAsync({
+				organizationId,
+				siteId,
+				areaId,
+			})
+			toast.success('Area permanently deleted')
+			return { success: true }
+		} catch (error) {
+			const message =
+				error instanceof Error
+					? error.message
+					: 'Failed to permanently delete area'
+			toast.error(message)
+			return { success: false, error: message }
+		}
+	}
+
+	const permanentlyDeleteSite = async (
+		siteId: string,
+		organizationId: string,
+	): Promise<SoftDeleteResult> => {
+		try {
+			await permanentlyDeleteSiteMutation.mutateAsync({
+				organizationId,
+				siteId,
+			})
+			toast.success('Site permanently deleted')
+			return { success: true }
+		} catch (error) {
+			const message =
+				error instanceof Error
+					? error.message
+					: 'Failed to permanently delete site'
+			toast.error(message)
+			return { success: false, error: message }
+		}
+	}
+
+	const permanentlyDeleteDevice = async (
+		deviceId: string,
+		organizationId: string,
+	): Promise<SoftDeleteResult> => {
+		try {
+			await permanentlyDeleteDeviceMutation.mutateAsync({
+				organizationId,
+				deviceId,
+			})
+			toast.success('Device permanently deleted')
+			return { success: true }
+		} catch (error) {
+			const message =
+				error instanceof Error
+					? error.message
+					: 'Failed to permanently delete device'
+			toast.error(message)
+			return { success: false, error: message }
+		}
+	}
+
+	// Sensors are treated as devices in the codebase
+	const permanentlyDeleteSensor = async (
+		sensorId: string,
+		organizationId: string,
+	): Promise<SoftDeleteResult> => {
+		return permanentlyDeleteDevice(sensorId, organizationId)
+	}
+
+	return {
+		restoreUnit,
+		restoreArea,
+		restoreSite,
+		restoreDevice,
+		restoreSensor,
+		permanentlyDeleteUnit,
+		permanentlyDeleteArea,
+		permanentlyDeleteSite,
+		permanentlyDeleteDevice,
+		permanentlyDeleteSensor,
+	}
 }
