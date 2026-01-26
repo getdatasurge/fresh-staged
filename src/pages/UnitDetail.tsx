@@ -24,7 +24,6 @@ import { DEFAULT_ALERT_RULES, useUnitAlertRules } from "@/hooks/useAlertRules"
 import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
 import { useEntityDashboardUrl } from "@/hooks/useEntityDashboardUrl"
 import { useLoraSensorsByUnit } from "@/hooks/useLoraSensors"
-import { useSoftDelete } from "@/hooks/useSoftDelete"
 import { computeUnitAlerts } from "@/hooks/useUnitAlerts"
 import { UnitStatusInfo, computeUnitStatus } from "@/hooks/useUnitStatus"
 import { usePermissions } from "@/hooks/useUserRole"
@@ -110,7 +109,6 @@ const UnitDetail = () => {
   const { effectiveOrgId, isInitialized: identityInitialized } = useEffectiveIdentity();
   const { layoutKey } = useEntityDashboardUrl();
   const { canDeleteEntities, isLoading: permissionsLoading } = usePermissions();
-  const { softDeleteUnit, getActiveChildrenCount } = useSoftDelete();
 
   const [timeRange, setTimeRange] = useState("24h");
   const [isExporting, setIsExporting] = useState(false);
@@ -118,9 +116,34 @@ const UnitDetail = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Queries using tRPC
-  const unitQuery = trpc.units.getWithHierarchy.useQuery(
-    { unitId: unitId!, organizationId: effectiveOrgId! },
-    { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
+  const unitLookupQuery = trpc.units.listByOrg.useQuery(
+    { organizationId: effectiveOrgId! },
+    { enabled: !!effectiveOrgId && identityInitialized }
+  );
+
+  const unitLookup = useMemo(() => {
+    if (!unitLookupQuery.data) return null;
+    return unitLookupQuery.data.find((u) => u.id === unitId) || null;
+  }, [unitLookupQuery.data, unitId]);
+
+  const unitLookupSiteId = unitLookup?.siteId ?? "";
+  const unitLookupAreaId = unitLookup?.areaId ?? "";
+
+  const unitQuery = trpc.units.get.useQuery(
+    {
+      unitId: unitId!,
+      organizationId: effectiveOrgId!,
+      siteId: unitLookupSiteId,
+      areaId: unitLookupAreaId,
+    },
+    {
+      enabled:
+        !!unitId &&
+        !!unitLookupSiteId &&
+        !!unitLookupAreaId &&
+        !!effectiveOrgId &&
+        identityInitialized,
+    }
   );
 
   const fromDate = useMemo(() => {
@@ -155,6 +178,15 @@ const UnitDetail = () => {
     { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
   );
 
+  const latestManualLogQuery = trpc.readings.listManual.useQuery(
+    {
+      unitId: unitId!,
+      organizationId: effectiveOrgId!,
+      limit: 1,
+    },
+    { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
+  );
+
   const eventsQuery = trpc.audit.list.useQuery(
     {
       unitId: unitId!,
@@ -178,13 +210,13 @@ const UnitDetail = () => {
   const siblingsQuery = trpc.units.list.useQuery(
     {
       organizationId: effectiveOrgId!,
-      siteId: unitQuery.data?.siteId!,
-      areaId: unitQuery.data?.areaId!,
+      siteId: unitLookupSiteId,
+      areaId: unitLookupAreaId,
     },
-    { enabled: !!unitQuery.data?.areaId && !!effectiveOrgId }
+    { enabled: !!unitLookupAreaId && !!effectiveOrgId }
   );
 
-  const isLoading = unitQuery.isLoading || identityInitialized === false;
+  const isLoading = unitLookupQuery.isLoading || unitQuery.isLoading || identityInitialized === false;
   const { data: loraSensors } = useLoraSensorsByUnit(unitId || null);
   const { data: alertRules } = useUnitAlertRules(unitId || null);
   const [isTabVisible, setIsTabVisible] = useState(true);
@@ -199,17 +231,19 @@ const UnitDetail = () => {
       unitQuery.refetch();
       readingsQuery.refetch();
       manualLogsQuery.refetch();
+      latestManualLogQuery.refetch();
       eventsQuery.refetch();
       deviceQuery.refetch();
       setRefreshTick(prev => prev + 1);
     }, 30000); // 30s polling
 
     return () => clearInterval(interval);
-  }, [unitId, isTabVisible, unitQuery, readingsQuery, manualLogsQuery, eventsQuery, deviceQuery]);
+  }, [unitId, isTabVisible, unitQuery, readingsQuery, manualLogsQuery, latestManualLogQuery, eventsQuery, deviceQuery]);
 
   // Derived data from tRPC queries
   const unit = useMemo(() => {
-    if (!unitQuery.data) return null;
+    if (!unitQuery.data || !unitLookup) return null;
+    const lastManualLogAt = latestManualLogQuery.data?.[0]?.recordedAt;
     return {
       id: unitQuery.data.id,
       name: unitQuery.data.name,
@@ -219,19 +253,19 @@ const UnitDetail = () => {
       temp_limit_low: unitQuery.data.tempMin,
       last_temp_reading: unitQuery.data.lastTemperature,
       last_reading_at: unitQuery.data.lastReadingAt?.toISOString() || null,
-      last_manual_log_at: (unitQuery.data as any).lastManualLogAt?.toISOString() || null,
+      last_manual_log_at: lastManualLogAt ? lastManualLogAt.toISOString() : null,
       manual_log_cadence: unitQuery.data.manualMonitoringInterval || 240,
       area: {
-        id: unitQuery.data.areaId,
-        name: (unitQuery.data as any).areaName,
+        id: unitLookup.areaId,
+        name: unitLookup.areaName,
         site: {
-          id: (unitQuery.data as any).siteId,
-          name: (unitQuery.data as any).siteName,
+          id: unitLookup.siteId,
+          name: unitLookup.siteName,
           organization_id: effectiveOrgId!,
         }
       }
     } as UnitData;
-  }, [unitQuery.data, effectiveOrgId]);
+  }, [unitQuery.data, unitLookup, latestManualLogQuery.data, effectiveOrgId]);
 
   const siblingUnits = useMemo(() => {
     if (!siblingsQuery.data) return [];
@@ -393,11 +427,12 @@ const UnitDetail = () => {
     unitQuery.refetch();
     readingsQuery.refetch();
     manualLogsQuery.refetch();
+    latestManualLogQuery.refetch();
     eventsQuery.refetch();
     deviceQuery.refetch();
     doorEventsQuery.refetch();
     setRefreshTick(prev => prev + 1);
-  }, [unitQuery, readingsQuery, manualLogsQuery, eventsQuery, deviceQuery, doorEventsQuery]);
+  }, [unitQuery, readingsQuery, manualLogsQuery, latestManualLogQuery, eventsQuery, deviceQuery, doorEventsQuery]);
 
   const derivedStatus = useMemo(() => {
     if (!unit) return null;
@@ -464,16 +499,16 @@ const UnitDetail = () => {
   };
 
   const handleDeleteUnit = async () => {
-    if (!user?.id || !unitId || !effectiveOrgId || !unitQuery.data) return;
+    if (!user?.id || !unitId || !effectiveOrgId || !unitLookup) return;
     try {
       await trpcClient.units.delete.mutate({
         organizationId: effectiveOrgId,
-        siteId: (unitQuery.data as any).siteId,
-        areaId: unitQuery.data!.areaId,
+        siteId: unitLookup.siteId,
+        areaId: unitLookup.areaId,
         unitId: unitId,
       });
       toast({ title: "Unit deleted" });
-      navigate(`/sites/${(unitQuery.data as any).siteId}/areas/${unitQuery.data!.areaId}`);
+      navigate(`/sites/${unitLookup.siteId}/areas/${unitLookup.areaId}`);
     } catch (err) {
       console.error("Error deleting unit:", err);
       toast({ title: "Failed to delete unit", variant: "destructive" });
