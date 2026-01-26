@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/DashboardLayout";
 import { usePermissions } from "@/hooks/useUserRole";
 import { DeleteConfirmationDialog, DeleteEntityType } from "@/components/ui/delete-confirmation-dialog";
@@ -99,128 +98,13 @@ const RecentlyDeleted = () => {
 
   const loadDeletedItems = async () => {
     setIsLoading(true);
-    const allItems: DeletedItem[] = [];
 
     try {
-      // Load deleted sites
-      const { data: sites } = await supabase
-        .from("sites")
-        .select("id, name, deleted_at, deleted_by")
-        .not("deleted_at", "is", null)
-        .order("deleted_at", { ascending: false });
-
-      if (sites) {
-        for (const site of sites) {
-          allItems.push({
-            id: site.id,
-            name: site.name,
-            entityType: "site",
-            deletedAt: site.deleted_at!,
-            deletedBy: site.deleted_by,
-            deletedByName: null, // Will be loaded separately if needed
-            parentPath: "",
-          });
-        }
-      }
-
-      // Load deleted areas
-      const { data: areas } = await supabase
-        .from("areas")
-        .select("id, name, deleted_at, deleted_by, site:sites(name)")
-        .not("deleted_at", "is", null)
-        .order("deleted_at", { ascending: false });
-
-      if (areas) {
-        for (const area of areas) {
-          allItems.push({
-            id: area.id,
-            name: area.name,
-            entityType: "area",
-            deletedAt: area.deleted_at!,
-            deletedBy: area.deleted_by,
-            deletedByName: null,
-            parentPath: area.site?.name || "Unknown Site",
-          });
-        }
-      }
-
-      // Load deleted units
-      const { data: units } = await supabase
-        .from("units")
-        .select("id, name, deleted_at, deleted_by, area:areas(name, site:sites(name))")
-        .not("deleted_at", "is", null)
-        .order("deleted_at", { ascending: false });
-
-      if (units) {
-        for (const unit of units) {
-          const siteName = unit.area?.site?.name || "Unknown Site";
-          const areaName = unit.area?.name || "Unknown Area";
-          allItems.push({
-            id: unit.id,
-            name: unit.name,
-            entityType: "unit",
-            deletedAt: unit.deleted_at!,
-            deletedBy: unit.deleted_by,
-            deletedByName: null,
-            parentPath: `${siteName} > ${areaName}`,
-          });
-        }
-      }
-
-      // Load deleted devices
-      const { data: devices } = await supabase
-        .from("devices")
-        .select("id, serial_number, deleted_at, deleted_by, unit:units(name, area:areas(name, site:sites(name)))")
-        .not("deleted_at", "is", null)
-        .order("deleted_at", { ascending: false });
-
-      if (devices) {
-        for (const device of devices) {
-          const siteName = device.unit?.area?.site?.name || "Unknown";
-          const areaName = device.unit?.area?.name || "Unknown";
-          const unitName = device.unit?.name || "Unassigned";
-          allItems.push({
-            id: device.id,
-            name: device.serial_number,
-            entityType: "device",
-            deletedAt: device.deleted_at!,
-            deletedBy: device.deleted_by,
-            deletedByName: null,
-            parentPath: device.unit ? `${siteName} > ${areaName} > ${unitName}` : "Unassigned",
-          });
-        }
-      }
-
-      // Load deleted sensors
-      const { data: sensors } = await supabase
-        .from("lora_sensors")
-        .select("id, name, deleted_at, deleted_by, site:sites(name), unit:units(name)")
-        .not("deleted_at", "is", null)
-        .order("deleted_at", { ascending: false });
-
-      if (sensors) {
-        for (const sensor of sensors) {
-          const siteName = sensor.site?.name || "";
-          const unitName = sensor.unit?.name || "";
-          allItems.push({
-            id: sensor.id,
-            name: sensor.name,
-            entityType: "sensor",
-            deletedAt: sensor.deleted_at!,
-            deletedBy: sensor.deleted_by,
-            deletedByName: null,
-            parentPath: unitName ? `${siteName} > ${unitName}` : siteName || "Unassigned",
-          });
-        }
-      }
-
-      // Sort all items by deleted_at descending
-      allItems.sort((a, b) => new Date(b.deletedAt).getTime() - new Date(a.deletedAt).getTime());
-
-      setItems(allItems);
+      setItems([]);
     } catch (error) {
       console.error("Failed to load deleted items:", error);
     }
+
     setIsLoading(false);
   };
 
@@ -327,6 +211,7 @@ const RecentlyDeleted = () => {
                 <div className="text-center py-12 text-muted-foreground">
                   <Trash2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No deleted items found</p>
+                  <p className="text-sm mt-2">Recently deleted listings are being migrated to tRPC.</p>
                 </div>
               ) : (
                 <Table>

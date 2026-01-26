@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@stackframe/react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,14 +26,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
+import { useTRPC } from "@/lib/trpc";
 import {
   Loader2,
-  Search,
   Trash2,
   AlertTriangle,
   Building2,
   MapPin,
-  LayoutGrid,
   Thermometer,
   Radio,
   Bell,
@@ -44,6 +43,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
+// TODO: These interfaces should come from tRPC when admin.orphans endpoint is added
 interface OrphanOrg {
   org_id: string;
   org_name: string;
@@ -74,6 +74,8 @@ const DataMaintenance = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const user = useUser();
+  const trpc = useTRPC();
+  const { isInitialized: identityInitialized } = useEffectiveIdentity();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
@@ -86,52 +88,38 @@ const DataMaintenance = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      checkAdminAccess();
-    }
-  }, [user]);
-
-  const checkAdminAccess = async () => {
-    try {
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-
-      // Check if user has any admin/owner role
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
-
-      const hasAdminRole = roles?.some(r => r.role === "owner" || r.role === "admin");
-      
-      if (!hasAdminRole) {
-        toast({ title: "Access Denied", description: "Admin access required", variant: "destructive" });
-        navigate("/dashboard");
-        return;
-      }
-
+  // Use admin stats to check access - if we can query this, user has admin access
+  const adminStatsQuery = trpc.admin.systemStats.useQuery(undefined, {
+    enabled: identityInitialized && !!user,
+    retry: false,
+    onError: () => {
+      // Access denied
+      toast({ title: "Access Denied", description: "Admin access required", variant: "destructive" });
+      navigate("/dashboard");
+    },
+    onSuccess: () => {
       setIsAdmin(true);
       setIsLoading(false);
-      await scanOrphans();
-      await loadCleanupJobs();
-    } catch (error) {
-      console.error("Error checking access:", error);
-      navigate("/dashboard");
     }
-  };
+  });
+
+  useEffect(() => {
+    if (adminStatsQuery.isSuccess) {
+      scanOrphans();
+      loadCleanupJobs();
+    }
+  }, [adminStatsQuery.isSuccess]);
 
   const scanOrphans = async () => {
     setIsScanning(true);
     try {
-      const { data, error } = await supabase.rpc("find_orphan_organizations");
-      
-      if (error) throw error;
-      
-      setOrphanOrgs(data || []);
-      console.log(`[DataMaintenance] Found ${data?.length || 0} orphan organizations`);
+      // TODO: Add trpc.admin.findOrphanOrganizations endpoint
+      // For now, show placeholder message
+      toast({
+        title: "Feature migration in progress",
+        description: "Orphan organization scanning is being migrated to tRPC. Check back soon."
+      });
+      setOrphanOrgs([]);
     } catch (error: any) {
       console.error("Error scanning orphans:", error);
       toast({ title: "Scan Failed", description: error.message, variant: "destructive" });
@@ -142,14 +130,9 @@ const DataMaintenance = () => {
 
   const loadCleanupJobs = async () => {
     try {
-      const { data, error } = await supabase
-        .from("org_cleanup_jobs")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-      setCleanupJobs(data || []);
+      // TODO: Add trpc.admin.listCleanupJobs endpoint
+      // For now, return empty
+      setCleanupJobs([]);
     } catch (error: any) {
       console.error("Error loading cleanup jobs:", error);
     }
@@ -158,26 +141,11 @@ const DataMaintenance = () => {
   const handleSoftDelete = async (org: OrphanOrg) => {
     setIsDeleting(true);
     try {
-      if (!user?.id) {
-        toast({ title: "Authentication required", variant: "destructive" });
-        return;
-      }
-
-      const { data, error } = await supabase.rpc("soft_delete_organization", {
-        p_org_id: org.org_id,
-        p_user_id: user.id,
+      // TODO: Add trpc.admin.softDeleteOrganization endpoint
+      toast({
+        title: "Feature migration in progress",
+        description: "Organization soft delete is being migrated to tRPC."
       });
-
-      if (error) throw error;
-
-      toast({ 
-        title: "Organization Soft Deleted", 
-        description: `${org.org_name} has been marked as deleted. Slug "${org.org_slug}" is now available.` 
-      });
-      
-      // Refresh the list
-      await scanOrphans();
-      await loadCleanupJobs();
       setDeleteDialogOpen(false);
       setSelectedOrg(null);
     } catch (error: any) {
@@ -196,20 +164,11 @@ const DataMaintenance = () => {
 
     setIsDeleting(true);
     try {
-      const { data, error } = await supabase.rpc("hard_delete_organization", {
-        p_org_id: org.org_id,
+      // TODO: Add trpc.admin.hardDeleteOrganization endpoint
+      toast({
+        title: "Feature migration in progress",
+        description: "Organization hard delete is being migrated to tRPC."
       });
-
-      if (error) throw error;
-
-      toast({ 
-        title: "Organization Permanently Deleted", 
-        description: `${org.org_name} and all its data have been permanently removed.` 
-      });
-      
-      // Refresh the list
-      await scanOrphans();
-      await loadCleanupJobs();
       setHardDeleteDialogOpen(false);
       setSelectedOrg(null);
       setDeleteConfirmText("");
@@ -222,11 +181,11 @@ const DataMaintenance = () => {
   };
 
   const getTotalDependents = (org: OrphanOrg) => {
-    return org.sites_count + org.areas_count + org.units_count + 
+    return org.sites_count + org.areas_count + org.units_count +
            org.sensors_count + org.gateways_count + org.alerts_count + org.event_logs_count;
   };
 
-  if (isLoading) {
+  if (isLoading || adminStatsQuery.isLoading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
@@ -259,6 +218,44 @@ const DataMaintenance = () => {
           </Button>
         </div>
 
+        {/* System Stats Card (from tRPC) */}
+        {adminStatsQuery.data && (
+          <Card>
+            <CardHeader>
+              <CardTitle>System Overview</CardTitle>
+              <CardDescription>Current database statistics</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold">{adminStatsQuery.data.organizations}</p>
+                  <p className="text-xs text-muted-foreground">Organizations</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold">{adminStatsQuery.data.users}</p>
+                  <p className="text-xs text-muted-foreground">Users</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold">{adminStatsQuery.data.sites}</p>
+                  <p className="text-xs text-muted-foreground">Sites</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold">{adminStatsQuery.data.units}</p>
+                  <p className="text-xs text-muted-foreground">Units</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold">{adminStatsQuery.data.readings.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Readings</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold">{adminStatsQuery.data.alerts}</p>
+                  <p className="text-xs text-muted-foreground">Alerts</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Orphan Organizations */}
         <Card>
           <CardHeader>
@@ -287,6 +284,7 @@ const DataMaintenance = () => {
               <div className="text-center py-8 text-muted-foreground">
                 <Building2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p>No orphan organizations found</p>
+                <p className="text-sm mt-2">Orphan scanning is being migrated to tRPC</p>
               </div>
             ) : (
               <Table>
@@ -397,6 +395,7 @@ const DataMaintenance = () => {
               <div className="text-center py-8 text-muted-foreground">
                 <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p>No cleanup jobs yet</p>
+                <p className="text-sm mt-2">Cleanup job listing is being migrated to tRPC</p>
               </div>
             ) : (
               <Table>
@@ -421,7 +420,7 @@ const DataMaintenance = () => {
                         <Badge variant="outline">{job.reason}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge 
+                        <Badge
                           variant={
                             job.status === "SUCCEEDED" ? "default" :
                             job.status === "FAILED" ? "destructive" :
@@ -451,7 +450,7 @@ const DataMaintenance = () => {
             <AlertDialogTitle>Soft Delete Organization?</AlertDialogTitle>
             <AlertDialogDescription className="space-y-3">
               <p>
-                This will mark <strong>{selectedOrg?.org_name}</strong> as deleted and free up the slug 
+                This will mark <strong>{selectedOrg?.org_name}</strong> as deleted and free up the slug
                 "<code className="bg-muted px-1 py-0.5 rounded">{selectedOrg?.org_slug}</code>".
               </p>
               <p>
@@ -494,7 +493,7 @@ const DataMaintenance = () => {
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3">
               <p>
-                This will <strong>permanently delete</strong> <strong>{selectedOrg?.org_name}</strong> 
+                This will <strong>permanently delete</strong> <strong>{selectedOrg?.org_name}</strong>
                 and ALL its data. This action cannot be undone.
               </p>
               {selectedOrg && (
