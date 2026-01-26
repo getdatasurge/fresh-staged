@@ -1,147 +1,83 @@
 # Technology Stack
 
-**Analysis Date:** 2026-01-23
+**Analysis Date:** 2026-01-26
 
 ## Languages
 
 **Primary:**
-- TypeScript 5.8.3 - Frontend React application (`src/`)
-- TypeScript (Deno) - Supabase Edge Functions (`supabase/functions/`)
+- TypeScript 5.x - Frontend and backend application code in `src` and `backend/src`
 
 **Secondary:**
-- SQL - Database migrations (`supabase/migrations/`)
-- JavaScript - Build configuration and scripts (`scripts/`)
+- JavaScript - Tooling/scripts in `scripts`
+- SQL - Database migrations in `supabase/migrations` and `backend/drizzle`
+- Shell - Ops scripts in `scripts`
+- YAML - Infrastructure config in `docker-compose.yml` and `docker/compose.prod.yaml`
 
 ## Runtime
 
 **Environment:**
-- Node.js (via Vite dev server for frontend)
-- Deno (Supabase Edge Functions runtime)
-- Browser (React SPA target)
+- Node.js 20+ (inferred from package engines in `backend/pnpm-lock.yaml` and toolchain usage in `package.json`)
+- Deno (Supabase Edge Functions) in `supabase/functions`
 
 **Package Manager:**
-- npm (primary) - `package-lock.json` present
-- bun (secondary) - `bun.lockb` present (198KB)
+- pnpm - Lockfile: `pnpm-lock.yaml` present
+- npm - Lockfile: `package-lock.json` present
+- bun - Lockfile: `bun.lockb` present
 
 ## Frameworks
 
 **Core:**
-- React 18.3.1 - UI framework
-- Vite 5.4.19 - Build tool and dev server
-- React Router DOM 6.30.1 - Client-side routing
-
-**UI/Styling:**
-- Tailwind CSS 3.4.17 - Utility-first CSS
-- shadcn/ui (via Radix primitives) - Component library
-- tailwindcss-animate 1.0.7 - Animation utilities
-- Framer Motion 12.23.26 - Animation library
-
-**State/Data:**
-- TanStack React Query 5.83.0 - Server state management
-- React Hook Form 7.61.1 - Form handling
-- Zod 3.25.76 - Schema validation
+- React 18.x - Frontend UI in `src`
+- Vite 5.x - Frontend build/dev server in `vite.config.ts`
+- Fastify 5.x - Backend HTTP server in `backend/src`
+- tRPC 11.x - API layer for frontend/backend in `src/lib/trpc.ts` and `backend/src`
 
 **Testing:**
-- Vitest 2.1.8 - Test runner
-- Testing Library (React 16.3.1, jest-dom 6.9.1) - Component testing
-- jsdom 27.4.0 - DOM simulation
+- Vitest 2.x/4.x - Frontend and backend tests via `vitest.config.ts` and `backend/vitest.config.ts`
+- Testing Library - React component tests (from `package.json`)
+
+**Build/Dev:**
+- TypeScript 5.x - Compilation and type checking via `tsconfig.json` and `backend/tsconfig.json`
+- Tailwind CSS 3.x - Styling in `tailwind.config.ts`
+- PostCSS - Styling pipeline in `postcss.config.js`
 
 ## Key Dependencies
 
 **Critical:**
-- `@supabase/supabase-js` 2.89.0 - Database, auth, realtime, edge functions
-- `recharts` 2.15.4 - Temperature charts and data visualization
-- `react-grid-layout` 1.5.3 - Customizable dashboard layouts
-- `sonner` 1.7.4 - Toast notifications
+- @stackframe/react 2.x - Stack Auth frontend SDK in `src/App.tsx`
+- drizzle-orm 0.38 - Database access layer in `backend/src`
+- zod 3.x/4.x - Runtime schema validation across `src/lib` and `backend/src`
+- socket.io 4.x - Realtime updates between client/server in `src/lib/socket.ts` and `backend/src`
+- stripe 20.x - Payments integration in `backend/src`
 
 **Infrastructure:**
-- `vite-plugin-pwa` 1.2.0 - PWA manifest and service worker
-- `date-fns` 3.6.0 - Date manipulation
-- `lucide-react` 0.462.0 - Icon library
-- `next-themes` 0.3.0 - Dark mode support
-
-**Radix UI Primitives:**
-- Full suite of accessible primitives: dialog, dropdown-menu, select, tabs, tooltip, toast, popover, etc.
-- Located in `@radix-ui/react-*` packages
-
-## Build Configuration
-
-**Vite Config:** `vite.config.ts`
-- React plugin via SWC (`@vitejs/plugin-react-swc`)
-- Path alias: `@` maps to `./src`
-- PWA plugin with workbox runtime caching
-- Dev server: port 8080, host `::`
-- Test environment: jsdom with globals enabled
-
-**TypeScript Config:** `tsconfig.json` + `tsconfig.app.json`
-- Target: ES2020
-- Module: ESNext with bundler resolution
-- JSX: react-jsx
-- Strict mode: OFF (`"strict": false`)
-- Path alias: `@/*` maps to `./src/*`
-
-**Tailwind Config:** `tailwind.config.ts`
-- Dark mode: class-based
-- Custom colors: safe, warning, alarm, excursion, offline (status indicators)
-- Custom fonts: Inter (sans), JetBrains Mono (mono)
-- Animations: fade-in, slide-in, scale-in, pulse-glow
-
-**ESLint Config:** `eslint.config.js`
-- TypeScript-ESLint integration
-- React Hooks and React Refresh plugins
-- Relaxed rules for unused vars and explicit any (warnings)
-- Special rules for Supabase functions (allow `any` types)
+- pg 8.x - PostgreSQL client in `backend/src`
+- ioredis 5.x / redis 5.x - Redis connectivity in `backend/src`
+- bullmq 5.x - Job queueing for background work in `backend/src`
+- @aws-sdk/client-s3 3.x - S3/MinIO object storage in `backend/src`
 
 ## Configuration
 
-**Environment Variables:**
-- `VITE_SUPABASE_URL` - Supabase project URL
-- `VITE_SUPABASE_PUBLISHABLE_KEY` - Supabase anon key
-- `VITE_SUPABASE_PROJECT_ID` - Project identifier
+**Environment:**
+- Environment variables documented in `docs/ENVIRONMENT_VARIABLES.md`
+- Secrets stored via files in `secrets/` for self-hosted deployments
 
-**Edge Function Secrets (Supabase):**
-- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` - Internal auth
-- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` - Payment processing
-- `TELNYX_API_KEY`, `TELNYX_PHONE_NUMBER`, `TELNYX_MESSAGING_PROFILE_ID` - SMS alerts
-- `TTN_ENCRYPTION_SALT` - TTN credential encryption
-
-**Build Commands:**
-```bash
-npm run dev          # Start dev server (port 8080)
-npm run build        # Production build
-npm run preview      # Preview production build
-npm run lint         # ESLint check
-```
-
-**Test Commands:**
-```bash
-# Vitest configured in vite.config.ts
-# Test files: src/**/*.{test,spec}.{ts,tsx}
-# Setup file: src/test/setup.ts
-```
+**Build:**
+- `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`
+- `tailwind.config.ts`, `postcss.config.js`, `eslint.config.js`
+- Docker Compose configs in `docker-compose.yml` and `docker/compose.prod.yaml`
 
 ## Platform Requirements
 
 **Development:**
-- Node.js (ES2020 target)
-- npm or bun for package management
-- Supabase CLI for edge function development
-- Docker for local infrastructure (PostgreSQL, Redis, MinIO)
+- Any OS with Node.js 20+ and Docker (local services) as described in `docs/LOCAL_DEV_ENV.md`
+- Supabase CLI only if working on Edge Functions in `supabase/functions`
 
 **Production:**
-- Supabase hosted platform
-- Static hosting for SPA (Vite build output in `dist/`)
-- PWA-capable browsers (service worker support)
-
-## Local Development Infrastructure
-
-**Docker Compose:** `docker-compose.yml`
-- PostgreSQL 15 Alpine - Primary database (port 5432)
-- PgBouncer - Connection pooling (port 6432)
-- Redis 7 Alpine - Caching, jobs, pubsub (port 6379)
-- MinIO - S3-compatible object storage (ports 9000, 9001)
-- Optional: PgAdmin, Redis Commander (via `admin` profile)
+- Docker-based deployment on Linux hosts (Ubuntu/Debian) per `docs/operations/DEPLOYMENT.md`
+- Supabase Edge Functions runtime (Deno) for functions in `supabase/functions`
 
 ---
 
-*Stack analysis: 2026-01-23*
+*Stack analysis: 2026-01-26*
+*Update after major dependency changes*
