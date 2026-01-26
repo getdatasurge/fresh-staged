@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@stackframe/react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase-placeholder';
 import { useSuperAdmin, RoleLoadStatus } from '@/contexts/SuperAdminContext';
 import { Shield, Database, Clock, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -95,7 +95,7 @@ export function RBACDebugPanel() {
 
   if (!isDebugEnabled) return null;
 
-  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'unknown';
+  const projectId = 'supabase-removed';
   const maskedEmail = userInfo?.email
     ? userInfo.email.replace(/(.{2})(.*)(@.*)/, '$1***$3')
     : 'not logged in';

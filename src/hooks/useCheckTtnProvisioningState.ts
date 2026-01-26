@@ -24,10 +24,8 @@
  */
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";  // TEMPORARY
 import { toast } from "sonner";
 import { qk } from "@/lib/queryKeys";
-import { useOrgScope } from "./useOrgScope";
 
 export type TtnProvisioningState =
   | "not_configured"
@@ -70,25 +68,8 @@ export function useCheckTtnProvisioningState() {
       }
 
       if (!user) throw new Error("Not authenticated");
-      const { accessToken } = await user.getAuthJson();
 
-      // TODO: Replace with tRPC when backend TTN SDK integration is available
-      // Requires: ttnDevices.checkExistence procedure with TTN API device lookup
-      const { data, error } = await supabase.functions.invoke("check-ttn-device-exists", {
-        body: { sensor_ids: sensorIds },
-        headers: { 'x-stack-access-token': accessToken },
-      });
-
-      if (error) {
-        console.error("[useCheckTtnProvisioningState] Error:", error);
-        throw new Error(error.message || "Failed to check TTN device status");
-      }
-
-      if (!data?.success) {
-        throw new Error(data?.error || "Unknown error checking TTN status");
-      }
-
-      return data as CheckTtnResponse;
+      throw new Error("TTN provisioning checks unavailable during Supabase removal");
     },
     onSuccess: (data) => {
       // Invalidate sensor queries using correct org-scoped keys

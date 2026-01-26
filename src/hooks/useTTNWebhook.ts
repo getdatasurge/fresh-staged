@@ -25,12 +25,12 @@
  * Estimated effort: Medium (requires external API integration)
  * Priority: Low (webhook config is one-time setup)
  */
-import { useState, useCallback } from "react";
-import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";  // TEMPORARY
-import { toast } from "sonner";
-import { hashConfigValues } from "@/types/ttnState";
 import { useTTNConfig } from "@/contexts/TTNConfigContext";
+import { trpc } from "@/trpc/client";
+import { hashConfigValues } from "@/types/ttnState";
+import { useUser } from "@stackframe/react";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import { WEBHOOK_URL, type TTNSettings } from "./useTTNSettings";
 
 /**
@@ -133,6 +133,9 @@ export function useTTNWebhook({
 
   const user = useUser();
   const { setCanonical, setInvalid } = useTTNConfig();
+  
+  const updateWebhookMutation = trpc.ttnSettings.updateWebhook.useMutation();
+  // const regenerateSecretMutation = trpc.ttnSettings.regenerateWebhookSecret.useMutation(); // Not yet implemented in router
 
   const startEditingWebhook = useCallback(() => {
     setWebhookDraft({
@@ -171,16 +174,14 @@ export function useTTNWebhook({
     try {
       const { accessToken } = await user.getAuthJson();
 
-      // TODO: Replace with tRPC when backend TTN SDK integration is available
-      // Requires: ttnSettings.updateWebhook procedure to call TTN API
-      const { data, error } = await supabase.functions.invoke("update-ttn-webhook", {
-        body: {
-          organization_id: organizationId,
-          webhook_url: webhookDraft.url,
-          enabled_events: webhookDraft.events,
-        },
-        headers: { 'x-stack-access-token': accessToken },
+      const result = await updateWebhookMutation.mutateAsync({
+        organizationId,
+        url: webhookDraft.url,
+        events: webhookDraft.events,
       });
+      
+      const data = result;
+      const error = null;
 
       if (error) throw error;
 
@@ -220,34 +221,12 @@ export function useTTNWebhook({
 
     setIsRegenerating(true);
     try {
-      const { accessToken } = await user.getAuthJson();
-
-      // TODO: Replace with tRPC when backend TTN SDK integration is available
-      // Requires: ttnSettings.regenerateWebhookSecret procedure to regenerate secret in TTN
-      const { data, error } = await supabase.functions.invoke("ttn-provision-org", {
-        body: {
-          action: "regenerate_webhook_secret",
-          organization_id: organizationId,
-        },
-        headers: { 'x-stack-access-token': accessToken },
-      });
-
-      if (error) throw error;
-
-      if (data?.success) {
-        toast.success("Webhook secret regenerated and updated in TTN");
-        await onSettingsRefresh();
-      } else {
-        toast.error(data?.error || "Failed to regenerate webhook secret");
-      }
-    } catch (err: unknown) {
-      const errMessage = err instanceof Error ? err.message : "Unknown error";
-      console.error("Regenerate error:", err);
-      toast.error(errMessage || "Failed to regenerate webhook secret");
+      toast.error("Webhook secret regeneration is unavailable during Supabase removal.");
     } finally {
       setIsRegenerating(false);
     }
-  }, [organizationId, user, onSettingsRefresh]);
+  }, [organizationId, user]);
+
 
   return {
     isEditingWebhook,

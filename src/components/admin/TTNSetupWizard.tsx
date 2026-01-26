@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { WEBHOOK_URL } from "@/hooks/useTTNSettings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -361,7 +362,7 @@ export function TTNSetupWizard({
                   variant="ghost" 
                   size="sm"
                   onClick={() => {
-                    navigator.clipboard.writeText(`https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/ttn-webhook`);
+                    navigator.clipboard.writeText(WEBHOOK_URL);
                     toast.success("Webhook URL copied");
                   }}
                 >
@@ -370,7 +371,7 @@ export function TTNSetupWizard({
                 </Button>
               </div>
               <code className="block text-xs font-mono p-2 bg-background rounded border break-all">
-                https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/ttn-webhook
+                {WEBHOOK_URL}
               </code>
             </div>
 

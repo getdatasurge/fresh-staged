@@ -8,7 +8,6 @@
  */
 import { useState, useCallback } from "react";
 import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";  // TEMPORARY - for provisioning only
 import { useTRPCClient } from "@/lib/trpc";
 import { toast } from "sonner";
 import { hashConfigValues } from "@/types/ttnState";
@@ -52,78 +51,19 @@ export function useTTNOperations({
   const user = useUser();
   const { setCanonical, setInvalid } = useTTNConfig();
 
-  // Helper for edge function calls with Stack Auth token (provisioning only)
-  const invokeEdgeFunction = useCallback(async (functionName: string, payload: Record<string, unknown>) => {
-    if (!user) throw new Error('Not authenticated');
-    const { accessToken } = await user.getAuthJson();
 
-    const { data, error } = await supabase.functions.invoke(functionName, {
-      body: { organization_id: organizationId, ...payload },
-      headers: { 'x-stack-access-token': accessToken },
-    });
-
-    if (error) throw error;
-    return data;
-  }, [user, organizationId]);
-
-  // TODO: Migrate to backend BullMQ job when ttn-provision-org edge function is replaced
-  const handleProvision = useCallback(async (isRetry: boolean = false, fromStep?: string) => {
+  // TODO: Provisioning will be reintroduced via backend TTN services
+  const handleProvision = useCallback(async (_isRetry?: boolean, _fromStep?: string) => {
     if (!organizationId || !user) return;
 
     setIsProvisioning(true);
     try {
-      const data = await invokeEdgeFunction("ttn-provision-org", {
-        action: isRetry ? "retry" : "provision",
-        ttn_region: region,
-        from_step: fromStep,
-      });
-
-      if (data?.success) {
-        toast.success("TTN Application provisioned successfully!");
-
-        const hash = hashConfigValues({
-          cluster: region,
-          application_id: data.application_id || settings?.ttn_application_id,
-          is_enabled: true,
-        });
-        console.log('[TTN Config] Provisioning complete, setting canonical', { hash });
-        setCanonical(hash);
-
-        await onSettingsRefresh();
-      } else {
-        const errorMsg = data?.error || data?.message || "Provisioning failed";
-        const hint = data?.hint || "";
-        const isRetryable = data?.retryable;
-
-        if (errorMsg.includes("TTN admin credentials not configured")) {
-          toast.error("TTN credentials not configured", {
-            description: "Please contact your administrator to set up TTN_ADMIN_API_KEY and TTN_USER_ID secrets.",
-          });
-        } else if (errorMsg.includes("timed out")) {
-          toast.error("Request timed out", {
-            description: isRetryable ? "TTN is taking too long to respond. You can retry." : errorMsg,
-          });
-        } else {
-          toast.error(hint ? `${errorMsg}: ${hint}` : errorMsg);
-        }
-
-        await onSettingsRefresh();
-      }
-    } catch (err: unknown) {
-      const errMessage = err instanceof Error ? err.message : "Unknown error";
-      console.error("Provisioning error:", err);
-
-      if (errMessage?.includes("TTN admin credentials")) {
-        toast.error("TTN credentials not configured. Please contact your administrator.");
-      } else {
-        toast.error(errMessage || "Failed to provision TTN application");
-      }
-
-      await onSettingsRefresh();
+      toast.error("TTN provisioning is temporarily unavailable while Supabase is removed.");
+      setInvalid("TTN provisioning temporarily unavailable");
     } finally {
       setIsProvisioning(false);
     }
-  }, [organizationId, region, settings?.ttn_application_id, user, invokeEdgeFunction, setCanonical, onSettingsRefresh]);
+  }, [organizationId, user, setInvalid]);
 
   const handleTest = useCallback(async () => {
     if (!organizationId || !user) return;

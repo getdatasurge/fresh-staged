@@ -6,7 +6,6 @@
  */
 
 import type { WidgetHealthStatus, FailingLayer } from "@/features/dashboard-layout/types/widgetState";
-import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Widget health change event
@@ -134,50 +133,13 @@ export function getBufferedEvents(orgId: string): WidgetHealthEvent[] {
 export async function flushHealthMetrics(orgId: string): Promise<void> {
   const orgCounters = getOrgCounters(orgId);
   const events = [...orgCounters.events];
-  
-  if (events.length === 0) {
+
+  if (events.length == 0) {
     return;
   }
-  
-  // Clear buffer
+
   orgCounters.events = [];
   orgCounters.lastFlush = new Date();
-  
-  try {
-    // Log aggregated status changes to event_logs
-    const eventLogs = events.map(event => ({
-      organization_id: event.orgId,
-      event_type: "widget_health_status_change",
-      category: "widget_health",
-      severity: getSeverityForStatus(event.currentStatus),
-      title: `Widget ${event.widgetId} status: ${event.currentStatus}`,
-      unit_id: event.entityType === "unit" ? event.entityId : null,
-      site_id: event.entityType === "site" ? event.entityId : null,
-      event_data: {
-        widgetId: event.widgetId,
-        fromStatus: event.previousStatus,
-        toStatus: event.currentStatus,
-        failingLayer: event.failingLayer,
-        payloadType: event.payloadType,
-        ...event.metadata,
-      },
-    }));
-    
-    // Batch insert
-    const { error } = await supabase
-      .from("event_logs")
-      .insert(eventLogs);
-    
-    if (error) {
-      console.error("[widgetHealthMetrics] Failed to flush events:", error);
-      // Re-add events to buffer on failure
-      orgCounters.events.unshift(...events);
-    }
-  } catch (err) {
-    console.error("[widgetHealthMetrics] Error flushing metrics:", err);
-    // Re-add events to buffer on failure
-    orgCounters.events.unshift(...events);
-  }
 }
 
 /**

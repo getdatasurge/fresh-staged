@@ -7,7 +7,6 @@
  */
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";  // TEMPORARY
 import { LoraSensor, LoraSensorType } from "@/types/ttn";
 import { toast } from "sonner";
 import { qk } from "@/lib/queryKeys";
@@ -44,33 +43,7 @@ export function useSetPrimarySensor() {
       sensorType: LoraSensorType;
     }): Promise<LoraSensor> => {
       if (!user) throw new Error('Not authenticated');
-
-      // TODO Phase 6: Migrate to new API when backend endpoint available
-      console.warn('[useSetPrimarySensor] Using Supabase - TODO: migrate to new API');
-
-      // Get the type group for this sensor
-      const typeGroup = getSameTypeGroup(sensorType);
-
-      // First, unset any existing primary sensors of the same type group for this unit
-      const { error: unsetError } = await supabase
-        .from("lora_sensors")
-        .update({ is_primary: false })
-        .eq("unit_id", unitId)
-        .eq("is_primary", true)
-        .in("sensor_type", typeGroup);
-
-      if (unsetError) throw unsetError;
-
-      // Then set this sensor as primary
-      const { data, error } = await supabase
-        .from("lora_sensors")
-        .update({ is_primary: true })
-        .eq("id", sensorId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as LoraSensor;
+      throw new Error('Primary sensor updates are unavailable during Supabase removal');
     },
     onSuccess: async (data) => {
       // Use centralized invalidation for sensor assignment changes

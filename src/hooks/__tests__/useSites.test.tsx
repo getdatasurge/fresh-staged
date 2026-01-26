@@ -14,7 +14,7 @@ vi.mock('@stackframe/react', () => ({
 import { useNavTree } from '../useNavTree';
 
 // Mock dependencies
-vi.mock('@/integrations/supabase/client', () => ({
+vi.mock('@/lib/supabase-placeholder', () => ({
   supabase: {
     auth: {
       getSession: vi.fn(() =>

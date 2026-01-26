@@ -24,8 +24,6 @@
  */
 import { useState, useCallback, useEffect } from "react";
 import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";  // TEMPORARY
-import { useOrgScope } from "./useOrgScope";
 
 export interface PreflightError {
   code: "WRONG_KEY_TYPE" | "MISSING_GATEWAY_RIGHTS" | "API_KEY_INVALID" | "TTN_NOT_CONFIGURED";
@@ -82,37 +80,26 @@ export function useGatewayProvisioningPreflight(
     setIsLoading(true);
 
     try {
-      const { accessToken } = await user.getAuthJson();
+      const preflightResult: PreflightResult = {
+        ok: false,
+        request_id: "supabase-removed",
+        allowed: false,
+        key_type: "unknown",
+        owner_scope: null,
+        scope_id: null,
+        has_gateway_rights: false,
+        missing_rights: [],
+        error: {
+          code: "TTN_NOT_CONFIGURED",
+          message: "Gateway preflight unavailable",
+          hint: "Supabase-based gateway checks have been removed.",
+          fix_steps: ["Retry after backend TTN preflight is implemented."],
+        },
+      };
 
-      // TODO: Replace with tRPC when backend TTN SDK integration is available
-      // Requires: ttnSettings.validateGatewayRights procedure to check API key type
-      const { data, error } = await supabase.functions.invoke("ttn-gateway-preflight", {
-        body: { organization_id: organizationId },
-        headers: { 'x-stack-access-token': accessToken },
-      });
-
-      if (error) {
-        console.error("[useGatewayProvisioningPreflight] Invoke error:", error);
-        setStatus("error");
-        setResult(null);
-        return null;
-      }
-
-      const preflightResult = data as PreflightResult;
       setResult(preflightResult);
-
-      if (preflightResult.allowed) {
-        setStatus("ready");
-      } else {
-        setStatus("blocked");
-      }
-
+      setStatus("blocked");
       return preflightResult;
-    } catch (err) {
-      console.error("[useGatewayProvisioningPreflight] Error:", err);
-      setStatus("error");
-      setResult(null);
-      return null;
     } finally {
       setIsLoading(false);
     }

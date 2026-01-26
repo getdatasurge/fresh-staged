@@ -91,66 +91,16 @@ export function useSlugAvailability(
       excludeOrgId 
     });
 
-    try {
-      const params = new URLSearchParams({ slug: slugToCheck });
-      if (excludeOrgId) {
-        params.append("exclude_org_id", excludeOrgId);
-      }
+    const suggestions = generateClientSideSuggestions(normalized);
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/check-slug-available?${params}`,
-        {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          signal: abortControllerRef.current.signal,
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      logSlugCheck(`Slug check result: "${normalized}"`, {
-        available: result.available,
-        suggestionsCount: result.suggestions?.length || 0,
-        conflicts: result.conflicts,
-      });
-
-      // Generate client-side fallback suggestions if backend didn't provide any
-      let suggestions = result.suggestions || [];
-      if (!result.available && suggestions.length === 0) {
-        suggestions = generateClientSideSuggestions(normalized);
-        logSlugCheck("Using client-side fallback suggestions", { suggestions });
-      }
-
-      setStatus({
-        isChecking: false,
-        available: result.available,
-        normalizedSlug: result.normalizedSlug || normalized,
-        suggestions,
-        conflicts: result.conflicts || [],
-        error: null,
-      });
-    } catch (error: any) {
-      // Ignore abort errors
-      if (error.name === "AbortError") {
-        return;
-      }
-
-      console.error("Error checking slug:", error);
-
-      // On error, don't block user - assume available with warning
-      setStatus({
-        isChecking: false,
-        available: null, // null means unknown/couldn't check
-        normalizedSlug: normalized,
-        suggestions: [],
-        conflicts: [],
-        error: "Could not verify availability. You can still proceed.",
-      });
-    }
+    setStatus({
+      isChecking: false,
+      available: null,
+      normalizedSlug: normalized,
+      suggestions,
+      conflicts: [],
+      error: "Slug availability check is unavailable during Supabase removal.",
+    });
   }, [excludeOrgId, minLength]);
 
   // Debounced effect

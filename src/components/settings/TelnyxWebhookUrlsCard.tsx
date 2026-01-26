@@ -18,8 +18,8 @@ const MESSAGING_PROFILE = {
 } as const;
 
 // Build webhook URL from Supabase project URL
-const SUPABASE_PROJECT_URL = "https://mfwyiifehsvwnjwqoxht.supabase.co";
-const WEBHOOK_URL = `${SUPABASE_PROJECT_URL}/functions/v1/telnyx-webhook`;
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const WEBHOOK_URL = `${API_BASE_URL}/api/webhooks/telnyx`;
 
 export function TelnyxWebhookUrlsCard() {
   const [copiedField, setCopiedField] = useState<string | null>(null);

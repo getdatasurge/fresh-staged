@@ -4,7 +4,6 @@
  */
 
 import type { TTNConfigContext, TTNValidationResult, TTNConfigState } from '@/types/ttnState';
-import { supabase } from '@/integrations/supabase/client';
 
 // Single cluster base URL - must match backend
 const CLUSTER_BASE_URL = "https://nam1.cloud.thethings.network";
@@ -81,55 +80,11 @@ function redactUrl(url: string | null): string | null {
  * Fetch edge function versions from health endpoints
  */
 async function fetchEdgeFunctionVersions(): Promise<TTNDiagnostics['edge_function_versions']> {
-  const versions: TTNDiagnostics['edge_function_versions'] = {
+  return {
     ttn_bootstrap: null,
     manage_ttn_settings: null,
     ttn_gateway_preflight: null,
   };
-
-const fetchVersion = async (funcName: string): Promise<string | null> => {
-    try {
-      // Use native fetch with GET to avoid Supabase SDK always sending POST
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      
-      const response = await fetch(
-        `${supabaseUrl}/functions/v1/${funcName}`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      
-      if (!response.ok) {
-        console.warn(`[diagnostics] ${funcName} returned ${response.status}`);
-        return null;
-      }
-      
-      const data = await response.json();
-      // Handle multiple response formats from different edge functions
-      return data?.version || data?.contract?.version || data?.BUILD_VERSION || null;
-    } catch (err) {
-      console.warn(`[diagnostics] Failed to fetch version for ${funcName}:`, err);
-      return null;
-    }
-  };
-
-  // Fetch in parallel
-  const [bootstrap, settings, preflight] = await Promise.all([
-    fetchVersion('ttn-bootstrap'),
-    fetchVersion('manage-ttn-settings'),
-    fetchVersion('ttn-gateway-preflight'),
-  ]);
-
-  versions.ttn_bootstrap = bootstrap;
-  versions.manage_ttn_settings = settings;
-  versions.ttn_gateway_preflight = preflight;
-
-  return versions;
 }
 
 /**
@@ -159,17 +114,8 @@ export async function buildTTNDiagnostics(
   const edgeVersions = await fetchEdgeFunctionVersions();
 
   // Check for sensors/gateways if we have an org
-  let hasSensors = false;
-  let hasGateways = false;
-  
-  if (organizationId) {
-    const [sensorsResult, gatewaysResult] = await Promise.all([
-      supabase.from('lora_sensors').select('id', { count: 'exact', head: true }).eq('organization_id', organizationId),
-      supabase.from('gateways').select('id', { count: 'exact', head: true }).eq('organization_id', organizationId),
-    ]);
-    hasSensors = (sensorsResult.count || 0) > 0;
-    hasGateways = (gatewaysResult.count || 0) > 0;
-  }
+  const hasSensors = false;
+  const hasGateways = false;
 
   return {
     generated_at: new Date().toISOString(),

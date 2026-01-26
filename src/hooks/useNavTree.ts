@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { qk } from "@/lib/queryKeys";
 import { sitesApi, areasApi, unitsApi } from "@/lib/api";
@@ -177,39 +176,16 @@ export function useNavTree(organizationId: string | null): NavTree {
   // Fetch sensor counts per unit
   const { data: sensors = [], isLoading: sensorsLoading } = useQuery({
     queryKey: [...qk.org(organizationId).navTree(), 'sensors'],
-    queryFn: async () => {
-      if (!organizationId) return [];
-
-      const { data, error } = await supabase
-        .from("lora_sensors")
-        .select("id, unit_id")
-        .eq("organization_id", organizationId)
-        .is("deleted_at", null)
-        .not("unit_id", "is", null);
-
-      if (error) throw error;
-      return data as RawSensor[];
-    },
-    enabled: !!organizationId,
+    queryFn: async () => [] as RawSensor[],
+    enabled: false,
     staleTime: 1000 * 30,
   });
 
   // Fetch ALL org layouts for all entities (org-wide sharing)
   const { data: layouts = [], isLoading: layoutsLoading } = useQuery({
     queryKey: [...qk.org(organizationId).navTree(), 'layouts'],
-    queryFn: async () => {
-      if (!organizationId) return [];
-
-      const { data, error } = await supabase
-        .from("entity_dashboard_layouts")
-        .select("id, entity_type, entity_id, slot_number, name, is_user_default")
-        .eq("organization_id", organizationId)
-        .order("slot_number", { ascending: true });
-
-      if (error) throw error;
-      return data as RawLayout[];
-    },
-    enabled: !!organizationId,
+    queryFn: async () => [] as RawLayout[],
+    enabled: false,
     staleTime: 1000 * 30,
   });
 

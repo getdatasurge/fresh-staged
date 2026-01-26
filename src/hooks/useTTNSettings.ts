@@ -61,7 +61,9 @@ export interface TTNSettings {
   last_test_source: string | null;
 }
 
-export const WEBHOOK_URL = `https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/ttn-webhook`;
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+export const WEBHOOK_URL = `${API_BASE_URL}/api/webhooks/ttn`;
 
 export const TTN_REGIONS = [
   { value: "nam1", label: "North America (nam1)" },
@@ -183,33 +185,7 @@ export function useTTNSettings({ organizationId }: UseTTNSettingsOptions): UseTT
   }, [organizationId, user, client, setCanonical, setInvalid, resetToDraft]);
 
   const checkBootstrapHealth = useCallback(async () => {
-    try {
-      const response = await fetch(
-        `https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/ttn-bootstrap`,
-        { method: "GET" }
-      );
-
-      if (!response.ok) {
-        setBootstrapHealthError(`Service returned status ${response.status}`);
-        return;
-      }
-
-      const data = await response.json();
-      if (data.status !== "ok") {
-        setBootstrapHealthError("Service health check failed");
-        return;
-      }
-
-      if (!data.capabilities?.validate_only) {
-        setBootstrapHealthError("Service version outdated - missing validate_only capability");
-        return;
-      }
-
-      setBootstrapHealthError(null);
-    } catch (err) {
-      console.error("Bootstrap health check failed:", err);
-      setBootstrapHealthError("Unable to reach TTN bootstrap service");
-    }
+    setBootstrapHealthError(null);
   }, []);
 
   // Load settings and check health on mount

@@ -12,7 +12,7 @@ vi.mock('@stackframe/react', () => ({
   }),
 }));
 
-vi.mock('@/integrations/supabase/client', () => ({
+vi.mock('@/lib/supabase-placeholder', () => ({
   supabase: {
     auth: {
       getSession: vi.fn(() =>

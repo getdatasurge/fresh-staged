@@ -13,10 +13,8 @@
  * - INSPECTOR: Read-only access with export capability for audits
  */
 
-import type { Database } from '@/integrations/supabase/types';
-
-// Re-export the database role type as our canonical Role type
-export type Role = Database['public']['Enums']['app_role'];
+// Canonical role type (mirrors backend enum)
+export type Role = 'owner' | 'admin' | 'manager' | 'staff' | 'viewer' | 'inspector';
 
 // All available roles in hierarchy order (highest to lowest)
 export const ROLE_HIERARCHY: Role[] = ['owner', 'admin', 'manager', 'staff', 'viewer', 'inspector'];

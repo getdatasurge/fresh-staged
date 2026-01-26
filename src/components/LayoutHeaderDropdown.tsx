@@ -9,7 +9,6 @@
 
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Layout, Lock, Star, ChevronDown, Plus, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
@@ -50,17 +49,7 @@ export function LayoutHeaderDropdown({
   // Fetch layouts for this entity
   const { data: layouts = [], isLoading } = useQuery({
     queryKey: ["entity-layouts-header", entityType, entityId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("entity_dashboard_layouts")
-        .select("id, name, slot_number, is_user_default")
-        .eq("entity_type", entityType)
-        .eq("entity_id", entityId)
-        .order("slot_number", { ascending: true });
-
-      if (error) throw error;
-      return (data || []) as LayoutRecord[];
-    },
+    queryFn: async () => [] as LayoutRecord[],
     enabled: !!entityId,
     staleTime: 1000 * 30,
   });
@@ -100,7 +89,7 @@ export function LayoutHeaderDropdown({
   const currentLayout = layouts.find(l => l.id === currentLayoutKey);
   const currentName = isDefault ? "Default" : (currentLayout?.name || "Layout");
   // Only show create option if user has permission AND slots available
-  const canCreateMore = canCreateLayouts && layouts.length < 3;
+  const canCreateMore = false;
 
   return (
     <DropdownMenu>

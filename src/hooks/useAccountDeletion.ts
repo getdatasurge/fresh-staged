@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser, useStackApp } from '@stackframe/react';
-import { supabase } from '@/integrations/supabase/client';
 import { debugLog } from '@/lib/debugLogger';
 import { useToast } from '@/hooks/use-toast';
 
@@ -78,52 +77,14 @@ export function useAccountDeletion() {
       // The backend then cleans up local data
       console.warn('[useAccountDeletion] TODO: migrate to new backend');
 
-      // Call the RPC function (TEMPORARY - keep existing logic)
-      const { data, error } = await supabase.rpc('delete_user_account', {
-        p_user_id: userId
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      const result = data as unknown as DeletionResult;
-
-      if (!result.success) {
-        debugLog.error('auth', 'Account deletion failed', { 
-          error: result.error, 
-          errorCode: result.error_code,
-          requestId,
-          jobId: result.job_id
-        });
-        
-        setProgress({ 
-          status: 'error', 
-          currentStep: 'Deletion failed', 
-          error: result.error || 'Unknown error',
-          errorCode: result.error_code,
-          requestId,
-          jobId: result.job_id
-        });
-        setIsDeleting(false);
-        return false;
-      }
-
-      debugLog.info('auth', 'Account deletion completed', { 
-        step: 'completed',
-        requestId,
-        jobId: result.job_id,
-        sensorsQueued: result.sensors_queued,
-        gatewaysDeleted: result.gateways_deleted,
-        orgDeleted: result.org_deleted
-      });
-
       setProgress({
-        status: 'signing_out',
-        currentStep: 'Signing out...',
+        status: 'error',
+        currentStep: 'Account deletion unavailable',
+        error: 'Account deletion requires backend migration after Supabase removal',
         requestId,
-        jobId: result.job_id
       });
+      setIsDeleting(false);
+      return false;
 
       // Sign out the user via Stack Auth
       await stackApp.signOut();
