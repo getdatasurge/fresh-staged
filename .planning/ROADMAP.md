@@ -45,14 +45,14 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
 **Milestone Goal:** Eliminate Supabase dependency and stabilize TTN integration for long-term maintainability
 
 - [x] **Phase 27: TTN SDK Integration** - Complete.
-- [~] **Phase 28: Supabase Removal** - Complete migration of all frontend pages to tRPC.
+- [x] **Phase 28: Supabase Removal** - Complete migration of remaining frontend pages off Supabase.
     - [x] Wave 1: Audit & Event Logging
     - [x] Wave 2: Site & Alert Settings
     - [x] Wave 3: Alert Rules & History
     - [x] Wave 4: System Pages & Sync
     - [x] Wave 5: Core Entity Dashboards (Dashboard, Units, Sites, Alerts)
-    - [~] Wave 6: Detail Views & Maintenance
-    - [ ] Wave 7: Platform Admin & Remaining Cleanup
+        - [x] Wave 6: Detail Views & Maintenance
+        - [x] Wave 7: Platform Admin & Remaining Cleanup
 - [ ] **Phase 29: Production Data Migration** - Execute final data transfer from legacy system
 - [ ] **Phase 30: System Hardening** - Final security audit and performance tuning
 - [ ] **Phase 30: System Hardening** - Final security audit and performance tuning
@@ -60,4 +60,4 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-26 (Phase 28 in progress)*
+*Last updated: 2026-01-26 (Phase 28 complete)*
