@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { UuidSchema, TimestampSchema, OrgParamsSchema } from './common.js';
+import { z } from 'zod'
+import { OrgParamsSchema, TimestampSchema, UuidSchema } from './common.js'
 
 // --- Enum Schemas (match database enums) ---
 
@@ -46,7 +46,15 @@ export const AlertSchema = z.object({
   updatedAt: TimestampSchema,
 });
 
+export const AlertWithHierarchySchema = AlertSchema.extend({
+  unitName: z.string(),
+  areaName: z.string(),
+  siteName: z.string(),
+  siteId: z.string().uuid(),
+});
+
 export const AlertsListSchema = z.array(AlertSchema);
+export const AlertsWithHierarchyListSchema = z.array(AlertWithHierarchySchema);
 
 // --- Request Body Schemas ---
 
@@ -80,7 +88,9 @@ export const AlertParamsSchema = OrgParamsSchema.extend({
 // --- Type Exports ---
 
 export type Alert = z.infer<typeof AlertSchema>;
+export type AlertWithHierarchy = z.infer<typeof AlertWithHierarchySchema>;
 export type AlertsList = z.infer<typeof AlertsListSchema>;
+export type AlertsWithHierarchyList = z.infer<typeof AlertsWithHierarchyListSchema>;
 export type AlertAcknowledge = z.infer<typeof AlertAcknowledgeSchema>;
 export type AlertResolve = z.infer<typeof AlertResolveSchema>;
 export type AlertQuery = z.infer<typeof AlertQuerySchema>;

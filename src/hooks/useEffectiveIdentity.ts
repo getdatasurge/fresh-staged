@@ -5,137 +5,117 @@
  * When a Super Admin is impersonating a user, this returns the impersonated user's
  * identity. Otherwise, returns the real authenticated user's identity.
  *
- * MIGRATED: Now uses Stack Auth + /api/auth/me instead of Supabase
+ * MIGRATED: Now uses Stack Auth + tRPC users.me instead of Supabase
  *
  * This hook should be used by all data-fetching components to ensure proper scoping.
  */
 
-import { useCallback, useMemo } from 'react';
-import { useUser } from '@stackframe/react';
-import { useQuery } from '@tanstack/react-query';
-import { authApi } from '@/lib/api';
-import { qk } from '@/lib/queryKeys';
-import { useSuperAdmin } from '@/contexts/SuperAdminContext';
+import { useSuperAdmin } from '@/contexts/SuperAdminContext'
+import { qk } from '@/lib/queryKeys'
+import { createTRPCClientInstance } from '@/lib/trpc'
+import { useUser } from '@stackframe/react'
+import { useQuery } from '@tanstack/react-query'
+import { useCallback, useMemo } from 'react'
 
 export interface EffectiveIdentity {
-  // Effective identity (impersonated if active, else real user)
-  effectiveUserId: string | null;
-  effectiveOrgId: string | null;
-  effectiveOrgName: string | null;
-  effectiveUserEmail: string | null;
-  effectiveUserName: string | null;
-
-  // Real user identity (always the authenticated user)
-  realUserId: string | null;
-  realOrgId: string | null;
-
-  // Impersonation metadata
-  isImpersonating: boolean;
-  impersonationExpiresAt: Date | null;
-  impersonationSessionId: string | null;
-
-  // Loading state
-  isLoading: boolean;
-  isInitialized: boolean;
-  impersonationChecked: boolean; // True after server-side impersonation check completes
-
-  // Actions
-  refresh: () => Promise<void>;
+	effectiveUserId: string | null
+	effectiveOrgId: string | null
+	effectiveOrgName: string | null
+	effectiveUserEmail: string | null
+	effectiveUserName: string | null
+	realUserId: string | null
+	realOrgId: string | null
+	isImpersonating: boolean
+	impersonationExpiresAt: Date | null
+	impersonationSessionId: string | null
+	isLoading: boolean
+	isInitialized: boolean
+	impersonationChecked: boolean
+	refresh: () => Promise<void>
 }
 
 export function useEffectiveIdentity(): EffectiveIdentity {
-  const stackUser = useUser();
-  const {
-    isSuperAdmin,
-    rolesLoaded,
-    impersonation,
-    isSupportModeActive
-  } = useSuperAdmin();
+	const stackUser = useUser()
+	const { isSuperAdmin, rolesLoaded, impersonation, isSupportModeActive } =
+		useSuperAdmin()
 
-  // Fetch user profile with org context from Stack Auth + new API
-  const { data: profile, isLoading, refetch } = useQuery({
-    queryKey: qk.user(stackUser?.id ?? null).profile(),
-    queryFn: async () => {
-      if (!stackUser) return null;
-      const authJson = await stackUser.getAuthJson();
-      return authApi.getMe(authJson.accessToken);
-    },
-    enabled: !!stackUser,
-    staleTime: 1000 * 60 * 5, // 5 min cache
-  });
+	const {
+		data: profile,
+		isLoading,
+		refetch,
+	} = useQuery({
+		queryKey: qk.user(stackUser?.id ?? null).profile(),
+		queryFn: async () => {
+			if (!stackUser) return null
+			const authJson = await stackUser.getAuthJson()
+			const trpcClient = createTRPCClientInstance(
+				async () => authJson.accessToken,
+			)
+			return trpcClient.users.me.query()
+		},
+		enabled: !!stackUser,
+		staleTime: 1000 * 60 * 5,
+	})
 
-  // Real user identity from Stack Auth
-  const realUserId = stackUser?.id ?? null;
-  const realOrgId = profile?.primaryOrganizationId ?? null;
+	const realUserId = stackUser?.id ?? null
+	const realOrgId = null
 
-  // TODO: Phase 6 - Implement impersonation support
-  // For now, we use SuperAdminContext state but don't have server-side validation
-  // The impersonation RPC calls need to be migrated to new backend
-  const hasContextImpersonation = impersonation?.isImpersonating && impersonation?.impersonatedOrgId;
+	const hasContextImpersonation =
+		impersonation?.isImpersonating && impersonation?.impersonatedOrgId
 
-  // Determine if we have a valid impersonation from context
-  const isImpersonating = Boolean(
-    isSuperAdmin &&
-    isSupportModeActive &&
-    hasContextImpersonation
-  );
+	const isImpersonating = Boolean(
+		isSuperAdmin && isSupportModeActive && hasContextImpersonation,
+	)
 
-  // Effective identity: Use impersonation if active, otherwise real user
-  const effectiveUserId = isImpersonating
-    ? (impersonation.impersonatedUserId ?? realUserId)
-    : realUserId;
+	const effectiveUserId = isImpersonating
+		? (impersonation.impersonatedUserId ?? realUserId)
+		: realUserId
 
-  const effectiveOrgId = isImpersonating
-    ? (impersonation.impersonatedOrgId ?? realOrgId)
-    : realOrgId;
+	const effectiveOrgId = isImpersonating
+		? (impersonation.impersonatedOrgId ?? realOrgId)
+		: realOrgId
 
-  const effectiveOrgName = isImpersonating
-    ? (impersonation.impersonatedOrgName ?? null)
-    : null;
+	const effectiveOrgName = isImpersonating
+		? (impersonation.impersonatedOrgName ?? null)
+		: null
 
-  const effectiveUserEmail = isImpersonating
-    ? (impersonation.impersonatedUserEmail ?? null)
-    : (stackUser?.primaryEmail ?? null);
+	const effectiveUserEmail = isImpersonating
+		? (impersonation.impersonatedUserEmail ?? null)
+		: (stackUser?.primaryEmail ?? null)
 
-  const effectiveUserName = isImpersonating
-    ? (impersonation.impersonatedUserName ?? null)
-    : (stackUser?.displayName ?? null);
+	const effectiveUserName = isImpersonating
+		? (impersonation.impersonatedUserName ?? null)
+		: (stackUser?.displayName ?? null)
 
-  // Compute isInitialized: We're ready when:
-  // 1. Stack Auth user state is loaded, AND
-  // 2. Profile data is loaded (or confirmed unavailable)
-  // 3. For Super Admins in support mode, impersonation context is loaded
-  const isInitialized = useMemo(() => {
-    if (!rolesLoaded) return false;
-    if (stackUser && isLoading) return false; // Still loading profile
+	const isInitialized = useMemo(() => {
+		if (!rolesLoaded) return false
+		if (stackUser && isLoading) return false
 
-    // In support mode, need impersonation context ready
-    if (isSupportModeActive) {
-      // Context provides impersonation state synchronously
-      return true;
-    }
+		if (isSupportModeActive) {
+			return true
+		}
 
-    return true;
-  }, [rolesLoaded, stackUser, isLoading, isSupportModeActive]);
+		return true
+	}, [rolesLoaded, stackUser, isLoading, isSupportModeActive])
 
-  const refresh = useCallback(async () => {
-    await refetch();
-  }, [refetch]);
+	const refresh = useCallback(async () => {
+		await refetch()
+	}, [refetch])
 
-  return {
-    effectiveUserId,
-    effectiveOrgId,
-    effectiveOrgName,
-    effectiveUserEmail,
-    effectiveUserName,
-    realUserId,
-    realOrgId,
-    isImpersonating,
-    impersonationExpiresAt: null, // TODO: Phase 6
-    impersonationSessionId: null, // TODO: Phase 6
-    isLoading,
-    isInitialized,
-    impersonationChecked: true, // TODO: Phase 6 - server-side validation
-    refresh,
-  };
+	return {
+		effectiveUserId,
+		effectiveOrgId,
+		effectiveOrgName,
+		effectiveUserEmail,
+		effectiveUserName,
+		realUserId,
+		realOrgId,
+		isImpersonating,
+		impersonationExpiresAt: null,
+		impersonationSessionId: null,
+		isLoading,
+		isInitialized,
+		impersonationChecked: true,
+		refresh,
+	}
 }

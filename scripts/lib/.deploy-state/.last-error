@@ -1,0 +1,5 @@
+timestamp=2026-01-25T11:25:15-05:00
+script=scripts/lib/prereq-lib.sh
+line=588
+exit_code=1
+category=recoverable:permission

@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageSquare, Plus, Loader2, X, Trash2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-placeholder";
 import { useUser } from "@stackframe/react";
 import type { WidgetProps } from "../types";
 import { format } from "date-fns";

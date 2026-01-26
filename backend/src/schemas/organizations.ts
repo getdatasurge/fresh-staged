@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { OrgParamsSchema, TimestampSchema, UuidSchema } from './common.js';
+import { z } from 'zod'
+import { OrgParamsSchema, TimestampSchema, UuidSchema } from './common.js'
 
 // Compliance mode enum matching database
 const ComplianceModeSchema = z.enum(['standard', 'haccp']);
@@ -26,7 +26,7 @@ export const UpdateOrganizationSchema = z.object({
 });
 
 // Role enum matching database
-const AppRoleSchema = z.enum(['owner', 'admin', 'manager', 'staff', 'viewer']);
+const AppRoleSchema = z.enum(['owner', 'admin', 'manager', 'staff', 'viewer', 'inspector']);
 
 // Organization member response schema
 export const MemberSchema = z.object({
@@ -67,12 +67,13 @@ export const OrganizationStatsSchema = z.object({
   alertCounts: AlertStatusCountsSchema,
   compliancePercentage: z.number().min(0).max(100),
   memberCount: z.number().int().min(0),
+  siteCount: z.number().int().min(0),
   worstState: UnitDashboardStateSchema,
   lastUpdated: TimestampSchema,
 });
 
 // Re-export params for routes
-export { OrgParamsSchema };
+export { OrgParamsSchema }
 
 // Type exports
 export type OrganizationResponse = z.infer<typeof OrganizationSchema>;

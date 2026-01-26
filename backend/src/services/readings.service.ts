@@ -1,4 +1,4 @@
-import { and, eq, gte, inArray, lte } from 'drizzle-orm'
+import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm'
 import { db } from '../db/client.js'
 import {
   areas,
@@ -264,4 +264,95 @@ export async function createManualReading(
     .returning();
     
   return result;
+}
+
+/**
+ * Query manual temperature logs with filters
+ */
+export async function queryManualLogs(
+  params: {
+    unitId?: string;
+    organizationId: string;
+    start?: string;
+    end?: string;
+    limit?: number;
+    offset?: number;
+  }
+) {
+  const { unitId, organizationId, start, end, limit = 50, offset = 0 } = params;
+
+  // Verify unit belongs to org if unitId provided
+  if (unitId) {
+    const validUnitIds = await validateUnitsInOrg([unitId], organizationId);
+    if (validUnitIds.length === 0) {
+      throw new Error('Unit not found or access denied');
+    }
+  }
+
+  const query = db
+    .select({
+      id: manualTemperatureLogs.id,
+      unitId: manualTemperatureLogs.unitId,
+      profileId: manualTemperatureLogs.profileId,
+      temperature: manualTemperatureLogs.temperature,
+      notes: manualTemperatureLogs.notes,
+      recordedAt: manualTemperatureLogs.recordedAt,
+      // lastManualLogAt might be useful but here we are listing the logs themselves
+    })
+    .from(manualTemperatureLogs)
+    .innerJoin(units, eq(manualTemperatureLogs.unitId, units.id))
+    .innerJoin(areas, eq(units.areaId, areas.id))
+    .innerJoin(sites, eq(areas.siteId, sites.id))
+    .where(and(
+      eq(sites.organizationId, organizationId),
+      unitId ? eq(manualTemperatureLogs.unitId, unitId) : undefined,
+      start ? gte(manualTemperatureLogs.recordedAt, new Date(start)) : undefined,
+      end ? lte(manualTemperatureLogs.recordedAt, new Date(end)) : undefined,
+      eq(units.isActive, true),
+    ))
+    .orderBy(desc(manualTemperatureLogs.recordedAt))
+    .limit(limit)
+    .offset(offset);
+
+  const results = await query;
+
+  // Convert temperature string to number
+  return results.map(r => ({
+    ...r,
+    temperature: parseFloat(r.temperature)
+  }));
+}
+
+/**
+ * Query door events for a unit
+ */
+export async function queryDoorEvents(
+  params: {
+    unitId?: string;
+    organizationId: string;
+    limit?: number;
+  }
+) {
+  const { unitId, organizationId, limit = 10 } = params;
+
+  // Use dynamic import for doorEvents to avoid circular dependencies if any
+  const { doorEvents } = await import('../db/schema/index.js');
+
+  const query = db
+    .select({
+      state: doorEvents.state,
+      occurredAt: doorEvents.occurredAt,
+    })
+    .from(doorEvents)
+    .innerJoin(units, eq(doorEvents.unitId, units.id))
+    .innerJoin(areas, eq(units.areaId, areas.id))
+    .innerJoin(sites, eq(areas.siteId, sites.id))
+    .where(and(
+      eq(sites.organizationId, organizationId),
+      unitId ? eq(doorEvents.unitId, unitId) : undefined,
+    ))
+    .orderBy(desc(doorEvents.occurredAt))
+    .limit(limit);
+
+  return query;
 }

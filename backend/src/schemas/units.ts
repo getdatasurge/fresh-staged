@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UuidSchema, TimestampSchema, AreaParamsSchema } from './common.js';
+import { AreaParamsSchema, TimestampSchema, UuidSchema } from './common.js';
 
 // Unit type enum (matches database enum)
 export const UnitTypeSchema = z.enum([
@@ -91,8 +91,19 @@ export const UpdateUnitSchema = z.object({
 // Units list response
 export const UnitsListSchema = z.array(UnitSchema);
 
+// Unit with hierarchy info (for dashboards)
+export const UnitWithHierarchySchema = UnitSchema.extend({
+  areaName: z.string(),
+  siteName: z.string(),
+  siteId: z.string().uuid(),
+  lastManualLogAt: TimestampSchema.nullable().optional(),
+});
+
+export const UnitsWithHierarchyListSchema = z.array(UnitWithHierarchySchema);
+
 // Type exports
 export type UnitResponse = z.infer<typeof UnitSchema>;
+export type UnitWithHierarchyResponse = z.infer<typeof UnitWithHierarchySchema>;
 export type CreateUnitRequest = z.infer<typeof CreateUnitSchema>;
 export type UpdateUnitRequest = z.infer<typeof UpdateUnitSchema>;
 export type UnitType = z.infer<typeof UnitTypeSchema>;

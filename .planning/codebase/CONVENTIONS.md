@@ -1,247 +1,113 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-01-23
+**Analysis Date:** 2026-01-26
 
 ## Naming Patterns
 
 **Files:**
-- React components: PascalCase (`GatewayManager.tsx`, `AddSensorDialog.tsx`)
-- Hooks: camelCase with `use` prefix (`useGateways.ts`, `useDebounce.ts`)
-- Utilities/libraries: camelCase (`queryKeys.ts`, `debugLogger.ts`)
-- Test files: Same name as module with `.test.ts` suffix (`gatewayEligibility.test.ts`)
-- Type files: camelCase or PascalCase for domain-specific (`types.ts`, `ttn.ts`)
-- Index files: `index.ts` for barrel exports
+- camelCase for most utility/modules (examples: `src/lib/errorHandler.ts`, `src/lib/orgScopedInvalidation.ts`)
+- PascalCase for React components/pages (examples: `src/App.tsx`, `src/pages/Areas.tsx`)
+- Tests use `*.test.ts`/`*.test.tsx` in-place or under `__tests__` (examples: `src/lib/__tests__/api-client.test.ts`, `src/hooks/__tests__/useSites.test.tsx`)
 
 **Functions:**
-- Regular functions: camelCase (`canProvisionGateway`, `formatEUI`)
-- React components: PascalCase (`GatewayManager`, `ColumnHeaderTooltip`)
-- Hooks: `use` prefix + PascalCase (`useGateways`, `useProvisionGateway`)
-- Boolean getters: `can`/`is`/`has` prefix (`canHideWidget`, `isPayloadTypeRegistered`)
-- Event handlers: `handle` prefix (`handleDelete`, `handleSiteChange`)
-- Mutations: `use` + verb + noun (`useCreateGateway`, `useDeleteGateway`)
+- camelCase for functions and methods (examples: `src/lib/utils.ts`, `src/lib/eventLogger.ts`)
+- React hooks use `useX` naming (examples: `src/hooks/useEffectiveIdentity.ts`, `src/hooks/useNavTree.ts`)
+- Async functions use `async`/`await`, no special naming prefix detected
 
 **Variables:**
-- Local variables: camelCase (`bestMatch`, `payloadKeys`)
-- Constants: UPPER_SNAKE_CASE for config objects (`PAYLOAD_SCHEMAS`, `WIDGET_REGISTRY`)
-- React state: camelCase (`editGateway`, `confirmSiteChange`)
-- Boolean state: descriptive (`isProvisioning`, `isLoading`)
+- camelCase for local variables and properties (examples: `src/lib/eventLogger.ts`)
+- UPPER_SNAKE_CASE for constants (example: `RLS_ERROR_CODES` in `src/lib/errorHandler.ts`)
+- Private member prefix: Not detected
 
 **Types:**
-- Interfaces: PascalCase (`ActionEligibility`, `GatewayForEligibility`)
-- Type aliases: PascalCase (`ActionCode`, `GatewayStatus`)
-- Generic type params: Single uppercase letter or descriptive (`T`, `EntityType`)
+- PascalCase for interfaces and type aliases (examples: `LogEventParams`, `ImpersonationContext` in `src/lib/eventLogger.ts`)
+- Enums: Not detected (TS enums not used; enum-like values are mapped via config or zod)
 
 ## Code Style
 
 **Formatting:**
-- No Prettier config detected - relies on TypeScript defaults
-- 2-space indentation (inferred from tsconfig bundler mode)
-- No semicolon enforcement - semicolons used consistently
+- Tool: Not detected at repo root (no `.prettierrc`); `opencode/package.json` embeds a Prettier config for that subproject
+- Line length: Not detected (opencode Prettier config sets `printWidth: 120`)
+- Quotes: Mixed (single quotes are common in `src/**/*.ts(x)`, double quotes appear in some files). Match the local file style.
+- Semicolons: Mixed (present in some TS files like `src/lib/utils.ts`, absent in many TSX files like `src/App.tsx`). Match the local file style.
+- Indentation: Mixed (tabs in many TSX files like `src/App.tsx`, spaces in some TS files like `src/lib/errorHandler.ts`). Match the local file style.
 
 **Linting:**
-- ESLint 9 with flat config at `eslint.config.js`
-- TypeScript-ESLint recommended rules
-- React Hooks plugin enabled
-- React Refresh plugin for HMR
-
-**Key ESLint rules:**
-- `@typescript-eslint/no-unused-vars`: off (relaxed)
-- `@typescript-eslint/no-explicit-any`: warn (allows but discourages)
-- `@typescript-eslint/no-empty-object-type`: off
-- `react-refresh/only-export-components`: warn
-- Short-circuit expressions allowed (`allowShortCircuit: true`)
-
-**TypeScript config:**
-- Strict mode: disabled (`"strict": false`)
-- No implicit any: disabled
-- Null checks: disabled (`"strictNullChecks": false`)
-- Target: ES2020, JSX: react-jsx
-- Path alias: `@/*` maps to `./src/*`
+- Tool: ESLint via `eslint.config.js`
+- Notable rules: `@typescript-eslint/no-explicit-any` is `warn` (off in `supabase/functions/**/*.ts`), `react-refresh/only-export-components` is `warn`, `@typescript-eslint/no-unused-vars` is `off`
+- Run: `npm run lint`
 
 ## Import Organization
 
 **Order:**
-1. React and external packages (`react`, `@tanstack/react-query`)
-2. Radix UI components (`@radix-ui/react-*`)
-3. Internal UI components (`@/components/ui/*`)
-4. Internal hooks (`@/hooks/*`)
-5. Internal lib utilities (`@/lib/*`)
-6. Types (often last, with `type` keyword)
+1. No strict ordering rule detected; files often mix external, alias, and relative imports (see `src/App.tsx`)
+2. Type-only imports use `import type` in some files (example: `src/lib/actions/sensorEligibility.test.ts`)
+
+**Grouping:**
+- Blank lines between groups are inconsistently used; follow the local file pattern
+- Sorting: Not detected
 
 **Path Aliases:**
-- `@/` resolves to `./src/`
-- Always use `@/` for internal imports, never relative paths from components
-
-**Example:**
-```typescript
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { useGateways } from "@/hooks/useGateways";
-import { cn } from "@/lib/utils";
-import type { Gateway } from "@/types/ttn";
-```
+- `@/` maps to `src/` (see `tsconfig.json`, used in `src/App.tsx` and tests)
 
 ## Error Handling
 
 **Patterns:**
-- Return result objects with `allowed`, `code`, and `reason` fields for eligibility checks
-- Use `ActionEligibility` interface pattern: `{ allowed: boolean; code: ActionCode; reason?: string }`
-- Toast notifications for user feedback (`toast.success()`, `toast.error()`)
-- Throw errors in mutation functions, catch in `onError` callbacks
-- Always provide human-readable reasons when operations are disallowed
+- Throw `Error` for hard failures (example: `src/lib/eventLogger.ts`)
+- Permission and toast handling centralized in `src/lib/errorHandler.ts`
+- Async operations use `try/catch` in service-like helpers (example: `src/lib/eventLogger.ts`)
 
-**Error codes:**
-- Use stable string codes for programmatic handling (e.g., `"PERMISSION_DENIED"`, `"TTN_NOT_CONFIGURED"`)
-- Define codes as union types in `types.ts` for type safety
-- Codes used for tests, telemetry, and UI decisions
-
-**Example pattern:**
-```typescript
-export function canProvisionGateway(
-  gateway: GatewayForEligibility,
-  ttnConfig: TTNConfigState | null
-): ActionEligibility {
-  if (gateway.ttn_gateway_id) {
-    return {
-      allowed: false,
-      code: "GATEWAY_ALREADY_PROVISIONED",
-      reason: "Gateway is already provisioned to TTN",
-    };
-  }
-  // ... more checks
-  return { allowed: true, code: "ALLOWED" };
-}
-```
+**Error Types:**
+- Custom error classes: Not detected
+- Return shapes with `{ error }` for some helpers (example: `logEvent` in `src/lib/eventLogger.ts`)
+- Console logging before user-facing feedback is common (example: `handleError` in `src/lib/errorHandler.ts`)
 
 ## Logging
 
-**Framework:** Custom `debugLog` utility at `src/lib/debugLogger.ts`
+**Framework:**
+- Primarily `console.*` in frontend (examples: `src/lib/errorHandler.ts`, `src/features/dashboard-layout/hooks/useLayoutManager.ts`)
+- Audit/event logging via `logEvent` in `src/lib/eventLogger.ts`
 
 **Patterns:**
-- Category-based logging: `debugLog.info('ttn', 'TTN_PROVISION_GATEWAY_REQUEST', {...})`
-- CRUD operations: `debugLog.crud('update', 'gateway', id, details)`
-- Structured context objects with snake_case keys
-- Request IDs for tracing: `request_id: crypto.randomUUID().slice(0, 8)`
-- Timing: capture `startTime` and log `duration_ms`
+- Log errors with context strings (example: `console.error("Failed to log event:", err)` in `src/lib/eventLogger.ts`)
+- `console.warn`/`console.log` used for diagnostics in feature modules
 
 ## Comments
 
 **When to Comment:**
-- File-level docblocks explaining module purpose
-- JSDoc for exported functions with parameters and return types
-- Section comments using `// ===` dividers for logical groupings
-- Inline comments for non-obvious business logic
+- JSDoc blocks for public utility functions (examples: `src/lib/errorHandler.ts`, `src/lib/eventLogger.ts`)
+- Inline comments for non-obvious behavior or operational notes
 
 **JSDoc/TSDoc:**
-- Use `/** */` for public API documentation
-- Include `@param` for function parameters when complex
-- Brief descriptions (1-2 lines) preferred over verbose
+- Used for exported helpers and complex logic; not required everywhere
 
-**Example:**
-```typescript
-/**
- * Check if a gateway can be provisioned to TTN.
- *
- * Order of checks:
- * 1. Already provisioned
- * 2. Permission check
- * 3. TTN configuration
- * 4. Gateway EUI
- */
-export function canProvisionGateway(...): ActionEligibility {
-```
+**TODO Comments:**
+- Format: `// TODO: ...` with optional phase tags (examples: `src/hooks/useEffectiveIdentity.ts`, `src/pages/DataMaintenance.tsx`)
+- Issue linking: Not detected
 
 ## Function Design
 
-**Size:** Functions kept focused, typically under 50 lines. Extract helpers for complex logic.
+**Size:**
+- No explicit size limits detected; functions vary from small utilities to larger handlers
 
 **Parameters:**
-- Destructure objects in function signature for clarity
-- Use optional chaining for nullable params
-- Group related params into objects (e.g., `{ id, updates }`)
+- No strict parameter count convention detected
+- Options objects used when appropriate (example: `logEvent` params in `src/lib/eventLogger.ts`)
 
 **Return Values:**
-- Explicit return types for public APIs
-- Use result objects over throw for expected failures
-- Return early for error conditions
+- Explicit returns are common; guard clauses appear in helpers (example: `isPermissionError` in `src/lib/errorHandler.ts`)
 
 ## Module Design
 
 **Exports:**
-- Named exports preferred over default exports
-- Explicit `export` keyword on functions/types to export
-- Group related exports together
+- Named exports common for utilities (examples: `src/lib/utils.ts`, `src/lib/errorHandler.ts`)
+- Default exports common for React components/pages (example: `src/pages/Areas.tsx`)
 
 **Barrel Files:**
-- `index.ts` for re-exporting from subdirectories
-- Example: `src/components/ui/index.ts` exports all UI components
-- Pattern: `export * from "./component"` or `export { specific } from "./module"`
-
-**Directory Structure:**
-- Feature directories: `src/features/{feature}/`
-  - `__tests__/` for test files
-  - `hooks/` for feature-specific hooks
-  - `types/` or `types.ts` for feature types
-  - `utils/` for utilities
-  - `index.ts` for public exports
-- Shared code in `src/lib/`
-- React hooks in `src/hooks/`
-- React contexts in `src/contexts/`
-
-## React Patterns
-
-**Component Structure:**
-```typescript
-interface Props {
-  organizationId: string;
-  sites: Site[];
-  canEdit: boolean;
-}
-
-export function ComponentName({ organizationId, sites, canEdit }: Props) {
-  // Hooks first
-  const { data, isLoading } = useQuery(...);
-  const mutation = useMutation(...);
-
-  // Local state
-  const [editItem, setEditItem] = useState<Item | null>(null);
-
-  // Effects
-  useEffect(() => {...}, [deps]);
-
-  // Handlers
-  const handleAction = async () => {...};
-
-  // Early returns for loading/empty
-  if (isLoading) return <Loader />;
-
-  // Main render
-  return (...);
-}
-```
-
-**Hooks Pattern:**
-```typescript
-export function useResourceName(resourceId: string | null) {
-  return useQuery({
-    queryKey: qk.resource(resourceId).details(),
-    queryFn: async (): Promise<Resource | null> => {
-      if (!resourceId) return null;
-      const { data, error } = await supabase.from("resources")...
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!resourceId,
-  });
-}
-```
-
-**Query Keys:**
-- Centralized in `src/lib/queryKeys.ts`
-- Hierarchical factory pattern: `qk.org(orgId).gateways()`
-- Type-safe with `as const` assertions
+- Barrel exports used for API modules (example: `src/lib/api/index.ts`)
+- Avoided elsewhere; no global barrel pattern detected
 
 ---
 
-*Convention analysis: 2026-01-23*
+*Convention analysis: 2026-01-26*
+*Update when patterns change*

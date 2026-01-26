@@ -1,25 +1,25 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { useSuperAdmin } from "@/contexts/SuperAdminContext";
-import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import DashboardLayout from "@/components/DashboardLayout"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useSuperAdmin } from "@/contexts/SuperAdminContext"
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
+import { useTRPC } from "@/lib/trpc"
+import { formatDistanceToNow } from "date-fns"
 import {
+  AlertTriangle,
+  Boxes,
+  ChevronRight,
+  MapPin,
   Search,
   Thermometer,
   Wifi,
   WifiOff,
-  AlertTriangle,
-  ChevronRight,
-  Boxes,
-  MapPin,
-} from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+} from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { Link } from "react-router-dom"
 
 interface UnitWithHierarchy {
   id: string;
@@ -43,9 +43,13 @@ interface UnitWithHierarchy {
 const Units = () => {
   const { effectiveOrgId, isInitialized, isImpersonating } = useEffectiveIdentity();
   const { isSupportModeActive } = useSuperAdmin();
-  const [isLoading, setIsLoading] = useState(true);
-  const [units, setUnits] = useState<UnitWithHierarchy[]>([]);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const trpc = useTRPC();
+
+  const unitsQuery = trpc.units.listByOrg.useQuery(
+    { organizationId: effectiveOrgId || "" },
+    { enabled: !!effectiveOrgId }
+  );
+
   const [searchQuery, setSearchQuery] = useState("");
   const [lastViewedUnitId, setLastViewedUnitId] = useState<string | null>(null);
 
@@ -55,115 +59,35 @@ const Units = () => {
     if (stored) setLastViewedUnitId(stored);
   }, []);
 
-  // Debug logging for impersonation context
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log('[Units] Context state:', {
-        isInitialized,
-        effectiveOrgId,
-        isSupportModeActive,
-        isImpersonating,
-      });
-    }
-  }, [isInitialized, effectiveOrgId, isSupportModeActive, isImpersonating]);
-
-  useEffect(() => {
-    // Guard: In support mode, wait until we have a valid effectiveOrgId
-    if (isSupportModeActive && !effectiveOrgId && isInitialized) {
-      // Still waiting for impersonation context - stay in loading state
-      return;
-    }
+  // Map tRPC units to local format
+  const units = useMemo(() => {
+    if (!unitsQuery.data) return [];
     
-    if (isInitialized && effectiveOrgId) {
-      loadUnits();
-    } else if (isInitialized && !effectiveOrgId && !isSupportModeActive) {
-      // Only show empty state for non-support mode with no org
-      setUnits([]);
-      setIsLoading(false);
-    }
-  }, [isInitialized, effectiveOrgId, isSupportModeActive]);
-
-  const loadUnits = async () => {
-    if (!effectiveOrgId) return;
-
-    setIsLoading(true);
-    setLoadError(null);
-    try {
-      if (import.meta.env.DEV) {
-        console.log('[Units] Loading units for org:', effectiveOrgId, 'isImpersonating:', isImpersonating);
-      }
-
-      // Step 1: Get area IDs for this organization
-      // PostgREST can't filter through multiple nested relationships (units->areas->sites->org)
-      // so we need to first get area IDs, then filter units by those
-      const { data: areasData, error: areasError } = await supabase
-        .from("areas")
-        .select("id, site:sites!inner(organization_id)")
-        .eq("is_active", true)
-        .eq("sites.organization_id", effectiveOrgId);
-
-      if (areasError) {
-        console.error("[Units] Areas query error:", areasError);
-        setLoadError(isImpersonating
-          ? "Unable to load areas while impersonating. This may be a permissions issue."
-          : `Failed to load areas: ${areasError.message}`
-        );
-        setUnits([]);
-        return;
-      }
-
-      const areaIds = (areasData || []).map(a => a.id);
-
-      if (import.meta.env.DEV) {
-        console.log('[Units] Areas found:', areaIds.length, 'areaIds:', areaIds);
-      }
-
-      if (areaIds.length === 0) {
-        if (import.meta.env.DEV) {
-          console.log('[Units] No areas found for org, showing empty state');
+    return unitsQuery.data.map(u => ({
+      id: u.id,
+      name: u.name,
+      unit_type: u.unitType,
+      status: u.status,
+      last_temp_reading: u.lastTemperature,
+      last_reading_at: u.lastReadingAt?.toISOString() || null,
+      temp_limit_high: u.tempMax,
+      temp_limit_low: u.tempMin,
+      area: {
+        id: u.areaId,
+        name: u.areaName,
+        site: {
+          id: u.siteId,
+          name: u.siteName,
         }
-        setUnits([]);
-        return;
       }
+    }));
+  }, [unitsQuery.data]);
 
-      // Step 2: Fetch all units with hierarchy filtered by those area IDs
-      const { data: unitsData, error } = await supabase
-        .from("units")
-        .select(`
-          id, name, unit_type, status, last_temp_reading, last_reading_at,
-          temp_limit_high, temp_limit_low,
-          area:areas!inner(
-            id, name,
-            site:sites!inner(id, name, organization_id)
-          )
-        `)
-        .eq("is_active", true)
-        .in("area_id", areaIds)
-        .order("name");
+  const isLoading = isInitialized && (unitsQuery.isLoading || (isSupportModeActive && !effectiveOrgId));
+  const loadError = unitsQuery.error ? unitsQuery.error.message : null;
 
-      if (error) {
-        console.error("[Units] Units query error:", error);
-        setLoadError(isImpersonating
-          ? "Unable to load units while impersonating. This may be a permissions issue."
-          : `Failed to load units: ${error.message}`
-        );
-        setUnits([]);
-      } else {
-        if (import.meta.env.DEV) {
-          console.log('[Units] Units loaded:', unitsData?.length, 'units');
-        }
-        setUnits(unitsData || []);
-      }
-    } catch (err) {
-      console.error("[Units] Failed to load units:", err);
-      setLoadError(isImpersonating
-        ? "An error occurred while loading units during impersonation."
-        : "An unexpected error occurred while loading units."
-      );
-      setUnits([]);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleRefetch = () => {
+    unitsQuery.refetch();
   };
 
   // Filter units by search query
@@ -178,22 +102,24 @@ const Units = () => {
   });
 
   // Group units by site
-  const groupedBySite = filteredUnits.reduce((acc, unit) => {
-    const siteId = unit.area.site.id;
-    if (!acc[siteId]) {
-      acc[siteId] = {
-        siteName: unit.area.site.name,
-        units: [],
-      };
-    }
-    acc[siteId].units.push(unit);
-    return acc;
-  }, {} as Record<string, { siteName: string; units: UnitWithHierarchy[] }>);
+  const groupedBySite = useMemo(() => {
+    return filteredUnits.reduce((acc, unit) => {
+      const siteId = unit.area.site.id;
+      if (!acc[siteId]) {
+        acc[siteId] = {
+          siteName: unit.area.site.name,
+          units: [],
+        };
+      }
+      acc[siteId].units.push(unit);
+      return acc;
+    }, {} as Record<string, { siteName: string; units: UnitWithHierarchy[] }>);
+  }, [filteredUnits]);
 
   const getStatusBadge = (unit: UnitWithHierarchy) => {
-    const isOnline = unit.status === "online" || unit.status === "normal";
-    const isAlerting = unit.status === "alarm" || unit.status === "critical";
-    const isWarning = unit.status === "warning";
+    const isOnline = unit.status === "online" || unit.status === "normal" || unit.status === "ok";
+    const isAlerting = unit.status === "alarm" || unit.status === "critical" || unit.status === "alarm_active";
+    const isWarning = unit.status === "warning" || unit.status === "excursion";
 
     if (isAlerting) {
       return (
@@ -291,7 +217,7 @@ const Units = () => {
             <AlertTriangle className="w-12 h-12 mx-auto text-destructive mb-4" />
             <h3 className="text-lg font-medium mb-2">Unable to Load Units</h3>
             <p className="text-muted-foreground mb-4">{loadError}</p>
-            <Button variant="outline" onClick={() => loadUnits()}>
+            <Button variant="outline" onClick={() => handleRefetch()}>
               Try Again
             </Button>
           </CardContent>

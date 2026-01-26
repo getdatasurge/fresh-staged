@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Timer, WifiOff, TrendingUp, Clock, AlertTriangle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-placeholder";
 import { findDowntimeIntervals, calculateUptimePercentage, DEFAULT_OFFLINE_THRESHOLD_MS } from "@/lib/downtime/gapDetection";
 import { format, subDays } from "date-fns";
 import type { WidgetProps } from "../types";

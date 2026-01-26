@@ -1,34 +1,33 @@
-import { useEffect, useState, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import DashboardLayout from "@/components/DashboardLayout";
-import LogTempModal, { LogTempUnit } from "@/components/LogTempModal";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { RBACDebugPanel } from "@/components/debug/RBACDebugPanel";
+import DashboardLayout from "@/components/DashboardLayout"
+import { RBACDebugPanel } from "@/components/debug/RBACDebugPanel"
+import LogTempModal, { LogTempUnit } from "@/components/LogTempModal"
+import { Badge as UIBadge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
+import { useUnitAlerts } from "@/hooks/useUnitAlerts"
+import { computeUnitStatus, UnitStatusInfo } from "@/hooks/useUnitStatus"
+import { useTRPC } from "@/lib/trpc"
+import { useUser } from "@stackframe/react"
+import { formatDistanceToNow } from "date-fns"
 import {
-  Thermometer,
+  AlertCircle,
   AlertTriangle,
   CheckCircle2,
-  Plus,
-  MapPin,
-  Loader2,
   ChevronRight,
+  ClipboardEdit,
+  ClipboardList,
+  Loader2,
+  MapPin,
+  Plus,
+  ShieldAlert,
+  ShieldCheck,
+  Thermometer,
   Wifi,
   WifiOff,
-  Clock,
-  ClipboardList,
-  AlertCircle,
-  ShieldCheck,
-  ShieldAlert,
-  ClipboardEdit,
-} from "lucide-react";
-import { useUser } from "@stackframe/react";
-import { formatDistanceToNow } from "date-fns";
-import { computeUnitStatus, UnitStatusInfo } from "@/hooks/useUnitStatus";
-import { useUnitAlerts, ComputedAlert } from "@/hooks/useUnitAlerts";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
+} from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
 
 interface DashboardStats {
   totalUnits: number;
@@ -37,28 +36,70 @@ interface DashboardStats {
   totalSites: number;
 }
 
-import { STATUS_CONFIG } from "@/lib/statusConfig";
+import { STATUS_CONFIG } from "@/lib/statusConfig"
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const user = useUser();
+  const trpc = useTRPC();
+  const { effectiveOrgId, isImpersonating, isInitialized } = useEffectiveIdentity();
+
+  // Queries
+  const statsQuery = trpc.organizations.stats.useQuery(
+    { organizationId: effectiveOrgId || "" },
+    { enabled: !!effectiveOrgId }
+  );
+  
+  const unitsQuery = trpc.units.listByOrg.useQuery(
+    { organizationId: effectiveOrgId || "" },
+    { enabled: !!effectiveOrgId }
+  );
+
   const [isLoading, setIsLoading] = useState(true);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
-  const [stats, setStats] = useState<DashboardStats>({
-    totalUnits: 0,
-    unitsOk: 0,
-    unitsWithAlerts: 0,
-    totalSites: 0,
-  });
-  const [units, setUnits] = useState<(UnitStatusInfo & { computed: ReturnType<typeof computeUnitStatus> })[]>([]);
-  const [unitsRequiringAction, setUnitsRequiringAction] = useState<(UnitStatusInfo & { computed: ReturnType<typeof computeUnitStatus> })[]>([]);
-
-  // Use effective identity for impersonation support
-  const { effectiveOrgId, isImpersonating, isInitialized } = useEffectiveIdentity();
 
   // Log temp modal state
   const [selectedUnit, setSelectedUnit] = useState<LogTempUnit | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+
+  // Map tRPC units to local format
+  const units = useMemo(() => {
+    if (!unitsQuery.data) return [];
+    
+    return unitsQuery.data.map(u => ({
+      id: u.id,
+      name: u.name,
+      unit_type: u.unitType,
+      status: u.status,
+      last_temp_reading: u.lastTemperature,
+      last_reading_at: u.lastReadingAt?.toISOString() || null,
+      temp_limit_high: u.tempMax,
+      temp_limit_low: u.tempMin,
+      manual_log_cadence: u.manualMonitoringInterval || 240, // default 4 hours
+      last_manual_log_at: u.lastManualLogAt?.toISOString() || null,
+      sensor_reliable: u.isActive, // placeholder for legacy field
+      manual_logging_enabled: u.manualMonitoringRequired !== false,
+      consecutive_checkins: 10, // placeholder
+      area: { name: u.areaName, site: { name: u.siteName } },
+      computed: computeUnitStatus({
+        id: u.id,
+        name: u.name,
+        unit_type: u.unitType,
+        status: u.status,
+        last_temp_reading: u.lastTemperature,
+        last_reading_at: u.lastReadingAt?.toISOString() || null,
+        temp_limit_high: u.tempMax,
+        temp_limit_low: u.tempMin,
+        manual_log_cadence: u.manualMonitoringInterval || 240,
+        last_manual_log_at: u.lastManualLogAt?.toISOString() || null,
+        area: { name: u.areaName, site: { name: u.siteName } }
+      } as any)
+    }));
+  }, [unitsQuery.data]);
+
+  const unitsRequiringAction = useMemo(() => 
+    units.filter(u => u.computed.actionRequired),
+  [units]);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -67,132 +108,36 @@ const Dashboard = () => {
     }
   }, [user, navigate]);
 
-  // Load dashboard data when effective org changes (supports impersonation)
-  // @org-scope-verified: Uses effectiveOrgId directly, no profile fallback
   useEffect(() => {
-    if (!isInitialized) return;
-    
-    // Wait for effectiveOrgId to be available
+    if (isInitialized && !effectiveOrgId) {
+      navigate("/auth/callback", { replace: true });
+    }
     if (effectiveOrgId) {
       setOrganizationId(effectiveOrgId);
-      loadDashboardData(effectiveOrgId);
-    } else if (isInitialized && !effectiveOrgId) {
-      // No org found - redirect to onboarding
-      navigate("/auth/callback", { replace: true });
     }
   }, [effectiveOrgId, isInitialized, navigate]);
 
-  const loadDashboardData = useCallback(async (orgId: string) => {
-    if (!orgId) return;
-
-    try {
-      const { count: sitesCount } = await supabase
-        .from("sites")
-        .select("*", { count: "exact", head: true })
-        .eq("organization_id", orgId);
-
-      // Step 1: Get area IDs for this organization
-      // PostgREST can't filter through multiple nested relationships (units->areas->sites->org)
-      // so we need to first get area IDs, then filter units by those
-      const { data: areasData } = await supabase
-        .from("areas")
-        .select("id, site:sites!inner(organization_id)")
-        .eq("is_active", true)
-        .eq("sites.organization_id", orgId);
-
-      const areaIds = (areasData || []).map(a => a.id);
-
-      // Step 2: Fetch units filtered by those area IDs
-      // CRITICAL: Must filter by organization_id at DB level, not client-side,
-      // because Super Admins bypass RLS and would otherwise get units from all orgs
-      let unitsData: any[] = [];
-      let unitsError: any = null;
-
-      if (areaIds.length > 0) {
-        const result = await supabase
-          .from("units")
-          .select(`
-            id, name, unit_type, status, last_temp_reading, last_reading_at,
-            temp_limit_high, temp_limit_low, manual_log_cadence,
-            sensor_reliable, manual_logging_enabled, consecutive_checkins,
-            area:areas!inner(name, site:sites!inner(name, organization_id))
-          `)
-          .eq("is_active", true)
-          .in("area_id", areaIds)
-          .limit(100);
-
-        unitsData = result.data || [];
-        unitsError = result.error;
-      }
-
-      if (unitsError) {
-        console.error("[Dashboard] Error fetching units:", unitsError);
-      }
-
-      const filteredUnits = unitsData;
-
-      // Fetch last manual log for each unit
-      const unitIds = filteredUnits.map((u: any) => u.id);
-      const { data: manualLogs } = await supabase
-        .from("manual_temperature_logs")
-        .select("unit_id, logged_at")
-        .in("unit_id", unitIds)
-        .order("logged_at", { ascending: false });
-
-      // Get the latest log per unit
-      const latestLogByUnit: Record<string, string> = {};
-      manualLogs?.forEach((log) => {
-        if (!latestLogByUnit[log.unit_id]) {
-          latestLogByUnit[log.unit_id] = log.logged_at;
-        }
-      });
-
-      const formattedUnits: UnitStatusInfo[] = filteredUnits.map((u: any) => ({
-        id: u.id,
-        name: u.name,
-        unit_type: u.unit_type,
-        status: u.status,
-        last_temp_reading: u.last_temp_reading,
-        last_reading_at: u.last_reading_at,
-        temp_limit_high: u.temp_limit_high,
-        temp_limit_low: u.temp_limit_low,
-        manual_log_cadence: u.manual_log_cadence,
-        last_manual_log_at: latestLogByUnit[u.id] || null,
-        sensor_reliable: u.sensor_reliable,
-        manual_logging_enabled: u.manual_logging_enabled,
-        consecutive_checkins: u.consecutive_checkins,
-        area: { name: u.area.name, site: { name: u.area.site.name } },
-      }));
-
-      // Compute status for each unit
-      const unitsWithComputed = formattedUnits.map(u => ({
-        ...u,
-        computed: computeUnitStatus(u),
-      }));
-
-      // Sort units by action required priority
-      unitsWithComputed.sort((a, b) => {
-        if (a.computed.actionRequired && !b.computed.actionRequired) return -1;
-        if (!a.computed.actionRequired && b.computed.actionRequired) return 1;
-        const aPriority = STATUS_CONFIG[a.status]?.priority || 99;
-        const bPriority = STATUS_CONFIG[b.status]?.priority || 99;
-        return aPriority - bPriority;
-      });
-
-      setUnits(unitsWithComputed);
-      setUnitsRequiringAction(unitsWithComputed.filter(u => u.computed.actionRequired));
-
-      setStats({
-        totalUnits: unitsWithComputed.length,
-        unitsOk: 0, // Will be computed by useUnitAlerts
-        unitsWithAlerts: 0, // Will be computed by useUnitAlerts
-        totalSites: sitesCount || 0,
-      });
-    } catch (error) {
-      console.error("Error loading dashboard:", error);
+  useEffect(() => {
+    if (isInitialized && (!statsQuery.isLoading && !unitsQuery.isLoading)) {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  }, [organizationId, navigate]);
+  }, [isInitialized, statsQuery.isLoading, unitsQuery.isLoading]);
+
+  const handleRefetch = useCallback(() => {
+    statsQuery.refetch();
+    unitsQuery.refetch();
+  }, [statsQuery, unitsQuery]);
+
+  const handleLogSuccess = () => {
+    handleRefetch();
+  };
+
+  const dashboardStats: DashboardStats = {
+    totalUnits: statsQuery.data?.unitCounts.total || 0,
+    unitsOk: 0, // Computed by useUnitAlerts below
+    unitsWithAlerts: 0, // Computed by useUnitAlerts below
+    totalSites: statsQuery.data?.siteCount || 0,
+  };
 
   // Use unified alert computation - single source of truth
   const alertsSummary = useUnitAlerts(units);
@@ -215,28 +160,29 @@ const Dashboard = () => {
   const getComplianceBadge = (unit: UnitStatusInfo & { computed: ReturnType<typeof computeUnitStatus> }) => {
     if (unit.status === "ok" && !unit.computed.actionRequired) {
       return (
-        <Badge variant="outline" className="gap-1 text-safe border-safe/30 bg-safe/5">
+        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold gap-1 text-safe border-safe/30 bg-safe/5">
           <ShieldCheck className="w-3 h-3" />
           Compliant
-        </Badge>
+        </span>
       );
     } else if (unit.computed.manualRequired) {
       return (
-        <Badge variant="outline" className="gap-1 text-warning border-warning/30 bg-warning/5">
+        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold gap-1 text-warning border-warning/30 bg-warning/5">
           <ClipboardList className="w-3 h-3" />
           Log Due
-        </Badge>
+        </span>
       );
     } else if (["alarm_active", "excursion"].includes(unit.status)) {
       return (
-        <Badge variant="outline" className="gap-1 text-alarm border-alarm/30 bg-alarm/5">
+        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold gap-1 text-alarm border-alarm/30 bg-alarm/5">
           <ShieldAlert className="w-3 h-3" />
           Non-Compliant
-        </Badge>
+        </span>
       );
     }
     return null;
   };
+
 
   const getLastLogDisplay = (unit: UnitStatusInfo) => {
     if (!unit.last_manual_log_at) {
@@ -268,11 +214,7 @@ const Dashboard = () => {
     setModalOpen(true);
   };
 
-  const handleLogSuccess = () => {
-    if (organizationId) {
-      loadDashboardData(organizationId);
-    }
-  };
+
 
   if (isLoading) {
     return (
@@ -296,7 +238,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Units</p>
-                <p className="text-3xl font-bold text-foreground">{stats.totalUnits}</p>
+                <p className="text-3xl font-bold text-foreground">{dashboardStats.totalUnits}</p>
               </div>
               <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
                 <Thermometer className="w-6 h-6 text-accent" />
@@ -335,7 +277,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Sites</p>
-                <p className="text-3xl font-bold text-foreground">{stats.totalSites}</p>
+                <p className="text-3xl font-bold text-foreground">{dashboardStats.totalSites}</p>
               </div>
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                 <MapPin className="w-6 h-6 text-primary" />
@@ -376,7 +318,7 @@ const Dashboard = () => {
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="font-medium text-foreground">{alert.unit_name}</span>
-                                <Badge variant="destructive" className="text-xs">{alert.type === "MANUAL_REQUIRED" ? "Log Required" : "Alarm"}</Badge>
+                                <UIBadge variant="destructive" className="text-xs">{alert.type === "MANUAL_REQUIRED" ? "Log Required" : "Alarm"}</UIBadge>
                               </div>
                               <p className="text-xs text-muted-foreground">{alert.site_name} · {alert.area_name}</p>
                               {/* Show message on mobile and desktop - no truncation */}
@@ -437,9 +379,9 @@ const Dashboard = () => {
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="font-medium text-foreground">{alert.unit_name}</span>
-                                <Badge variant="secondary" className="text-xs bg-warning/10 text-warning border-0">
+                                <UIBadge variant="secondary" className="text-xs bg-warning/10 text-warning border-0">
                                   {alert.type === "OFFLINE" ? "Offline" : "Excursion"}
-                                </Badge>
+                                </UIBadge>
                               </div>
                               <p className="text-xs text-muted-foreground">{alert.site_name} · {alert.area_name}</p>
                               {/* Show message - no truncation, fully wrapping */}
@@ -460,6 +402,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           )}
+
         </>
       )}
 

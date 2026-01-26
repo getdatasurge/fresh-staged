@@ -15,7 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { BarChart3, Plus, X, Check, Thermometer, Clock, AlertTriangle, Wifi, WifiOff } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-placeholder";
 import { formatDistanceToNow } from "date-fns";
 import type { WidgetProps } from "../types";
 

@@ -46,7 +46,7 @@ import { checkTTNOperationAllowed } from "@/lib/ttn/guards";
 import { TtnProvisioningStatusBadge, TtnActions } from "./TtnProvisioningStatusBadge";
 import { useCheckTtnProvisioningState } from "@/hooks/useCheckTtnProvisioningState";
 import { TtnDiagnoseModal, TtnDiagnoseResult } from "./TtnDiagnoseModal";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-placeholder";
 
 interface Site {
   id: string;

@@ -4,7 +4,6 @@
  * This is the main router that merges all domain routers.
  */
 
-import { z } from 'zod'
 import { adminRouter } from '../routers/admin.router.js'
 import { alertHistoryRouter } from '../routers/alert-history.router.js'
 import { alertRulesRouter } from '../routers/alert-rules.router.js'
@@ -13,7 +12,9 @@ import { areasRouter } from '../routers/areas.router.js'
 import { assetsRouter } from '../routers/assets.router.js'
 import { auditRouter } from '../routers/audit.js'
 import { availabilityRouter } from '../routers/availability.router.js'
+import { dashboardLayoutRouter } from '../routers/dashboard-layout.router.js'
 import { escalationContactsRouter } from '../routers/escalation-contacts.router.js'
+import { healthRouter } from '../routers/health.router.js'
 import { notificationPoliciesRouter } from '../routers/notification-policies.router.js'
 import { organizationsRouter } from '../routers/organizations.router.js'
 import { paymentsRouter } from '../routers/payments.router.js'
@@ -26,7 +27,9 @@ import { ttnDevicesRouter } from '../routers/ttn-devices.router.js'
 import { ttnGatewaysRouter } from '../routers/ttn-gateways.router.js'
 import { ttnSettingsRouter } from '../routers/ttn-settings.router.js'
 import { unitsRouter } from '../routers/units.router.js'
-import { publicProcedure, router } from './index.js'
+import { usersRouter } from '../routers/users.router.js'
+import { widgetHealthRouter } from '../routers/widget-health.router.js'
+import { router } from './index.js'
 
 /**
  * Application router
@@ -39,147 +42,158 @@ import { publicProcedure, router } from './index.js'
  * - alerts: Alert management and workflows (Plan 02)
  */
 export const appRouter = router({
-  /**
-   * Health check procedure
-   * Public endpoint to verify tRPC infrastructure is working
-   */
-  health: publicProcedure
-    .output(z.object({ status: z.string(), timestamp: z.string() }))
-    .query(() => ({
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-    })),
+	/**
+	 * Health check procedures
+	 */
+	health: healthRouter,
 
-  /**
-   * Organizations domain router
-   * Procedures: get, update, listMembers, stats
-   */
-  organizations: organizationsRouter,
+	/**
+	 * Widget Health Metrics procedures
+	 */
+	widgetHealth: widgetHealthRouter,
 
-  /**
-   * Sites domain router
-   * Procedures: list, get, create, update, delete
-   */
-  sites: sitesRouter,
+	/**
+	 * Organizations domain router
+	 * Procedures: get, update, listMembers, stats
+	 */
+	organizations: organizationsRouter,
 
-  /**
-   * Areas domain router
-   * Procedures: list, get, create, update, delete
-   */
-  areas: areasRouter,
+	/**
+	 * Sites domain router
+	 * Procedures: list, get, create, update, delete
+	 */
+	sites: sitesRouter,
 
-  /**
-   * Units domain router
-   * Procedures: list, get, create, update, delete
-   */
-  units: unitsRouter,
+	/**
+	 * Areas domain router
+	 * Procedures: list, get, create, update, delete
+	 */
+	areas: areasRouter,
 
-  /**
-   * Readings domain router
-   * Procedures: list, latest
-   * NOTE: Bulk ingestion stays as REST (API key auth)
-   */
-  readings: readingsRouter,
+	/**
+	 * Units domain router
+	 * Procedures: list, get, create, update, delete
+	 */
+	units: unitsRouter,
 
-  /**
-   * Alerts domain router
-   * Procedures: list, get, acknowledge, resolve
-   */
-  alerts: alertsRouter,
+	/**
+	 * Readings domain router
+	 * Procedures: list, latest
+	 * NOTE: Bulk ingestion stays as REST (API key auth)
+	 */
+	readings: readingsRouter,
 
-  /**
-   * Preferences domain router
-   * Procedures: getDigest, updateDigest, disableAllDigests
-   */
-  preferences: preferencesRouter,
+	/**
+	 * Alerts domain router
+	 * Procedures: list, get, acknowledge, resolve
+	 */
+	alerts: alertsRouter,
 
-  /**
-   * SMS Configuration domain router
-   * Procedures: get, upsert
-   */
-  smsConfig: smsConfigRouter,
+	/**
+	 * Preferences domain router
+	 * Procedures: getDigest, updateDigest, disableAllDigests
+	 */
+	preferences: preferencesRouter,
 
-  /**
-   * Payments domain router
-   * Procedures: getSubscription, createCheckoutSession, createPortalSession
-   */
-  payments: paymentsRouter,
+	/**
+	 * SMS Configuration domain router
+	 * Procedures: get, upsert
+	 */
+	smsConfig: smsConfigRouter,
 
-  /**
-   * Admin domain router
-   * Procedures: queueHealth, systemStatus
-   */
-  admin: adminRouter,
+	/**
+	 * Payments domain router
+	 * Procedures: getSubscription, createCheckoutSession, createPortalSession
+	 */
+	payments: paymentsRouter,
 
-  /**
-   * Assets domain router
-   * Procedures: getUploadUrl
-   */
-  assets: assetsRouter,
+	/**
+	 * Admin domain router
+	 * Procedures: queueHealth, systemStatus
+	 */
+	admin: adminRouter,
 
-  /**
-   * TTN Gateways domain router
-   * Procedures: list, get, register, update, deregister, refreshStatus
-   */
-  ttnGateways: ttnGatewaysRouter,
+	/**
+	 * Assets domain router
+	 * Procedures: getUploadUrl
+	 */
+	assets: assetsRouter,
 
-  /**
-   * TTN Devices domain router
-   * Procedures: list, get, provision, bootstrap, update, deprovision
-   */
-  ttnDevices: ttnDevicesRouter,
+	/**
+	 * TTN Gateways domain router
+	 * Procedures: list, get, register, update, deregister, refreshStatus
+	 */
+	ttnGateways: ttnGatewaysRouter,
 
-  /**
-   * TTN Settings domain router
-   * Procedures: get, update, test
-   */
-  ttnSettings: ttnSettingsRouter,
+	/**
+	 * TTN Devices domain router
+	 * Procedures: list, get, provision, bootstrap, update, deprovision
+	 */
+	ttnDevices: ttnDevicesRouter,
 
-  /**
-   * Availability domain router (PUBLIC - no auth required)
-   * Procedures: checkEmail, checkPhone
-   */
-  availability: availabilityRouter,
+	/**
+	 * TTN Settings domain router
+	 * Procedures: get, update, test
+	 */
+	ttnSettings: ttnSettingsRouter,
 
-  /**
-   * Escalation Contacts domain router
-   * Procedures: list, create, update, delete
-   */
-  escalationContacts: escalationContactsRouter,
+	/**
+	 * Availability domain router (PUBLIC - no auth required)
+	 * Procedures: checkEmail, checkPhone
+	 */
+	availability: availabilityRouter,
 
-  /**
-   * Notification Policies domain router
-   * Procedures: listByOrg, listBySite, listByUnit, getEffective, upsert, delete
-   */
-  notificationPolicies: notificationPoliciesRouter,
+	/**
+	 * Escalation Contacts domain router
+	 * Procedures: list, create, update, delete
+	 */
+	escalationContacts: escalationContactsRouter,
 
-  /**
-   * Audit domain router
-   * Procedures: logEvent
-   */
-  audit: auditRouter,
+	/**
+	 * Notification Policies domain router
+	 * Procedures: listByOrg, listBySite, listByUnit, getEffective, upsert, delete
+	 */
+	notificationPolicies: notificationPoliciesRouter,
 
-  /**
-   * Alert History domain router
-   * Procedures: get
-   */
-  alertHistory: alertHistoryRouter,
+	/**
+	 * Audit domain router
+	 * Procedures: logEvent
+	 */
+	audit: auditRouter,
 
-  /**
-   * Alert Rules domain router
-   * Procedures: get, upsert, delete, clearField
-   */
-  alertRules: alertRulesRouter,
+	/**
+	 * Alert History domain router
+	 * Procedures: get
+	 */
+	alertHistory: alertHistoryRouter,
 
-  /**
-   * Pilot Feedback domain router
-   * Procedures: upsert, list
-   */
-  pilotFeedback: pilotFeedbackRouter,
-});
+	/**
+	 * Alert Rules domain router
+	 * Procedures: get, upsert, delete, clearField
+	 */
+	alertRules: alertRulesRouter,
+
+	/**
+	 * Pilot Feedback domain router
+	 * Procedures: upsert, list
+	 */
+	pilotFeedback: pilotFeedbackRouter,
+
+	/**
+	 * Users domain router
+	 * Procedures: me, updateProfile
+	 */
+	users: usersRouter,
+
+	/**
+	 * Dashboard Layouts domain router
+	 * Procedures: list, create, update, remove, setDefault
+	 */
+	dashboardLayouts: dashboardLayoutRouter,
+})
 
 /**
  * Type export for tRPC client
  * This allows frontend to have full type safety
  */
-export type AppRouter = typeof appRouter;
+export type AppRouter = typeof appRouter

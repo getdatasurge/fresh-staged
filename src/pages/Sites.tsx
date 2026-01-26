@@ -1,29 +1,29 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { useSuperAdmin } from "@/contexts/SuperAdminContext";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { 
-  Plus, 
-  MapPin, 
-  ChevronRight, 
-  Building2,
-  Loader2,
-  Thermometer
-} from "lucide-react";
+import { useSuperAdmin } from "@/contexts/SuperAdminContext";
 import { useToast } from "@/hooks/use-toast";
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
+import { useTRPC } from "@/lib/trpc";
+import {
+    Building2,
+    ChevronRight,
+    Loader2,
+    MapPin,
+    Plus,
+    Thermometer
+} from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 interface Site {
   id: string;
@@ -40,8 +40,15 @@ const Sites = () => {
   const { toast } = useToast();
   const { effectiveOrgId, isInitialized, isImpersonating } = useEffectiveIdentity();
   const { isSupportModeActive } = useSuperAdmin();
-  const [sites, setSites] = useState<Site[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const trpc = useTRPC();
+  
+  const sitesQuery = trpc.sites.list.useQuery(
+    { organizationId: effectiveOrgId || "" },
+    { enabled: !!effectiveOrgId }
+  );
+
+  const createSiteMutation = trpc.sites.create.useMutation();
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -52,75 +59,22 @@ const Sites = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Debug logging for impersonation context
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log('[Sites] Context state:', {
-        isInitialized,
-        effectiveOrgId,
-        isSupportModeActive,
-        isImpersonating,
-      });
-    }
-  }, [isInitialized, effectiveOrgId, isSupportModeActive, isImpersonating]);
+  // Map tRPC sites to local format
+  const sites = useMemo(() => {
+    if (!sitesQuery.data) return [];
+    return sitesQuery.data.map(s => ({
+      id: s.id,
+      name: s.name,
+      address: s.address,
+      city: s.city,
+      state: s.state,
+      is_active: s.isActive,
+      areasCount: s.areasCount,
+      unitsCount: s.unitsCount,
+    }));
+  }, [sitesQuery.data]);
 
-  useEffect(() => {
-    // Guard: In support mode, wait until we have a valid effectiveOrgId
-    // This prevents showing "No sites" before impersonation context loads
-    if (isSupportModeActive && !effectiveOrgId && isInitialized) {
-      // Still waiting for impersonation context - stay in loading state
-      return;
-    }
-    
-    if (isInitialized && effectiveOrgId) {
-      loadSites();
-    } else if (isInitialized && !effectiveOrgId && !isSupportModeActive) {
-      // Only show empty state for non-support mode with no org
-      setSites([]);
-      setIsLoading(false);
-    }
-  }, [isInitialized, effectiveOrgId, isSupportModeActive]);
-
-  const loadSites = async () => {
-    if (!effectiveOrgId) return;
-    
-    setIsLoading(true);
-    const { data: sitesData, error } = await supabase
-      .from("sites")
-      .select(`
-        id,
-        name,
-        address,
-        city,
-        state,
-        is_active,
-        areas (
-          id,
-          units (id)
-        )
-      `)
-      .eq("organization_id", effectiveOrgId)
-      .eq("is_active", true)
-      .order("name");
-
-    if (error) {
-      console.error("Error loading sites:", error);
-      toast({ title: "Failed to load sites", variant: "destructive" });
-    } else {
-      const formatted = (sitesData || []).map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        address: s.address,
-        city: s.city,
-        state: s.state,
-        is_active: s.is_active,
-        areasCount: s.areas?.length || 0,
-        unitsCount: s.areas?.reduce((acc: number, a: any) => acc + (a.units?.length || 0), 0) || 0,
-      }));
-      setSites(formatted);
-    }
-    setIsLoading(false);
-  };
+  const isLoading = isInitialized && (sitesQuery.isLoading || (isSupportModeActive && !effectiveOrgId));
 
   const handleCreate = async () => {
     if (!formData.name.trim()) {
@@ -129,22 +83,25 @@ const Sites = () => {
     }
 
     setIsSubmitting(true);
-    const { data, error } = await supabase.rpc("create_site_for_org", {
-      p_name: formData.name,
-      p_address: formData.address || null,
-      p_city: formData.city || null,
-      p_state: formData.state || null,
-      p_postal_code: formData.postal_code || null,
-    });
+    try {
+      await createSiteMutation.mutateAsync({
+        organizationId: effectiveOrgId || "",
+        data: {
+          name: formData.name,
+          address: formData.address || null,
+          city: formData.city || null,
+          state: formData.state || null,
+          postalCode: formData.postal_code || null,
+        }
+      });
 
-    if (error) {
-      console.error("Error creating site:", error);
-      toast({ title: "Failed to create site", variant: "destructive" });
-    } else {
       toast({ title: "Site created successfully" });
       setFormData({ name: "", address: "", city: "", state: "", postal_code: "" });
       setDialogOpen(false);
-      loadSites();
+      sitesQuery.refetch();
+    } catch (error) {
+      console.error("Error creating site:", error);
+      toast({ title: "Failed to create site", variant: "destructive" });
     }
     setIsSubmitting(false);
   };

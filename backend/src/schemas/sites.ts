@@ -1,8 +1,8 @@
-import { z } from 'zod';
-import { SiteParamsSchema, TimestampSchema, UuidSchema } from './common.js';
+import { z } from 'zod'
+import { SiteParamsSchema, TimestampSchema, UuidSchema } from './common.js'
 
 // Re-export SiteParamsSchema from common for convenience
-export { SiteParamsSchema };
+export { SiteParamsSchema }
 
 // Full site response schema
 export const SiteSchema = z.object({
@@ -47,7 +47,16 @@ export const UpdateSiteSchema = CreateSiteSchema.partial();
 // Sites list response
 export const SitesListSchema = z.array(SiteSchema);
 
+// Site with summary stats
+export const SiteWithStatsSchema = SiteSchema.extend({
+  areasCount: z.number().int(),
+  unitsCount: z.number().int(),
+});
+
+export const SitesWithStatsListSchema = z.array(SiteWithStatsSchema);
+
 // Type exports
 export type SiteResponse = z.infer<typeof SiteSchema>;
+export type SiteWithStatsResponse = z.infer<typeof SiteWithStatsSchema>;
 export type CreateSiteRequest = z.infer<typeof CreateSiteSchema>;
 export type UpdateSiteRequest = z.infer<typeof UpdateSiteSchema>;

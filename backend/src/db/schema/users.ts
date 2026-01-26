@@ -1,13 +1,13 @@
 import {
-  pgTable,
-  uuid,
-  varchar,
-  text,
-  integer,
-  boolean,
-  timestamp,
-  index,
-  uniqueIndex,
+    boolean,
+    index,
+    integer,
+    pgTable,
+    text,
+    timestamp,
+    uniqueIndex,
+    uuid,
+    varchar,
 } from 'drizzle-orm/pg-core';
 import { appRoleEnum } from './enums.js';
 import { organizations } from './tenancy.js';
@@ -110,6 +110,21 @@ export const escalationContacts = pgTable(
     ),
   ]
 );
+
+// Platform Roles - global/platform-wide roles (Super Admins)
+export const platformRoles = pgTable(
+  'platform_roles',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(),
+    role: varchar('role', { length: 50 }).notNull(), // 'SUPER_ADMIN'
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex('platform_roles_user_role_idx').on(table.userId, table.role),
+  ]
+);
+
 
 // Type exports
 export type Profile = typeof profiles.$inferSelect;

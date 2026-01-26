@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-placeholder";
 import DashboardLayout from "@/components/DashboardLayout";
 import LogTempModal, { LogTempUnit } from "@/components/LogTempModal";
 import { Button } from "@/components/ui/button";

@@ -1,352 +1,172 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-01-23
+**Analysis Date:** 2026-01-26
 
 ## Test Framework
 
 **Runner:**
-- Vitest 2.1.8
-- Config: Integrated in `vite.config.ts` under `test` key
+- Vitest (frontend) with config in `vitest.config.ts`
+- Vitest (backend) with config in `backend/vitest.config.ts`
 
 **Assertion Library:**
-- Vitest built-in (`expect`)
-- `@testing-library/jest-dom` for DOM matchers
+- Vitest built-in `expect`
+- DOM matchers via `@testing-library/jest-dom` loaded in `src/test/setup.ts`
 
 **Run Commands:**
 ```bash
-npx vitest              # Run tests in watch mode
-npx vitest run          # Run all tests once
-npx vitest run --coverage  # Run with coverage
+npm test                                  # Run frontend tests via Vitest
+npm run test:watch                        # Frontend watch mode
+npm test -- src/lib/orgScopedInvalidation.test.ts
+cd backend && npm test                    # Run backend tests via Vitest
+cd backend && npm run test:watch          # Backend watch mode
+cd backend && npm test -- tests/api/sites.test.ts
 ```
 
 ## Test File Organization
 
 **Location:**
-- Feature tests: Co-located in `__tests__/` subdirectory within feature
-- Library tests: Same directory as module with `.test.ts` suffix
+- Frontend tests live under `src/**` and match `src/**/*.{test,spec}.{ts,tsx}` (see `vitest.config.ts`)
+- Backend tests live under `backend/tests/**/*.test.ts` (see `backend/vitest.config.ts`)
 
 **Naming:**
-- `{moduleName}.test.ts` for unit tests
-- Feature tests: descriptive names (`payloadClassification.test.ts`, `widgetHealthStates.test.ts`)
+- Unit/integration tests use `*.test.ts`/`*.test.tsx` naming
+- Some feature-specific locations use `__tests__` (examples: `src/lib/__tests__/api-client.test.ts`, `src/hooks/__tests__/useSites.test.tsx`)
 
 **Structure:**
 ```
 src/
-├── features/
-│   └── dashboard-layout/
-│       └── __tests__/
-│           ├── payloadClassification.test.ts
-│           ├── layoutValidation.test.ts
-│           └── widgetHealthStates.test.ts
-├── lib/
-│   └── actions/
-│       ├── gatewayEligibility.ts
-│       ├── gatewayEligibility.test.ts
-│       ├── sensorEligibility.ts
-│       └── sensorEligibility.test.ts
-└── test/
-    └── setup.ts
-```
-
-## Test Setup
-
-**Setup File:** `src/test/setup.ts`
-```typescript
-import "@testing-library/jest-dom";
-```
-
-**Vitest Config:**
-```typescript
-test: {
-  globals: true,          // describe, it, expect available globally
-  environment: "jsdom",   // Browser-like environment
-  setupFiles: ["./src/test/setup.ts"],
-  include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
-}
+  lib/
+    api-client.ts
+    __tests__/api-client.test.ts
+  hooks/
+    __tests__/useSites.test.tsx
+  features/
+    dashboard-layout/
+      __tests__/layoutValidation.test.ts
+backend/
+  tests/
+    api/
+      sites.test.ts
+    services/
+      availability.service.test.ts
+    trpc/
+      e2e.test.ts
 ```
 
 ## Test Structure
 
 **Suite Organization:**
 ```typescript
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-describe("Feature/Module Name", () => {
-  describe("function or component name", () => {
-    it("describes expected behavior in plain English", () => {
-      // Arrange
-      const input = {...};
+describe('moduleName', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-      // Act
-      const result = functionUnderTest(input);
-
-      // Assert
-      expect(result.allowed).toBe(true);
-    });
+  it('handles the happy path', () => {
+    // arrange
+    // act
+    // assert
   });
 });
 ```
 
 **Patterns:**
-- Nested `describe` blocks for grouping related tests
-- `it` descriptions: behavior-focused, reads like sentence
-- AAA pattern: Arrange, Act, Assert
-- Use `beforeEach` for shared setup, `afterEach` for cleanup
-
-## Test Data Patterns
-
-**Fixtures:**
-```typescript
-const validTtnConfig: TTNConfigState = {
-  isEnabled: true,
-  hasApiKey: true,
-  applicationId: "test-app-id",
-};
-
-const validGateway: GatewayForEligibility = {
-  gateway_eui: "AABBCCDDEEFF0011",
-  ttn_gateway_id: null,
-  status: "pending",
-};
-```
-
-**Sample Payloads:**
-```typescript
-const SAMPLE_PAYLOADS: Record<string, Record<string, unknown>> = {
-  temp_rh_v1: { temperature: 3.5, humidity: 62, battery_level: 95 },
-  door_v1: { door_open: true, battery_level: 90 },
-  temperature_only_v1: { temperature: 5.2, battery_level: 80 },
-};
-```
-
-**Test Cases Array Pattern:**
-```typescript
-const testCases = [
-  { gateway: { ...validGateway, ttn_gateway_id: "exists" }, ttn: validTtnConfig },
-  { gateway: validGateway, ttn: null },
-  { gateway: validGateway, ttn: { ...validTtnConfig, isEnabled: false } },
-];
-
-testCases.forEach(({ gateway, ttn }) => {
-  const result = canProvisionGateway(gateway, ttn);
-  if (!result.allowed) {
-    expect(result.reason).toBeDefined();
-  }
-});
-```
+- `describe`/`it` structure with Vitest globals
+- `beforeEach` used to reset mocks/state in frontend hooks tests (example: `src/hooks/__tests__/useSites.test.tsx`)
+- Arrange/act/assert comments appear when tests are complex
 
 ## Mocking
 
-**Framework:** Vitest built-in (`vi`)
+**Framework:**
+- Vitest built-in mocking via `vi`
+- Module mocking with `vi.mock()` at top of test files
 
 **Patterns:**
 ```typescript
-import { vi, beforeEach } from "vitest";
+import { vi } from 'vitest';
 
-// Mock module
-vi.mock("@/integrations/supabase/client", () => ({
-  supabase: mockSupabase,
+vi.mock('@/lib/api', () => ({
+  sitesApi: { listSites: vi.fn() },
 }));
 
-// Reset between tests
-beforeEach(() => {
-  vi.clearAllMocks();
-  clearAllCounters(); // Custom cleanup
-});
-
-// Spy on functions
-const spy = vi.spyOn(module, 'function');
-expect(spy).toHaveBeenCalledWith(expectedArgs);
+const mockFn = vi.mocked(sitesApi.listSites);
+mockFn.mockResolvedValueOnce([] as any);
 ```
 
 **What to Mock:**
-- External services (Supabase, APIs)
-- Time-dependent functions
-- Browser APIs when testing in jsdom
+- External services and SDKs (examples mocked in `backend/tests/setup.ts`)
+- API modules and auth hooks in frontend tests (example: `src/hooks/__tests__/useSites.test.tsx`)
+- Network or storage boundaries
 
 **What NOT to Mock:**
-- Internal business logic under test
-- Type definitions
-- Pure utility functions
+- Pure helper functions when they are the unit under test (pattern implied in `src/lib/actions/sensorEligibility.test.ts`)
 
-## Assertion Patterns
+## Fixtures and Factories
 
-**Common Matchers:**
+**Test Data:**
 ```typescript
-// Basic equality
-expect(result.allowed).toBe(true);
-expect(result.code).toBe("ALLOWED");
-
-// Defined/undefined
-expect(result.reason).toBeUndefined();
-expect(result.reason).toBeDefined();
-
-// String matching
-expect(result.reason).toContain("already provisioned");
-
-// Arrays
-expect(result.missingRequired).toHaveLength(0);
-expect(result.rights).toContainEqual("RIGHT_APPLICATION_INFO");
-expect(navTreeKeys).toContainEqual(["nav-tree"]);
-
-// Numbers
-expect(result.confidence).toBeGreaterThan(0.5);
-expect(result.confidence).toBeGreaterThanOrEqual(0.5);
-
-// Objects
-expect(widget.requiredCapabilities).toBeDefined();
-expect(Array.isArray(widget.requiredCapabilities)).toBe(true);
+// backend/tests/helpers/fixtures.ts
+export async function createTestOrg(...) { /* ... */ }
+export async function createTestUser(...) { /* ... */ }
+export function createTestReading(...) { /* ... */ }
 ```
 
-**Custom Error Messages:**
-```typescript
-expect(
-  SAMPLE_PAYLOADS[type],
-  `Missing sample payload for schema: ${type}`
-).toBeDefined();
-
-expect(
-  result.payloadType.match(/_v\d+$/),
-  `Inferred type "${result.payloadType}" must be versioned or 'unclassified'`
-).not.toBeNull();
-```
+**Location:**
+- Backend factories and fixtures live in `backend/tests/helpers/fixtures.ts`
+- Frontend shared fixtures: Not detected
 
 ## Coverage
 
-**Requirements:** Not formally enforced (no coverage thresholds in config)
+**Requirements:**
+- Not detected (no coverage target in package scripts)
+
+**Configuration:**
+- Not detected (no coverage config in `vitest.config.ts` or `backend/vitest.config.ts`)
 
 **View Coverage:**
 ```bash
-npx vitest run --coverage
+Not detected
 ```
 
 ## Test Types
 
 **Unit Tests:**
-- Focus: Individual functions, pure logic
-- Location: Co-located with modules
-- Example: Eligibility functions, validation logic, utility functions
+- Frontend utilities/hooks are tested in isolation with mocked dependencies (examples: `src/lib/actions/sensorEligibility.test.ts`, `src/hooks/__tests__/useSites.test.tsx`)
 
 **Integration Tests:**
-- Focus: Module interactions, state management
-- Location: Feature `__tests__/` directories
-- Example: Widget health state machine, payload classification
+- Backend service and API tests exercise multiple modules (examples: `backend/tests/services/availability.service.test.ts`, `backend/tests/api/sites.test.ts`)
 
 **E2E Tests:**
-- Framework: Not configured
-- Status: Not implemented in this codebase
+- Vitest-based E2E-style coverage exists in backend (example: `backend/tests/trpc/e2e.test.ts`)
 
 ## Common Patterns
 
 **Async Testing:**
 ```typescript
-it("handles async operations", async () => {
-  const result = await asyncFunction();
+it('handles async work', async () => {
+  const result = await asyncFn();
   expect(result).toBeDefined();
 });
 ```
 
 **Error Testing:**
 ```typescript
-it("returns error for invalid input", () => {
-  const result = validatePayloadSchema(null, "temp_rh_v1");
+it('throws on invalid input', () => {
+  expect(() => fn(null)).toThrow();
+});
 
-  expect(result.valid).toBe(false);
-  expect(result.errors).toContain("No payload data available");
+it('rejects on failure', async () => {
+  await expect(asyncFn()).rejects.toThrow();
 });
 ```
 
-**Boundary Testing:**
-```typescript
-it("returns false for empty array", () => {
-  expect(detectOutOfOrderTimestamps([])).toBe(false);
-});
-
-it("returns false for single reading", () => {
-  const readings = [{ recorded_at: "2024-01-15T10:00:00Z" }];
-  expect(detectOutOfOrderTimestamps(readings)).toBe(false);
-});
-```
-
-**Contract Testing:**
-```typescript
-describe("Widget Registry Contracts", () => {
-  it("every widget MUST have requiredCapabilities defined", () => {
-    Object.entries(WIDGET_REGISTRY).forEach(([id, widget]) => {
-      expect(widget.requiredCapabilities).toBeDefined();
-      expect(Array.isArray(widget.requiredCapabilities)).toBe(true);
-    });
-  });
-});
-```
-
-**Exhaustive Case Testing:**
-```typescript
-describe("Each registered schema has a sample payload", () => {
-  const registeredTypes = Object.keys(PAYLOAD_SCHEMAS);
-
-  it("sample payloads exist for all registered schemas", () => {
-    registeredTypes.forEach(type => {
-      expect(
-        SAMPLE_PAYLOADS[type],
-        `Missing sample payload for schema: ${type}`
-      ).toBeDefined();
-    });
-  });
-});
-```
-
-## Deno Tests (Edge Functions)
-
-**Location:** `supabase/functions/_shared/*.test.ts`
-
-**Framework:** Deno built-in test runner
-
-**Pattern:**
-```typescript
-import { assertEquals, assertArrayIncludes } from "https://deno.land/std@0.168.0/testing/asserts.ts";
-
-Deno.test("test name", () => {
-  const result = computePermissionReport(rights);
-  assertEquals(result.valid, true);
-  assertArrayIncludes(result.rights, ["RIGHT_APPLICATION_TRAFFIC_READ"]);
-});
-```
-
-**Run Commands:**
-```bash
-deno test supabase/functions/_shared/ttnPermissions.test.ts
-```
-
-## Testing Best Practices
-
-**Naming:**
-- Use descriptive `it` statements that explain expected behavior
-- Include the condition being tested: `"returns ALLOWED when all conditions are met"`
-- Test both positive and negative cases
-
-**Structure:**
-- One assertion focus per test (multiple related assertions OK)
-- Keep tests independent - no shared state between tests
-- Use `beforeEach` for setup, not constructor-like patterns
-
-**Maintainability:**
-- Define fixtures at top of test file
-- Use constants for magic values
-- Group related tests with nested `describe`
-
-**CI Gate Pattern:**
-```typescript
-/**
- * Deterministic Payload Classification Tests
- *
- * CI Gate: These tests ensure every sample payload matches exactly one versioned
- * payload type, or is explicitly classified as "unclassified".
- *
- * Ambiguous matches MUST fail CI (no silent ambiguity allowed).
- */
-```
+**Snapshot Testing:**
+- Not detected in frontend/backend tests
+- Opencode subproject includes snapshots (example: `opencode/packages/opencode/test/tool/__snapshots__/tool.test.ts.snap`)
 
 ---
 
-*Testing analysis: 2026-01-23*
+*Testing analysis: 2026-01-26*
+*Update when test patterns change*

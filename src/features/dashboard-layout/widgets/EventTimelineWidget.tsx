@@ -17,7 +17,7 @@ import {
   Activity,
   Loader2
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-placeholder";
 import type { WidgetProps } from "../types";
 import { format, isToday, isYesterday } from "date-fns";
 

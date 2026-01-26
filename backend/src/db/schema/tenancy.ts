@@ -1,18 +1,18 @@
 import {
-  pgTable,
-  uuid,
-  varchar,
-  text,
-  integer,
-  boolean,
-  timestamp,
-  index,
-  uniqueIndex,
+    boolean,
+    index,
+    integer,
+    pgTable,
+    text,
+    timestamp,
+    uniqueIndex,
+    uuid,
+    varchar,
 } from 'drizzle-orm/pg-core';
 import {
-  subscriptionPlanEnum,
-  subscriptionStatusEnum,
-  complianceModeEnum,
+    complianceModeEnum,
+    subscriptionPlanEnum,
+    subscriptionStatusEnum,
 } from './enums.js';
 
 // Reusable timestamp columns
@@ -32,7 +32,13 @@ const timestamps = {
     .defaultNow()
     .notNull()
     .$onUpdateFn(() => new Date()),
+  deletedAt: timestamp('deleted_at', {
+    mode: 'date',
+    precision: 3,
+    withTimezone: true,
+  }),
 };
+
 
 // Organizations - primary tenant boundary
 export const organizations = pgTable(

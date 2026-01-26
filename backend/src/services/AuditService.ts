@@ -1,10 +1,6 @@
-/**
- * Audit Service
- * Handles event logging and audit trails in the backend.
- * Replaces Supabase 'log_impersonated_action' RPC and frontend direct inserts.
- */
+import { and, desc, eq, gte, lte } from "drizzle-orm"
 import { db } from "../db/client.js"
-import { eventLogs } from "../db/schema/index.js"
+import { areas, eventLogs, profiles, sites, units } from "../db/schema/index.js"
 
 export interface LogEventParams {
   eventType: string;
@@ -54,7 +50,7 @@ export class AuditService {
       unitId,
       actorId,
       actorType,
-      eventData: JSON.stringify(eventData || {}),
+      eventData: eventData as any,
       // Impersonation columns
       actingUserId: actingAdminId || null,
       impersonationSessionId: impersonationSessionId || null,
@@ -63,6 +59,64 @@ export class AuditService {
     });
 
     return { success: true };
+  }
+
+  /**
+   * List event logs with filters
+   */
+  static async listEvents(params: {
+    organizationId: string;
+    siteId?: string;
+    areaId?: string;
+    unitId?: string;
+    start?: string;
+    end?: string;
+    limit?: number;
+    offset?: number;
+  }) {
+    const { organizationId, siteId, areaId, unitId, start, end, limit = 50, offset = 0 } = params;
+
+    const results = await db
+      .select({
+        id: eventLogs.id,
+        eventType: eventLogs.eventType,
+        category: eventLogs.category,
+        severity: eventLogs.severity,
+        title: eventLogs.title,
+        recordedAt: eventLogs.recordedAt,
+        organizationId: eventLogs.organizationId,
+        siteId: eventLogs.siteId,
+        areaId: eventLogs.areaId,
+        unitId: eventLogs.unitId,
+        actorId: eventLogs.actorId,
+        actorType: eventLogs.actorType,
+        eventData: eventLogs.eventData,
+        ipAddress: eventLogs.ipAddress,
+        userAgent: eventLogs.userAgent,
+        siteName: sites.name,
+        areaName: areas.name,
+        unitName: units.name,
+        actorName: profiles.fullName,
+        actorEmail: profiles.email,
+      })
+      .from(eventLogs)
+      .leftJoin(sites, eq(eventLogs.siteId, sites.id))
+      .leftJoin(areas, eq(eventLogs.areaId, areas.id))
+      .leftJoin(units, eq(eventLogs.unitId, units.id))
+      .leftJoin(profiles, eq(eventLogs.actorId, profiles.userId))
+      .where(and(
+        eq(eventLogs.organizationId, organizationId),
+        siteId ? eq(eventLogs.siteId, siteId) : undefined,
+        areaId ? eq(eventLogs.areaId, areaId) : undefined,
+        unitId ? eq(eventLogs.unitId, unitId) : undefined,
+        start ? gte(eventLogs.recordedAt, new Date(start)) : undefined,
+        end ? lte(eventLogs.recordedAt, new Date(end)) : undefined,
+      ))
+      .orderBy(desc(eventLogs.recordedAt))
+      .limit(limit)
+      .offset(offset);
+
+    return results;
   }
 
   /**
@@ -77,3 +131,4 @@ export class AuditService {
     });
   }
 }
+

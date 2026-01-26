@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { History, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-placeholder";
 import type { WidgetProps } from "../types";
 import { format, formatDistanceToNow, differenceInMinutes } from "date-fns";
 

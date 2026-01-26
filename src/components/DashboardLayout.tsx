@@ -1,36 +1,34 @@
-import { ReactNode, useEffect, useState, useRef } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
-import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
+import BrandedLogo from "@/components/BrandedLogo"
+import { ConnectionStatus } from "@/components/common/ConnectionStatus"
+import NotificationDropdown from "@/components/NotificationDropdown"
+import { SupportDiagnosticsPanel } from "@/components/platform/SupportDiagnosticsPanel"
+import { ImpersonationBanner, SupportModeBanner } from "@/components/platform/SupportModeBanner"
+import { SidebarSitesAccordion, SidebarUnitsAccordion } from "@/components/sidebar"
+import ThemeToggle from "@/components/ThemeToggle"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useSuperAdmin } from "@/contexts/SuperAdminContext"
+import { useToast } from "@/hooks/use-toast"
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
+import { usePermissions } from "@/hooks/useUserRole"
+import { clearOfflineStorage } from "@/lib/offlineStorage"
+import { useTRPC } from "@/lib/trpc"
+import { cn } from "@/lib/utils"
+import { useUser } from "@stackframe/react"
+import { useQueryClient } from "@tanstack/react-query"
 import {
-  LogOut,
-  MapPin,
-  Settings,
-  LayoutGrid,
   Building2,
-  Menu,
-  X,
   ChevronLeft,
-  Trash2,
+  LayoutGrid,
+  LogOut,
+  Menu,
+  Settings,
   Shield,
-} from "lucide-react";
-import { SidebarSitesAccordion, SidebarUnitsAccordion } from "@/components/sidebar";
-import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-import ThemeToggle from "@/components/ThemeToggle";
-import BrandedLogo from "@/components/BrandedLogo";
-import NotificationDropdown from "@/components/NotificationDropdown";
-import { clearOfflineStorage } from "@/lib/offlineStorage";
-import { usePermissions } from "@/hooks/useUserRole";
-import { useSuperAdmin } from "@/contexts/SuperAdminContext";
-import { SupportModeBanner, ImpersonationBanner } from "@/components/platform/SupportModeBanner";
-import { SupportDiagnosticsPanel } from "@/components/platform/SupportDiagnosticsPanel";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { ConnectionStatus } from "@/components/common/ConnectionStatus";
+  Trash2,
+  X
+} from "lucide-react"
+import { ReactNode, useEffect, useRef, useState } from "react"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -39,7 +37,7 @@ interface DashboardLayoutProps {
   backHref?: string;
 }
 
-import { ClipboardList, AlertCircle, FileBarChart, Boxes } from "lucide-react";
+import { AlertCircle, ClipboardList, FileBarChart } from "lucide-react"
 
 // Nav items - Sites and Units handled separately via accordions
 const navItemsBeforeAccordions = [
@@ -63,9 +61,13 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
   const { canDeleteEntities, isLoading: permissionsLoading } = usePermissions();
   const { isSuperAdmin, isLoadingSuperAdmin, rolesLoaded, isSupportModeActive, impersonation, viewingOrg } = useSuperAdmin();
   const { effectiveOrgId, effectiveOrgName, isImpersonating, isInitialized, impersonationChecked } = useEffectiveIdentity();
-  const [realOrgId, setRealOrgId] = useState<string | null>(null);
-  const [realOrgName, setRealOrgName] = useState("");
-  const [alertCount, setAlertCount] = useState(0);
+  const trpc = useTRPC();
+  
+  const alertsQuery = trpc.alerts.listByOrg.useQuery(
+    { organizationId: effectiveOrgId || "", status: "active", limit: 0 },
+    { enabled: !!effectiveOrgId }
+  );
+
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Use effectiveOrgId directly for sidebar - it already handles impersonation internally
@@ -77,7 +79,8 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
   }
   // Use the current effectiveOrgId if available, otherwise fall back to last known valid value
   const sidebarOrgId = effectiveOrgId || lastValidOrgIdRef.current;
-  const displayOrgName = effectiveOrgName || realOrgName;
+  const displayOrgName = effectiveOrgName;
+  const alertCount = (alertsQuery.data as any)?.totalCount || alertsQuery.data?.length || 0;
 
   // Debug logging for impersonation state changes (only log when value actually changes)
   const prevOrgIdRef = useRef<string | null>(null);
@@ -115,57 +118,11 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
   // No subscription needed - user object changes trigger re-renders
   useEffect(() => {
     if (!user) {
-      navigate("/auth");
+      if (location.pathname !== "/auth" && !location.pathname.includes("unsubscribe")) {
+        navigate("/auth");
+      }
     }
-  }, [user, navigate]);
-
-  // Load real user's org data (for non-impersonation mode)
-  useEffect(() => {
-    if (user && !isImpersonating) {
-      // Normal user - load their org data
-      loadOrgData();
-    }
-  }, [user, isImpersonating]);
-
-  // Load alert count for the effective org (works for both real and impersonated)
-  useEffect(() => {
-    const orgToUse = sidebarOrgId;
-    if (orgToUse) {
-      loadAlertCount(orgToUse);
-    }
-  }, [sidebarOrgId]);
-
-  const loadAlertCount = async (targetOrgId: string) => {
-    const { count } = await supabase
-      .from("alerts")
-      .select("id", { count: "exact" })
-      .eq("organization_id", targetOrgId)
-      .eq("status", "active")
-      .limit(0);
-    setAlertCount(count || 0);
-  };
-
-  const loadOrgData = async () => {
-    if (!user) return;
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("organization_id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (profile?.organization_id) {
-      setRealOrgId(profile.organization_id);
-
-      const { data: org } = await supabase
-        .from("organizations")
-        .select("name")
-        .eq("id", profile.organization_id)
-        .maybeSingle();
-
-      if (org) setRealOrgName(org.name);
-    }
-  };
+  }, [user, navigate, location.pathname]);
 
   const handleSignOut = async () => {
     try {
@@ -174,11 +131,6 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
 
       // Clear IndexedDB offline storage
       await clearOfflineStorage();
-
-      // Reset component state
-      setRealOrgId(null);
-      setRealOrgName("");
-      setAlertCount(0);
 
       // Sign out from Stack Auth
       if (user) {

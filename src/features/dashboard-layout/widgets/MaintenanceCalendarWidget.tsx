@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Calendar, Battery, AlertTriangle, Loader2, Wrench } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-placeholder";
 import { format, addDays, isBefore, isAfter } from "date-fns";
 import type { WidgetProps } from "../types";
 

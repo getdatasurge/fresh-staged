@@ -1,0 +1,2 @@
+$wslCommand = 'cd /home/skynet/freshtrack-pro-local/fresh-staged && echo "=== Running Frontend Typecheck ===" && npm run typecheck && echo "=== Running Backend Typecheck ===" && cd backend && npm run build && cd .. && echo "=== Running Frontend Linting ===" && npm run lint && echo "=== Running Backend Linting ===" && cd backend && npm run lint && cd .. && echo "=== Typecheck and Linting Complete! ==="'
+wsl -e bash -c $wslCommand

@@ -1,47 +1,47 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import DashboardLayout from "@/components/DashboardLayout";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import DashboardLayout from "@/components/DashboardLayout"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Search,
-  Filter,
-  ChevronDown,
-  ChevronRight,
-  Loader2,
-  RefreshCw,
-  ExternalLink,
-  Clock,
-} from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
+} from "@/components/ui/select"
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
+import { useUserRole } from "@/hooks/useUserRole"
 import {
   categoryConfig,
-  severityConfig,
-  getEventLabel,
   getEventIcon,
+  getEventLabel,
   inferCategory,
   inferSeverity,
+  severityConfig,
   type EventCategory,
   type EventSeverity,
-} from "@/lib/eventTypeMapper";
-import { useUserRole } from "@/hooks/useUserRole";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
+} from "@/lib/eventTypeMapper"
+import { useTRPC } from "@/lib/trpc"
+import { format, formatDistanceToNow } from "date-fns"
+import {
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  ExternalLink,
+  Filter,
+  Loader2,
+  RefreshCw,
+  Search,
+} from "lucide-react"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+
 
 interface EventLog {
   id: string;
@@ -68,10 +68,9 @@ interface EventLog {
 
 const EventHistory = () => {
   const navigate = useNavigate();
+  const trpc = useTRPC();
   const { role, isLoading: roleLoading } = useUserRole();
-  const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
-  const [events, setEvents] = useState<EventLog[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { effectiveOrgId, isInitialized: identityInitialized } = useEffectiveIdentity();
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
@@ -81,150 +80,44 @@ const EventHistory = () => {
   const [severityFilter, setSeverityFilter] = useState<string>("all");
   const [siteFilter, setSiteFilter] = useState<string>("all");
 
-  // Filter options
-  const [sites, setSites] = useState<{ id: string; name: string }[]>([]);
-
   // Pagination
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
   const PAGE_SIZE = 50;
 
   const isAdmin = role === "owner" || role === "admin";
 
-  // Load sites for filter dropdown
-  useEffect(() => {
-    const loadSites = async () => {
-      if (!effectiveOrgId) return;
-      const { data } = await supabase
-        .from("sites")
-        .select("id, name")
-        .eq("organization_id", effectiveOrgId)
-        .order("name");
-      setSites(data || []);
-    };
-    loadSites();
-  }, [effectiveOrgId]);
+  const sitesQuery = trpc.sites.list.useQuery(
+    { organizationId: effectiveOrgId! },
+    { enabled: !!effectiveOrgId && identityInitialized }
+  );
 
-  const loadEvents = async (reset = false) => {
-    if (!effectiveOrgId) return;
-
-    setIsLoading(true);
-    const currentPage = reset ? 0 : page;
-
-    try {
-      let query = supabase
-        .from("event_logs")
-        .select(`
-          id,
-          event_type,
-          category,
-          severity,
-          title,
-          recorded_at,
-          organization_id,
-          site_id,
-          area_id,
-          unit_id,
-          actor_id,
-          actor_type,
-          event_data,
-          ip_address,
-          user_agent
-        `)
-        .eq("organization_id", effectiveOrgId)
-        .order("recorded_at", { ascending: false })
-        .range(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE - 1);
-
-      // Apply filters
-      if (categoryFilter && categoryFilter !== "all") {
-        query = query.eq("category", categoryFilter);
-      }
-      if (severityFilter && severityFilter !== "all") {
-        query = query.eq("severity", severityFilter);
-      }
-      if (siteFilter && siteFilter !== "all") {
-        query = query.eq("site_id", siteFilter);
-      }
-      if (searchQuery) {
-        query = query.or(`title.ilike.%${searchQuery}%,event_type.ilike.%${searchQuery}%`);
-      }
-
-      const { data: eventsData, error } = await query;
-
-      if (error) throw error;
-
-      // Fetch related data for context
-      const enrichedEvents = await Promise.all(
-        (eventsData || []).map(async (event) => {
-          const eventData = typeof event.event_data === 'object' && event.event_data !== null && !Array.isArray(event.event_data)
-            ? event.event_data as Record<string, any>
-            : {};
-          const enriched: EventLog = { ...event, event_data: eventData };
-
-          // Fetch site name
-          if (event.site_id) {
-            const { data: site } = await supabase
-              .from("sites")
-              .select("name")
-              .eq("id", event.site_id)
-              .maybeSingle();
-            enriched.site = site;
-          }
-
-          // Fetch area name
-          if (event.area_id) {
-            const { data: area } = await supabase
-              .from("areas")
-              .select("name")
-              .eq("id", event.area_id)
-              .maybeSingle();
-            enriched.area = area;
-          }
-
-          // Fetch unit name
-          if (event.unit_id) {
-            const { data: unit } = await supabase
-              .from("units")
-              .select("name")
-              .eq("id", event.unit_id)
-              .maybeSingle();
-            enriched.unit = unit;
-          }
-
-          // Fetch actor name
-          if (event.actor_id) {
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("full_name, email")
-              .eq("user_id", event.actor_id)
-              .maybeSingle();
-            enriched.actor_profile = profile;
-          }
-
-          return enriched;
-        })
-      );
-
-      if (reset) {
-        setEvents(enrichedEvents);
-        setPage(0);
-      } else {
-        setEvents((prev) => [...prev, ...enrichedEvents]);
-      }
-
-      setHasMore((eventsData?.length || 0) === PAGE_SIZE);
-      setLastUpdated(new Date());
-    } catch (error) {
-      console.error("Error loading events:", error);
+  const eventsQuery = trpc.audit.list.useQuery(
+    {
+      organizationId: effectiveOrgId!,
+      siteId: siteFilter !== "all" ? siteFilter : undefined,
+      category: categoryFilter !== "all" ? (categoryFilter as any) : undefined,
+      severity: severityFilter !== "all" ? (severityFilter as any) : undefined,
+      page: page,
+      limit: PAGE_SIZE,
+    },
+    { 
+      enabled: !!effectiveOrgId && identityInitialized,
+      keepPreviousData: true
     }
-    setIsLoading(false);
+  );
+
+  const isLoading = eventsQuery.isLoading || !identityInitialized;
+  const events = eventsQuery.data || [];
+  const hasMore = events.length === PAGE_SIZE; // Simplified for now
+
+  const handleRefetch = () => {
+    eventsQuery.refetch();
+    setLastUpdated(new Date());
   };
 
-  useEffect(() => {
-    if (isInitialized && effectiveOrgId) {
-      loadEvents(true);
-    }
-  }, [isInitialized, effectiveOrgId, categoryFilter, severityFilter, siteFilter, searchQuery]);
+
+
+
 
   const toggleExpanded = (eventId: string) => {
     setExpandedEvents((prev) => {
@@ -238,21 +131,23 @@ const EventHistory = () => {
     });
   };
 
-  const buildContext = (event: EventLog): string => {
+  const buildContext = (event: any): string => {
     const parts: string[] = [];
-    if (event.site?.name) parts.push(event.site.name);
-    if (event.area?.name) parts.push(event.area.name);
-    if (event.unit?.name) parts.push(event.unit.name);
+    if (event.siteName) parts.push(event.siteName);
+    if (event.areaName) parts.push(event.areaName);
+    if (event.unitName) parts.push(event.unitName);
     return parts.join(" · ") || "—";
   };
 
-  const getActorDisplay = (event: EventLog): string => {
-    if (event.actor_type === "system") return "System";
-    if (event.actor_profile) {
-      return event.actor_profile.full_name || event.actor_profile.email;
+
+  const getActorDisplay = (event: any): string => {
+    if (event.actorType === "system") return "System";
+    if (event.actorName) {
+      return event.actorName;
     }
-    return event.actor_id ? "User" : "System";
+    return event.actorEmail || "System";
   };
+
 
   if (roleLoading) {
     return (
@@ -282,7 +177,7 @@ const EventHistory = () => {
               variant="ghost"
               size="icon"
               className="h-7 w-7"
-              onClick={() => loadEvents(true)}
+              onClick={() => handleRefetch()}
               disabled={isLoading}
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
@@ -336,11 +231,12 @@ const EventHistory = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Sites</SelectItem>
-                  {sites.map((site) => (
+                  {sitesQuery.data?.map((site) => (
                     <SelectItem key={site.id} value={site.id}>
                       {site.name}
                     </SelectItem>
                   ))}
+
                 </SelectContent>
               </Select>
             </div>
@@ -399,18 +295,13 @@ const EventHistory = () => {
                                   <span className="font-medium text-foreground">
                                     {label}
                                   </span>
-                                  <Badge
-                                    variant="outline"
-                                    className={`text-[10px] px-1.5 py-0 ${catConfig.color}`}
-                                  >
+                                  <span className="inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-semibold bg-secondary/10 text-secondary-foreground">
                                     {catConfig.label}
-                                  </Badge>
-                                  <Badge
-                                    variant="outline"
-                                    className={`text-[10px] px-1.5 py-0 ${sevConfig.color} ${sevConfig.borderColor}`}
-                                  >
+                                  </span>
+                                  <span className={`inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-semibold ${sevConfig.color} ${sevConfig.borderColor}`}>
                                     {sevConfig.label}
-                                  </Badge>
+                                  </span>
+
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-0.5 truncate">
                                   {buildContext(event)}
@@ -528,7 +419,6 @@ const EventHistory = () => {
                         size="sm"
                         onClick={() => {
                           setPage((p) => p + 1);
-                          loadEvents();
                         }}
                         disabled={isLoading}
                       >

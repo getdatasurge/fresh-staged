@@ -17,6 +17,7 @@ import { z } from 'zod'
 import {
 	AreaSchema,
 	AreasListSchema,
+	AreasListWithUnitCountSchema,
 	CreateAreaSchema,
 	UpdateAreaSchema,
 } from '../schemas/areas.js'
@@ -84,6 +85,7 @@ export const areasRouter = router({
 	 */
 	listWithUnitCount: orgProcedure
 		.input(SiteInput)
+		.output(AreasListWithUnitCountSchema)
 		.query(async ({ ctx, input }) => {
 			return areaService.listAreasWithUnitCount(
 				input.siteId,

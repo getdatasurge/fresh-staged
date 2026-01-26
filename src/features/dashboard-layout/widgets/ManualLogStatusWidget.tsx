@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ClipboardList, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-placeholder";
 import type { WidgetProps } from "../types";
 import { formatDistanceToNow, isAfter, addHours } from "date-fns";
 

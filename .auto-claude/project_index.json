@@ -1,10 +1,10 @@
 {
-  "project_root": "\\\\wsl.localhost\\Ubuntu\\home\\skynet\\freshtrack-pro-local\\freshtrack-pro",
+  "project_root": "\\\\wsl.localhost\\Ubuntu\\home\\skynet\\freshtrack-pro-local\\fresh-staged",
   "project_type": "monorepo",
   "services": {
     "docs-site": {
       "name": "docs-site",
-      "path": "\\\\wsl.localhost\\Ubuntu\\home\\skynet\\freshtrack-pro-local\\freshtrack-pro\\docs-site",
+      "path": "\\\\wsl.localhost\\Ubuntu\\home\\skynet\\freshtrack-pro-local\\fresh-staged\\docs-site",
       "language": "Python",
       "framework": null,
       "type": "unknown",
@@ -61,12 +61,13 @@
     },
     "backend": {
       "name": "backend",
-      "path": "\\\\wsl.localhost\\Ubuntu\\home\\skynet\\freshtrack-pro-local\\freshtrack-pro\\backend",
+      "path": "\\\\wsl.localhost\\Ubuntu\\home\\skynet\\freshtrack-pro-local\\fresh-staged\\backend",
       "language": "TypeScript",
-      "framework": "Fastify",
-      "type": "backend",
+      "framework": "React",
+      "type": "frontend",
       "package_manager": "pnpm",
       "default_port": 3000,
+      "task_queue": "BullMQ",
       "orm": "Drizzle",
       "dev_command": "npm run dev",
       "key_directories": {
@@ -81,20 +82,33 @@
       },
       "entry_point": "src/index.ts",
       "dependencies": [
+        "@aws-sdk/client-s3",
+        "@bull-board/api",
+        "@bull-board/fastify",
         "@fastify/cors",
+        "@fastify/multipart",
+        "@fastify/rate-limit",
+        "@react-email/components",
+        "@react-email/render",
+        "@socket.io/redis-adapter",
+        "@trpc/server",
+        "bullmq",
         "dotenv",
         "drizzle-orm",
         "fastify",
         "fastify-plugin",
         "fastify-type-provider-zod",
+        "ioredis",
         "jose",
         "pg",
-        "zod"
+        "react"
       ],
       "dev_dependencies": [
         "@types/node",
         "@types/pg",
+        "@types/react",
         "drizzle-kit",
+        "pino-pretty",
         "tsx",
         "typescript",
         "vitest"
@@ -105,7 +119,7 @@
       "environment": {
         "variables": {
           "DATABASE_URL": {
-            "value": "postgresql://frostguard:frostguard_dev_password@localhost:5432/frostguard",
+            "value": "postgresql://frostguard:frostguard_dev_password@localhost:6432/frostguard",
             "source": ".env",
             "type": "url",
             "sensitive": false,
@@ -117,13 +131,6 @@
             "type": "url",
             "sensitive": false,
             "required": true
-          },
-          "STACK_AUTH_PROJECT_ID": {
-            "value": "<REDACTED>",
-            "source": ".env",
-            "type": "string",
-            "sensitive": true,
-            "required": false
           },
           "VITE_STACK_PROJECT_ID": {
             "value": "82b1319b-9ab2-4b0c-9a2e-992c8317905c",
@@ -163,10 +170,460 @@
         },
         "required_count": 2,
         "optional_count": 0,
-        "detected_count": 8
+        "detected_count": 7
       },
       "api": {
         "routes": [
+          {
+            "path": "/api/protected",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\app.js",
+            "framework": "Express",
+            "requires_auth": true
+          },
+          {
+            "path": "/api/orgs/:organizationId/test",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\app.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/api/orgs/:organizationId/users/:userId",
+            "methods": [
+              "DELETE"
+            ],
+            "file": "dist\\src\\app.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\alerts.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:alertId",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\alerts.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:alertId/acknowledge",
+            "methods": [
+              "POST"
+            ],
+            "file": "dist\\src\\routes\\alerts.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:alertId/resolve",
+            "methods": [
+              "POST"
+            ],
+            "file": "dist\\src\\routes\\alerts.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\ttn-devices.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "POST"
+            ],
+            "file": "dist\\src\\routes\\ttn-devices.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/bootstrap",
+            "methods": [
+              "POST"
+            ],
+            "file": "dist\\src\\routes\\ttn-devices.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:deviceId",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\ttn-devices.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:deviceId",
+            "methods": [
+              "PUT"
+            ],
+            "file": "dist\\src\\routes\\ttn-devices.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:deviceId",
+            "methods": [
+              "DELETE"
+            ],
+            "file": "dist\\src\\routes\\ttn-devices.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\sms-config.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "POST"
+            ],
+            "file": "dist\\src\\routes\\sms-config.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/subscription",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\payments.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/checkout",
+            "methods": [
+              "POST"
+            ],
+            "file": "dist\\src\\routes\\payments.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/portal",
+            "methods": [
+              "POST"
+            ],
+            "file": "dist\\src\\routes\\payments.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\sites.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "POST"
+            ],
+            "file": "dist\\src\\routes\\sites.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:siteId",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\sites.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:siteId",
+            "methods": [
+              "PUT"
+            ],
+            "file": "dist\\src\\routes\\sites.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:siteId",
+            "methods": [
+              "DELETE"
+            ],
+            "file": "dist\\src\\routes\\sites.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/digest",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\preferences.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/digest",
+            "methods": [
+              "PATCH"
+            ],
+            "file": "dist\\src\\routes\\preferences.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/digest/disable-all",
+            "methods": [
+              "POST"
+            ],
+            "file": "dist\\src\\routes\\preferences.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\unsubscribe.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\ttn-gateways.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "POST"
+            ],
+            "file": "dist\\src\\routes\\ttn-gateways.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:gatewayId",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\ttn-gateways.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:gatewayId",
+            "methods": [
+              "PUT"
+            ],
+            "file": "dist\\src\\routes\\ttn-gateways.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:gatewayId",
+            "methods": [
+              "DELETE"
+            ],
+            "file": "dist\\src\\routes\\ttn-gateways.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:gatewayId/status",
+            "methods": [
+              "POST"
+            ],
+            "file": "dist\\src\\routes\\ttn-gateways.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/upload",
+            "methods": [
+              "POST"
+            ],
+            "file": "dist\\src\\routes\\assets.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\areas.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "POST"
+            ],
+            "file": "dist\\src\\routes\\areas.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:areaId",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\areas.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:areaId",
+            "methods": [
+              "PUT"
+            ],
+            "file": "dist\\src\\routes\\areas.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:areaId",
+            "methods": [
+              "DELETE"
+            ],
+            "file": "dist\\src\\routes\\areas.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:organizationId",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\organizations.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:organizationId",
+            "methods": [
+              "PUT"
+            ],
+            "file": "dist\\src\\routes\\organizations.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:organizationId/members",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\organizations.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:organizationId/stats",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\organizations.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/email",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\availability.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/phone",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\availability.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\units.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "POST"
+            ],
+            "file": "dist\\src\\routes\\units.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:unitId",
+            "methods": [
+              "GET"
+            ],
+            "file": "dist\\src\\routes\\units.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:unitId",
+            "methods": [
+              "PUT"
+            ],
+            "file": "dist\\src\\routes\\units.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:unitId",
+            "methods": [
+              "DELETE"
+            ],
+            "file": "dist\\src\\routes\\units.js",
+            "framework": "Express",
+            "requires_auth": false
+          },
           {
             "path": "/api/protected",
             "methods": [
@@ -218,6 +675,69 @@
               "DELETE"
             ],
             "file": "src\\routes\\sites.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "GET"
+            ],
+            "file": "src\\routes\\ttn-gateways.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "POST"
+            ],
+            "file": "src\\routes\\ttn-gateways.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:gatewayId",
+            "methods": [
+              "GET"
+            ],
+            "file": "src\\routes\\ttn-gateways.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:gatewayId",
+            "methods": [
+              "PUT"
+            ],
+            "file": "src\\routes\\ttn-gateways.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:gatewayId",
+            "methods": [
+              "DELETE"
+            ],
+            "file": "src\\routes\\ttn-gateways.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:gatewayId/status",
+            "methods": [
+              "POST"
+            ],
+            "file": "src\\routes\\ttn-gateways.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/upload",
+            "methods": [
+              "POST"
+            ],
+            "file": "src\\routes\\assets.ts",
             "framework": "Express",
             "requires_auth": false
           },
@@ -294,6 +814,96 @@
             "requires_auth": false
           },
           {
+            "path": "/:organizationId/stats",
+            "methods": [
+              "GET"
+            ],
+            "file": "src\\routes\\organizations.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "GET"
+            ],
+            "file": "src\\routes\\ttn-devices.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/",
+            "methods": [
+              "POST"
+            ],
+            "file": "src\\routes\\ttn-devices.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/bootstrap",
+            "methods": [
+              "POST"
+            ],
+            "file": "src\\routes\\ttn-devices.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:deviceId",
+            "methods": [
+              "GET"
+            ],
+            "file": "src\\routes\\ttn-devices.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:deviceId",
+            "methods": [
+              "PUT"
+            ],
+            "file": "src\\routes\\ttn-devices.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/:deviceId",
+            "methods": [
+              "DELETE"
+            ],
+            "file": "src\\routes\\ttn-devices.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/subscription",
+            "methods": [
+              "GET"
+            ],
+            "file": "src\\routes\\payments.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/checkout",
+            "methods": [
+              "POST"
+            ],
+            "file": "src\\routes\\payments.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
+            "path": "/portal",
+            "methods": [
+              "POST"
+            ],
+            "file": "src\\routes\\payments.ts",
+            "framework": "Express",
+            "requires_auth": false
+          },
+          {
             "path": "/",
             "methods": [
               "GET"
@@ -339,14 +949,16 @@
             "requires_auth": false
           }
         ],
-        "total_routes": 19,
+        "total_routes": 86,
         "methods": [
-          "PUT",
           "POST",
           "GET",
-          "DELETE"
+          "PUT",
+          "DELETE",
+          "PATCH"
         ],
         "protected_routes": [
+          "/api/protected",
           "/api/protected"
         ]
       },
@@ -355,6 +967,37 @@
           {
             "type": "postgresql",
             "client": "pg"
+          },
+          {
+            "type": "redis",
+            "client": "redis"
+          },
+          {
+            "type": "redis",
+            "client": "ioredis"
+          }
+        ],
+        "cache": [
+          {
+            "type": "redis"
+          }
+        ],
+        "message_queues": [
+          {
+            "type": "bullmq",
+            "client": "bullmq"
+          }
+        ],
+        "payments": [
+          {
+            "provider": "stripe",
+            "client": "stripe"
+          }
+        ],
+        "storage": [
+          {
+            "provider": "aws_s3",
+            "client": "@aws-sdk/client-s3"
           }
         ]
       },
@@ -367,6 +1010,11 @@
         ],
         "user_model": null,
         "middleware": []
+      },
+      "background_jobs": {
+        "system": "bullmq",
+        "tasks": [],
+        "worker_command": "node worker.js"
       }
     }
   },
@@ -383,13 +1031,16 @@
       "minio",
       "minio-setup",
       "pgadmin",
-      "redis-commander"
+      "redis-commander",
+      "worker"
     ],
     "ci": "GitHub Actions",
     "ci_workflows": [
       "release-docs.yml",
       "docs-ci.yml",
-      "docs-site.yml"
+      "docs-site.yml",
+      "deploy.yml",
+      "ci.yml"
     ]
   },
   "conventions": {

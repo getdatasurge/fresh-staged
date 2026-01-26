@@ -1,12 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useSuperAdmin } from '@/contexts/SuperAdminContext';
-import PlatformLayout from '@/components/platform/PlatformLayout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import PlatformLayout from '@/components/platform/PlatformLayout'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -14,89 +9,46 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/components/ui/table'
+import { useSuperAdmin } from '@/contexts/SuperAdminContext'
+import { useTRPC } from '@/lib/trpc'
 import {
-  Search,
   Building2,
-  Users,
-  MapPin,
   ChevronRight,
+  MapPin,
   RefreshCw,
-  ExternalLink,
-} from 'lucide-react';
-
-interface Organization {
-  id: string;
-  name: string;
-  slug: string;
-  timezone: string;
-  compliance_mode: string;
-  created_at: string;
-  user_count?: number;
-  site_count?: number;
-}
+  Search,
+  Users,
+} from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 export default function PlatformOrganizations() {
   const { logSuperAdminAction } = useSuperAdmin();
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const trpc = useTRPC();
   const [searchQuery, setSearchQuery] = useState('');
-  const [totalCount, setTotalCount] = useState(0);
 
-  useEffect(() => {
-    loadOrganizations();
-    logSuperAdminAction('VIEWED_ORGANIZATIONS_LIST');
-  }, []);
-
-  const loadOrganizations = async () => {
-    setIsLoading(true);
-    try {
-      // Get organizations
-      const { data: orgs, error, count } = await supabase
-        .from('organizations')
-        .select('*', { count: 'exact' })
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (error) throw error;
-
-      // Get counts via RPC (bypasses RLS, Super Admin only)
-      const { data: stats, error: statsError } = await supabase
-        .rpc('get_platform_organization_stats');
-
-      if (statsError) {
-        console.error('Stats RPC error:', statsError);
-      }
-
-      // Merge counts into orgs
-      const statsMap = new Map(
-        (stats || []).map((s: { org_id: string; user_count: number; site_count: number }) => [s.org_id, s])
-      );
-
-      const orgsWithCounts = (orgs || []).map((org) => ({
-        ...org,
-        user_count: statsMap.get(org.id)?.user_count || 0,
-        site_count: statsMap.get(org.id)?.site_count || 0,
-      }));
-
-      setOrganizations(orgsWithCounts);
-      setTotalCount(count || 0);
-    } catch (err) {
-      console.error('Error loading organizations:', err);
-    } finally {
-      setIsLoading(false);
+  const orgsQuery = trpc.admin.listOrganizations.useQuery(undefined, {
+    onSuccess: () => {
+      logSuperAdminAction('VIEWED_ORGANIZATIONS_LIST');
     }
-  };
+  });
 
-  const filteredOrganizations = organizations.filter((org) => {
-    if (!searchQuery) return true;
+  const organizations = orgsQuery.data || [];
+  const isLoading = orgsQuery.isLoading;
+
+  const filteredOrganizations = useMemo(() => {
+    if (!searchQuery) return organizations;
     const query = searchQuery.toLowerCase();
-    return (
+    return organizations.filter((org) =>
       org.name.toLowerCase().includes(query) ||
       org.slug.toLowerCase().includes(query)
     );
-  });
+  }, [organizations, searchQuery]);
+
+  const totalCount = organizations.length;
+  const totalUsers = organizations.reduce((sum, org) => sum + (org.userCount || 0), 0);
+  const totalSites = organizations.reduce((sum, org) => sum + (org.siteCount || 0), 0);
 
   return (
     <PlatformLayout title="Organizations">
@@ -119,9 +71,7 @@ export default function PlatformOrganizations() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {organizations.reduce((sum, org) => sum + (org.user_count || 0), 0)}
-            </div>
+            <div className="text-2xl font-bold">{totalUsers}</div>
           </CardContent>
         </Card>
         <Card>
@@ -131,9 +81,7 @@ export default function PlatformOrganizations() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {organizations.reduce((sum, org) => sum + (org.site_count || 0), 0)}
-            </div>
+            <div className="text-2xl font-bold">{totalSites}</div>
           </CardContent>
         </Card>
       </div>
@@ -149,7 +97,7 @@ export default function PlatformOrganizations() {
             className="pl-10"
           />
         </div>
-        <Button variant="outline" onClick={loadOrganizations} disabled={isLoading}>
+        <Button variant="outline" onClick={() => orgsQuery.refetch()} disabled={isLoading}>
           <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
@@ -200,22 +148,27 @@ export default function PlatformOrganizations() {
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1">
                         <Users className="w-3 h-3 text-muted-foreground" />
-                        {org.user_count}
+                        {org.userCount}
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1">
                         <MapPin className="w-3 h-3 text-muted-foreground" />
-                        {org.site_count}
+                        {org.siteCount}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={org.compliance_mode === 'haccp' ? 'default' : 'secondary'}>
-                        {org.compliance_mode || 'standard'}
-                      </Badge>
+                      <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
+                        org.complianceMode === 'haccp' 
+                          ? 'border-transparent bg-primary text-primary-foreground' 
+                          : 'border-transparent bg-secondary text-secondary-foreground'
+                      }`}>
+                        {org.complianceMode || 'standard'}
+                      </span>
                     </TableCell>
+
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(org.created_at).toLocaleDateString()}
+                      {new Date(org.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <Link to={`/platform/organizations/${org.id}`}>
@@ -235,4 +188,5 @@ export default function PlatformOrganizations() {
   );
 }
 
-export { PlatformOrganizations };
+export { PlatformOrganizations }
+

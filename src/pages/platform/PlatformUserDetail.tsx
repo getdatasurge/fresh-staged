@@ -1,42 +1,27 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useSuperAdmin } from '@/contexts/SuperAdminContext';
-import { useImpersonateAndNavigate, ImpersonationTarget } from '@/hooks/useImpersonateAndNavigate';
 import { ConfirmSpoofingModal } from '@/components/platform/ConfirmSpoofingModal';
 import PlatformLayout from '@/components/platform/PlatformLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useSuperAdmin } from '@/contexts/SuperAdminContext';
+import { ImpersonationTarget, useImpersonateAndNavigate } from '@/hooks/useImpersonateAndNavigate';
+import { useTRPC } from '@/lib/trpc';
 import {
-  User,
-  Mail,
-  Phone,
-  Building2,
-  Calendar,
-  Shield,
-  Eye,
-  ExternalLink,
-  Activity,
-  Loader2,
+    Activity,
+    Building2,
+    Calendar,
+    ExternalLink,
+    Eye,
+    Mail,
+    Phone,
+    Shield,
+    User
 } from 'lucide-react';
-
-interface UserDetails {
-  user_id: string;
-  email: string;
-  full_name: string | null;
-  phone: string | null;
-  organization_id: string | null;
-  organization_name: string | null;
-  role: string | null;
-  is_super_admin: boolean;
-  created_at: string;
-  notification_preferences: Record<string, boolean> | null;
-}
+import { Link, useParams } from 'react-router-dom';
 
 export default function PlatformUserDetail() {
   const { userId } = useParams<{ userId: string }>();
   const { logSuperAdminAction } = useSuperAdmin();
+  const trpc = useTRPC();
   const { 
     requestImpersonation,
     cancelRequest,
@@ -46,117 +31,38 @@ export default function PlatformUserDetail() {
     canImpersonate 
   } = useImpersonateAndNavigate();
 
-  const [user, setUser] = useState<UserDetails | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [recentActivity, setRecentActivity] = useState<Array<{
-    action: string;
-    timestamp: string;
-  }>>([]);
-
-  useEffect(() => {
-    if (userId) {
-      loadUserDetails();
-    }
-  }, [userId]);
-
-  const loadUserDetails = async () => {
-    if (!userId) return;
-
-    setIsLoading(true);
-    try {
-      // Get profile with org
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select(`
-          user_id,
-          email,
-          full_name,
-          phone,
-          organization_id,
-          created_at,
-          notification_preferences,
-          organization:organizations (
-            name
-          )
-        `)
-        .eq('user_id', userId)
-        .single();
-
-      if (error) throw error;
-
-      // Get role
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      // Check if super admin
-      const { data: platformRole } = await supabase
-        .from('platform_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .eq('role', 'SUPER_ADMIN')
-        .maybeSingle();
-
-      const userDetails: UserDetails = {
-        user_id: profile.user_id,
-        email: profile.email,
-        full_name: profile.full_name,
-        phone: profile.phone,
-        organization_id: profile.organization_id,
-        organization_name: (profile.organization as { name: string } | null)?.name || null,
-        role: roleData?.role || null,
-        is_super_admin: !!platformRole,
-        created_at: profile.created_at,
-        notification_preferences: profile.notification_preferences as Record<string, boolean> | null,
-      };
-
-      setUser(userDetails);
-
-      // Log this view
-      logSuperAdminAction(
-        'VIEWED_USER_DETAIL',
-        'user',
-        userId,
-        profile.organization_id || undefined,
-        { user_email: profile.email }
-      );
-
-      // Get some recent activity (manual temp logs as example)
-      if (profile.organization_id) {
-        const { data: logs } = await supabase
-          .from('manual_temperature_logs')
-          .select('created_at')
-          .eq('logged_by', userId)
-          .order('created_at', { ascending: false })
-          .limit(5);
-
-        if (logs) {
-          setRecentActivity(
-            logs.map(log => ({
-              action: 'Logged temperature',
-              timestamp: log.created_at,
-            }))
-          );
-        }
+  const userQuery = trpc.admin.getUser.useQuery(
+    { userId: userId || '' },
+    { 
+      enabled: !!userId,
+      onSuccess: (data) => {
+        logSuperAdminAction(
+          'VIEWED_USER_DETAIL',
+          'user',
+          data.userId,
+          data.organizationId || undefined,
+          { user_email: data.email }
+        );
       }
-    } catch (err) {
-      console.error('Error loading user details:', err);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  );
+
+  const user = userQuery.data;
+  const isLoading = userQuery.isLoading;
 
   const handleViewAsUser = () => {
-    if (!user || !user.organization_id || !user.organization_name) return;
+    if (!user) return;
+    
+    // Find a valid organization to impersonate if multiple roles exist
+    const primaryRole = user.roles?.[0];
+    if (!primaryRole) return;
 
     requestImpersonation({
-      user_id: user.user_id,
+      user_id: user.userId,
       email: user.email,
-      full_name: user.full_name,
-      organization_id: user.organization_id,
-      organization_name: user.organization_name,
+      full_name: user.fullName,
+      organization_id: primaryRole.organizationId,
+      organization_name: primaryRole.organizationName,
     });
   };
 
@@ -195,7 +101,7 @@ export default function PlatformUserDetail() {
         isLoading={isNavigating}
       />
       <PlatformLayout
-      title={user.full_name || user.email}
+      title={user.fullName || user.email}
       showBack
       backHref="/platform/users"
     >
@@ -207,11 +113,11 @@ export default function PlatformUserDetail() {
             <CardTitle className="flex items-center gap-2">
               <User className="w-5 h-5" />
               User Information
-              {user.is_super_admin && (
-                <Badge variant="outline" className="ml-auto border-purple-300 text-purple-700">
+              {user.isSuperAdmin && (
+                <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold ml-auto border-purple-300 text-purple-700">
                   <Shield className="w-3 h-3 mr-1" />
                   Super Admin
-                </Badge>
+                </span>
               )}
             </CardTitle>
           </CardHeader>
@@ -224,12 +130,12 @@ export default function PlatformUserDetail() {
               </div>
             </div>
 
-            {user.full_name && (
+            {user.fullName && (
               <div className="flex items-center gap-3">
                 <User className="w-4 h-4 text-muted-foreground" />
                 <div>
                   <div className="text-sm text-muted-foreground">Full Name</div>
-                  <div>{user.full_name}</div>
+                  <div>{user.fullName}</div>
                 </div>
               </div>
             )}
@@ -248,62 +154,60 @@ export default function PlatformUserDetail() {
               <Calendar className="w-4 h-4 text-muted-foreground" />
               <div>
                 <div className="text-sm text-muted-foreground">Joined</div>
-                <div>{new Date(user.created_at).toLocaleDateString()}</div>
+                <div>{new Date(user.createdAt).toLocaleDateString()}</div>
               </div>
             </div>
 
             <div className="text-xs text-muted-foreground font-mono mt-4 pt-4 border-t">
-              User ID: {user.user_id}
+              User ID: {user.userId}
             </div>
           </CardContent>
         </Card>
 
-        {/* Organization Card */}
+        {/* Organizations Card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Building2 className="w-5 h-5" />
-              Organization Membership
+              Organization Memberships
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {user.organization_id ? (
+            {user.roles && user.roles.length > 0 ? (
               <div className="space-y-4">
-                <div>
-                  <div className="text-sm text-muted-foreground">Organization</div>
-                  <Link
-                    to={`/platform/organizations/${user.organization_id}`}
-                    className="flex items-center gap-2 text-lg font-medium hover:underline"
-                  >
-                    {user.organization_name}
-                    <ExternalLink className="w-4 h-4" />
-                  </Link>
-                </div>
-
-                <div>
-                  <div className="text-sm text-muted-foreground">Role</div>
-                  <Badge variant={user.role === 'owner' ? 'default' : 'secondary'}>
-                    {user.role || 'No role'}
-                  </Badge>
-                </div>
-
-                {canImpersonate && (
-                  <div className="pt-4 border-t">
-                    <Button
-                      variant="outline"
-                      onClick={handleViewAsUser}
-                      disabled={isNavigating}
-                      className="w-full text-orange-600 border-orange-200 hover:bg-orange-50 hover:text-orange-700"
-                    >
-                      {isNavigating ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <Eye className="w-4 h-4 mr-2" />
-                      )}
-                      View App as This User
-                    </Button>
+                {user.roles.map((role: any, idx: number) => (
+                  <div key={idx} className="flex items-center justify-between py-2 border-b last:border-0">
+                    <div>
+                      <Link
+                        to={`/platform/organizations/${role.organizationId}`}
+                        className="flex items-center gap-2 font-medium hover:underline"
+                      >
+                        {role.organizationName}
+                        <ExternalLink className="w-4 h-4" />
+                      </Link>
+                      <div className="text-sm text-muted-foreground">{role.role}</div>
+                    </div>
+                    {canImpersonate && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          requestImpersonation({
+                            user_id: user.userId,
+                            email: user.email,
+                            full_name: user.fullName,
+                            organization_id: role.organizationId,
+                            organization_name: role.organizationName,
+                          });
+                        }}
+                        className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        View As
+                      </Button>
+                    )}
                   </div>
-                )}
+                ))}
               </div>
             ) : (
               <div className="text-muted-foreground">
@@ -314,53 +218,23 @@ export default function PlatformUserDetail() {
         </Card>
       </div>
 
-      {/* Recent Activity */}
+      {/* Note: Recent activity would need audit log queries which we can add later */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="w-5 h-5" />
-            Recent Activity
+            Platform Summary
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {recentActivity.length > 0 ? (
-            <div className="space-y-2">
-              {recentActivity.map((activity, idx) => (
-                <div key={idx} className="flex items-center justify-between py-2 border-b last:border-0">
-                  <span>{activity.action}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {new Date(activity.timestamp).toLocaleString()}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-muted-foreground">No recent activity found</div>
-          )}
+          <div className="text-muted-foreground text-sm">
+            This user has {user.roles?.length || 0} organization memberships.
+            Last updated: {new Date(user.updatedAt).toLocaleString()}
+          </div>
         </CardContent>
       </Card>
-
-      {/* Notification Preferences */}
-      {user.notification_preferences && Object.keys(user.notification_preferences).length > 0 && (
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Notification Preferences</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {Object.entries(user.notification_preferences).map(([key, value]) => (
-                <div key={key} className="flex items-center gap-2">
-                  <Badge variant={value ? 'default' : 'secondary'}>
-                    {value ? 'On' : 'Off'}
-                  </Badge>
-                  <span className="text-sm">{key.replace(/_/g, ' ')}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-      </PlatformLayout>
+    </PlatformLayout>
     </>
   );
 }
+

@@ -1,178 +1,146 @@
 # Architecture
 
-**Analysis Date:** 2026-01-23
+**Analysis Date:** 2026-01-26
 
 ## Pattern Overview
 
-**Overall:** Multi-Tenant SPA with Supabase Backend
+**Overall:** Full-stack web application (React SPA + Fastify API + Supabase/Postgres + Edge functions)
 
 **Key Characteristics:**
-- React SPA with file-based page routing (not Next.js - uses react-router-dom)
-- Supabase for authentication, database, and edge functions
-- Multi-tenant architecture with organization-scoped data
-- Super Admin platform with impersonation support
-- React Query for server state management
+- React/Vite single-page frontend with routing and data fetching
+- Fastify backend exposes REST and tRPC endpoints, plus webhook handlers
+- Supabase provides Postgres, migrations, and edge functions
 
 ## Layers
 
-**Presentation Layer:**
-- Purpose: UI rendering and user interaction
-- Location: `src/components/`, `src/pages/`
-- Contains: React components, page layouts, UI primitives
-- Depends on: Hooks, Contexts, UI library (shadcn/ui)
-- Used by: App router
+**Frontend UI Layer:**
+- Purpose: User-facing pages and reusable UI components
+- Contains: Route pages, layout components, UI primitives
+- Depends on: Frontend state/data layer, contexts, hooks
+- Used by: React Router entry (`src/App.tsx`)
+- Location: `src/pages`, `src/components`, `src/assets`
 
-**Page Layer:**
-- Purpose: Route-level components that compose features
-- Location: `src/pages/`
-- Contains: 28 page components (Dashboard, Sites, Units, Settings, etc.)
-- Depends on: DashboardLayout, feature components, hooks
-- Used by: `src/App.tsx` router
+**Frontend State/Data Layer:**
+- Purpose: API access, caching, client-side domain logic
+- Contains: API clients, React Query/tRPC setup, context providers, hooks
+- Depends on: Backend APIs, Supabase client helpers, shared utilities
+- Used by: UI layer components and pages
+- Location: `src/lib`, `src/hooks`, `src/contexts`, `src/providers`
 
-**Feature Layer:**
-- Purpose: Self-contained feature modules
-- Location: `src/features/`
-- Contains: Dashboard layouts with widgets, types, hooks, components
-- Depends on: Hooks, lib utilities
-- Used by: Page components
+**Backend API Layer:**
+- Purpose: HTTP API endpoints, tRPC router, webhook receivers
+- Contains: Fastify routes, tRPC routers, middleware, plugins
+- Depends on: Services, schemas, data access, background jobs
+- Used by: Frontend, external webhook providers
+- Location: `backend/src/routes`, `backend/src/routers`, `backend/src/trpc`, `backend/src/middleware`, `backend/src/plugins`
 
-**Hooks Layer:**
-- Purpose: Reusable data fetching and state logic
-- Location: `src/hooks/`
-- Contains: 45+ custom hooks (useOrgScope, useCan, useTTN*, useUnit*, etc.)
-- Depends on: Supabase client, React Query, Contexts
-- Used by: Components, Pages
+**Backend Service Layer:**
+- Purpose: Business logic and integrations
+- Contains: Service modules, background jobs, feature modules
+- Depends on: Data layer, external APIs (Stripe/Telnyx/TTN), utilities
+- Used by: API layer routes/routers
+- Location: `backend/src/services`, `backend/src/features`, `backend/src/jobs`, `backend/src/workers`
 
-**Context Layer:**
-- Purpose: Global application state
-- Location: `src/contexts/`
-- Contains: DebugContext, SuperAdminContext, TTNConfigContext
-- Depends on: Supabase client
-- Used by: Entire application via providers in App.tsx
+**Data Layer:**
+- Purpose: Database access and persistence
+- Contains: Drizzle schemas/migrations, Supabase migrations, DB helpers
+- Depends on: Postgres/Supabase
+- Used by: Backend services and jobs
+- Location: `backend/src/db`, `backend/drizzle`, `supabase/migrations`, `supabase/config.toml`
 
-**Library Layer:**
-- Purpose: Domain logic, utilities, and configurations
-- Location: `src/lib/`
-- Contains: RBAC permissions, query keys, cache invalidation, TTN utilities, error handling
-- Depends on: Supabase types
-- Used by: Hooks, Components
-
-**Integration Layer:**
-- Purpose: External service clients
-- Location: `src/integrations/supabase/`
-- Contains: Supabase client configuration, auto-generated types
-- Depends on: Environment variables
-- Used by: Entire application
-
-**Backend Layer (Edge Functions):**
-- Purpose: Server-side logic and external API integrations
-- Location: `supabase/functions/`
-- Contains: 40+ Deno edge functions for TTN, Telnyx, Stripe, data processing
-- Depends on: Supabase service role, external APIs
-- Used by: Frontend via supabase.functions.invoke()
+**Edge Functions Layer:**
+- Purpose: Serverless functions for external integrations
+- Contains: Supabase edge functions
+- Depends on: Supabase runtime, external APIs
+- Used by: External webhooks or scheduled triggers
+- Location: `supabase/functions/*/index.ts`
 
 ## Data Flow
 
-**User Data Query:**
-1. Component calls hook (e.g., `useLoraSensors()`)
-2. Hook uses `useOrgScope()` to get effective organization ID (handles impersonation)
-3. Hook uses `qk.org(orgId).loraSensors()` for type-safe query key
-4. React Query fetches from Supabase with RLS-enforced data
-5. Data cached by query key hierarchy
+**Web App Request (SPA + API):**
 
-**Mutation with Invalidation:**
-1. Component calls mutation hook
-2. Mutation writes to Supabase
-3. On success, calls `invalidateUnit()` or `invalidateOrg()` from `src/lib/invalidation.ts`
-4. React Query refetches affected queries by key prefix
+1. Browser loads `index.html` and bootstraps React (`src/main.tsx`).
+2. React Router renders pages (`src/App.tsx` → `src/pages/*`).
+3. Pages call hooks/clients (`src/hooks`, `src/lib/api`, `src/lib/trpc`).
+4. Requests hit Fastify routes/tRPC (`backend/src/app.ts`, `backend/src/routes`, `backend/src/trpc`).
+5. Services execute business logic and access data (`backend/src/services`, `backend/src/db`).
+6. Response returns to client, cached via React Query.
+
+**Webhook Processing (TTN/Stripe/Telnyx):**
+
+1. Provider sends webhook to backend route (`backend/src/routes/*-webhooks.ts`).
+2. Middleware validates/authenticates, parses payloads.
+3. Services enqueue jobs or persist data.
+4. Async workers/jobs perform follow-up tasks (`backend/src/jobs`, `backend/src/workers`).
 
 **State Management:**
-- Server state: React Query (`@tanstack/react-query`)
-- Auth state: Supabase auth listeners + SuperAdminContext
-- UI state: React useState, component-local
-- Global state: React Context (Debug, SuperAdmin, TTNConfig)
+- Frontend: React Query cache + context providers (`src/contexts`, `src/providers`).
+- Backend: Stateless request handling with persistent state in Postgres/Supabase.
+- Local persistence: client-side storage helpers (`src/lib/offlineStorage.ts`).
 
 ## Key Abstractions
 
-**Effective Identity (`src/hooks/useEffectiveIdentity.ts`):**
-- Purpose: Resolves "who is the current user/org" considering impersonation
-- Examples: `src/hooks/useOrgScope.ts` wraps this for data queries
-- Pattern: Returns effectiveOrgId, effectiveUserId, isImpersonating
+**Routes/Controllers:**
+- Purpose: HTTP boundary and request validation
+- Examples: `backend/src/routes/areas.ts`, `backend/src/routes/alerts.ts`
+- Pattern: Fastify route modules
 
-**RBAC Permissions (`src/lib/permissions.ts`):**
-- Purpose: Role-based access control with permission matrix
-- Examples: `src/hooks/useCan.tsx`, `src/lib/rbac/index.ts`
-- Pattern: Roles (owner, admin, manager, staff, viewer, inspector) map to permissions
+**tRPC Router:**
+- Purpose: Typed RPC endpoints between frontend and backend
+- Examples: `backend/src/trpc/router.ts`, `src/lib/trpc.ts`
+- Pattern: tRPC router with Fastify adapter
 
-**Query Key Factory (`src/lib/queryKeys.ts`):**
-- Purpose: Type-safe, hierarchical cache keys for React Query
-- Examples: `qk.org(orgId).sites()`, `qk.unit(unitId).readings('24h')`
-- Pattern: Scoped keys enable prefix-based invalidation
+**Service Modules:**
+- Purpose: Domain logic and integrations
+- Examples: `backend/src/services/*`, `backend/src/features/*`
+- Pattern: Module-based services called by routes
 
-**Cache Invalidation (`src/lib/invalidation.ts`):**
-- Purpose: Centralized, context-aware cache busting
-- Examples: `invalidateOrg()`, `invalidateUnit()`, `invalidateAllOrgData()`
-- Pattern: Invalidates by query key prefix
-
-**Dashboard Layouts (`src/features/dashboard-layout/`):**
-- Purpose: Customizable drag-and-drop widget layouts for unit/site dashboards
-- Examples: `EntityDashboard`, `LayoutManager`, `WidgetRenderer`
-- Pattern: Widget registry + user-saved layout configs
+**React Hooks/Contexts:**
+- Purpose: Encapsulate client-side state and effects
+- Examples: `src/hooks/useUnits.ts`, `src/contexts/TTNConfigContext.tsx`
+- Pattern: Custom hooks + context providers
 
 ## Entry Points
 
-**Browser Entry:**
+**Frontend App:**
 - Location: `src/main.tsx`
-- Triggers: Browser loads index.html
-- Responsibilities: Mount React app to DOM
+- Triggers: Browser loads app bundle
+- Responsibilities: Mount React app, load global styles
 
-**Application Root:**
-- Location: `src/App.tsx`
-- Triggers: React renders
-- Responsibilities: Provider composition, route definitions
+**Backend API Server:**
+- Location: `backend/src/index.ts`
+- Triggers: Node process start
+- Responsibilities: Build Fastify app, register routes/plugins, start server
 
-**Routes:**
-- Main app: `/dashboard`, `/sites/:id`, `/units/:id`, `/settings`, etc.
-- Platform admin: `/platform/*` (Super Admin only)
-- Public: `/`, `/auth`, `/privacy`, `/terms`
-
-**Edge Functions:**
+**Supabase Edge Functions:**
 - Location: `supabase/functions/*/index.ts`
-- Triggers: HTTP requests, Supabase invocations
-- Responsibilities: Server-side processing (TTN provisioning, SMS alerts, webhooks)
+- Triggers: Supabase edge function invocation (webhook/event)
+- Responsibilities: Handle integration-specific workflows
 
 ## Error Handling
 
-**Strategy:** Centralized error explanation with graceful degradation
+**Strategy:** Centralized error handler in backend, per-route/client handling in frontend
 
 **Patterns:**
-- `src/lib/errorHandler.ts`: Global error processing
-- `src/lib/errorExplainer.ts`: User-friendly error messages with debugging hints
-- `src/lib/ttn/errorMapper.ts`: TTN-specific error mapping
-- Toast notifications via `src/hooks/use-toast.ts`
+- Backend error plugin (`backend/src/plugins/error-handler.plugin.ts`) for consistent responses
+- Fastify validation with Zod (`backend/src/app.ts`, `backend/src/schemas`)
+- Frontend helpers for user-facing error messages (`src/lib/errorHandler.ts`, `src/lib/errors/userFriendlyErrors.ts`)
 
 ## Cross-Cutting Concerns
 
 **Logging:**
-- Development: `src/lib/debugLogger.ts` with gated console output
-- Production: Edge function logs via Deno console
-- RBAC debugging: `window.location.search.includes('debug_rbac=1')`
+- Backend structured logging (`backend/src/utils/logger.ts`)
+- Frontend debug logging utilities (`src/lib/debugLogger.ts`)
 
 **Validation:**
-- Form validation: Zod schemas with react-hook-form
-- API validation: Edge functions use Zod schemas (`supabase/functions/_shared/validation.ts`)
+- Backend: Zod validation via Fastify type provider (`backend/src/app.ts`, `backend/src/schemas`)
+- Frontend: runtime schema validation helpers (`src/lib/validation`, `src/lib/validation/runtimeSchemaValidator.ts`)
 
 **Authentication:**
-- Provider: Supabase Auth (email/password, OAuth)
-- Session: localStorage persistence, auto-refresh
-- Super Admin: Server-side role check via `is_current_user_super_admin` RPC
-- Impersonation: Server-side sessions via `start_impersonation`/`stop_impersonation` RPCs
-
-**Multi-Tenancy:**
-- Organization-scoped: All data queries filter by `organization_id`
-- Row Level Security: Supabase RLS policies enforce tenant isolation
-- Impersonation: Super Admins can view/act as any user within Support Mode
+- Frontend auth provider (`src/App.tsx`, `src/lib/stack/client.ts`)
+- Backend auth middleware (`backend/src/middleware/auth.ts`, `backend/src/plugins/auth.plugin.ts`)
 
 ---
 
-*Architecture analysis: 2026-01-23*
+*Architecture analysis: 2026-01-26*
+*Update when major patterns change*

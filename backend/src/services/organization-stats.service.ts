@@ -81,6 +81,7 @@ export interface OrganizationStats {
   alertCounts: AlertStatusCounts;
   compliancePercentage: number;
   memberCount: number;
+  siteCount: number;
   worstState: UnitDashboardState;
   lastUpdated: Date;
 }
@@ -137,11 +138,12 @@ export class OrganizationStatsService {
     }
 
     // Fetch fresh data
-    const [unitCounts, alertCounts, compliancePercentage, memberCount] = await Promise.all([
+    const [unitCounts, alertCounts, compliancePercentage, memberCount, siteCount] = await Promise.all([
       this.calculateUnitCounts(organizationId),
       this.calculateAlertCounts(organizationId),
       this.calculateCompliancePercentage(organizationId),
       this.calculateMemberCount(organizationId),
+      this.calculateSiteCount(organizationId),
     ]);
 
     const worstState = this.determineWorstState(unitCounts);
@@ -152,6 +154,7 @@ export class OrganizationStatsService {
       alertCounts,
       compliancePercentage,
       memberCount,
+      siteCount,
       worstState,
       lastUpdated: new Date(),
     };
@@ -160,6 +163,18 @@ export class OrganizationStatsService {
     this.setCacheEntry(organizationId, stats);
 
     return stats;
+  }
+
+  /**
+   * Calculate total site count for the organization
+   */
+  async calculateSiteCount(organizationId: string): Promise<number> {
+    const [result] = await db
+      .select({ count: count() })
+      .from(sql`sites`)
+      .where(and(sql`organization_id = ${organizationId}`, sql`is_active = true`));
+    
+    return Number(result?.count || 0);
   }
 
   /**

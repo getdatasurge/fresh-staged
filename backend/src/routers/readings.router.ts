@@ -10,12 +10,12 @@
  * All procedures use orgProcedure which enforces authentication and org membership.
  */
 
-import { TRPCError } from '@trpc/server';
-import { z } from 'zod';
-import { ReadingResponseSchema } from '../schemas/readings.js';
-import * as readingsService from '../services/readings.service.js';
-import { router } from '../trpc/index.js';
-import { orgProcedure } from '../trpc/procedures.js';
+import { TRPCError } from '@trpc/server'
+import { z } from 'zod'
+import { ReadingResponseSchema } from '../schemas/readings.js'
+import * as readingsService from '../services/readings.service.js'
+import { router } from '../trpc/index.js'
+import { orgProcedure } from '../trpc/procedures.js'
 
 /**
  * Input schema for readings list with optional filters
@@ -132,6 +132,59 @@ export const readingsRouter = router({
         temperature: input.temperature,
         notes: input.notes,
         recordedAt: new Date(input.recordedAt),
+      });
+    }),
+
+  /**
+   * List manual temperature logs
+   */
+  listManual: orgProcedure
+    .input(z.object({
+      organizationId: z.string().uuid(),
+      unitId: z.string().uuid().optional(),
+      page: z.number().int().min(1).optional(),
+      limit: z.number().int().min(1).max(1000).optional(),
+      start: z.string().datetime().optional(),
+      end: z.string().datetime().optional(),
+    }))
+    .query(async ({ input, ctx }) => {
+      const limit = input.limit ?? 50;
+      const offset = input.page ? (input.page - 1) * limit : 0;
+
+      try {
+        return readingsService.queryManualLogs({
+          organizationId: ctx.user.organizationId,
+          unitId: input.unitId,
+          start: input.start,
+          end: input.end,
+          limit,
+          offset,
+        });
+      } catch (error: any) {
+        if (error.message?.includes('Unit not found or access denied')) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Unit not found or access denied',
+          });
+        }
+        throw error;
+      }
+    }),
+
+  /**
+   * List door events for a unit
+   */
+  listDoorEvents: orgProcedure
+    .input(z.object({
+      organizationId: z.string().uuid(),
+      unitId: z.string().uuid().optional(),
+      limit: z.number().int().min(1).max(100).optional(),
+    }))
+    .query(async ({ input, ctx }) => {
+      return readingsService.queryDoorEvents({
+        organizationId: ctx.user.organizationId,
+        unitId: input.unitId,
+        limit: input.limit || 10,
       });
     }),
 });

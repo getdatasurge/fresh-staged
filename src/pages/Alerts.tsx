@@ -1,73 +1,39 @@
-import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUser } from "@stackframe/react";
-import { supabase } from "@/integrations/supabase/client";
-import DashboardLayout from "@/components/DashboardLayout";
-import LogTempModal, { LogTempUnit } from "@/components/LogTempModal";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DashboardLayout from "@/components/DashboardLayout"
+import LogTempModal, { LogTempUnit } from "@/components/LogTempModal"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
+import { useToast } from "@/hooks/use-toast"
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
+import { computeUnitAlerts } from "@/hooks/useUnitAlerts"
+import { UnitStatusInfo } from "@/hooks/useUnitStatus"
+import { getAlertTypeConfig, getSeverityConfig } from "@/lib/alertConfig"
+import { useTRPC } from "@/lib/trpc"
+import { useUser } from "@stackframe/react"
 import {
   AlertTriangle,
-  Thermometer,
-  Loader2,
-  CheckCircle2,
-  Clock,
+  ArrowUpCircle,
   Bell,
   BellOff,
-  Battery,
-  WifiOff,
-  ArrowUpCircle,
   Check,
+  CheckCircle2,
   ClipboardEdit,
+  Loader2,
   Mail,
   MailCheck,
-  MailX,
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import type { Database } from "@/integrations/supabase/types";
-import { UnitStatusInfo } from "@/hooks/useUnitStatus";
-import { computeUnitAlerts } from "@/hooks/useUnitAlerts";
-
-type DBAlertType = Database["public"]["Enums"]["alert_type"];
-type DBAlertSeverity = Database["public"]["Enums"]["alert_severity"];
-type DBAlertStatus = Database["public"]["Enums"]["alert_status"];
-
-interface DBAlert {
-  id: string;
-  title: string;
-  message: string | null;
-  alert_type: DBAlertType;
-  severity: DBAlertSeverity;
-  status: DBAlertStatus;
-  escalation_level: number;
-  temp_reading: number | null;
-  temp_limit: number | null;
-  triggered_at: string;
-  acknowledged_at: string | null;
-  acknowledged_by: string | null;
-  acknowledgment_notes: string | null;
-  resolved_at: string | null;
-  last_notified_at: string | null;
-  last_notified_reason: string | null;
-  unit: {
-    id: string;
-    name: string;
-    area: {
-      name: string;
-      site: { name: string };
-    };
-  };
-}
+  MailX
+} from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 // Unified alert type that works for both DB and computed alerts
 interface UnifiedAlert {
@@ -93,17 +59,29 @@ interface UnifiedAlert {
   last_notified_reason?: string | null;
 }
 
-import { ALERT_TYPE_CONFIG, SEVERITY_CONFIG, getAlertTypeConfig, getSeverityConfig } from "@/lib/alertConfig";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-
 const Alerts = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const user = useUser();
+  const trpc = useTRPC();
   const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
+
+  // Queries
+  const alertsQuery = trpc.alerts.listByOrg.useQuery(
+    { organizationId: effectiveOrgId || "", limit: 100 },
+    { enabled: !!effectiveOrgId }
+  );
+
+  const unitsQuery = trpc.units.listByOrg.useQuery(
+    { organizationId: effectiveOrgId || "" },
+    { enabled: !!effectiveOrgId }
+  );
+
+  // Mutations
+  const acknowledgeMutation = trpc.alerts.acknowledge.useMutation();
+  const resolveMutation = trpc.alerts.resolve.useMutation();
+
   const [isLoading, setIsLoading] = useState(true);
-  const [units, setUnits] = useState<UnitStatusInfo[]>([]);
-  const [unifiedAlerts, setUnifiedAlerts] = useState<UnifiedAlert[]>([]);
   const [selectedAlert, setSelectedAlert] = useState<UnifiedAlert | null>(null);
   const [showResolveDialog, setShowResolveDialog] = useState(false);
   const [showAcknowledgeDialog, setShowAcknowledgeDialog] = useState(false);
@@ -124,174 +102,104 @@ const Alerts = () => {
   }, [user, navigate]);
 
   useEffect(() => {
-    if (isInitialized && effectiveOrgId && user) {
-      loadAlertsAndUnits();
+    if (isInitialized && !alertsQuery.isLoading && !unitsQuery.isLoading) {
+      setIsLoading(false);
     }
-  }, [isInitialized, effectiveOrgId, user]);
+  }, [isInitialized, alertsQuery.isLoading, unitsQuery.isLoading]);
 
-  const loadAlertsAndUnits = useCallback(async () => {
-    if (!user || !effectiveOrgId) return;
-    setIsLoading(true);
-    try {
-      // Load DB alerts - use effectiveOrgId for impersonation support
-      const { data: alertsData, error: alertsError } = await supabase
-        .from("alerts")
-        .select(`
-          id, title, message, alert_type, severity, status, escalation_level,
-          temp_reading, temp_limit, triggered_at, acknowledged_at, acknowledged_by,
-          acknowledgment_notes, resolved_at, last_notified_at, last_notified_reason,
-          organization_id, site_id, area_id, source,
-          unit:units!inner(
-            id, name,
-            area:areas!inner(name, site:sites!inner(name))
-          )
-        `)
-        .eq("organization_id", effectiveOrgId)
-        .order("triggered_at", { ascending: false })
-        .limit(100);
+  // Merge logic
+  const unifiedAlerts = useMemo(() => {
+    if (!unitsQuery.data || !alertsQuery.data) return [];
 
-      if (alertsError) throw alertsError;
+    const formattedUnits: UnitStatusInfo[] = unitsQuery.data.map(u => ({
+      id: u.id,
+      name: u.name,
+      unit_type: u.unitType,
+      status: u.status,
+      last_temp_reading: u.lastTemperature,
+      last_reading_at: u.lastReadingAt?.toISOString() || null,
+      temp_limit_high: u.tempMax,
+      temp_limit_low: u.tempMin,
+      manual_log_cadence: u.manualMonitoringInterval || 240,
+      last_manual_log_at: u.lastManualLogAt?.toISOString() || null,
+      area: { name: u.areaName, site: { name: u.siteName } },
+    }));
 
-      const formattedDbAlerts: DBAlert[] = (alertsData || []).map((a: any) => ({
-          ...a,
-          unit: {
-            id: a.unit.id,
-            name: a.unit.name,
-            area: {
-              name: a.unit.area.name,
-              site: { name: a.unit.area.site.name },
-            },
-          },
-        }));
+    const computedAlertsSummary = computeUnitAlerts(formattedUnits);
+    const unified: UnifiedAlert[] = [];
+    const seenAlerts = new Set<string>();
 
-      // Load units for computed alerts (including sensor reliability fields)
-      const { data: unitsData } = await supabase
-        .from("units")
-        .select(`
-          id, name, unit_type, status, temp_limit_high, temp_limit_low, manual_log_cadence,
-          last_temp_reading, last_reading_at,
-          sensor_reliable, manual_logging_enabled, consecutive_checkins,
-          area:areas!inner(name, site:sites!inner(name, organization_id))
-        `)
-        .eq("is_active", true);
-
-      const filteredUnits = (unitsData || []).filter(
-        (u: any) => u.area?.site?.organization_id === effectiveOrgId
-      );
-
-      const unitIds = filteredUnits.map((u: any) => u.id);
-      const { data: manualLogs } = await supabase
-        .from("manual_temperature_logs")
-        .select("unit_id, logged_at")
-        .in("unit_id", unitIds)
-        .order("logged_at", { ascending: false });
-
-      const latestLogByUnit: Record<string, string> = {};
-      manualLogs?.forEach((log) => {
-        if (!latestLogByUnit[log.unit_id]) {
-          latestLogByUnit[log.unit_id] = log.logged_at;
-        }
+    // Add computed alerts
+    for (const computed of computedAlertsSummary.alerts) {
+      const key = `${computed.unit_id}-${computed.type}`;
+      seenAlerts.add(key);
+      unified.push({
+        id: computed.id,
+        title: computed.title,
+        message: computed.message,
+        alertType: computed.type,
+        severity: computed.severity,
+        status: "active",
+        unit_id: computed.unit_id,
+        unit_name: computed.unit_name,
+        site_name: computed.site_name,
+        area_name: computed.area_name,
+        temp_reading: null,
+        temp_limit: null,
+        triggered_at: computed.created_at,
+        acknowledged_at: null,
+        acknowledgment_notes: null,
+        isComputed: true,
       });
-
-      const formattedUnits: UnitStatusInfo[] = filteredUnits.map((u: any) => ({
-        id: u.id,
-        name: u.name,
-        unit_type: u.unit_type,
-        status: u.status,
-        temp_limit_high: u.temp_limit_high,
-        temp_limit_low: u.temp_limit_low,
-        manual_log_cadence: u.manual_log_cadence,
-        last_manual_log_at: latestLogByUnit[u.id] || null,
-        last_reading_at: u.last_reading_at,
-        last_temp_reading: u.last_temp_reading,
-        sensor_reliable: u.sensor_reliable,
-        manual_logging_enabled: u.manual_logging_enabled,
-        consecutive_checkins: u.consecutive_checkins,
-        area: { name: u.area.name, site: { name: u.area.site.name } },
-      }));
-
-      setUnits(formattedUnits);
-
-      // Compute alerts from unit status
-      const computedAlertsSummary = computeUnitAlerts(formattedUnits);
-
-      // Merge DB alerts and computed alerts into unified format
-      const unified: UnifiedAlert[] = [];
-      const seenAlerts = new Set<string>();
-
-      // Add computed alerts first (they represent current state)
-      for (const computed of computedAlertsSummary.alerts) {
-        const key = `${computed.unit_id}-${computed.type}`;
-        seenAlerts.add(key);
-        unified.push({
-          id: computed.id,
-          title: computed.title,
-          message: computed.message,
-          alertType: computed.type,
-          severity: computed.severity,
-          status: "active",
-          unit_id: computed.unit_id,
-          unit_name: computed.unit_name,
-          site_name: computed.site_name,
-          area_name: computed.area_name,
-          temp_reading: null,
-          temp_limit: null,
-          triggered_at: computed.created_at,
-          acknowledged_at: null,
-          acknowledgment_notes: null,
-          isComputed: true,
-        });
-      }
-
-      // Add DB alerts that aren't covered by computed alerts
-      for (const dbAlert of formattedDbAlerts) {
-        const computedKey = `${dbAlert.unit.id}-${dbAlert.alert_type.toUpperCase()}`;
-        if (seenAlerts.has(computedKey) && dbAlert.status === "active") continue;
-
-        unified.push({
-          id: dbAlert.id,
-          title: dbAlert.title,
-          message: dbAlert.message,
-          alertType: dbAlert.alert_type,
-          severity: dbAlert.severity,
-          status: dbAlert.status === "escalated" ? "active" : dbAlert.status,
-          unit_id: dbAlert.unit.id,
-          unit_name: dbAlert.unit.name,
-          site_name: dbAlert.unit.area.site.name,
-          area_name: dbAlert.unit.area.name,
-          temp_reading: dbAlert.temp_reading,
-          temp_limit: dbAlert.temp_limit,
-          triggered_at: dbAlert.triggered_at,
-          acknowledged_at: dbAlert.acknowledged_at,
-          acknowledgment_notes: dbAlert.acknowledgment_notes,
-          isComputed: false,
-          dbAlertId: dbAlert.id,
-          escalation_level: dbAlert.escalation_level,
-          last_notified_at: dbAlert.last_notified_at,
-          last_notified_reason: dbAlert.last_notified_reason,
-        });
-      }
-
-      // Sort by status (active first), then severity (critical first), then date
-      unified.sort((a, b) => {
-        if (a.status !== b.status) {
-          const statusOrder = { active: 0, acknowledged: 1, resolved: 2 };
-          return statusOrder[a.status] - statusOrder[b.status];
-        }
-        if (a.severity !== b.severity) {
-          const sevOrder = { critical: 0, warning: 1, info: 2 };
-          return sevOrder[a.severity] - sevOrder[b.severity];
-        }
-        return new Date(b.triggered_at).getTime() - new Date(a.triggered_at).getTime();
-      });
-
-      setUnifiedAlerts(unified);
-    } catch (error) {
-      console.error("Error loading alerts:", error);
-      toast({ title: "Failed to load alerts", variant: "destructive" });
     }
-    setIsLoading(false);
-  }, [user, navigate, toast]);
+
+    // Add DB alerts
+    for (const dbAlert of alertsQuery.data) {
+      const computedKey = `${dbAlert.unitId}-${dbAlert.alertType.toUpperCase()}`;
+      if (seenAlerts.has(computedKey) && dbAlert.status === "active") continue;
+
+      unified.push({
+        id: dbAlert.id,
+        title: dbAlert.message || "Alert", 
+        message: dbAlert.message,
+        alertType: dbAlert.alertType,
+        severity: dbAlert.severity,
+        status: dbAlert.status === "escalated" ? "active" : dbAlert.status,
+        unit_id: dbAlert.unitId,
+        unit_name: (dbAlert as any).unitName,
+        site_name: (dbAlert as any).siteName,
+        area_name: (dbAlert as any).areaName,
+        temp_reading: dbAlert.triggerTemperature,
+        temp_limit: dbAlert.thresholdViolated ? parseFloat(dbAlert.thresholdViolated) : null,
+        triggered_at: dbAlert.triggeredAt.toISOString(),
+        acknowledged_at: dbAlert.acknowledgedAt?.toISOString() || null,
+        acknowledgment_notes: dbAlert.metadata ? JSON.parse(dbAlert.metadata).notes : null,
+        isComputed: false,
+        dbAlertId: dbAlert.id,
+        escalation_level: dbAlert.escalationLevel,
+        last_notified_at: dbAlert.escalatedAt?.toISOString() || null,
+      });
+    }
+
+    unified.sort((a, b) => {
+      if (a.status !== b.status) {
+        const statusOrder = { active: 0, acknowledged: 1, resolved: 2 };
+        return statusOrder[a.status] - statusOrder[b.status];
+      }
+      if (a.severity !== b.severity) {
+        const sevOrder = { critical: 0, warning: 1, info: 2 };
+        return sevOrder[a.severity] - sevOrder[b.severity];
+      }
+      return new Date(b.triggered_at).getTime() - new Date(a.triggered_at).getTime();
+    });
+
+    return unified;
+  }, [unitsQuery.data, alertsQuery.data]);
+
+  const handleRefetch = useCallback(() => {
+    alertsQuery.refetch();
+    unitsQuery.refetch();
+  }, [alertsQuery, unitsQuery]);
 
   const handleAcknowledge = async () => {
     if (!selectedAlert || !acknowledgmentNotes.trim()) {
@@ -306,23 +214,17 @@ const Alerts = () => {
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
-        .from("alerts")
-        .update({
-          status: "acknowledged",
-          acknowledged_at: new Date().toISOString(),
-          acknowledged_by: user!.id,
-          acknowledgment_notes: acknowledgmentNotes.trim(),
-        })
-        .eq("id", selectedAlert.dbAlertId || selectedAlert.id);
-
-      if (error) throw error;
+      await acknowledgeMutation.mutateAsync({
+        organizationId: effectiveOrgId || "",
+        alertId: selectedAlert.dbAlertId || selectedAlert.id,
+        notes: acknowledgmentNotes.trim(),
+      });
 
       toast({ title: "Alert acknowledged" });
       setShowAcknowledgeDialog(false);
       setSelectedAlert(null);
       setAcknowledgmentNotes("");
-      loadAlertsAndUnits();
+      handleRefetch();
     } catch (error) {
       console.error("Error acknowledging alert:", error);
       toast({ title: "Failed to acknowledge", variant: "destructive" });
@@ -344,39 +246,19 @@ const Alerts = () => {
 
     setIsSubmitting(true);
     try {
-      // Create corrective action record
-      const { error: actionError } = await supabase
-        .from("corrective_actions")
-        .insert({
-          alert_id: selectedAlert.isComputed ? null : (selectedAlert.dbAlertId || selectedAlert.id),
-          unit_id: selectedAlert.unit_id,
-          action_taken: correctiveAction,
-          root_cause: rootCause || null,
-          created_by: user!.id,
-        });
-
-      if (actionError) throw actionError;
-
-      // Update alert status if it's a DB alert
-      if (!selectedAlert.isComputed && selectedAlert.dbAlertId) {
-        const { error: alertError } = await supabase
-          .from("alerts")
-          .update({
-            status: "resolved",
-            resolved_at: new Date().toISOString(),
-            resolved_by: user!.id,
-          })
-          .eq("id", selectedAlert.dbAlertId);
-
-        if (alertError) throw alertError;
-      }
+      await resolveMutation.mutateAsync({
+        organizationId: effectiveOrgId || "",
+        alertId: selectedAlert.dbAlertId || selectedAlert.id,
+        resolution: rootCause || "Issue resolved",
+        correctiveAction: correctiveAction.trim(),
+      });
 
       toast({ title: "Alert resolved with corrective action" });
       setShowResolveDialog(false);
       setSelectedAlert(null);
       setCorrectiveAction("");
       setRootCause("");
-      loadAlertsAndUnits();
+      handleRefetch();
     } catch (error) {
       console.error("Error resolving alert:", error);
       toast({ title: "Failed to resolve", variant: "destructive" });
@@ -385,24 +267,25 @@ const Alerts = () => {
   };
 
   const handleLogTemp = (alert: UnifiedAlert) => {
-    const unit = units.find(u => u.id === alert.unit_id);
-    if (!unit) return;
+    if (!unitsQuery.data) return;
+    const u = unitsQuery.data.find(u => u.id === alert.unit_id);
+    if (!u) return;
     
     setSelectedUnit({
-      id: unit.id,
-      name: unit.name,
-      unit_type: unit.unit_type,
-      status: unit.status,
-      temp_limit_high: unit.temp_limit_high,
-      temp_limit_low: unit.temp_limit_low,
-      manual_log_cadence: unit.manual_log_cadence,
-      area: unit.area,
-    });
+      id: u.id,
+      name: u.name,
+      unit_type: u.unitType,
+      status: u.status,
+      temp_limit_high: u.tempMax,
+      temp_limit_low: u.tempMin,
+      manual_log_cadence: u.manualMonitoringInterval || 240,
+      area: { name: u.areaName, site: { name: u.siteName } },
+    } as any);
     setModalOpen(true);
   };
 
   const handleLogSuccess = () => {
-    loadAlertsAndUnits();
+    handleRefetch();
   };
 
   const getTimeAgo = (dateStr: string) => {

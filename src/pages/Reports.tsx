@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-placeholder";
 import DashboardLayout from "@/components/DashboardLayout";
 import { ComplianceReportCard } from "@/components/reports/ComplianceReportCard";
 import { Button } from "@/components/ui/button";

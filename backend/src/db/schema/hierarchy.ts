@@ -1,16 +1,16 @@
 import {
-    boolean,
-    index,
-    integer,
-    pgTable,
-    text,
-    timestamp,
-    uniqueIndex,
-    uuid,
-    varchar,
-} from 'drizzle-orm/pg-core';
-import { complianceModeEnum, gatewayStatusEnum, tempUnitEnum, unitStatusEnum, unitTypeEnum } from './enums.js';
-import { organizations, ttnConnections } from './tenancy.js';
+  boolean,
+  index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core'
+import { complianceModeEnum, gatewayStatusEnum, tempUnitEnum, unitStatusEnum, unitTypeEnum } from './enums.js'
+import { organizations, ttnConnections } from './tenancy.js'
 
 // Reusable timestamp columns
 const timestamps = {
@@ -29,7 +29,13 @@ const timestamps = {
     .defaultNow()
     .notNull()
     .$onUpdateFn(() => new Date()),
+  deletedAt: timestamp('deleted_at', {
+    mode: 'date',
+    precision: 3,
+    withTimezone: true,
+  }),
 };
+
 
 // Sites - physical locations (top of hierarchy)
 export const sites = pgTable(
@@ -104,6 +110,11 @@ export const units = pgTable(
       withTimezone: true,
     }),
     lastTemperature: integer('last_temperature'),
+    lastManualLogAt: timestamp('last_manual_log_at', {
+      mode: 'date',
+      precision: 3,
+      withTimezone: true,
+    }),
     isActive: boolean('is_active').notNull().default(true),
     sortOrder: integer('sort_order').notNull().default(0),
     ...timestamps,

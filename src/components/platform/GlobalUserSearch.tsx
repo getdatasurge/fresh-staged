@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase-placeholder';
 import { useSuperAdmin } from '@/contexts/SuperAdminContext';
 import { useImpersonateAndNavigate } from '@/hooks/useImpersonateAndNavigate';
 import { Button } from '@/components/ui/button';

@@ -1,53 +1,41 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useSuperAdmin } from '@/contexts/SuperAdminContext';
-import { useImpersonateAndNavigate, ImpersonationTarget } from '@/hooks/useImpersonateAndNavigate';
 import { ConfirmSpoofingModal } from '@/components/platform/ConfirmSpoofingModal';
 import PlatformLayout from '@/components/platform/PlatformLayout';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from '@/components/ui/table';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useSuperAdmin } from '@/contexts/SuperAdminContext';
+import { ImpersonationTarget, useImpersonateAndNavigate } from '@/hooks/useImpersonateAndNavigate';
+import { useTRPC } from '@/lib/trpc';
 import {
-  Search,
-  User,
-  Building2,
-  ChevronRight,
-  RefreshCw,
-  Eye,
-  Shield,
-  Loader2,
+    Building2,
+    ChevronRight,
+    Eye,
+    Loader2,
+    RefreshCw,
+    Search,
+    Shield,
+    User,
 } from 'lucide-react';
-
-interface PlatformUser {
-  user_id: string;
-  email: string;
-  full_name: string | null;
-  phone: string | null;
-  organization_id: string | null;
-  organization_name: string | null;
-  role: string | null;
-  is_super_admin: boolean;
-  created_at: string;
-}
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function PlatformUsers() {
-  const { logSuperAdminAction, isSuperAdmin } = useSuperAdmin();
+  const { logSuperAdminAction } = useSuperAdmin();
+  const trpc = useTRPC();
   const { 
     requestImpersonation, 
     cancelRequest,
@@ -57,96 +45,36 @@ export default function PlatformUsers() {
     canImpersonate 
   } = useImpersonateAndNavigate();
 
-  const [users, setUsers] = useState<PlatformUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    loadUsers();
-    logSuperAdminAction('VIEWED_USERS_LIST');
-  }, []);
-
-  const loadUsers = async () => {
-    setIsLoading(true);
-    try {
-      // Get all profiles with their org info and roles
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select(`
-          user_id,
-          email,
-          full_name,
-          phone,
-          organization_id,
-          created_at,
-          organization:organizations (
-            name
-          )
-        `)
-        .order('created_at', { ascending: false })
-        .limit(200);
-
-      if (error) throw error;
-
-      // Get roles for all users
-      const userIds = profiles?.map(p => p.user_id) || [];
-
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('user_id, role')
-        .in('user_id', userIds);
-
-      // Get platform roles (super admins)
-      const { data: platformRoles } = await supabase
-        .from('platform_roles')
-        .select('user_id, role')
-        .in('user_id', userIds);
-
-      const rolesMap = new Map(roles?.map(r => [r.user_id, r.role]));
-      const superAdminSet = new Set(
-        platformRoles?.filter(r => r.role === 'SUPER_ADMIN').map(r => r.user_id)
-      );
-
-      const usersWithDetails: PlatformUser[] = (profiles || []).map(profile => ({
-        user_id: profile.user_id,
-        email: profile.email,
-        full_name: profile.full_name,
-        phone: profile.phone,
-        organization_id: profile.organization_id,
-        organization_name: (profile.organization as { name: string } | null)?.name || null,
-        role: rolesMap.get(profile.user_id) || null,
-        is_super_admin: superAdminSet.has(profile.user_id),
-        created_at: profile.created_at,
-      }));
-
-      setUsers(usersWithDetails);
-    } catch (err) {
-      console.error('Error loading users:', err);
-    } finally {
-      setIsLoading(false);
+  const usersQuery = trpc.admin.listUsers.useQuery(undefined, {
+    onSuccess: () => {
+      logSuperAdminAction('VIEWED_USERS_LIST');
     }
-  };
+  });
+
+  const users = usersQuery.data || [];
+  const isLoading = usersQuery.isLoading;
 
   const filteredUsers = useMemo(() => {
     if (!searchQuery) return users;
     const query = searchQuery.toLowerCase();
     return users.filter(user =>
       user.email.toLowerCase().includes(query) ||
-      (user.full_name && user.full_name.toLowerCase().includes(query)) ||
-      (user.organization_name && user.organization_name.toLowerCase().includes(query))
+      (user.fullName && user.fullName.toLowerCase().includes(query)) ||
+      (user.organizationName && user.organizationName.toLowerCase().includes(query))
     );
   }, [users, searchQuery]);
 
-  const handleViewAsUser = (user: PlatformUser) => {
-    if (!user.organization_id || !user.organization_name) return;
+  const handleViewAsUser = (user: any) => {
+    if (!user.organizationId || !user.organizationName) return;
 
-    // This opens the confirmation modal
     requestImpersonation({
-      user_id: user.user_id,
+      user_id: user.userId,
       email: user.email,
-      full_name: user.full_name,
-      organization_id: user.organization_id,
-      organization_name: user.organization_name,
+      full_name: user.fullName,
+      organization_id: user.organizationId,
+      organization_name: user.organizationName,
     });
   };
 
@@ -154,14 +82,14 @@ export default function PlatformUsers() {
     return confirmAndNavigate(target, reason);
   };
 
-  const superAdminCount = users.filter(u => u.is_super_admin).length;
+  const superAdminCount = users.filter(u => u.isSuperAdmin).length;
+  const noOrgCount = users.filter(u => !u.organizationId).length;
 
   // Check if modal should be open
   const isModalOpen = pendingTarget !== null;
 
   return (
     <>
-      {/* Confirmation Modal */}
       <ConfirmSpoofingModal
         target={pendingTarget}
         isOpen={isModalOpen}
@@ -201,7 +129,7 @@ export default function PlatformUsers() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-amber-600">
-              {users.filter(u => !u.organization_id).length}
+              {noOrgCount}
             </div>
           </CardContent>
         </Card>
@@ -218,7 +146,7 @@ export default function PlatformUsers() {
             className="pl-10"
           />
         </div>
-        <Button variant="outline" onClick={loadUsers} disabled={isLoading}>
+        <Button variant="outline" onClick={() => usersQuery.refetch()} disabled={isLoading}>
           <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
@@ -253,30 +181,30 @@ export default function PlatformUsers() {
                 </TableRow>
               ) : (
                 filteredUsers.map((user) => (
-                  <TableRow key={user.user_id}>
+                  <TableRow key={user.userId}>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4 text-muted-foreground" />
                         <span className="font-medium">
-                          {user.full_name || 'No name'}
+                          {user.fullName || 'No name'}
                         </span>
-                        {user.is_super_admin && (
-                          <Badge variant="outline" className="ml-1 border-purple-300 text-purple-700">
+                        {user.isSuperAdmin && (
+                          <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold ml-1 border-purple-300 text-purple-700">
                             <Shield className="w-3 h-3 mr-1" />
                             Super Admin
-                          </Badge>
+                          </span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      {user.organization_name ? (
+                      {user.organizationName ? (
                         <Link
-                          to={`/platform/organizations/${user.organization_id}`}
+                          to={`/platform/organizations/${user.organizationId}`}
                           className="flex items-center gap-1 text-sm hover:underline"
                         >
                           <Building2 className="w-3 h-3" />
-                          {user.organization_name}
+                          {user.organizationName}
                         </Link>
                       ) : (
                         <span className="text-muted-foreground text-sm">No organization</span>
@@ -284,19 +212,24 @@ export default function PlatformUsers() {
                     </TableCell>
                     <TableCell>
                       {user.role ? (
-                        <Badge variant={user.role === 'owner' ? 'default' : 'secondary'}>
+                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
+                          user.role === 'owner' 
+                            ? 'border-transparent bg-primary text-primary-foreground' 
+                            : 'border-transparent bg-secondary text-secondary-foreground'
+                        }`}>
                           {user.role}
-                        </Badge>
+                        </span>
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
+
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(user.created_at).toLocaleDateString()}
+                      {new Date(user.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Link to={`/platform/users/${user.user_id}`}>
+                        <Link to={`/platform/users/${user.userId}`}>
                           <Button variant="ghost" size="icon">
                             <ChevronRight className="w-4 h-4" />
                           </Button>
@@ -310,7 +243,7 @@ export default function PlatformUsers() {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => handleViewAsUser(user)}
-                                    disabled={!user.organization_id || isNavigating}
+                                    disabled={!user.organizationId || isNavigating}
                                     className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 disabled:opacity-50"
                                   >
                                     {isNavigating ? (
@@ -322,7 +255,7 @@ export default function PlatformUsers() {
                                 </span>
                               </TooltipTrigger>
                               <TooltipContent>
-                                {user.organization_id 
+                                {user.organizationId 
                                   ? 'View app as this user' 
                                   : 'No organization membership'}
                               </TooltipContent>
@@ -342,3 +275,4 @@ export default function PlatformUsers() {
     </>
   );
 }
+

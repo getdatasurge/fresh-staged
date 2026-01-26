@@ -8,7 +8,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DoorOpen, DoorClosed, Clock } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase-placeholder";
 import type { WidgetProps } from "../types";
 import { format, formatDistanceToNow } from "date-fns";
 import { createLoadingState, createNotConfiguredState, createEmptyState, createHealthyState, createMismatchState } from "../hooks/useWidgetState";

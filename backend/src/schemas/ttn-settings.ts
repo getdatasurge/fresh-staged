@@ -97,4 +97,18 @@ export type TTNSettings = z.infer<typeof TTNSettingsSchema>;
 export type UpdateTTNSettings = z.infer<typeof UpdateTTNSettingsSchema>;
 export type TestConnectionInput = z.infer<typeof TestConnectionInputSchema>;
 export type TestConnectionResult = z.infer<typeof TestConnectionResultSchema>;
-export type ProvisioningStatus = z.infer<typeof ProvisioningStatusSchema>;
+// New Schemas for Phase 27 Integration
+export const ValidateApiKeySchema = z.object({
+  organizationId: z.string().uuid(),
+  apiKey: z.string(),
+  applicationId: z.string(),
+  cluster: z.string(),
+});
+
+export const BootstrapTtnSchema = ValidateApiKeySchema;
+
+export const UpdateWebhookSchema = z.object({
+  organizationId: z.string().uuid(),
+  url: z.string().url(),
+  events: z.array(z.string()),
+});
