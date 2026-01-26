@@ -6,7 +6,6 @@ import { HierarchyBreadcrumb, BreadcrumbSibling } from "@/components/HierarchyBr
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
 import { usePermissions } from "@/hooks/useUserRole";
 import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { useSoftDelete } from "@/hooks/useSoftDelete";
 import { useTRPC, useTRPCClient } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -83,7 +82,6 @@ const AreaDetail = () => {
   const trpcClient = useTRPCClient();
   const { effectiveOrgId, isInitialized: identityInitialized } = useEffectiveIdentity();
   const { canDeleteEntities, isLoading: permissionsLoading } = usePermissions();
-  const { softDeleteArea } = useSoftDelete();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -232,10 +230,18 @@ const AreaDetail = () => {
   };
 
   const handleDeleteArea = async () => {
-    if (!user?.id || !areaId || !area) return;
-    const result = await softDeleteArea(areaId, user.id, true);
-    if (result.success) {
-      navigate(`/sites/${area.site.id}`);
+    if (!user?.id || !areaId || !siteId || !effectiveOrgId) return;
+    try {
+      await trpcClient.areas.delete.mutate({
+        organizationId: effectiveOrgId,
+        siteId: siteId,
+        areaId: areaId,
+      });
+      toast({ title: "Area deleted" });
+      navigate(`/sites/${siteId}`);
+    } catch (err) {
+      console.error("Error deleting area:", err);
+      toast({ title: "Failed to delete area", variant: "destructive" });
     }
   };
 
