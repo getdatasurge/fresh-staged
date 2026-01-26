@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useMemo, useState } from 'react';
 import { useSuperAdmin } from '@/contexts/SuperAdminContext';
+import { useTRPC } from '@/lib/trpc';
 import PlatformLayout from '@/components/platform/PlatformLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,17 +38,16 @@ import { format } from 'date-fns';
 
 interface AuditLogEntry {
   id: string;
-  admin_user_id: string;
-  actor_email?: string;
-  impersonated_user_id: string | null;
-  impersonated_email?: string;
   action: string;
-  target_type: string | null;
-  target_id: string | null;
-  target_org_id: string | null;
-  target_org_name?: string;
-  details: Record<string, unknown>;
-  created_at: string;
+  actorEmail: string | null;
+  actorName: string | null;
+  impersonatedUserId: string | null;
+  targetType: string | null;
+  targetId: string | null;
+  targetOrgId: string | null;
+  targetOrgName: string | null;
+  details: Record<string, unknown> | null;
+  createdAt: string;
 }
 
 const ACTION_TYPE_LABELS: Record<string, { label: string; color: string }> = {
@@ -65,79 +64,23 @@ const ACTION_TYPE_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export default function PlatformAuditLog() {
-  const { logSuperAdminAction, isSupportModeActive } = useSuperAdmin();
-  const [entries, setEntries] = useState<AuditLogEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { logSuperAdminAction } = useSuperAdmin();
+  const trpc = useTRPC();
   const [searchQuery, setSearchQuery] = useState('');
   const [actionTypeFilter, setActionTypeFilter] = useState<string>('all');
   const [expandedEntries, setExpandedEntries] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    loadAuditLog();
-    logSuperAdminAction('VIEWED_AUDIT_LOG');
-  }, []);
-
-  const loadAuditLog = async () => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('super_admin_audit_log')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(500);
-
-      if (error) throw error;
-
-      // Enrich with user emails
-      const actorIds = [...new Set(data?.map(e => e.admin_user_id) || [])];
-      const impersonatedIds = [...new Set(
-        data?.filter(e => e.impersonated_user_id).map(e => e.impersonated_user_id!) || []
-      )];
-      const orgIds = [...new Set(
-        data?.filter(e => e.target_org_id).map(e => e.target_org_id!) || []
-      )];
-
-      // Get actor emails
-      const { data: actorProfiles } = await supabase
-        .from('profiles')
-        .select('user_id, email')
-        .in('user_id', actorIds);
-
-      // Get impersonated user emails
-      const { data: impersonatedProfiles } = await supabase
-        .from('profiles')
-        .select('user_id, email')
-        .in('user_id', impersonatedIds);
-
-      // Get org names
-      const { data: orgs } = await supabase
-        .from('organizations')
-        .select('id, name')
-        .in('id', orgIds);
-
-      const actorMap = new Map(actorProfiles?.map(p => [p.user_id, p.email]));
-      const impersonatedMap = new Map(impersonatedProfiles?.map(p => [p.user_id, p.email]));
-      const orgMap = new Map(orgs?.map(o => [o.id, o.name]));
-
-      const enrichedEntries: AuditLogEntry[] = (data || []).map(entry => ({
-        ...entry,
-        details: (entry.details || {}) as Record<string, unknown>,
-        actor_email: actorMap.get(entry.admin_user_id),
-        impersonated_email: entry.impersonated_user_id
-          ? impersonatedMap.get(entry.impersonated_user_id)
-          : undefined,
-        target_org_name: entry.target_org_id
-          ? orgMap.get(entry.target_org_id)
-          : undefined,
-      }));
-
-      setEntries(enrichedEntries);
-    } catch (err) {
-      console.error('Error loading audit log:', err);
-    } finally {
-      setIsLoading(false);
+  const auditLogQuery = trpc.admin.listSuperAdminAuditLog.useQuery(
+    { limit: 500 },
+    {
+      onSuccess: () => {
+        logSuperAdminAction('VIEWED_AUDIT_LOG');
+      },
     }
-  };
+  );
+
+  const entries = auditLogQuery.data || [];
+  const isLoading = auditLogQuery.isLoading;
 
   const toggleExpanded = (id: string) => {
     setExpandedEntries(prev => {
@@ -151,19 +94,21 @@ export default function PlatformAuditLog() {
     });
   };
 
-  const filteredEntries = entries.filter(entry => {
-    if (actionTypeFilter !== 'all' && entry.action !== actionTypeFilter) {
-      return false;
-    }
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      entry.actor_email?.toLowerCase().includes(query) ||
-      entry.impersonated_email?.toLowerCase().includes(query) ||
-      entry.target_org_name?.toLowerCase().includes(query) ||
-      entry.action.toLowerCase().includes(query)
-    );
-  });
+  const filteredEntries = useMemo(() => {
+    return entries.filter(entry => {
+      if (actionTypeFilter !== 'all' && entry.action !== actionTypeFilter) {
+        return false;
+      }
+      if (!searchQuery) return true;
+      const query = searchQuery.toLowerCase();
+      return (
+        entry.actorEmail?.toLowerCase().includes(query) ||
+        entry.impersonatedUserId?.toLowerCase().includes(query) ||
+        entry.targetOrgName?.toLowerCase().includes(query) ||
+        entry.action.toLowerCase().includes(query)
+      );
+    });
+  }, [entries, actionTypeFilter, searchQuery]);
 
   const uniqueActionTypes = [...new Set(entries.map(e => e.action))];
 
@@ -214,7 +159,7 @@ export default function PlatformAuditLog() {
           <CardContent>
             <div className="text-2xl font-bold">
               {entries.filter(e => {
-                const date = new Date(e.created_at);
+                const date = new Date(e.createdAt);
                 const today = new Date();
                 return date.toDateString() === today.toDateString();
               }).length}
@@ -248,7 +193,7 @@ export default function PlatformAuditLog() {
             ))}
           </SelectContent>
         </Select>
-        <Button variant="outline" onClick={loadAuditLog} disabled={isLoading}>
+        <Button variant="outline" onClick={() => auditLogQuery.refetch()} disabled={isLoading}>
           <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
@@ -300,14 +245,14 @@ export default function PlatformAuditLog() {
                           <div className="flex items-center gap-2">
                             <Clock className="w-3 h-3 text-muted-foreground" />
                             <span className="text-sm">
-                              {format(new Date(entry.created_at), 'MMM d, yyyy HH:mm:ss')}
+                              {format(new Date(entry.createdAt), 'MMM d, yyyy HH:mm:ss')}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Shield className="w-4 h-4 text-purple-600" />
-                            <span className="text-sm">{entry.actor_email || 'Unknown'}</span>
+                            <span className="text-sm">{entry.actorEmail || 'Unknown'}</span>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -319,16 +264,16 @@ export default function PlatformAuditLog() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {entry.target_org_name && (
+                          {entry.targetOrgName && (
                             <div className="flex items-center gap-1 text-sm">
                               <Building2 className="w-3 h-3" />
-                              {entry.target_org_name}
+                              {entry.targetOrgName}
                             </div>
                           )}
-                          {entry.impersonated_email && (
+                          {entry.impersonatedUserId && (
                             <div className="flex items-center gap-1 text-sm text-orange-600">
                               <Eye className="w-3 h-3" />
-                              {entry.impersonated_email}
+                              {entry.impersonatedUserId}
                             </div>
                           )}
                         </TableCell>
@@ -351,24 +296,24 @@ export default function PlatformAuditLog() {
                                   </div>
                                   <div className="flex">
                                     <dt className="w-32 text-muted-foreground">Actor ID:</dt>
-                                    <dd className="font-mono text-xs">{entry.admin_user_id}</dd>
+                                    <dd className="font-mono text-xs">{entry.actorEmail || entry.actorName || 'Unknown'}</dd>
                                   </div>
-                                  {entry.impersonated_user_id && (
+                                  {entry.impersonatedUserId && (
                                     <div className="flex">
                                       <dt className="w-32 text-muted-foreground">Impersonated:</dt>
-                                      <dd className="font-mono text-xs">{entry.impersonated_user_id}</dd>
+                                      <dd className="font-mono text-xs">{entry.impersonatedUserId}</dd>
                                     </div>
                                   )}
-                                  {entry.target_id && (
+                                  {entry.targetId && (
                                     <div className="flex">
                                       <dt className="w-32 text-muted-foreground">Target ID:</dt>
-                                      <dd className="font-mono text-xs">{entry.target_id}</dd>
+                                      <dd className="font-mono text-xs">{entry.targetId}</dd>
                                     </div>
                                   )}
-                                  {entry.target_type && (
+                                  {entry.targetType && (
                                     <div className="flex">
                                       <dt className="w-32 text-muted-foreground">Target Type:</dt>
-                                      <dd>{entry.target_type}</dd>
+                                      <dd>{entry.targetType}</dd>
                                     </div>
                                   )}
                                 </dl>

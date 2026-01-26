@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import { useUser } from '@stackframe/react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useTRPC } from '@/lib/trpc';
 
 // Support mode timeout (30 minutes in milliseconds)
 const SUPPORT_MODE_TIMEOUT_MS = 30 * 60 * 1000;
@@ -76,6 +76,8 @@ interface SuperAdminProviderProps {
 export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
   const { toast } = useToast();
   const stackUser = useUser();
+  const trpc = useTRPC();
+  const logSuperAdminActionMutation = trpc.admin.logSuperAdminAction.useMutation();
 
   // Super admin status with explicit state machine
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -329,18 +331,18 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
     if (!isSuperAdmin) return;
 
     try {
-      await supabase.rpc('log_super_admin_action', {
-        p_action: actionType,
-        p_target_type: targetType || null,
-        p_target_id: targetId || null,
-        p_target_org_id: targetOrgId || null,
-        p_impersonated_user_id: impersonation.impersonatedUserId || null,
-        p_details: JSON.parse(JSON.stringify(metadata || {})),
+      await logSuperAdminActionMutation.mutateAsync({
+        action: actionType,
+        targetType: targetType || null,
+        targetId: targetId || null,
+        targetOrgId: targetOrgId || null,
+        impersonatedUserId: impersonation.impersonatedUserId || null,
+        details: metadata || {},
       });
     } catch (err) {
       console.error('Error logging super admin action:', err);
     }
-  }, [isSuperAdmin, impersonation.impersonatedUserId]);
+  }, [isSuperAdmin, impersonation.impersonatedUserId, logSuperAdminActionMutation]);
 
   // Enter support mode
   const enterSupportMode = useCallback(async () => {
@@ -370,7 +372,7 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
   }, [isSuperAdmin, logSuperAdminAction, toast]);
 
 
-  // Start impersonation with server-side session
+  // Start impersonation with local session
   const startImpersonation = useCallback(async (
     userId: string,
     userEmail: string,
@@ -388,31 +390,19 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
     }
 
     try {
-      // Create server-side impersonation session
-      const { data, error } = await supabase.rpc('start_impersonation', {
-        p_target_user_id: userId,
-        p_target_org_id: orgId,
-        p_duration_minutes: 60,
-      });
+      const sessionId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}`;
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
-      if (error) {
-        console.error('Error starting impersonation:', error);
-        toast({
-          title: 'Impersonation Failed',
-          description: error.message || 'Could not start impersonation session.',
-          variant: 'destructive',
-        });
-        return false;
-      }
-
-      const sessionData = data as {
-        session_id: string;
-        target_user_id: string;
-        target_org_id: string;
-        target_user_email: string;
-        target_user_name: string;
-        target_org_name: string;
-        expires_at: string;
+      const sessionData = {
+        session_id: sessionId,
+        target_user_id: userId,
+        target_org_id: orgId,
+        target_user_email: userEmail,
+        target_user_name: userName,
+        target_org_name: orgName,
+        expires_at: expiresAt,
       };
 
       // Update local state
@@ -454,20 +444,8 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
     }
   }, [isSuperAdmin, isSupportModeActive, toast]);
 
-  // Stop impersonation with server-side session cleanup
+  // Stop impersonation with local session cleanup
   const stopImpersonation = useCallback(async () => {
-    try {
-      // End server-side session
-      const { error } = await supabase.rpc('stop_impersonation');
-      
-      if (error) {
-        console.error('Error stopping impersonation:', error);
-        // Continue with local cleanup even if server call fails
-      }
-    } catch (err) {
-      console.error('Error in stopImpersonation:', err);
-    }
-
     // Clear local state
     setImpersonation({
       isImpersonating: false,
@@ -504,16 +482,697 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
       await stopImpersonation();
     }
 
-    // Expire all server-side impersonation sessions for this admin
-    try {
-      const { data, error } = await supabase.rpc('expire_all_admin_impersonation_sessions');
-      if (error) {
-        console.error('Error expiring server sessions:', error);
-      } else if (data && data > 0) {
-        rbacLog(`Expired ${data} server-side impersonation session(s)`);
+    setIsSupportModeActive(false);
+      setSupportModeStartedAt(null);
+      setSupportModeExpiresAt(null);
+      localStorage.removeItem(SUPPORT_MODE_STORAGE_KEY);
+      setImpersonation({
+        isImpersonating: false,
+        impersonatedUserId: null,
+        impersonatedUserEmail: null,
+        impersonatedUserName: null,
+        impersonatedOrgId: null,
+        impersonatedOrgName: null,
+        startedAt: null,
+      });
+      setViewingOrgState({ orgId: null, orgName: null });
+    }
+  }, [checkSuperAdminStatus, stackUser]);
+
+  // Ref to hold the exit support mode function (avoids hoisting issues in useEffect)
+  const exitSupportModeRef = useRef<(() => Promise<void>) | null>(null);
+
+  // Support mode auto-timeout
+  useEffect(() => {
+    if (!isSupportModeActive || !supportModeExpiresAt) return;
+
+    const checkExpiry = () => {
+      const now = new Date();
+      const timeSinceActivity = now.getTime() - lastActivityTime.getTime();
+
+      // Check inactivity timeout
+      if (timeSinceActivity >= SUPPORT_MODE_INACTIVITY_TIMEOUT_MS) {
+        exitSupportModeRef.current?.();
+        toast({
+          title: 'Support Mode Ended',
+          description: 'Support mode has been automatically disabled due to inactivity.',
+        });
+        return;
       }
+
+      // Check absolute timeout
+      if (now >= supportModeExpiresAt) {
+        exitSupportModeRef.current?.();
+        toast({
+          title: 'Support Mode Ended',
+          description: 'Support mode has reached its maximum duration.',
+        });
+      }
+    };
+
+    const interval = setInterval(checkExpiry, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [isSupportModeActive, supportModeExpiresAt, lastActivityTime, toast]);
+
+  // Track activity for inactivity timeout
+  useEffect(() => {
+    if (!isSupportModeActive) return;
+
+    const updateActivity = () => setLastActivityTime(new Date());
+
+    window.addEventListener('click', updateActivity);
+    window.addEventListener('keydown', updateActivity);
+    window.addEventListener('mousemove', updateActivity);
+
+    return () => {
+      window.removeEventListener('click', updateActivity);
+      window.removeEventListener('keydown', updateActivity);
+      window.removeEventListener('mousemove', updateActivity);
+    };
+  }, [isSupportModeActive]);
+
+  // Log super admin action
+  const logSuperAdminAction = useCallback(async (
+    actionType: string,
+    targetType?: string,
+    targetId?: string,
+    targetOrgId?: string,
+    metadata?: Record<string, unknown>
+  ) => {
+    if (!isSuperAdmin) return;
+
+    try {
+      await logSuperAdminActionMutation.mutateAsync({
+        action: actionType,
+        targetType: targetType || null,
+        targetId: targetId || null,
+        targetOrgId: targetOrgId || null,
+        impersonatedUserId: impersonation.impersonatedUserId || null,
+        details: metadata || {},
+      });
     } catch (err) {
-      console.warn('Error expiring server sessions:', err);
+      console.error('Error logging super admin action:', err);
+    }
+  }, [isSuperAdmin, impersonation.impersonatedUserId, logSuperAdminActionMutation]);
+
+  // Enter support mode
+  const enterSupportMode = useCallback(async () => {
+    if (!isSuperAdmin) {
+      toast({
+        title: 'Access Denied',
+        description: 'Only Super Admins can enter Support Mode.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + SUPPORT_MODE_TIMEOUT_MS);
+
+    setIsSupportModeActive(true);
+    setSupportModeStartedAt(now);
+    setSupportModeExpiresAt(expiresAt);
+    setLastActivityTime(now);
+
+    await logSuperAdminAction('SUPPORT_MODE_ENTERED');
+
+    toast({
+      title: 'Support Mode Activated',
+      description: 'You now have access to support tools. Mode will auto-expire after 30 minutes of inactivity.',
+    });
+  }, [isSuperAdmin, logSuperAdminAction, toast]);
+
+
+  // Start impersonation with local session
+  const startImpersonation = useCallback(async (
+    userId: string,
+    userEmail: string,
+    userName: string,
+    orgId: string,
+    orgName: string
+  ): Promise<boolean> => {
+    if (!isSuperAdmin || !isSupportModeActive) {
+      toast({
+        title: 'Access Denied',
+        description: 'Impersonation requires active Support Mode.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    try {
+      const sessionId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}`;
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+      const sessionData = {
+        session_id: sessionId,
+        target_user_id: userId,
+        target_org_id: orgId,
+        target_user_email: userEmail,
+        target_user_name: userName,
+        target_org_name: orgName,
+        expires_at: expiresAt,
+      };
+
+      // Update local state
+      setImpersonation({
+        isImpersonating: true,
+        impersonatedUserId: userId,
+        impersonatedUserEmail: sessionData.target_user_email || userEmail,
+        impersonatedUserName: sessionData.target_user_name || userName,
+        impersonatedOrgId: orgId,
+        impersonatedOrgName: sessionData.target_org_name || orgName,
+        startedAt: new Date(),
+      });
+
+      // Persist to localStorage for page refresh
+      localStorage.setItem('ftp_impersonation_session', JSON.stringify({
+        sessionId: sessionData.session_id,
+        targetUserId: userId,
+        targetOrgId: orgId,
+        targetUserEmail: sessionData.target_user_email || userEmail,
+        targetUserName: sessionData.target_user_name || userName,
+        targetOrgName: sessionData.target_org_name || orgName,
+        expiresAt: sessionData.expires_at,
+      }));
+
+      toast({
+        title: 'Impersonation Started',
+        description: `Now viewing as ${sessionData.target_user_name || sessionData.target_user_email || userEmail}`,
+      });
+
+      return true;
+    } catch (err) {
+      console.error('Error in startImpersonation:', err);
+      toast({
+        title: 'Impersonation Failed',
+        description: 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  }, [isSuperAdmin, isSupportModeActive, toast]);
+
+  // Stop impersonation with local session cleanup
+  const stopImpersonation = useCallback(async () => {
+    // Clear local state
+    setImpersonation({
+      isImpersonating: false,
+      impersonatedUserId: null,
+      impersonatedUserEmail: null,
+      impersonatedUserName: null,
+      impersonatedOrgId: null,
+      impersonatedOrgName: null,
+      startedAt: null,
+    });
+
+    // Clear localStorage
+    localStorage.removeItem('ftp_impersonation_session');
+
+    // Notify callbacks (for cache invalidation)
+    impersonationCallbacksRef.current.forEach(callback => {
+      try {
+        callback(false);
+      } catch (err) {
+        console.error('Error in impersonation callback:', err);
+      }
+    });
+
+    toast({
+      title: 'Impersonation Ended',
+      description: 'Returned to your admin view.',
+    });
+  }, [toast]);
+
+  // Exit support mode (defined after stopImpersonation to avoid hoisting issues)
+  const exitSupportMode = useCallback(async () => {
+    // Stop impersonation first if active
+    if (impersonation.isImpersonating) {
+      await stopImpersonation();
+    }
+
+    setIsSupportModeActive(false);
+      setSupportModeStartedAt(null);
+      setSupportModeExpiresAt(null);
+      localStorage.removeItem(SUPPORT_MODE_STORAGE_KEY);
+      setImpersonation({
+        isImpersonating: false,
+        impersonatedUserId: null,
+        impersonatedUserEmail: null,
+        impersonatedUserName: null,
+        impersonatedOrgId: null,
+        impersonatedOrgName: null,
+        startedAt: null,
+      });
+      setViewingOrgState({ orgId: null, orgName: null });
+    }
+  }, [checkSuperAdminStatus, stackUser]);
+
+  // Ref to hold the exit support mode function (avoids hoisting issues in useEffect)
+  const exitSupportModeRef = useRef<(() => Promise<void>) | null>(null);
+
+  // Support mode auto-timeout
+  useEffect(() => {
+    if (!isSupportModeActive || !supportModeExpiresAt) return;
+
+    const checkExpiry = () => {
+      const now = new Date();
+      const timeSinceActivity = now.getTime() - lastActivityTime.getTime();
+
+      // Check inactivity timeout
+      if (timeSinceActivity >= SUPPORT_MODE_INACTIVITY_TIMEOUT_MS) {
+        exitSupportModeRef.current?.();
+        toast({
+          title: 'Support Mode Ended',
+          description: 'Support mode has been automatically disabled due to inactivity.',
+        });
+        return;
+      }
+
+      // Check absolute timeout
+      if (now >= supportModeExpiresAt) {
+        exitSupportModeRef.current?.();
+        toast({
+          title: 'Support Mode Ended',
+          description: 'Support mode has reached its maximum duration.',
+        });
+      }
+    };
+
+    const interval = setInterval(checkExpiry, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [isSupportModeActive, supportModeExpiresAt, lastActivityTime, toast]);
+
+  // Track activity for inactivity timeout
+  useEffect(() => {
+    if (!isSupportModeActive) return;
+
+    const updateActivity = () => setLastActivityTime(new Date());
+
+    window.addEventListener('click', updateActivity);
+    window.addEventListener('keydown', updateActivity);
+    window.addEventListener('mousemove', updateActivity);
+
+    return () => {
+      window.removeEventListener('click', updateActivity);
+      window.removeEventListener('keydown', updateActivity);
+      window.removeEventListener('mousemove', updateActivity);
+    };
+  }, [isSupportModeActive]);
+
+  // Log super admin action
+  const logSuperAdminAction = useCallback(async (
+    actionType: string,
+    targetType?: string,
+    targetId?: string,
+    targetOrgId?: string,
+    metadata?: Record<string, unknown>
+  ) => {
+    if (!isSuperAdmin) return;
+
+    try {
+      await logSuperAdminActionMutation.mutateAsync({
+        action: actionType,
+        targetType: targetType || null,
+        targetId: targetId || null,
+        targetOrgId: targetOrgId || null,
+        impersonatedUserId: impersonation.impersonatedUserId || null,
+        details: metadata || {},
+      });
+    } catch (err) {
+      console.error('Error logging super admin action:', err);
+    }
+  }, [isSuperAdmin, impersonation.impersonatedUserId, logSuperAdminActionMutation]);
+
+  // Enter support mode
+  const enterSupportMode = useCallback(async () => {
+    if (!isSuperAdmin) {
+      toast({
+        title: 'Access Denied',
+        description: 'Only Super Admins can enter Support Mode.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + SUPPORT_MODE_TIMEOUT_MS);
+
+    setIsSupportModeActive(true);
+    setSupportModeStartedAt(now);
+    setSupportModeExpiresAt(expiresAt);
+    setLastActivityTime(now);
+
+    await logSuperAdminAction('SUPPORT_MODE_ENTERED');
+
+    toast({
+      title: 'Support Mode Activated',
+      description: 'You now have access to support tools. Mode will auto-expire after 30 minutes of inactivity.',
+    });
+  }, [isSuperAdmin, logSuperAdminAction, toast]);
+
+
+  // Start impersonation with local session
+  const startImpersonation = useCallback(async (
+    userId: string,
+    userEmail: string,
+    userName: string,
+    orgId: string,
+    orgName: string
+  ): Promise<boolean> => {
+    if (!isSuperAdmin || !isSupportModeActive) {
+      toast({
+        title: 'Access Denied',
+        description: 'Impersonation requires active Support Mode.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    try {
+      const sessionId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}`;
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+      const sessionData = {
+        session_id: sessionId,
+        target_user_id: userId,
+        target_org_id: orgId,
+        target_user_email: userEmail,
+        target_user_name: userName,
+        target_org_name: orgName,
+        expires_at: expiresAt,
+      };
+
+      // Update local state
+      setImpersonation({
+        isImpersonating: true,
+        impersonatedUserId: userId,
+        impersonatedUserEmail: sessionData.target_user_email || userEmail,
+        impersonatedUserName: sessionData.target_user_name || userName,
+        impersonatedOrgId: orgId,
+        impersonatedOrgName: sessionData.target_org_name || orgName,
+        startedAt: new Date(),
+      });
+
+      // Persist to localStorage for page refresh
+      localStorage.setItem('ftp_impersonation_session', JSON.stringify({
+        sessionId: sessionData.session_id,
+        targetUserId: userId,
+        targetOrgId: orgId,
+        targetUserEmail: sessionData.target_user_email || userEmail,
+        targetUserName: sessionData.target_user_name || userName,
+        targetOrgName: sessionData.target_org_name || orgName,
+        expiresAt: sessionData.expires_at,
+      }));
+
+      toast({
+        title: 'Impersonation Started',
+        description: `Now viewing as ${sessionData.target_user_name || sessionData.target_user_email || userEmail}`,
+      });
+
+      return true;
+    } catch (err) {
+      console.error('Error in startImpersonation:', err);
+      toast({
+        title: 'Impersonation Failed',
+        description: 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  }, [isSuperAdmin, isSupportModeActive, toast]);
+
+  // Stop impersonation with local session cleanup
+  const stopImpersonation = useCallback(async () => {
+    // Clear local state
+    setImpersonation({
+      isImpersonating: false,
+      impersonatedUserId: null,
+      impersonatedUserEmail: null,
+      impersonatedUserName: null,
+      impersonatedOrgId: null,
+      impersonatedOrgName: null,
+      startedAt: null,
+    });
+
+    // Clear localStorage
+    localStorage.removeItem('ftp_impersonation_session');
+
+    // Notify callbacks (for cache invalidation)
+    impersonationCallbacksRef.current.forEach(callback => {
+      try {
+        callback(false);
+      } catch (err) {
+        console.error('Error in impersonation callback:', err);
+      }
+    });
+
+    toast({
+      title: 'Impersonation Ended',
+      description: 'Returned to your admin view.',
+    });
+  }, [toast]);
+
+  // Exit support mode (defined after stopImpersonation to avoid hoisting issues)
+  const exitSupportMode = useCallback(async () => {
+    // Stop impersonation first if active
+    if (impersonation.isImpersonating) {
+      await stopImpersonation();
+    }
+
+    setIsSupportModeActive(false);
+      setSupportModeStartedAt(null);
+      setSupportModeExpiresAt(null);
+      localStorage.removeItem(SUPPORT_MODE_STORAGE_KEY);
+      setImpersonation({
+        isImpersonating: false,
+        impersonatedUserId: null,
+        impersonatedUserEmail: null,
+        impersonatedUserName: null,
+        impersonatedOrgId: null,
+        impersonatedOrgName: null,
+        startedAt: null,
+      });
+      setViewingOrgState({ orgId: null, orgName: null });
+    }
+  }, [checkSuperAdminStatus, stackUser]);
+
+  // Ref to hold the exit support mode function (avoids hoisting issues in useEffect)
+  const exitSupportModeRef = useRef<(() => Promise<void>) | null>(null);
+
+  // Support mode auto-timeout
+  useEffect(() => {
+    if (!isSupportModeActive || !supportModeExpiresAt) return;
+
+    const checkExpiry = () => {
+      const now = new Date();
+      const timeSinceActivity = now.getTime() - lastActivityTime.getTime();
+
+      // Check inactivity timeout
+      if (timeSinceActivity >= SUPPORT_MODE_INACTIVITY_TIMEOUT_MS) {
+        exitSupportModeRef.current?.();
+        toast({
+          title: 'Support Mode Ended',
+          description: 'Support mode has been automatically disabled due to inactivity.',
+        });
+        return;
+      }
+
+      // Check absolute timeout
+      if (now >= supportModeExpiresAt) {
+        exitSupportModeRef.current?.();
+        toast({
+          title: 'Support Mode Ended',
+          description: 'Support mode has reached its maximum duration.',
+        });
+      }
+    };
+
+    const interval = setInterval(checkExpiry, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [isSupportModeActive, supportModeExpiresAt, lastActivityTime, toast]);
+
+  // Track activity for inactivity timeout
+  useEffect(() => {
+    if (!isSupportModeActive) return;
+
+    const updateActivity = () => setLastActivityTime(new Date());
+
+    window.addEventListener('click', updateActivity);
+    window.addEventListener('keydown', updateActivity);
+    window.addEventListener('mousemove', updateActivity);
+
+    return () => {
+      window.removeEventListener('click', updateActivity);
+      window.removeEventListener('keydown', updateActivity);
+      window.removeEventListener('mousemove', updateActivity);
+    };
+  }, [isSupportModeActive]);
+
+  // Log super admin action
+  const logSuperAdminAction = useCallback(async (
+    actionType: string,
+    targetType?: string,
+    targetId?: string,
+    targetOrgId?: string,
+    metadata?: Record<string, unknown>
+  ) => {
+    if (!isSuperAdmin) return;
+
+    try {
+      await logSuperAdminActionMutation.mutateAsync({
+        action: actionType,
+        targetType: targetType || null,
+        targetId: targetId || null,
+        targetOrgId: targetOrgId || null,
+        impersonatedUserId: impersonation.impersonatedUserId || null,
+        details: metadata || {},
+      });
+    } catch (err) {
+      console.error('Error logging super admin action:', err);
+    }
+  }, [isSuperAdmin, impersonation.impersonatedUserId, logSuperAdminActionMutation]);
+
+  // Enter support mode
+  const enterSupportMode = useCallback(async () => {
+    if (!isSuperAdmin) {
+      toast({
+        title: 'Access Denied',
+        description: 'Only Super Admins can enter Support Mode.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + SUPPORT_MODE_TIMEOUT_MS);
+
+    setIsSupportModeActive(true);
+    setSupportModeStartedAt(now);
+    setSupportModeExpiresAt(expiresAt);
+    setLastActivityTime(now);
+
+    await logSuperAdminAction('SUPPORT_MODE_ENTERED');
+
+    toast({
+      title: 'Support Mode Activated',
+      description: 'You now have access to support tools. Mode will auto-expire after 30 minutes of inactivity.',
+    });
+  }, [isSuperAdmin, logSuperAdminAction, toast]);
+
+
+  // Start impersonation with local session
+  const startImpersonation = useCallback(async (
+    userId: string,
+    userEmail: string,
+    userName: string,
+    orgId: string,
+    orgName: string
+  ): Promise<boolean> => {
+    if (!isSuperAdmin || !isSupportModeActive) {
+      toast({
+        title: 'Access Denied',
+        description: 'Impersonation requires active Support Mode.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    try {
+      const sessionId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}`;
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+      const sessionData = {
+        session_id: sessionId,
+        target_user_id: userId,
+        target_org_id: orgId,
+        target_user_email: userEmail,
+        target_user_name: userName,
+        target_org_name: orgName,
+        expires_at: expiresAt,
+      };
+
+      // Update local state
+      setImpersonation({
+        isImpersonating: true,
+        impersonatedUserId: userId,
+        impersonatedUserEmail: sessionData.target_user_email || userEmail,
+        impersonatedUserName: sessionData.target_user_name || userName,
+        impersonatedOrgId: orgId,
+        impersonatedOrgName: sessionData.target_org_name || orgName,
+        startedAt: new Date(),
+      });
+
+      // Persist to localStorage for page refresh
+      localStorage.setItem('ftp_impersonation_session', JSON.stringify({
+        sessionId: sessionData.session_id,
+        targetUserId: userId,
+        targetOrgId: orgId,
+        targetUserEmail: sessionData.target_user_email || userEmail,
+        targetUserName: sessionData.target_user_name || userName,
+        targetOrgName: sessionData.target_org_name || orgName,
+        expiresAt: sessionData.expires_at,
+      }));
+
+      toast({
+        title: 'Impersonation Started',
+        description: `Now viewing as ${sessionData.target_user_name || sessionData.target_user_email || userEmail}`,
+      });
+
+      return true;
+    } catch (err) {
+      console.error('Error in startImpersonation:', err);
+      toast({
+        title: 'Impersonation Failed',
+        description: 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  }, [isSuperAdmin, isSupportModeActive, toast]);
+
+  // Stop impersonation with local session cleanup
+  const stopImpersonation = useCallback(async () => {
+    // Clear local state
+    setImpersonation({
+      isImpersonating: false,
+      impersonatedUserId: null,
+      impersonatedUserEmail: null,
+      impersonatedUserName: null,
+      impersonatedOrgId: null,
+      impersonatedOrgName: null,
+      startedAt: null,
+    });
+
+    // Clear localStorage
+    localStorage.removeItem('ftp_impersonation_session');
+
+    // Notify callbacks (for cache invalidation)
+    impersonationCallbacksRef.current.forEach(callback => {
+      try {
+        callback(false);
+      } catch (err) {
+        console.error('Error in impersonation callback:', err);
+      }
+    });
+
+    toast({
+      title: 'Impersonation Ended',
+      description: 'Returned to your admin view.',
+    });
+  }, [toast]);
+
+  // Exit support mode (defined after stopImpersonation to avoid hoisting issues)
+  const exitSupportMode = useCallback(async () => {
+    // Stop impersonation first if active
+    if (impersonation.isImpersonating) {
+      await stopImpersonation();
     }
 
     setIsSupportModeActive(false);
