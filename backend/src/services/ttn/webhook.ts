@@ -2,10 +2,10 @@
  * TTN Webhook Service
  * Ports update-ttn-webhook logic
  */
+import { TRPCError } from '@trpc/server'
 import { eq } from 'drizzle-orm'
 import { db } from '../../db/client.js'
-import { ttnConnections } from '../../db/schema.js'
-import { AppError } from '../../lib/error.js'
+import { ttnConnections } from '../../db/schema/tenancy.js'
 import { TtnClient } from './client.js'
 import { TtnCrypto } from './crypto.js'
 
@@ -85,11 +85,10 @@ export class TtnWebhookService {
 
 		if (!response.ok) {
 			const text = await response.text()
-			throw new AppError(
-				'TTN_WEBHOOK_FAILED',
-				`Failed to configure webhook: ${text}`,
-				500,
-			)
+			throw new TRPCError({
+				code: 'INTERNAL_SERVER_ERROR',
+				message: `Failed to configure webhook: ${text}`,
+			})
 		}
 
 		// Update DB with URL
@@ -113,17 +112,16 @@ export class TtnWebhookService {
 			where: eq(ttnConnections.organizationId, organizationId),
 		})
 
-		if (!record || !record.ttnApiKeyEncrypted || !record.ttnApplicationId) {
-			throw new AppError(
-				'TTN_NOT_CONFIGURED',
-				'Organization not configured',
-				400,
-			)
+		if (!record || !record.ttnApiKeyEncrypted || !record.applicationId) {
+			throw new TRPCError({
+				code: 'BAD_REQUEST',
+				message: 'Organization not configured',
+			})
 		}
 
 		const salt = process.env.TTN_ENCRYPTION_SALT || 'default-salt'
 		const apiKey = TtnCrypto.deobfuscateKey(record.ttnApiKeyEncrypted, salt)
-		const appId = record.ttnApplicationId
+		const appId = record.applicationId
 		const webhookId = 'freshtrack-webhook'
 
 		// Construct body based on events
@@ -150,7 +148,10 @@ export class TtnWebhookService {
 		})
 
 		if (!response.ok) {
-			throw new AppError('TTN_UPDATE_FAILED', 'Failed to update webhook', 500)
+			throw new TRPCError({
+				code: 'INTERNAL_SERVER_ERROR',
+				message: 'Failed to update webhook',
+			})
 		}
 
 		return { ok: true }
@@ -166,17 +167,16 @@ export class TtnWebhookService {
 			where: eq(ttnConnections.organizationId, organizationId),
 		})
 
-		if (!record || !record.ttnApiKeyEncrypted || !record.ttnApplicationId) {
-			throw new AppError(
-				'TTN_NOT_CONFIGURED',
-				'Organization not configured',
-				400,
-			)
+		if (!record || !record.ttnApiKeyEncrypted || !record.applicationId) {
+			throw new TRPCError({
+				code: 'BAD_REQUEST',
+				message: 'Organization not configured',
+			})
 		}
 
 		const salt = process.env.TTN_ENCRYPTION_SALT || 'default-salt'
 		const apiKey = TtnCrypto.deobfuscateKey(record.ttnApiKeyEncrypted, salt)
-		const appId = record.ttnApplicationId
+		const appId = record.applicationId
 		const webhookId = 'freshtrack-webhook'
 
 		// Generate new secret
@@ -208,11 +208,10 @@ export class TtnWebhookService {
 		})
 
 		if (!response.ok) {
-			throw new AppError(
-				'TTN_UPDATE_FAILED',
-				'Failed to update webhook secret',
-				500,
-			)
+			throw new TRPCError({
+				code: 'INTERNAL_SERVER_ERROR',
+				message: 'Failed to update webhook secret',
+			})
 		}
 
 		// Update in DB

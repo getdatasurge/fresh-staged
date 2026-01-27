@@ -135,7 +135,7 @@ export const adminRouter = router({
 		.query(async () => {
 			// In production, these should be cached or retrieved from a stats table
 			const [orgs, profiles, sites, units, readings, alerts] =
-				await Promise.all([
+				(await Promise.all([
 					db.select({ count: count() }).from(sql`organizations`),
 					db.select({ count: count() }).from(sql`profiles`),
 					db
@@ -148,7 +148,7 @@ export const adminRouter = router({
 						.where(sql`deleted_at IS NULL`),
 					db.select({ count: count() }).from(sql`sensor_readings`),
 					db.select({ count: count() }).from(sql`alerts`),
-				])
+				])) as Array<{ count: number }[]>
 
 			return {
 				organizations: Number(orgs[0]?.count || 0),
@@ -178,7 +178,7 @@ export const adminRouter = router({
 			),
 		)
 		.query(async () => {
-			const results = await db
+			const results = (await db
 				.select({
 					id: sql`ttn_connections.id`,
 					organizationId: sql`ttn_connections.organization_id`,
@@ -191,7 +191,7 @@ export const adminRouter = router({
 				.leftJoin(
 					sql`organizations`,
 					sql`ttn_connections.organization_id = organizations.id`,
-				)
+				)) as unknown as any[]
 
 			return results.map((r: any) => ({
 				id: r.id,
@@ -334,7 +334,7 @@ export const adminRouter = router({
 				targetId: z.string().optional().nullable(),
 				targetOrgId: z.string().optional().nullable(),
 				impersonatedUserId: z.string().optional().nullable(),
-				details: z.record(z.any()).optional(),
+				details: z.object({}).catchall(z.any()).optional(),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
@@ -378,7 +378,7 @@ export const adminRouter = router({
 					details: details || {},
 				} as any,
 				recordedAt: new Date(),
-			})
+			} as any)
 
 			return { success: true }
 		}),
@@ -404,7 +404,7 @@ export const adminRouter = router({
 					targetId: z.string().nullable(),
 					targetOrgId: z.string().nullable(),
 					targetOrgName: z.string().nullable(),
-					details: z.record(z.any()).nullable(),
+					details: z.object({}).catchall(z.any()).nullable(),
 					createdAt: z.string(),
 				}),
 			),

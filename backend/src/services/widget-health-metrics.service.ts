@@ -49,10 +49,10 @@ export interface WidgetHealthEvent {
 	entityId: string
 	entityType: 'unit' | 'site'
 	orgId: string
-	previousStatus: WidgetHealthStatus | null
+	previousStatus?: WidgetHealthStatus | null
 	currentStatus: WidgetHealthStatus
-	failingLayer: FailingLayer | null
-	payloadType: string | null
+	failingLayer?: FailingLayer | null
+	payloadType?: string | null
 	timestamp: string
 	metadata?: Record<string, unknown>
 }

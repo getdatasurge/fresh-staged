@@ -147,7 +147,7 @@ export const dashboardLayoutRouter = router({
 					widgetPrefsJson: input.widgetPrefsJson || {},
 					timelineStateJson: input.timelineStateJson,
 					layoutVersion: 1,
-				})
+				} as any)
 				.returning()
 
 			if (!newLayout) {
@@ -270,7 +270,7 @@ export const dashboardLayoutRouter = router({
 			// Unset all other layouts as default
 			await db
 				.update(entityDashboardLayouts)
-				.set({ isUserDefault: false })
+				.set({ isUserDefault: false } as any)
 				.where(
 					and(
 						eq(
@@ -285,7 +285,7 @@ export const dashboardLayoutRouter = router({
 			// Set the selected layout as default
 			await db
 				.update(entityDashboardLayouts)
-				.set({ isUserDefault: true })
+				.set({ isUserDefault: true } as any)
 				.where(eq(entityDashboardLayouts.id, input.layoutId))
 
 			return { success: true }

@@ -12,7 +12,12 @@ export type HealthStatus =
 	| 'unknown'
 	| 'checking'
 
-export type HealthCategory = 'edge_function' | 'database' | 'ttn' | 'external'
+export type HealthCategory =
+	| 'edge_function'
+	| 'database'
+	| 'ttn'
+	| 'external'
+	| 'cache'
 
 export interface HealthCheckResult {
 	id: string

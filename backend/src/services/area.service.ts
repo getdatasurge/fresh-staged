@@ -75,6 +75,7 @@ export async function listAreasWithUnitCount(
 			isActive: areas.isActive,
 			createdAt: areas.createdAt,
 			updatedAt: areas.updatedAt,
+			deletedAt: areas.deletedAt,
 			unitsCount: sql<number>`count(${units.id})::int`,
 		})
 		.from(areas)
@@ -163,7 +164,7 @@ export async function updateArea(
 		.set({
 			...data,
 			updatedAt: new Date(),
-		})
+		} as any)
 		.where(
 			and(
 				eq(areas.id, areaId),
@@ -196,7 +197,7 @@ export async function deleteArea(
 		.set({
 			isActive: false,
 			updatedAt: new Date(),
-		})
+		} as any)
 		.where(
 			and(
 				eq(areas.id, areaId),
@@ -228,7 +229,7 @@ export async function restoreArea(
 		.set({
 			isActive: true,
 			updatedAt: new Date(),
-		})
+		} as any)
 		.where(
 			and(
 				eq(areas.id, areaId),

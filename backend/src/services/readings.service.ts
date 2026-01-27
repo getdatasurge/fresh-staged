@@ -341,7 +341,7 @@ export async function queryDoorEvents(
   const query = db
     .select({
       state: doorEvents.state,
-      occurredAt: doorEvents.occurredAt,
+      occurredAt: doorEvents.timestamp,
     })
     .from(doorEvents)
     .innerJoin(units, eq(doorEvents.unitId, units.id))
@@ -351,7 +351,7 @@ export async function queryDoorEvents(
       eq(sites.organizationId, organizationId),
       unitId ? eq(doorEvents.unitId, unitId) : undefined,
     ))
-    .orderBy(desc(doorEvents.occurredAt))
+    .orderBy(desc(doorEvents.timestamp))
     .limit(limit);
 
   return query;

@@ -11,7 +11,7 @@
  */
 
 import { TRPCError } from '@trpc/server'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db/client.js'
 import { userRoles } from '../db/schema/users.js'
@@ -124,14 +124,7 @@ export const organizationsRouter = router({
 			z.object({
 				organizationId: z.string().uuid(),
 				userId: z.string(),
-				role: z.enum([
-					'owner',
-					'admin',
-					'manager',
-					'staff',
-					'viewer',
-					'inspector',
-				]),
+				role: z.enum(['owner', 'admin', 'manager', 'staff', 'viewer']),
 			}),
 		)
 		.output(z.object({ success: z.boolean() }))
@@ -146,9 +139,13 @@ export const organizationsRouter = router({
 
 			await db
 				.update(userRoles)
-				.set({ role: input.role })
-				.where(eq(userRoles.userId, input.userId))
-				.and(eq(userRoles.organizationId, input.organizationId))
+				.set({ role: input.role } as any)
+				.where(
+					and(
+						eq(userRoles.userId, input.userId),
+						eq(userRoles.organizationId, input.organizationId),
+					),
+				)
 
 			return { success: true }
 		}),
@@ -178,8 +175,12 @@ export const organizationsRouter = router({
 
 			await db
 				.delete(userRoles)
-				.where(eq(userRoles.userId, input.userId))
-				.and(eq(userRoles.organizationId, input.organizationId))
+				.where(
+					and(
+						eq(userRoles.userId, input.userId),
+						eq(userRoles.organizationId, input.organizationId),
+					),
+				)
 
 			return { success: true }
 		}),

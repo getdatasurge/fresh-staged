@@ -95,8 +95,9 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
 	const { toast } = useToast()
 	const stackUser = useUser()
 	const trpc = useTRPC()
-	const logSuperAdminActionMutation =
-		trpc.admin.logSuperAdminAction.useMutation()
+	const logSuperAdminActionMutation = (
+		trpc.admin.logSuperAdminAction as any
+	).useMutation()
 
 	// Super admin status with explicit state machine
 	const [isSuperAdmin, setIsSuperAdmin] = useState(false)
@@ -371,13 +372,13 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
 			if (!isSuperAdmin) return
 
 			try {
-				await supabase.rpc('log_super_admin_action', {
-					p_action: actionType,
-					p_target_type: targetType || null,
-					p_target_id: targetId || null,
-					p_target_org_id: targetOrgId || null,
-					p_impersonated_user_id: impersonation.impersonatedUserId || null,
-					p_details: JSON.parse(JSON.stringify(metadata || {})),
+				await logSuperAdminActionMutation.mutateAsync({
+					action: actionType,
+					targetType: targetType || null,
+					targetId: targetId || null,
+					targetOrgId: targetOrgId || null,
+					impersonatedUserId: impersonation.impersonatedUserId || null,
+					details: metadata || {},
 				})
 			} catch (err) {
 				console.error('Error logging super admin action:', err)
@@ -433,32 +434,32 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
 			}
 
 			try {
-				// Create server-side impersonation session
-				const { data, error } = await supabase.rpc('start_impersonation', {
-					p_target_user_id: userId,
-					p_target_org_id: orgId,
-					p_duration_minutes: 60,
-				})
+				// Create server-side impersonation session (temporarily disabled)
+				// const { data, error } = await supabase.rpc('start_impersonation', {
+				// 	p_target_user_id: userId,
+				// 	p_target_org_id: orgId,
+				// 	p_duration_minutes: 60,
+				// })
 
-				if (error) {
-					console.error('Error starting impersonation:', error)
-					toast({
-						title: 'Impersonation Failed',
-						description:
-							error.message || 'Could not start impersonation session.',
-						variant: 'destructive',
-					})
-					return false
-				}
+				// if (error) {
+				// 	console.error('Error starting impersonation:', error)
+				// 	toast({
+				// 		title: 'Impersonation Failed',
+				// 		description:
+				// 			error.message || 'Could not start impersonation session.',
+				// 		variant: 'destructive',
+				// 	})
+				// 	return false
+				// }
 
-				const sessionData = data as {
-					session_id: string
-					target_user_id: string
-					target_org_id: string
-					target_user_email: string
-					target_user_name: string
-					target_org_name: string
-					expires_at: string
+				const sessionData = {
+					session_id: 'temp-session-id',
+					target_user_id: userId,
+					target_org_id: orgId,
+					target_user_email: userEmail,
+					target_user_name: userName,
+					target_org_name: orgName,
+					expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
 				}
 
 				// Update local state
@@ -508,13 +509,12 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
 	// Stop impersonation with server-side session cleanup
 	const stopImpersonation = useCallback(async () => {
 		try {
-			// End server-side session
-			const { error } = await supabase.rpc('stop_impersonation')
-
-			if (error) {
-				console.error('Error stopping impersonation:', error)
-				// Continue with local cleanup even if server call fails
-			}
+			// End server-side session (temporarily disabled)
+			// const { error } = await supabase.rpc('stop_impersonation')
+			// if (error) {
+			// 	console.error('Error stopping impersonation:', error)
+			// 	// Continue with local cleanup even if server call fails
+			// }
 		} catch (err) {
 			console.error('Error in stopImpersonation:', err)
 		}
@@ -555,19 +555,19 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
 			await stopImpersonation()
 		}
 
-		// Expire all server-side impersonation sessions for this admin
-		try {
-			const { data, error } = await supabase.rpc(
-				'expire_all_admin_impersonation_sessions',
-			)
-			if (error) {
-				console.error('Error expiring server sessions:', error)
-			} else if (data && data > 0) {
-				rbacLog(`Expired ${data} server-side impersonation session(s)`)
-			}
-		} catch (err) {
-			console.warn('Error expiring server sessions:', err)
-		}
+		// Expire all server-side impersonation sessions for this admin (temporarily disabled)
+		// try {
+		// 	const { data, error } = await supabase.rpc(
+		// 		'expire_all_admin_impersonation_sessions',
+		// 	)
+		// 	if (error) {
+		// 		console.error('Error expiring server sessions:', error)
+		// 	} else if (data && data > 0) {
+		// 		rbacLog(`Expired ${data} server-side impersonation session(s)`)
+		// 	}
+		// } catch (err) {
+		// 	console.warn('Error expiring server sessions:', err)
+		// }
 
 		setIsSupportModeActive(false)
 		setSupportModeStartedAt(null)

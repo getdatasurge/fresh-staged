@@ -59,7 +59,7 @@ const TrackHealthChangeSchema = z.object({
 	currentStatus: WidgetHealthStatusSchema,
 	failingLayer: FailingLayerSchema.nullable(),
 	payloadType: z.string().nullable(),
-	metadata: z.record(z.any()).optional(),
+	metadata: z.object({}).catchall(z.any()).optional(),
 })
 
 // Input schema for getting health distribution
