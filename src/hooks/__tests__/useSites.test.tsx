@@ -1,214 +1,340 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { renderHook, waitFor } from '@testing-library/react'
+import type { ReactNode } from 'react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock Stack Auth before importing hook
 vi.mock('@stackframe/react', () => ({
-  useUser: vi.fn(() => ({
-    getAuthJson: vi.fn().mockResolvedValue({ accessToken: 'test-token' }),
-  })),
-  useStackApp: vi.fn(() => ({})),
-}));
+	useUser: vi.fn(() => ({
+		getAuthJson: vi.fn().mockResolvedValue({ accessToken: 'test-token' }),
+	})),
+	useStackApp: vi.fn(() => ({})),
+}))
 
-import { useNavTree } from '../useNavTree';
+import { useNavTree } from '../useNavTree'
 
 // Mock dependencies
 vi.mock('@/lib/supabase-placeholder', () => ({
-  supabase: {
-    auth: {
-      getSession: vi.fn(() =>
-        Promise.resolve({
-          data: {
-            session: {
-              access_token: 'test-token',
-            },
-          },
-        })
-      ),
-    },
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          is: vi.fn(() => ({
-            not: vi.fn(() => ({
-              data: [],
-              error: null,
-            })),
-          })),
-        })),
-      })),
-    })),
-  },
-}));
+	supabase: {
+		auth: {
+			getSession: vi.fn(() =>
+				Promise.resolve({
+					data: {
+						session: {
+							access_token: 'test-token',
+						},
+					},
+				}),
+			),
+		},
+		from: vi.fn(() => ({
+			select: vi.fn(() => ({
+				eq: vi.fn(() => ({
+					is: vi.fn(() => ({
+						not: vi.fn(() => ({
+							data: [],
+							error: null,
+						})),
+					})),
+				})),
+			})),
+		})),
+	},
+}))
 
-vi.mock('@/lib/api', () => ({
-  sitesApi: {
-    listSites: vi.fn(),
-  },
-  areasApi: {
-    listAreas: vi.fn(),
-  },
-  unitsApi: {
-    listUnits: vi.fn(),
-  },
-}));
+const mockUseTRPC = vi.fn()
 
-import { sitesApi, areasApi, unitsApi } from '@/lib/api';
+vi.mock('@/lib/trpc', () => ({
+	useTRPC: () => mockUseTRPC(),
+}))
 
 describe('useSites hooks', () => {
-  let queryClient: QueryClient;
-  let wrapper: ({ children }: { children: ReactNode }) => JSX.Element;
+	let queryClient: QueryClient
+	let wrapper: ({ children }: { children: ReactNode }) => JSX.Element
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    queryClient = new QueryClient({
-      defaultOptions: {
-        queries: { retry: false },
-      },
-    });
-    wrapper = ({ children }: { children: ReactNode }) => (
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    );
-  });
+	beforeEach(() => {
+		vi.clearAllMocks()
+		queryClient = new QueryClient({
+			defaultOptions: {
+				queries: { retry: false },
+			},
+		})
+		wrapper = ({ children }: { children: ReactNode }) => (
+			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+		)
+	})
 
-  describe('useNavTree', () => {
-    it('fetches sites using sitesApi', async () => {
-      const mockSites = [
-        { id: 'site-1', name: 'Site 1', organizationId: 'org-1', isActive: true },
-        { id: 'site-2', name: 'Site 2', organizationId: 'org-1', isActive: true },
-      ];
+	describe('useNavTree', () => {
+		it('fetches sites and units using tRPC', async () => {
+			const mockSites = [
+				{
+					id: 'site-1',
+					name: 'Site 1',
+					organizationId: 'org-1',
+					isActive: true,
+				},
+				{
+					id: 'site-2',
+					name: 'Site 2',
+					organizationId: 'org-1',
+					isActive: true,
+				},
+			]
 
-      vi.mocked(sitesApi.listSites).mockResolvedValueOnce(mockSites as any);
-      vi.mocked(areasApi.listAreas).mockResolvedValue([] as any);
-      vi.mocked(unitsApi.listUnits).mockResolvedValue([] as any);
+			const mockUnits = [
+				{
+					id: 'unit-1',
+					name: 'Unit 1',
+					unitType: 'freezer',
+					status: 'ok',
+					areaId: 'area-1',
+					areaName: 'Area 1',
+					siteId: 'site-1',
+				},
+			]
 
-      const { result } = renderHook(() => useNavTree('org-1'), { wrapper });
+			const mockSitesQuery = {
+				data: mockSites,
+				isLoading: false,
+				error: null,
+			}
 
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+			const mockUnitsQuery = {
+				data: mockUnits,
+				isLoading: false,
+				error: null,
+			}
 
-      expect(sitesApi.listSites).toHaveBeenCalledWith('org-1', 'test-token');
-      expect(result.current.sites).toHaveLength(2);
-    });
+			mockUseTRPC.mockReturnValue({
+				sites: {
+					list: {
+						useQuery: vi.fn().mockReturnValue(mockSitesQuery),
+					},
+				},
+				units: {
+					listByOrg: {
+						useQuery: vi.fn().mockReturnValue(mockUnitsQuery),
+					},
+				},
+			})
 
-    it('fetches areas and units for each site', async () => {
-      const mockSites = [{ id: 'site-1', name: 'Site 1', organizationId: 'org-1', isActive: true }];
-      const mockAreas = [{ id: 'area-1', name: 'Area 1', siteId: 'site-1', isActive: true }];
-      const mockUnits = [
-        {
-          id: 'unit-1',
-          name: 'Unit 1',
-          areaId: 'area-1',
-          unitType: 'freezer',
-          status: 'ok',
-        },
-      ];
+			const { result } = renderHook(() => useNavTree('org-1'), { wrapper })
 
-      vi.mocked(sitesApi.listSites).mockResolvedValueOnce(mockSites as any);
-      vi.mocked(areasApi.listAreas).mockResolvedValueOnce(mockAreas as any);
-      vi.mocked(unitsApi.listUnits).mockResolvedValueOnce(mockUnits as any);
+			await waitFor(() => expect(result.current.isLoading).toBe(false))
 
-      const { result } = renderHook(() => useNavTree('org-1'), { wrapper });
+			expect(result.current.sites).toHaveLength(2)
+		})
 
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+		it('builds navigation tree structure', async () => {
+			const mockSites = [
+				{
+					id: 'site-1',
+					name: 'Site 1',
+					organizationId: 'org-1',
+					isActive: true,
+				},
+			]
 
-      expect(areasApi.listAreas).toHaveBeenCalledWith('org-1', 'site-1', 'test-token');
-      expect(unitsApi.listUnits).toHaveBeenCalledWith('org-1', 'site-1', 'area-1', 'test-token');
-    });
+			const mockUnits = [
+				{
+					id: 'unit-1',
+					name: 'Unit 1',
+					unitType: 'freezer',
+					status: 'ok',
+					areaId: 'area-1',
+					areaName: 'Area 1',
+					siteId: 'site-1',
+				},
+			]
 
-    it('builds navigation tree structure', async () => {
-      const mockSites = [{ id: 'site-1', name: 'Site 1', organizationId: 'org-1', isActive: true }];
-      const mockAreas = [{ id: 'area-1', name: 'Area 1', siteId: 'site-1', isActive: true }];
-      const mockUnits = [
-        {
-          id: 'unit-1',
-          name: 'Unit 1',
-          areaId: 'area-1',
-          unitType: 'freezer',
-          status: 'ok',
-        },
-      ];
+			const mockSitesQuery = {
+				data: mockSites,
+				isLoading: false,
+				error: null,
+			}
 
-      vi.mocked(sitesApi.listSites).mockResolvedValueOnce(mockSites as any);
-      vi.mocked(areasApi.listAreas).mockResolvedValueOnce(mockAreas as any);
-      vi.mocked(unitsApi.listUnits).mockResolvedValueOnce(mockUnits as any);
+			const mockUnitsQuery = {
+				data: mockUnits,
+				isLoading: false,
+				error: null,
+			}
 
-      const { result } = renderHook(() => useNavTree('org-1'), { wrapper });
+			mockUseTRPC.mockReturnValue({
+				sites: {
+					list: {
+						useQuery: vi.fn().mockReturnValue(mockSitesQuery),
+					},
+				},
+				units: {
+					listByOrg: {
+						useQuery: vi.fn().mockReturnValue(mockUnitsQuery),
+					},
+				},
+			})
 
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+			const { result } = renderHook(() => useNavTree('org-1'), { wrapper })
 
-      const site = result.current.sites[0];
-      expect(site.siteId).toBe('site-1');
-      expect(site.siteName).toBe('Site 1');
-      expect(site.units).toHaveLength(1);
-      expect(site.units[0].unitId).toBe('unit-1');
-      expect(site.units[0].areaName).toBe('Area 1');
-    });
+			await waitFor(() => expect(result.current.isLoading).toBe(false))
 
-    it('detects single site correctly', async () => {
-      const mockSites = [{ id: 'site-1', name: 'Single Site', organizationId: 'org-1', isActive: true }];
+			const site = result.current.sites[0]
+			expect(site.siteId).toBe('site-1')
+			expect(site.siteName).toBe('Site 1')
+			expect(site.units).toHaveLength(1)
+			expect(site.units[0].unitId).toBe('unit-1')
+			expect(site.units[0].areaName).toBe('Area 1')
+		})
 
-      vi.mocked(sitesApi.listSites).mockResolvedValueOnce(mockSites as any);
-      vi.mocked(areasApi.listAreas).mockResolvedValue([] as any);
-      vi.mocked(unitsApi.listUnits).mockResolvedValue([] as any);
+		it('detects single site correctly', async () => {
+			const mockSites = [
+				{
+					id: 'site-1',
+					name: 'Single Site',
+					organizationId: 'org-1',
+					isActive: true,
+				},
+			]
 
-      const { result } = renderHook(() => useNavTree('org-1'), { wrapper });
+			const mockSitesQuery = {
+				data: mockSites,
+				isLoading: false,
+				error: null,
+			}
 
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+			const mockUnitsQuery = {
+				data: [],
+				isLoading: false,
+				error: null,
+			}
 
-      expect(result.current.hasSingleSite).toBe(true);
-    });
+			mockUseTRPC.mockReturnValue({
+				sites: {
+					list: {
+						useQuery: vi.fn().mockReturnValue(mockSitesQuery),
+					},
+				},
+				units: {
+					listByOrg: {
+						useQuery: vi.fn().mockReturnValue(mockUnitsQuery),
+					},
+				},
+			})
 
-    it('handles multiple sites', async () => {
-      const mockSites = [
-        { id: 'site-1', name: 'Site 1', organizationId: 'org-1', isActive: true },
-        { id: 'site-2', name: 'Site 2', organizationId: 'org-1', isActive: true },
-      ];
+			const { result } = renderHook(() => useNavTree('org-1'), { wrapper })
 
-      vi.mocked(sitesApi.listSites).mockResolvedValueOnce(mockSites as any);
-      vi.mocked(areasApi.listAreas).mockResolvedValue([] as any);
-      vi.mocked(unitsApi.listUnits).mockResolvedValue([] as any);
+			await waitFor(() => expect(result.current.isLoading).toBe(false))
 
-      const { result } = renderHook(() => useNavTree('org-1'), { wrapper });
+			expect(result.current.hasSingleSite).toBe(true)
+		})
 
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+		it('handles multiple sites', async () => {
+			const mockSites = [
+				{
+					id: 'site-1',
+					name: 'Site 1',
+					organizationId: 'org-1',
+					isActive: true,
+				},
+				{
+					id: 'site-2',
+					name: 'Site 2',
+					organizationId: 'org-1',
+					isActive: true,
+				},
+			]
 
-      expect(result.current.hasSingleSite).toBe(false);
-      expect(result.current.sites).toHaveLength(2);
-    });
+			const mockSitesQuery = {
+				data: mockSites,
+				isLoading: false,
+				error: null,
+			}
 
-    it('returns empty when organizationId is null', () => {
-      const { result } = renderHook(() => useNavTree(null), { wrapper });
+			const mockUnitsQuery = {
+				data: [],
+				isLoading: false,
+				error: null,
+			}
 
-      expect(result.current.sites).toEqual([]);
-      expect(result.current.hasSingleSite).toBe(false);
-    });
+			mockUseTRPC.mockReturnValue({
+				sites: {
+					list: {
+						useQuery: vi.fn().mockReturnValue(mockSitesQuery),
+					},
+				},
+				units: {
+					listByOrg: {
+						useQuery: vi.fn().mockReturnValue(mockUnitsQuery),
+					},
+				},
+			})
 
-    it('preserves query key structure for cache', async () => {
-      const mockSites = [{ id: 'site-1', name: 'Site 1', organizationId: 'org-1', isActive: true }];
+			const { result } = renderHook(() => useNavTree('org-1'), { wrapper })
 
-      vi.mocked(sitesApi.listSites).mockResolvedValueOnce(mockSites as any);
-      vi.mocked(areasApi.listAreas).mockResolvedValue([] as any);
-      vi.mocked(unitsApi.listUnits).mockResolvedValue([] as any);
+			await waitFor(() => expect(result.current.isLoading).toBe(false))
 
-      renderHook(() => useNavTree('org-1'), { wrapper });
+			expect(result.current.hasSingleSite).toBe(false)
+			expect(result.current.sites).toHaveLength(2)
+		})
 
-      await waitFor(() => {
-        // Query key should be org-scoped for cache invalidation on impersonation
-        const cachedData = queryClient.getQueryData(['org', 'org-1', 'sites']);
-        return expect(cachedData).toBeDefined();
-      });
-    });
+		it('returns empty when organizationId is null', () => {
+			mockUseTRPC.mockReturnValue({
+				sites: {
+					list: {
+						useQuery: vi.fn().mockReturnValue({
+							data: null,
+							isLoading: false,
+							error: null,
+						}),
+					},
+				},
+				units: {
+					listByOrg: {
+						useQuery: vi.fn().mockReturnValue({
+							data: null,
+							isLoading: false,
+							error: null,
+						}),
+					},
+				},
+			})
 
-    it('handles errors gracefully', async () => {
-      vi.mocked(sitesApi.listSites).mockRejectedValueOnce(new Error('API Error'));
+			const { result } = renderHook(() => useNavTree(null), { wrapper })
 
-      const { result } = renderHook(() => useNavTree('org-1'), { wrapper });
+			expect(result.current.sites).toEqual([])
+			expect(result.current.hasSingleSite).toBe(false)
+		})
 
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+		it('handles errors gracefully', async () => {
+			const mockSitesQuery = {
+				data: null,
+				isLoading: false,
+				error: new Error('API Error'),
+			}
 
-      expect(result.current.error).toBeDefined();
-      expect(result.current.sites).toEqual([]);
-    });
-  });
-});
+			const mockUnitsQuery = {
+				data: null,
+				isLoading: false,
+				error: null,
+			}
+
+			mockUseTRPC.mockReturnValue({
+				sites: {
+					list: {
+						useQuery: vi.fn().mockReturnValue(mockSitesQuery),
+					},
+				},
+				units: {
+					listByOrg: {
+						useQuery: vi.fn().mockReturnValue(mockUnitsQuery),
+					},
+				},
+			})
+
+			const { result } = renderHook(() => useNavTree('org-1'), { wrapper })
+
+			await waitFor(() => expect(result.current.isLoading).toBe(false))
+
+			expect(result.current.error).toBeDefined()
+			expect(result.current.sites).toEqual([])
+		})
+	})
+})

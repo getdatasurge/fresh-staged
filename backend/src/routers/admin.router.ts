@@ -12,7 +12,7 @@ import { and, count, desc, eq, isNull, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db/client.js'
 import { eventLogs } from '../db/schema/audit.js'
-import { areas, sites, units } from '../db/schema/hierarchy.js'
+import { sites } from '../db/schema/hierarchy.js'
 import { organizations } from '../db/schema/tenancy.js'
 import { platformRoles, profiles, userRoles } from '../db/schema/users.js'
 import { getQueueService } from '../services/queue.service.js'
@@ -113,6 +113,43 @@ export const adminRouter = router({
 			return {
 				redisEnabled: true,
 				queues: queueStats,
+				timestamp: new Date().toISOString(),
+			}
+		}),
+
+	/**
+	 * Get overall system status
+	 */
+	systemStatus: protectedProcedure
+		.output(
+			z.object({
+				queues: z.object({
+					enabled: z.boolean(),
+					count: z.number(),
+				}),
+				timestamp: z.string(),
+			}),
+		)
+		.query(async () => {
+			const queueService = getQueueService()
+
+			if (!queueService || !queueService.isRedisEnabled()) {
+				return {
+					queues: {
+						enabled: false,
+						count: 0,
+					},
+					timestamp: new Date().toISOString(),
+				}
+			}
+
+			const queues = queueService.getAllQueues()
+
+			return {
+				queues: {
+					enabled: true,
+					count: queues.size,
+				},
 				timestamp: new Date().toISOString(),
 			}
 		}),
@@ -455,127 +492,5 @@ export const adminRouter = router({
 					createdAt: entry.createdAt.toISOString(),
 				}
 			})
-		}),
-
-	/**
-	 * Get detail for an organization (system-wide)
-	 */
-	getOrganization: protectedProcedure
-		.input(z.object({ organizationId: z.string() }))
-		.query(async ({ input }) => {
-			const { organizationId } = input
-
-			const [org] = await db
-				.select()
-				.from(organizations)
-				.where(eq(organizations.id, organizationId))
-				.limit(1)
-
-			if (!org) {
-				throw new Error('Organization not found')
-			}
-
-			// Get users
-			const members = await db
-				.select({
-					userId: userRoles.userId,
-					role: userRoles.role,
-					email: profiles.email,
-					fullName: profiles.fullName,
-					phone: profiles.phone,
-				})
-				.from(userRoles)
-				.leftJoin(profiles, eq(userRoles.userId, profiles.userId))
-				.where(eq(userRoles.organizationId, organizationId))
-
-			// Get sites
-			const orgSites = await db
-				.select()
-				.from(sites)
-				.where(
-					and(
-						eq(sites.organizationId, organizationId),
-						isNull(sites.deletedAt),
-					),
-				)
-
-			// Get units count
-			const [unitsCountResult] = await db
-				.select({ count: count() })
-				.from(units)
-				.leftJoin(areas, eq(units.areaId, areas.id))
-				.leftJoin(sites, eq(areas.siteId, sites.id))
-				.where(
-					and(
-						eq(sites.organizationId, organizationId),
-						isNull(units.deletedAt),
-						isNull(areas.deletedAt),
-						isNull(sites.deletedAt),
-					),
-				)
-			const unitsCount = Number(unitsCountResult?.count || 0)
-
-			return {
-				...org,
-				createdAt: org.createdAt.toISOString(),
-				updatedAt: org.updatedAt.toISOString(),
-				users: members,
-				sites: orgSites.map(s => ({
-					...s,
-					createdAt: s.createdAt.toISOString(),
-					updatedAt: s.updatedAt.toISOString(),
-				})),
-				unitsCount,
-			}
-		}),
-
-	/**
-	 * Get detail for a user (system-wide)
-	 */
-	getUser: protectedProcedure
-		.input(z.object({ userId: z.string() }))
-		.query(async ({ input }) => {
-			const { userId } = input
-
-			const [profile] = await db
-				.select()
-				.from(profiles)
-				.where(eq(profiles.userId, userId))
-				.limit(1)
-
-			if (!profile) {
-				throw new Error('User profile not found')
-			}
-
-			// Get roles
-			const roles = await db
-				.select({
-					role: userRoles.role,
-					organizationId: userRoles.organizationId,
-					organizationName: organizations.name,
-				})
-				.from(userRoles)
-				.leftJoin(organizations, eq(userRoles.organizationId, organizations.id))
-				.where(eq(userRoles.userId, userId))
-
-			// Check if super admin
-			const [platformRole] = await db
-				.select()
-				.from(platformRoles)
-				.where(
-					and(
-						eq(platformRoles.userId, userId),
-						eq(platformRoles.role, 'SUPER_ADMIN'),
-					),
-				)
-				.limit(1)
-
-			return {
-				...profile,
-				createdAt: profile.createdAt.toISOString(),
-				updatedAt: profile.updatedAt.toISOString(),
-				roles,
-				isSuperAdmin: !!platformRole,
-			}
 		}),
 })
