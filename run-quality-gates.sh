@@ -1,38 +1,42 @@
 #!/bin/bash
-cd /home/skynet/freshtrack-pro-local/fresh-staged
 
-echo "=== Running Quality Gates for tRPC Migration ==="
-echo "=============================================="
-
+echo "Running quality gates for freshtrack-pro project..."
 echo ""
-echo "1. Running Frontend Tests"
-echo "------------------------"
-npm test
 
+echo "Step 1: Installing dependencies..."
+npm install
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to install dependencies"
+    exit 1
+fi
+echo "✓ Dependencies installed successfully"
 echo ""
-echo "2. Running Backend Tests"
-echo "------------------------"
-cd backend
-npm test
-cd ..
 
-echo ""
-echo "3. Running Frontend Build"
-echo "------------------------"
+echo "Step 2: Running build process..."
 npm run build
-
+if [ $? -ne 0 ]; then
+    echo "Error: Build process failed"
+    exit 1
+fi
+echo "✓ Build completed successfully"
 echo ""
-echo "4. Running Backend Build"
-echo "------------------------"
-cd backend
-npm run build
-cd ..
 
+echo "Step 3: Running test suite..."
+npm test
+if [ $? -ne 0 ]; then
+    echo "Error: Tests failed"
+    exit 1
+fi
+echo "✓ All tests passed"
 echo ""
-echo "5. Running Linting"
-echo "------------------------"
+
+echo "Step 4: Checking for linting issues..."
 npm run lint
-
+if [ $? -ne 0 ]; then
+    echo "Error: Linting issues found"
+    exit 1
+fi
+echo "✓ No linting issues found"
 echo ""
-echo "=============================================="
-echo "Quality Gates Complete!"
+
+echo "✨ All quality gates passed! ✨"
