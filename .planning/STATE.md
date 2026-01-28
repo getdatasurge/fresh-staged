@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 ## Current Position
 
 Milestone: v2.2 Technical Debt & Stabilization
-Phase: 28 of 30 (Supabase Removal)
-Plan: 7 of 7 in current phase
-Status: Phase complete
-Last activity: 2026-01-26 - Completed 28-07-PLAN.md
+Phase: 30 of 30 (System Hardening)
+Plan: 0 of ? in current phase
+Status: Ready to plan
+Last activity: 2026-01-28 - Phase 29 skipped (no Supabase access)
 
-Progress: ██████████ 100%
+Progress: █████████░ 95%
 
 ## Progress
 - [x] **27. TTN SDK Integration**: Complete.
 - [x] **28. Supabase Removal**: Complete. Supabase client removed and placeholders added for remaining flows.
-- [ ] **29. Production Data Migration**: Pending.
-- [ ] **30. System Hardening**: Pending.
+- [x] ~~**29. Production Data Migration**~~: SKIPPED - No access to Supabase production database.
+- [ ] **30. System Hardening**: Ready to plan.
 
 ## Recent Achievements
 - Removed Supabase client and integration files with placeholder fallbacks.
@@ -29,7 +29,7 @@ Progress: ██████████ 100%
 - Stubbed legacy Supabase-backed flows pending backend replacements.
 
 ## Next Steps
-1. Begin Phase 29: Production Data Migration planning and execution.
+1. Plan and execute Phase 30: System Hardening.
 
 ## Decisions
 | Phase | Decision | Rationale |
@@ -37,12 +37,13 @@ Progress: ██████████ 100%
 | 28-06 | Resolve unit hierarchy via units.listByOrg before units.get | Unit routes provide unitId only |
 | 28-06 | Placeholder Recently Deleted list while tRPC endpoint is pending | Supabase reads removed from UI |
 | 28-07 | Use placeholder client for removed Supabase calls | Keep UI stable while backend replacements are pending |
+| 29 | Skip Phase 29 entirely | No access to Supabase production database credentials - will never be available |
 
 ## Blockers/Concerns Carried Forward
 - Placeholder TTN/layout/restore/health flows need backend replacements.
 
 ## Session Continuity
 
-Last session: 2026-01-26 02:19 UTC
-Stopped at: Completed 28-07-PLAN.md
+Last session: 2026-01-28
+Stopped at: Phase 29 skipped, ready to plan Phase 30
 Resume file: None

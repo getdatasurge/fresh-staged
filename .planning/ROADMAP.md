@@ -53,8 +53,7 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
     - [x] Wave 5: Core Entity Dashboards (Dashboard, Units, Sites, Alerts)
         - [x] Wave 6: Detail Views & Maintenance
         - [x] Wave 7: Platform Admin & Remaining Cleanup
-- [ ] **Phase 29: Production Data Migration** - Execute final data transfer from legacy system
-- [ ] **Phase 30: System Hardening** - Final security audit and performance tuning
+- [x] ~~**Phase 29: Production Data Migration**~~ - SKIPPED (no Supabase production access)
 - [ ] **Phase 30: System Hardening** - Final security audit and performance tuning
 
 
