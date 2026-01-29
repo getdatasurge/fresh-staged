@@ -68,11 +68,11 @@ Requirements for completing deployment automation (continuation of v2.1 Phases 2
 
 ### Post-Deployment
 
-- [ ] **POST-01**: Script displays complete URL summary (dashboard, monitoring, API)
-- [ ] **POST-02**: Script displays credential summary securely (no passwords in plaintext logs)
-- [ ] **POST-03**: Script creates sample organization and site with demo data
-- [ ] **POST-04**: Script configures Grafana dashboards for sensor metrics
-- [ ] **POST-05**: Script displays next steps guide for first admin user setup
+- [x] **POST-01**: Script displays complete URL summary (dashboard, monitoring, API)
+- [x] **POST-02**: Script displays credential summary securely (no passwords in plaintext logs)
+- [x] **POST-03**: Script creates sample organization and site with demo data
+- [x] **POST-04**: Script configures Grafana dashboards for sensor metrics
+- [x] **POST-05**: Script displays next steps guide for first admin user setup
 
 ### Documentation
 
@@ -143,11 +143,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VERIFY-04 | Phase 35 | Complete |
 | VERIFY-05 | Phase 35 | Complete |
 | VERIFY-06 | Phase 35 | Complete |
-| POST-01 | Phase 36 | Pending |
-| POST-02 | Phase 36 | Pending |
-| POST-03 | Phase 36 | Pending |
-| POST-04 | Phase 36 | Pending |
-| POST-05 | Phase 36 | Pending |
+| POST-01 | Phase 36 | Complete |
+| POST-02 | Phase 36 | Complete |
+| POST-03 | Phase 36 | Complete |
+| POST-04 | Phase 36 | Complete |
+| POST-05 | Phase 36 | Complete |
 | DOCS-01 | Phase 37 | Pending |
 | DOCS-02 | Phase 37 | Pending |
 | DOCS-03 | Phase 37 | Pending |
@@ -155,9 +155,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 **Coverage:**
 - v2.1 requirements (PREFLIGHT, PREREQ, CONFIG, ERROR): 26 total, 26 complete
-- v2.3 requirements (DEPLOY, VERIFY, POST, DOCS): 20 total, 11 complete
+- v2.3 requirements (DEPLOY, VERIFY, POST, DOCS): 20 total, 16 complete
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-25*
-*Last updated: 2026-01-29 (v2.3 traceability added)*
+*Last updated: 2026-01-29 (Phase 36 POST requirements complete)*
