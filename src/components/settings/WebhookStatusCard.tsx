@@ -1,10 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useTRPC } from "@/lib/trpc";
-import { supabase } from "@/lib/supabase-placeholder";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Webhook,
   CheckCircle,
@@ -13,11 +11,9 @@ import {
   RefreshCw,
   Settings2,
   AlertTriangle,
-  Activity
 } from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface WebhookStatusCardProps {
   organizationId: string | null;
@@ -25,18 +21,9 @@ interface WebhookStatusCardProps {
 }
 
 interface WebhookConfig {
-  id: string;
-  webhook_id: string | null;
-  webhook_url: string;
+  webhookUrl: string;
   status: "pending" | "active" | "error";
-  last_event_at: string | null;
-  last_error: string | null;
-  created_at: string;
-}
-
-interface WebhookStats {
-  eventsToday: number;
-  lastEventType: string | null;
+  configuredAt: string;
 }
 
 const statusConfig = {
@@ -63,70 +50,40 @@ const statusConfig = {
 };
 
 export function WebhookStatusCard({ organizationId, canEdit }: WebhookStatusCardProps) {
-  const queryClient = useQueryClient();
   const [isConfiguring, setIsConfiguring] = useState(false);
+  const [config, setConfig] = useState<WebhookConfig | null>(null);
   const trpc = useTRPC();
 
-  // Fetch webhook config
-  const { data: config, isLoading: configLoading } = useQuery({
-    queryKey: ["telnyx-webhook-config", organizationId],
-    queryFn: async () => {
-      // First try org-specific, then global
-      const { data, error } = await supabase
-        .from("telnyx_webhook_config")
-        .select("*")
-        .or(`organization_id.eq.${organizationId},organization_id.is.null`)
-        .order("organization_id", { ascending: false, nullsFirst: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data as WebhookConfig | null;
-    },
-    enabled: !!organizationId,
-  });
-
-  // Fetch webhook event stats
-  const { data: stats } = useQuery({
-    queryKey: ["telnyx-webhook-stats", organizationId],
-    queryFn: async () => {
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-
-      // Count events today
-      const { count, error: countError } = await supabase
-        .from("telnyx_webhook_events")
-        .select("*", { count: "exact", head: true })
-        .gte("created_at", todayStart.toISOString());
-
-      if (countError) throw countError;
-
-      // Get last event type
-      const { data: lastEvent, error: lastError } = await supabase
-        .from("telnyx_webhook_events")
-        .select("event_type")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (lastError) throw lastError;
-
-      return {
-        eventsToday: count || 0,
-        lastEventType: lastEvent?.event_type || null,
-      } as WebhookStats;
-    },
-    enabled: !!organizationId,
-    refetchInterval: 30000, // Refresh every 30 seconds
-  });
+  // Load saved config from localStorage on mount
+  useEffect(() => {
+    if (organizationId) {
+      const savedConfig = localStorage.getItem(`webhook-config-${organizationId}`);
+      if (savedConfig) {
+        try {
+          setConfig(JSON.parse(savedConfig));
+        } catch {
+          // Invalid stored config, ignore
+        }
+      }
+    }
+  }, [organizationId]);
 
   // Configure webhook mutation using tRPC
   const configureWebhook = useMutation(
     trpc.telnyx.configureWebhook.mutationOptions({
       onSuccess: (data) => {
-        if (data.success) {
+        if (data.success && data.webhookUrl) {
+          const newConfig: WebhookConfig = {
+            webhookUrl: data.webhookUrl,
+            status: "active",
+            configuredAt: new Date().toISOString(),
+          };
+          setConfig(newConfig);
+          // Persist to localStorage for session persistence
+          if (organizationId) {
+            localStorage.setItem(`webhook-config-${organizationId}`, JSON.stringify(newConfig));
+          }
           toast.success("Webhook configured successfully!");
-          queryClient.invalidateQueries({ queryKey: ["telnyx-webhook-config"] });
         } else {
           toast.error(data.error || "Failed to configure webhook");
         }
@@ -148,25 +105,18 @@ export function WebhookStatusCard({ organizationId, canEdit }: WebhookStatusCard
   };
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ["telnyx-webhook-config", organizationId] });
-    queryClient.invalidateQueries({ queryKey: ["telnyx-webhook-stats", organizationId] });
+    // Re-trigger configuration check by clearing and reloading
+    if (organizationId) {
+      const savedConfig = localStorage.getItem(`webhook-config-${organizationId}`);
+      if (savedConfig) {
+        try {
+          setConfig(JSON.parse(savedConfig));
+        } catch {
+          setConfig(null);
+        }
+      }
+    }
   };
-
-  if (configLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Webhook className="h-5 w-5" />
-            Webhook Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-20 w-full" />
-        </CardContent>
-      </Card>
-    );
-  }
 
   const status = config?.status || "not_configured";
   const statusInfo = statusConfig[status as keyof typeof statusConfig] || statusConfig.not_configured;
@@ -206,41 +156,13 @@ export function WebhookStatusCard({ organizationId, canEdit }: WebhookStatusCard
             </Badge>
           </div>
 
-          {/* Last Event */}
-          {config?.last_event_at && (
+          {/* Webhook URL */}
+          {config?.webhookUrl && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Last Event</span>
-              <div className="flex items-center gap-2 text-sm">
-                <Activity className="h-3 w-3 text-muted-foreground" />
-                <span title={format(new Date(config.last_event_at), "PPpp")}>
-                  {formatDistanceToNow(new Date(config.last_event_at), { addSuffix: true })}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Events Today */}
-          {stats && stats.eventsToday > 0 && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Events Today</span>
-              <span className="text-sm font-medium">{stats.eventsToday}</span>
-            </div>
-          )}
-
-          {/* Last Event Type */}
-          {stats?.lastEventType && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Last Event Type</span>
-              <Badge variant="secondary" className="text-xs">
-                {stats.lastEventType.replace("message.", "")}
-              </Badge>
-            </div>
-          )}
-
-          {/* Error Message */}
-          {config?.last_error && (
-            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
-              <p className="text-xs text-destructive">{config.last_error}</p>
+              <span className="text-sm text-muted-foreground">Webhook URL</span>
+              <span className="text-sm font-mono text-xs truncate max-w-[200px]" title={config.webhookUrl}>
+                {config.webhookUrl}
+              </span>
             </div>
           )}
 
