@@ -63,20 +63,24 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
 
 ### Gap Closure Phases (from v2.2 Audit)
 
-- [ ] **Phase 31: TTN Provisioning UI Migration**
+- [x] **Phase 31: TTN Provisioning UI Migration** - VERIFIED
     - **Goal:** Wire TTN provisioning UI to Phase 27 tRPC endpoints
     - **Closes:** Integration gap (TTN UI → tRPC), Flow gap (TTN Organization Provisioning)
     - **Plans:** 3 plans
     Plans:
-    - [ ] 31-01-PLAN.md — Add missing tRPC procedures for TTN provisioning
-    - [ ] 31-02-PLAN.md — Migrate TTNCredentialsPanel to tRPC
-    - [ ] 31-03-PLAN.md — Add integration tests and verify UI
+    - [x] 31-01-PLAN.md — Add missing tRPC procedures for TTN provisioning
+    - [x] 31-02-PLAN.md — Migrate TTNCredentialsPanel to tRPC
+    - [x] 31-03-PLAN.md — Add integration tests and verify UI
 
 - [ ] **Phase 32: Remaining Edge Function Migration**
     - **Goal:** Migrate remaining supabase.functions.invoke calls to tRPC
-    - **Closes:** 19 remaining edge function calls in 7 files
-    - **Files:** EmulatorTTNRoutingCard.tsx (2), SensorManager.tsx (1), 5+ other files
-    - **Tasks:** Audit remaining calls, migrate each file, verify
+    - **Closes:** 15 remaining edge function calls in 12 files
+    - **Plans:** 4 plans
+    Plans:
+    - [ ] 32-01-PLAN.md — Migrate TTN domain (EmulatorTTNRoutingCard, Onboarding)
+    - [ ] 32-02-PLAN.md — Create reports router + migrate 3 export files
+    - [ ] 32-03-PLAN.md — Create telnyx router + migrate 4 Telnyx files
+    - [ ] 32-04-PLAN.md — Add ttnDevices.diagnose + cleanup dead code
 
 - [ ] **Phase 33: Error Handling UI Integration**
     - **Goal:** Wire SupabaseMigrationError to UI error boundaries
@@ -85,4 +89,4 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-28 (Phase 31 planned with 3 plans)*
+*Last updated: 2026-01-28 (Phase 32 planned with 4 plans)*
