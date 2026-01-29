@@ -829,6 +829,122 @@ docker compose logs caddy
 
 See [docs/SSL_CERTIFICATES.md](SSL_CERTIFICATES.md) for detailed SSL troubleshooting and wildcard certificate setup.
 
+### Verification Script Failures
+
+The `verify-deployment.sh` script performs 6 checks. Here's how to troubleshoot each:
+
+#### VERIFY-01: Service Health Endpoint Failures
+
+**Symptom:** `Backend API verification failed after 3 attempts (Last status: 000)`
+
+**Cause:** Backend not responding or unreachable
+
+**Solution:**
+```bash
+# Check if backend container is running
+docker compose ps backend
+
+# Check backend logs for errors
+docker compose logs --tail=100 backend
+
+# Common issues:
+# - Database not ready: wait 30 seconds, retry
+# - Missing env vars: check .env.production
+# - Port conflict: check `lsof -i :3000`
+```
+
+#### VERIFY-02: SSL Certificate Failures
+
+**Symptom:** `SSL Certificate EXPIRED` or `Cannot connect to https://domain`
+
+**Causes and solutions:**
+
+1. **Certificate not issued yet:**
+   ```bash
+   # Check Caddy logs
+   docker compose logs caddy | grep -i "certificate"
+
+   # Wait for Let's Encrypt (can take 1-2 minutes on first deploy)
+   sleep 120
+   ./scripts/verify-deployment.sh your-domain.com
+   ```
+
+2. **DNS not pointing to server:**
+   ```bash
+   # Check DNS resolution
+   dig your-domain.com +short
+
+   # Should return your server IP
+   curl -s ifconfig.me
+   ```
+
+3. **Port 80 blocked (Let's Encrypt needs HTTP-01 challenge):**
+   ```bash
+   # Check firewall
+   sudo ufw status | grep 80
+
+   # Should show: 80/tcp ALLOW Anywhere
+   ```
+
+#### VERIFY-03/VERIFY-06: Dashboard Accessibility Failures
+
+**Symptom:** `Dashboard failed to achieve 3 consecutive passes`
+
+**Cause:** Dashboard returning non-200 responses intermittently
+
+**Solution:**
+```bash
+# Check what status code is returned
+curl -I https://your-domain.com
+
+# Check Caddy proxy logs
+docker compose logs caddy
+
+# Check frontend container
+docker compose logs frontend
+
+# Common issues:
+# - Frontend build failed: check for npm errors in logs
+# - Caddy misconfigured: check Caddyfile syntax
+```
+
+#### VERIFY-04: E2E Pipeline Test Failures
+
+**Symptom:** `E2E sensor pipeline test failed`
+
+**Note:** This test only runs if `TTN_WEBHOOK_SECRET` is set.
+
+**Solution:**
+```bash
+# Check if TTN is configured
+grep TTN_WEBHOOK_SECRET .env.production
+
+# If not using TTN, this test is skipped (normal)
+# If using TTN, check webhook endpoint:
+curl -X POST https://your-domain.com/api/webhooks/ttn \
+  -H "Content-Type: application/json" \
+  -d '{"test": true}'
+```
+
+#### VERIFY-05: Monitoring Stack Failures
+
+**Symptom:** `Prometheus verification failed` or `Grafana verification failed`
+
+**Note:** Monitoring failures are warnings, not blockers.
+
+**Solution:**
+```bash
+# Check Prometheus
+docker compose logs prometheus
+
+# Check Grafana
+docker compose logs grafana
+
+# Verify monitoring URLs (may require auth)
+curl -I https://your-domain.com/prometheus/-/healthy
+curl -I https://your-domain.com/grafana/api/health
+```
+
 ### Service Won't Start
 
 **Symptom:** Container restarts repeatedly or shows `Restarting` status
