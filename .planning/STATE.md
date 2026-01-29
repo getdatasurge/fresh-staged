@@ -11,18 +11,18 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 
 Milestone: v2.3 Deployment Orchestration
 Phase: 35 - Verification
-Plan: 01 of 3 complete
+Plan: 02 of 3 complete
 Status: In progress
-Last activity: 2026-01-29 — Completed 35-01-PLAN.md (verify library extension)
+Last activity: 2026-01-29 — Completed 35-02-PLAN.md (verify-deployment.sh integration)
 
-Progress: [=====-----] 50% (1/4 phases complete, 35-01 done)
+Progress: [======----] 60% (1/4 phases complete, 35-02 done)
 
 ## v2.3 Phase Overview
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
 | 34 | Deployment Orchestration | DEPLOY-01 to DEPLOY-05 | Complete (2/2 plans) |
-| 35 | Verification | VERIFY-01 to VERIFY-06 | In progress (1/3 plans) |
+| 35 | Verification | VERIFY-01 to VERIFY-06 | In progress (2/3 plans) |
 | 36 | Post-Deployment Setup | POST-01 to POST-05 | Blocked by 35 |
 | 37 | Documentation | DOCS-01 to DOCS-04 | Blocked by 36 |
 
@@ -51,6 +51,8 @@ Progress: [=====-----] 50% (1/4 phases complete, 35-01 done)
 | 35-01 | Worker health check is warning, not failure | Worker endpoint may be internal-only in some deployments |
 | 35-01 | Consecutive health scoped to dashboard | Matches Phase 34 pattern where consecutive passes apply to main health endpoint |
 | 35-01 | Environment-overridable VERIFY_* config | Allows deployment-specific tuning of verification parameters |
+| 35-02 | Monitoring failures are warnings not blockers | Monitoring endpoints may require auth in some deployments |
+| 35-02 | E2E test auto-detection via TTN_WEBHOOK_SECRET | Conditional test based on environment availability |
 
 ## Tech Debt Carried Forward
 
@@ -67,14 +69,23 @@ Progress: [=====-----] 50% (1/4 phases complete, 35-01 done)
 - verify_worker_health() - Worker endpoint validation
 - verify_consecutive_health() - 3-consecutive-pass dashboard verification
 
-**Configuration variables added:**
+**What Phase 35-02 built:**
+- scripts/verify-deployment.sh restructured (115 -> 189 lines)
+- Integrated VERIFY-01 through VERIFY-06 into single workflow
+- Conditional E2E sensor pipeline test via RUN_E2E_TEST and TTN_WEBHOOK_SECRET
+- 3-consecutive-pass applied to dashboard endpoint only
+- Comprehensive troubleshooting guidance on failure
+
+**Configuration variables:**
 - VERIFY_CONSECUTIVE_REQUIRED (default 3)
 - VERIFY_CHECK_INTERVAL (default 5s)
 - VERIFY_MAX_ATTEMPTS (default 12)
+- RUN_E2E_TEST (auto, yes, no)
+- TTN_WEBHOOK_SECRET (triggers E2E when set with auto mode)
 
 ## Session Continuity
 
-Last session: 2026-01-29 10:32 UTC
-Stopped at: Completed 35-01-PLAN.md
+Last session: 2026-01-29 10:35 UTC
+Stopped at: Completed 35-02-PLAN.md
 Resume file: None
-Next action: Execute 35-02-PLAN.md (verify-deployment.sh script)
+Next action: Execute 35-03-PLAN.md (if exists, otherwise phase 35 complete)
