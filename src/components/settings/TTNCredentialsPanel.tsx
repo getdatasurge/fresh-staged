@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, RefreshCw, Key, Building2, ExternalLink, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, PlayCircle, Info, Trash2, MapPin } from "lucide-react";
 import { useUser } from "@stackframe/react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useTRPC } from "@/lib/trpc";
 import { toast } from "sonner";
 import { SecretField } from "./SecretField";
 import { TTNDiagnosticsPanel } from "@/components/ttn/TTNDiagnosticsPanel";
@@ -80,6 +80,7 @@ const PROVISIONING_STEPS = [
 
 export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCredentialsPanelProps) {
   const user = useUser();
+  const trpc = useTRPC();
   const [credentials, setCredentials] = useState<TTNCredentials | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRetrying, setIsRetrying] = useState(false);
@@ -96,6 +97,19 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
 
   // Track the last known organizationId to prevent clearing credentials during transitional states
   const lastOrgIdRef = useRef<string | null>(null);
+
+  // tRPC hooks for TTN settings operations
+  const getCredentialsQuery = trpc.ttnSettings.getCredentials.useQuery(
+    { organizationId: organizationId || '' },
+    { enabled: false } // Manual fetch control
+  );
+  const getStatusQuery = trpc.ttnSettings.getStatus.useQuery(
+    { organizationId: organizationId || '' },
+    { enabled: false }
+  );
+  const provisionMutation = trpc.ttnSettings.provision.useMutation();
+  const startFreshMutation = trpc.ttnSettings.startFresh.useMutation();
+  const deepCleanMutation = trpc.ttnSettings.deepClean.useMutation();
 
   const fetchCredentials = useCallback(async () => {
     // Don't clear credentials if organizationId is temporarily null (transitional state)
@@ -126,15 +140,16 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke("manage-ttn-settings", {
-        body: { 
-          action: "get_credentials",
-          organization_id: organizationId 
-        },
-      });
+      const result = await getCredentialsQuery.refetch();
 
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      if (result.error) {
+        throw result.error;
+      }
+
+      const data = result.data;
+      if (!data) {
+        throw new Error("No credentials data returned");
+      }
 
       // Log what we received for debugging
       console.log(`[TTNCredentialsPanel] Fetched credentials for org ${organizationId.slice(0, 8)}:`, {
@@ -145,14 +160,16 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
         ttn_region: data.ttn_region,
       });
 
-      setCredentials(data);
-    } catch (err) {
+      setCredentials(data as TTNCredentials);
+    } catch (err: unknown) {
       console.error("Failed to fetch TTN credentials:", err);
-      setFetchError("Unable to load TTN settings");
+      const message = err instanceof Error ? err.message : "Unable to load TTN settings";
+      setFetchError(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
-  }, [organizationId]);
+  }, [organizationId, user, getCredentialsQuery]);
 
   useEffect(() => {
     fetchCredentials();
