@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { supabase, isSupabaseMigrationError } from "@/lib/supabase-placeholder";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useTRPC } from "@/lib/trpc";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -89,21 +90,48 @@ interface SensorSimulatorPanelProps {
 }
 
 export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelProps) {
-  const [units, setUnits] = useState<Unit[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
-  const [recentEvents, setRecentEvents] = useState<SimulatorEvent[]>([]);
   const [activeTab, setActiveTab] = useState<string>("readings");
   const [routeViaTTN, setRouteViaTTN] = useState(false);
-  
+
   // TTN Config Context for state awareness
   const { context: ttnContext } = useTTNConfig();
   const guardResult = checkTTNOperationAllowed('simulate', ttnContext);
-  
-  // Simulated device config
+
+  // tRPC for units loading
+  const trpc = useTRPC();
+  const { data: unitsData, isLoading } = useQuery(
+    trpc.units.listByOrg.queryOptions({ organizationId: organizationId! }, {
+      enabled: !!organizationId
+    })
+  );
+
+  // Transform tRPC response to match Unit interface
+  const units = useMemo<Unit[]>(() => {
+    if (!unitsData) return [];
+    return unitsData.map(u => ({
+      id: u.id,
+      name: u.name,
+      unit_type: u.unitType,
+      temp_limit_high: u.tempLimitHigh,
+      temp_limit_low: u.tempLimitLow,
+      last_reading_at: u.lastReadingAt,
+      last_temp_reading: u.lastTempReading,
+      door_state: u.doorState,
+      area: {
+        name: u.areaName || '',
+        site: { name: u.siteName || '' }
+      }
+    }));
+  }, [unitsData]);
+
+  // Simulated device config - now static since simulator is unavailable
   const [config, setConfig] = useState<SimulatedDeviceConfig | null>(null);
-  
+
+  // Recent events - empty since simulator is unavailable
+  const recentEvents: SimulatorEvent[] = [];
+
   // Form state
   const [customTemp, setCustomTemp] = useState<string>("38.0");
   const [customHumidity, setCustomHumidity] = useState<string>("55");
@@ -111,162 +139,24 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
   const [signalStrength, setSignalStrength] = useState<number>(-50);
   const [streamingInterval, setStreamingInterval] = useState<string>("60");
 
-  const loadUnits = useCallback(async () => {
-    if (!organizationId) {
-      setUnits([]);
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // Step 1: Get area IDs for this organization
-      // PostgREST can't filter through multiple nested relationships (units->areas->sites->org)
-      // so we need to first get area IDs, then filter units by those
-      const { data: areasData } = await supabase
-        .from("areas")
-        .select("id, site:sites!inner(organization_id)")
-        .eq("is_active", true)
-        .eq("sites.organization_id", organizationId);
-
-      const areaIds = (areasData || []).map(a => a.id);
-
-      if (areaIds.length === 0) {
-        setUnits([]);
-        setIsLoading(false);
-        return;
-      }
-
-      // Step 2: Query units filtered by those area IDs
-      const { data, error } = await supabase
-        .from("units")
-        .select(`
-          id, name, unit_type, temp_limit_high, temp_limit_low,
-          last_reading_at, last_temp_reading, door_state,
-          area:areas!inner(name, site:sites!inner(name, organization_id))
-        `)
-        .in("area_id", areaIds)
-        .eq("is_active", true)
-        .is("deleted_at", null)
-        .order("name");
-
-      if (error) throw error;
-
-      const formattedUnits = (data || []).map(u => ({
-        id: u.id,
-        name: u.name,
-        unit_type: u.unit_type,
-        temp_limit_high: u.temp_limit_high,
-        temp_limit_low: u.temp_limit_low,
-        last_reading_at: u.last_reading_at,
-        last_temp_reading: u.last_temp_reading,
-        door_state: u.door_state,
-        area: {
-          name: u.area?.name || "",
-          site: { name: u.area?.site?.name || "" }
-        }
-      }));
-      setUnits(formattedUnits);
-    } catch (error) {
-      console.error("Error loading units:", error);
-      toast.error("Failed to load units");
-    }
-    setIsLoading(false);
-  }, [organizationId]);
-
-  const loadSimConfig = useCallback(async (unitId: string) => {
-    try {
-      const { data } = await supabase
-        .from("simulated_devices")
-        .select("*")
-        .eq("unit_id", unitId)
-        .maybeSingle();
-
-      if (data) {
-        setConfig(data as SimulatedDeviceConfig);
-        setCustomTemp(String(data.current_temperature));
-        setCustomHumidity(String(data.current_humidity));
-        setBatteryLevel(data.battery_level);
-        setSignalStrength(data.signal_strength);
-        setStreamingInterval(String(data.streaming_interval_seconds));
-      } else {
-        setConfig(null);
-      }
-    } catch (error) {
-      console.error("Error loading sim config:", error);
-    }
-  }, []);
-
-  const loadRecentEvents = useCallback(async (unitId: string) => {
-    try {
-      const { data } = await supabase
-        .from("event_logs")
-        .select("id, event_type, recorded_at, event_data")
-        .eq("unit_id", unitId)
-        .eq("event_type", "sensor_simulation")
-        .order("recorded_at", { ascending: false })
-        .limit(8);
-
-      setRecentEvents((data || []) as SimulatorEvent[]);
-    } catch (error) {
-      console.error("Error loading events:", error);
-    }
-  }, []);
-
+  // Clear config when unit changes
   useEffect(() => {
-    if (organizationId) {
-      loadUnits();
-    }
-  }, [organizationId, loadUnits]);
-
-  useEffect(() => {
-    if (selectedUnit) {
-      loadSimConfig(selectedUnit);
-      loadRecentEvents(selectedUnit);
-    } else {
+    if (!selectedUnit) {
       setConfig(null);
-      setRecentEvents([]);
     }
-  }, [selectedUnit, loadSimConfig, loadRecentEvents]);
+  }, [selectedUnit]);
 
-  // Note: sensor-simulator edge function is intentionally kept as-is.
-  // This is an admin-only dev tool that simulates hardware sensors.
-  // The edge function still exists and works for internal testing purposes.
-  // Migration to tRPC is not required for internal tooling (Phase 32-04 decision).
-  const invokeSimulator = async (action: string, extraParams: Record<string, unknown> = {}) => {
+  // Sensor simulator edge function is no longer available after Supabase removal
+  // Show unavailable message for all simulator actions
+  const invokeSimulator = async (action: string, _extraParams: Record<string, unknown> = {}) => {
     if (!selectedUnit) {
       toast.error("Please select a unit");
       return;
     }
 
-    setLoadingAction(action);
-    try {
-      const body = {
-        action,
-        unit_id: selectedUnit,
-        ...extraParams
-      };
-
-      const { data, error } = await supabase.functions.invoke("sensor-simulator", { body });
-
-      if (error) throw error;
-
-      toast.success(data.message || `Action ${action} completed`);
-      
-      // Refresh data
-      await Promise.all([
-        loadSimConfig(selectedUnit),
-        loadRecentEvents(selectedUnit),
-        loadUnits()
-      ]);
-    } catch (error: unknown) {
-      console.error("Simulator error:", error);
-      if (isSupabaseMigrationError(error)) {
-        toast.error("Sensor simulator unavailable during migration");
-      } else {
-        toast.error(error instanceof Error ? error.message : "Simulator action failed");
-      }
-    }
-    setLoadingAction(null);
+    toast.error("Sensor simulator unavailable", {
+      description: "Edge function removed during migration. Use direct API for testing."
+    });
   };
 
   const handleInjectReading = () => {
