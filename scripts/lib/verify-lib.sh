@@ -275,6 +275,7 @@ display_url_summary() {
     echo -e "  🔌 API:       ${BLUE}https://${domain}/api/health${NC}"
     echo -e "  📈 Grafana:   ${BLUE}https://${domain}/grafana${NC}"
     echo -e "  🔎 Prometheus:${BLUE}https://${domain}/prometheus${NC}"
+    echo -e "  🚀 Bull Board:${BLUE}https://${domain}/api/admin/queues${NC}"
     echo ""
     echo -e "Administration:"
     echo -e "  To create first admin user: Sign up in the dashboard"
