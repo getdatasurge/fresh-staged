@@ -98,6 +98,11 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
 
   // Track the last known organizationId to prevent clearing credentials during transitional states
   const lastOrgIdRef = useRef<string | null>(null);
+  // Stable ref for user to avoid dependency cycles in fetchCredentials
+  const userRef = useRef(user);
+  userRef.current = user;
+  // Track whether we already showed an error toast to prevent toast spam on 429 retry loops
+  const hasShownErrorToastRef = useRef(false);
 
   // tRPC hooks for TTN settings operations
   const getCredentialsQuery = useQuery(
@@ -115,6 +120,10 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
   const provisionMutation = useMutation(trpc.ttnSettings.provision.mutationOptions());
   const startFreshMutation = useMutation(trpc.ttnSettings.startFresh.mutationOptions());
   const deepCleanMutation = useMutation(trpc.ttnSettings.deepClean.mutationOptions());
+
+  // Stable ref to the query's refetch to avoid dependency cycles
+  const getCredentialsRefetchRef = useRef(getCredentialsQuery.refetch);
+  getCredentialsRefetchRef.current = getCredentialsQuery.refetch;
 
   const fetchCredentials = useCallback(async () => {
     // Don't clear credentials if organizationId is temporarily null (transitional state)
@@ -140,12 +149,12 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
     setFetchError(null);
 
     try {
-      if (!user) {
+      if (!userRef.current) {
         setFetchError("Session expired - please sign in again");
         return;
       }
 
-      const result = await getCredentialsQuery.refetch();
+      const result = await getCredentialsRefetchRef.current();
 
       if (result.error) {
         throw result.error;
@@ -156,25 +165,21 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
         throw new Error("No credentials data returned");
       }
 
-      // Log what we received for debugging
-      console.log(`[TTNCredentialsPanel] Fetched credentials for org ${organizationId.slice(0, 8)}:`, {
-        provisioning_status: data.provisioning_status,
-        has_app_secret: !!(data.app_api_secret || data.app_api_secret_last4),
-        has_webhook_secret: !!(data.webhook_secret || data.webhook_secret_last4),
-        app_api_secret_status: data.app_api_secret_status,
-        ttn_region: data.ttn_region,
-      });
-
       setCredentials(data as TTNCredentials);
+      hasShownErrorToastRef.current = false; // Reset error toast flag on success
     } catch (err: unknown) {
       console.error("Failed to fetch TTN credentials:", err);
       const message = err instanceof Error ? err.message : "Unable to load TTN settings";
       setFetchError(message);
-      toast.error(message);
+      // Only toast on first error, not on repeated failures (prevents toast spam from 429s)
+      if (!hasShownErrorToastRef.current) {
+        hasShownErrorToastRef.current = true;
+        toast.error(message);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [organizationId, user, getCredentialsQuery]);
+  }, [organizationId]); // Removed `user` dependency - use userRef instead to prevent infinite loop
 
   useEffect(() => {
     fetchCredentials();
