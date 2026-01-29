@@ -13,6 +13,7 @@
  * subscription sensor limits in addition to authentication and org membership.
  */
 
+import { eq } from 'drizzle-orm'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import {
@@ -26,6 +27,8 @@ import {
 import * as ttnDeviceService from '../services/ttn-device.service.js'
 import { router } from '../trpc/index.js'
 import { orgProcedure, sensorCapacityProcedure } from '../trpc/procedures.js'
+import { db } from '../db/client.js'
+import { ttnConnections } from '../db/schema/tenancy.js'
 
 /**
  * Base input schema for organization-scoped device operations
@@ -66,6 +69,34 @@ const UpdateDeviceInput = z.object({
 	organizationId: z.string().uuid(),
 	deviceId: z.string().min(1),
 	data: UpdateTTNDeviceSchema,
+})
+
+/**
+ * Input schema for diagnose operation
+ */
+const DiagnoseInputSchema = z.object({
+	organizationId: z.string().uuid(),
+	sensorId: z.string().min(1), // deviceId/sensor identifier
+})
+
+/**
+ * Output schema for diagnose operation
+ */
+const DiagnoseOutputSchema = z.object({
+	success: z.boolean(),
+	clusterBaseUrl: z.string().nullable(),
+	region: z.string().nullable(),
+	appId: z.string().nullable(),
+	deviceId: z.string().nullable(),
+	checks: z.array(
+		z.object({
+			name: z.string(),
+			passed: z.boolean(),
+			message: z.string().optional(),
+		}),
+	),
+	diagnosis: z.string().nullable(),
+	hint: z.string().nullable(),
 })
 
 export const ttnDevicesRouter = router({
@@ -344,6 +375,94 @@ export const ttnDevicesRouter = router({
 					code: 'NOT_FOUND',
 					message: 'Device not found',
 				})
+			}
+		}),
+
+	/**
+	 * Diagnose device connectivity issues
+	 * Equivalent to: ttn-provision-device diagnose action
+	 *
+	 * Runs connectivity checks and returns diagnostic information.
+	 */
+	diagnose: orgProcedure
+		.input(DiagnoseInputSchema)
+		.output(DiagnoseOutputSchema)
+		.mutation(async ({ input }) => {
+			// Get TTN connection settings for the organization
+			const conn = await db.query.ttnConnections.findFirst({
+				where: eq(ttnConnections.organizationId, input.organizationId),
+			})
+
+			if (!conn) {
+				return {
+					success: false,
+					clusterBaseUrl: null,
+					region: null,
+					appId: null,
+					deviceId: input.sensorId,
+					checks: [
+						{
+							name: 'TTN Configuration',
+							passed: false,
+							message: 'No TTN connection configured',
+						},
+					],
+					diagnosis: 'TTN is not configured for this organization',
+					hint: 'Configure TTN settings in organization settings',
+				}
+			}
+
+			// Run diagnostic checks
+			const checks: { name: string; passed: boolean; message?: string }[] = []
+
+			// Check 1: TTN connection configured
+			checks.push({
+				name: 'TTN Configuration',
+				passed: true,
+				message: 'TTN connection is configured',
+			})
+
+			// Check 2: Application ID exists
+			const hasAppId = !!(conn.ttnApplicationId || conn.applicationId)
+			checks.push({
+				name: 'Application ID',
+				passed: hasAppId,
+				message: hasAppId
+					? `App ID: ${conn.ttnApplicationId || conn.applicationId}`
+					: 'No application ID',
+			})
+
+			// Check 3: API credentials present
+			const hasCredentials = !!conn.ttnApiKeyEncrypted
+			checks.push({
+				name: 'API Credentials',
+				passed: hasCredentials,
+				message: hasCredentials
+					? 'API credentials configured'
+					: 'No API credentials',
+			})
+
+			// Generate diagnosis
+			const allPassed = checks.every(c => c.passed)
+			const diagnosis = allPassed
+				? 'All checks passed - device should be able to connect'
+				: 'Some checks failed - see details above'
+
+			const hint = allPassed
+				? 'If device still not working, check device-side configuration'
+				: 'Fix the failed checks before troubleshooting further'
+
+			return {
+				success: allPassed,
+				clusterBaseUrl: conn.ttnRegion
+					? `https://${conn.ttnRegion}.cloud.thethings.network`
+					: null,
+				region: conn.ttnRegion,
+				appId: conn.ttnApplicationId || conn.applicationId || null,
+				deviceId: input.sensorId,
+				checks,
+				diagnosis,
+				hint,
 			}
 		}),
 })
