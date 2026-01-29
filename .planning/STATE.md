@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.5 TTN Test Fixes
+**Current focus:** v2.7 tRPC Client Fix — unblock production app render
 
 ## Current Position
 
-Milestone: v2.5 TTN Test Fixes
-Phase: 44 of 44 - TTN Bootstrap Fix
-Plan: 1/1 complete
-Status: Complete
-Last activity: 2026-01-29 — Phase 44 complete, all 45 TTN tests pass
+Milestone: v2.7 tRPC Client Fix
+Phase: 47 of 48 - tRPC Proxy Call Migration
+Plan: 2/3 (in progress)
+Status: In progress
+Last activity: 2026-01-29 — Completed 47-02-PLAN.md (entity layout + billing migration)
 
-Progress: ██████████ 100%
+Progress: ██████░░░░ 60%
 
 ## Milestones Shipped
 
@@ -29,31 +29,52 @@ Progress: ██████████ 100%
 | v2.3 | Deployment Orchestration | 34-37 | 11 | 2026-01-29 |
 | v2.4 | Tech Debt Cleanup | 38-43 | 16 | 2026-01-29 |
 | v2.5 | TTN Test Fixes | 44 | 1 | 2026-01-29 |
+| v2.6 | Production Deployment | 45 | 3 | 2026-01-29 |
 
-**Total shipped:** 8 milestones, 44 phases, 184 plans
+**Total shipped:** 9 milestones, 45 phases, 187 plans
 
-## v2.5 Progress
+## v2.7 Progress
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 44 | TTN Bootstrap Fix | TTN-01, TTN-02, TTN-03 | ✓ Complete |
+| 46 | Dependency Cleanup | DEP-01, DEP-02, DEP-03 | Complete |
+| 47 | tRPC Proxy Call Migration | TRPC-01 to TRPC-04 | In Progress (2/3 plans) |
+| 48 | Production Redeploy & Verification | PROD-01 to PROD-03 | Not Started |
 
-**v2.5 scope:** 3 requirements, 1 phase — **Complete**
+**v2.7 scope:** 10 requirements, 3 phases, 5 plans — **3/5 plans complete (60%)**
+
+## Root Cause Reference
+
+**Bug:** `TypeError: e[i] is not a function` — React fails to mount
+
+**Primary cause:** 30+ call sites use `.mutate()`/`.query()` on `useTRPC()` proxy, which only supports `.mutationOptions()`/`.queryOptions()` in `@trpc/tanstack-react-query` v11. The proxy's `contextMap` doesn't contain `"mutate"` or `"query"` keys.
+
+**Contributing factors:**
+1. Phantom `@trpc/react-query` dependency bundled (not imported)
+2. tRPC version mismatch (server 11.9.0, client 11.8.1)
+3. Zod major version mismatch (frontend v3, backend v4)
+
+**Affected files (`.mutate()`):** useAlertRules.ts, useAlertRulesHistory.ts, useWidgetHealthMetrics.ts, useSiteLocationMutation.ts, eventLogger.ts, useEntityLayoutStorage.ts, BillingTab.tsx, Inspector.tsx
+**Affected files (`.query()`):** useWidgetHealthMetrics.ts, useEntityLayoutStorage.ts, SiteAlertsSummaryWidget.tsx, AlertHistoryWidget.tsx, BillingTab.tsx, Inspector.tsx, PilotSetup.tsx
 
 ## Accumulated Context
 
 ### Decisions
 
-(None yet for v2.5)
+- IP-based deployment (192.168.4.181), no domain
+- Self-signed SSL via Caddy auto-TLS
+- Docker compose: base `docker-compose.yml` + overlay `compose.production.yaml`
+- Env vars in `.env.production` (must export before docker compose commands)
+- Playwright E2E tests for deployment validation
+- Fix pattern: `.mutate()`/`.query()` → `useTRPCClient()` (vanilla client supports these methods)
 
 ### Blockers/Concerns
 
-- 15 pre-existing failures in tests/api/ttn-devices.test.ts — ALL in bootstrap endpoint
-- Root cause hypothesis: unhandled error, missing dependency, or unmocked TTN SDK
+- ServiceWorker registration fails due to self-signed cert (non-blocking)
 
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Milestone v2.5 initialization
+Stopped at: Completed 47-02-PLAN.md (entity layout + billing migration)
 Resume file: None
-Next action: Define requirements and create roadmap
+Next action: Execute 47-03-PLAN.md (remaining file migrations)
