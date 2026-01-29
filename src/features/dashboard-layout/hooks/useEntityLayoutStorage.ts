@@ -1,4 +1,4 @@
-import { useTRPC } from '@/lib/trpc'
+import { useTRPCClient } from '@/lib/trpc'
 import { useUser } from '@stackframe/react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -55,7 +55,7 @@ export function useEntityLayoutStorage(
 ) {
 	const queryClient = useQueryClient()
 	const user = useUser()
-	const trpc = useTRPC()
+	const trpcClient = useTRPCClient()
 	const queryKey = ['entity-layouts', entityType, entityId]
 
 	// Fetch saved layouts for this entity
@@ -64,7 +64,7 @@ export function useEntityLayoutStorage(
 		queryFn: async () => {
 			if (!user || !entityId) return []
 
-			const response = await trpc.dashboardLayouts.list.query({
+			const response = await trpcClient.dashboardLayouts.list.query({
 				entityType,
 				entityId,
 			})
@@ -114,7 +114,7 @@ export function useEntityLayoutStorage(
 				throw new Error('Not authenticated or missing entity/org')
 			}
 
-			const response = await trpc.dashboardLayouts.create.mutate({
+			const response = await trpcClient.dashboardLayouts.create.mutate({
 				organizationId,
 				entityType,
 				entityId,
@@ -153,7 +153,7 @@ export function useEntityLayoutStorage(
 			widgetPrefsJson?: WidgetPreferences
 			timelineStateJson?: TimelineState
 		}) => {
-			const response = await trpc.dashboardLayouts.update.mutate(params)
+			const response = await trpcClient.dashboardLayouts.update.mutate(params)
 			return rowToSavedLayout(response)
 		},
 		onSuccess: updatedLayout => {
@@ -175,7 +175,7 @@ export function useEntityLayoutStorage(
 	// Delete layout mutation
 	const deleteLayoutMutation = useMutation({
 		mutationFn: async (layoutId: string) => {
-			await trpc.dashboardLayouts.remove.mutate({ layoutId })
+			await trpcClient.dashboardLayouts.remove.mutate({ layoutId })
 		},
 		onSuccess: (_data, deletedLayoutId) => {
 			// Update cache directly by removing the deleted layout
@@ -196,7 +196,7 @@ export function useEntityLayoutStorage(
 	// Set as default mutation
 	const setAsDefaultMutation = useMutation({
 		mutationFn: async (layoutId: string) => {
-			await trpc.dashboardLayouts.setDefault.mutate({
+			await trpcClient.dashboardLayouts.setDefault.mutate({
 				layoutId,
 				organizationId: organizationId!,
 			})
