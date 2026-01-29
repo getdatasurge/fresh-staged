@@ -62,6 +62,12 @@ Phases: TTN SDK Integration, Supabase Removal (7 waves), System Hardening, TTN P
 
 **Requirements:** DEPLOY-01, DEPLOY-02, DEPLOY-03, DEPLOY-04, DEPLOY-05
 
+**Plans:** 2 plans
+
+Plans:
+- [ ] 34-01-PLAN.md — Deployment state management library and orchestration entry script
+- [ ] 34-02-PLAN.md — Enhanced health wait with 3-consecutive-pass requirement
+
 **Success Criteria:**
 1. User can run deployment script that integrates with existing deploy.sh (no duplicated logic)
 2. User can see checkpoint markers created at each deployment phase (build, deploy, configure)
@@ -119,7 +125,7 @@ Phases: TTN SDK Integration, Supabase Removal (7 waves), System Hardening, TTN P
 
 | Phase | Name | Status | Plans |
 |-------|------|--------|-------|
-| 34 | Deployment Orchestration | Pending | - |
+| 34 | Deployment Orchestration | Planned | 2 |
 | 35 | Verification | Pending | - |
 | 36 | Post-Deployment Setup | Pending | - |
 | 37 | Documentation | Pending | - |
@@ -128,4 +134,4 @@ Phases: TTN SDK Integration, Supabase Removal (7 waves), System Hardening, TTN P
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-29 (v2.3 phases added)*
+*Last updated: 2026-01-29 (Phase 34 planned)*
