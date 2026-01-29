@@ -1,8 +1,8 @@
-# Roadmap: FreshTrack Pro v2.5
+# Roadmap: FreshTrack Pro v2.6
 
 ## Overview
 
-Fix the 15 pre-existing test failures in the TTN device bootstrap endpoint. These tests have been failing since before the tRPC migration and need proper error handling to return correct HTTP status codes.
+Deploy FreshTrack Pro to a self-hosted VM with full production configuration. Fresh start deployment (no data migration needed).
 
 ## Milestones
 
@@ -14,6 +14,7 @@ Fix the 15 pre-existing test failures in the TTN device bootstrap endpoint. Thes
 - ✅ **v2.3 Deployment Orchestration** - Phases 34-37 (shipped 2026-01-29)
 - ✅ **v2.4 Tech Debt Cleanup** - Phases 38-43 (shipped 2026-01-29)
 - ✅ **v2.5 TTN Test Fixes** - Phase 44 (shipped 2026-01-29)
+- 🚧 **v2.6 Production Deployment** - Phase 45 (in progress)
 
 ## Phases
 
@@ -206,6 +207,41 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 44. TTN Bootstrap Fix | v2.5 | 1/1 | Complete | 2026-01-29 |
+
+---
+
+### v2.6 Production Deployment (Current)
+
+**Milestone Goal:** Deploy FreshTrack Pro to a self-hosted Ubuntu VM
+
+---
+
+### Phase 45: Self-Hosted VM Deployment
+**Goal**: Deploy FreshTrack Pro to production on a self-hosted Ubuntu VM
+**Depends on**: v2.5 complete (all tests passing)
+**Requirements**: DEPLOY-01, DEPLOY-02, DEPLOY-03, DEPLOY-04, DEPLOY-05
+**Success Criteria** (what must be TRUE):
+  1. VM provisioned with Ubuntu 22.04/24.04 LTS, 4+ vCPU, 8+ GB RAM
+  2. Domain configured with DNS pointing to VM IP
+  3. SSL certificate obtained and auto-renewing via Let's Encrypt
+  4. All services running (backend, worker, frontend, PostgreSQL, Redis, MinIO)
+  5. External services configured (Stack Auth, Stripe webhooks, TTN webhooks)
+  6. Health checks passing, monitoring dashboard accessible
+  7. First user can sign up, create organization, and see dashboard
+**Plans**: 3 plans
+
+Plans:
+- [ ] 45-01-PLAN.md — Prerequisites checklist and validation (VM info, credentials)
+- [ ] 45-02-PLAN.md — Execute deployment to VM (run deploy-orchestrated.sh)
+- [ ] 45-03-PLAN.md — Post-deployment validation and smoke testing
+
+---
+
+## v2.6 Progress
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 45. Self-Hosted VM Deployment | v2.6 | 0/3 | Not Started | - |
 
 ---
 *Roadmap created: 2026-01-29*
