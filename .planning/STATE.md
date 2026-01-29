@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** Planning next milestone
+**Current focus:** v2.3 Deployment Orchestration — defining requirements
 
 ## Current Position
 
-Milestone: v2.2 Technical Debt & Stabilization — SHIPPED
-Phase: 33 of 33 complete
-Status: Milestone complete, ready for next milestone planning
-Last activity: 2026-01-29 — v2.2 milestone archived
+Milestone: v2.3 Deployment Orchestration
+Phase: Not started (defining requirements)
+Status: Defining requirements
+Last activity: 2026-01-29 — Milestone v2.3 started
 
-Progress: ██████████ 100% (33/33 phases across all milestones)
+Progress: ░░░░░░░░░░ 0% (0/? phases)
 
 ## Milestones Shipped
 
@@ -28,30 +28,25 @@ Progress: ██████████ 100% (33/33 phases across all milestone
 
 **Total:** 5 milestones, 33 phases, 154 plans
 
-## v2.2 Accomplishments
+## v2.3 Scope
 
-- **TTN Integration Complete** — All TTN operations now use tRPC
-- **Edge Functions Migrated** — 15 edge function calls replaced with tRPC
-- **Error Handling Integrated** — MigrationErrorBoundary in render tree
-- **tRPC Pattern Standardized** — 165+ call sites use consistent pattern
-- **Security Hardened** — Helmet headers, body limits, request timeouts
+Complete deployment orchestration from v2.1 (Phases 25-26 requirements):
+- DEPLOY-01 to DEPLOY-05: Deployment orchestration with checkpoints
+- VERIFY-01 to VERIFY-06: Multi-layer verification
+- POST-01 to POST-05: Post-deployment setup
+- DOCS-01 to DOCS-04: Documentation
+
+**20 requirements** across 4 categories
 
 ## Tech Debt Carried Forward
 
 - 53 test failures need mock updates (38 frontend, 15 backend pre-existing)
 - supabase-placeholder.ts remains (intentional graceful degradation)
 - SensorSimulatorPanel edge function call kept (admin testing tool)
-- v2.1 Phases 25-26 deployment orchestration not completed
-
-## Next Steps
-
-1. Run `/gsd:new-milestone` to start next milestone planning
-2. Consider completing v2.1 deployment orchestration (Phases 25-26)
-3. Or plan new product capabilities
 
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: v2.2 milestone archived
+Stopped at: v2.3 milestone started
 Resume file: None
-Next action: `/gsd:new-milestone` to plan next version
+Next action: Complete requirements definition and roadmap creation

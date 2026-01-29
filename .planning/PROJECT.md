@@ -138,13 +138,37 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 
 ### Active
 
-<!-- Next milestone features - to be planned -->
+<!-- Current milestone scope -->
 
-*Awaiting next milestone planning. Potential areas:*
-- Complete v2.1 deployment orchestration (Phases 25-26)
-- AWS ECS/Fargate deployment option (ENT-01)
-- Advanced billing analytics and reporting
-- Mobile PWA improvements
+**v2.3 Deployment Orchestration**
+
+Deployment Orchestration:
+- [ ] DEPLOY-01: Script integrates with existing deploy.sh (no code duplication)
+- [ ] DEPLOY-02: Script creates checkpoint markers at each deployment phase
+- [ ] DEPLOY-03: Script enables resume from failure point using state tracking
+- [ ] DEPLOY-04: Script calls Docker Compose with production overlay configuration
+- [ ] DEPLOY-05: Script waits for all services to reach healthy state before proceeding
+
+Verification:
+- [ ] VERIFY-01: Script validates all service health endpoints return 200 OK
+- [ ] VERIFY-02: Script validates SSL certificate is valid and trusted
+- [ ] VERIFY-03: Script validates dashboard accessible via HTTPS in browser
+- [ ] VERIFY-04: Script runs integrated E2E test (sensor → storage → alert pipeline)
+- [ ] VERIFY-05: Script validates monitoring dashboards (Prometheus/Grafana) accessible
+- [ ] VERIFY-06: Script waits for 3 consecutive health check passes (not just 1)
+
+Post-Deployment:
+- [ ] POST-01: Script displays complete URL summary (dashboard, monitoring, API)
+- [ ] POST-02: Script displays credential summary securely (no passwords in plaintext logs)
+- [ ] POST-03: Script creates sample organization and site with demo data
+- [ ] POST-04: Script configures Grafana dashboards for sensor metrics
+- [ ] POST-05: Script displays next steps guide for first admin user setup
+
+Documentation:
+- [ ] DOCS-01: Prerequisites guide documents VM specs, DNS setup, firewall requirements
+- [ ] DOCS-02: Step-by-step walkthrough documents deployment process with examples
+- [ ] DOCS-03: Troubleshooting playbook documents common failures and fixes
+- [ ] DOCS-04: Post-deployment operations guide documents updates, backups, scaling
 
 ### Out of Scope
 
@@ -157,6 +181,16 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Self-hosted Stack Auth — Hosted service reduces complexity
 - Blue-green/canary deployments — Over-engineering for current scale
 - Data migration from Supabase — No access to production Supabase data
+
+## Current Milestone: v2.3 Deployment Orchestration
+
+**Goal:** Complete one-script deployment automation with orchestration, verification, post-deployment setup, and documentation — finishing the work started in v2.1.
+
+**Target features:**
+- Deployment orchestration with checkpoint-based resume
+- Multi-layer verification (health, SSL, E2E)
+- Post-deployment setup (sample data, Grafana dashboards)
+- Comprehensive documentation (prerequisites, walkthrough, troubleshooting, operations)
 
 ## Current State (v2.2 Shipped)
 
@@ -218,4 +252,4 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 | supabase-placeholder with SupabaseMigrationError | Graceful degradation during migration | Good — user-friendly error messages |
 
 ---
-*Last updated: 2026-01-29 after v2.2 milestone*
+*Last updated: 2026-01-29 after v2.3 milestone start*
