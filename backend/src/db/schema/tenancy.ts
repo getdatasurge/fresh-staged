@@ -185,6 +185,30 @@ export const smsConfigs = pgTable(
 	],
 )
 
+// Notification Settings - organization-level email notification configuration
+export const notificationSettings = pgTable(
+	'notification_settings',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		organizationId: uuid('organization_id')
+			.references(() => organizations.id, { onDelete: 'cascade' })
+			.notNull(),
+		emailEnabled: boolean('email_enabled').notNull().default(true),
+		recipients: text('recipients'), // JSON array of email strings
+		notifyTempExcursion: boolean('notify_temp_excursion').notNull().default(true),
+		notifyAlarmActive: boolean('notify_alarm_active').notNull().default(true),
+		notifyManualRequired: boolean('notify_manual_required').notNull().default(true),
+		notifyOffline: boolean('notify_offline').notNull().default(false),
+		notifyLowBattery: boolean('notify_low_battery').notNull().default(false),
+		notifyWarnings: boolean('notify_warnings').notNull().default(false),
+		...timestamps,
+	},
+	table => [
+		index('notification_settings_org_idx').on(table.organizationId),
+		uniqueIndex('notification_settings_org_unique_idx').on(table.organizationId),
+	],
+)
+
 // Type exports
 export type Organization = typeof organizations.$inferSelect
 export type InsertOrganization = typeof organizations.$inferInsert
@@ -194,3 +218,5 @@ export type TtnConnection = typeof ttnConnections.$inferSelect
 export type InsertTtnConnection = typeof ttnConnections.$inferInsert
 export type SmsConfig = typeof smsConfigs.$inferSelect
 export type InsertSmsConfig = typeof smsConfigs.$inferInsert
+export type NotificationSettings = typeof notificationSettings.$inferSelect
+export type InsertNotificationSettings = typeof notificationSettings.$inferInsert

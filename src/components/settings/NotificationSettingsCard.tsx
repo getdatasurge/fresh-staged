@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useTRPC, useTRPCClient } from "@/lib/trpc";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,14 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Save, 
-  Loader2, 
-  Mail, 
-  Thermometer, 
-  AlertTriangle, 
-  Clock, 
-  Wifi, 
+import {
+  Save,
+  Loader2,
+  Mail,
+  Thermometer,
+  AlertTriangle,
+  Clock,
+  Wifi,
   Battery,
   X
 } from "lucide-react";
@@ -49,98 +50,67 @@ const defaultSettings: NotificationSettings = {
 
 export function NotificationSettingsCard({ organizationId, canEdit }: NotificationSettingsCardProps) {
   const [settings, setSettings] = useState<NotificationSettings>(defaultSettings);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   const [newRecipient, setNewRecipient] = useState("");
 
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+  const client = useTRPCClient();
+
+  const settingsQueryOptions = trpc.notificationPolicies.getNotificationSettings.queryOptions({
+    organizationId: organizationId!,
+  });
+
+  const { data: loadedSettings, isLoading } = useQuery({
+    ...settingsQueryOptions,
+    enabled: !!organizationId,
+    staleTime: 60_000,
+  });
+
+  // Sync to local state when loaded
   useEffect(() => {
-    loadSettings();
-  }, [organizationId]);
-
-  const loadSettings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("notification_settings")
-        .select("*")
-        .eq("organization_id", organizationId)
-        .maybeSingle();
-
-      if (error && error.code !== "PGRST116") {
-        throw error;
-      }
-
-      if (data) {
-        setSettings({
-          id: data.id,
-          email_enabled: data.email_enabled,
-          recipients: data.recipients || [],
-          notify_temp_excursion: data.notify_temp_excursion,
-          notify_alarm_active: data.notify_alarm_active,
-          notify_manual_required: data.notify_manual_required,
-          notify_offline: data.notify_offline,
-          notify_low_battery: data.notify_low_battery,
-          notify_warnings: data.notify_warnings,
-        });
-      }
-    } catch (error) {
-      console.error("Error loading notification settings:", error);
-      toast.error("Failed to load notification settings");
-    } finally {
-      setIsLoading(false);
+    if (loadedSettings) {
+      setSettings({
+        id: loadedSettings.id,
+        email_enabled: loadedSettings.emailEnabled,
+        recipients: loadedSettings.recipients,
+        notify_temp_excursion: loadedSettings.notifyTempExcursion,
+        notify_alarm_active: loadedSettings.notifyAlarmActive,
+        notify_manual_required: loadedSettings.notifyManualRequired,
+        notify_offline: loadedSettings.notifyOffline,
+        notify_low_battery: loadedSettings.notifyLowBattery,
+        notify_warnings: loadedSettings.notifyWarnings,
+      });
     }
-  };
+  }, [loadedSettings]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (data: typeof settings) => {
+      return client.notificationPolicies.upsertNotificationSettings.mutate({
+        organizationId: organizationId!,
+        data: {
+          emailEnabled: data.email_enabled,
+          recipients: data.recipients,
+          notifyTempExcursion: data.notify_temp_excursion,
+          notifyAlarmActive: data.notify_alarm_active,
+          notifyManualRequired: data.notify_manual_required,
+          notifyOffline: data.notify_offline,
+          notifyLowBattery: data.notify_low_battery,
+          notifyWarnings: data.notify_warnings,
+        },
+      });
+    },
+    onSuccess: (result) => {
+      setSettings(prev => ({ ...prev, id: result.id }));
+      queryClient.invalidateQueries({ queryKey: settingsQueryOptions.queryKey });
+      toast.success("Notification settings saved");
+    },
+    onError: (error) => {
+      toast.error(`Failed to save: ${error.message}`);
+    },
+  });
 
   const saveSettings = async () => {
-    setIsSaving(true);
-    try {
-      if (settings.id) {
-        // Update existing
-        const { error } = await supabase
-          .from("notification_settings")
-          .update({
-            email_enabled: settings.email_enabled,
-            recipients: settings.recipients,
-            notify_temp_excursion: settings.notify_temp_excursion,
-            notify_alarm_active: settings.notify_alarm_active,
-            notify_manual_required: settings.notify_manual_required,
-            notify_offline: settings.notify_offline,
-            notify_low_battery: settings.notify_low_battery,
-            notify_warnings: settings.notify_warnings,
-          })
-          .eq("id", settings.id);
-
-        if (error) throw error;
-      } else {
-        // Insert new
-        const { data, error } = await supabase
-          .from("notification_settings")
-          .insert({
-            organization_id: organizationId,
-            email_enabled: settings.email_enabled,
-            recipients: settings.recipients,
-            notify_temp_excursion: settings.notify_temp_excursion,
-            notify_alarm_active: settings.notify_alarm_active,
-            notify_manual_required: settings.notify_manual_required,
-            notify_offline: settings.notify_offline,
-            notify_low_battery: settings.notify_low_battery,
-            notify_warnings: settings.notify_warnings,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        if (data) {
-          setSettings(prev => ({ ...prev, id: data.id }));
-        }
-      }
-
-      toast.success("Notification settings saved");
-    } catch (error) {
-      console.error("Error saving notification settings:", error);
-      toast.error("Failed to save notification settings");
-    } finally {
-      setIsSaving(false);
-    }
+    saveMutation.mutate(settings);
   };
 
   const addRecipient = () => {
@@ -214,8 +184,8 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
               </p>
             </div>
           </div>
-          <Switch 
-            checked={settings.email_enabled} 
+          <Switch
+            checked={settings.email_enabled}
             onCheckedChange={(checked) => setSettings(prev => ({ ...prev, email_enabled: checked }))}
             disabled={!canEdit}
           />
@@ -234,8 +204,8 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
               disabled={!canEdit || !settings.email_enabled}
               className="flex-1"
             />
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={addRecipient}
               disabled={!canEdit || !settings.email_enabled || !newRecipient.trim()}
             >
@@ -248,7 +218,7 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
                 <Badge key={email} variant="secondary" className="pl-2 pr-1 py-1">
                   {email}
                   {canEdit && (
-                    <button 
+                    <button
                       onClick={() => removeRecipient(email)}
                       className="ml-1 hover:bg-muted rounded p-0.5"
                     >
@@ -277,8 +247,8 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
                   <p className="text-xs text-muted-foreground">When temperature goes out of range</p>
                 </div>
               </div>
-              <Switch 
-                checked={settings.notify_temp_excursion} 
+              <Switch
+                checked={settings.notify_temp_excursion}
                 onCheckedChange={(checked) => setSettings(prev => ({ ...prev, notify_temp_excursion: checked }))}
                 disabled={!canEdit || !settings.email_enabled}
               />
@@ -292,8 +262,8 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
                   <p className="text-xs text-muted-foreground">Confirmed temperature violations</p>
                 </div>
               </div>
-              <Switch 
-                checked={settings.notify_alarm_active} 
+              <Switch
+                checked={settings.notify_alarm_active}
                 onCheckedChange={(checked) => setSettings(prev => ({ ...prev, notify_alarm_active: checked }))}
                 disabled={!canEdit || !settings.email_enabled}
               />
@@ -307,8 +277,8 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
                   <p className="text-xs text-muted-foreground">When a unit needs a manual temperature log</p>
                 </div>
               </div>
-              <Switch 
-                checked={settings.notify_manual_required} 
+              <Switch
+                checked={settings.notify_manual_required}
                 onCheckedChange={(checked) => setSettings(prev => ({ ...prev, notify_manual_required: checked }))}
                 disabled={!canEdit || !settings.email_enabled}
               />
@@ -322,8 +292,8 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
                   <p className="text-xs text-muted-foreground">When a sensor stops sending data</p>
                 </div>
               </div>
-              <Switch 
-                checked={settings.notify_offline} 
+              <Switch
+                checked={settings.notify_offline}
                 onCheckedChange={(checked) => setSettings(prev => ({ ...prev, notify_offline: checked }))}
                 disabled={!canEdit || !settings.email_enabled}
               />
@@ -337,8 +307,8 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
                   <p className="text-xs text-muted-foreground">When sensor battery is running low</p>
                 </div>
               </div>
-              <Switch 
-                checked={settings.notify_low_battery} 
+              <Switch
+                checked={settings.notify_low_battery}
                 onCheckedChange={(checked) => setSettings(prev => ({ ...prev, notify_low_battery: checked }))}
                 disabled={!canEdit || !settings.email_enabled}
               />
@@ -359,8 +329,8 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
               </p>
             </div>
           </div>
-          <Switch 
-            checked={settings.notify_warnings} 
+          <Switch
+            checked={settings.notify_warnings}
             onCheckedChange={(checked) => setSettings(prev => ({ ...prev, notify_warnings: checked }))}
             disabled={!canEdit || !settings.email_enabled}
           />
@@ -369,8 +339,8 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
         {/* Save Button */}
         {canEdit && (
           <div className="flex justify-end pt-4">
-            <Button onClick={saveSettings} disabled={isSaving}>
-              {isSaving ? (
+            <Button onClick={saveSettings} disabled={saveMutation.isPending}>
+              {saveMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <Save className="w-4 h-4 mr-2" />

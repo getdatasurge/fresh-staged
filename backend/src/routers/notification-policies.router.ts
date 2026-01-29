@@ -13,7 +13,10 @@
  */
 
 import { TRPCError } from '@trpc/server'
+import { eq } from 'drizzle-orm'
 import { z } from 'zod'
+import { db } from '../db/client.js'
+import { notificationSettings } from '../db/schema/tenancy.js'
 import * as notificationPolicyService from '../services/notification-policy.service.js'
 import { getTelnyxService } from '../services/telnyx.service.js'
 import { router } from '../trpc/index.js'
@@ -354,6 +357,137 @@ export const notificationPoliciesRouter = router({
 			)
 
 			return { success: deleted }
+		}),
+
+	/**
+	 * Get organization notification settings
+	 * Used by NotificationSettingsCard component
+	 */
+	getNotificationSettings: orgProcedure
+		.input(z.object({ organizationId: z.string().uuid() }))
+		.output(
+			z
+				.object({
+					id: z.string().uuid(),
+					emailEnabled: z.boolean(),
+					recipients: z.array(z.string()),
+					notifyTempExcursion: z.boolean(),
+					notifyAlarmActive: z.boolean(),
+					notifyManualRequired: z.boolean(),
+					notifyOffline: z.boolean(),
+					notifyLowBattery: z.boolean(),
+					notifyWarnings: z.boolean(),
+				})
+				.nullable(),
+		)
+		.query(async ({ ctx }) => {
+			const settings = await db.query.notificationSettings.findFirst({
+				where: eq(notificationSettings.organizationId, ctx.user.organizationId),
+			})
+
+			if (!settings) return null
+
+			// Parse recipients from JSON string
+			let recipients: string[] = []
+			if (settings.recipients) {
+				try {
+					recipients = JSON.parse(settings.recipients)
+				} catch {
+					recipients = []
+				}
+			}
+
+			return {
+				id: settings.id,
+				emailEnabled: settings.emailEnabled,
+				recipients,
+				notifyTempExcursion: settings.notifyTempExcursion,
+				notifyAlarmActive: settings.notifyAlarmActive,
+				notifyManualRequired: settings.notifyManualRequired,
+				notifyOffline: settings.notifyOffline,
+				notifyLowBattery: settings.notifyLowBattery,
+				notifyWarnings: settings.notifyWarnings,
+			}
+		}),
+
+	/**
+	 * Upsert organization notification settings
+	 * Used by NotificationSettingsCard component
+	 *
+	 * Requires admin or owner role.
+	 */
+	upsertNotificationSettings: orgProcedure
+		.input(
+			z.object({
+				organizationId: z.string().uuid(),
+				data: z.object({
+					emailEnabled: z.boolean(),
+					recipients: z.array(z.string()),
+					notifyTempExcursion: z.boolean(),
+					notifyAlarmActive: z.boolean(),
+					notifyManualRequired: z.boolean(),
+					notifyOffline: z.boolean(),
+					notifyLowBattery: z.boolean(),
+					notifyWarnings: z.boolean(),
+				}),
+			}),
+		)
+		.output(
+			z.object({
+				id: z.string().uuid(),
+				emailEnabled: z.boolean(),
+				recipients: z.array(z.string()),
+				notifyTempExcursion: z.boolean(),
+				notifyAlarmActive: z.boolean(),
+				notifyManualRequired: z.boolean(),
+				notifyOffline: z.boolean(),
+				notifyLowBattery: z.boolean(),
+				notifyWarnings: z.boolean(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			// Role check - admin and owner can update settings
+			if (!['admin', 'owner'].includes(ctx.user.role)) {
+				throw new TRPCError({
+					code: 'FORBIDDEN',
+					message: 'Only administrators can update notification settings',
+				})
+			}
+
+			const existing = await db.query.notificationSettings.findFirst({
+				where: eq(notificationSettings.organizationId, ctx.user.organizationId),
+			})
+
+			const settingsData = {
+				emailEnabled: input.data.emailEnabled,
+				recipients: JSON.stringify(input.data.recipients),
+				notifyTempExcursion: input.data.notifyTempExcursion,
+				notifyAlarmActive: input.data.notifyAlarmActive,
+				notifyManualRequired: input.data.notifyManualRequired,
+				notifyOffline: input.data.notifyOffline,
+				notifyLowBattery: input.data.notifyLowBattery,
+				notifyWarnings: input.data.notifyWarnings,
+			}
+
+			if (existing) {
+				// Update
+				const [updated] = await db
+					.update(notificationSettings)
+					.set(settingsData)
+					.where(eq(notificationSettings.id, existing.id))
+					.returning()
+				return { ...input.data, id: updated.id }
+			} else {
+				// Insert
+				const [created] = await db
+					.insert(notificationSettings)
+					.values({
+						...settingsData,
+						organizationId: ctx.user.organizationId,
+					})
+					.returning()
+				return { ...input.data, id: created.id }
+			}
 		}),
 })
 
