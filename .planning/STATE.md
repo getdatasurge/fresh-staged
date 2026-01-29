@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.3 Deployment Orchestration — Phase 34 ready to plan
+**Current focus:** v2.3 Deployment Orchestration — Phase 34 in progress
 
 ## Current Position
 
 Milestone: v2.3 Deployment Orchestration
 Phase: 34 - Deployment Orchestration
-Plan: Not started
-Status: Ready for planning
-Last activity: 2026-01-29 — Roadmap created for v2.3
+Plan: 01 of 2 complete
+Status: In progress
+Last activity: 2026-01-29 — Completed 34-01-PLAN.md (deployment orchestration foundation)
 
-Progress: [==========] 0% (0/4 phases)
+Progress: [==--------] 25% (1/4 phases, plan 01/02 in phase 34)
 
 ## v2.3 Phase Overview
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 34 | Deployment Orchestration | DEPLOY-01 to DEPLOY-05 | Ready |
+| 34 | Deployment Orchestration | DEPLOY-01 to DEPLOY-05 | In progress (1/2 plans) |
 | 35 | Verification | VERIFY-01 to VERIFY-06 | Blocked by 34 |
 | 36 | Post-Deployment Setup | POST-01 to POST-05 | Blocked by 35 |
 | 37 | Documentation | DOCS-01 to DOCS-04 | Blocked by 36 |
@@ -38,6 +38,14 @@ Progress: [==========] 0% (0/4 phases)
 
 **Total:** 5 milestones, 33 phases, 154 plans
 
+## Accumulated Decisions
+
+| Phase | Decision | Rationale |
+|-------|----------|-----------|
+| 34-01 | Extend preflight-lib.sh checkpoint system | Reuses proven checkpoint_done/checkpoint_set/run_step functions |
+| 34-01 | Use 'deploy-' prefix for checkpoint names | Avoid conflicts with other checkpoint usages |
+| 34-01 | Store orchestrator script dir separately | Prevents SCRIPT_DIR overwrite conflicts when sourcing libraries |
+
 ## Tech Debt Carried Forward
 
 - 53 test failures need mock updates (38 frontend, 15 backend pre-existing)
@@ -52,15 +60,18 @@ Progress: [==========] 0% (0/4 phases)
 - Phase 24: Interactive configuration (prompts, .env generation, secrets)
 - Existing scripts: deploy.sh, rollback.sh, health-check.sh from v1.1
 
-**What Phase 34 must build:**
-- Checkpoint-based state tracking for resume on failure
-- Integration wrapper that calls deploy.sh (not duplicates it)
-- Docker Compose orchestration with production overlay
-- Health-wait loop before proceeding
+**What Phase 34 has built (Plan 01):**
+- scripts/lib/deploy-lib.sh - Deployment state management with checkpoint tracking
+- scripts/deploy-orchestrated.sh - Main orchestration script with resume capability
+- 10-phase deployment workflow matching deploy.sh sequence
+
+**What Phase 34 Plan 02 will build:**
+- Enhanced health wait with 3-consecutive-pass logic
+- Health check functions for reliable service readiness detection
 
 ## Session Continuity
 
-Last session: 2026-01-29
-Stopped at: Roadmap creation complete
+Last session: 2026-01-29 10:08 UTC
+Stopped at: Completed 34-01-PLAN.md
 Resume file: None
-Next action: Run `/gsd:plan-phase 34` to create deployment orchestration plan
+Next action: Execute 34-02-PLAN.md (health wait enhancement)
