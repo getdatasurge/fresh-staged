@@ -1,13 +1,11 @@
 /**
- * Migration Error Boundary
+ * Error Boundary
  *
- * Catches render-time errors from Supabase placeholder calls and displays
- * a user-friendly fallback. Non-migration errors are re-thrown to parent
- * error boundaries.
+ * Catches render-time errors and displays a user-friendly fallback.
+ * Simplified from migration-specific handling to generic error boundary.
  */
 
 import React, { Component, ReactNode } from "react";
-import { isSupabaseMigrationError } from "@/lib/supabase-placeholder";
 import { MigrationErrorFallback } from "./MigrationErrorFallback";
 
 interface MigrationErrorBoundaryProps {
@@ -18,7 +16,6 @@ interface MigrationErrorBoundaryProps {
 interface MigrationErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
-  isMigrationError: boolean;
 }
 
 export class MigrationErrorBoundary extends Component<
@@ -27,31 +24,29 @@ export class MigrationErrorBoundary extends Component<
 > {
   constructor(props: MigrationErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null, isMigrationError: false };
+    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error: Error): MigrationErrorBoundaryState {
     return {
       hasError: true,
       error,
-      isMigrationError: isSupabaseMigrationError(error),
     };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("[MigrationErrorBoundary]", {
+    console.error("[ErrorBoundary]", {
       error: error.message,
-      isMigration: isSupabaseMigrationError(error),
       componentStack: errorInfo.componentStack,
     });
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: null, isMigrationError: false });
+    this.setState({ hasError: false, error: null });
   };
 
   render() {
-    if (this.state.hasError && this.state.isMigrationError) {
+    if (this.state.hasError) {
       return (
         this.props.fallback || (
           <MigrationErrorFallback
@@ -60,11 +55,6 @@ export class MigrationErrorBoundary extends Component<
           />
         )
       );
-    }
-
-    // Re-throw non-migration errors to parent boundaries
-    if (this.state.hasError) {
-      throw this.state.error;
     }
 
     return this.props.children;

@@ -3,13 +3,9 @@
  *
  * Provides user-friendly error messages for permission-related failures,
  * converting cryptic RLS errors into actionable feedback.
- *
- * Also handles SupabaseMigrationError to show user-friendly messages
- * for features temporarily unavailable during migration.
  */
 
 import { toast } from 'sonner';
-import { isSupabaseMigrationError, SupabaseMigrationError } from '@/lib/supabase-placeholder';
 
 // Supabase/Postgres error codes related to permissions
 const RLS_ERROR_CODES = [
@@ -26,23 +22,16 @@ interface PostgrestError {
 }
 
 /**
- * Check if an error is a Supabase migration error
+ * Check if an error is a migration error (deprecated - always returns false)
  */
-export function isMigrationError(error: unknown): boolean {
-  return isSupabaseMigrationError(error);
+export function isMigrationError(_error: unknown): boolean {
+  return false; // Migration complete
 }
 
 /**
- * Get user-friendly message for migration errors
+ * Get user-friendly message for migration errors (deprecated)
  */
-export function getMigrationErrorMessage(error: unknown): string {
-  if (isSupabaseMigrationError(error)) {
-    const migrationError = error as SupabaseMigrationError;
-    if (migrationError.featureName) {
-      return `The "${migrationError.featureName}" feature is temporarily unavailable while being migrated.`;
-    }
-    return 'This feature is temporarily unavailable while being migrated to the new backend.';
-  }
+export function getMigrationErrorMessage(_error: unknown): string {
   return 'An unexpected error occurred.';
 }
 
@@ -51,14 +40,14 @@ export function getMigrationErrorMessage(error: unknown): string {
  */
 export function isPermissionError(error: unknown): boolean {
   if (!error || typeof error !== 'object') return false;
-  
+
   const pgError = error as PostgrestError;
-  
+
   // Check error code
   if (pgError.code && RLS_ERROR_CODES.includes(pgError.code)) {
     return true;
   }
-  
+
   // Check error message patterns
   const message = pgError.message?.toLowerCase() || '';
   return (
@@ -77,24 +66,23 @@ export function isPermissionError(error: unknown): boolean {
  */
 export function getPermissionErrorMessage(error: unknown, action?: string): string {
   const actionText = action ? ` to ${action}` : '';
-  
+
   if (isPermissionError(error)) {
     return `You don't have permission${actionText}. This action requires a higher role.`;
   }
-  
+
   // Fallback for other errors
   const pgError = error as PostgrestError;
   if (pgError.message) {
     return pgError.message;
   }
-  
+
   return `An error occurred${actionText}. Please try again.`;
 }
 
 /**
  * Handle an error with appropriate toast notification
- * Shows migration-specific message for SupabaseMigrationError,
- * permission-specific message for RLS errors,
+ * Shows permission-specific message for RLS errors,
  * or a generic message for other errors.
  * @param error - The error object
  * @param action - Optional action description for context
@@ -106,19 +94,6 @@ export function handleError(
   fallbackMessage?: string
 ): void {
   console.error('Operation failed:', error);
-
-  // Check for migration error FIRST
-  if (isSupabaseMigrationError(error)) {
-    const migrationError = error as SupabaseMigrationError;
-    const featureMsg = migrationError.featureName
-      ? ` (${migrationError.featureName})`
-      : '';
-    toast.error(`This feature is temporarily unavailable${featureMsg}`, {
-      description: 'It is being migrated to the new backend. Please try again later.',
-      duration: 5000,
-    });
-    return;
-  }
 
   if (isPermissionError(error)) {
     toast.error(getPermissionErrorMessage(error, action));
@@ -145,7 +120,7 @@ export function handleMutationResult(
     handleError(result.error, action);
     return false;
   }
-  
+
   toast.success(successMessage);
   return true;
 }
