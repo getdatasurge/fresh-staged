@@ -192,33 +192,13 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
         return;
       }
 
-      // If status is failed, use manage-ttn-settings to reset state first
-      // Otherwise call ttn-provision-org directly
-      const isFailed = credentials?.provisioning_status === 'failed';
-      
-      const { data, error } = isFailed 
-        ? await supabase.functions.invoke("manage-ttn-settings", {
-            body: { 
-              action: "retry_provisioning",
-              organization_id: organizationId,
-            },
-          })
-        : await supabase.functions.invoke("ttn-provision-org", {
-            body: { 
-              action: "retry",
-              organization_id: organizationId,
-            },
-          });
+      const data = await provisionMutation.mutateAsync({
+        organizationId,
+        action: 'retry'
+      });
 
-      // Handle transport errors
-      if (error) {
-        console.error("Transport error:", error);
-        toast.error(error.message || "Failed to connect");
-        return;
-      }
-
-      // Handle structured responses (HTTP 200 with success:false)
-      if (data && !data.success) {
+      // Handle structured responses (success:false)
+      if (!data.success) {
         if (data.use_start_fresh) {
           toast.error("Cannot retry - use Start Fresh", {
             description: data.message || "Application is owned by different account",
@@ -234,9 +214,10 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
 
       toast.success("Provisioning retry initiated");
       setTimeout(fetchCredentials, 2000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to retry provisioning:", err);
-      toast.error(err.message || "Failed to retry provisioning");
+      const message = err instanceof Error ? err.message : "Failed to retry provisioning";
+      toast.error(message);
     } finally {
       setIsRetrying(false);
     }
@@ -252,23 +233,13 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke("ttn-provision-org", {
-        body: { 
-          action: "start_fresh",
-          organization_id: organizationId,
-          ttn_region: "nam1", // NAM1 ONLY - hardcoded cluster
-        },
+      const data = await startFreshMutation.mutateAsync({
+        organizationId,
+        region: "nam1", // NAM1 ONLY - hardcoded cluster
       });
 
-      // Handle transport errors
-      if (error) {
-        console.error("Transport error:", error);
-        toast.error(error.message || "Failed to connect");
-        return;
-      }
-
       // Handle structured responses
-      if (data && !data.success) {
+      if (!data.success) {
         toast.error(data.error || "Start Fresh failed", {
           description: data.message,
         });
@@ -280,9 +251,10 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
         description: "Provisioned on NAM1 cluster successfully",
       });
       setTimeout(fetchCredentials, 2000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to start fresh:", err);
-      toast.error(err.message || "Failed to start fresh");
+      const message = err instanceof Error ? err.message : "Failed to start fresh";
+      toast.error(message);
     } finally {
       setIsStartingFresh(false);
     }
@@ -298,21 +270,9 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke("ttn-provision-org", {
-        body: { 
-          action: "deep_clean",
-          organization_id: organizationId,
-          ttn_region: "nam1", // NAM1 ONLY - hardcoded cluster
-        },
-      });
+      const data = await deepCleanMutation.mutateAsync({ organizationId });
 
-      if (error) {
-        console.error("Transport error:", error);
-        toast.error(error.message || "Failed to connect");
-        return;
-      }
-
-      if (data && !data.success) {
+      if (!data.success) {
         toast.error(data.error || "Deep clean failed", {
           description: data.message,
         });
@@ -323,14 +283,15 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
       toast.success("Deep clean completed", {
         description: `Deleted ${data.deleted_devices || 0} devices. ${data.deleted_org ? 'Organization deleted.' : ''} Ready to provision on NAM1.`,
       });
-      
+
       // Close dialog and refresh
       setShowDeepCleanDialog(false);
       setDeepCleanConfirmChecked(false);
       setTimeout(fetchCredentials, 2000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to deep clean:", err);
-      toast.error(err.message || "Failed to deep clean");
+      const message = err instanceof Error ? err.message : "Failed to deep clean";
+      toast.error(message);
     } finally {
       setIsDeepCleaning(false);
     }
@@ -355,21 +316,14 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
     if (!organizationId) return;
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("ttn-provision-org", {
-        body: { 
-          action: "status",
-          organization_id: organizationId,
-        },
-      });
-
-      if (error) throw error;
-      
+      await getStatusQuery.refetch();
       // Refresh full credentials after status check
       await fetchCredentials();
       toast.success("Status refreshed");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to check status:", err);
-      toast.error(err.message || "Failed to check status");
+      const message = err instanceof Error ? err.message : "Failed to check status";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
