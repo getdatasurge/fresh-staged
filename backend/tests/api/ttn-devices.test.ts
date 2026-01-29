@@ -35,6 +35,16 @@ vi.mock('../../src/services/ttn-device.service.js', () => ({
   },
 }));
 
+// Mock subscription middleware (no-op for unit tests)
+vi.mock('../../src/middleware/subscription.js', () => ({
+  requireSensorCapacity: vi.fn((_req, _reply, done) => {
+    if (typeof done === 'function') done();
+  }),
+  requireActiveSubscription: vi.fn((_req, _reply, done) => {
+    if (typeof done === 'function') done();
+  }),
+}));
+
 import { verifyAccessToken } from '../../src/utils/jwt.js';
 import { getUserRoleInOrg, getOrCreateProfile } from '../../src/services/user.service.js';
 import * as ttnDeviceService from '../../src/services/ttn-device.service.js';
