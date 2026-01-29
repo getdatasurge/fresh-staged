@@ -17,7 +17,7 @@
  */
 
 import { TRPCError } from '@trpc/server'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db/client.js'
 import { organizations, ttnConnections } from '../db/schema/tenancy.js'
@@ -528,5 +528,66 @@ export const ttnSettingsRouter = router({
 			)
 
 			return result
+		}),
+
+	/**
+	 * List TTN provisioning logs
+	 * Returns recent provisioning activity for the organization
+	 */
+	listProvisioningLogs: orgProcedure
+		.input(z.object({
+			organizationId: z.string().uuid(),
+			limit: z.number().int().min(1).max(100).optional().default(50),
+		}))
+		.output(z.array(z.object({
+			id: z.string().uuid(),
+			createdAt: z.date(),
+			step: z.string(),
+			status: z.string(),
+			message: z.string().nullable(),
+			payload: z.record(z.unknown()).nullable(),
+			durationMs: z.number().nullable(),
+			requestId: z.string().nullable(),
+			ttnHttpStatus: z.number().nullable(),
+			ttnResponseBody: z.string().nullable(),
+			errorCategory: z.string().nullable(),
+			ttnEndpoint: z.string().nullable(),
+		})))
+		.query(async ({ ctx, input }) => {
+			// Query ttn_provisioning_logs table directly via raw SQL
+			const logs = await db.execute(sql`
+				SELECT
+					id,
+					created_at,
+					step,
+					status,
+					message,
+					payload,
+					duration_ms,
+					request_id,
+					ttn_http_status,
+					ttn_response_body,
+					error_category,
+					ttn_endpoint
+				FROM ttn_provisioning_logs
+				WHERE organization_id = ${ctx.user.organizationId}
+				ORDER BY created_at DESC
+				LIMIT ${input.limit}
+			`)
+
+			return logs.rows.map((log: any) => ({
+				id: log.id,
+				createdAt: new Date(log.created_at),
+				step: log.step,
+				status: log.status,
+				message: log.message,
+				payload: log.payload,
+				durationMs: log.duration_ms ? Number(log.duration_ms) : null,
+				requestId: log.request_id,
+				ttnHttpStatus: log.ttn_http_status ? Number(log.ttn_http_status) : null,
+				ttnResponseBody: log.ttn_response_body,
+				errorCategory: log.error_category,
+				ttnEndpoint: log.ttn_endpoint,
+			}))
 		}),
 })

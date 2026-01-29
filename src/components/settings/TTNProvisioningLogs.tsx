@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabase-placeholder";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,34 +55,34 @@ const statusConfig: Record<string, { icon: React.ElementType; color: string; lab
 };
 
 export function TTNProvisioningLogs({ organizationId }: TTNProvisioningLogsProps) {
-  const [logs, setLogs] = useState<ProvisioningLog[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set());
+  const trpc = useTRPC();
 
-  const fetchLogs = useCallback(async () => {
-    if (!organizationId) return;
+  const queryOptions = trpc.ttnSettings.listProvisioningLogs.queryOptions({
+    organizationId: organizationId!,
+    limit: 50,
+  });
 
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("ttn_provisioning_logs")
-        .select("*")
-        .eq("organization_id", organizationId)
-        .order("created_at", { ascending: false })
-        .limit(50);
+  const { data: trpcLogs, isLoading, refetch } = useQuery({
+    ...queryOptions,
+    enabled: !!organizationId,
+  });
 
-      if (error) throw error;
-      setLogs((data as ProvisioningLog[]) || []);
-    } catch (err) {
-      console.error("Failed to fetch provisioning logs:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [organizationId]);
-
-  useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
+  // Transform tRPC response to match component's expected snake_case format
+  const logs: ProvisioningLog[] = (trpcLogs ?? []).map(log => ({
+    id: log.id,
+    created_at: log.createdAt.toISOString(),
+    step: log.step,
+    status: log.status,
+    message: log.message,
+    payload: log.payload as Record<string, unknown> | null,
+    duration_ms: log.durationMs,
+    request_id: log.requestId,
+    ttn_http_status: log.ttnHttpStatus,
+    ttn_response_body: log.ttnResponseBody,
+    error_category: log.errorCategory,
+    ttn_endpoint: log.ttnEndpoint,
+  }));
 
   const toggleExpanded = (logId: string) => {
     setExpandedLogs(prev => {
@@ -106,7 +107,7 @@ export function TTNProvisioningLogs({ organizationId }: TTNProvisioningLogsProps
           <CardTitle className="text-base">Provisioning Logs</CardTitle>
           <CardDescription>Recent TTN provisioning activity</CardDescription>
         </div>
-        <Button variant="ghost" size="sm" onClick={fetchLogs} disabled={isLoading}>
+        <Button variant="ghost" size="sm" onClick={() => refetch()} disabled={isLoading}>
           <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
         </Button>
       </CardHeader>
