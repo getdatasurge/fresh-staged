@@ -34,7 +34,7 @@ Progress: ██░░░░░░░░ 17%
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
-| 38 | Test Infrastructure | TEST-01, TEST-02, TEST-03 | 38-01 done |
+| 38 | Test Infrastructure | TEST-01, TEST-02, TEST-03 | 38-01, 38-02 done |
 | 39 | Dashboard Widget Migration | WIDGET-01-09 | Not started |
 | 40 | Settings Components Migration | SETTINGS-01-07 | Not started |
 | 41 | Pages Migration | PAGE-01-07 | Not started |
@@ -50,17 +50,20 @@ Progress: ██░░░░░░░░ 17%
 | ID | Decision | Rationale |
 |----|----------|-----------|
 | DEC-38-01-A | Use queryOptions mock pattern for tRPC | @trpc/tanstack-react-query uses queryOptions/mutationOptions, not useQuery hooks |
+| DEC-38-02-A | Mock both bullmq and ioredis | Complete Redis isolation requires mocking both for QueueService |
+| DEC-38-02-B | Deterministic job IDs | job-1, job-2 format enables reliable test assertions |
 
 ### Blockers/Concerns
 
 - 32 frontend tests fail with queryOptions/mutationOptions errors (down from 38)
 - Remaining failures in: useAlerts.test.tsx (11), TTNCredentialsPanel.test.tsx (21)
-- 22 backend tests fail in queue.service.test.ts (BullMQ/Redis mocking)
+- ~~22 backend tests fail in queue.service.test.ts~~ FIXED in 38-02
+- 15 pre-existing failures in tests/api/ttn-devices.test.ts (unrelated)
 - 35 files still import from supabase-placeholder.ts
 
 ## Session Continuity
 
-Last session: 2026-01-29 12:46 UTC
-Stopped at: Completed 38-01-PLAN.md
+Last session: 2026-01-29T12:47:03Z
+Stopped at: Completed 38-02-PLAN.md
 Resume file: None
-Next action: Execute 38-02-PLAN.md to fix useAlerts.test.tsx and TTNCredentialsPanel.test.tsx
+Next action: Execute 38-03 to fix remaining frontend test mocking
