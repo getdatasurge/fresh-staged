@@ -4,7 +4,8 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useTRPC } from "@/lib/trpc";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -57,74 +58,65 @@ export function EmulatorTTNRoutingCard({
   emulatorDevEui,
   onRoutingModeChange,
 }: EmulatorTTNRoutingCardProps) {
-  const [status, setStatus] = useState<TTNConnectionStatus | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isTesting, setIsTesting] = useState(false);
   const [routeViaTTN, setRouteViaTTN] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
-  
+
+  // tRPC client
+  const trpc = useTRPC();
+
   // TTN Config Context for state awareness
   const { context: ttnContext } = useTTNConfig();
   const guardResult = checkTTNOperationAllowed('simulate', ttnContext);
 
-  const loadStatus = useCallback(async () => {
+  // tRPC query for TTN settings
+  const settingsQuery = useQuery(
+    trpc.ttnSettings.get.queryOptions(
+      { organizationId: organizationId || '' },
+      { enabled: !!organizationId }
+    )
+  );
+
+  // tRPC mutation for connection test
+  const testMutation = useMutation(
+    trpc.ttnSettings.test.mutationOptions({
+      onSuccess: (result) => {
+        if (result.success) {
+          toast.success("TTN connection verified!");
+        } else {
+          toast.error(result.error || "Connection test failed");
+        }
+        // Refetch settings to update last test info
+        settingsQuery.refetch();
+      },
+      onError: (err) => {
+        console.error("[EmulatorTTNRoutingCard] Test error:", err);
+        toast.error(err.message || "Failed to test connection");
+      },
+    })
+  );
+
+  // Derive status from query data
+  const status: TTNConnectionStatus | null = settingsQuery.data ? {
+    isEnabled: settingsQuery.data.is_enabled || false,
+    hasApiKey: settingsQuery.data.has_api_key || false,
+    region: settingsQuery.data.ttn_region || "nam1",
+    applicationId: settingsQuery.data.ttn_application_id || null,
+    lastTestSuccess: (settingsQuery.data.last_connection_test_result as { success?: boolean } | null)?.success ?? null,
+    lastTestAt: settingsQuery.data.last_connection_test_at || null,
+    lastTestError: (settingsQuery.data.last_connection_test_result as { error?: string } | null)?.error || null,
+  } : null;
+
+  const isLoading = settingsQuery.isLoading;
+  const isTesting = testMutation.isPending;
+
+  // Callback to refetch settings (used by wizard on complete)
+  const loadStatus = useCallback(() => {
+    settingsQuery.refetch();
+  }, [settingsQuery]);
+
+  const handleTestConnection = () => {
     if (!organizationId) return;
-
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("manage-ttn-settings", {
-        body: { action: "get", organization_id: organizationId },
-      });
-
-      if (error) throw error;
-
-      const lastTest = data.last_connection_test_result as { success?: boolean; error?: string } | null;
-
-      setStatus({
-        isEnabled: data.is_enabled || false,
-        hasApiKey: data.has_api_key || false,
-        region: data.ttn_region || "nam1",
-        applicationId: data.global_application_id || null,
-        lastTestSuccess: lastTest?.success ?? null,
-        lastTestAt: data.last_connection_test_at || null,
-        lastTestError: lastTest?.error || null,
-      });
-    } catch (err) {
-      console.error("[EmulatorTTNRoutingCard] Error loading status:", err);
-      setStatus(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [organizationId]);
-
-  useEffect(() => {
-    loadStatus();
-  }, [loadStatus]);
-
-  const handleTestConnection = async () => {
-    if (!organizationId) return;
-
-    setIsTesting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("manage-ttn-settings", {
-        body: { action: "test", organization_id: organizationId },
-      });
-
-      if (error) throw error;
-
-      if (data.success) {
-        toast.success("TTN connection verified!");
-      } else {
-        toast.error(data.error || "Connection test failed");
-      }
-
-      await loadStatus();
-    } catch (err) {
-      console.error("[EmulatorTTNRoutingCard] Test error:", err);
-      toast.error("Failed to test connection");
-    } finally {
-      setIsTesting(false);
-    }
+    testMutation.mutate({ organizationId });
   };
 
   const handleRoutingToggle = (enabled: boolean) => {
