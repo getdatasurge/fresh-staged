@@ -75,12 +75,14 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
 - [ ] **Phase 32: Remaining Edge Function Migration**
     - **Goal:** Migrate remaining supabase.functions.invoke calls to tRPC
     - **Closes:** 15 remaining edge function calls in 12 files
-    - **Plans:** 4 plans
+    - **Plans:** 6 plans (4 migration + 2 gap closure)
     Plans:
-    - [ ] 32-01-PLAN.md — Migrate TTN domain (EmulatorTTNRoutingCard, Onboarding)
-    - [ ] 32-02-PLAN.md — Create reports router + migrate 3 export files
-    - [ ] 32-03-PLAN.md — Create telnyx router + migrate 4 Telnyx files
-    - [ ] 32-04-PLAN.md — Add ttnDevices.diagnose + cleanup dead code
+    - [x] 32-01-PLAN.md — Migrate TTN domain (EmulatorTTNRoutingCard, Onboarding)
+    - [x] 32-02-PLAN.md — Create reports router + migrate 3 export files
+    - [x] 32-03-PLAN.md — Create telnyx router + migrate 4 Telnyx files
+    - [x] 32-04-PLAN.md — Add ttnDevices.diagnose + cleanup dead code
+    - [ ] 32-05-PLAN.md — Gap closure: Implement reports.export with real database queries
+    - [ ] 32-06-PLAN.md — Gap closure: Implement Telnyx API integration (verification + webhook)
 
 - [ ] **Phase 33: Error Handling UI Integration**
     - **Goal:** Wire SupabaseMigrationError to UI error boundaries
@@ -89,4 +91,4 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-28 (Phase 32 planned with 4 plans)*
+*Last updated: 2026-01-28 (Phase 32 gap closure plans added: 32-05, 32-06)*
