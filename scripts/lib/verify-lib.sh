@@ -19,6 +19,13 @@ if [[ "$(type -t step)" != "function" ]]; then
 fi
 
 # ===========================================
+# Configuration (environment-overridable)
+# ===========================================
+VERIFY_CONSECUTIVE_REQUIRED="${VERIFY_CONSECUTIVE_REQUIRED:-3}"
+VERIFY_CHECK_INTERVAL="${VERIFY_CHECK_INTERVAL:-5}"
+VERIFY_MAX_ATTEMPTS="${VERIFY_MAX_ATTEMPTS:-12}"
+
+# ===========================================
 # Verification Functions
 # ===========================================
 
@@ -186,6 +193,47 @@ verify_all_services() {
         error "One or more core services unhealthy"
         return 1
     fi
+}
+
+# VERIFY-06: Wait for consecutive health check passes
+# Purpose: Dashboard-specific stability check (other endpoints use standard verify_endpoint_health)
+# Args: $1 = name, $2 = URL
+# Uses VERIFY_CONSECUTIVE_REQUIRED consecutive passes (default 3)
+verify_consecutive_health() {
+    local name="$1"
+    local url="$2"
+    local consecutive_passes=0
+    local total_attempts=0
+
+    step "Verifying $name with ${VERIFY_CONSECUTIVE_REQUIRED} consecutive passes..."
+
+    while [[ $total_attempts -lt $VERIFY_MAX_ATTEMPTS ]]; do
+        total_attempts=$((total_attempts + 1))
+
+        local http_code
+        http_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "$url" 2>/dev/null || echo "000")
+
+        if [[ "$http_code" == "200" ]]; then
+            consecutive_passes=$((consecutive_passes + 1))
+            echo -e "  [${GREEN}PASS${NC}] Attempt $total_attempts: consecutive $consecutive_passes/$VERIFY_CONSECUTIVE_REQUIRED"
+
+            if [[ $consecutive_passes -ge $VERIFY_CONSECUTIVE_REQUIRED ]]; then
+                success "$name verified ($consecutive_passes consecutive passes)"
+                return 0
+            fi
+        else
+            if [[ $consecutive_passes -gt 0 ]]; then
+                warning "Streak reset (was $consecutive_passes)"
+            fi
+            consecutive_passes=0
+            echo -e "  [${RED}FAIL${NC}] Attempt $total_attempts: HTTP $http_code"
+        fi
+
+        sleep "$VERIFY_CHECK_INTERVAL"
+    done
+
+    error "$name failed to achieve $VERIFY_CONSECUTIVE_REQUIRED consecutive passes"
+    return 1
 }
 
 # Check Docker service state
