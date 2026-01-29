@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useMemo } from "react";
 import { useTRPC } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import { ComplianceReportCard } from "@/components/reports/ComplianceReportCard";
@@ -52,21 +52,67 @@ interface DateRange {
 const Reports = () => {
   const { toast } = useToast();
   const user = useUser();
-  const { effectiveOrgId } = useEffectiveIdentity();
+  const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
   const trpc = useTRPC();
-  const [sites, setSites] = useState<Site[]>([]);
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [filteredUnits, setFilteredUnits] = useState<Unit[]>([]);
   const [selectedSite, setSelectedSite] = useState<string>("all");
   const [selectedUnit, setSelectedUnit] = useState<string>("all");
   const [dateRange, setDateRange] = useState<DateRange>({
     from: subDays(new Date(), 7),
     to: new Date(),
   });
-  const [loading, setLoading] = useState(true);
+
+  // Fetch sites via tRPC
+  const sitesQuery = useQuery(
+    trpc.sites.list.queryOptions(
+      undefined,
+      { enabled: isInitialized && !!effectiveOrgId }
+    )
+  );
+
+  // Fetch units via tRPC
+  const unitsQuery = useQuery(
+    trpc.units.listByOrg.queryOptions(
+      { organizationId: effectiveOrgId || "" },
+      { enabled: isInitialized && !!effectiveOrgId }
+    )
+  );
+
+  // Transform sites to expected format
+  const sites = useMemo<Site[]>(() => {
+    if (!sitesQuery.data) return [];
+    return sitesQuery.data.map(s => ({
+      id: s.id,
+      name: s.name,
+    }));
+  }, [sitesQuery.data]);
+
+  // Transform units to expected format with area/site hierarchy
+  const units = useMemo<Unit[]>(() => {
+    if (!unitsQuery.data) return [];
+    return unitsQuery.data.map(u => ({
+      id: u.id,
+      name: u.name,
+      area: {
+        name: u.areaName || "",
+        site: {
+          id: u.siteId || "",
+          name: u.siteName || "",
+        },
+      },
+    }));
+  }, [unitsQuery.data]);
+
+  // Filter units by selected site
+  const filteredUnits = useMemo(() => {
+    if (selectedSite === "all") return units;
+    return units.filter(u => u.area.site.id === selectedSite);
+  }, [selectedSite, units]);
+
+  const loading = sitesQuery.isLoading || unitsQuery.isLoading;
 
   // tRPC mutation for exporting reports
-  const exportMutation = trpc.reports.export.useMutation({
+  const exportMutation = useMutation({
+    ...trpc.reports.export.mutationOptions(),
     onSuccess: (data) => {
       // Download file
       const blob = new Blob([data.content], { type: data.contentType });
@@ -93,67 +139,10 @@ const Reports = () => {
     },
   });
 
+  // Reset unit selection when site changes
   useEffect(() => {
-    if (user) {
-      loadData();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (selectedSite === "all") {
-      setFilteredUnits(units);
-    } else {
-      setFilteredUnits(units.filter(u => u.area.site.id === selectedSite));
-    }
     setSelectedUnit("all");
-  }, [selectedSite, units]);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      // Load sites
-      const { data: sitesData } = await supabase
-        .from("sites")
-        .select("id, name")
-        .order("name");
-
-      if (sitesData) setSites(sitesData);
-
-      // Load units with area and site info
-      const { data: unitsData } = await supabase
-        .from("units")
-        .select(`
-          id,
-          name,
-          area:areas(
-            name,
-            site:sites(id, name)
-          )
-        `)
-        .eq("is_active", true)
-        .order("name");
-
-      if (unitsData) {
-        const formattedUnits = unitsData.map(u => ({
-          id: u.id,
-          name: u.name,
-          area: {
-            name: u.area?.name || "",
-            site: {
-              id: u.area?.site?.id || "",
-              name: u.area?.site?.name || ""
-            }
-          }
-        }));
-        setUnits(formattedUnits);
-        setFilteredUnits(formattedUnits);
-      }
-    } catch (error) {
-      console.error("Error loading data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [selectedSite]);
 
   const handleExport = (reportType: "daily" | "exceptions" | "manual" | "compliance", format: "csv" | "pdf" = "csv") => {
     if (!dateRange.from || !dateRange.to) {
