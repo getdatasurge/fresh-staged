@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 
 Milestone: v2.3 Deployment Orchestration
 Phase: 37 - Documentation
-Plan: 01 of 4 complete
+Plan: 04 of 4 complete (also 01 complete)
 Status: In progress
-Last activity: 2026-01-29 — Completed 37-01-PLAN.md (prerequisites documentation)
+Last activity: 2026-01-29 — Completed 37-04-PLAN.md (operations manual)
 
-Progress: [========--] 80% (3.25/4 phases complete)
+Progress: [=========-] 85% (3.5/4 phases complete)
 
 ## v2.3 Phase Overview
 
@@ -24,7 +24,7 @@ Progress: [========--] 80% (3.25/4 phases complete)
 | 34 | Deployment Orchestration | DEPLOY-01 to DEPLOY-05 | Complete (2/2 plans) |
 | 35 | Verification | VERIFY-01 to VERIFY-06 | Complete (2/2 plans) |
 | 36 | Post-Deployment Setup | POST-01 to POST-05 | Complete (3/3 plans) |
-| 37 | Documentation | DOCS-01 to DOCS-04 | In progress (1/4 plans) |
+| 37 | Documentation | DOCS-01 to DOCS-04 | In progress (2/4 plans: 01, 04) |
 
 ## Milestones Shipped
 
@@ -61,6 +61,9 @@ Progress: [========--] 80% (3.25/4 phases complete)
 | 36-03 | pg_isready loop with 30s timeout | Robust database readiness waiting before seeding |
 | 37-01 | Added notes column to server requirements | Links preflight validation context directly in requirements |
 | 37-01 | deploy-guide.md as quick reference | Avoids duplication by linking to SELFHOSTED_DEPLOYMENT.md for details |
+| 37-04 | Combined all 8 sections in single document | Comprehensive coverage in one location |
+| 37-04 | ASCII diagram for horizontal scaling | Works in terminal and markdown |
+| 37-04 | Threshold tables for monitoring alerts | Quick reference for operators |
 
 ## Tech Debt Carried Forward
 
@@ -80,12 +83,17 @@ Progress: [========--] 80% (3.25/4 phases complete)
 - Updated docs/deployment/deploy-guide.md as quick reference with cross-links
 - All script references updated from deploy-selfhosted.sh to deploy-automated.sh
 
+**What 37-04 built:**
+- docs/deployment/operations.md (720 lines, comprehensive operations manual)
+- 8 major sections: daily ops, updates, backups, disaster recovery, scaling, monitoring, security, service management
+- Troubleshooting and quick reference sections
+
 **Deployment workflow documentation updated:**
 - preflight.sh -> deploy-automated.sh -> verify-deployment.sh -> post-deploy.sh
 
 ## Session Continuity
 
-Last session: 2026-01-29 11:50 UTC
-Stopped at: Completed 37-01-PLAN.md
+Last session: 2026-01-29 11:51 UTC
+Stopped at: Completed 37-04-PLAN.md
 Resume file: None
-Next action: Execute 37-02-PLAN.md (Core Workflow Documentation)
+Next action: Execute 37-02-PLAN.md and 37-03-PLAN.md
