@@ -1,4 +1,5 @@
 import { useTRPC } from '@/lib/trpc'
+import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
 /**
@@ -98,21 +99,25 @@ export function useNavTree(organizationId: string | null): NavTree {
 	DEV && console.log('[useNavTree] Called with organizationId:', organizationId)
 
 	// Fetch all sites for this organization via tRPC
-	const sitesQuery = trpc.sites.list.useQuery(
-		{ organizationId: organizationId! },
-		{
-			enabled: !!organizationId,
-			staleTime: 1000 * 30,
-		},
+	const sitesQuery = useQuery(
+		trpc.sites.list.queryOptions(
+			{ organizationId: organizationId! },
+			{
+				enabled: !!organizationId,
+				staleTime: 1000 * 30,
+			},
+		)
 	)
 
 	// Fetch all units for this organization via tRPC
-	const unitsQuery = trpc.units.listByOrg.useQuery(
-		{ organizationId: organizationId! },
-		{
-			enabled: !!organizationId,
-			staleTime: 1000 * 30,
-		},
+	const unitsQuery = useQuery(
+		trpc.units.listByOrg.queryOptions(
+			{ organizationId: organizationId! },
+			{
+				enabled: !!organizationId,
+				staleTime: 1000 * 30,
+			},
+		)
 	)
 
 	// Build navigation tree

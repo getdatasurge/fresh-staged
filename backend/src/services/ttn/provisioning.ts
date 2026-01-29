@@ -428,7 +428,7 @@ export class TtnProvisioningService {
 		const currentAppId = conn.ttnApplicationId ?? conn.applicationId
 		let deletedDevices = 0
 		let deletedApp = false
-		let deletedOrg = false
+		const deletedOrg = false
 
 		// 1. Delete all devices from TTN application
 		if (currentAppId) {

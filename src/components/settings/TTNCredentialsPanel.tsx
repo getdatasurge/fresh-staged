@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, RefreshCw, Key, Building2, ExternalLink, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, PlayCircle, Info, Trash2, MapPin } from "lucide-react";
 import { useUser } from "@stackframe/react";
 import { useTRPC } from "@/lib/trpc";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { SecretField } from "./SecretField";
 import { TTNDiagnosticsPanel } from "@/components/ttn/TTNDiagnosticsPanel";
@@ -99,17 +100,21 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
   const lastOrgIdRef = useRef<string | null>(null);
 
   // tRPC hooks for TTN settings operations
-  const getCredentialsQuery = trpc.ttnSettings.getCredentials.useQuery(
-    { organizationId: organizationId || '' },
-    { enabled: false } // Manual fetch control
+  const getCredentialsQuery = useQuery(
+    trpc.ttnSettings.getCredentials.queryOptions(
+      { organizationId: organizationId || '' },
+      { enabled: false } // Manual fetch control
+    )
   );
-  const getStatusQuery = trpc.ttnSettings.getStatus.useQuery(
-    { organizationId: organizationId || '' },
-    { enabled: false }
+  const getStatusQuery = useQuery(
+    trpc.ttnSettings.getStatus.queryOptions(
+      { organizationId: organizationId || '' },
+      { enabled: false }
+    )
   );
-  const provisionMutation = trpc.ttnSettings.provision.useMutation();
-  const startFreshMutation = trpc.ttnSettings.startFresh.useMutation();
-  const deepCleanMutation = trpc.ttnSettings.deepClean.useMutation();
+  const provisionMutation = useMutation(trpc.ttnSettings.provision.mutationOptions());
+  const startFreshMutation = useMutation(trpc.ttnSettings.startFresh.mutationOptions());
+  const deepCleanMutation = useMutation(trpc.ttnSettings.deepClean.mutationOptions());
 
   const fetchCredentials = useCallback(async () => {
     // Don't clear credentials if organizationId is temporarily null (transitional state)

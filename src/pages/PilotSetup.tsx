@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
 import { useTRPC } from "@/lib/trpc";
 import { useUser } from "@stackframe/react";
+import { useMutation } from "@tanstack/react-query";
 import { format, startOfWeek } from "date-fns";
 import {
     ArrowRight,
@@ -43,7 +44,7 @@ const PilotSetup = () => {
   const navigate = useNavigate();
   const user = useUser();
   const trpc = useTRPC();
-  const upsertFeedbackMutation = trpc.pilotFeedback.upsert.useMutation();
+  const upsertFeedbackMutation = useMutation(trpc.pilotFeedback.upsert.mutationOptions());
   const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
   const [isLoading, setIsLoading] = useState(true);
   const [organizationId, setOrganizationId] = useState<string | null>(null);

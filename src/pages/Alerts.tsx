@@ -19,6 +19,7 @@ import { UnitStatusInfo } from "@/hooks/useUnitStatus"
 import { getAlertTypeConfig, getSeverityConfig } from "@/lib/alertConfig"
 import { useTRPC } from "@/lib/trpc"
 import { useUser } from "@stackframe/react"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import {
   AlertTriangle,
   ArrowUpCircle,
@@ -67,19 +68,23 @@ const Alerts = () => {
   const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
 
   // Queries
-  const alertsQuery = trpc.alerts.listByOrg.useQuery(
-    { organizationId: effectiveOrgId || "", limit: 100 },
-    { enabled: !!effectiveOrgId }
+  const alertsQuery = useQuery(
+    trpc.alerts.listByOrg.queryOptions(
+      { organizationId: effectiveOrgId || "", limit: 100 },
+      { enabled: !!effectiveOrgId }
+    )
   );
 
-  const unitsQuery = trpc.units.listByOrg.useQuery(
-    { organizationId: effectiveOrgId || "" },
-    { enabled: !!effectiveOrgId }
+  const unitsQuery = useQuery(
+    trpc.units.listByOrg.queryOptions(
+      { organizationId: effectiveOrgId || "" },
+      { enabled: !!effectiveOrgId }
+    )
   );
 
   // Mutations
-  const acknowledgeMutation = trpc.alerts.acknowledge.useMutation();
-  const resolveMutation = trpc.alerts.resolve.useMutation();
+  const acknowledgeMutation = useMutation(trpc.alerts.acknowledge.mutationOptions());
+  const resolveMutation = useMutation(trpc.alerts.resolve.mutationOptions());
 
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAlert, setSelectedAlert] = useState<UnifiedAlert | null>(null);

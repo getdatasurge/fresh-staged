@@ -28,6 +28,7 @@
 import { useTRPC } from '@/lib/trpc'
 import { TTN_WIZARD_STEPS, type TTNRegion } from '@/lib/ttnErrorConfig'
 import { useUser } from '@stackframe/react'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 
 export interface TTNWizardState {
@@ -85,15 +86,18 @@ export function useTTNSetupWizard(organizationId: string | null) {
 	const [isLoading, setIsLoading] = useState(false)
 	const [isTesting, setIsTesting] = useState(false)
 
-	const ttnSettingsQuery = trpc.ttnSettings.get.useQuery(
-		{ organizationId: organizationId || '' },
-		{ enabled: !!organizationId, staleTime: 0 },
+	const ttnSettingsQuery = useQuery(
+		trpc.ttnSettings.get.queryOptions(
+			{ organizationId: organizationId || '' },
+			{ enabled: !!organizationId, staleTime: 0 },
+		)
 	)
 
-	const updateSettingsMutation = trpc.ttnSettings.update.useMutation()
-	const testConnectionMutation = trpc.ttnSettings.test.useMutation()
-	const saveAndConfigureMutation =
-		trpc.ttnSettings.saveAndConfigure.useMutation()
+	const updateSettingsMutation = useMutation(trpc.ttnSettings.update.mutationOptions())
+	const testConnectionMutation = useMutation(trpc.ttnSettings.test.mutationOptions())
+	const saveAndConfigureMutation = useMutation(
+		trpc.ttnSettings.saveAndConfigure.mutationOptions()
+	)
 
 	/**
 	 * Load current TTN settings and determine wizard state

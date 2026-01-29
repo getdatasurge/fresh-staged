@@ -2,7 +2,6 @@ import { useToast } from '@/hooks/use-toast'
 import { useTRPC } from '@/lib/trpc'
 import { isSupabaseMigrationError } from '@/lib/supabase-placeholder'
 import { useUser } from '@stackframe/react'
-import { useMutation } from '@tanstack/react-query'
 import {
 	createContext,
 	ReactNode,
@@ -97,7 +96,7 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
 	const { toast } = useToast()
 	const stackUser = useUser()
 	const trpc = useTRPC()
-	const logSuperAdminActionMutation = useMutation(trpc.admin.logSuperAdminAction.mutationOptions())
+	const logSuperAdminActionMutation = trpc.admin.logSuperAdminAction.useMutation()
 
 	// Super admin status with explicit state machine
 	const [isSuperAdmin, setIsSuperAdmin] = useState(false)

@@ -76,7 +76,7 @@ function TRPCWrapper({ children }: { children: React.ReactNode }) {
 	}, [user])
 
 	return (
-		<TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+		<TRPCProvider client={trpcClient} queryClient={queryClient}>
 			{children}
 		</TRPCProvider>
 	)

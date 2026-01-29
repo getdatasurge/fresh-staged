@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useTRPC } from '../lib/trpc'
 
@@ -9,18 +10,22 @@ export interface SoftDeleteResult {
 export function useSoftDelete() {
 	const trpc = useTRPC()
 
-	const restoreUnitMutation = trpc.units.restore.useMutation()
-	const restoreAreaMutation = trpc.areas.restore.useMutation()
-	const restoreSiteMutation = trpc.sites.restore.useMutation()
-	const restoreDeviceMutation = trpc.ttnDevices.restore.useMutation()
-	const permanentlyDeleteUnitMutation =
-		trpc.units.permanentlyDelete.useMutation()
-	const permanentlyDeleteAreaMutation =
-		trpc.areas.permanentlyDelete.useMutation()
-	const permanentlyDeleteSiteMutation =
-		trpc.sites.permanentlyDelete.useMutation()
-	const permanentlyDeleteDeviceMutation =
-		trpc.ttnDevices.permanentlyDelete.useMutation()
+	const restoreUnitMutation = useMutation(trpc.units.restore.mutationOptions())
+	const restoreAreaMutation = useMutation(trpc.areas.restore.mutationOptions())
+	const restoreSiteMutation = useMutation(trpc.sites.restore.mutationOptions())
+	const restoreDeviceMutation = useMutation(trpc.ttnDevices.restore.mutationOptions())
+	const permanentlyDeleteUnitMutation = useMutation(
+		trpc.units.permanentlyDelete.mutationOptions()
+	)
+	const permanentlyDeleteAreaMutation = useMutation(
+		trpc.areas.permanentlyDelete.mutationOptions()
+	)
+	const permanentlyDeleteSiteMutation = useMutation(
+		trpc.sites.permanentlyDelete.mutationOptions()
+	)
+	const permanentlyDeleteDeviceMutation = useMutation(
+		trpc.ttnDevices.permanentlyDelete.mutationOptions()
+	)
 
 	const restoreUnit = async (
 		unitId: string,

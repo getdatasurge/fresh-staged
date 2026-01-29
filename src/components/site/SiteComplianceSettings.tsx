@@ -17,6 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { usePermissions } from "@/hooks/useUserRole";
 import { useTRPC } from "@/lib/trpc";
 import { useUser } from "@stackframe/react";
+import { useMutation } from "@tanstack/react-query";
 import { ChevronDown, ChevronUp, Clock, Globe, Loader2, Save, Settings, Shield } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -67,7 +68,7 @@ export function SiteComplianceSettings({
 }: SiteComplianceSettingsProps) {
   const user = useUser();
   const trpc = useTRPC();
-  const updateSiteMutation = trpc.sites.update.useMutation();
+  const updateSiteMutation = useMutation(trpc.sites.update.mutationOptions());
   const [isOpen, setIsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { canEditComplianceSettings, isLoading: permLoading } = usePermissions();

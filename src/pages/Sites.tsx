@@ -14,6 +14,7 @@ import { useSuperAdmin } from "@/contexts/SuperAdminContext";
 import { useToast } from "@/hooks/use-toast";
 import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
 import { useTRPC } from "@/lib/trpc";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
     Building2,
     ChevronRight,
@@ -42,12 +43,14 @@ const Sites = () => {
   const { isSupportModeActive } = useSuperAdmin();
   const trpc = useTRPC();
   
-  const sitesQuery = trpc.sites.list.useQuery(
-    { organizationId: effectiveOrgId || "" },
-    { enabled: !!effectiveOrgId }
+  const sitesQuery = useQuery(
+    trpc.sites.list.queryOptions(
+      { organizationId: effectiveOrgId || "" },
+      { enabled: !!effectiveOrgId }
+    )
   );
 
-  const createSiteMutation = trpc.sites.create.useMutation();
+  const createSiteMutation = useMutation(trpc.sites.create.mutationOptions());
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
