@@ -18,8 +18,8 @@ Complete the Supabase-to-tRPC migration by fixing 60 failing tests and migrating
 
 - [x] **Phase 38: Test Infrastructure** - Fix tRPC and BullMQ test mocking
 - [x] **Phase 39: Dashboard Widget Migration** - Migrate 9 widgets to tRPC
-- [ ] **Phase 40: Settings Components Migration** - Migrate 7 settings components to tRPC
-- [ ] **Phase 41: Pages Migration** - Migrate 7 pages to tRPC
+- [x] **Phase 40: Settings Components Migration** - Migrate 7 settings components to tRPC
+- [x] **Phase 41: Pages Migration** - Migrate 7 pages to tRPC
 - [ ] **Phase 42: Admin/Debug + Other Components** - Migrate 8 remaining components to tRPC
 - [ ] **Phase 43: Cleanup & Verification** - Delete supabase-placeholder, verify all tests pass
 
@@ -96,26 +96,27 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 41-01-PLAN.md — Simple pages: HealthDashboard, TTNCleanup, Reports
-- [ ] 41-02-PLAN.md — Medium pages: ManualLog, OrganizationDashboard
-- [ ] 41-03-PLAN.md — Complex pages: Inspector, Onboarding (with new backend routers)
+- [x] 41-01-PLAN.md — Simple pages: HealthDashboard, TTNCleanup, Reports
+- [x] 41-02-PLAN.md — Medium pages: ManualLog, OrganizationDashboard
+- [x] 41-03-PLAN.md — Complex pages: Inspector, Onboarding (with new backend routers)
 
 ---
 
 ### Phase 42: Admin/Debug + Other Components Migration
-**Goal**: All 8 remaining components (4 admin/debug + 4 other) fetch data through tRPC
+**Goal**: All remaining components (admin/debug + general) fetch data through tRPC
 **Depends on**: Phase 38 (need working test patterns)
 **Requirements**: ADMIN-01, ADMIN-02, ADMIN-03, ADMIN-04, COMP-01, COMP-02, COMP-03, COMP-04
 **Success Criteria** (what must be TRUE):
-  1. All 4 admin/debug components render with data from tRPC endpoints
-  2. All 4 other components render with data from tRPC endpoints
-  3. No component imports from supabase-placeholder.ts
-  4. Component tests pass using established tRPC mock patterns
-**Plans**: TBD
+  1. All admin/debug components (SuperAdminContext, SensorSimulatorPanel, RBACDebugPanel, UnitDebugBanner) use tRPC or hooks
+  2. All general components (NotificationDropdown, LogTempModal, GlobalUserSearch, UnitSettingsSection, InvoiceHistory) use tRPC
+  3. Error handling utilities (MigrationErrorBoundary, MigrationErrorFallback, errorHandler.ts) cleaned up
+  4. No component imports from supabase-placeholder.ts
+**Plans**: 3 plans
 
 Plans:
-- [ ] 42-01: TBD (admin/debug components)
-- [ ] 42-02: TBD (other components)
+- [ ] 42-01-PLAN.md — Admin/debug: SuperAdminContext, SensorSimulatorPanel, RBACDebugPanel, UnitDebugBanner
+- [ ] 42-02-PLAN.md — General components: NotificationDropdown, LogTempModal, GlobalUserSearch
+- [ ] 42-03-PLAN.md — Remaining: UnitSettingsSection, InvoiceHistory, error handling utilities cleanup
 
 ---
 
@@ -142,11 +143,11 @@ Plans:
 | 38. Test Infrastructure | v2.4 | 3/3 | Complete | 2026-01-29 |
 | 39. Dashboard Widget Migration | v2.4 | 3/3 | Complete | 2026-01-29 |
 | 40. Settings Components Migration | v2.4 | 3/3 | Complete | 2026-01-29 |
-| 41. Pages Migration | v2.4 | 0/3 | Not started | - |
-| 42. Admin/Debug + Other Components | v2.4 | 0/2 | Not started | - |
+| 41. Pages Migration | v2.4 | 3/3 | Complete | 2026-01-29 |
+| 42. Admin/Debug + Other Components | v2.4 | 0/3 | Not started | - |
 | 43. Cleanup & Verification | v2.4 | 0/1 | Not started | - |
 
-**v2.4 Total:** 9/15 plans complete (60%)
+**v2.4 Total:** 12/16 plans complete (75%)
 
 ---
 
