@@ -1,5 +1,5 @@
-import { useTRPC } from "@/lib/trpc";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTRPC, useTRPCClient } from "@/lib/trpc";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export interface AlertRulesHistoryEntry {
   id: string;
@@ -22,32 +22,33 @@ export function useAlertRulesHistory(
   limit: number = 20
 ) {
   const trpc = useTRPC();
-  
-  return trpc.alertHistory.get.useQuery(
-    { ...scope, limit },
-    {
-      enabled: !!(scope.organizationId || scope.siteId || scope.unitId),
-      select: (data) => {
-        return data.map(entry => ({
-          ...entry,
-          // Map backend response to frontend interface if needed
-          action: entry.changeType,
-          changes: entry.newValues ? JSON.parse(entry.newValues) : {}, // Assuming basic storage
-          // Note: oldValues/newValues are strings in DB? 
-          // In service we select them. If they are JSON type in DB, Drizzle returns object? 
-          // Schema says text. So string.
-          // Frontend expects 'changes' object.
-          // Wait, history input was `changes`. 
-          // Backend `createHistory` stores `newValues`.
-          // We need to robustly parse.
-        }));
-      }
+
+  return useQuery({
+    ...trpc.alertHistory.get.queryOptions(
+      { ...scope, limit },
+      { enabled: !!(scope.organizationId || scope.siteId || scope.unitId) }
+    ),
+    select: (data) => {
+      return data.map(entry => ({
+        ...entry,
+        // Map backend response to frontend interface if needed
+        action: entry.changeType,
+        changes: entry.newValues ? JSON.parse(entry.newValues) : {}, // Assuming basic storage
+        // Note: oldValues/newValues are strings in DB?
+        // In service we select them. If they are JSON type in DB, Drizzle returns object?
+        // Schema says text. So string.
+        // Frontend expects 'changes' object.
+        // Wait, history input was `changes`.
+        // Backend `createHistory` stores `newValues`.
+        // We need to robustly parse.
+      }));
     }
-  );
+  });
 }
 
 export function useInsertAlertRulesHistory() {
   const trpc = useTRPC();
+  const trpcClient = useTRPCClient();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -59,7 +60,7 @@ export function useInsertAlertRulesHistory() {
       note?: string,
       userId?: string // Unused, strictly context
     }) => {
-      return trpc.alertHistory.create.mutate({
+      return trpcClient.alertHistory.create.mutate({
         alertRuleId: args.alertRuleId,
         action: args.action,
         changes: args.changes,

@@ -1,5 +1,5 @@
-import { useTRPC } from '@/lib/trpc'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTRPC, useTRPCClient } from '@/lib/trpc'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export interface AlertRules {
 	manual_interval_minutes: number
@@ -144,55 +144,56 @@ function mapFrontendToBackend(rules: Partial<AlertRulesRow>): any {
 
 export function useUnitAlertRules(unitId: string | null) {
 	const trpc = useTRPC()
-	return trpc.alertRules.get.useQuery(
-		{ unitId: unitId! },
-		{
-			enabled: !!unitId,
-			select: data => {
-				if (!data) return DEFAULT_ALERT_RULES
-				const row = mapBackendToFrontend(data)
-				return { ...DEFAULT_ALERT_RULES, ...row, source_unit: true } // Simplified logic
-			},
+	return useQuery({
+		...trpc.alertRules.get.queryOptions(
+			{ unitId: unitId! },
+			{ enabled: !!unitId }
+		),
+		select: data => {
+			if (!data) return DEFAULT_ALERT_RULES
+			const row = mapBackendToFrontend(data)
+			return { ...DEFAULT_ALERT_RULES, ...row, source_unit: true } // Simplified logic
 		},
-	)
+	})
 }
 
 export function useOrgAlertRules(orgId: string | null) {
 	const trpc = useTRPC()
-	return trpc.alertRules.get.useQuery(
-		{ organizationId: orgId! },
-		{
-			enabled: !!orgId,
-			select: mapBackendToFrontend,
-		},
-	)
+	return useQuery({
+		...trpc.alertRules.get.queryOptions(
+			{ organizationId: orgId! },
+			{ enabled: !!orgId }
+		),
+		select: mapBackendToFrontend,
+	})
 }
 
 export function useSiteAlertRules(siteId: string | null) {
 	const trpc = useTRPC()
-	return trpc.alertRules.get.useQuery(
-		{ siteId: siteId! },
-		{
-			enabled: !!siteId,
-			select: mapBackendToFrontend,
-		},
-	)
+	return useQuery({
+		...trpc.alertRules.get.queryOptions(
+			{ siteId: siteId! },
+			{ enabled: !!siteId }
+		),
+		select: mapBackendToFrontend,
+	})
 }
 
 export function useUnitAlertRulesOverride(unitId: string | null) {
 	const trpc = useTRPC()
-	return trpc.alertRules.get.useQuery(
-		{ unitId: unitId! },
-		{
-			enabled: !!unitId,
-			select: mapBackendToFrontend,
-		},
-	)
+	return useQuery({
+		...trpc.alertRules.get.queryOptions(
+			{ unitId: unitId! },
+			{ enabled: !!unitId }
+		),
+		select: mapBackendToFrontend,
+	})
 }
 
 // Hook for upserting rules
 export function useUpsertAlertRules() {
 	const trpc = useTRPC()
+	const trpcClient = useTRPCClient()
 	const queryClient = useQueryClient()
 
 	return useMutation({
@@ -200,7 +201,7 @@ export function useUpsertAlertRules() {
 			scope: { organization_id?: string; site_id?: string; unit_id?: string }
 			rules: Partial<AlertRulesRow>
 		}) => {
-			return trpc.alertRules.upsert.mutate({
+			return trpcClient.alertRules.upsert.mutate({
 				organizationId: args.scope.organization_id,
 				siteId: args.scope.site_id,
 				unitId: args.scope.unit_id,
@@ -216,6 +217,7 @@ export function useUpsertAlertRules() {
 // Hook for deleting rules
 export function useDeleteAlertRules() {
 	const trpc = useTRPC()
+	const trpcClient = useTRPCClient()
 	const queryClient = useQueryClient()
 
 	return useMutation({
@@ -224,7 +226,7 @@ export function useDeleteAlertRules() {
 			site_id?: string
 			unit_id?: string
 		}) => {
-			return trpc.alertRules.delete.mutate({
+			return trpcClient.alertRules.delete.mutate({
 				organizationId: scope.organization_id,
 				siteId: scope.site_id,
 				unitId: scope.unit_id,
@@ -240,6 +242,7 @@ export function useDeleteAlertRules() {
 // We added clearField to router.
 export function useClearRuleField() {
 	const trpc = useTRPC()
+	const trpcClient = useTRPCClient()
 	const queryClient = useQueryClient()
 
 	return useMutation({
@@ -249,7 +252,7 @@ export function useClearRuleField() {
 			// Step 344 service: allow list has snake_case (e.g. manual_interval_minutes).
 			// And db driver uses snake_case column names.
 			// So passing snake_case field name should work if DB column is snake_case.
-			return trpc.alertRules.clearField.mutate(args)
+			return trpcClient.alertRules.clearField.mutate(args)
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: [['alertRules']] })

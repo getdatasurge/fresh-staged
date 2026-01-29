@@ -5,7 +5,7 @@
  */
 
 import { qk } from '@/lib/queryKeys'
-import { useTRPC } from '@/lib/trpc'
+import { useTRPC, useTRPCClient } from '@/lib/trpc'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useOrgScope } from './useOrgScope'
@@ -19,13 +19,14 @@ interface SiteLocationData {
 export function useSiteLocationMutation(siteId: string) {
 	const { orgId } = useOrgScope()
 	const trpc = useTRPC()
+	const trpcClient = useTRPCClient()
 	const queryClient = useQueryClient()
 
 	return useMutation({
 		mutationFn: async (data: SiteLocationData) => {
 			if (!orgId) throw new Error('Not authenticated')
 
-			return trpc.sites.update.mutate({
+			return trpcClient.sites.update.mutate({
 				siteId,
 				data: {
 					latitude: data.latitude,
