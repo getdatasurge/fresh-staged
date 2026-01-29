@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 
 Milestone: v2.4 Tech Debt Cleanup
 Phase: 39 of 43 (Dashboard Widget Migration)
-Plan: 01 complete
+Plan: 02 complete
 Status: In progress
-Last activity: 2026-01-29 — Completed 39-01-PLAN.md (Simple Widgets Migration)
+Last activity: 2026-01-29 — Completed 39-02-PLAN.md (Medium Widgets Migration)
 
-Progress: ███░░░░░░░ 27%
+Progress: ███░░░░░░░ 28%
 
 ## Milestones Shipped
 
@@ -35,7 +35,7 @@ Progress: ███░░░░░░░ 27%
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
 | 38 | Test Infrastructure | TEST-01, TEST-02, TEST-03 | COMPLETE (3 plans) |
-| 39 | Dashboard Widget Migration | WIDGET-01-09 | In progress (1 plan) |
+| 39 | Dashboard Widget Migration | WIDGET-01-09 | In progress (2 plans) |
 | 40 | Settings Components Migration | SETTINGS-01-07 | Not started |
 | 41 | Pages Migration | PAGE-01-07 | Not started |
 | 42 | Admin/Debug + Other Components | ADMIN-01-04, COMP-01-04 | Not started |
@@ -55,18 +55,20 @@ Progress: ███░░░░░░░ 27%
 | DEC-38-03-A | Reduce TTNCredentialsPanel test suite | Component's manual refetch() pattern creates test isolation challenges; deferred full coverage |
 | DEC-39-01-A | useMemo for client-side filtering in widgets | listByOrg returns all org units; filter by siteId client-side for simplicity |
 | DEC-39-01-B | Keep snake_case interfaces, transform tRPC responses | Maintain component compatibility while using camelCase tRPC data |
+| DEC-39-02-A | useQueries for parallel per-unit readings | Fetch readings for each unit in parallel for SiteActivityGraphWidget and DowntimeTrackerWidget |
+| DEC-39-02-B | Replace useEffect+setState with useQuery+useMemo | Declarative data fetching pattern in UnitComplianceScoreWidget |
 
 ### Blockers/Concerns
 
 - ~~32 frontend tests fail with queryOptions/mutationOptions errors~~ FIXED in 38-03
 - ~~22 backend tests fail in queue.service.test.ts~~ FIXED in 38-02
 - 15 pre-existing failures in tests/api/ttn-devices.test.ts (unrelated)
-- 32 files still import from supabase-placeholder.ts (3 widgets migrated in 39-01)
+- 28 files still import from supabase-placeholder.ts (7 widgets migrated in 39-01/39-02)
 - TTNCredentialsPanel has reduced test coverage (5 tests vs original 21) due to component complexity
 
 ## Session Continuity
 
-Last session: 2026-01-29T14:09:02Z
-Stopped at: Completed 39-01-PLAN.md (Simple Widgets Migration)
+Last session: 2026-01-29T14:15:00Z
+Stopped at: Completed 39-02-PLAN.md (Medium Widgets Migration)
 Resume file: None
-Next action: Execute 39-02-PLAN.md (Complex Widgets Migration)
+Next action: Execute 39-03-PLAN.md (Complex Widgets Migration)
