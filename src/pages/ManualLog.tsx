@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import LogTempModal, { LogTempUnit } from "@/components/LogTempModal";
 import { Button } from "@/components/ui/button";
@@ -31,91 +32,60 @@ const ManualLog = () => {
   const { toast } = useToast();
   const { isOnline, pendingCount, isSyncing, syncPendingLogs } = useOfflineSync();
   const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
-  const [isLoading, setIsLoading] = useState(true);
-  const [units, setUnits] = useState<UnitForLogging[]>([]);
+  const trpc = useTRPC();
   const [selectedUnit, setSelectedUnit] = useState<LogTempUnit | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   // Redirect to auth if not logged in
-  useEffect(() => {
-    if (!user) {
-      navigate("/auth");
-    }
-  }, [user, navigate]);
+  if (!user) {
+    navigate("/auth");
+  }
 
-  useEffect(() => {
-    if (isInitialized && effectiveOrgId && user) {
-      loadUnits();
-    }
-  }, [isInitialized, effectiveOrgId, user]);
+  // Fetch units via tRPC
+  const unitsQuery = useQuery(
+    trpc.units.listByOrg.queryOptions(
+      { organizationId: effectiveOrgId || "" },
+      { enabled: isInitialized && !!effectiveOrgId && !!user }
+    )
+  );
 
-  const loadUnits = useCallback(async () => {
-    if (!user || !effectiveOrgId) return;
-    setIsLoading(true);
-    try {
-      // Get units including sensor reliability fields using effectiveOrgId
-      const { data: unitsData } = await supabase
-        .from("units")
-        .select(`
-          id, name, unit_type, status, temp_limit_high, temp_limit_low, manual_log_cadence,
-          last_temp_reading, last_reading_at,
-          sensor_reliable, manual_logging_enabled, consecutive_checkins,
-          area:areas!inner(name, site:sites!inner(name, organization_id))
-        `)
-        .eq("is_active", true);
+  // Transform tRPC camelCase response to snake_case UnitStatusInfo interface
+  const units: UnitForLogging[] = useMemo(() => {
+    if (!unitsQuery.data) return [];
 
-      // Get most recent manual logs for each unit
-      const unitIds = (unitsData || [])
-        .filter((u: any) => u.area?.site?.organization_id === effectiveOrgId)
-        .map((u: any) => u.id);
+    return unitsQuery.data.map(u => ({
+      id: u.id,
+      name: u.name,
+      unit_type: u.unitType,
+      status: u.status,
+      temp_limit_high: u.tempMax,
+      temp_limit_low: u.tempMin,
+      manual_log_cadence: u.manualMonitoringInterval || 14400,
+      last_manual_log_at: u.lastManualLogAt?.toISOString() || null,
+      last_reading_at: u.lastReadingAt?.toISOString() || null,
+      last_temp_reading: u.lastTemperature,
+      sensor_reliable: true, // Default - listByOrg doesn't include this field
+      manual_logging_enabled: u.manualMonitoringRequired,
+      consecutive_checkins: 0, // Default - listByOrg doesn't include this field
+      area: {
+        name: u.areaName,
+        site: { name: u.siteName }
+      },
+    }));
+  }, [unitsQuery.data]);
 
-      const { data: recentLogs } = await supabase
-        .from("manual_temperature_logs")
-        .select("unit_id, logged_at")
-        .in("unit_id", unitIds)
-        .order("logged_at", { ascending: false });
+  // Sort units by action required
+  const sortedUnits = useMemo(() => {
+    return [...units].sort((a, b) => {
+      const aStatus = computeUnitStatus(a);
+      const bStatus = computeUnitStatus(b);
+      if (aStatus.manualRequired && !bStatus.manualRequired) return -1;
+      if (!aStatus.manualRequired && bStatus.manualRequired) return 1;
+      return 0;
+    });
+  }, [units]);
 
-      const logsByUnit: Record<string, string> = {};
-      (recentLogs || []).forEach((log) => {
-        if (!logsByUnit[log.unit_id]) {
-          logsByUnit[log.unit_id] = log.logged_at;
-        }
-      });
-
-      const filtered: UnitForLogging[] = (unitsData || [])
-        .filter((u: any) => u.area?.site?.organization_id === effectiveOrgId)
-        .map((u: any) => ({
-          id: u.id,
-          name: u.name,
-          unit_type: u.unit_type,
-          status: u.status,
-          temp_limit_high: u.temp_limit_high,
-          temp_limit_low: u.temp_limit_low,
-          manual_log_cadence: u.manual_log_cadence || 14400,
-          last_manual_log_at: logsByUnit[u.id] || null,
-          last_reading_at: u.last_reading_at,
-          last_temp_reading: u.last_temp_reading,
-          sensor_reliable: u.sensor_reliable,
-          manual_logging_enabled: u.manual_logging_enabled,
-          consecutive_checkins: u.consecutive_checkins,
-          area: { name: u.area.name, site: { name: u.area.site.name } },
-        }));
-
-      // Sort by action required first, then by manual required
-      filtered.sort((a, b) => {
-        const aStatus = computeUnitStatus(a);
-        const bStatus = computeUnitStatus(b);
-        if (aStatus.manualRequired && !bStatus.manualRequired) return -1;
-        if (!aStatus.manualRequired && bStatus.manualRequired) return 1;
-        return 0;
-      });
-
-      setUnits(filtered);
-    } catch (error) {
-      console.error("Error loading units:", error);
-    }
-    setIsLoading(false);
-  }, [user, effectiveOrgId]);
+  const isLoading = !isInitialized || unitsQuery.isLoading;
 
   const formatCadence = (seconds: number) => {
     const hours = seconds / 3600;
@@ -148,7 +118,7 @@ const ManualLog = () => {
 
   const handleLogSuccess = () => {
     // Reload units to get fresh data
-    loadUnits();
+    unitsQuery.refetch();
   };
 
   if (isLoading) {
@@ -188,8 +158,8 @@ const ManualLog = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={loadUnits}
-            disabled={isLoading}
+            onClick={() => unitsQuery.refetch()}
+            disabled={unitsQuery.isLoading}
             title="Refresh units"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
