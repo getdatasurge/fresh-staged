@@ -27,7 +27,7 @@
 }
 
 # Main application
-{$DOMAIN:localhost} {
+{$DOMAIN::80} {
     # Reverse proxy to backend API
     reverse_proxy /api/* backend:3000 {
         # Health check for load balancing
@@ -61,9 +61,6 @@
 
     # Security headers
     header {
-        # HSTS (1 year, include subdomains, preload-ready)
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-
         # Prevent content type sniffing
         X-Content-Type-Options "nosniff"
 
