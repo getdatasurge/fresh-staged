@@ -6,10 +6,10 @@
  * - updateProfile: Update personal profile data
  */
 import { TRPCError } from '@trpc/server'
-import { eq } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db/client.js'
-import { profiles, userRoles } from '../db/schema/users.js'
+import { profiles, userRoles, userSyncLog } from '../db/schema/users.js'
 import { router } from '../trpc/index.js'
 import { protectedProcedure } from '../trpc/procedures.js'
 
@@ -84,6 +84,70 @@ export const usersRouter = router({
 					updated_at: new Date(),
 				} as any)
 				.where(eq(profiles.userId, userId))
+
+			return { success: true }
+		}),
+
+	/**
+	 * Get last user sync log entry
+	 * Used by EmulatorResyncCard component
+	 */
+	getLastSyncLog: protectedProcedure
+		.output(
+			z
+				.object({
+					id: z.string().uuid(),
+					userId: z.string(),
+					eventType: z.string(),
+					payload: z.record(z.unknown()),
+					status: z.string(),
+					lastError: z.string().nullable(),
+					createdAt: z.date(),
+					sentAt: z.date().nullable(),
+				})
+				.nullable(),
+		)
+		.query(async ({ ctx }) => {
+			const log = await db.query.userSyncLog.findFirst({
+				where: eq(userSyncLog.userId, ctx.user.id),
+				orderBy: [desc(userSyncLog.createdAt)],
+			})
+
+			if (!log) return null
+
+			// Parse payload from JSON string
+			let payload: Record<string, unknown> = {}
+			if (log.payload) {
+				try {
+					payload = JSON.parse(log.payload)
+				} catch {
+					payload = {}
+				}
+			}
+
+			return {
+				id: log.id,
+				userId: log.userId,
+				eventType: log.eventType,
+				payload,
+				status: log.status,
+				lastError: log.lastError,
+				createdAt: log.createdAt,
+				sentAt: log.sentAt,
+			}
+		}),
+
+	/**
+	 * Trigger emulator sync by updating profile
+	 * Used by EmulatorResyncCard component
+	 */
+	triggerEmulatorSync: protectedProcedure
+		.output(z.object({ success: z.boolean() }))
+		.mutation(async ({ ctx }) => {
+			await db
+				.update(profiles)
+				.set({ updatedAt: new Date() })
+				.where(eq(profiles.userId, ctx.user.id))
 
 			return { success: true }
 		}),

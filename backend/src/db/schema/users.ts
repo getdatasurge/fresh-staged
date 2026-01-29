@@ -126,6 +126,30 @@ export const platformRoles = pgTable(
 );
 
 
+// User Sync Log - tracks user sync events to external systems (like Emulator)
+export const userSyncLog = pgTable(
+  'user_sync_log',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(),
+    eventType: varchar('event_type', { length: 64 }).notNull(),
+    payload: text('payload'), // JSON payload
+    status: varchar('status', { length: 32 }).notNull().default('pending'),
+    lastError: text('last_error'),
+    sentAt: timestamp('sent_at', {
+      mode: 'date',
+      precision: 3,
+      withTimezone: true,
+    }),
+    ...timestamps,
+  },
+  (table) => [
+    index('user_sync_log_user_idx').on(table.userId),
+    index('user_sync_log_status_idx').on(table.status),
+    index('user_sync_log_created_idx').on(table.createdAt),
+  ]
+);
+
 // Type exports
 export type Profile = typeof profiles.$inferSelect;
 export type InsertProfile = typeof profiles.$inferInsert;
@@ -133,3 +157,5 @@ export type UserRole = typeof userRoles.$inferSelect;
 export type InsertUserRole = typeof userRoles.$inferInsert;
 export type EscalationContact = typeof escalationContacts.$inferSelect;
 export type InsertEscalationContact = typeof escalationContacts.$inferInsert;
+export type UserSyncLog = typeof userSyncLog.$inferSelect;
+export type InsertUserSyncLog = typeof userSyncLog.$inferInsert;

@@ -1,98 +1,59 @@
-import { useState } from "react";
-import { supabase } from "@/lib/supabase-placeholder";
-import { useUser } from "@stackframe/react";
+import { useTRPC, useTRPCClient } from "@/lib/trpc";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { RefreshCw, CheckCircle, AlertTriangle, Clock } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 
 interface EmulatorResyncCardProps {
   organizationId: string | null;
 }
 
-interface SyncLogEntry {
-  id: string;
-  user_id: string;
-  event_type: string;
-  payload: {
-    ttn?: {
-      enabled: boolean;
-      provisioning_status: string;
-      cluster: string | null;
-      application_id: string | null;
-      webhook_url: string | null;
-      api_key_last4: string | null;
-      webhook_secret_last4: string | null;
-    };
-  };
-  status: string;
-  last_error: string | null;
-  created_at: string;
-  sent_at: string | null;
+interface TtnPayload {
+  enabled?: boolean;
+  provisioning_status?: string;
+  cluster?: string | null;
+  application_id?: string | null;
+  webhook_url?: string | null;
+  api_key_last4?: string | null;
+  webhook_secret_last4?: string | null;
 }
 
 export function EmulatorResyncCard({ organizationId }: EmulatorResyncCardProps) {
-  const user = useUser();
-  const [isSyncing, setIsSyncing] = useState(false);
+  const trpc = useTRPC();
+  const client = useTRPCClient();
 
-  // Fetch last sync log for current user
+  const syncLogQueryOptions = trpc.users.getLastSyncLog.queryOptions();
   const { data: lastSync, refetch: refetchSync } = useQuery({
-    queryKey: ["user-sync-log", organizationId],
-    queryFn: async () => {
-      if (!user) return null;
-
-      const { data, error } = await supabase
-        .from("user_sync_log")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data as SyncLogEntry | null;
-    },
+    ...syncLogQueryOptions,
     enabled: !!organizationId,
+    staleTime: 60_000,
   });
 
-  const handleResync = async () => {
-    if (!organizationId) {
-      toast.error("No organization found");
-      return;
-    }
-
-    if (!user) {
-      toast.error("Not authenticated");
-      return;
-    }
-
-    setIsSyncing(true);
-    try {
-      // Update profile to trigger emit_user_sync database trigger
-      const { error } = await supabase
-        .from("profiles")
-        .update({ updated_at: new Date().toISOString() })
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-
+  const resyncMutation = useMutation({
+    mutationFn: () => client.users.triggerEmulatorSync.mutate(),
+    onSuccess: () => {
       toast.success("Sync triggered - check Emulator in a few seconds");
-      
       // Wait a moment then refetch to show new sync status
       setTimeout(() => {
         refetchSync();
       }, 2000);
-    } catch (error) {
-      console.error("[EmulatorResyncCard] Sync error:", error);
-      toast.error(`Sync failed: ${error instanceof Error ? error.message : "Unknown error"}`);
-    } finally {
-      setIsSyncing(false);
+    },
+    onError: (error) => {
+      toast.error(`Sync failed: ${error.message}`);
+    },
+  });
+
+  const handleResync = () => {
+    if (!organizationId) {
+      toast.error("No organization found");
+      return;
     }
+    resyncMutation.mutate();
   };
 
-  const ttnPayload = lastSync?.payload?.ttn;
+  const ttnPayload = lastSync?.payload?.ttn as TtnPayload | undefined;
   const hasTtnConfig = ttnPayload?.enabled && ttnPayload?.application_id;
 
   return (
@@ -108,12 +69,12 @@ export function EmulatorResyncCard({ organizationId }: EmulatorResyncCardProps) 
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-4">
-          <Button 
-            onClick={handleResync} 
-            disabled={isSyncing || !organizationId}
+          <Button
+            onClick={handleResync}
+            disabled={resyncMutation.isPending || !organizationId}
             variant="outline"
           >
-            {isSyncing ? (
+            {resyncMutation.isPending ? (
               <>
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                 Syncing...
@@ -152,12 +113,12 @@ export function EmulatorResyncCard({ organizationId }: EmulatorResyncCardProps) 
             </div>
 
             <div className="text-xs text-muted-foreground">
-              {new Date(lastSync.created_at).toLocaleString()}
+              {new Date(lastSync.createdAt).toLocaleString()}
             </div>
 
-            {lastSync.last_error && (
+            {lastSync.lastError && (
               <div className="p-2 rounded bg-alarm/10 text-alarm text-sm">
-                Error: {lastSync.last_error}
+                Error: {lastSync.lastError}
               </div>
             )}
 
@@ -171,30 +132,30 @@ export function EmulatorResyncCard({ organizationId }: EmulatorResyncCardProps) 
                   </div>
                   <div>
                     <span className="text-muted-foreground">Status:</span>{" "}
-                    <span className="font-mono">{ttnPayload.provisioning_status || "—"}</span>
+                    <span className="font-mono">{ttnPayload.provisioning_status || "-"}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Cluster:</span>{" "}
-                    <span className="font-mono">{ttnPayload.cluster || "—"}</span>
+                    <span className="font-mono">{ttnPayload.cluster || "-"}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">App ID:</span>{" "}
-                    <span className="font-mono">{ttnPayload.application_id || "—"}</span>
+                    <span className="font-mono">{ttnPayload.application_id || "-"}</span>
                   </div>
                   <div className="col-span-2">
                     <span className="text-muted-foreground">Webhook URL:</span>{" "}
-                    <span className="font-mono text-xs break-all">{ttnPayload.webhook_url || "—"}</span>
+                    <span className="font-mono text-xs break-all">{ttnPayload.webhook_url || "-"}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">API Key:</span>{" "}
                     <span className="font-mono">
-                      {ttnPayload.api_key_last4 ? `••••${ttnPayload.api_key_last4}` : "Not set"}
+                      {ttnPayload.api_key_last4 ? `****${ttnPayload.api_key_last4}` : "Not set"}
                     </span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Webhook Secret:</span>{" "}
                     <span className="font-mono">
-                      {ttnPayload.webhook_secret_last4 ? `••••${ttnPayload.webhook_secret_last4}` : "Not set"}
+                      {ttnPayload.webhook_secret_last4 ? `****${ttnPayload.webhook_secret_last4}` : "Not set"}
                     </span>
                   </div>
                 </div>
