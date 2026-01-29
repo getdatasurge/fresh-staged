@@ -548,6 +548,131 @@ See [docs/DATABASE.md](DATABASE.md) for complete restoration procedures. Quick r
 
 ## Troubleshooting
 
+This section covers common deployment issues and their solutions, organized by deployment phase.
+
+### Quick Diagnosis
+
+Before diving into specific issues, gather diagnostic information:
+
+```bash
+# Check deployment checkpoint state
+cat .deploy-state/checkpoints.txt 2>/dev/null || echo "No checkpoints found"
+
+# Check which phase failed (look for last successful checkpoint)
+ls -la .deploy-state/
+
+# Check service status
+docker compose ps
+
+# Check recent logs
+docker compose logs --tail=50
+```
+
+### Pre-flight Failures
+
+Pre-flight checks validate your system meets minimum requirements before deployment begins.
+
+#### "Insufficient RAM" Error
+
+**Symptom:** `Pre-flight failed: RAM 4GB is below minimum 8GB`
+
+**Cause:** System has less than 8GB RAM (FreshTrack Pro requires 8GB minimum)
+
+**Solution:**
+1. Check current RAM: `free -h`
+2. Either:
+   - Upgrade server to 8GB+ RAM, or
+   - Set override (not recommended): `PREFLIGHT_SKIP_RAM=true ./scripts/deploy-automated.sh`
+
+**Warning:** Running with less than 8GB RAM may cause OOM kills during deployment.
+
+#### "Insufficient Disk Space" Error
+
+**Symptom:** `Pre-flight failed: Disk space 8GB is below minimum 10GB`
+
+**Cause:** Less than 10GB free disk space
+
+**Solution:**
+```bash
+# Check disk usage
+df -h
+
+# Clean up Docker (if previous failed deployments)
+docker system prune -a
+
+# Clean up apt cache
+sudo apt clean
+
+# Retry deployment
+sudo ./scripts/deploy-automated.sh
+```
+
+#### "Network Unreachable" Error
+
+**Symptom:** `Pre-flight failed: Cannot reach docker.com`
+
+**Cause:** Server cannot reach external networks (required for Docker install, apt packages)
+
+**Solution:**
+1. Check DNS resolution: `dig docker.com`
+2. Check firewall outbound rules: `sudo ufw status`
+3. Check if behind proxy: configure `HTTP_PROXY` if needed
+4. Test connectivity: `curl -I https://docker.com`
+
+### Checkpoint Recovery Failures
+
+The deployment script uses checkpoints to track progress. If a checkpoint is corrupted or stale, deployment may fail to resume correctly.
+
+#### "Checkpoint exists but state is invalid"
+
+**Symptom:** Script says checkpoint exists but deployment state is inconsistent
+
+**Solution:**
+```bash
+# View checkpoint state
+cat .deploy-state/checkpoints.txt
+
+# Clear specific checkpoint (e.g., deploy-deployment)
+rm .deploy-state/checkpoints.txt  # Clears all checkpoints
+
+# Or reset completely
+sudo ./scripts/deploy-automated.sh --reset
+```
+
+#### Script Hangs at "Resuming from checkpoint"
+
+**Symptom:** Script appears stuck after detecting checkpoint
+
+**Cause:** Previous deployment left services in partial state
+
+**Solution:**
+```bash
+# Stop all containers
+docker compose down --timeout 30
+
+# Clear checkpoints
+rm -rf .deploy-state/checkpoints.txt
+
+# Retry
+sudo ./scripts/deploy-automated.sh
+```
+
+#### "Checkpoint file not writable"
+
+**Symptom:** `Error: Cannot write to .deploy-state/checkpoints.txt`
+
+**Cause:** Permission issues (usually when script was run as different user)
+
+**Solution:**
+```bash
+# Fix ownership
+sudo chown -R $(whoami):$(whoami) .deploy-state/
+
+# Or remove and let script recreate
+sudo rm -rf .deploy-state/
+sudo ./scripts/deploy-automated.sh
+```
+
 ### DNS Check Fails
 
 **Symptom:** "DNS resolution failed for yourdomain.com"
