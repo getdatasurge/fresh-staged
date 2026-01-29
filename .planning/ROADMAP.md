@@ -13,7 +13,7 @@ Fix the 15 pre-existing test failures in the TTN device bootstrap endpoint. Thes
 - ✅ **v2.2 Technical Debt & Stabilization** - Phases 27-33 (shipped 2026-01-29)
 - ✅ **v2.3 Deployment Orchestration** - Phases 34-37 (shipped 2026-01-29)
 - ✅ **v2.4 Tech Debt Cleanup** - Phases 38-43 (shipped 2026-01-29)
-- 🚧 **v2.5 TTN Test Fixes** - Phase 44 (in progress)
+- ✅ **v2.5 TTN Test Fixes** - Phase 44 (shipped 2026-01-29)
 
 ## Phases
 

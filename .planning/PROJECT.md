@@ -155,7 +155,12 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 
 ### Active
 
-<!-- No active milestone - ready for next milestone -->
+<!-- Current milestone: v2.5 TTN Test Fixes -->
+
+**TTN Test Fixes (v2.5)**
+- [x] **TTN-01**: Bootstrap endpoint returns correct status codes (400/401/403/201 instead of 500) — v2.5
+- [x] **TTN-02**: All 15 failing tests in ttn-devices.test.ts pass — v2.5
+- [x] **TTN-03**: Proper error handling in bootstrap service/route — v2.5
 
 ### Out of Scope
 
@@ -230,5 +235,14 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 | /dev/tty for credentials | Prevents log capture of secrets | Good — v2.3 secure display working |
 | 3-consecutive-pass health check | Prevents transient false positives | Good — v2.3 stability verification |
 
+## Current Milestone: v2.5 TTN Test Fixes
+
+**Goal:** Fix the 15 pre-existing test failures in the TTN device bootstrap endpoint.
+
+**Target features:**
+- Fix bootstrap endpoint to return correct HTTP status codes
+- Proper error handling (400/401/403 vs 500)
+- All 45 tests in ttn-devices.test.ts passing
+
 ---
-*Last updated: 2026-01-29 after v2.4 milestone completed*
+*Last updated: 2026-01-29 after v2.5 milestone started*

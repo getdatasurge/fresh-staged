@@ -28,8 +28,9 @@ Progress: ██████████ 100%
 | v2.2 | Technical Debt & Stabilization | 27-33 | 27 | 2026-01-29 |
 | v2.3 | Deployment Orchestration | 34-37 | 11 | 2026-01-29 |
 | v2.4 | Tech Debt Cleanup | 38-43 | 16 | 2026-01-29 |
+| v2.5 | TTN Test Fixes | 44 | 1 | 2026-01-29 |
 
-**Total shipped:** 7 milestones, 43 phases, 183 plans
+**Total shipped:** 8 milestones, 44 phases, 184 plans
 
 ## v2.5 Progress
 
