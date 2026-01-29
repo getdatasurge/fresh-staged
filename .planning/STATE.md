@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.3 Deployment Orchestration — Phase 36 in progress
+**Current focus:** v2.3 Deployment Orchestration — Phase 36 complete
 
 ## Current Position
 
 Milestone: v2.3 Deployment Orchestration
 Phase: 36 - Post-Deployment Setup
-Plan: 02 of 3 complete (01 + 02)
-Status: In progress
-Last activity: 2026-01-29 — Completed 36-01-PLAN.md (URL summary + credential display)
+Plan: 03 of 3 complete
+Status: Phase complete
+Last activity: 2026-01-29 — Completed 36-03-PLAN.md (post-deploy.sh orchestration)
 
-Progress: [======----] 58% (2/4 phases complete, phase 36 plan 2/3)
+Progress: [=======---] 75% (3/4 phases complete)
 
 ## v2.3 Phase Overview
 
@@ -23,8 +23,8 @@ Progress: [======----] 58% (2/4 phases complete, phase 36 plan 2/3)
 |-------|------|--------------|--------|
 | 34 | Deployment Orchestration | DEPLOY-01 to DEPLOY-05 | Complete (2/2 plans) |
 | 35 | Verification | VERIFY-01 to VERIFY-06 | Complete (2/2 plans) |
-| 36 | Post-Deployment Setup | POST-01 to POST-05 | In progress (2/3 plans) |
-| 37 | Documentation | DOCS-01 to DOCS-04 | Blocked by 36 |
+| 36 | Post-Deployment Setup | POST-01 to POST-05 | Complete (3/3 plans) |
+| 37 | Documentation | DOCS-01 to DOCS-04 | Ready |
 
 ## Milestones Shipped
 
@@ -57,6 +57,8 @@ Progress: [======----] 58% (2/4 phases complete, phase 36 plan 2/3)
 | 36-02 | Dashboard co-located with freshtrack-overview.json | Auto-provisioning via existing dashboards.yml |
 | 36-01 | Use /dev/tty for credential display | Prevents secrets from being captured in log redirections |
 | 36-01 | Mask secrets showing first/last 4 chars | Allows identification without full exposure |
+| 36-03 | post-deploy.sh follows verify-deployment.sh pattern | Consistent domain loading from config.env or CLI arg |
+| 36-03 | pg_isready loop with 30s timeout | Robust database readiness waiting before seeding |
 
 ## Tech Debt Carried Forward
 
@@ -64,29 +66,22 @@ Progress: [======----] 58% (2/4 phases complete, phase 36 plan 2/3)
 - supabase-placeholder.ts remains (intentional graceful degradation)
 - SensorSimulatorPanel edge function call kept (admin testing tool)
 
-## Context for Phase 36 (In Progress)
+## Context for Phase 37 (Next)
 
-**What Phase 36-01 built:**
+**What Phase 36 built (complete):**
 - scripts/lib/post-deploy-lib.sh (credential display library)
-- Extended verify-lib.sh with Bull Board URL
 - display_credential_summary() with /dev/tty output for security
 - display_next_steps() with 5-step onboarding guide
-- mask_secret() helper for consistent credential masking
+- docker/grafana/dashboards/freshtrack-sensors.json (6-panel dashboard)
+- scripts/post-deploy.sh (POST-01 through POST-05 orchestration)
+- Enhanced scripts/seed-demo-data.sh with database readiness check
 
-**What Phase 36-02 built:**
-- docker/grafana/dashboards/freshtrack-sensors.json
-- 6-panel sensor metrics dashboard
-- Active Sensors, Readings Today, Active Alerts stat panels
-- Temperature time-series with celsius units
-- Sensor reading rate (ops/sec) and battery status panels
-- Prometheus queries with fallback for graceful degradation
-
-**Remaining in Phase 36:**
-- Plan 03: Backup configuration
+**Deployment workflow now complete:**
+- preflight.sh -> deploy-selfhosted.sh -> verify-deployment.sh -> post-deploy.sh
 
 ## Session Continuity
 
-Last session: 2026-01-29 11:15 UTC
-Stopped at: Completed 36-01-PLAN.md
+Last session: 2026-01-29 11:12 UTC
+Stopped at: Completed 36-03-PLAN.md
 Resume file: None
-Next action: Execute 36-03-PLAN.md (backup configuration)
+Next action: Execute Phase 37 (Documentation)
