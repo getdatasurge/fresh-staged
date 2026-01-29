@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@stackframe/react";
 import { supabase } from "@/lib/supabase-placeholder";
+import { useTRPC } from "@/lib/trpc";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -98,6 +100,7 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const stackUser = useUser();
   const { toast } = useToast();
+  const trpc = useTRPC();
   const [currentStep, setCurrentStep] = useState<Step>("organization");
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingOrg, setIsCheckingOrg] = useState(true);
@@ -117,6 +120,9 @@ const Onboarding = () => {
     gatewayId?: string;
   }>({});
 
+  // Ref to track polling interval for cleanup
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const [data, setData] = useState<OnboardingData>({
     organization: { name: "", slug: "", timezone: "America/New_York" },
     site: { name: "", address: "", city: "", state: "", postalCode: "" },
@@ -127,6 +133,23 @@ const Onboarding = () => {
 
   // Use the slug availability hook
   const { status: slugStatus } = useSlugAvailability(data.organization.slug);
+
+  // tRPC query for TTN provisioning status (disabled by default, used for polling)
+  const statusQuery = useQuery(
+    trpc.ttnSettings.getStatus.queryOptions(
+      { organizationId: createdIds.orgId || '' },
+      { enabled: false } // Manual polling control
+    )
+  );
+
+  // Cleanup polling interval on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, []);
 
   // Check if user already has an organization
   // MIGRATED: Now uses Stack Auth user instead of Supabase auth
@@ -191,89 +214,85 @@ const Onboarding = () => {
     }
   };
 
-  // TTN Provisioning function with polling for status updates
+  // TTN Provisioning function with polling for status updates via tRPC
+  // NOTE: The database trigger queue_tts_provisioning automatically queues
+  // provisioning when an organization is created. This function just polls
+  // for status until provisioning completes or fails.
   const provisionTTN = async (orgId: string): Promise<boolean> => {
     const POLL_INTERVAL_MS = 3000; // Poll every 3 seconds
     const MAX_POLL_TIME_MS = 90000; // Give up polling after 90 seconds
-    
+
     setTtnStatus({ status: 'provisioning', step: 'Starting...' });
-    
-    try {
-      // Kick off provisioning (non-blocking)
-      const { error: provisionError } = await supabase.functions.invoke(
-        'ttn-provision-org',
-        {
-          body: {
-            action: 'provision',
-            organization_id: orgId,
-            // Default to nam1 (North America, US915 frequency plan)
-            ttn_region: 'nam1',
-          },
-        }
-      );
-      
-      if (provisionError) {
-        console.error('[Onboarding] TTN provisioning error:', provisionError);
-        setTtnStatus({ 
-          status: 'failed', 
-          error: provisionError.message || 'Provisioning failed',
-          retryable: true 
-        });
-        return false;
-      }
-      
-      // Poll for status updates
+
+    // Store orgId for status query
+    setCreatedIds(prev => ({ ...prev, orgId }));
+
+    return new Promise((resolve) => {
       const startTime = Date.now();
-      while (Date.now() - startTime < MAX_POLL_TIME_MS) {
-        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
-        
-        const { data: statusResult } = await supabase.functions.invoke(
-          'ttn-provision-org',
-          {
-            body: {
-              action: 'status',
-              organization_id: orgId,
-            },
-          }
-        );
-        
-        if (statusResult) {
-          const status = statusResult.provisioning_status;
-          setTtnStatus({
-            status: status === 'completed' ? 'ready' : status,
-            step: statusResult.provisioning_step || statusResult.provisioning_last_step,
-            error: statusResult.provisioning_error,
-            retryable: statusResult.provisioning_can_retry ?? true,
-            attemptCount: statusResult.provisioning_attempt_count,
-            lastHeartbeat: statusResult.provisioning_last_heartbeat_at,
-          });
-          
-          if (status === 'ready' || status === 'completed') {
-            return true;
-          }
-          if (status === 'failed') {
-            return false;
-          }
-        }
+
+      // Clear any existing polling interval
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
       }
-      
-      // Polling timed out - user can continue, retry from Settings
-      setTtnStatus({
-        status: 'failed',
-        error: 'Provisioning is taking longer than expected. You can continue and retry from Settings.',
-        retryable: true,
+
+      // Start polling for status updates via tRPC
+      pollingIntervalRef.current = setInterval(async () => {
+        try {
+          const result = await statusQuery.refetch();
+          const statusResult = result.data;
+
+          if (statusResult) {
+            const status = statusResult.provisioning_status;
+            setTtnStatus({
+              status: status === 'completed' ? 'ready' : (status as 'idle' | 'provisioning' | 'ready' | 'failed'),
+              step: statusResult.provisioning_step || undefined,
+              error: statusResult.provisioning_error || undefined,
+              retryable: true,
+              attemptCount: statusResult.provisioning_attempt_count,
+            });
+
+            if (status === 'ready' || status === 'completed') {
+              if (pollingIntervalRef.current) {
+                clearInterval(pollingIntervalRef.current);
+                pollingIntervalRef.current = null;
+              }
+              resolve(true);
+              return;
+            }
+            if (status === 'failed') {
+              if (pollingIntervalRef.current) {
+                clearInterval(pollingIntervalRef.current);
+                pollingIntervalRef.current = null;
+              }
+              resolve(false);
+              return;
+            }
+          }
+
+          // Check for timeout
+          if (Date.now() - startTime > MAX_POLL_TIME_MS) {
+            if (pollingIntervalRef.current) {
+              clearInterval(pollingIntervalRef.current);
+              pollingIntervalRef.current = null;
+            }
+            setTtnStatus({
+              status: 'failed',
+              error: 'Provisioning is taking longer than expected. You can continue and retry from Settings.',
+              retryable: true,
+            });
+            resolve(false);
+          }
+        } catch (err) {
+          console.error('[Onboarding] TTN status poll error:', err);
+          // Don't fail on individual poll errors, let it retry
+        }
+      }, POLL_INTERVAL_MS);
+
+      // Also poll immediately on first call
+      statusQuery.refetch().catch(err => {
+        console.error('[Onboarding] Initial TTN status poll error:', err);
       });
-      return false;
-      
-    } catch (err) {
-      console.error('[Onboarding] TTN provisioning exception:', err);
-      setTtnStatus({ 
-        status: 'failed', 
-        error: 'Provisioning failed unexpectedly. You can retry from Settings.',
-        retryable: true 
-      });
-      return false;
-    }
+    });
   };
 
   const handleCreateOrganization = async () => {
