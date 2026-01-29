@@ -1,20 +1,20 @@
 /**
  * Annotations Widget
- * 
+ *
  * View and add notes, comments, and shift handoff information.
- * Persists notes to event_logs table.
+ * Persists notes to event_logs table via tRPC.
  * Displays author name/email and timestamp for each annotation.
  * Allows managers/admins to delete annotations.
  */
 
-import { useEffect, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageSquare, Plus, Loader2, X, Trash2 } from "lucide-react";
-import { supabase } from "@/lib/supabase-placeholder";
-import { useUser } from "@stackframe/react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTRPC, useTRPCClient } from "@/lib/trpc";
 import type { WidgetProps } from "../types";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -30,126 +30,99 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface RawAnnotation {
+interface Annotation {
   id: string;
   title: string | null;
   event_data: {
     note?: string;
     message?: string;
   };
-  recorded_at: string;
+  recorded_at: string | Date;
   actor_id: string | null;
-}
-
-interface Annotation extends RawAnnotation {
   author_name: string | null;
   author_email: string | null;
 }
 
 export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
-  const user = useUser();
-  const [annotations, setAnnotations] = useState<Annotation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [noteText, setNoteText] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
   const [annotationToDelete, setAnnotationToDelete] = useState<Annotation | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const { canManageAnnotations } = usePermissions();
 
-  const fetchAnnotations = useCallback(async () => {
-    if (!entityId || !organizationId) {
-      setIsLoading(false);
-      return;
-    }
+  const trpc = useTRPC();
+  const client = useTRPCClient();
+  const queryClient = useQueryClient();
 
-    try {
-      // Fetch event logs
-      const { data: rawAnnotations, error } = await supabase
-        .from("event_logs")
-        .select("id, title, event_data, recorded_at, actor_id")
-        .eq("unit_id", entityId)
-        .eq("organization_id", organizationId)
-        .in("event_type", ["note_added", "comment", "shift_handoff", "annotation"])
-        .order("recorded_at", { ascending: false })
-        .limit(20);
+  // Query options for annotations
+  const queryOptions = trpc.readings.listEventLogs.queryOptions({
+    organizationId: organizationId!,
+    unitId: entityId!,
+    eventTypes: ['note_added', 'comment', 'shift_handoff', 'annotation'],
+    limit: 20,
+  });
 
-      if (error) throw error;
-      
-      if (!rawAnnotations || rawAnnotations.length === 0) {
-        setAnnotations([]);
-        setIsLoading(false);
-        return;
-      }
+  const { data: rawAnnotations, isLoading } = useQuery({
+    ...queryOptions,
+    enabled: !!entityId && !!organizationId,
+  });
 
-      // Get unique actor_ids to fetch profiles
-      const actorIds = [...new Set(rawAnnotations.map(a => a.actor_id).filter(Boolean))] as string[];
-      
-      let profilesMap: Record<string, { full_name: string | null; email: string | null }> = {};
-      
-      if (actorIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("user_id, full_name, email")
-          .in("user_id", actorIds);
-        
-        if (profiles) {
-          profilesMap = profiles.reduce((acc, p) => {
-            acc[p.user_id] = { full_name: p.full_name, email: p.email };
-            return acc;
-          }, {} as Record<string, { full_name: string | null; email: string | null }>);
-        }
-      }
+  // Transform tRPC response to match expected Annotation interface
+  const annotations = useMemo((): Annotation[] => {
+    if (!rawAnnotations) return [];
+    return rawAnnotations.map(a => ({
+      id: a.id,
+      title: a.title,
+      event_data: (a.eventData ?? {}) as { note?: string; message?: string },
+      recorded_at: a.recordedAt,
+      actor_id: a.actorId,
+      author_name: a.authorName,
+      author_email: a.authorEmail,
+    }));
+  }, [rawAnnotations]);
 
-      // Merge annotations with profile data
-      const enrichedAnnotations: Annotation[] = rawAnnotations.map(a => ({
-        ...a,
-        event_data: a.event_data as { note?: string; message?: string },
-        author_name: a.actor_id ? profilesMap[a.actor_id]?.full_name || null : null,
-        author_email: a.actor_id ? profilesMap[a.actor_id]?.email || null : null,
-      }));
-
-      setAnnotations(enrichedAnnotations);
-    } catch (err) {
-      console.error("Error fetching annotations:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [entityId, organizationId]);
-
-  useEffect(() => {
-    fetchAnnotations();
-  }, [fetchAnnotations]);
-
-  const handleSaveNote = async () => {
-    if (!noteText.trim() || !entityId || !organizationId) return;
-
-    setIsSaving(true);
-    try {
-      const { error } = await supabase
-        .from("event_logs")
-        .insert({
-          organization_id: organizationId,
-          unit_id: entityId,
-          event_type: "note_added",
-          event_data: { note: noteText.trim() },
-          actor_id: user?.id || null,
-          recorded_at: new Date().toISOString(),
-        });
-
-      if (error) throw error;
-
+  // Create mutation
+  const createMutation = useMutation({
+    mutationFn: async (noteContent: string) => {
+      return client.readings.createEventLog.mutate({
+        organizationId: organizationId!,
+        unitId: entityId!,
+        eventType: 'note_added',
+        eventData: { note: noteContent },
+      });
+    },
+    onSuccess: () => {
       toast.success("Note added");
       setNoteText("");
       setIsAddingNote(false);
-      fetchAnnotations();
-    } catch (err) {
-      console.error("Failed to save note:", err);
+      queryClient.invalidateQueries({ queryKey: queryOptions.queryKey });
+    },
+    onError: () => {
       toast.error("Failed to add note");
-    } finally {
-      setIsSaving(false);
-    }
+    },
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (eventLogId: string) => {
+      return client.readings.deleteEventLog.mutate({
+        organizationId: organizationId!,
+        eventLogId,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Annotation deleted");
+      setAnnotationToDelete(null);
+      queryClient.invalidateQueries({ queryKey: queryOptions.queryKey });
+    },
+    onError: () => {
+      toast.error("Failed to delete annotation");
+    },
+  });
+
+  const handleSaveNote = () => {
+    if (!noteText.trim()) return;
+    createMutation.mutate(noteText.trim());
   };
 
   const handleCancel = () => {
@@ -157,27 +130,9 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
     setNoteText("");
   };
 
-  const handleDeleteAnnotation = async () => {
+  const handleDeleteAnnotation = () => {
     if (!annotationToDelete) return;
-    
-    setIsDeleting(true);
-    try {
-      const { error } = await supabase
-        .from("event_logs")
-        .delete()
-        .eq("id", annotationToDelete.id);
-
-      if (error) throw error;
-
-      toast.success("Annotation deleted");
-      setAnnotationToDelete(null);
-      fetchAnnotations();
-    } catch (err) {
-      console.error("Failed to delete annotation:", err);
-      toast.error("Failed to delete annotation");
-    } finally {
-      setIsDeleting(false);
-    }
+    deleteMutation.mutate(annotationToDelete.id);
   };
 
   const getAuthorDisplay = (annotation: Annotation): string => {
@@ -190,9 +145,10 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
     return "Unknown user";
   };
 
-  const formatTimestamp = (dateString: string): string => {
+  const formatTimestamp = (dateValue: string | Date): string => {
     try {
-      return format(new Date(dateString), "MMM d, yyyy · h:mm a");
+      const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
+      return format(date, "MMM d, yyyy · h:mm a");
     } catch {
       return "Unknown time";
     }
@@ -240,21 +196,21 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
                 autoFocus
               />
               <div className="flex gap-2 justify-end">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={handleCancel}
-                  disabled={isSaving}
+                  disabled={createMutation.isPending}
                 >
                   <X className="h-4 w-4 mr-1" />
                   Cancel
                 </Button>
-                <Button 
-                  size="sm" 
-                  onClick={handleSaveNote} 
-                  disabled={isSaving || !noteText.trim()}
+                <Button
+                  size="sm"
+                  onClick={handleSaveNote}
+                  disabled={createMutation.isPending || !noteText.trim()}
                 >
-                  {isSaving ? (
+                  {createMutation.isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                       Saving...
@@ -280,9 +236,9 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
             <ScrollArea className="flex-1">
               <div className="space-y-3">
                 {annotations.map((annotation) => {
-                  const noteContent = annotation.event_data?.note 
-                    || annotation.event_data?.message 
-                    || annotation.title 
+                  const noteContent = annotation.event_data?.note
+                    || annotation.event_data?.message
+                    || annotation.title
                     || "No content";
 
                   return (
@@ -332,13 +288,13 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteAnnotation}
-              disabled={isDeleting}
+              disabled={deleteMutation.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? (
+              {deleteMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                   Deleting...
