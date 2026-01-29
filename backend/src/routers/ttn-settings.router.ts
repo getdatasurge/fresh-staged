@@ -436,4 +436,97 @@ export const ttnSettingsRouter = router({
 
 			return testResult
 		}),
+
+	/**
+	 * Retry failed provisioning
+	 * Equivalent to: retry action in ttn-provision-org edge function
+	 *
+	 * Only available when provisioning_status is 'failed'.
+	 * Returns use_start_fresh=true if the application is unowned.
+	 */
+	provision: orgProcedure
+		.input(
+			z.object({
+				organizationId: z.string().uuid(),
+				action: z.enum(['retry']),
+			}),
+		)
+		.output(ProvisionResponseSchema)
+		.mutation(async ({ input, ctx }) => {
+			// Admin/owner only
+			if (!['admin', 'owner'].includes(ctx.user.role)) {
+				throw new TRPCError({
+					code: 'FORBIDDEN',
+					message: 'Only administrators can retry provisioning',
+				})
+			}
+
+			const result = await TtnProvisioningService.retryProvisioning(
+				input.organizationId,
+			)
+
+			return result
+		}),
+
+	/**
+	 * Start fresh - deprovision and prepare for re-provisioning
+	 * Equivalent to: start_fresh action in ttn-provision-org edge function
+	 *
+	 * Deletes existing TTN application and clears all credentials.
+	 * After this, use the provisioning wizard to set up a new TTN application.
+	 */
+	startFresh: orgProcedure
+		.input(
+			z.object({
+				organizationId: z.string().uuid(),
+				region: z.string().default('nam1'),
+			}),
+		)
+		.output(StartFreshResponseSchema)
+		.mutation(async ({ input, ctx }) => {
+			// Admin/owner only
+			if (!['admin', 'owner'].includes(ctx.user.role)) {
+				throw new TRPCError({
+					code: 'FORBIDDEN',
+					message: 'Only administrators can start fresh provisioning',
+				})
+			}
+
+			const result = await TtnProvisioningService.startFresh(
+				input.organizationId,
+				input.region,
+			)
+
+			return result
+		}),
+
+	/**
+	 * Deep clean - delete ALL TTN resources
+	 * Equivalent to: deep_clean action in ttn-provision-org edge function
+	 *
+	 * This is the nuclear option. Deletes:
+	 * - All devices from TTN application
+	 * - The TTN application itself
+	 * - Clears all credentials in database
+	 *
+	 * Use this when provisioning is stuck or corrupted.
+	 */
+	deepClean: orgProcedure
+		.input(OrgInput)
+		.output(DeepCleanResponseSchema)
+		.mutation(async ({ input, ctx }) => {
+			// Admin/owner only
+			if (!['admin', 'owner'].includes(ctx.user.role)) {
+				throw new TRPCError({
+					code: 'FORBIDDEN',
+					message: 'Only administrators can perform deep clean',
+				})
+			}
+
+			const result = await TtnProvisioningService.deepClean(
+				input.organizationId,
+			)
+
+			return result
+		}),
 })
