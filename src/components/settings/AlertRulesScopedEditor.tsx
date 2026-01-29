@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "@/lib/trpc";
+import { useSites } from "@/hooks/useSites";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -40,15 +42,40 @@ import { useQueryClient } from "@tanstack/react-query";
 
 export function AlertRulesScopedEditor({ organizationId, canEdit }: AlertRulesScopedEditorProps) {
   const queryClient = useQueryClient();
+  const trpc = useTRPC();
   const [scopeTab, setScopeTab] = useState<"org" | "site" | "unit">("org");
   const [editorTab, setEditorTab] = useState<"thresholds" | "notifications">("thresholds");
-  const [sites, setSites] = useState<Site[]>([]);
-  const [units, setUnits] = useState<Unit[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState<string>("");
   const [selectedUnitId, setSelectedUnitId] = useState<string>("");
-  const [isLoadingSites, setIsLoadingSites] = useState(false);
-  const [isLoadingUnits, setIsLoadingUnits] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+
+  // Fetch sites using tRPC hook
+  const { data: sitesData, isLoading: isLoadingSites } = useSites(organizationId);
+  const sites = useMemo(() =>
+    (sitesData ?? []).map(s => ({ id: s.id, name: s.name })),
+    [sitesData]
+  );
+
+  // Fetch all units for org using tRPC
+  const unitsQueryOptions = trpc.units.listByOrg.queryOptions({
+    organizationId: organizationId!,
+  });
+  const { data: allUnits, isLoading: isLoadingUnits } = useQuery({
+    ...unitsQueryOptions,
+    enabled: !!organizationId && scopeTab === "unit" && !!selectedSiteId,
+  });
+
+  // Filter units for selected site
+  const units = useMemo(() => {
+    if (!allUnits || !selectedSiteId) return [];
+    return allUnits
+      .filter(u => u.siteId === selectedSiteId)
+      .map(u => ({
+        id: u.id,
+        name: u.name,
+        area_name: u.areaName || '',
+      }));
+  }, [allUnits, selectedSiteId]);
 
   // Fetch org rules
   const { data: orgRules, refetch: refetchOrg } = useOrgAlertRules(organizationId);
@@ -73,50 +100,6 @@ export function AlertRulesScopedEditor({ organizationId, canEdit }: AlertRulesSc
   const { data: unitNotifPolicies, refetch: refetchUnitNotif } = useUnitNotificationPolicies(
     scopeTab === "unit" ? selectedUnitId : null
   );
-
-  // Load sites
-  useEffect(() => {
-    const loadSites = async () => {
-      setIsLoadingSites(true);
-      const { data } = await supabase
-        .from("sites")
-        .select("id, name")
-        .order("name");
-      setSites(data || []);
-      setIsLoadingSites(false);
-    };
-    loadSites();
-  }, [organizationId]);
-
-  // Load units when site selected (for unit tab)
-  useEffect(() => {
-    if (scopeTab === "unit" && selectedSiteId) {
-      const loadUnits = async () => {
-        setIsLoadingUnits(true);
-        const { data } = await supabase
-          .from("units")
-          .select(`
-            id,
-            name,
-            area:areas!inner(
-              name,
-              site_id
-            )
-          `)
-          .eq("areas.site_id", selectedSiteId)
-          .order("name");
-
-        const formatted: Unit[] = (data || []).map((u: any) => ({
-          id: u.id,
-          name: u.name,
-          area_name: u.area?.name || "",
-        }));
-        setUnits(formatted);
-        setIsLoadingUnits(false);
-      };
-      loadUnits();
-    }
-  }, [scopeTab, selectedSiteId]);
 
   // Reset selections when changing tabs
   useEffect(() => {
