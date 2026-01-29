@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.4 Tech Debt Cleanup — Phase 42 Admin/Debug Components COMPLETE
+**Current focus:** v2.4 Tech Debt Cleanup — COMPLETE
 
 ## Current Position
 
 Milestone: v2.4 Tech Debt Cleanup
-Phase: 42 of 43 (Admin/Debug Components)
-Plan: 03 of 3 complete
-Status: Phase complete
-Last activity: 2026-01-29 — Completed all Phase 42 plans (admin/debug + general components)
+Phase: 43 of 43 (Cleanup & Verification)
+Plan: 01 of 1 complete
+Status: Milestone complete
+Last activity: 2026-01-29 — Completed Phase 43 (supabase-placeholder deleted, migration complete)
 
-Progress: █████████░ 90%
+Progress: ██████████ 100%
 
 ## Milestones Shipped
 
@@ -27,8 +27,9 @@ Progress: █████████░ 90%
 | v2.1 | Streamlined Deployment | 22-26 | 9 | 2026-01-25 |
 | v2.2 | Technical Debt & Stabilization | 27-33 | 27 | 2026-01-29 |
 | v2.3 | Deployment Orchestration | 34-37 | 11 | 2026-01-29 |
+| v2.4 | Tech Debt Cleanup | 38-43 | 16 | 2026-01-29 |
 
-**Total shipped:** 6 milestones, 37 phases, 167 plans
+**Total shipped:** 7 milestones, 43 phases, 183 plans
 
 ## v2.4 Progress
 
@@ -39,9 +40,9 @@ Progress: █████████░ 90%
 | 40 | Settings Components Migration | SETTINGS-01-07 | COMPLETE (3 plans) |
 | 41 | Pages Migration | PAGE-01-07 | COMPLETE (3 plans) |
 | 42 | Admin/Debug + Other Components | ADMIN-01-04, COMP-01-04 | COMPLETE (3 plans) |
-| 43 | Cleanup & Verification | CLEAN-01-03 | Not started |
+| 43 | Cleanup & Verification | CLEAN-01-03 | COMPLETE (1 plan) |
 
-**v2.4 scope:** 37 requirements, 6 phases, ~12 plans
+**v2.4 scope:** 37 requirements, 6 phases, 16 plans - COMPLETE
 
 ## Accumulated Context
 
@@ -69,18 +70,19 @@ Progress: █████████░ 90%
 | DEC-42-02-C | Add searchUsers procedure with ILIKE | Server-side search more efficient |
 | DEC-42-03-A | Remove settings history feature | No backend procedure exists |
 | DEC-42-03-B | Simplify InvoiceHistory to billing portal link | No listInvoices procedure in router |
+| DEC-43-01-A | Delete supabase-placeholder.ts | All migrations complete, placeholder no longer needed |
 
 ### Blockers/Concerns
 
 - ~~32 frontend tests fail with queryOptions/mutationOptions errors~~ FIXED in 38-03
 - ~~22 backend tests fail in queue.service.test.ts~~ FIXED in 38-02
-- 15 pre-existing failures in tests/api/ttn-devices.test.ts (unrelated)
-- 26 files still import from supabase-placeholder.ts (9 widgets migrated in 39-01/39-02/39-03)
+- 15 pre-existing failures in tests/api/ttn-devices.test.ts (unrelated to migration)
+- ~~26 files still import from supabase-placeholder.ts~~ FIXED in phases 39-43
 - TTNCredentialsPanel has reduced test coverage (5 tests vs original 21) due to component complexity
 
 ## Session Continuity
 
-Last session: 2026-01-29T16:30:00Z
-Stopped at: Completed Phase 42 (all 3 plans)
+Last session: 2026-01-29T15:28:25Z
+Stopped at: Completed Phase 43 - v2.4 Milestone COMPLETE
 Resume file: None
-Next action: Execute Phase 43 (Cleanup & Verification)
+Next action: v2.4 Tech Debt Cleanup milestone is complete. All Supabase dependencies removed.
