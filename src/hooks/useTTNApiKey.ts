@@ -30,6 +30,7 @@ import { useTTNConfig } from '@/contexts/TTNConfigContext'
 import { useTRPC } from '@/lib/trpc'
 import { hashConfigValues } from '@/types/ttnState'
 import { useUser } from '@stackframe/react'
+import { useMutation } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import type { TTNSettings } from './useTTNSettings'
@@ -153,8 +154,8 @@ export function useTTNApiKey({
 	const trpc = useTRPC()
 
 	// TRPC Mutations
-	const validateMutation = trpc.ttnSettings.validateApiKey.useMutation()
-	const saveMutation = trpc.ttnSettings.saveAndConfigure.useMutation()
+	const validateMutation = useMutation(trpc.ttnSettings.validateApiKey.mutationOptions())
+	const saveMutation = useMutation(trpc.ttnSettings.saveAndConfigure.mutationOptions())
 
 	const apiKeyValidation = validateApiKeyFormat(newApiKey)
 
@@ -171,8 +172,6 @@ export function useTTNApiKey({
 
 		setIsValidating(true)
 		try {
-			const { accessToken } = await user.getAuthJson()
-
 			const result = await validateMutation.mutateAsync({
 				organizationId,
 				cluster: region,
@@ -320,8 +319,6 @@ export function useTTNApiKey({
 		setBootstrapResult(null)
 
 		try {
-			const { accessToken } = await user.getAuthJson()
-
 			const result = await saveMutation.mutateAsync({
 				organizationId,
 				cluster: region,
@@ -329,19 +326,7 @@ export function useTTNApiKey({
 				apiKey: newApiKey.trim(),
 			})
 
-			const data = result
-			// TRPC throws error, so catch block handles it, but for compatibility map to data/error shape if needed
-			const error = null // mutateAsync throws on error
-
-			if (error) {
-				console.error('Save API key invoke error:', error)
-				toast.error('Connection error', {
-					description: error.message || 'Failed to reach the server',
-				})
-				return
-			}
-
-			const bootstrapData = data as BootstrapResult
+			const bootstrapData = result as BootstrapResult
 			setBootstrapResult(bootstrapData)
 
 			if (result?.ok) {

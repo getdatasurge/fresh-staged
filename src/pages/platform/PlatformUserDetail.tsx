@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSuperAdmin } from '@/contexts/SuperAdminContext';
 import { ImpersonationTarget, useImpersonateAndNavigate } from '@/hooks/useImpersonateAndNavigate';
 import { useTRPC } from '@/lib/trpc';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useRef } from 'react';
 import {
     Activity,
     Building2,
@@ -31,21 +33,28 @@ export default function PlatformUserDetail() {
     canImpersonate 
   } = useImpersonateAndNavigate();
 
-  const userQuery = trpc.admin.getUser.useQuery(
-    { userId: userId || '' },
-    { 
-      enabled: !!userId,
-      onSuccess: (data) => {
-        logSuperAdminAction(
-          'VIEWED_USER_DETAIL',
-          'user',
-          data.userId,
-          data.organizationId || undefined,
-          { user_email: data.email }
-        );
-      }
-    }
+  const userQuery = useQuery(
+    trpc.admin.getUser.queryOptions(
+      { userId: userId || '' },
+      { enabled: !!userId }
+    )
   );
+
+  const hasLoggedUserRef = useRef(false);
+
+  // Handle side effect for logging
+  useEffect(() => {
+    if (userQuery.data && !hasLoggedUserRef.current) {
+      hasLoggedUserRef.current = true;
+      logSuperAdminAction(
+        'VIEWED_USER_DETAIL',
+        'user',
+        userQuery.data.userId,
+        userQuery.data.organizationId || undefined,
+        { user_email: userQuery.data.email }
+      );
+    }
+  }, [userQuery.data, logSuperAdminAction]);
 
   const user = userQuery.data;
   const isLoading = userQuery.isLoading;

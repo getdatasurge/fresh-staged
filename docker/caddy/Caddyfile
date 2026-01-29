@@ -19,6 +19,9 @@
     # PRODUCTION: Update to your actual admin email
     email {$ADMIN_EMAIL:admin@freshtrackpro.com}
 
+    # Default SNI for IP-based connections (set DEFAULT_SNI env var to your IP)
+    default_sni {$DEFAULT_SNI:localhost}
+
     # Access logging
     log {
         output file /var/log/caddy/access.log
@@ -27,23 +30,30 @@
 }
 
 # Main application
-{$DOMAIN::80} {
-    # Reverse proxy to backend API
-    reverse_proxy /api/* backend:3000 {
-        # Health check for load balancing
-        health_uri /health
-        health_interval 30s
-        health_timeout 10s
+# When DOMAIN is an IP address, use self-signed cert from /etc/caddy/certs/
+# When DOMAIN is a real domain, Let's Encrypt handles it automatically
+https://{$DOMAIN:localhost} {
+    # TLS: Uses self-signed certs by default. For Let's Encrypt, set TLS_CERT and TLS_KEY to empty strings.
+    tls {$TLS_CERT:/etc/caddy/certs/server.crt} {$TLS_KEY:/etc/caddy/certs/server.key}
 
-        # Pass client info headers
-        header_up Host {host}
-        header_up X-Real-IP {remote_host}
-        header_up X-Forwarded-For {remote_host}
-        header_up X-Forwarded-Proto {scheme}
+    # Reverse proxy to backend API (strip /api prefix)
+    handle_path /api/* {
+        reverse_proxy backend:3000 {
+            # Health check for load balancing
+            health_uri /health
+            health_interval 30s
+            health_timeout 10s
 
-        # WebSocket support for real-time features
-        header_up Connection {>Connection}
-        header_up Upgrade {>Upgrade}
+            # Pass client info headers
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+
+            # WebSocket support for real-time features
+            header_up Connection {>Connection}
+            header_up Upgrade {>Upgrade}
+        }
     }
 
     # Health endpoint for external monitoring
@@ -87,44 +97,26 @@
     }
 }
 
-# Monitoring subdomain (Grafana)
-monitoring.{$DOMAIN:localhost} {
-    reverse_proxy grafana:3000 {
-        header_up Host {host}
-        header_up X-Real-IP {remote_host}
-        header_up X-Forwarded-Proto {scheme}
-
-        # WebSocket support for Grafana live features
-        header_up Connection {>Connection}
-        header_up Upgrade {>Upgrade}
-    }
-
-    # Security headers for monitoring subdomain
-    header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains"
-        X-Content-Type-Options "nosniff"
-        X-Frame-Options "SAMEORIGIN"
-        -Server
-    }
+# HTTP to HTTPS redirect
+http://{$DOMAIN:localhost} {
+    redir https://{host}{uri} permanent
 }
 
-# Status page subdomain (Uptime Kuma)
-status.{$DOMAIN:localhost} {
-    reverse_proxy uptime-kuma:3001 {
-        header_up Host {host}
-        header_up X-Real-IP {remote_host}
-        header_up X-Forwarded-Proto {scheme}
-
-        # WebSocket support for real-time status updates
-        header_up Connection {>Connection}
-        header_up Upgrade {>Upgrade}
-    }
-
-    # Security headers for status subdomain
-    header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains"
-        X-Content-Type-Options "nosniff"
-        X-Frame-Options "SAMEORIGIN"
-        -Server
-    }
-}
+# Monitoring and Status subdomains are disabled for IP-based deployments.
+# When using a real domain, uncomment these blocks:
+#
+# monitoring.{$DOMAIN:localhost} {
+#     reverse_proxy grafana:3000
+#     header {
+#         X-Content-Type-Options "nosniff"
+#         -Server
+#     }
+# }
+#
+# status.{$DOMAIN:localhost} {
+#     reverse_proxy uptime-kuma:3001
+#     header {
+#         X-Content-Type-Options "nosniff"
+#         -Server
+#     }
+# }

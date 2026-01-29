@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@stackframe/react";
+import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -89,26 +90,29 @@ const DataMaintenance = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   // Use admin stats to check access - if we can query this, user has admin access
-  const adminStatsQuery = trpc.admin.systemStats.useQuery(undefined, {
-    enabled: identityInitialized && !!user,
-    retry: false,
-    onError: () => {
-      // Access denied
-      toast({ title: "Access Denied", description: "Admin access required", variant: "destructive" });
-      navigate("/dashboard");
-    },
-    onSuccess: () => {
-      setIsAdmin(true);
-      setIsLoading(false);
-    }
+  const adminStatsQuery = useQuery({
+    ...trpc.admin.systemStats.queryOptions(undefined, {
+      enabled: identityInitialized && !!user,
+      retry: false,
+    }),
   });
 
+  // Handle success/error effects since onSuccess/onError are deprecated in v5
   useEffect(() => {
     if (adminStatsQuery.isSuccess) {
+      setIsAdmin(true);
+      setIsLoading(false);
       scanOrphans();
       loadCleanupJobs();
     }
   }, [adminStatsQuery.isSuccess]);
+
+  useEffect(() => {
+    if (adminStatsQuery.isError) {
+      toast({ title: "Access Denied", description: "Admin access required", variant: "destructive" });
+      navigate("/dashboard");
+    }
+  }, [adminStatsQuery.isError, navigate, toast]);
 
   const scanOrphans = async () => {
     setIsScanning(true);

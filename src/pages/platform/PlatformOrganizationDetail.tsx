@@ -12,6 +12,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useSuperAdmin } from '@/contexts/SuperAdminContext'
 import { useTRPC } from '@/lib/trpc'
+import { useQuery } from '@tanstack/react-query'
+import { useEffect, useRef } from 'react'
 import {
 	Building2,
 	Calendar,
@@ -36,22 +38,29 @@ export default function PlatformOrganizationDetail() {
 	} = useSuperAdmin()
 	const trpc = useTRPC()
 
-	const orgQuery = trpc.admin.getOrganization.useQuery(
-		{ organizationId: orgId || '' },
-		{
-			enabled: !!orgId,
-			onSuccess: data => {
-				setViewingOrg(data.id, data.name)
-				logSuperAdminAction(
-					'VIEWED_ORGANIZATION_DETAIL',
-					'organization',
-					data.id,
-					data.id,
-					{ org_name: data.name },
-				)
-			},
-		},
+	const orgQuery = useQuery(
+		trpc.admin.getOrganization.queryOptions(
+			{ organizationId: orgId || '' },
+			{ enabled: !!orgId }
+		)
 	)
+
+	const hasLoggedOrgRef = useRef(false)
+
+	// Handle side effects
+	useEffect(() => {
+		if (orgQuery.data && !hasLoggedOrgRef.current) {
+			hasLoggedOrgRef.current = true
+			setViewingOrg(orgQuery.data.id, orgQuery.data.name)
+			logSuperAdminAction(
+				'VIEWED_ORGANIZATION_DETAIL',
+				'organization',
+				orgQuery.data.id,
+				orgQuery.data.id,
+				{ org_name: orgQuery.data.name },
+			)
+		}
+	}, [orgQuery.data, setViewingOrg, logSuperAdminAction])
 
 	const organization = orgQuery.data
 	const isLoading = orgQuery.isLoading
