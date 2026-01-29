@@ -5,6 +5,11 @@
  * - get: Retrieve TTN settings for organization
  * - update: Modify TTN settings (admin/owner only)
  * - test: Test TTN connection
+ * - getCredentials: Retrieve decrypted TTN credentials
+ * - getStatus: Retrieve provisioning status
+ * - provision: Retry failed provisioning
+ * - startFresh: Deprovision and re-provision
+ * - deepClean: Delete all TTN resources
  */
 
 import { TRPCError } from '@trpc/server'
@@ -30,6 +35,39 @@ vi.mock('../../src/services/ttn-settings.service.js', () => ({
 vi.mock('../../src/services/ttn/settings.ts', () => ({
 	TtnSettingsService: {
 		testConnection: vi.fn(),
+	},
+}))
+
+// Mock TtnProvisioningService
+vi.mock('../../src/services/ttn/provisioning.js', () => ({
+	TtnProvisioningService: {
+		retryProvisioning: vi.fn(),
+		startFresh: vi.fn(),
+		deepClean: vi.fn(),
+		validateConfiguration: vi.fn(),
+		provisionOrganization: vi.fn(),
+	},
+}))
+
+// Mock TtnCrypto
+vi.mock('../../src/services/ttn/crypto.js', () => ({
+	TtnCrypto: {
+		deobfuscateKey: vi.fn((key: string) => key ? `decrypted-${key}` : ''),
+		obfuscateKey: vi.fn((key: string) => `encrypted-${key}`),
+	},
+}))
+
+// Mock db client
+vi.mock('../../src/db/client.js', () => ({
+	db: {
+		query: {
+			organizations: {
+				findFirst: vi.fn(),
+			},
+			ttnConnections: {
+				findFirst: vi.fn(),
+			},
+		},
 	},
 }))
 
@@ -375,6 +413,395 @@ describe('TTN Settings tRPC Router', () => {
 			const result = await caller.test({ organizationId: orgId })
 
 			expect(result.success).toBe(true)
+		})
+	})
+
+	describe('getCredentials', () => {
+		let mockDbQuery: any
+
+		beforeEach(async () => {
+			const dbModule = await import('../../src/db/client.js')
+			mockDbQuery = dbModule.db.query
+		})
+
+		it('should return empty credentials when no connection configured', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('admin')
+			mockDbQuery.organizations.findFirst.mockResolvedValue({ name: 'Test Org' })
+			mockDbQuery.ttnConnections.findFirst.mockResolvedValue(null)
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			const result = await caller.getCredentials({ organizationId: orgId })
+
+			expect(result.organization_name).toBe('Test Org')
+			expect(result.ttn_application_id).toBeNull()
+			expect(result.org_api_secret_status).toBe('empty')
+			expect(result.app_api_secret_status).toBe('empty')
+			expect(result.webhook_secret_status).toBe('empty')
+		})
+
+		it('should return decrypted credentials when connection exists', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('admin')
+			mockDbQuery.organizations.findFirst.mockResolvedValue({ name: 'Test Org' })
+			mockDbQuery.ttnConnections.findFirst.mockResolvedValue({
+				ttnApplicationId: 'freshtrack-app',
+				applicationId: null,
+				ttnRegion: 'nam1',
+				ttnOrgApiKeyEncrypted: 'org-key-encrypted',
+				ttnOrgApiKeyLast4: 'key1',
+				ttnApiKeyEncrypted: 'app-key-encrypted',
+				ttnApiKeyLast4: 'key2',
+				ttnWebhookSecretEncrypted: 'webhook-encrypted',
+				ttnWebhookSecretLast4: 'hook',
+				ttnWebhookUrl: 'https://example.com/webhook',
+				provisioningStatus: 'ready',
+				provisioningStep: null,
+				provisioningStepDetails: null,
+				provisioningError: null,
+				provisioningAttemptCount: 0,
+				lastHttpStatus: null,
+				lastHttpBody: null,
+				appRightsCheckStatus: null,
+				lastTtnCorrelationId: null,
+				lastTtnErrorName: null,
+				credentialsLastRotatedAt: null,
+			})
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			const result = await caller.getCredentials({ organizationId: orgId })
+
+			expect(result.organization_name).toBe('Test Org')
+			expect(result.ttn_application_id).toBe('freshtrack-app')
+			expect(result.org_api_secret_status).toBe('decrypted')
+			expect(result.app_api_secret_status).toBe('decrypted')
+			expect(result.webhook_secret_status).toBe('decrypted')
+			expect(result.provisioning_status).toBe('ready')
+		})
+
+		it('should allow manager role access', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('manager')
+			mockDbQuery.organizations.findFirst.mockResolvedValue({ name: 'Test Org' })
+			mockDbQuery.ttnConnections.findFirst.mockResolvedValue(null)
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			const result = await caller.getCredentials({ organizationId: orgId })
+
+			expect(result.organization_name).toBe('Test Org')
+		})
+
+		it('should reject viewer role', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('viewer')
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			await expect(
+				caller.getCredentials({ organizationId: orgId }),
+			).rejects.toMatchObject({
+				code: 'FORBIDDEN',
+			})
+		})
+
+		it('should map legacy status values (not_started -> idle)', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('admin')
+			mockDbQuery.organizations.findFirst.mockResolvedValue({ name: 'Test Org' })
+			mockDbQuery.ttnConnections.findFirst.mockResolvedValue({
+				provisioningStatus: 'not_started',
+				ttnApplicationId: null,
+				applicationId: null,
+				ttnRegion: null,
+				ttnOrgApiKeyEncrypted: null,
+				ttnOrgApiKeyLast4: null,
+				ttnApiKeyEncrypted: null,
+				ttnApiKeyLast4: null,
+				ttnWebhookSecretEncrypted: null,
+				ttnWebhookSecretLast4: null,
+				ttnWebhookUrl: null,
+				provisioningStep: null,
+				provisioningStepDetails: null,
+				provisioningError: null,
+				provisioningAttemptCount: 0,
+				lastHttpStatus: null,
+				lastHttpBody: null,
+				appRightsCheckStatus: null,
+				lastTtnCorrelationId: null,
+				lastTtnErrorName: null,
+				credentialsLastRotatedAt: null,
+			})
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			const result = await caller.getCredentials({ organizationId: orgId })
+
+			expect(result.provisioning_status).toBe('idle')
+		})
+	})
+
+	describe('getStatus', () => {
+		let mockDbQuery: any
+
+		beforeEach(async () => {
+			const dbModule = await import('../../src/db/client.js')
+			mockDbQuery = dbModule.db.query
+		})
+
+		it('should return idle status when no connection configured', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('admin')
+			mockDbQuery.ttnConnections.findFirst.mockResolvedValue(null)
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			const result = await caller.getStatus({ organizationId: orgId })
+
+			expect(result.provisioning_status).toBe('idle')
+			expect(result.provisioning_error).toBeNull()
+		})
+
+		it('should return provisioning status from connection', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('admin')
+			mockDbQuery.ttnConnections.findFirst.mockResolvedValue({
+				provisioningStatus: 'failed',
+				provisioningStep: 'webhook',
+				provisioningStepDetails: '{"webhook_created": false}',
+				provisioningError: 'Webhook creation failed',
+				provisioningAttemptCount: 3,
+			})
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			const result = await caller.getStatus({ organizationId: orgId })
+
+			expect(result.provisioning_status).toBe('failed')
+			expect(result.provisioning_step).toBe('webhook')
+			expect(result.provisioning_error).toBe('Webhook creation failed')
+			expect(result.provisioning_attempt_count).toBe(3)
+			expect(result.provisioning_step_details).toEqual({ webhook_created: false })
+		})
+	})
+
+	describe('provision (retry)', () => {
+		let mockProvisioningService: any
+
+		beforeEach(async () => {
+			const provisioningModule =
+				await import('../../src/services/ttn/provisioning.js')
+			mockProvisioningService = provisioningModule.TtnProvisioningService
+		})
+
+		it('should allow admin to retry provisioning', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('admin')
+			mockProvisioningService.retryProvisioning.mockResolvedValue({
+				success: true,
+				message: 'Retry successful',
+			})
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			const result = await caller.provision({
+				organizationId: orgId,
+				action: 'retry',
+			})
+
+			expect(result.success).toBe(true)
+			expect(mockProvisioningService.retryProvisioning).toHaveBeenCalledWith(orgId)
+		})
+
+		it('should allow owner to retry provisioning', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('owner')
+			mockProvisioningService.retryProvisioning.mockResolvedValue({
+				success: true,
+				message: 'Retry successful',
+			})
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			const result = await caller.provision({
+				organizationId: orgId,
+				action: 'retry',
+			})
+
+			expect(result.success).toBe(true)
+		})
+
+		it('should reject manager role', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('manager')
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			await expect(
+				caller.provision({ organizationId: orgId, action: 'retry' }),
+			).rejects.toMatchObject({
+				code: 'FORBIDDEN',
+			})
+		})
+
+		it('should return use_start_fresh=true for no_application_rights', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('admin')
+			mockProvisioningService.retryProvisioning.mockResolvedValue({
+				success: false,
+				error: 'Application exists but current key has no rights to it',
+				use_start_fresh: true,
+			})
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			const result = await caller.provision({
+				organizationId: orgId,
+				action: 'retry',
+			})
+
+			expect(result.success).toBe(false)
+			expect(result.use_start_fresh).toBe(true)
+		})
+	})
+
+	describe('startFresh', () => {
+		let mockProvisioningService: any
+
+		beforeEach(async () => {
+			const provisioningModule =
+				await import('../../src/services/ttn/provisioning.js')
+			mockProvisioningService = provisioningModule.TtnProvisioningService
+		})
+
+		it('should allow admin to start fresh', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('admin')
+			mockProvisioningService.startFresh.mockResolvedValue({
+				success: true,
+				message: 'Credentials cleared. Ready for fresh provisioning.',
+			})
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			const result = await caller.startFresh({
+				organizationId: orgId,
+				region: 'nam1',
+			})
+
+			expect(result.success).toBe(true)
+			expect(mockProvisioningService.startFresh).toHaveBeenCalledWith(orgId, 'nam1')
+		})
+
+		it('should reject manager role', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('manager')
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			await expect(
+				caller.startFresh({ organizationId: orgId }),
+			).rejects.toMatchObject({
+				code: 'FORBIDDEN',
+			})
+		})
+
+		it('should use default region if not provided', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('admin')
+			mockProvisioningService.startFresh.mockResolvedValue({
+				success: true,
+				message: 'Credentials cleared.',
+			})
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			await caller.startFresh({ organizationId: orgId })
+
+			expect(mockProvisioningService.startFresh).toHaveBeenCalledWith(
+				orgId,
+				'nam1',
+			)
+		})
+	})
+
+	describe('deepClean', () => {
+		let mockProvisioningService: any
+
+		beforeEach(async () => {
+			const provisioningModule =
+				await import('../../src/services/ttn/provisioning.js')
+			mockProvisioningService = provisioningModule.TtnProvisioningService
+		})
+
+		it('should allow admin to deep clean', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('admin')
+			mockProvisioningService.deepClean.mockResolvedValue({
+				success: true,
+				deleted_devices: 5,
+				deleted_app: true,
+				deleted_org: false,
+				message: 'Deep clean completed.',
+			})
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			const result = await caller.deepClean({ organizationId: orgId })
+
+			expect(result.success).toBe(true)
+			expect(result.deleted_devices).toBe(5)
+			expect(result.deleted_app).toBe(true)
+			expect(mockProvisioningService.deepClean).toHaveBeenCalledWith(orgId)
+		})
+
+		it('should allow owner to deep clean', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('owner')
+			mockProvisioningService.deepClean.mockResolvedValue({
+				success: true,
+				deleted_devices: 0,
+				deleted_app: false,
+				deleted_org: false,
+				message: 'No resources to delete.',
+			})
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			const result = await caller.deepClean({ organizationId: orgId })
+
+			expect(result.success).toBe(true)
+		})
+
+		it('should reject manager role', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('manager')
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			await expect(
+				caller.deepClean({ organizationId: orgId }),
+			).rejects.toMatchObject({
+				code: 'FORBIDDEN',
+			})
+		})
+
+		it('should return error when TTN_ADMIN_API_KEY not configured', async () => {
+			mockGetUserRoleInOrg.mockResolvedValue('admin')
+			mockProvisioningService.deepClean.mockResolvedValue({
+				success: false,
+				error: 'TTN_ADMIN_API_KEY not configured',
+			})
+
+			const ctx = createOrgContext()
+			const caller = createCaller(ctx)
+
+			const result = await caller.deepClean({ organizationId: orgId })
+
+			expect(result.success).toBe(false)
+			expect(result.error).toBe('TTN_ADMIN_API_KEY not configured')
 		})
 	})
 })
