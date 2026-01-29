@@ -99,7 +99,7 @@ export const usersRouter = router({
 					id: z.string().uuid(),
 					userId: z.string(),
 					eventType: z.string(),
-					payload: z.record(z.unknown()),
+					payload: z.record(z.string(), z.unknown()),
 					status: z.string(),
 					lastError: z.string().nullable(),
 					createdAt: z.date(),

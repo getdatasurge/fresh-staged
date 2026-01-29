@@ -324,11 +324,10 @@ export const readingsRouter = router({
         .insert(manualTemperatureLogs)
         .values({
           unitId: input.unitId,
-          temperature: input.temperature,
+          temperature: String(input.temperature),
           notes: input.notes || null,
-          loggedAt: now,
-          loggedBy: ctx.user.profileId,
-          isInRange: input.isInRange,
+          recordedAt: now,
+          profileId: ctx.user.profileId,
         })
         .returning();
 
@@ -337,9 +336,10 @@ export const readingsRouter = router({
         await db
           .insert(correctiveActions)
           .values({
+            alertId: log.id, // Reference the log as context
             unitId: input.unitId,
             profileId: ctx.user.profileId,
-            actionType: 'manual_temp_log',
+            actionTaken: 'manual_temp_log',
             description: input.correctiveAction.trim(),
             actionAt: now,
           });

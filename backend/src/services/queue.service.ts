@@ -82,7 +82,7 @@ export class QueueService {
 
     try {
       // Create Redis connection for queues with fast timeout for dev
-      this.connection = new Redis(redisUrl || undefined, {
+      this.connection = new Redis(redisUrl ?? `redis://${redisHost}:${redisPort}`, {
         host: redisUrl ? undefined : redisHost,
         port: redisUrl ? undefined : redisPort,
         maxRetriesPerRequest: null, // Required for BullMQ

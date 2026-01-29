@@ -545,7 +545,7 @@ export const ttnSettingsRouter = router({
 			step: z.string(),
 			status: z.string(),
 			message: z.string().nullable(),
-			payload: z.record(z.unknown()).nullable(),
+			payload: z.record(z.string(), z.unknown()).nullable(),
 			durationMs: z.number().nullable(),
 			requestId: z.string().nullable(),
 			ttnHttpStatus: z.number().nullable(),

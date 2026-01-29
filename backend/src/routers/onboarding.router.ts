@@ -162,8 +162,8 @@ export const onboardingRouter = router({
             await tx.insert(profiles).values({
               userId: ctx.user.id,
               organizationId: org.id,
-              email: ctx.user.email,
-              fullName: ctx.user.name,
+              email: ctx.user.email ?? '',
+              fullName: ctx.user.name ?? null,
             })
           }
 

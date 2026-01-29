@@ -160,7 +160,7 @@ export const assetsRouter = router({
           ContentType: mimeType,
         });
 
-        const uploadUrl = await getSignedUrl(s3Client, command, {
+        const uploadUrl = await getSignedUrl(s3Client as any, command, {
           expiresIn: 3600, // 1 hour
         });
 
