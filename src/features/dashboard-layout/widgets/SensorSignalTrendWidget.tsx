@@ -1,10 +1,11 @@
 /**
  * Sensor Signal Trend Widget
- * 
+ *
  * Shows signal strength history chart.
  */
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Signal } from "lucide-react";
 import {
@@ -17,7 +18,7 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from "recharts";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useTRPC } from "@/lib/trpc";
 import type { WidgetProps } from "../types";
 import { format } from "date-fns";
 
@@ -26,38 +27,32 @@ interface SignalReading {
   signal_strength: number;
 }
 
-export function SensorSignalTrendWidget({ entityId, sensor }: WidgetProps) {
-  const [readings, setReadings] = useState<SignalReading[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function SensorSignalTrendWidget({ entityId, organizationId, sensor }: WidgetProps) {
+  const trpc = useTRPC();
 
-  useEffect(() => {
-    async function fetchSignalData() {
-      if (!entityId) {
-        setIsLoading(false);
-        return;
-      }
+  // Fetch readings for this unit
+  const queryOptions = trpc.readings.list.queryOptions({
+    organizationId: organizationId!,
+    unitId: entityId!,
+    limit: 100,
+  });
 
-      try {
-        // Get sensor readings with signal strength for this unit
-        const { data, error } = await supabase
-          .from("sensor_readings")
-          .select("recorded_at, signal_strength")
-          .eq("unit_id", entityId)
-          .not("signal_strength", "is", null)
-          .order("recorded_at", { ascending: true })
-          .limit(100);
+  const { data: readingsData, isLoading } = useQuery({
+    ...queryOptions,
+    enabled: !!entityId && !!organizationId,
+    staleTime: 60_000, // 1 minute
+  });
 
-        if (error) throw error;
-        setReadings(data || []);
-      } catch (err) {
-        console.error("Error fetching signal data:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchSignalData();
-  }, [entityId]);
+  // Filter for readings with signal strength and transform to expected shape
+  const readings = useMemo<SignalReading[]>(() => {
+    if (!readingsData) return [];
+    return readingsData
+      .filter((r) => r.signalStrength != null)
+      .map((r) => ({
+        recorded_at: r.recordedAt instanceof Date ? r.recordedAt.toISOString() : String(r.recordedAt),
+        signal_strength: r.signalStrength!,
+      }));
+  }, [readingsData]);
 
   const chartData = readings.map(r => ({
     time: format(new Date(r.recorded_at), "HH:mm"),
