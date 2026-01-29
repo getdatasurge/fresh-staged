@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.4 Tech Debt Cleanup — Phase 40 Settings Components Migration IN PROGRESS
+**Current focus:** v2.4 Tech Debt Cleanup — Phase 42 Admin/Debug Components COMPLETE
 
 ## Current Position
 
 Milestone: v2.4 Tech Debt Cleanup
 Phase: 42 of 43 (Admin/Debug Components)
-Plan: 01 of 2 complete
-Status: In progress
-Last activity: 2026-01-29 — Completed 42-01-PLAN.md (admin/debug components migration)
+Plan: 03 of 3 complete
+Status: Phase complete
+Last activity: 2026-01-29 — Completed all Phase 42 plans (admin/debug + general components)
 
-Progress: ███████░░░ 70%
+Progress: █████████░ 90%
 
 ## Milestones Shipped
 
@@ -37,8 +37,8 @@ Progress: ███████░░░ 70%
 | 38 | Test Infrastructure | TEST-01, TEST-02, TEST-03 | COMPLETE (3 plans) |
 | 39 | Dashboard Widget Migration | WIDGET-01-09 | COMPLETE (3 plans) |
 | 40 | Settings Components Migration | SETTINGS-01-07 | COMPLETE (3 plans) |
-| 41 | Pages Migration | PAGE-01-07 | In progress (1/3 plans) |
-| 42 | Admin/Debug + Other Components | ADMIN-01-04, COMP-01-04 | Not started |
+| 41 | Pages Migration | PAGE-01-07 | COMPLETE (3 plans) |
+| 42 | Admin/Debug + Other Components | ADMIN-01-04, COMP-01-04 | COMPLETE (3 plans) |
 | 43 | Cleanup & Verification | CLEAN-01-03 | Not started |
 
 **v2.4 scope:** 37 requirements, 6 phases, ~12 plans
@@ -62,6 +62,13 @@ Progress: ███████░░░ 70%
 | DEC-40-02-A | WebhookStatusCard uses localStorage for config state | telnyx_webhook_config table does not exist in drizzle schema |
 | DEC-40-02-B | AlertRulesScopedEditor filters units client-side | siteId available directly on listByOrg response |
 | DEC-41-01-A | Use useMemo for derived state instead of useState+useEffect | Cleaner reactive data flow for filtering and transformations |
+| DEC-42-01-A | Replace supabase RPC with static values in RBACDebugPanel | Debug panel still useful without live RPC |
+| DEC-42-01-B | Show unavailable toast for sensor simulator | Edge function removed, direct API alternative exists |
+| DEC-42-02-A | Remove realtime subscription with TODO for WebSocket | Alerts refresh when dropdown opens |
+| DEC-42-02-B | Add logManualTemperature procedure | Full workflow: log + corrective action + alert resolution |
+| DEC-42-02-C | Add searchUsers procedure with ILIKE | Server-side search more efficient |
+| DEC-42-03-A | Remove settings history feature | No backend procedure exists |
+| DEC-42-03-B | Simplify InvoiceHistory to billing portal link | No listInvoices procedure in router |
 
 ### Blockers/Concerns
 
@@ -73,7 +80,7 @@ Progress: ███████░░░ 70%
 
 ## Session Continuity
 
-Last session: 2026-01-29T15:10:00Z
-Stopped at: Completed 41-01-PLAN.md (simple pages migration)
+Last session: 2026-01-29T16:30:00Z
+Stopped at: Completed Phase 42 (all 3 plans)
 Resume file: None
-Next action: Execute 41-02-PLAN.md (medium pages migration)
+Next action: Execute Phase 43 (Cleanup & Verification)
