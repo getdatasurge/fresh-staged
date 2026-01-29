@@ -14,7 +14,9 @@ import { TRPCError } from '@trpc/server'
 import { and, desc, eq, inArray } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db/client.js'
+import { alerts, correctiveActions } from '../db/schema/alerts.js'
 import { eventLogs } from '../db/schema/audit.js'
+import { manualTemperatureLogs } from '../db/schema/telemetry.js'
 import { profiles } from '../db/schema/users.js'
 import { ReadingResponseSchema } from '../schemas/readings.js'
 import * as readingsService from '../services/readings.service.js'
@@ -289,5 +291,78 @@ export const readingsRouter = router({
         );
 
       return { success: true };
+    }),
+
+  /**
+   * Log manual temperature with corrective action and alert resolution
+   * Used by LogTempModal for full temperature logging workflow
+   */
+  logManualTemperature: orgProcedure
+    .input(z.object({
+      organizationId: z.string().uuid(),
+      unitId: z.string().uuid(),
+      temperature: z.number(),
+      notes: z.string().nullable().optional(),
+      correctiveAction: z.string().nullable().optional(),
+      isInRange: z.boolean(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Validate unit belongs to org
+      const validUnits = await readingsService.validateUnitsInOrg([input.unitId], ctx.user.organizationId);
+
+      if (validUnits.length === 0) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Unit not found or access denied',
+        });
+      }
+
+      const now = new Date();
+
+      // Insert manual temperature log
+      const [log] = await db
+        .insert(manualTemperatureLogs)
+        .values({
+          unitId: input.unitId,
+          temperature: input.temperature,
+          notes: input.notes || null,
+          loggedAt: now,
+          loggedBy: ctx.user.profileId,
+          isInRange: input.isInRange,
+        })
+        .returning();
+
+      // If out of range and corrective action provided, create corrective action record
+      if (!input.isInRange && input.correctiveAction?.trim()) {
+        await db
+          .insert(correctiveActions)
+          .values({
+            unitId: input.unitId,
+            profileId: ctx.user.profileId,
+            actionType: 'manual_temp_log',
+            description: input.correctiveAction.trim(),
+            actionAt: now,
+          });
+      }
+
+      // If in range, resolve any existing missed_manual_entry alerts for this unit
+      if (input.isInRange) {
+        await db
+          .update(alerts)
+          .set({
+            status: 'resolved',
+            resolvedAt: now,
+            resolvedBy: ctx.user.profileId,
+          })
+          .where(
+            and(
+              eq(alerts.unitId, input.unitId),
+              eq(alerts.alertType, 'missed_manual_entry'),
+              inArray(alerts.status, ['active', 'acknowledged'])
+            )
+          );
+      }
+
+      return { success: true, logId: log.id };
     }),
 });

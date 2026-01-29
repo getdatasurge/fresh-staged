@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { supabase, isSupabaseMigrationError } from "@/lib/supabase-placeholder";
-import { handleError } from "@/lib/errorHandler";
+import { useMutation } from "@tanstack/react-query";
+import { useTRPC } from "@/lib/trpc";
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,10 +53,17 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
   const user = useUser();
   const { toast } = useToast();
   const { isOnline, saveLogOffline } = useOfflineSync();
+  const { effectiveOrgId: orgId } = useEffectiveIdentity();
+  const trpc = useTRPC();
   const [temperature, setTemperature] = useState("");
   const [notes, setNotes] = useState("");
   const [correctiveAction, setCorrectiveAction] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // tRPC mutation for logging temperature
+  const logTemperatureMutation = useMutation(
+    trpc.readings.logManualTemperature.mutationOptions()
+  );
 
   // Reset form when unit changes
   useEffect(() => {
@@ -89,21 +97,21 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
 
     // Check if out of range and require corrective action
     const validatedTemp = (tempResult as { success: true; data: number }).data;
-    const isOutOfRange = validatedTemp > unit.temp_limit_high || 
+    const isOutOfRange = validatedTemp > unit.temp_limit_high ||
       (unit.temp_limit_low !== null && validatedTemp < unit.temp_limit_low);
-    
+
     if (isOutOfRange && !correctiveAction.trim()) {
-      toast({ 
-        title: "Corrective action required", 
+      toast({
+        title: "Corrective action required",
         description: "Temperature is out of range. Please describe the corrective action taken.",
-        variant: "destructive" 
+        variant: "destructive"
       });
       return;
     }
 
     setIsSubmitting(true);
     const validatedNotes = (notesResult as { success: true; data: string | undefined }).data?.trim() || null;
-    
+
     const logEntry = {
       id: crypto.randomUUID(),
       unit_id: unit.id,
@@ -114,42 +122,16 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
     };
 
     try {
-      if (isOnline && user?.id) {
-        // Save to Supabase
-        const { error } = await supabase.from("manual_temperature_logs").insert({
-          unit_id: logEntry.unit_id,
-          temperature: logEntry.temperature,
-          notes: logEntry.notes,
-          logged_at: logEntry.logged_at,
-          logged_by: user.id,
-          is_in_range: !isOutOfRange,
+      if (isOnline && user?.id && orgId) {
+        // Save via tRPC mutation
+        await logTemperatureMutation.mutateAsync({
+          organizationId: orgId,
+          unitId: unit.id,
+          temperature: validatedTemp,
+          notes: validatedNotes,
+          correctiveAction: isOutOfRange ? correctiveAction.trim() : null,
+          isInRange: !isOutOfRange,
         });
-
-        if (error) throw error;
-
-        // If out of range, also create corrective action record
-        if (isOutOfRange && correctiveAction.trim()) {
-          await supabase.from("corrective_actions").insert({
-            unit_id: unit.id,
-            action_taken: correctiveAction.trim(),
-            created_by: user.id,
-          });
-        }
-
-        // Resolve any existing missed_manual_entry alerts for this unit
-        if (!isOutOfRange) {
-          await supabase
-            .from("alerts")
-            .update({
-              status: "resolved",
-              resolved_at: new Date().toISOString(),
-              resolved_by: user.id,
-            })
-            .eq("unit_id", unit.id)
-            .eq("alert_type", "missed_manual_entry")
-            .in("status", ["active", "acknowledged"]);
-        }
-
         toast({ title: "Temperature logged successfully" });
       } else {
         await saveLogOffline(logEntry);
@@ -165,18 +147,7 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
     } catch (error) {
       console.error("Error saving log:", error);
 
-      // Show migration-specific message instead of silently falling back to offline
-      if (isSupabaseMigrationError(error)) {
-        handleError(error, "save temperature log");
-        // Still save offline as fallback
-        await saveLogOffline(logEntry);
-        onOpenChange(false);
-        onSuccess?.();
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Original fallback for network errors
+      // Fallback to offline storage on any error
       await saveLogOffline(logEntry);
       toast({
         title: "Saved offline",
@@ -207,7 +178,7 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
   };
 
   const isOutOfRange = temperature && unit && (
-    parseFloat(temperature) > unit.temp_limit_high || 
+    parseFloat(temperature) > unit.temp_limit_high ||
     (unit.temp_limit_low !== null && parseFloat(temperature) < unit.temp_limit_low)
   );
 
