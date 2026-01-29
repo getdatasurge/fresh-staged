@@ -1,58 +1,44 @@
 /**
  * Manual Log Status Widget
- * 
+ *
  * Shows next log due, overdue indicator, streak, and compliance percentage.
  */
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ClipboardList, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useTRPC } from "@/lib/trpc";
 import type { WidgetProps } from "../types";
 import { formatDistanceToNow, isAfter, addHours } from "date-fns";
 
-export function ManualLogStatusWidget({ entityId, site }: WidgetProps) {
-  const [lastLog, setLastLog] = useState<{ logged_at: string } | null>(null);
-  const [logCount, setLogCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+export function ManualLogStatusWidget({ entityId, organizationId, site }: WidgetProps) {
+  const trpc = useTRPC();
 
-  useEffect(() => {
-    async function fetchManualLogs() {
-      if (!entityId) {
-        setIsLoading(false);
-        return;
-      }
+  // Fetch manual logs for last 24 hours
+  const dayAgo = useMemo(() => new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), []);
 
-      try {
-        // Get last log
-        const { data: last } = await supabase
-          .from("manual_temperature_logs")
-          .select("logged_at")
-          .eq("unit_id", entityId)
-          .order("logged_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+  const queryOptions = trpc.readings.listManual.queryOptions({
+    organizationId: organizationId!,
+    unitId: entityId!,
+    limit: 50,
+    start: dayAgo,
+  });
 
-        // Get count for last 24 hours
-        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const { count } = await supabase
-          .from("manual_temperature_logs")
-          .select("*", { count: "exact", head: true })
-          .eq("unit_id", entityId)
-          .gte("logged_at", dayAgo);
+  const { data: logs, isLoading } = useQuery({
+    ...queryOptions,
+    enabled: !!entityId && !!organizationId,
+    staleTime: 60_000, // 1 minute
+  });
 
-        setLastLog(last);
-        setLogCount(count || 0);
-      } catch (err) {
-        console.error("Error fetching manual logs:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+  // Compute lastLog and logCount from the query result
+  const lastLog = useMemo(() => {
+    if (!logs || logs.length === 0) return null;
+    return { logged_at: logs[0].recordedAt.toISOString() };
+  }, [logs]);
 
-    fetchManualLogs();
-  }, [entityId]);
+  const logCount = logs?.length ?? 0;
 
   const cadenceHours = site?.manual_log_cadence_seconds 
     ? site.manual_log_cadence_seconds / 3600 
