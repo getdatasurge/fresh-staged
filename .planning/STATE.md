@@ -12,8 +12,8 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 Milestone: v2.2 Technical Debt & Stabilization
 Phase: 32 of 33 (Remaining Edge Function Migration)
 Plan: 6 of 6 complete (gap closure plans)
-Status: Phase 32 complete - all gap closure plans executed
-Last activity: 2026-01-29 - Completed 32-06-PLAN.md (Telnyx API integration)
+Status: Phase 32 VERIFIED - all 13/13 must-haves passed
+Last activity: 2026-01-29 - Phase 32 verification passed (gap closure complete)
 
 Progress: ████████░░ 97% (32/33 phases)
 
@@ -23,19 +23,20 @@ Progress: ████████░░ 97% (32/33 phases)
 - [x] ~~**29. Production Data Migration**~~: SKIPPED - No access to Supabase production database.
 - [x] **30. System Hardening**: Complete. All 4 plans executed and verified.
 - [x] **31. TTN Provisioning UI Migration**: VERIFIED. All tRPC procedures + frontend migration complete.
-- [x] **32. Remaining Edge Function Migration**: COMPLETE. All 6 plans executed (4 original + 2 gap closure).
+- [x] **32. Remaining Edge Function Migration**: VERIFIED. All 6 plans + gap closure, 13/13 must-haves passed.
 - [ ] **33. Error Handling UI Integration**: Pending. Wire SupabaseMigrationError to UI.
 
 ## Recent Achievements
-- **Phase 32 Plan 06 Complete** - Telnyx API integration (gap closure)
-- Implemented real Telnyx SDK calls for verificationStatus (toll-free verification)
-- Implemented real Telnyx SDK calls for configureWebhook (messaging profiles)
-- Added graceful error handling for missing API keys and configuration
+- **Phase 32 Verified (13/13)** - All edge function migrations complete
+- Real database queries in reports.export (sensorReadings, manualTemperatureLogs)
+- Real Telnyx API calls for verificationStatus and configureWebhook
+- Migrated 15 edge function calls across 12 files to tRPC
+- Created reports.router.ts (298 lines) and enhanced telnyx.router.ts (279 lines)
 
 ## Next Steps
-1. Re-audit Phase 32 after gap closure (`/gsd:audit-milestone`)
-2. Plan and execute Phase 33: Error Handling UI Integration
-3. Complete milestone when all phases pass audit
+1. Plan Phase 33: Error Handling UI Integration (`/gsd:plan-phase 33`)
+2. Execute Phase 33
+3. Audit milestone completion (`/gsd:audit-milestone`)
 
 ## Decisions
 | Phase | Decision | Rationale |
@@ -74,6 +75,6 @@ Progress: ████████░░ 97% (32/33 phases)
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 32-06-PLAN.md
+Stopped at: Phase 32 verified (13/13 must-haves passed)
 Resume file: None
-Next action: Re-audit Phase 32, then plan Phase 33
+Next action: Plan Phase 33 (Error Handling UI Integration)
