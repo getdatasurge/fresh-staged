@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 
 Milestone: v2.2 Technical Debt & Stabilization
 Phase: 32 of 33 (Remaining Edge Function Migration)
-Plan: 5 of 6 complete (gap closure plans)
-Status: Executing gap closure plans
-Last activity: 2026-01-29 - Completed 32-05-PLAN.md (Reports export implementation)
+Plan: 6 of 6 complete (gap closure plans)
+Status: Phase 32 complete - all gap closure plans executed
+Last activity: 2026-01-29 - Completed 32-06-PLAN.md (Telnyx API integration)
 
 Progress: ████████░░ 97% (32/33 phases)
 
@@ -23,19 +23,19 @@ Progress: ████████░░ 97% (32/33 phases)
 - [x] ~~**29. Production Data Migration**~~: SKIPPED - No access to Supabase production database.
 - [x] **30. System Hardening**: Complete. All 4 plans executed and verified.
 - [x] **31. TTN Provisioning UI Migration**: VERIFIED. All tRPC procedures + frontend migration complete.
-- [x] **32. Remaining Edge Function Migration**: COMPLETE. All 4 plans executed.
+- [x] **32. Remaining Edge Function Migration**: COMPLETE. All 6 plans executed (4 original + 2 gap closure).
 - [ ] **33. Error Handling UI Integration**: Pending. Wire SupabaseMigrationError to UI.
 
 ## Recent Achievements
-- **Phase 32 Plan 05 Complete** - Reports export implementation (gap closure)
-- Implemented real database queries for reports.export procedure
-- Added CSV/HTML export formatting for sensor readings
-- Added unit filtering by unitId, siteId, or organizationId hierarchy
+- **Phase 32 Plan 06 Complete** - Telnyx API integration (gap closure)
+- Implemented real Telnyx SDK calls for verificationStatus (toll-free verification)
+- Implemented real Telnyx SDK calls for configureWebhook (messaging profiles)
+- Added graceful error handling for missing API keys and configuration
 
 ## Next Steps
-1. Execute 32-06-PLAN.md (Manual temperature logging - Gap 2 closure)
-2. Re-audit Phase 32 after gap closure
-3. Plan and execute Phase 33: Error Handling UI Integration
+1. Re-audit Phase 32 after gap closure (`/gsd:audit-milestone`)
+2. Plan and execute Phase 33: Error Handling UI Integration
+3. Complete milestone when all phases pass audit
 
 ## Decisions
 | Phase | Decision | Rationale |
@@ -64,6 +64,8 @@ Progress: ████████░░ 97% (32/33 phases)
 | 32-04 | Keep SensorSimulatorPanel edge function as-is | Admin-only dev tool, migration to tRPC not required |
 | 32-04 | Map tRPC diagnose response to TtnDiagnoseResult format | Modal compatibility with existing UI |
 | 32-05 | Filter exceptions in-memory after DB query | Avoid complex SQL CAST for numeric comparison |
+| 32-06 | Use messagingTollfree.verification.requests.list for toll-free status | Telnyx SDK pattern for verification lookup by phone number |
+| 32-06 | Map Telnyx statuses to simplified enum (approved/pending/rejected/unknown) | UI needs simple status categories, not all Telnyx variations |
 
 ## Blockers/Concerns Carried Forward
 - Placeholder TTN/layout/restore/health flows need backend replacements.
@@ -72,6 +74,6 @@ Progress: ████████░░ 97% (32/33 phases)
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 32-05-PLAN.md
+Stopped at: Completed 32-06-PLAN.md
 Resume file: None
-Next action: Execute 32-06-PLAN.md (Gap 2 closure)
+Next action: Re-audit Phase 32, then plan Phase 33
