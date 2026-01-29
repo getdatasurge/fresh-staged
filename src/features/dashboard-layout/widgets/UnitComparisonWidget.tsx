@@ -1,6 +1,6 @@
 /**
  * Unit Comparison Widget
- * 
+ *
  * Allows selecting 2-4 units to compare key metrics side-by-side.
  * Persists selection in widget preferences.
  */
@@ -15,7 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { BarChart3, Plus, X, Check, Thermometer, Clock, AlertTriangle, Wifi, WifiOff } from "lucide-react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useTRPC } from "@/lib/trpc";
 import { formatDistanceToNow } from "date-fns";
 import type { WidgetProps } from "../types";
 
@@ -31,48 +31,42 @@ interface ComparisonUnit {
 
 const MAX_COMPARE_UNITS = 4;
 
-export function UnitComparisonWidget({ site, preferences, onPreferencesChange }: WidgetProps) {
+export function UnitComparisonWidget({ organizationId, site, preferences, onPreferencesChange }: WidgetProps) {
   const [selectorOpen, setSelectorOpen] = useState(false);
-  
+  const trpc = useTRPC();
+
   // Get selected unit IDs from preferences
   const selectedIds: string[] = useMemo(() => {
     return (preferences?.settings?.selectedUnitIds as string[]) ?? [];
   }, [preferences]);
 
-  // Fetch all units for the site
-  const { data: allUnits, isLoading: unitsLoading } = useQuery({
-    queryKey: ["site-units-comparison", site?.id],
-    queryFn: async () => {
-      if (!site?.id) return [];
-
-      const { data: areas } = await supabase
-        .from("areas")
-        .select("id, name")
-        .eq("site_id", site.id)
-        .is("deleted_at", null);
-
-      if (!areas || areas.length === 0) return [];
-
-      const areaIds = areas.map((a) => a.id);
-      const areaMap = Object.fromEntries(areas.map((a) => [a.id, a.name]));
-
-      const { data: unitsData, error } = await supabase
-        .from("units")
-        .select("id, name, area_id, last_temp_reading, temp_limit_high, temp_limit_low, last_reading_at")
-        .in("area_id", areaIds)
-        .is("deleted_at", null)
-        .order("name");
-
-      if (error) throw error;
-      
-      return (unitsData ?? []).map((u) => ({
-        ...u,
-        area_name: areaMap[u.area_id!] || "",
-      }));
-    },
-    enabled: !!site?.id,
-    staleTime: 60000,
+  // Fetch all units for the organization via tRPC
+  const queryOptions = trpc.units.listByOrg.queryOptions({
+    organizationId: organizationId!,
   });
+
+  const { data: allUnitsRaw, isLoading: unitsLoading } = useQuery({
+    ...queryOptions,
+    enabled: !!organizationId && !!site?.id,
+    staleTime: 60_000,
+  });
+
+  // Filter units for this site and transform to expected shape
+  const allUnits = useMemo(() => {
+    if (!allUnitsRaw || !site?.id) return [];
+    return allUnitsRaw
+      .filter((u) => u.siteId === site.id && u.isActive)
+      .map((u) => ({
+        id: u.id,
+        name: u.name,
+        area_id: u.areaId,
+        area_name: u.areaName || "",
+        last_temp_reading: u.lastTemperature,
+        temp_limit_high: u.tempMax,
+        temp_limit_low: u.tempMin,
+        last_reading_at: u.lastReadingAt,
+      }));
+  }, [allUnitsRaw, site?.id]);
 
   // Get selected units with full data
   const selectedUnits = useMemo(() => {
