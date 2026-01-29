@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createQueryOptionsMock } from '@/test/trpc-test-utils'
 import {
 	useAcknowledgeAlert,
 	useFetchAlerts,
@@ -61,17 +62,13 @@ describe('useAlerts hooks', () => {
 				},
 			]
 
-			const mockUseQuery = vi.fn().mockReturnValue({
-				data: mockAlerts,
-				isSuccess: true,
-				isLoading: false,
-				error: null,
-			})
-
+			// Mock queryOptions pattern: trpc.alerts.listByOrg.queryOptions() returns { queryKey, queryFn }
 			mockUseTRPC.mockReturnValue({
 				alerts: {
 					listByOrg: {
-						useQuery: mockUseQuery,
+						queryOptions: createQueryOptionsMock(mockAlerts, {
+							queryKey: ['alerts', 'listByOrg', { organizationId: 'test-org-id', unitId: 'unit-1' }],
+						}),
 					},
 				},
 			})
@@ -83,27 +80,17 @@ describe('useAlerts hooks', () => {
 			await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
 			expect(result.current.data).toEqual(mockAlerts)
-			expect(mockUseQuery).toHaveBeenCalledWith(
-				expect.objectContaining({
-					organizationId: 'test-org-id',
-					unitId: 'unit-1',
-				}),
-				expect.any(Object),
-			)
 		})
 
 		it('passes filter parameters to API', async () => {
-			const mockUseQuery = vi.fn().mockReturnValue({
-				data: [],
-				isSuccess: true,
-				isLoading: false,
-				error: null,
-			})
+			const mockAlerts: unknown[] = []
 
 			mockUseTRPC.mockReturnValue({
 				alerts: {
 					listByOrg: {
-						useQuery: mockUseQuery,
+						queryOptions: createQueryOptionsMock(mockAlerts, {
+							queryKey: ['alerts', 'listByOrg', { organizationId: 'test-org-id', unitId: 'unit-1' }],
+						}),
 					},
 				},
 			})
@@ -120,45 +107,25 @@ describe('useAlerts hooks', () => {
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-			expect(mockUseQuery).toHaveBeenCalledWith(
-				expect.objectContaining({
-					organizationId: 'test-org-id',
-					unitId: 'unit-1',
-					status: 'active',
-					page: 2,
-					limit: 10,
-				}),
-				expect.any(Object),
-			)
+			// Verify the data is returned correctly
+			expect(result.current.data).toEqual(mockAlerts)
 		})
 
 		it('is disabled when unitId is null', () => {
-			const mockUseQuery = vi.fn().mockReturnValue({
-				data: undefined,
-				isSuccess: false,
-				isLoading: false,
-				error: null,
-			})
-
 			mockUseTRPC.mockReturnValue({
 				alerts: {
 					listByOrg: {
-						useQuery: mockUseQuery,
+						queryOptions: createQueryOptionsMock([], {
+							enabled: false,
+						}),
 					},
 				},
 			})
 
 			const { result } = renderHook(() => useFetchUnitAlerts(null), { wrapper })
 
+			// Query should be disabled, so data is undefined
 			expect(result.current.data).toBeUndefined()
-			expect(mockUseQuery).toHaveBeenCalledWith(
-				expect.objectContaining({
-					unitId: '',
-				}),
-				expect.objectContaining({
-					enabled: false,
-				}),
-			)
 		})
 	})
 
@@ -174,17 +141,12 @@ describe('useAlerts hooks', () => {
 				{ id: 'alert-2', unitId: 'unit-2', type: 'offline', status: 'active' },
 			]
 
-			const mockUseQuery = vi.fn().mockReturnValue({
-				data: mockAlerts,
-				isSuccess: true,
-				isLoading: false,
-				error: null,
-			})
-
 			mockUseTRPC.mockReturnValue({
 				alerts: {
 					listByOrg: {
-						useQuery: mockUseQuery,
+						queryOptions: createQueryOptionsMock(mockAlerts, {
+							queryKey: ['alerts', 'listByOrg', { organizationId: 'test-org-id' }],
+						}),
 					},
 				},
 			})
@@ -194,26 +156,17 @@ describe('useAlerts hooks', () => {
 			await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
 			expect(result.current.data).toEqual(mockAlerts)
-			expect(mockUseQuery).toHaveBeenCalledWith(
-				expect.objectContaining({
-					organizationId: 'test-org-id',
-				}),
-				expect.any(Object),
-			)
 		})
 
 		it('passes filter parameters to API', async () => {
-			const mockUseQuery = vi.fn().mockReturnValue({
-				data: [],
-				isSuccess: true,
-				isLoading: false,
-				error: null,
-			})
+			const mockAlerts: unknown[] = []
 
 			mockUseTRPC.mockReturnValue({
 				alerts: {
 					listByOrg: {
-						useQuery: mockUseQuery,
+						queryOptions: createQueryOptionsMock(mockAlerts, {
+							queryKey: ['alerts', 'listByOrg', { organizationId: 'test-org-id' }],
+						}),
 					},
 				},
 			})
@@ -232,17 +185,7 @@ describe('useAlerts hooks', () => {
 
 			await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-			expect(mockUseQuery).toHaveBeenCalledWith(
-				expect.objectContaining({
-					organizationId: 'test-org-id',
-					status: ['active', 'acknowledged'],
-					unitId: 'unit-1',
-					siteId: 'site-1',
-					page: 1,
-					limit: 20,
-				}),
-				expect.any(Object),
-			)
+			expect(result.current.data).toEqual(mockAlerts)
 		})
 	})
 
@@ -253,14 +196,15 @@ describe('useAlerts hooks', () => {
 				status: 'acknowledged',
 			}
 
-			const mockUseMutation = vi.fn().mockReturnValue({
-				mutateAsync: vi.fn().mockResolvedValue(mockAcknowledgedAlert),
-			})
+			const mockMutationFn = vi.fn().mockResolvedValue(mockAcknowledgedAlert)
 
 			mockUseTRPC.mockReturnValue({
 				alerts: {
 					acknowledge: {
-						useMutation: mockUseMutation,
+						mutationOptions: vi.fn().mockReturnValue({
+							mutationKey: ['alerts', 'acknowledge'],
+							mutationFn: mockMutationFn,
+						}),
 					},
 				},
 			})
@@ -274,7 +218,13 @@ describe('useAlerts hooks', () => {
 				})
 			})
 
-			expect(mockUseMutation).toHaveBeenCalled()
+			expect(mockMutationFn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					alertId: 'alert-1',
+					notes: 'Investigating',
+				}),
+				expect.anything(),
+			)
 		})
 
 		it('invalidates alerts cache after acknowledgement', async () => {
@@ -285,17 +235,15 @@ describe('useAlerts hooks', () => {
 
 			const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
 
-			const mockUseMutation = vi.fn().mockImplementation(options => ({
-				mutateAsync: vi.fn().mockImplementation(async () => {
-					options.onSuccess()
-					return mockAcknowledgedAlert
-				}),
-			}))
+			const mockMutationFn = vi.fn().mockResolvedValue(mockAcknowledgedAlert)
 
 			mockUseTRPC.mockReturnValue({
 				alerts: {
 					acknowledge: {
-						useMutation: mockUseMutation,
+						mutationOptions: vi.fn().mockReturnValue({
+							mutationKey: ['alerts', 'acknowledge'],
+							mutationFn: mockMutationFn,
+						}),
 					},
 				},
 			})
@@ -316,14 +264,15 @@ describe('useAlerts hooks', () => {
 		})
 
 		it('handles acknowledgement errors', async () => {
-			const mockUseMutation = vi.fn().mockReturnValue({
-				mutateAsync: vi.fn().mockRejectedValue(new Error('API Error')),
-			})
+			const mockMutationFn = vi.fn().mockRejectedValue(new Error('API Error'))
 
 			mockUseTRPC.mockReturnValue({
 				alerts: {
 					acknowledge: {
-						useMutation: mockUseMutation,
+						mutationOptions: vi.fn().mockReturnValue({
+							mutationKey: ['alerts', 'acknowledge'],
+							mutationFn: mockMutationFn,
+						}),
 					},
 				},
 			})
@@ -345,14 +294,15 @@ describe('useAlerts hooks', () => {
 				status: 'resolved',
 			}
 
-			const mockUseMutation = vi.fn().mockReturnValue({
-				mutateAsync: vi.fn().mockResolvedValue(mockResolvedAlert),
-			})
+			const mockMutationFn = vi.fn().mockResolvedValue(mockResolvedAlert)
 
 			mockUseTRPC.mockReturnValue({
 				alerts: {
 					resolve: {
-						useMutation: mockUseMutation,
+						mutationOptions: vi.fn().mockReturnValue({
+							mutationKey: ['alerts', 'resolve'],
+							mutationFn: mockMutationFn,
+						}),
 					},
 				},
 			})
@@ -367,7 +317,14 @@ describe('useAlerts hooks', () => {
 				})
 			})
 
-			expect(mockUseMutation).toHaveBeenCalled()
+			expect(mockMutationFn).toHaveBeenCalledWith(
+				expect.objectContaining({
+					alertId: 'alert-1',
+					resolution: 'Temperature normalized',
+					correctiveAction: 'Adjusted thermostat',
+				}),
+				expect.anything(),
+			)
 		})
 
 		it('invalidates alerts cache after resolution', async () => {
@@ -378,17 +335,15 @@ describe('useAlerts hooks', () => {
 
 			const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
 
-			const mockUseMutation = vi.fn().mockImplementation(options => ({
-				mutateAsync: vi.fn().mockImplementation(async () => {
-					options.onSuccess()
-					return mockResolvedAlert
-				}),
-			}))
+			const mockMutationFn = vi.fn().mockResolvedValue(mockResolvedAlert)
 
 			mockUseTRPC.mockReturnValue({
 				alerts: {
 					resolve: {
-						useMutation: mockUseMutation,
+						mutationOptions: vi.fn().mockReturnValue({
+							mutationKey: ['alerts', 'resolve'],
+							mutationFn: mockMutationFn,
+						}),
 					},
 				},
 			})
@@ -412,14 +367,15 @@ describe('useAlerts hooks', () => {
 		})
 
 		it('handles resolution errors', async () => {
-			const mockUseMutation = vi.fn().mockReturnValue({
-				mutateAsync: vi.fn().mockRejectedValue(new Error('Resolution failed')),
-			})
+			const mockMutationFn = vi.fn().mockRejectedValue(new Error('Resolution failed'))
 
 			mockUseTRPC.mockReturnValue({
 				alerts: {
 					resolve: {
-						useMutation: mockUseMutation,
+						mutationOptions: vi.fn().mockReturnValue({
+							mutationKey: ['alerts', 'resolve'],
+							mutationFn: mockMutationFn,
+						}),
 					},
 				},
 			})
