@@ -11,7 +11,7 @@
  */
 
 import { TRPCError } from '@trpc/server'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db/client.js'
 import { userRoles } from '../db/schema/users.js'
@@ -212,5 +212,75 @@ export const organizationsRouter = router({
 				ctx.user.organizationId,
 			)
 			return stats
+		}),
+
+	/**
+	 * List emulator sync history
+	 * Returns recent emulator sync runs for the organization
+	 */
+	listEmulatorSyncHistory: orgProcedure
+		.input(z.object({
+			organizationId: z.string().uuid(),
+			limit: z.number().int().min(1).max(100).optional().default(25),
+		}))
+		.output(z.array(z.object({
+			id: z.string().uuid(),
+			organizationId: z.string().uuid(),
+			syncId: z.string().nullable(),
+			syncedAt: z.date(),
+			processedAt: z.date(),
+			status: z.string(),
+			counts: z.object({
+				gateways: z.object({ created: z.number(), updated: z.number() }).optional(),
+				devices: z.object({ created: z.number(), updated: z.number() }).optional(),
+				sensors: z.object({ created: z.number(), updated: z.number() }).optional(),
+			}),
+			warnings: z.array(z.string()),
+			errors: z.array(z.string()),
+			payloadSummary: z.object({
+				gatewaysCount: z.number().optional(),
+				devicesCount: z.number().optional(),
+				sensorsCount: z.number().optional(),
+			}).nullable(),
+			createdAt: z.date(),
+		})))
+		.query(async ({ ctx, input }) => {
+			// Query emulator_sync_runs table directly via raw SQL
+			const runs = await db.execute(sql`
+				SELECT
+					id,
+					organization_id,
+					sync_id,
+					synced_at,
+					processed_at,
+					status,
+					counts,
+					warnings,
+					errors,
+					payload_summary,
+					created_at
+				FROM emulator_sync_runs
+				WHERE organization_id = ${ctx.user.organizationId}
+				ORDER BY created_at DESC
+				LIMIT ${input.limit}
+			`)
+
+			return runs.rows.map((run: any) => ({
+				id: run.id,
+				organizationId: run.organization_id,
+				syncId: run.sync_id,
+				syncedAt: new Date(run.synced_at),
+				processedAt: new Date(run.processed_at),
+				status: run.status,
+				counts: run.counts ?? {},
+				warnings: run.warnings ?? [],
+				errors: run.errors ?? [],
+				payloadSummary: run.payload_summary ? {
+					gatewaysCount: run.payload_summary.gateways_count,
+					devicesCount: run.payload_summary.devices_count,
+					sensorsCount: run.payload_summary.sensors_count,
+				} : null,
+				createdAt: new Date(run.created_at),
+			}))
 		}),
 })

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useTRPC } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -49,21 +49,36 @@ interface SyncRun {
 
 export function EmulatorSyncHistory({ organizationId }: EmulatorSyncHistoryProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const trpc = useTRPC();
 
-  const { data: syncRuns, isLoading, refetch, isRefetching } = useQuery({
-    queryKey: ["emulator-sync-history", organizationId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("emulator_sync_runs")
-        .select("*")
-        .eq("organization_id", organizationId!)
-        .order("created_at", { ascending: false })
-        .limit(25);
-      if (error) throw error;
-      return data as SyncRun[];
-    },
+  const queryOptions = trpc.organizations.listEmulatorSyncHistory.queryOptions({
+    organizationId: organizationId!,
+    limit: 25,
+  });
+
+  const { data: trpcRuns, isLoading, refetch, isRefetching } = useQuery({
+    ...queryOptions,
     enabled: !!organizationId,
   });
+
+  // Transform tRPC response to match component's expected snake_case format
+  const syncRuns: SyncRun[] | undefined = trpcRuns?.map(run => ({
+    id: run.id,
+    organization_id: run.organizationId,
+    sync_id: run.syncId,
+    synced_at: run.syncedAt.toISOString(),
+    processed_at: run.processedAt.toISOString(),
+    status: run.status,
+    counts: run.counts,
+    warnings: run.warnings,
+    errors: run.errors,
+    payload_summary: run.payloadSummary ? {
+      gateways_count: run.payloadSummary.gatewaysCount,
+      devices_count: run.payloadSummary.devicesCount,
+      sensors_count: run.payloadSummary.sensorsCount,
+    } : null,
+    created_at: run.createdAt.toISOString(),
+  }));
 
   const toggleExpanded = (id: string) => {
     setExpandedIds(prev => {
