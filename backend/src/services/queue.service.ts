@@ -81,27 +81,40 @@ export class QueueService {
     }
 
     try {
-      // Create Redis connection for queues
-      const clientConfig = redisUrl
-        ? { url: redisUrl }
-        : { host: redisHost, port: redisPort };
-
-      this.connection = new Redis(redisUrl || '', {
-        ...clientConfig,
+      // Create Redis connection for queues with fast timeout for dev
+      this.connection = new Redis(redisUrl || undefined, {
+        host: redisUrl ? undefined : redisHost,
+        port: redisUrl ? undefined : redisPort,
         maxRetriesPerRequest: null, // Required for BullMQ
         enableReadyCheck: false,
+        connectTimeout: 3000, // 3s timeout - fail fast in dev
+        retryStrategy: (times) => {
+          // Only retry 2 times, then give up
+          if (times > 2) {
+            return null; // Stop retrying
+          }
+          return Math.min(times * 200, 1000);
+        },
+        lazyConnect: true, // Don't connect until we call .connect()
       });
 
-      // Setup error handler
+      // Setup error handler (suppress during initial connect attempt)
+      let suppressErrors = true;
       this.connection.on('error', (err: Error) => {
-        console.error('[QueueService] Redis connection error:', err);
+        if (!suppressErrors) {
+          console.error('[QueueService] Redis connection error:', err);
+        }
       });
 
       this.connection.on('connect', () => {
         console.log('[QueueService] Connected to Redis');
       });
 
-      // Wait for connection
+      // Attempt connection with timeout
+      await this.connection.connect();
+      suppressErrors = false;
+
+      // Verify connection works
       await this.connection.ping();
 
       // Register queues
