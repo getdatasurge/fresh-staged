@@ -126,6 +126,14 @@ Plans:
 
 **Requirements:** DOCS-01, DOCS-02, DOCS-03, DOCS-04
 
+**Plans:** 4 plans
+
+Plans:
+- [ ] 37-01-PLAN.md — Update prerequisites documentation (DOCS-01)
+- [ ] 37-02-PLAN.md — Update deployment walkthrough (DOCS-02)
+- [ ] 37-03-PLAN.md — Enhance troubleshooting playbook (DOCS-03)
+- [ ] 37-04-PLAN.md — Comprehensive operations guide (DOCS-04)
+
 **Success Criteria:**
 1. User can follow prerequisites guide to prepare VM (specs, DNS, firewall) without asking questions
 2. User can follow step-by-step walkthrough from fresh VM to running FreshTrack Pro
@@ -141,10 +149,10 @@ Plans:
 | 34 | Deployment Orchestration | Complete | 2 |
 | 35 | Verification | Complete | 2 |
 | 36 | Post-Deployment Setup | Complete | 3 |
-| 37 | Documentation | Ready | - |
+| 37 | Documentation | Planned | 4 |
 
 **Milestone Progress:** 3/4 phases complete (75%)
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 36 complete)*
+*Last updated: 2026-01-29 (Phase 37 planned)*
