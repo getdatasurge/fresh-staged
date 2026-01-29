@@ -25,7 +25,7 @@ Complete the Supabase-to-tRPC migration by fixing 60 failing tests and migrating
 
 ## Phase Details
 
-### 🚧 v2.4 Tech Debt Cleanup (In Progress)
+### v2.4 Tech Debt Cleanup (In Progress)
 
 **Milestone Goal:** Complete Supabase removal and fix all 60 failing tests
 
@@ -58,12 +58,12 @@ Plans:
   2. No widget imports from supabase-placeholder.ts
   3. Widget tests pass using established tRPC mock patterns
   4. Dashboard page loads without errors showing all widgets
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 39-01: TBD (widget batch 1)
-- [ ] 39-02: TBD (widget batch 2)
-- [ ] 39-03: TBD (widget batch 3)
+- [ ] 39-01-PLAN.md — Simple widgets: ManualLogStatusWidget, UnitsStatusGridWidget, SensorSignalTrendWidget
+- [ ] 39-02-PLAN.md — Medium widgets: UnitComparisonWidget, UnitComplianceScoreWidget, SiteActivityGraphWidget, DowntimeTrackerWidget
+- [ ] 39-03-PLAN.md — Complex widgets: AnnotationsWidget, EventTimelineWidget (with new backend procedures)
 
 ---
 
@@ -144,7 +144,7 @@ Plans:
 | 42. Admin/Debug + Other Components | v2.4 | 0/2 | Not started | - |
 | 43. Cleanup & Verification | v2.4 | 0/1 | Not started | - |
 
-**v2.4 Total:** 3/12 plans complete (25%)
+**v2.4 Total:** 3/13 plans complete (23%)
 
 ---
 
