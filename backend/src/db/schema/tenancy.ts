@@ -105,7 +105,8 @@ export const ttnConnections = pgTable(
 		organizationId: uuid('organization_id')
 			.references(() => organizations.id, { onDelete: 'cascade' })
 			.notNull(),
-		applicationId: varchar('application_id', { length: 256 }), // TTN application ID
+		applicationId: varchar('application_id', { length: 256 }), // TTN application ID (legacy alias)
+		ttnApplicationId: varchar('ttn_application_id', { length: 256 }), // TTN application ID
 		webhookSecret: varchar('webhook_secret', { length: 256 }).notNull(), // API key for webhook auth
 		isActive: boolean('is_active').notNull().default(true),
 		lastUsedAt: timestamp('last_used_at', {
@@ -118,12 +119,33 @@ export const ttnConnections = pgTable(
 			'not_started',
 		),
 		ttnRegion: varchar('ttn_region', { length: 256 }),
+		// App API key
 		ttnApiKeyEncrypted: varchar('ttn_api_key_encrypted', { length: 512 }),
 		ttnApiKeyLast4: varchar('ttn_api_key_last4', { length: 4 }),
+		// Org API key
+		ttnOrgApiKeyEncrypted: varchar('ttn_org_api_key_encrypted', { length: 512 }),
+		ttnOrgApiKeyLast4: varchar('ttn_org_api_key_last4', { length: 4 }),
+		// Webhook
 		ttnWebhookUrl: varchar('ttn_webhook_url', { length: 512 }),
 		ttnWebhookSecretLast4: varchar('ttn_webhook_secret_last4', { length: 4 }),
 		ttnWebhookSecretEncrypted: varchar('ttn_webhook_secret_encrypted', {
 			length: 512,
+		}),
+		// Provisioning state machine
+		provisioningStep: varchar('provisioning_step', { length: 256 }),
+		provisioningStepDetails: text('provisioning_step_details'), // JSON string
+		provisioningError: varchar('provisioning_error', { length: 1024 }),
+		provisioningAttemptCount: integer('provisioning_attempt_count').default(0),
+		// Diagnostics
+		lastHttpStatus: integer('last_http_status'),
+		lastHttpBody: text('last_http_body'),
+		appRightsCheckStatus: varchar('app_rights_check_status', { length: 256 }),
+		lastTtnCorrelationId: varchar('last_ttn_correlation_id', { length: 256 }),
+		lastTtnErrorName: varchar('last_ttn_error_name', { length: 256 }),
+		credentialsLastRotatedAt: timestamp('credentials_last_rotated_at', {
+			mode: 'date',
+			precision: 3,
+			withTimezone: true,
 		}),
 		...timestamps,
 	},

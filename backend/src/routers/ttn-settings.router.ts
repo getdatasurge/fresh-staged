@@ -5,6 +5,11 @@
  * - get: Retrieve TTN settings for organization
  * - update: Modify TTN settings (admin/owner only)
  * - test: Test TTN connection
+ * - getCredentials: Retrieve decrypted TTN credentials (admin/owner/manager)
+ * - getStatus: Retrieve provisioning status
+ * - provision: Retry failed provisioning (admin/owner)
+ * - startFresh: Deprovision and re-provision (admin/owner)
+ * - deepClean: Delete all TTN resources (admin/owner)
  *
  * All procedures use orgProcedure which enforces authentication and org membership.
  *
@@ -12,14 +17,24 @@
  */
 
 import { TRPCError } from '@trpc/server'
+import { eq } from 'drizzle-orm'
 import { z } from 'zod'
+import { db } from '../db/client.js'
+import { organizations, ttnConnections } from '../db/schema/tenancy.js'
 import {
+	DeepCleanResponseSchema,
+	ProvisionResponseSchema,
+	StartFreshResponseSchema,
 	TestConnectionInputSchema,
 	TestConnectionResultSchema,
+	TTNCredentialsResponseSchema,
 	TTNSettingsSchema,
+	TTNStatusResponseSchema,
 	UpdateTTNSettingsSchema,
+	type SecretStatus,
 } from '../schemas/ttn-settings.js'
 import * as ttnSettingsService from '../services/ttn-settings.service.js'
+import { TtnCrypto } from '../services/ttn/crypto.js'
 import { TtnProvisioningService } from '../services/ttn/provisioning.js'
 import { TtnSettingsService } from '../services/ttn/settings.js'
 import { TtnWebhookService } from '../services/ttn/webhook.js'
@@ -58,6 +73,187 @@ export const ttnSettingsRouter = router({
 				input.organizationId,
 			)
 			return settings
+		}),
+
+	/**
+	 * Get full TTN credentials for developer panel
+	 * Equivalent to: get_credentials action in manage-ttn-settings edge function
+	 *
+	 * Returns decrypted credentials with status tracking for each secret.
+	 * Allows manager role for read-only access.
+	 */
+	getCredentials: orgProcedure
+		.input(OrgInput)
+		.output(TTNCredentialsResponseSchema)
+		.query(async ({ input, ctx }) => {
+			const { user } = ctx
+
+			// Manager, admin, or owner can view credentials
+			if (!['admin', 'owner', 'manager'].includes(user.role)) {
+				throw new TRPCError({
+					code: 'FORBIDDEN',
+					message: 'Only managers, administrators, or owners can view TTN credentials',
+				})
+			}
+
+			// Get organization name
+			const org = await db.query.organizations.findFirst({
+				where: eq(organizations.id, input.organizationId),
+				columns: { name: true },
+			})
+
+			// Get TTN connection settings
+			const conn = await db.query.ttnConnections.findFirst({
+				where: eq(ttnConnections.organizationId, input.organizationId),
+			})
+
+			// Return empty credentials if no connection configured
+			if (!conn) {
+				return {
+					organization_name: org?.name ?? 'Unknown',
+					organization_id: input.organizationId,
+					ttn_application_id: null,
+					ttn_region: null,
+					org_api_secret: null,
+					org_api_secret_last4: null,
+					org_api_secret_status: 'empty' as SecretStatus,
+					app_api_secret: null,
+					app_api_secret_last4: null,
+					app_api_secret_status: 'empty' as SecretStatus,
+					webhook_secret: null,
+					webhook_secret_last4: null,
+					webhook_secret_status: 'empty' as SecretStatus,
+					webhook_url: null,
+					provisioning_status: 'idle',
+					provisioning_step: null,
+					provisioning_step_details: null,
+					provisioning_error: null,
+					provisioning_attempt_count: 0,
+					last_http_status: null,
+					last_http_body: null,
+					app_rights_check_status: null,
+					last_ttn_correlation_id: null,
+					last_ttn_error_name: null,
+					credentials_last_rotated_at: null,
+				}
+			}
+
+			const salt = process.env.TTN_ENCRYPTION_SALT || 'default-salt'
+
+			// Helper to safely decrypt with status tracking
+			const safeDecrypt = (encrypted: string | null): { value: string | null; status: SecretStatus } => {
+				if (!encrypted) return { value: null, status: 'empty' }
+				try {
+					const decrypted = TtnCrypto.deobfuscateKey(encrypted, salt)
+					return { value: decrypted, status: 'decrypted' }
+				} catch (err) {
+					console.error('[getCredentials] Decryption failed:', err)
+					return { value: null, status: 'failed' }
+				}
+			}
+
+			// Decrypt secrets
+			const orgApiResult = safeDecrypt(conn.ttnOrgApiKeyEncrypted)
+			const appApiResult = safeDecrypt(conn.ttnApiKeyEncrypted)
+			const webhookResult = safeDecrypt(conn.ttnWebhookSecretEncrypted)
+
+			// Map legacy status values
+			let provisioningStatus = conn.provisioningStatus ?? 'idle'
+			if (provisioningStatus === 'not_started') provisioningStatus = 'idle'
+			if (provisioningStatus === 'completed') provisioningStatus = 'ready'
+
+			// Parse step details JSON
+			let stepDetails: Record<string, unknown> | null = null
+			if (conn.provisioningStepDetails) {
+				try {
+					stepDetails = JSON.parse(conn.provisioningStepDetails)
+				} catch {
+					stepDetails = null
+				}
+			}
+
+			return {
+				organization_name: org?.name ?? 'Unknown',
+				organization_id: input.organizationId,
+				ttn_application_id: conn.ttnApplicationId ?? conn.applicationId ?? null,
+				ttn_region: conn.ttnRegion ?? null,
+				org_api_secret: orgApiResult.value,
+				org_api_secret_last4: conn.ttnOrgApiKeyLast4 ?? null,
+				org_api_secret_status: orgApiResult.status,
+				app_api_secret: appApiResult.value,
+				app_api_secret_last4: conn.ttnApiKeyLast4 ?? null,
+				app_api_secret_status: appApiResult.status,
+				webhook_secret: webhookResult.value,
+				webhook_secret_last4: conn.ttnWebhookSecretLast4 ?? null,
+				webhook_secret_status: webhookResult.status,
+				webhook_url: conn.ttnWebhookUrl ?? null,
+				provisioning_status: provisioningStatus,
+				provisioning_step: conn.provisioningStep ?? null,
+				provisioning_step_details: stepDetails,
+				provisioning_error: conn.provisioningError ?? null,
+				provisioning_attempt_count: conn.provisioningAttemptCount ?? 0,
+				last_http_status: conn.lastHttpStatus ?? null,
+				last_http_body: conn.lastHttpBody ?? null,
+				app_rights_check_status: conn.appRightsCheckStatus ?? null,
+				last_ttn_correlation_id: conn.lastTtnCorrelationId ?? null,
+				last_ttn_error_name: conn.lastTtnErrorName ?? null,
+				credentials_last_rotated_at: conn.credentialsLastRotatedAt?.toISOString() ?? null,
+			}
+		}),
+
+	/**
+	 * Get TTN provisioning status
+	 * Equivalent to: status action in ttn-provision-org edge function
+	 *
+	 * Returns current provisioning state without sensitive credentials.
+	 */
+	getStatus: orgProcedure
+		.input(OrgInput)
+		.output(TTNStatusResponseSchema)
+		.query(async ({ input }) => {
+			const conn = await db.query.ttnConnections.findFirst({
+				where: eq(ttnConnections.organizationId, input.organizationId),
+				columns: {
+					provisioningStatus: true,
+					provisioningStep: true,
+					provisioningStepDetails: true,
+					provisioningError: true,
+					provisioningAttemptCount: true,
+				},
+			})
+
+			if (!conn) {
+				return {
+					provisioning_status: 'idle',
+					provisioning_step: null,
+					provisioning_step_details: null,
+					provisioning_error: null,
+					provisioning_attempt_count: 0,
+				}
+			}
+
+			// Map legacy status values
+			let provisioningStatus = conn.provisioningStatus ?? 'idle'
+			if (provisioningStatus === 'not_started') provisioningStatus = 'idle'
+			if (provisioningStatus === 'completed') provisioningStatus = 'ready'
+
+			// Parse step details JSON
+			let stepDetails: Record<string, unknown> | null = null
+			if (conn.provisioningStepDetails) {
+				try {
+					stepDetails = JSON.parse(conn.provisioningStepDetails)
+				} catch {
+					stepDetails = null
+				}
+			}
+
+			return {
+				provisioning_status: provisioningStatus,
+				provisioning_step: conn.provisioningStep ?? null,
+				provisioning_step_details: stepDetails,
+				provisioning_error: conn.provisioningError ?? null,
+				provisioning_attempt_count: conn.provisioningAttemptCount ?? 0,
+			}
 		}),
 
 	/**

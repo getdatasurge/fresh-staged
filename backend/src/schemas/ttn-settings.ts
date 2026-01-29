@@ -114,3 +114,94 @@ export const UpdateWebhookSchema = z.object({
 	url: z.string().url(),
 	events: z.array(z.string()),
 })
+
+/**
+ * Secret decryption status for tracking decryption outcomes
+ */
+export const SecretStatusSchema = z.enum(['empty', 'decrypted', 'failed'])
+export type SecretStatus = z.infer<typeof SecretStatusSchema>
+
+/**
+ * TTN Credentials response schema - full credentials for developer panel
+ * Ported from manage-ttn-settings get_credentials action
+ */
+export const TTNCredentialsResponseSchema = z.object({
+	organization_name: z.string(),
+	organization_id: z.string().uuid(),
+	ttn_application_id: z.string().nullable(),
+	ttn_region: z.string().nullable(),
+	// Org API secret
+	org_api_secret: z.string().nullable(),
+	org_api_secret_last4: z.string().nullable(),
+	org_api_secret_status: SecretStatusSchema,
+	// App API secret
+	app_api_secret: z.string().nullable(),
+	app_api_secret_last4: z.string().nullable(),
+	app_api_secret_status: SecretStatusSchema,
+	// Webhook secret
+	webhook_secret: z.string().nullable(),
+	webhook_secret_last4: z.string().nullable(),
+	webhook_secret_status: SecretStatusSchema,
+	webhook_url: z.string().nullable(),
+	// Provisioning state
+	provisioning_status: z.string(),
+	provisioning_step: z.string().nullable(),
+	provisioning_step_details: z.record(z.string(), z.unknown()).nullable(),
+	provisioning_error: z.string().nullable(),
+	provisioning_attempt_count: z.number(),
+	// Diagnostics
+	last_http_status: z.number().nullable(),
+	last_http_body: z.string().nullable(),
+	app_rights_check_status: z.string().nullable(),
+	last_ttn_correlation_id: z.string().nullable(),
+	last_ttn_error_name: z.string().nullable(),
+	credentials_last_rotated_at: z.string().nullable(),
+})
+export type TTNCredentialsResponse = z.infer<typeof TTNCredentialsResponseSchema>
+
+/**
+ * TTN provisioning status response schema
+ * Ported from ttn-provision-org status action
+ */
+export const TTNStatusResponseSchema = z.object({
+	provisioning_status: z.string(),
+	provisioning_step: z.string().nullable(),
+	provisioning_step_details: z.record(z.string(), z.unknown()).nullable(),
+	provisioning_error: z.string().nullable(),
+	provisioning_attempt_count: z.number(),
+})
+export type TTNStatusResponse = z.infer<typeof TTNStatusResponseSchema>
+
+/**
+ * Provision action response schema
+ */
+export const ProvisionResponseSchema = z.object({
+	success: z.boolean(),
+	message: z.string().optional(),
+	use_start_fresh: z.boolean().optional(),
+	error: z.string().optional(),
+})
+export type ProvisionResponse = z.infer<typeof ProvisionResponseSchema>
+
+/**
+ * Start fresh response schema
+ */
+export const StartFreshResponseSchema = z.object({
+	success: z.boolean(),
+	message: z.string().optional(),
+	error: z.string().optional(),
+})
+export type StartFreshResponse = z.infer<typeof StartFreshResponseSchema>
+
+/**
+ * Deep clean response schema
+ */
+export const DeepCleanResponseSchema = z.object({
+	success: z.boolean(),
+	deleted_devices: z.number().optional(),
+	deleted_app: z.boolean().optional(),
+	deleted_org: z.boolean().optional(),
+	message: z.string().optional(),
+	error: z.string().optional(),
+})
+export type DeepCleanResponse = z.infer<typeof DeepCleanResponseSchema>
