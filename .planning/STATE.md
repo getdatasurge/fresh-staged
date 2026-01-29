@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 
 Milestone: v2.4 Tech Debt Cleanup
 Phase: 41 of 43 (Pages Migration)
-Plan: 01 of 3 complete
-Status: In progress
-Last activity: 2026-01-29 — Completed 41-01-PLAN.md (simple pages migration)
+Plan: 03 of 3 complete
+Status: Phase complete
+Last activity: 2026-01-29 — Completed 41-03-PLAN.md (complex pages migration)
 
-Progress: █████░░░░░ 55%
+Progress: ██████░░░░ 60%
 
 ## Milestones Shipped
 
