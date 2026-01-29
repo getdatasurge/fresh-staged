@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 
 Milestone: v2.2 Technical Debt & Stabilization
 Phase: 32 of 33 (Remaining Edge Function Migration)
-Plan: 3 of 4 complete
-Status: In progress
-Last activity: 2026-01-29 - Completed 32-01-PLAN.md (TTN domain tRPC migration)
+Plan: 4 of 4 complete
+Status: Phase complete
+Last activity: 2026-01-29 - Completed 32-04-PLAN.md (Final edge function cleanup)
 
-Progress: ████████░░ 85% (31.75/33 phases)
+Progress: ████████░░ 97% (32/33 phases)
 
 ## Progress
 - [x] **27. TTN SDK Integration**: Complete.
@@ -23,20 +23,20 @@ Progress: ████████░░ 85% (31.75/33 phases)
 - [x] ~~**29. Production Data Migration**~~: SKIPPED - No access to Supabase production database.
 - [x] **30. System Hardening**: Complete. All 4 plans executed and verified.
 - [x] **31. TTN Provisioning UI Migration**: VERIFIED. All tRPC procedures + frontend migration complete.
-- [~] **32. Remaining Edge Function Migration**: In progress. Plans 01-03 complete.
+- [x] **32. Remaining Edge Function Migration**: COMPLETE. All 4 plans executed.
 - [ ] **33. Error Handling UI Integration**: Pending. Wire SupabaseMigrationError to UI.
 
 ## Recent Achievements
-- **Phase 32 Plan 01 Complete** - TTN domain tRPC migration
-- Migrated EmulatorTTNRoutingCard to tRPC (2 edge function calls removed)
-- Migrated Onboarding page to tRPC (2 edge function calls removed)
-- Used existing ttnSettings router procedures (get, test, getStatus)
+- **Phase 32 Plan 04 Complete** - Final edge function cleanup
+- Added ttnDevices.diagnose procedure for device connectivity diagnostics
+- Migrated SensorManager from edge function to tRPC
+- Deleted EdgeFunctionDiagnostics.tsx (dead code)
+- Documented SensorSimulatorPanel edge function decision (kept for admin tooling)
 
 ## Next Steps
-1. Execute Phase 32 Plan 04: Remaining Edge Function Cleanup
-2. Plan and execute Phase 33: Error Handling UI Integration
-3. Re-audit milestone with `/gsd:audit-milestone`
-4. Complete milestone when audit passes
+1. Plan and execute Phase 33: Error Handling UI Integration
+2. Re-audit milestone with `/gsd:audit-milestone`
+3. Complete milestone when audit passes
 
 ## Decisions
 | Phase | Decision | Rationale |
@@ -62,6 +62,8 @@ Progress: ████████░░ 85% (31.75/33 phases)
 | 32-03 | verifyPublicAsset uses publicProcedure | Public URL HEAD check, no auth needed |
 | 32-01 | Database trigger handles initial TTN provisioning | Frontend only polls for status, trigger queues job on org creation |
 | 32-01 | Interval-based polling with cleanup for Onboarding status | Consistent with other polling patterns, prevents memory leaks |
+| 32-04 | Keep SensorSimulatorPanel edge function as-is | Admin-only dev tool, migration to tRPC not required |
+| 32-04 | Map tRPC diagnose response to TtnDiagnoseResult format | Modal compatibility with existing UI |
 
 ## Blockers/Concerns Carried Forward
 - Placeholder TTN/layout/restore/health flows need backend replacements.
@@ -70,6 +72,6 @@ Progress: ████████░░ 85% (31.75/33 phases)
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 32-01-PLAN.md
+Stopped at: Completed 32-04-PLAN.md
 Resume file: None
-Next action: Execute 32-04-PLAN.md
+Next action: Execute Phase 33 plans
