@@ -87,11 +87,12 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
 - [ ] **Phase 33: Error Handling UI Integration**
     - **Goal:** Wire SupabaseMigrationError to UI error boundaries for user-friendly error messages
     - **Closes:** Integration gap (SupabaseMigrationError → UI consumers)
-    - **Plans:** 2 plans
+    - **Plans:** 3 plans
     Plans:
-    - [ ] 33-01-PLAN.md — Extend errorHandler.ts + create MigrationErrorBoundary components
-    - [ ] 33-02-PLAN.md — Wire UI components + visual verification
+    - [x] 33-01-PLAN.md — Extend errorHandler.ts + create MigrationErrorBoundary components
+    - [x] 33-02-PLAN.md — Wire UI components + visual verification
+    - [ ] 33-03-PLAN.md — Gap closure: Integrate MigrationErrorBoundary into DashboardLayout
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 33 planned)*
+*Last updated: 2026-01-29 (Phase 33 gap closure plan added)*
