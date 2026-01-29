@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { supabase } from "@/lib/supabase-placeholder";
 import { useUser } from "@stackframe/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,46 +23,23 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { useUpdateUnit } from "@/hooks/useUnits";
 import {
   Settings,
   ChevronDown,
   ChevronRight,
   Pencil,
-  History,
   Loader2,
   Thermometer,
   DoorOpen,
 } from "lucide-react";
-import { format } from "date-fns";
-
-interface UnitSettings {
-  id: string;
-  unit_type: string;
-  temp_limit_low: number | null;
-  temp_limit_high: number;
-  notes?: string | null;
-  door_sensor_enabled?: boolean;
-  door_open_grace_minutes?: number;
-}
-
-interface SettingsHistoryEntry {
-  id: string;
-  changed_by: string;
-  changed_at: string;
-  changes: {
-    field: string;
-    old_value: string | number | boolean | null;
-    new_value: string | number | boolean | null;
-  }[];
-  note: string | null;
-  profile?: { email: string; full_name: string | null } | null;
-}
 
 interface UnitSettingsSectionProps {
   unitId: string;
+  organizationId: string;
+  siteId: string;
+  areaId: string;
   unitType: string;
   tempLimitLow: number | null;
   tempLimitHigh: number;
@@ -84,6 +60,9 @@ const unitTypeLabels: Record<string, string> = {
 
 export default function UnitSettingsSection({
   unitId,
+  organizationId,
+  siteId,
+  areaId,
   unitType,
   tempLimitLow,
   tempLimitHigh,
@@ -96,10 +75,10 @@ export default function UnitSettingsSection({
   const user = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
-  const [history, setHistory] = useState<SettingsHistoryEntry[]>([]);
+
+  // Use tRPC mutation for unit updates
+  const updateUnitMutation = useUpdateUnit();
 
   // Edit form state
   const [editUnitType, setEditUnitType] = useState(unitType);
@@ -107,9 +86,6 @@ export default function UnitSettingsSection({
     tempLimitLow !== null ? tempLimitLow.toString() : ""
   );
   const [editHighLimit, setEditHighLimit] = useState(tempLimitHigh.toString());
-  const [editNotes, setEditNotes] = useState(notes || "");
-  const [editDoorSensorEnabled, setEditDoorSensorEnabled] = useState(doorSensorEnabled);
-  const [editDoorGraceMinutes, setEditDoorGraceMinutes] = useState(doorOpenGraceMinutes.toString());
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const formatTemp = (temp: number | null) => {
@@ -121,9 +97,6 @@ export default function UnitSettingsSection({
     setEditUnitType(unitType);
     setEditLowLimit(tempLimitLow !== null ? tempLimitLow.toString() : "");
     setEditHighLimit(tempLimitHigh.toString());
-    setEditNotes(notes || "");
-    setEditDoorSensorEnabled(doorSensorEnabled);
-    setEditDoorGraceMinutes(doorOpenGraceMinutes.toString());
     setValidationError(null);
     setShowEditModal(true);
   };
@@ -131,7 +104,6 @@ export default function UnitSettingsSection({
   const validateAndSave = async () => {
     const lowVal = editLowLimit ? parseFloat(editLowLimit) : null;
     const highVal = parseFloat(editHighLimit);
-    const graceVal = parseInt(editDoorGraceMinutes) || 20;
 
     if (isNaN(highVal)) {
       setValidationError("High limit is required");
@@ -143,100 +115,43 @@ export default function UnitSettingsSection({
       return;
     }
 
-    if (graceVal < 1 || graceVal > 60) {
-      setValidationError("Grace minutes must be between 1 and 60");
-      return;
-    }
-
     setIsSaving(true);
     setValidationError(null);
 
+    // Check authentication
+    if (!user) {
+      toast({ title: "Not authenticated", variant: "destructive" });
+      setIsSaving(false);
+      return;
+    }
+
+    // Check for changes
+    const hasChanges =
+      editUnitType !== unitType ||
+      lowVal !== tempLimitLow ||
+      highVal !== tempLimitHigh;
+
+    if (!hasChanges) {
+      toast({ title: "No changes to save" });
+      setShowEditModal(false);
+      setIsSaving(false);
+      return;
+    }
+
     try {
-      // Check authentication
-      if (!user) throw new Error("Not authenticated");
-      const userId = user.id;
-
-      // Build changes array for history
-      const changes: { field: string; old_value: any; new_value: any }[] = [];
-
-      if (editUnitType !== unitType) {
-        changes.push({
-          field: "unit_type",
-          old_value: unitType,
-          new_value: editUnitType,
-        });
-      }
-
-      if (lowVal !== tempLimitLow) {
-        changes.push({
-          field: "temp_limit_low",
-          old_value: tempLimitLow,
-          new_value: lowVal,
-        });
-      }
-
-      if (highVal !== tempLimitHigh) {
-        changes.push({
-          field: "temp_limit_high",
-          old_value: tempLimitHigh,
-          new_value: highVal,
-        });
-      }
-
-      if (editDoorSensorEnabled !== doorSensorEnabled) {
-        changes.push({
-          field: "door_sensor_enabled",
-          old_value: doorSensorEnabled,
-          new_value: editDoorSensorEnabled,
-        });
-      }
-
-      if (graceVal !== doorOpenGraceMinutes) {
-        changes.push({
-          field: "door_open_grace_minutes",
-          old_value: doorOpenGraceMinutes,
-          new_value: graceVal,
-        });
-      }
-
-      if (changes.length === 0 && editNotes === (notes || "")) {
-        toast({ title: "No changes to save" });
-        setShowEditModal(false);
-        setIsSaving(false);
-        return;
-      }
-
-      // Update unit
-      const { error: updateError } = await supabase
-        .from("units")
-        .update({
-          unit_type: editUnitType as any,
-          temp_limit_low: lowVal,
-          temp_limit_high: highVal,
-          notes: editNotes || null,
-          door_sensor_enabled: editDoorSensorEnabled,
-          door_open_grace_minutes: graceVal,
-        })
-        .eq("id", unitId);
-
-      if (updateError) throw updateError;
-
-      // Insert history record if there were changes
-      if (changes.length > 0) {
-        const { error: historyError } = await supabase
-          .from("unit_settings_history")
-          .insert({
-            unit_id: unitId,
-            changed_by: userId,
-            changes: changes,
-            note: editNotes !== (notes || "") ? "Notes updated" : null,
-          });
-
-        if (historyError) {
-          console.error("History insert error:", historyError);
-          // Don't fail the whole operation for history
-        }
-      }
+      // Use tRPC mutation to update unit
+      // Note: The backend schema uses tempMin/tempMax instead of tempLimitLow/tempLimitHigh
+      await updateUnitMutation.mutateAsync({
+        organizationId,
+        siteId,
+        areaId,
+        unitId,
+        data: {
+          unitType: editUnitType as 'fridge' | 'freezer' | 'display_case' | 'walk_in_cooler' | 'walk_in_freezer' | 'blast_chiller',
+          tempMin: lowVal !== null ? Math.round(lowVal) : undefined,
+          tempMax: Math.round(highVal),
+        },
+      });
 
       toast({ title: "Unit settings updated" });
       setShowEditModal(false);
@@ -253,83 +168,6 @@ export default function UnitSettingsSection({
     setIsSaving(false);
   };
 
-  const loadHistory = async () => {
-    setIsLoadingHistory(true);
-    try {
-      const { data, error } = await supabase
-        .from("unit_settings_history")
-        .select("id, changed_by, changed_at, changes, note")
-        .eq("unit_id", unitId)
-        .order("changed_at", { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-
-      // Fetch user profiles for changed_by
-      const userIds = [...new Set((data || []).map((h) => h.changed_by))];
-      let profileMap: Record<string, { email: string; full_name: string | null }> = {};
-
-      if (userIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("user_id, email, full_name")
-          .in("user_id", userIds);
-
-        if (profiles) {
-          profileMap = profiles.reduce((acc, p) => {
-            acc[p.user_id] = { email: p.email, full_name: p.full_name };
-            return acc;
-          }, {} as Record<string, { email: string; full_name: string | null }>);
-        }
-      }
-
-      const historyWithProfiles = (data || []).map((h) => ({
-        ...h,
-        changes: h.changes as SettingsHistoryEntry["changes"],
-        profile: profileMap[h.changed_by] || null,
-      }));
-
-      setHistory(historyWithProfiles);
-    } catch (error) {
-      console.error("Load history error:", error);
-      toast({
-        title: "Failed to load history",
-        variant: "destructive",
-      });
-    }
-    setIsLoadingHistory(false);
-  };
-
-  const openHistoryModal = () => {
-    setShowHistoryModal(true);
-    loadHistory();
-  };
-
-  const getFieldLabel = (field: string): string => {
-    switch (field) {
-      case "unit_type":
-        return "Unit Type";
-      case "temp_limit_low":
-        return "Low Limit";
-      case "temp_limit_high":
-        return "High Limit";
-      case "door_sensor_enabled":
-        return "Door Sensor";
-      case "door_open_grace_minutes":
-        return "Door Grace Minutes";
-      default:
-        return field;
-    }
-  };
-
-  const formatValue = (field: string, value: any): string => {
-    if (value === null || value === undefined) return "Not set";
-    if (field === "unit_type") return unitTypeLabels[value] || value;
-    if (field.includes("temp_limit")) return `${value}°F`;
-    if (field === "door_sensor_enabled") return value ? "Enabled" : "Disabled";
-    if (field === "door_open_grace_minutes") return `${value} min`;
-    return String(value);
-  };
 
   return (
     <>
@@ -399,10 +237,6 @@ export default function UnitSettingsSection({
                   <Pencil className="w-3 h-3 mr-1" />
                   Edit
                 </Button>
-                <Button variant="ghost" size="sm" onClick={openHistoryModal}>
-                  <History className="w-3 h-3 mr-1" />
-                  View History
-                </Button>
               </div>
             </CardContent>
           </CollapsibleContent>
@@ -460,46 +294,6 @@ export default function UnitSettingsSection({
               </div>
             </div>
 
-            <div className="space-y-3 p-3 bg-muted/30 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <DoorOpen className="w-4 h-4 text-muted-foreground" />
-                  <Label>Door Sensor Enabled</Label>
-                </div>
-                <Switch
-                  checked={editDoorSensorEnabled}
-                  onCheckedChange={setEditDoorSensorEnabled}
-                />
-              </div>
-              
-              {editDoorSensorEnabled && (
-                <div className="space-y-2 pt-2 border-t border-border/50">
-                  <Label className="text-sm">Door Open Grace (minutes)</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="60"
-                    value={editDoorGraceMinutes}
-                    onChange={(e) => setEditDoorGraceMinutes(e.target.value)}
-                    className="w-24"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Time before door-open masks temp excursions (1-60 min)
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Notes (optional)</Label>
-              <Textarea
-                placeholder="Any notes about this unit..."
-                value={editNotes}
-                onChange={(e) => setEditNotes(e.target.value)}
-                rows={2}
-              />
-            </div>
-
             {validationError && (
               <p className="text-sm text-destructive">{validationError}</p>
             )}
@@ -517,71 +311,6 @@ export default function UnitSettingsSection({
         </DialogContent>
       </Dialog>
 
-      {/* History Modal */}
-      <Dialog open={showHistoryModal} onOpenChange={setShowHistoryModal}>
-        <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle>Settings History</DialogTitle>
-          </DialogHeader>
-
-          <div className="flex-1 overflow-y-auto py-2">
-            {isLoadingHistory ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : history.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                No changes recorded yet.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {history.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="p-3 bg-muted/30 rounded-lg border border-border/50"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">
-                        {entry.profile?.full_name || entry.profile?.email || "Unknown user"}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {format(new Date(entry.changed_at), "MMM d, yyyy h:mm a")}
-                      </span>
-                    </div>
-                    <div className="space-y-1">
-                      {entry.changes.map((change, idx) => (
-                        <div key={idx} className="text-sm">
-                          <span className="text-muted-foreground">
-                            {getFieldLabel(change.field)}:
-                          </span>{" "}
-                          <span className="text-destructive/70 line-through">
-                            {formatValue(change.field, change.old_value)}
-                          </span>
-                          {" → "}
-                          <span className="text-safe">
-                            {formatValue(change.field, change.new_value)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                    {entry.note && (
-                      <p className="text-xs text-muted-foreground mt-2 italic">
-                        {entry.note}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowHistoryModal(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

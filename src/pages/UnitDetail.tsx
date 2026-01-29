@@ -30,7 +30,7 @@ import { usePermissions } from "@/hooks/useUserRole"
 import { useTRPC, useTRPCClient } from "@/lib/trpc"
 import { invalidateUnitCaches } from "@/lib/unitCacheInvalidation"
 import { useUser } from "@stackframe/react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { format, subDays, subHours } from "date-fns"
 import {
   AlertTriangle,
@@ -116,9 +116,11 @@ const UnitDetail = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Queries using tRPC
-  const unitLookupQuery = trpc.units.listByOrg.useQuery(
-    { organizationId: effectiveOrgId! },
-    { enabled: !!effectiveOrgId && identityInitialized }
+  const unitLookupQuery = useQuery(
+    trpc.units.listByOrg.queryOptions(
+      { organizationId: effectiveOrgId! },
+      { enabled: !!effectiveOrgId && identityInitialized }
+    )
   );
 
   const unitLookup = useMemo(() => {
@@ -129,21 +131,23 @@ const UnitDetail = () => {
   const unitLookupSiteId = unitLookup?.siteId ?? "";
   const unitLookupAreaId = unitLookup?.areaId ?? "";
 
-  const unitQuery = trpc.units.get.useQuery(
-    {
-      unitId: unitId!,
-      organizationId: effectiveOrgId!,
-      siteId: unitLookupSiteId,
-      areaId: unitLookupAreaId,
-    },
-    {
-      enabled:
-        !!unitId &&
-        !!unitLookupSiteId &&
-        !!unitLookupAreaId &&
-        !!effectiveOrgId &&
-        identityInitialized,
-    }
+  const unitQuery = useQuery(
+    trpc.units.get.queryOptions(
+      {
+        unitId: unitId!,
+        organizationId: effectiveOrgId!,
+        siteId: unitLookupSiteId,
+        areaId: unitLookupAreaId,
+      },
+      {
+        enabled:
+          !!unitId &&
+          !!unitLookupSiteId &&
+          !!unitLookupAreaId &&
+          !!effectiveOrgId &&
+          identityInitialized,
+      }
+    )
   );
 
   const fromDate = useMemo(() => {
@@ -158,62 +162,74 @@ const UnitDetail = () => {
     }
   }, [timeRange]);
 
-  const readingsQuery = trpc.readings.list.useQuery(
-    { 
-      unitId: unitId!, 
-      organizationId: effectiveOrgId!,
-      start: fromDate,
-      limit: 500
-    },
-    { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
+  const readingsQuery = useQuery(
+    trpc.readings.list.queryOptions(
+      {
+        unitId: unitId!,
+        organizationId: effectiveOrgId!,
+        start: fromDate,
+        limit: 500
+      },
+      { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
+    )
   );
 
-  const manualLogsQuery = trpc.readings.listManual.useQuery(
-    {
-      unitId: unitId!,
-      organizationId: effectiveOrgId!,
-      start: fromDate,
-      limit: 50
-    },
-    { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
+  const manualLogsQuery = useQuery(
+    trpc.readings.listManual.queryOptions(
+      {
+        unitId: unitId!,
+        organizationId: effectiveOrgId!,
+        start: fromDate,
+        limit: 50
+      },
+      { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
+    )
   );
 
-  const latestManualLogQuery = trpc.readings.listManual.useQuery(
-    {
-      unitId: unitId!,
-      organizationId: effectiveOrgId!,
-      limit: 1,
-    },
-    { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
+  const latestManualLogQuery = useQuery(
+    trpc.readings.listManual.queryOptions(
+      {
+        unitId: unitId!,
+        organizationId: effectiveOrgId!,
+        limit: 1,
+      },
+      { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
+    )
   );
 
-  const eventsQuery = trpc.audit.list.useQuery(
-    {
-      unitId: unitId!,
-      organizationId: effectiveOrgId!,
-      start: fromDate,
-      limit: 50
-    },
-    { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
+  const eventsQuery = useQuery(
+    trpc.audit.list.queryOptions(
+      {
+        unitId: unitId!,
+        organizationId: effectiveOrgId!,
+        start: fromDate,
+        limit: 50
+      },
+      { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
+    )
   );
 
-  const deviceQuery = trpc.ttnDevices.getByUnit.useQuery(
-    { 
-      unitId: unitId!, 
-      organizationId: effectiveOrgId! 
-    },
-    { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
+  const deviceQuery = useQuery(
+    trpc.ttnDevices.getByUnit.queryOptions(
+      {
+        unitId: unitId!,
+        organizationId: effectiveOrgId!
+      },
+      { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
+    )
   );
 
   // Sibling units query (needs a list units in area procedure, but we can filter listByOrg for now or I'll add listByArea)
   // Actually I have trpc.units.list which takes areaId.
-  const siblingsQuery = trpc.units.list.useQuery(
-    {
-      organizationId: effectiveOrgId!,
-      siteId: unitLookupSiteId,
-      areaId: unitLookupAreaId,
-    },
-    { enabled: !!unitLookupAreaId && !!effectiveOrgId }
+  const siblingsQuery = useQuery(
+    trpc.units.list.queryOptions(
+      {
+        organizationId: effectiveOrgId!,
+        siteId: unitLookupSiteId,
+        areaId: unitLookupAreaId,
+      },
+      { enabled: !!unitLookupAreaId && !!effectiveOrgId }
+    )
   );
 
   const isLoading = unitLookupQuery.isLoading || unitQuery.isLoading || identityInitialized === false;
@@ -344,9 +360,11 @@ const UnitDetail = () => {
     [loraSensors]
   );
 
-  const doorEventsQuery = trpc.readings.listDoorEvents.useQuery(
-    { organizationId: effectiveOrgId!, unitId: unitId!, limit: 1 },
-    { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
+  const doorEventsQuery = useQuery(
+    trpc.readings.listDoorEvents.queryOptions(
+      { organizationId: effectiveOrgId!, unitId: unitId!, limit: 1 },
+      { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
+    )
   );
 
   const effectiveDoorState = useMemo(() => {
@@ -704,6 +722,9 @@ const UnitDetail = () => {
           {/* Unit Settings */}
           <UnitSettingsSection
             unitId={unit.id}
+            organizationId={unit.area.site.organization_id}
+            siteId={unit.area.site.id}
+            areaId={unit.area.id}
             unitType={unit.unit_type}
             tempLimitLow={unit.temp_limit_low}
             tempLimitHigh={unit.temp_limit_high}
