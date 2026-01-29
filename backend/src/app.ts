@@ -1,5 +1,6 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import multipart from '@fastify/multipart';
 import {
@@ -54,6 +55,10 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
     requestIdLogLabel: 'requestId',
     // Support batched tRPC requests with longer URLs
     maxParamLength: 5000,
+    // Security: Limit JSON body size (1MB default)
+    bodyLimit: 1048576,
+    // Security: Prevent indefinite request hangs (30 seconds)
+    requestTimeout: 30000,
   });
 
   // Enable CORS for frontend
@@ -74,6 +79,29 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-stack-access-token', 'x-stack-refresh-token'],
+  });
+
+  // Security headers via helmet
+  // Note: CSP configured for React SPA with Stack Auth integration
+  app.register(helmet, {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        connectSrc: [
+          "'self'",
+          "https://api.stack-auth.com",
+          "https://*.thethings.network",
+          "wss://*",
+          "ws://*",
+        ],
+      },
+    },
+    // HSTS handled by reverse proxy (Caddy/nginx) in production
+    strictTransportSecurity: false,
   });
 
   // Register rate limiting for auth endpoints protection
