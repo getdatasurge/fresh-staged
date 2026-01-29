@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "@/lib/trpc";
 import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,127 +42,118 @@ interface OrgSummary {
 const OrganizationDashboard = () => {
   const navigate = useNavigate();
   const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
-  const [loading, setLoading] = useState(true);
-  const [sites, setSites] = useState<SiteData[]>([]);
-  const [orgSummary, setOrgSummary] = useState<OrgSummary | null>(null);
+  const trpc = useTRPC();
 
-  useEffect(() => {
-    if (isInitialized && effectiveOrgId) {
-      loadOrganizationData();
-    } else if (isInitialized && !effectiveOrgId) {
-      navigate("/onboarding");
+  // Redirect to onboarding if no org
+  if (isInitialized && !effectiveOrgId) {
+    navigate("/onboarding");
+  }
+
+  // Fetch organization details via tRPC
+  const orgQuery = useQuery(
+    trpc.organizations.get.queryOptions(
+      { organizationId: effectiveOrgId || "" },
+      { enabled: isInitialized && !!effectiveOrgId }
+    )
+  );
+
+  // Fetch sites via tRPC
+  const sitesQuery = useQuery(
+    trpc.sites.list.queryOptions(
+      { organizationId: effectiveOrgId || "" },
+      { enabled: isInitialized && !!effectiveOrgId }
+    )
+  );
+
+  // Fetch units via tRPC
+  const unitsQuery = useQuery(
+    trpc.units.listByOrg.queryOptions(
+      { organizationId: effectiveOrgId || "" },
+      { enabled: isInitialized && !!effectiveOrgId }
+    )
+  );
+
+  // Process sites and compute compliance using useMemo
+  const { sites, orgSummary } = useMemo(() => {
+    if (!sitesQuery.data || !unitsQuery.data) {
+      return { sites: [], orgSummary: null };
     }
-  }, [isInitialized, effectiveOrgId]);
 
-  const loadOrganizationData = async () => {
-    if (!effectiveOrgId) return;
-    
-    setLoading(true);
-    try {
-      // Get organization details using effectiveOrgId
-      const { data: org } = await supabase
-        .from("organizations")
-        .select("name")
-        .eq("id", effectiveOrgId)
-        .maybeSingle();
-
-      // Get all sites with their units using effectiveOrgId
-      const { data: sitesData } = await supabase
-        .from("sites")
-        .select(`
-          id, name, address, city, state,
-          areas(
-            id,
-            units(
-              id, name, status, unit_type,
-              temp_limit_high, temp_limit_low,
-              last_temp_reading, last_reading_at, last_manual_log_at,
-              manual_log_cadence
-            )
-          )
-        `)
-        .eq("organization_id", effectiveOrgId)
-        .eq("is_active", true);
-
-      if (!sitesData) {
-        setSites([]);
-        setOrgSummary({
-          name: org?.name || "Organization",
-          totalSites: 0,
-          totalUnits: 0,
-          totalAlerts: 0,
-          overallCompliance: 100,
-        });
-        setLoading(false);
-        return;
+    // Transform units to UnitStatusInfo format and group by siteId
+    const unitsBySiteId: Record<string, UnitStatusInfo[]> = {};
+    unitsQuery.data.forEach(u => {
+      if (!unitsBySiteId[u.siteId]) {
+        unitsBySiteId[u.siteId] = [];
       }
-
-      // Process sites and compute compliance
-      const processedSites: SiteData[] = sitesData.map((site) => {
-        const units: UnitStatusInfo[] = [];
-        
-        (site.areas || []).forEach((area: any) => {
-          (area.units || []).forEach((unit: any) => {
-            units.push({
-              ...unit,
-              area: {
-                id: area.id,
-                name: area.name || "Default Area",
-                site: { id: site.id, name: site.name },
-              },
-            });
-          });
-        });
-
-        const alertSummary = computeUnitAlerts(units);
-        
-        // Compliance = units without CRITICAL alerts / total units
-        const unitsWithCritical = alertSummary.alerts.filter(a => a.severity === "critical")
-          .reduce((acc, alert) => {
-            acc.add(alert.unit_id);
-            return acc;
-          }, new Set<string>()).size;
-        
-        const complianceScore = units.length > 0 
-          ? Math.round(((units.length - unitsWithCritical) / units.length) * 100)
-          : 100;
-
-        return {
-          id: site.id,
-          name: site.name,
-          address: site.address,
-          city: site.city,
-          state: site.state,
-          units,
-          alertSummary,
-          complianceScore,
-        };
+      unitsBySiteId[u.siteId].push({
+        id: u.id,
+        name: u.name,
+        unit_type: u.unitType,
+        status: u.status,
+        temp_limit_high: u.tempMax,
+        temp_limit_low: u.tempMin,
+        manual_log_cadence: u.manualMonitoringInterval || 14400,
+        last_manual_log_at: u.lastManualLogAt?.toISOString() || null,
+        last_reading_at: u.lastReadingAt?.toISOString() || null,
+        last_temp_reading: u.lastTemperature,
+        area: {
+          name: u.areaName,
+          site: { name: u.siteName },
+        },
       });
+    });
 
-      // Sort by compliance (lowest first to highlight problem sites)
-      processedSites.sort((a, b) => a.complianceScore - b.complianceScore);
+    // Process sites with their units
+    const processedSites: SiteData[] = sitesQuery.data.map((site) => {
+      const siteUnits = unitsBySiteId[site.id] || [];
+      const alertSummary = computeUnitAlerts(siteUnits);
 
-      // Calculate org-wide summary
-      const totalUnits = processedSites.reduce((sum, s) => sum + s.units.length, 0);
-      const totalAlerts = processedSites.reduce((sum, s) => sum + s.alertSummary.criticalCount, 0);
-      const overallCompliance = totalUnits > 0
-        ? Math.round(processedSites.reduce((sum, s) => sum + s.complianceScore * s.units.length, 0) / totalUnits)
+      // Compliance = units without CRITICAL alerts / total units
+      const unitsWithCritical = alertSummary.alerts.filter(a => a.severity === "critical")
+        .reduce((acc, alert) => {
+          acc.add(alert.unit_id);
+          return acc;
+        }, new Set<string>()).size;
+
+      const complianceScore = siteUnits.length > 0
+        ? Math.round(((siteUnits.length - unitsWithCritical) / siteUnits.length) * 100)
         : 100;
 
-      setSites(processedSites);
-      setOrgSummary({
-        name: org?.name || "Organization",
+      return {
+        id: site.id,
+        name: site.name,
+        address: site.address || null,
+        city: site.city || null,
+        state: site.state || null,
+        units: siteUnits,
+        alertSummary,
+        complianceScore,
+      };
+    });
+
+    // Sort by compliance (lowest first to highlight problem sites)
+    processedSites.sort((a, b) => a.complianceScore - b.complianceScore);
+
+    // Calculate org-wide summary
+    const totalUnits = processedSites.reduce((sum, s) => sum + s.units.length, 0);
+    const totalAlerts = processedSites.reduce((sum, s) => sum + s.alertSummary.criticalCount, 0);
+    const overallCompliance = totalUnits > 0
+      ? Math.round(processedSites.reduce((sum, s) => sum + s.complianceScore * s.units.length, 0) / totalUnits)
+      : 100;
+
+    return {
+      sites: processedSites,
+      orgSummary: {
+        name: orgQuery.data?.name || "Organization",
         totalSites: processedSites.length,
         totalUnits,
         totalAlerts,
         overallCompliance,
-      });
-    } catch (error) {
-      console.error("Error loading organization data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      } as OrgSummary,
+    };
+  }, [sitesQuery.data, unitsQuery.data, orgQuery.data]);
+
+  const loading = !isInitialized || sitesQuery.isLoading || unitsQuery.isLoading;
 
   const getComplianceColor = (score: number) => {
     if (score >= 95) return "text-safe";
