@@ -20,7 +20,7 @@ Complete the Supabase-to-tRPC migration by fixing 60 failing tests and migrating
 - [x] **Phase 39: Dashboard Widget Migration** - Migrate 9 widgets to tRPC
 - [x] **Phase 40: Settings Components Migration** - Migrate 7 settings components to tRPC
 - [x] **Phase 41: Pages Migration** - Migrate 7 pages to tRPC
-- [ ] **Phase 42: Admin/Debug + Other Components** - Migrate 8 remaining components to tRPC
+- [x] **Phase 42: Admin/Debug + Other Components** - Migrate 8 remaining components to tRPC
 - [ ] **Phase 43: Cleanup & Verification** - Delete supabase-placeholder, verify all tests pass
 
 ## Phase Details
@@ -114,9 +114,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 42-01-PLAN.md — Admin/debug: SuperAdminContext, SensorSimulatorPanel, RBACDebugPanel, UnitDebugBanner
-- [ ] 42-02-PLAN.md — General components: NotificationDropdown, LogTempModal, GlobalUserSearch
-- [ ] 42-03-PLAN.md — Remaining: UnitSettingsSection, InvoiceHistory, error handling utilities cleanup
+- [x] 42-01-PLAN.md — Admin/debug: SuperAdminContext, SensorSimulatorPanel, RBACDebugPanel, UnitDebugBanner
+- [x] 42-02-PLAN.md — General components: NotificationDropdown, LogTempModal, GlobalUserSearch
+- [x] 42-03-PLAN.md — Remaining: UnitSettingsSection, InvoiceHistory, error handling utilities cleanup
 
 ---
 
@@ -129,10 +129,10 @@ Plans:
   2. Zero imports of supabase-placeholder exist in any file
   3. All frontend tests pass (145+ tests)
   4. All backend tests pass (1050+ tests)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 43-01: TBD (cleanup and final verification)
+- [ ] 43-01-PLAN.md — Delete supabase-placeholder.ts, remove test mocks, verify all tests pass
 
 ---
 
@@ -144,10 +144,10 @@ Plans:
 | 39. Dashboard Widget Migration | v2.4 | 3/3 | Complete | 2026-01-29 |
 | 40. Settings Components Migration | v2.4 | 3/3 | Complete | 2026-01-29 |
 | 41. Pages Migration | v2.4 | 3/3 | Complete | 2026-01-29 |
-| 42. Admin/Debug + Other Components | v2.4 | 0/3 | Not started | - |
-| 43. Cleanup & Verification | v2.4 | 0/1 | Not started | - |
+| 42. Admin/Debug + Other Components | v2.4 | 3/3 | Complete | 2026-01-29 |
+| 43. Cleanup & Verification | v2.4 | 0/1 | Planned | - |
 
-**v2.4 Total:** 12/16 plans complete (75%)
+**v2.4 Total:** 15/16 plans complete (94%)
 
 ---
 
