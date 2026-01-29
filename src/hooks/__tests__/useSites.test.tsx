@@ -14,35 +14,6 @@ vi.mock('@stackframe/react', () => ({
 
 import { useNavTree } from '../useNavTree'
 
-// Mock dependencies
-vi.mock('@/lib/supabase-placeholder', () => ({
-	supabase: {
-		auth: {
-			getSession: vi.fn(() =>
-				Promise.resolve({
-					data: {
-						session: {
-							access_token: 'test-token',
-						},
-					},
-				}),
-			),
-		},
-		from: vi.fn(() => ({
-			select: vi.fn(() => ({
-				eq: vi.fn(() => ({
-					is: vi.fn(() => ({
-						not: vi.fn(() => ({
-							data: [],
-							error: null,
-						})),
-					})),
-				})),
-			})),
-		})),
-	},
-}))
-
 const mockUseTRPC = vi.fn()
 
 vi.mock('@/lib/trpc', () => ({

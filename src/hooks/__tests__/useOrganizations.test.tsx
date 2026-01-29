@@ -12,22 +12,6 @@ vi.mock('@stackframe/react', () => ({
 	}),
 }))
 
-vi.mock('@/lib/supabase-placeholder', () => ({
-	supabase: {
-		auth: {
-			getSession: vi.fn(() =>
-				Promise.resolve({
-					data: {
-						session: {
-							access_token: 'test-token',
-						},
-					},
-				}),
-			),
-		},
-	},
-}))
-
 vi.mock('../useEffectiveIdentity', () => ({
 	useEffectiveIdentity: () => ({
 		effectiveOrgId: 'test-org-id',
