@@ -17,7 +17,7 @@ Complete the Supabase-to-tRPC migration by fixing 60 failing tests and migrating
 ## Phases
 
 - [x] **Phase 38: Test Infrastructure** - Fix tRPC and BullMQ test mocking
-- [ ] **Phase 39: Dashboard Widget Migration** - Migrate 9 widgets to tRPC
+- [x] **Phase 39: Dashboard Widget Migration** - Migrate 9 widgets to tRPC
 - [ ] **Phase 40: Settings Components Migration** - Migrate 7 settings components to tRPC
 - [ ] **Phase 41: Pages Migration** - Migrate 7 pages to tRPC
 - [ ] **Phase 42: Admin/Debug + Other Components** - Migrate 8 remaining components to tRPC
@@ -61,9 +61,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 39-01-PLAN.md — Simple widgets: ManualLogStatusWidget, UnitsStatusGridWidget, SensorSignalTrendWidget
-- [ ] 39-02-PLAN.md — Medium widgets: UnitComparisonWidget, UnitComplianceScoreWidget, SiteActivityGraphWidget, DowntimeTrackerWidget
-- [ ] 39-03-PLAN.md — Complex widgets: AnnotationsWidget, EventTimelineWidget (with new backend procedures)
+- [x] 39-01-PLAN.md — Simple widgets: ManualLogStatusWidget, UnitsStatusGridWidget, SensorSignalTrendWidget
+- [x] 39-02-PLAN.md — Medium widgets: UnitComparisonWidget, UnitComplianceScoreWidget, SiteActivityGraphWidget, DowntimeTrackerWidget
+- [x] 39-03-PLAN.md — Complex widgets: AnnotationsWidget, EventTimelineWidget (with new backend procedures)
 
 ---
 
@@ -138,13 +138,13 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 38. Test Infrastructure | v2.4 | 3/3 | Complete | 2026-01-29 |
-| 39. Dashboard Widget Migration | v2.4 | 0/3 | Not started | - |
+| 39. Dashboard Widget Migration | v2.4 | 3/3 | Complete | 2026-01-29 |
 | 40. Settings Components Migration | v2.4 | 0/2 | Not started | - |
 | 41. Pages Migration | v2.4 | 0/2 | Not started | - |
 | 42. Admin/Debug + Other Components | v2.4 | 0/2 | Not started | - |
 | 43. Cleanup & Verification | v2.4 | 0/1 | Not started | - |
 
-**v2.4 Total:** 3/13 plans complete (23%)
+**v2.4 Total:** 6/13 plans complete (46%)
 
 ---
 
