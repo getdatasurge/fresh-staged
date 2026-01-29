@@ -228,6 +228,10 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
     }
   }, [selectedUnit, loadSimConfig, loadRecentEvents]);
 
+  // Note: sensor-simulator edge function is intentionally kept as-is.
+  // This is an admin-only dev tool that simulates hardware sensors.
+  // The edge function still exists and works for internal testing purposes.
+  // Migration to tRPC is not required for internal tooling (Phase 32-04 decision).
   const invokeSimulator = async (action: string, extraParams: Record<string, unknown> = {}) => {
     if (!selectedUnit) {
       toast.error("Please select a unit");

@@ -1,7 +1,7 @@
 import { SensorSimulatorPanel } from '@/components/admin/SensorSimulatorPanel'
 import { BillingTab } from '@/components/billing/BillingTab'
 import DashboardLayout from '@/components/DashboardLayout'
-import { DebugModeToggle, EdgeFunctionDiagnostics } from '@/components/debug'
+import { DebugModeToggle } from '@/components/debug'
 import { AccountDeletionModal } from '@/components/settings/AccountDeletionModal'
 import { AlertRulesScopedEditor } from '@/components/settings/AlertRulesScopedEditor'
 import { EmulatorResyncCard } from '@/components/settings/EmulatorResyncCard'
@@ -59,7 +59,7 @@ import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity'
 import { AppRole, ComplianceMode } from '@/lib/api-types'
 import { useTRPC, useTRPCClient } from '@/lib/trpc'
 import { useUser } from '@stackframe/react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
 	AlertTriangle,
 	Bell,
@@ -188,7 +188,6 @@ const Settings = () => {
 	const stackUser = useUser()
 	const trpc = useTRPC()
 	const trpcClient = useTRPCClient()
-	console.log('trpc.users.me:', trpc.users.me)
 	const {
 		effectiveOrgId,
 		isImpersonating,
@@ -198,33 +197,45 @@ const Settings = () => {
 	const [isSaving, setIsSaving] = useState(false)
 
 	// tRPC Queries
-	const profileQuery = trpc.users.me.useQuery(undefined, {
-		enabled: !!stackUser,
-	})
-
-	const orgQuery = trpc.organizations.get.useQuery(
-		{ organizationId: effectiveOrgId! },
-		{ enabled: !!effectiveOrgId && identityInitialized },
+	const profileQuery = useQuery(
+		trpc.users.me.queryOptions(undefined, {
+			enabled: !!stackUser,
+		})
 	)
 
-	const membersQuery = trpc.organizations.listMembers.useQuery(
-		{ organizationId: effectiveOrgId! },
-		{ enabled: !!effectiveOrgId && identityInitialized },
+	const orgQuery = useQuery(
+		trpc.organizations.get.queryOptions(
+			{ organizationId: effectiveOrgId! },
+			{ enabled: !!effectiveOrgId && identityInitialized },
+		)
 	)
 
-	const statsQuery = trpc.organizations.stats.useQuery(
-		{ organizationId: effectiveOrgId! },
-		{ enabled: !!effectiveOrgId && identityInitialized },
+	const membersQuery = useQuery(
+		trpc.organizations.listMembers.queryOptions(
+			{ organizationId: effectiveOrgId! },
+			{ enabled: !!effectiveOrgId && identityInitialized },
+		)
 	)
 
-	const sitesQuery = trpc.sites.list.useQuery(
-		{ organizationId: effectiveOrgId! },
-		{ enabled: !!effectiveOrgId && identityInitialized },
+	const statsQuery = useQuery(
+		trpc.organizations.stats.queryOptions(
+			{ organizationId: effectiveOrgId! },
+			{ enabled: !!effectiveOrgId && identityInitialized },
+		)
 	)
 
-	const unitsQuery = trpc.units.listByOrg.useQuery(
-		{ organizationId: effectiveOrgId! },
-		{ enabled: !!effectiveOrgId && identityInitialized },
+	const sitesQuery = useQuery(
+		trpc.sites.list.queryOptions(
+			{ organizationId: effectiveOrgId! },
+			{ enabled: !!effectiveOrgId && identityInitialized },
+		)
+	)
+
+	const unitsQuery = useQuery(
+		trpc.units.listByOrg.queryOptions(
+			{ organizationId: effectiveOrgId! },
+			{ enabled: !!effectiveOrgId && identityInitialized },
+		)
 	)
 
 	// Form states
@@ -331,25 +342,31 @@ const Settings = () => {
 	} | null>(null)
 
 	// Fetch TTN settings using tRPC
-	const ttnSettingsQuery = trpc.ttnSettings.get.useQuery(
-		{ organizationId: effectiveOrgId! },
-		{
-			enabled: !!effectiveOrgId && identityInitialized,
-			onSuccess: data => {
-				if (data) {
-					setTtnConfig({
-						isEnabled: data.isEnabled ?? false,
-						hasApiKey: !!(data.apiKeyLast4 || data.hasApiKey),
-						applicationId: data.applicationId ?? null,
-						apiKeyLast4: data.apiKeyLast4 ?? null,
-					})
-				}
-			},
-			onError: err => {
-				console.error('Failed to load TTN config:', err)
-			},
-		},
+	const ttnSettingsQuery = useQuery(
+		trpc.ttnSettings.get.queryOptions(
+			{ organizationId: effectiveOrgId! },
+			{ enabled: !!effectiveOrgId && identityInitialized },
+		)
 	)
+
+	// Handle TTN settings data changes
+	useEffect(() => {
+		if (ttnSettingsQuery.data) {
+			setTtnConfig({
+				isEnabled: ttnSettingsQuery.data.isEnabled ?? false,
+				hasApiKey: !!(ttnSettingsQuery.data.apiKeyLast4 || ttnSettingsQuery.data.hasApiKey),
+				applicationId: ttnSettingsQuery.data.applicationId ?? null,
+				apiKeyLast4: ttnSettingsQuery.data.apiKeyLast4 ?? null,
+			})
+		}
+	}, [ttnSettingsQuery.data])
+
+	// Log TTN settings errors
+	useEffect(() => {
+		if (ttnSettingsQuery.error) {
+			console.error('Failed to load TTN config:', ttnSettingsQuery.error)
+		}
+	}, [ttnSettingsQuery.error])
 
 	const saveOrganization = async () => {
 		setIsSaving(true)
@@ -1285,7 +1302,6 @@ const Settings = () => {
 									<EmulatorSyncHistory
 										organizationId={organization?.id || null}
 									/>
-									<EdgeFunctionDiagnostics />
 									<SensorSimulatorPanel
 										organizationId={organization?.id || null}
 									/>

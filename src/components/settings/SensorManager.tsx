@@ -46,7 +46,7 @@ import { checkTTNOperationAllowed } from "@/lib/ttn/guards";
 import { TtnProvisioningStatusBadge, TtnActions } from "./TtnProvisioningStatusBadge";
 import { useCheckTtnProvisioningState } from "@/hooks/useCheckTtnProvisioningState";
 import { TtnDiagnoseModal, TtnDiagnoseResult } from "./TtnDiagnoseModal";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useTRPCClient } from "@/lib/trpc";
 
 interface Site {
   id: string;
@@ -274,6 +274,7 @@ const SensorUnitSelector = ({
 };
 export function SensorManager({ organizationId, sites, units, canEdit, autoOpenAdd, ttnConfig }: SensorManagerProps) {
   const queryClient = useQueryClient();
+  const trpcClient = useTRPCClient();
   const { data: sensors, isLoading, dataUpdatedAt } = useLoraSensors(organizationId);
   const deleteSensor = useDeleteLoraSensor();
   const provisionSensor = useProvisionLoraSensor();
@@ -371,38 +372,39 @@ export function SensorManager({ organizationId, sites, units, canEdit, autoOpenA
     setDiagnoseSensorName(sensor.name);
     setDiagnoseResult(null);
     setDiagnoseModalOpen(true);
-    
+
     try {
-      const { data, error } = await supabase.functions.invoke('ttn-provision-device', {
-        body: {
-          action: 'diagnose',
-          sensor_id: sensor.id,
-          organization_id: organizationId,
-        },
+      const data = await trpcClient.ttnDevices.diagnose.mutate({
+        organizationId,
+        sensorId: sensor.id,
       });
-      
-      if (error) {
-        setDiagnoseResult({
-          success: false,
-          error: error.message || 'Diagnosis failed',
-          clusterBaseUrl: '',
-          region: '',
-          appId: '',
-          deviceId: '',
-          checks: {
-            appProbe: { ok: false, status: 0 },
-            is: { ok: false, status: 0 },
-            js: { ok: false, status: 0 },
-            ns: { ok: false, status: 0 },
-            as: { ok: false, status: 0 },
-          },
-          diagnosis: 'error',
-          hint: '',
-          diagnosedAt: new Date().toISOString(),
-        });
-      } else {
-        setDiagnoseResult(data as TtnDiagnoseResult);
-      }
+
+      // Map tRPC response to TtnDiagnoseResult format
+      // tRPC diagnose returns simpler checks array, convert to expected format
+      const checksMap = data.checks.reduce((acc, check) => {
+        acc[check.name] = { ok: check.passed, status: check.passed ? 200 : 404, error: check.message };
+        return acc;
+      }, {} as Record<string, { ok: boolean; status: number; error?: string }>);
+
+      setDiagnoseResult({
+        success: data.success,
+        clusterBaseUrl: data.clusterBaseUrl || '',
+        region: data.region || '',
+        appId: data.appId || '',
+        deviceId: data.deviceId || '',
+        sensorName: sensor.name,
+        devEui: sensor.dev_eui,
+        checks: {
+          appProbe: checksMap['TTN Configuration'] || { ok: false, status: 0 },
+          is: checksMap['Application ID'] || { ok: false, status: 0 },
+          js: checksMap['API Credentials'] || { ok: false, status: 0 },
+          ns: { ok: data.success, status: data.success ? 200 : 404 },
+          as: { ok: data.success, status: data.success ? 200 : 404 },
+        },
+        diagnosis: data.success ? 'fully_provisioned' : 'not_provisioned',
+        hint: data.hint || '',
+        diagnosedAt: new Date().toISOString(),
+      });
     } catch (err) {
       setDiagnoseResult({
         success: false,
