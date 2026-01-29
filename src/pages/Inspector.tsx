@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "@stackframe/react";
 import { useMutation } from "@tanstack/react-query";
-import { useTRPC } from "@/lib/trpc";
+import { useTRPC, useTRPCClient } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -96,6 +96,7 @@ const Inspector = () => {
   const user = useUser();
   const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
   const trpc = useTRPC();
+  const trpcClient = useTRPCClient();
 
   const [isLoading, setIsLoading] = useState(true);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
@@ -168,7 +169,7 @@ const Inspector = () => {
       // Check if using token-based access
       if (tokenFromUrl) {
         try {
-          const session = await trpc.inspector.validateSession.mutate({ token: tokenFromUrl });
+          const session = await trpcClient.inspector.validateSession.mutate({ token: tokenFromUrl });
           setOrganizationId(session.organizationId);
           await loadOrgData(session.organizationId, session.allowedSiteIds || null);
         } catch (err: unknown) {
@@ -196,7 +197,7 @@ const Inspector = () => {
 
         // Check if user has inspector access via tRPC
         try {
-          await trpc.inspector.checkUserAccess.query({ organizationId: effectiveOrgId });
+          await trpcClient.inspector.checkUserAccess.query({ organizationId: effectiveOrgId });
         } catch (err: unknown) {
           console.error("User access error:", err);
           toast.error("No access to inspector mode");
@@ -216,7 +217,7 @@ const Inspector = () => {
 
   const loadOrgData = async (orgId: string, allowedSiteIds: string[] | null) => {
     try {
-      const orgData = await trpc.inspector.getOrgData.query({
+      const orgData = await trpcClient.inspector.getOrgData.query({
         organizationId: orgId,
         allowedSiteIds: allowedSiteIds || undefined,
       });
@@ -233,7 +234,7 @@ const Inspector = () => {
     if (!organizationId) return;
 
     try {
-      const unitsData = await trpc.inspector.getUnits.query({
+      const unitsData = await trpcClient.inspector.getUnits.query({
         organizationId,
         siteId: selectedSiteId !== "all" ? selectedSiteId : undefined,
       });
@@ -265,7 +266,7 @@ const Inspector = () => {
     if (unitIds.length === 0) return;
 
     try {
-      const data = await trpc.inspector.getInspectionData.query({
+      const data = await trpcClient.inspector.getInspectionData.query({
         organizationId,
         unitIds,
         startDate,

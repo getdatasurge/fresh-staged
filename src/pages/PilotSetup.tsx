@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { useTRPC } from "@/lib/trpc";
+import { useTRPC, useTRPCClient } from "@/lib/trpc";
 import { useUser } from "@stackframe/react";
 import { useMutation } from "@tanstack/react-query";
 import { format, startOfWeek } from "date-fns";
@@ -44,6 +44,7 @@ const PilotSetup = () => {
   const navigate = useNavigate();
   const user = useUser();
   const trpc = useTRPC();
+  const trpcClient = useTRPCClient();
   const upsertFeedbackMutation = useMutation(trpc.pilotFeedback.upsert.mutationOptions());
   const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
   const [isLoading, setIsLoading] = useState(true);
@@ -84,11 +85,11 @@ const PilotSetup = () => {
       setOrganizationId(effectiveOrgId);
 
       // Get sites using tRPC
-      const sitesData = await trpc.sites.list.query({ organizationId: effectiveOrgId });
+      const sitesData = await trpcClient.sites.list.query({ organizationId: effectiveOrgId });
       setSites(sitesData || []);
 
       // Get org stats using tRPC
-      const stats = await trpc.organizations.stats.query({ organizationId: effectiveOrgId });
+      const stats = await trpcClient.organizations.stats.query({ organizationId: effectiveOrgId });
       
       setUnitCount(stats.unitCounts.total);
       setUserCount(stats.memberCount);

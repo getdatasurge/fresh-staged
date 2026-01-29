@@ -6,7 +6,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useTRPC } from '@/lib/trpc'
+import { useTRPCClient } from '@/lib/trpc'
 import { AlertCircle, AlertTriangle, Info, Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -28,14 +28,14 @@ export function SiteAlertsSummaryWidget({
 		info: 0,
 	})
 	const [isLoading, setIsLoading] = useState(true)
-	const trpc = useTRPC()
+	const trpcClient = useTRPCClient()
 
 	useEffect(() => {
 		if (!entityId || !organizationId) return
 
 		const loadAlerts = async () => {
 			// Fetch active alerts for this site
-			const data = await trpc.alerts.list.query({
+			const data = await trpcClient.alerts.list.query({
 				organizationId,
 				siteId: entityId,
 				status: 'active',
@@ -54,7 +54,7 @@ export function SiteAlertsSummaryWidget({
 		}
 
 		loadAlerts()
-	}, [entityId, organizationId, trpc])
+	}, [entityId, organizationId, trpcClient])
 
 	const totalAlerts = counts.critical + counts.warning + counts.info
 

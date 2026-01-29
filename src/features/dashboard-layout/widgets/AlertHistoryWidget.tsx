@@ -7,7 +7,7 @@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useTRPC } from '@/lib/trpc'
+import { useTRPCClient } from '@/lib/trpc'
 import { differenceInMinutes, format } from 'date-fns'
 import { AlertTriangle, CheckCircle2, Clock, History } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -25,7 +25,7 @@ interface HistoricalAlert {
 export function AlertHistoryWidget({ entityId, organizationId }: WidgetProps) {
 	const [alerts, setAlerts] = useState<HistoricalAlert[]>([])
 	const [isLoading, setIsLoading] = useState(true)
-	const trpc = useTRPC()
+	const trpcClient = useTRPCClient()
 
 	useEffect(() => {
 		async function fetchAlertHistory() {
@@ -35,7 +35,7 @@ export function AlertHistoryWidget({ entityId, organizationId }: WidgetProps) {
 			}
 
 			try {
-				const data = await trpc.alerts.list.query({
+				const data = await trpcClient.alerts.list.query({
 					organizationId,
 					unitId: entityId,
 					limit: 20,
@@ -50,7 +50,7 @@ export function AlertHistoryWidget({ entityId, organizationId }: WidgetProps) {
 		}
 
 		fetchAlertHistory()
-	}, [entityId, organizationId, trpc])
+	}, [entityId, organizationId, trpcClient])
 
 	const resolvedAlerts = alerts.filter(a => a.resolved_at)
 	const avgResolutionTime =
