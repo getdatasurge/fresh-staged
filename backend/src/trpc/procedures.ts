@@ -37,8 +37,11 @@ const performanceMonitor = middleware(async ({ ctx, next }) => {
 		console.log(`${color}[PERF] Request: ${duration}ms\x1b[0m`)
 	}
 
-	// Add response header with duration - we need to access the res object directly from context
-	ctx.res.headers['x-response-time'] = String(duration)
+	// Add response header with duration - use Fastify's header() method if available
+	// (may not exist in test mocks)
+	if (typeof ctx.res.header === 'function') {
+		ctx.res.header('x-response-time', String(duration))
+	}
 
 	return result
 })
