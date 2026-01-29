@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.3 Deployment Orchestration — Phase 35 complete
+**Current focus:** v2.3 Deployment Orchestration — Phase 36 in progress
 
 ## Current Position
 
 Milestone: v2.3 Deployment Orchestration
-Phase: 35 - Verification
-Plan: 02 of 2 complete
-Status: Phase complete
-Last activity: 2026-01-29 — Completed 35-02-PLAN.md (verify-deployment.sh integration)
+Phase: 36 - Post-Deployment Setup
+Plan: 02 of 3 complete
+Status: In progress
+Last activity: 2026-01-29 — Completed 36-02-PLAN.md (sensor metrics Grafana dashboard)
 
-Progress: [======----] 50% (2/4 phases complete, phase 35 done)
+Progress: [======----] 58% (2/4 phases complete, phase 36 plan 2/3)
 
 ## v2.3 Phase Overview
 
@@ -23,7 +23,7 @@ Progress: [======----] 50% (2/4 phases complete, phase 35 done)
 |-------|------|--------------|--------|
 | 34 | Deployment Orchestration | DEPLOY-01 to DEPLOY-05 | Complete (2/2 plans) |
 | 35 | Verification | VERIFY-01 to VERIFY-06 | Complete (2/2 plans) |
-| 36 | Post-Deployment Setup | POST-01 to POST-05 | Blocked by 35 |
+| 36 | Post-Deployment Setup | POST-01 to POST-05 | In progress (2/3 plans) |
 | 37 | Documentation | DOCS-01 to DOCS-04 | Blocked by 36 |
 
 ## Milestones Shipped
@@ -53,6 +53,8 @@ Progress: [======----] 50% (2/4 phases complete, phase 35 done)
 | 35-01 | Environment-overridable VERIFY_* config | Allows deployment-specific tuning of verification parameters |
 | 35-02 | Monitoring failures are warnings not blockers | Monitoring endpoints may require auth in some deployments |
 | 35-02 | E2E test auto-detection via TTN_WEBHOOK_SECRET | Conditional test based on environment availability |
+| 36-02 | Prometheus datasource with fallback queries | Dashboard works even without FreshTrack-specific metrics exposed |
+| 36-02 | Dashboard co-located with freshtrack-overview.json | Auto-provisioning via existing dashboards.yml |
 
 ## Tech Debt Carried Forward
 
@@ -60,32 +62,27 @@ Progress: [======----] 50% (2/4 phases complete, phase 35 done)
 - supabase-placeholder.ts remains (intentional graceful degradation)
 - SensorSimulatorPanel edge function call kept (admin testing tool)
 
-## Context for Phase 35 (Complete)
+## Context for Phase 36 (In Progress)
 
-**What Phase 35-01 built:**
-- scripts/lib/verify-lib.sh extended with 4 new functions
-- verify_monitoring_stack() - Prometheus and Grafana validation
-- verify_all_services() - Combined backend/frontend/worker check
-- verify_worker_health() - Worker endpoint validation
-- verify_consecutive_health() - 3-consecutive-pass dashboard verification
+**What Phase 36-02 built:**
+- docker/grafana/dashboards/freshtrack-sensors.json
+- 6-panel sensor metrics dashboard
+- Active Sensors, Readings Today, Active Alerts stat panels
+- Temperature time-series with celsius units
+- Sensor reading rate (ops/sec) and battery status panels
+- Prometheus queries with fallback for graceful degradation
 
-**What Phase 35-02 built:**
-- scripts/verify-deployment.sh restructured (115 -> 189 lines)
-- Integrated VERIFY-01 through VERIFY-06 into single workflow
-- Conditional E2E sensor pipeline test via RUN_E2E_TEST and TTN_WEBHOOK_SECRET
-- 3-consecutive-pass applied to dashboard endpoint only
-- Comprehensive troubleshooting guidance on failure
+**Dashboard panels:**
+- Row 1: Stats (h:8) - Active Sensors, Readings Today, Active Alerts
+- Row 2: Temperature Over Time (h:10) - Full-width timeseries
+- Row 3: Details (h:8) - Reading Rate + Battery Status
 
-**Configuration variables:**
-- VERIFY_CONSECUTIVE_REQUIRED (default 3)
-- VERIFY_CHECK_INTERVAL (default 5s)
-- VERIFY_MAX_ATTEMPTS (default 12)
-- RUN_E2E_TEST (auto, yes, no)
-- TTN_WEBHOOK_SECRET (triggers E2E when set with auto mode)
+**Remaining in Phase 36:**
+- Plan 03: Backup configuration
 
 ## Session Continuity
 
-Last session: 2026-01-29 10:40 UTC
-Stopped at: Verified Phase 35 complete (17/17 must-haves)
+Last session: 2026-01-29 11:08 UTC
+Stopped at: Completed 36-02-PLAN.md
 Resume file: None
-Next action: Plan phase 36 (Post-Deployment Setup)
+Next action: Execute 36-03-PLAN.md (backup configuration)
