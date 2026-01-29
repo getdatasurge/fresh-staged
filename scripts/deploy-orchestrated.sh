@@ -267,42 +267,44 @@ phase_services_start() {
 }
 
 # Phase 9: Wait for health
-# Placeholder implementation - enhanced in Plan 02 with 3-consecutive-pass logic
+# Uses 3-consecutive-pass requirement from deploy-lib.sh
 # Same as deploy.sh STEP 6
 phase_health_wait() {
-  step "Waiting for services to be healthy..."
+  step "Phase: Health Wait"
+  echo "Waiting for all services to report healthy status..."
+  echo ""
 
-  # Simple health wait - enhanced in Plan 02 with 3-consecutive-pass logic
-  local retries=30
-  local health_url="http://localhost:3000/health"
+  # First, give services a moment to start
+  echo "Allowing services 10 seconds to initialize..."
+  sleep 10
 
-  echo "Checking backend health at $health_url..."
-
-  until curl -sf "$health_url" >/dev/null 2>&1 || [[ $retries -eq 0 ]]; do
-    echo "Waiting for backend health... ($retries attempts remaining)"
-    sleep 3
-    retries=$((retries - 1))
-  done
-
-  if [[ $retries -eq 0 ]]; then
-    error "Backend did not become healthy in time"
+  # Run the 3-consecutive-pass health check from deploy-lib.sh
+  if ! wait_for_healthy_services; then
+    error "Health wait phase failed"
     echo ""
-    echo "Check logs with: docker compose logs backend"
+    echo "The deployment has started but services are not healthy."
+    echo "This checkpoint will be saved - you can resume after fixing the issue."
     return 1
   fi
 
-  success "Backend is healthy"
+  # Additional service checks (optional, informational)
+  echo ""
+  step "Verifying individual service status..."
 
-  # Verify health endpoint response
-  local health_response
-  health_response=$(curl -s "$health_url")
-  if echo "$health_response" | grep -q '"status":"healthy"'; then
-    success "Health check passed"
-  else
-    warning "Health endpoint returned unexpected response:"
-    echo "$health_response"
-  fi
+  local services=("backend" "postgres" "redis")
+  local all_healthy=true
 
+  for service in "${services[@]}"; do
+    if check_service_health "$service"; then
+      success "$service: healthy"
+    else
+      warning "$service: not reporting healthy (may still be starting)"
+      # Don't fail on individual service checks - the main health endpoint passed
+    fi
+  done
+
+  echo ""
+  success "Health wait phase complete"
   return 0
 }
 
@@ -321,30 +323,42 @@ phase_cleanup() {
 }
 
 # ===========================================
-# Display Completion Information
+# Display Deployment Summary
+# Shows service URLs and management commands after successful deployment
 # ===========================================
-display_completion() {
-  echo ""
-  echo "========================================"
-  echo -e "${GREEN}Deployment Complete!${NC}"
-  echo "========================================"
-  echo ""
-  echo "End time: $(date '+%Y-%m-%d %H:%M:%S')"
-  echo ""
+display_deployment_summary() {
+  local domain="${DOMAIN:-localhost}"
 
-  if [[ -n "$DOMAIN" ]]; then
-    echo "Your FreshTrack Pro instance is ready at:"
-    echo "  Main App:   https://${DOMAIN}"
-    echo "  Monitoring: https://monitoring.${DOMAIN}"
-    echo "  Status:     https://status.${DOMAIN}"
-    echo ""
+  echo ""
+  echo -e "${GREEN}========================================"
+  echo "       Deployment Complete!"
+  echo "========================================${NC}"
+  echo ""
+  echo "Your FreshTrack Pro instance is ready!"
+  echo ""
+  echo -e "${BLUE}Service URLs:${NC}"
+  if [[ "$domain" != "localhost" ]]; then
+    echo "  Dashboard:    https://${domain}"
+    echo "  API:          https://${domain}/api"
+    echo "  Health:       https://${domain}/health"
+    echo "  Monitoring:   https://monitoring.${domain}"
+    echo "  Status Page:  https://status.${domain}"
+  else
+    echo "  Dashboard:    http://localhost:5173"
+    echo "  API:          http://localhost:3000/api"
+    echo "  Health:       http://localhost:3000/health"
   fi
-
-  echo "Next steps:"
-  echo "  1. Monitor logs: docker compose logs -f backend"
-  echo "  2. View all logs: docker compose logs -f"
-  echo "  3. Check service status: docker compose ps"
-  echo "  4. View health: curl http://localhost:3000/health"
+  echo ""
+  echo -e "${BLUE}Management Commands:${NC}"
+  echo "  View logs:    docker compose logs -f"
+  echo "  View status:  docker compose ps"
+  echo "  Stop:         docker compose down"
+  echo "  Restart:      docker compose restart"
+  echo ""
+  echo -e "${BLUE}Deployment State:${NC}"
+  echo "  State file:   ${STATE_DIR}/.deployment-state"
+  echo "  Redeploy:     ./scripts/deploy-orchestrated.sh --fresh"
+  echo "  Resume:       ./scripts/deploy-orchestrated.sh --resume"
   echo ""
   echo "To rollback this deployment, run: ./scripts/rollback.sh"
   echo ""
@@ -380,7 +394,7 @@ main() {
     success "Deployment already complete!"
     echo "Use --fresh to redeploy from scratch."
     echo ""
-    display_completion
+    display_deployment_summary
     exit 0
   fi
 
@@ -407,7 +421,7 @@ main() {
   # Mark deployment complete
   set_deployment_state "complete" "completed"
 
-  display_completion
+  display_deployment_summary
 }
 
 # ===========================================
