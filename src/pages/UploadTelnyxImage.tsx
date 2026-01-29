@@ -2,72 +2,52 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useTRPC } from "@/lib/trpc";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ExternalLink, Copy, RefreshCw, CheckCircle2, XCircle, Loader2 } from "lucide-react";
-
-interface VerificationResult {
-  accessible: boolean;
-  status: number | null;
-  statusText?: string;
-  contentType: string | null;
-  error: string | null;
-}
 
 /**
  * Utility page to view and verify the Telnyx opt-in verification image.
  * The image is hosted in the public folder and auto-deployed with the app.
  */
 export default function UploadTelnyxImage() {
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
   const [publicUrl, setPublicUrl] = useState<string>("");
+  const trpc = useTRPC();
 
   useEffect(() => {
     // Set the URL based on current origin
     setPublicUrl(`${window.location.origin}/telnyx/opt-in-verification.png`);
   }, []);
 
+  // Use tRPC mutation for verification
+  const verifyMutation = useMutation(
+    trpc.telnyx.verifyPublicAsset.mutationOptions({
+      onSuccess: (data) => {
+        if (data.accessible) {
+          toast.success("URL is publicly accessible!");
+        } else {
+          toast.error(`URL check failed: ${data.error || "Not accessible"}`);
+        }
+      },
+      onError: (error) => {
+        toast.error(`Verification failed: ${error.message}`);
+      },
+    })
+  );
+
   const verifyUrl = async () => {
     if (!publicUrl) return;
-    
-    setIsVerifying(true);
-    setVerificationResult(null);
-    
-    try {
-      const { data, error: fnError } = await supabase.functions.invoke("verify-public-asset", {
-        body: { url: publicUrl }
-      });
-
-      if (fnError) {
-        throw fnError;
-      }
-
-      setVerificationResult(data as VerificationResult);
-      
-      if (data.accessible) {
-        toast.success("URL is publicly accessible!");
-      } else {
-        toast.error(`URL check failed: ${data.error || "Not accessible"}`);
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Verification failed";
-      setVerificationResult({
-        accessible: false,
-        status: null,
-        contentType: null,
-        error: message
-      });
-      toast.error(message);
-    } finally {
-      setIsVerifying(false);
-    }
+    await verifyMutation.mutateAsync({ url: publicUrl });
   };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(publicUrl);
     toast.success("URL copied to clipboard!");
   };
+
+  const verificationResult = verifyMutation.data;
+  const isVerifying = verifyMutation.isPending;
 
   return (
     <div className="min-h-screen bg-background p-8 flex items-center justify-center">
@@ -90,18 +70,18 @@ export default function UploadTelnyxImage() {
               {publicUrl || "Loading..."}
             </code>
             <div className="flex gap-2 mt-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={copyToClipboard}
                 disabled={!publicUrl}
               >
                 <Copy className="mr-2 h-3 w-3" />
                 Copy URL
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={verifyUrl}
                 disabled={isVerifying || !publicUrl}
               >
@@ -112,9 +92,9 @@ export default function UploadTelnyxImage() {
                 )}
                 Verify Accessibility
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 asChild
               >
                 <a href={publicUrl} target="_blank" rel="noopener noreferrer">
@@ -128,8 +108,8 @@ export default function UploadTelnyxImage() {
           {/* Verification Result */}
           {verificationResult && (
             <div className={`p-4 rounded-lg border ${
-              verificationResult.accessible 
-                ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800" 
+              verificationResult.accessible
+                ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
                 : "bg-destructive/10 border-destructive/20"
             }`}>
               <div className="flex items-center gap-2 mb-2">
@@ -163,9 +143,9 @@ export default function UploadTelnyxImage() {
           {/* Image Preview */}
           <div className="border rounded-lg p-4 bg-muted/50">
             <p className="text-sm text-muted-foreground mb-2">Image Preview:</p>
-            <img 
-              src="/telnyx/opt-in-verification.png" 
-              alt="FrostGuard Opt-In Verification" 
+            <img
+              src="/telnyx/opt-in-verification.png"
+              alt="FrostGuard Opt-In Verification"
               className="w-full max-w-md mx-auto rounded-md shadow-sm"
             />
           </div>
@@ -173,7 +153,7 @@ export default function UploadTelnyxImage() {
           {/* Instructions */}
           <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
             <p className="text-sm text-blue-800 dark:text-blue-200">
-              <strong>Next Step:</strong> Copy the URL above and paste it into your Telnyx 
+              <strong>Next Step:</strong> Copy the URL above and paste it into your Telnyx
               toll-free verification form. The image is automatically deployed with your app,
               so no manual upload is needed.
             </p>

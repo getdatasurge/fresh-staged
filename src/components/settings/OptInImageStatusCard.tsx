@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/lib/supabase-placeholder";
-import { 
-  CheckCircle2, 
-  XCircle, 
-  RefreshCw, 
-  Copy, 
+import { useTRPC } from "@/lib/trpc";
+import {
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+  Copy,
   ExternalLink,
   ImageIcon,
   AlertTriangle,
@@ -25,42 +25,36 @@ const getExpectedImageUrl = () => {
   return "/telnyx/opt-in-verification.png";
 };
 
-interface VerificationResult {
-  accessible: boolean;
-  status: number | null;
-  statusText?: string;
-  contentType: string | null;
-  contentLength: number | null;
-  isImage: boolean;
-  checkedAt: string;
-  error: string | null;
-}
-
 export function OptInImageStatusCard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const expectedImageUrl = getExpectedImageUrl();
+  const trpc = useTRPC();
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["opt-in-image-status", expectedImageUrl],
-    queryFn: async (): Promise<VerificationResult> => {
-      const { data, error } = await supabase.functions.invoke("verify-public-asset", {
-        body: { url: expectedImageUrl }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      return data as VerificationResult;
-    },
-    staleTime: 5 * 60 * 1000, // Consider fresh for 5 minutes
-    refetchOnWindowFocus: false,
-  });
+  // Use tRPC mutation for verification
+  const verifyMutation = useMutation(
+    trpc.telnyx.verifyPublicAsset.mutationOptions({
+      onSuccess: (data) => {
+        if (data.accessible && data.isImage) {
+          toast.success("Image is publicly accessible!");
+        } else if (data.accessible && !data.isImage) {
+          toast.warning("URL is accessible but content is not an image");
+        } else {
+          toast.error(data.error || "Image not accessible");
+        }
+      },
+      onError: (error) => {
+        toast.error(`Verification failed: ${error.message}`);
+      },
+    })
+  );
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await refetch();
-    setIsRefreshing(false);
+    try {
+      await verifyMutation.mutateAsync({ url: expectedImageUrl });
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const handleCopyUrl = () => {
@@ -75,6 +69,10 @@ export function OptInImageStatusCard() {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const data = verifyMutation.data;
+  const isLoading = verifyMutation.isPending;
+  const error = verifyMutation.error;
+
   const getStatusBadge = () => {
     if (isLoading) {
       return <Badge variant="secondary">Checking...</Badge>;
@@ -83,7 +81,7 @@ export function OptInImageStatusCard() {
       return <Badge variant="destructive">Check Failed</Badge>;
     }
     if (!data) {
-      return <Badge variant="secondary">Unknown</Badge>;
+      return <Badge variant="secondary">Not Checked</Badge>;
     }
     if (data.accessible && data.isImage) {
       return <Badge className="bg-green-500 hover:bg-green-600">Accessible</Badge>;
@@ -139,15 +137,15 @@ export function OptInImageStatusCard() {
             <div className={data.accessible ? "text-green-600" : "text-destructive"}>
               {data.status ? `${data.status} ${data.statusText || ""}` : "N/A"}
             </div>
-            
+
             <div className="text-muted-foreground">Content Type:</div>
             <div className={data.isImage ? "text-green-600" : "text-yellow-600"}>
               {data.contentType || "Unknown"}
             </div>
-            
+
             <div className="text-muted-foreground">File Size:</div>
             <div>{formatBytes(data.contentLength)}</div>
-            
+
             <div className="text-muted-foreground">Last Checked:</div>
             <div>{data.checkedAt ? new Date(data.checkedAt).toLocaleTimeString() : "Never"}</div>
           </div>
@@ -170,7 +168,7 @@ export function OptInImageStatusCard() {
         {data && !data.accessible && (
           <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm">
             <p className="text-yellow-800 dark:text-yellow-200">
-              <strong>Action Required:</strong> The opt-in image is not publicly accessible. 
+              <strong>Action Required:</strong> The opt-in image is not publicly accessible.
               Upload it using the <a href="/admin/upload-telnyx-image" className="underline">upload utility</a>.
             </p>
           </div>
@@ -196,7 +194,7 @@ export function OptInImageStatusCard() {
             <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
             Verify Now
           </Button>
-          
+
           <Button
             variant="outline"
             size="sm"
@@ -205,7 +203,7 @@ export function OptInImageStatusCard() {
             <Copy className="mr-2 h-4 w-4" />
             Copy URL
           </Button>
-          
+
           <Button
             variant="outline"
             size="sm"

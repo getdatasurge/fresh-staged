@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useTRPC } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Phone, 
-  CheckCircle2, 
-  AlertCircle, 
-  Clock, 
-  RefreshCw, 
+import {
+  Phone,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  RefreshCw,
   Loader2,
   HelpCircle,
   Copy,
@@ -24,15 +24,9 @@ const MESSAGING_PROFILE = {
   id: "40019baa-aa62-463c-b254-463c66f4b2d3",
 } as const;
 
-interface VerificationStatus {
-  status: "approved" | "pending" | "rejected" | "unknown";
-  verificationId: string;
-  phoneNumber: string;
-  details?: string;
-  lastChecked: string;
-}
+type VerificationStatus = "approved" | "pending" | "rejected" | "unknown";
 
-const statusConfig: Record<VerificationStatus["status"], {
+const statusConfig: Record<VerificationStatus, {
   icon: React.ElementType;
   label: string;
   variant: "default" | "secondary" | "destructive" | "outline";
@@ -72,6 +66,7 @@ const statusConfig: Record<VerificationStatus["status"], {
 export function TollFreeVerificationCard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [copiedProfileId, setCopiedProfileId] = useState(false);
+  const trpc = useTRPC();
 
   const handleCopyProfileId = async () => {
     try {
@@ -84,21 +79,13 @@ export function TollFreeVerificationCard() {
     }
   };
 
-  const { data: verification, isLoading, error, refetch } = useQuery({
-    queryKey: ["telnyx-verification-status"],
-    queryFn: async (): Promise<VerificationStatus> => {
-      const { data, error } = await supabase.functions.invoke("telnyx-verification-status");
-      
-      if (error) {
-        console.error("[TollFreeVerificationCard] Error fetching status:", error);
-        throw error;
-      }
-      
-      return data as VerificationStatus;
-    },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-    retry: 1,
-  });
+  // Use tRPC for verification status
+  const { data: verification, isLoading, error, refetch } = useQuery(
+    trpc.telnyx.verificationStatus.queryOptions(undefined, {
+      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+      retry: 1,
+    })
+  );
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -249,7 +236,7 @@ export function TollFreeVerificationCard() {
                 <p className="text-sm text-warning flex items-start gap-2">
                   <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                   <span>
-                    SMS alerts may have limited deliverability until verification is complete. 
+                    SMS alerts may have limited deliverability until verification is complete.
                     Critical alerts will still be sent, but some carriers may block unverified traffic.
                   </span>
                 </p>

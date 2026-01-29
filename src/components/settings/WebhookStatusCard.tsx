@@ -1,14 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTRPC } from "@/lib/trpc";
 import { supabase } from "@/lib/supabase-placeholder";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Webhook, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import {
+  Webhook,
+  CheckCircle,
+  XCircle,
+  Clock,
   RefreshCw,
   Settings2,
   AlertTriangle,
@@ -39,31 +40,32 @@ interface WebhookStats {
 }
 
 const statusConfig = {
-  active: { 
-    icon: CheckCircle, 
-    label: "Active", 
-    className: "bg-safe/15 text-safe border-safe/30" 
+  active: {
+    icon: CheckCircle,
+    label: "Active",
+    className: "bg-safe/15 text-safe border-safe/30"
   },
-  pending: { 
-    icon: Clock, 
-    label: "Pending", 
-    className: "bg-warning/15 text-warning border-warning/30" 
+  pending: {
+    icon: Clock,
+    label: "Pending",
+    className: "bg-warning/15 text-warning border-warning/30"
   },
-  error: { 
-    icon: XCircle, 
-    label: "Error", 
-    className: "bg-destructive/15 text-destructive border-destructive/30" 
+  error: {
+    icon: XCircle,
+    label: "Error",
+    className: "bg-destructive/15 text-destructive border-destructive/30"
   },
-  not_configured: { 
-    icon: AlertTriangle, 
-    label: "Not Configured", 
-    className: "bg-muted text-muted-foreground border-border" 
+  not_configured: {
+    icon: AlertTriangle,
+    label: "Not Configured",
+    className: "bg-muted text-muted-foreground border-border"
   },
 };
 
 export function WebhookStatusCard({ organizationId, canEdit }: WebhookStatusCardProps) {
   const queryClient = useQueryClient();
   const [isConfiguring, setIsConfiguring] = useState(false);
+  const trpc = useTRPC();
 
   // Fetch webhook config
   const { data: config, isLoading: configLoading } = useQuery({
@@ -118,33 +120,28 @@ export function WebhookStatusCard({ organizationId, canEdit }: WebhookStatusCard
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  // Configure webhook mutation
-  const configureWebhook = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke("telnyx-configure-webhook", {
-        body: { 
-          action: "configure",
-          organization_id: organizationId 
-        },
-      });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      return data;
-    },
-    onSuccess: () => {
-      toast.success("Webhook configured successfully!");
-      queryClient.invalidateQueries({ queryKey: ["telnyx-webhook-config"] });
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to configure webhook: ${error.message}`);
-    },
-  });
+  // Configure webhook mutation using tRPC
+  const configureWebhook = useMutation(
+    trpc.telnyx.configureWebhook.mutationOptions({
+      onSuccess: (data) => {
+        if (data.success) {
+          toast.success("Webhook configured successfully!");
+          queryClient.invalidateQueries({ queryKey: ["telnyx-webhook-config"] });
+        } else {
+          toast.error(data.error || "Failed to configure webhook");
+        }
+      },
+      onError: (error) => {
+        toast.error(`Failed to configure webhook: ${error.message}`);
+      },
+    })
+  );
 
   const handleConfigure = async () => {
+    if (!organizationId) return;
     setIsConfiguring(true);
     try {
-      await configureWebhook.mutateAsync();
+      await configureWebhook.mutateAsync({ organizationId });
     } finally {
       setIsConfiguring(false);
     }
@@ -188,8 +185,8 @@ export function WebhookStatusCard({ organizationId, canEdit }: WebhookStatusCard
               Telnyx delivery status webhook for SMS tracking
             </CardDescription>
           </div>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="icon"
             onClick={handleRefresh}
             className="h-8 w-8"
@@ -251,7 +248,7 @@ export function WebhookStatusCard({ organizationId, canEdit }: WebhookStatusCard
           {canEdit && (
             <div className="pt-2">
               {!config || status === "not_configured" || status === "error" ? (
-                <Button 
+                <Button
                   onClick={handleConfigure}
                   disabled={isConfiguring}
                   className="w-full"
