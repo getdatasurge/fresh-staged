@@ -16,7 +16,7 @@ Complete the Supabase-to-tRPC migration by fixing 60 failing tests and migrating
 
 ## Phases
 
-- [ ] **Phase 38: Test Infrastructure** - Fix tRPC and BullMQ test mocking
+- [x] **Phase 38: Test Infrastructure** - Fix tRPC and BullMQ test mocking
 - [ ] **Phase 39: Dashboard Widget Migration** - Migrate 9 widgets to tRPC
 - [ ] **Phase 40: Settings Components Migration** - Migrate 7 settings components to tRPC
 - [ ] **Phase 41: Pages Migration** - Migrate 7 pages to tRPC
@@ -40,11 +40,12 @@ Complete the Supabase-to-tRPC migration by fixing 60 failing tests and migrating
   2. All 22 backend queue.service tests pass with properly mocked BullMQ/Redis
   3. tRPC test utilities support both `queryOptions()` and direct procedure calls
   4. Mock patterns are documented for use in subsequent migration phases
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
-- [ ] 38-01-PLAN.md — Frontend tRPC queryOptions mock utility and useSites.test.tsx fix
-- [ ] 38-02-PLAN.md — Backend BullMQ mock and queue.service.test.ts fix
+- [x] 38-01-PLAN.md — Frontend tRPC queryOptions mock utility and useSites.test.tsx fix
+- [x] 38-02-PLAN.md — Backend BullMQ mock and queue.service.test.ts fix
+- [x] 38-03-PLAN.md — Fix remaining frontend tests (useAlerts, TTNCredentialsPanel)
 
 ---
 
@@ -136,14 +137,14 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 38. Test Infrastructure | v2.4 | 0/2 | Planned | - |
+| 38. Test Infrastructure | v2.4 | 3/3 | Complete | 2026-01-29 |
 | 39. Dashboard Widget Migration | v2.4 | 0/3 | Not started | - |
 | 40. Settings Components Migration | v2.4 | 0/2 | Not started | - |
 | 41. Pages Migration | v2.4 | 0/2 | Not started | - |
 | 42. Admin/Debug + Other Components | v2.4 | 0/2 | Not started | - |
 | 43. Cleanup & Verification | v2.4 | 0/1 | Not started | - |
 
-**v2.4 Total:** 0/12 plans complete (0%)
+**v2.4 Total:** 3/12 plans complete (25%)
 
 ---
 
