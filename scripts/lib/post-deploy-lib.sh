@@ -181,3 +181,82 @@ display_next_steps() {
 
     return 0
 }
+
+# ===========================================
+# Self-test when run directly
+# ===========================================
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    echo "Testing post-deploy-lib.sh v${LIB_VERSION}..."
+    echo ""
+
+    # Test display_next_steps function exists and runs
+    echo "1. Testing display_next_steps..."
+    if display_next_steps "test.example.com" >/dev/null 2>&1; then
+        echo "PASS: display_next_steps function works"
+    else
+        echo "FAIL: display_next_steps function failed"
+        exit 1
+    fi
+
+    # Test display_credential_summary exists
+    echo "2. Testing display_credential_summary exists..."
+    if type display_credential_summary &>/dev/null; then
+        echo "PASS: display_credential_summary function defined"
+    else
+        echo "FAIL: display_credential_summary function not defined"
+        exit 1
+    fi
+
+    # Test that credential display doesn't leak secrets to stdout
+    echo "3. Testing credential display doesn't leak to stdout..."
+    # Create temporary mock secrets for testing
+    TEMP_SECRETS=$(mktemp -d)
+    echo "test_postgres_password_1234" > "$TEMP_SECRETS/postgres_password.txt"
+    echo "test_jwt_secret_abcdef1234567890" > "$TEMP_SECRETS/jwt_secret.txt"
+    echo "test_grafana_pass" > "$TEMP_SECRETS/grafana_password.txt"
+    echo "minioadmin" > "$TEMP_SECRETS/minio_user.txt"
+    echo "test_minio_password" > "$TEMP_SECRETS/minio_password.txt"
+
+    # Capture stdout only (credential display goes to /dev/tty)
+    CAPTURED_OUTPUT=$(SECRETS_DIR="$TEMP_SECRETS" display_credential_summary 2>&1 || true)
+
+    # Check that actual secret values don't appear in captured output
+    if echo "$CAPTURED_OUTPUT" | grep -q "test_postgres_password_1234"; then
+        echo "FAIL: PostgreSQL password leaked to stdout"
+        rm -rf "$TEMP_SECRETS"
+        exit 1
+    fi
+    if echo "$CAPTURED_OUTPUT" | grep -q "test_jwt_secret_abcdef1234567890"; then
+        echo "FAIL: JWT secret leaked to stdout"
+        rm -rf "$TEMP_SECRETS"
+        exit 1
+    fi
+    rm -rf "$TEMP_SECRETS"
+    echo "PASS: Secrets do not leak to stdout"
+
+    # Test mask_secret function
+    echo "4. Testing mask_secret function..."
+    masked=$(mask_secret "abcdefghijklmnop")
+    if [[ "$masked" == "abcd...mnop" ]]; then
+        echo "PASS: mask_secret shows first/last 4 chars"
+    else
+        echo "FAIL: mask_secret should return 'abcd...mnop', got '$masked'"
+        exit 1
+    fi
+
+    # Test short secret masking
+    masked_short=$(mask_secret "short")
+    if [[ "$masked_short" == "********" ]]; then
+        echo "PASS: mask_secret hides short secrets"
+    else
+        echo "FAIL: mask_secret should return '********' for short secrets, got '$masked_short'"
+        exit 1
+    fi
+
+    # Note: actual credential display test requires secrets/ directory
+    # which is deployment-specific
+
+    echo "========================================"
+    echo "All post-deploy-lib tests passed!"
+    echo "========================================"
+fi
