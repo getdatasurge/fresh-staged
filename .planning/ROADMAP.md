@@ -83,6 +83,12 @@ Plans:
 
 **Requirements:** VERIFY-01, VERIFY-02, VERIFY-03, VERIFY-04, VERIFY-05, VERIFY-06
 
+**Plans:** 2 plans
+
+Plans:
+- [ ] 35-01-PLAN.md — Extend verify-lib.sh with monitoring stack and comprehensive service checks
+- [ ] 35-02-PLAN.md — Integrate E2E test and 3-consecutive-pass into verify-deployment.sh
+
 **Success Criteria:**
 1. User sees verification script check all service health endpoints (backend, frontend, workers)
 2. User sees SSL certificate validation pass (certificate valid, trusted, not expiring soon)
@@ -126,7 +132,7 @@ Plans:
 | Phase | Name | Status | Plans |
 |-------|------|--------|-------|
 | 34 | Deployment Orchestration | Complete | 2 |
-| 35 | Verification | Ready | - |
+| 35 | Verification | Planned | 2 |
 | 36 | Post-Deployment Setup | Pending | - |
 | 37 | Documentation | Pending | - |
 
@@ -134,4 +140,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 34 complete)*
+*Last updated: 2026-01-29 (Phase 35 planned)*
