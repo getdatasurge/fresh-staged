@@ -1,11 +1,15 @@
 {
+  "enabledPlugins": {
+    "context7@claude-plugins-official": true,
+    "github@claude-plugins-official": true
+  },
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/gsd-check-update.js"
+            "command": "node \"/home/swoop/.claude/hooks/gsd-check-update.js\""
           }
         ]
       }
@@ -13,6 +17,6 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "node .claude/hooks/statusline.js"
+    "command": "/home/swoop/swoop-claude-projects/fresh-staged/.claude/status_line.sh"
   }
 }

@@ -24,6 +24,9 @@ dist-docs
 *.sln
 *.sw?
 
+# WSL Windows artifacts
+*:Zone.Identifier
+
 # Skills (developer-local context)
 .skills/
 
