@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@stackframe/react";
-import { supabase, isSupabaseMigrationError } from "@/lib/supabase-placeholder";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTRPC } from "@/lib/trpc";
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -23,10 +24,9 @@ import {
   Loader2,
   CheckCircle2,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from "react";
 import {
   mapAlertToNotification,
-  alertTypeLabels,
   severityConfig,
   type AlertNotification,
   type AlertWithContext,
@@ -51,214 +51,87 @@ const alertTypeIcons: Record<string, typeof AlertTriangle> = {
 
 const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
   const navigate = useNavigate();
-  const user = useUser();
-  const [notifications, setNotifications] = useState<AlertNotification[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [orgId, setOrgId] = useState<string | null>(null);
+  const { effectiveOrgId: orgId } = useEffectiveIdentity();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  // Load user's organization_id on mount
-  useEffect(() => {
-    const loadOrgId = async () => {
-      if (user) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("organization_id")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        setOrgId(data?.organization_id || null);
-      }
-    };
-    loadOrgId();
-  }, [user]);
+  // Fetch alerts via tRPC
+  const { data: alertsData, isLoading, refetch: loadNotifications } = useQuery(
+    trpc.alerts.listByOrg.queryOptions(
+      { organizationId: orgId || "", status: ["active", "acknowledged"], limit: 20 },
+      { enabled: isOpen && !!orgId }
+    )
+  );
 
-  const loadNotifications = async () => {
-    setIsLoading(true);
-    try {
-      if (!user) {
-        setNotifications([]);
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("organization_id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (!profile?.organization_id) {
-        setNotifications([]);
-        return;
-      }
-
-      // Query alerts with unit/area/site context
-      const { data: alerts, error } = await supabase
-        .from("alerts")
-        .select(`
-          id,
-          title,
-          message,
-          alert_type,
-          severity,
-          status,
-          temp_reading,
-          temp_limit,
-          triggered_at,
-          metadata,
-          unit_id,
-          unit:units!alerts_unit_id_fkey (
-            id,
-            name,
-            area:areas!units_area_id_fkey (
-              id,
-              name,
-              site:sites!areas_site_id_fkey (
-                id,
-                name
-              )
-            )
-          )
-        `)
-        .eq("organization_id", profile.organization_id)
-        .in("status", ["active", "acknowledged"])
-        .order("triggered_at", { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-
-      // Map alerts to notification format
-      const mappedNotifications = (alerts || []).map((alert) => {
-        // Transform the nested unit data structure
-        const alertWithContext: AlertWithContext = {
-          id: alert.id,
-          title: alert.title,
-          message: alert.message,
-          alert_type: alert.alert_type,
-          severity: alert.severity as "critical" | "warning" | "info",
-          status: alert.status,
-          temp_reading: alert.temp_reading,
-          temp_limit: alert.temp_limit,
-          triggered_at: alert.triggered_at,
-          metadata: (typeof alert.metadata === 'object' && alert.metadata !== null && !Array.isArray(alert.metadata))
-            ? alert.metadata as Record<string, unknown>
-            : null,
-          unit_id: alert.unit_id,
-          unit: alert.unit ? {
-            id: alert.unit.id,
-            name: alert.unit.name,
-            area: alert.unit.area ? {
-              id: alert.unit.area.id,
-              name: alert.unit.area.name,
-              site: alert.unit.area.site ? {
-                id: alert.unit.area.site.id,
-                name: alert.unit.area.site.name,
-              } : undefined,
+  // Transform alerts to notifications using useMemo
+  const notifications = useMemo(() => {
+    if (!alertsData) return [];
+    return alertsData.map((alert) => {
+      const alertWithContext: AlertWithContext = {
+        id: alert.id,
+        title: alert.title,
+        message: alert.message,
+        alert_type: alert.alertType,
+        severity: alert.severity as "critical" | "warning" | "info",
+        status: alert.status,
+        temp_reading: alert.tempReading,
+        temp_limit: alert.tempLimit,
+        triggered_at: alert.triggeredAt,
+        metadata: (typeof alert.metadata === 'object' && alert.metadata !== null && !Array.isArray(alert.metadata))
+          ? alert.metadata as Record<string, unknown>
+          : null,
+        unit_id: alert.unitId,
+        unit: alert.unit ? {
+          id: alert.unit.id,
+          name: alert.unit.name,
+          area: alert.unit.area ? {
+            id: alert.unit.area.id,
+            name: alert.unit.area.name,
+            site: alert.unit.area.site ? {
+              id: alert.unit.area.site.id,
+              name: alert.unit.area.site.name,
             } : undefined,
           } : undefined,
-        };
-        return mapAlertToNotification(alertWithContext);
-      });
+        } : undefined,
+      };
+      return mapAlertToNotification(alertWithContext);
+    });
+  }, [alertsData]);
 
-      setNotifications(mappedNotifications);
-    } catch (error) {
-      console.error("Error loading notifications:", error);
-      if (isSupabaseMigrationError(error)) {
-        // Don't show toast for background loading - just log and show empty
-        console.warn("[NotificationDropdown] Notifications unavailable during migration");
-      }
-      setNotifications([]);
-    }
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      loadNotifications();
-    }
-  }, [isOpen]);
-
-// Check if toast should be shown based on notification policy
+  // Check if toast should be shown based on notification policy
   const shouldShowToast = async (
     alert: { unit_id: string; alert_type: string; severity: string }
   ): Promise<boolean> => {
+    if (!orgId) return false;
     try {
-      const { data: policy } = await supabase.rpc("get_effective_notification_policy", {
-        p_unit_id: alert.unit_id,
-        p_alert_type: alert.alert_type,
-      });
+      const policy = await queryClient.fetchQuery(
+        trpc.notificationPolicies.getEffective.queryOptions({
+          organizationId: orgId,
+          unitId: alert.unit_id,
+          alertType: alert.alert_type,
+        })
+      );
 
-      if (!policy || typeof policy !== "object") return false;
-
-      const policyObj = policy as Record<string, unknown>;
+      if (!policy) return false;
 
       // Check if WEB_TOAST is in initial_channels
-      const initialChannels = (policyObj.initial_channels as string[]) || [];
+      const initialChannels = policy.initial_channels || [];
       if (!initialChannels.includes("WEB_TOAST")) return false;
 
       // Check severity threshold
-      const severityThreshold = (policyObj.severity_threshold as string) || "WARNING";
-      const allowWarnings = policyObj.allow_warning_notifications as boolean;
-
       if (alert.severity === "critical") return true;
-      if (alert.severity === "warning" && allowWarnings) return true;
-      if (alert.severity === "info" && severityThreshold === "INFO") return true;
+      if (alert.severity === "warning" && policy.allow_warning_notifications) return true;
 
       return false;
-    } catch (error) {
-      // Silently fail for migration errors - notification policy not available
-      if (!isSupabaseMigrationError(error)) {
-        console.error("Error checking notification policy:", error);
-      }
+    } catch {
       return false;
     }
   };
 
-  // Real-time subscription for new alerts
-  useEffect(() => {
-    if (!orgId) return;
-
-    const channel = supabase
-      .channel(`alerts-realtime-${orgId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "alerts",
-          filter: `organization_id=eq.${orgId}`,
-        },
-        async (payload) => {
-          const alert = payload.new as { id: string; unit_id: string; alert_type: string; severity: string; status: string; title?: string; message?: string };
-          const title = alertTypeLabels[alert.alert_type] || alert.title || "New Alert";
-          
-          // Check policy to determine if toast should be shown
-          if (alert.status === "active") {
-            const showToast = await shouldShowToast(alert);
-            if (showToast) {
-              const toastFn = alert.severity === "critical" ? toast.error : toast.warning;
-              toastFn(title, {
-                description: alert.message || `${alert.severity} alert triggered`,
-                duration: 10000,
-                action: {
-                  label: "View",
-                  onClick: () => navigate(`/unit/${alert.unit_id}`),
-                },
-              });
-            }
-          }
-          
-          // Refresh notifications if dropdown is open
-          if (isOpen) {
-            loadNotifications();
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [navigate, orgId, isOpen]);
+  // TODO: Implement WebSocket subscription for real-time alerts
+  // The Supabase realtime subscription has been removed during tRPC migration.
+  // Alerts will refresh when the dropdown opens.
 
   const handleViewAll = () => {
     setIsOpen(false);
@@ -282,8 +155,8 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent 
-        className="w-96 p-0 bg-popover border border-border shadow-lg" 
+      <PopoverContent
+        className="w-96 p-0 bg-popover border border-border shadow-lg"
         align="end"
         sideOffset={8}
       >
@@ -333,8 +206,8 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
                           {isAcknowledged && (
                             <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                           )}
-                          <Badge 
-                            variant="outline" 
+                          <Badge
+                            variant="outline"
                             className={`text-[10px] px-1.5 py-0 ${severity.textColor} ${severity.borderColor} ml-auto`}
                           >
                             {notif.severity}
@@ -367,17 +240,17 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
         </ScrollArea>
 
         <div className="p-2 border-t border-border space-y-1">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="w-full text-accent hover:text-accent"
             onClick={handleViewAll}
           >
             View all alerts
           </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="w-full text-muted-foreground hover:text-foreground"
             onClick={() => {
               setIsOpen(false);
