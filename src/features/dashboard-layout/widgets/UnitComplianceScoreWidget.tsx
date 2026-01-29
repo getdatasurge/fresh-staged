@@ -1,14 +1,15 @@
 /**
  * Unit Compliance Score Widget
- * 
+ *
  * Shows overall compliance percentage with breakdown.
  */
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Target, Thermometer, ClipboardList, Bell } from "lucide-react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useTRPC } from "@/lib/trpc";
 import type { WidgetProps } from "../types";
 
 interface ComplianceMetrics {
@@ -18,76 +19,95 @@ interface ComplianceMetrics {
   overall: number;
 }
 
-export function UnitComplianceScoreWidget({ entityId }: WidgetProps) {
-  const [metrics, setMetrics] = useState<ComplianceMetrics | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export function UnitComplianceScoreWidget({ entityId, organizationId }: WidgetProps) {
+  const trpc = useTRPC();
 
-  useEffect(() => {
-    async function calculateCompliance() {
-      if (!entityId) {
-        setIsLoading(false);
-        return;
-      }
+  // Calculate time range: last 24 hours
+  const dayAgo = useMemo(
+    () => new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    []
+  );
 
-      try {
-        const now = new Date();
-        const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  // Query readings via tRPC
+  const readingsQueryOptions = trpc.readings.list.queryOptions({
+    organizationId: organizationId!,
+    unitId: entityId!,
+    start: dayAgo,
+    limit: 200,
+  });
 
-        // Get reading count (expect ~144 readings for 10-min intervals)
-        const { count: readingCount } = await supabase
-          .from("sensor_readings")
-          .select("*", { count: "exact", head: true })
-          .eq("unit_id", entityId)
-          .gte("recorded_at", dayAgo.toISOString());
+  const readingsQuery = useQuery({
+    ...readingsQueryOptions,
+    enabled: !!entityId && !!organizationId,
+  });
 
-        const expectedReadings = 144; // 24h * 6 per hour
-        const readingCompliance = Math.min(100, ((readingCount || 0) / expectedReadings) * 100);
+  // Query manual logs via tRPC
+  const logsQueryOptions = trpc.readings.listManual.queryOptions({
+    organizationId: organizationId!,
+    unitId: entityId,
+    start: dayAgo,
+  });
 
-        // Get manual log count (expect 6 for 4-hour intervals)
-        const { count: logCount } = await supabase
-          .from("manual_temperature_logs")
-          .select("*", { count: "exact", head: true })
-          .eq("unit_id", entityId)
-          .gte("logged_at", dayAgo.toISOString());
+  const logsQuery = useQuery({
+    ...logsQueryOptions,
+    enabled: !!entityId && !!organizationId,
+  });
 
-        const expectedLogs = 6;
-        const manualLogCompliance = Math.min(100, ((logCount || 0) / expectedLogs) * 100);
+  // Query alerts via tRPC
+  const alertsQueryOptions = trpc.alerts.list.queryOptions({
+    organizationId: organizationId!,
+    unitId: entityId,
+    start: dayAgo,
+  });
 
-        // Get alert response (resolved alerts vs total)
-        const { data: alerts } = await supabase
-          .from("alerts")
-          .select("resolved_at")
-          .eq("unit_id", entityId)
-          .gte("created_at", dayAgo.toISOString());
+  const alertsQuery = useQuery({
+    ...alertsQueryOptions,
+    enabled: !!entityId && !!organizationId,
+  });
 
-        const totalAlerts = alerts?.length || 0;
-        const resolvedAlerts = alerts?.filter(a => a.resolved_at).length || 0;
-        const alertResponseCompliance = totalAlerts > 0 
-          ? (resolvedAlerts / totalAlerts) * 100 
-          : 100; // No alerts = 100% compliance
+  const isLoading =
+    readingsQuery.isLoading || logsQuery.isLoading || alertsQuery.isLoading;
 
-        // Calculate overall (weighted average)
-        const overall = (
-          readingCompliance * 0.4 +
-          manualLogCompliance * 0.3 +
-          alertResponseCompliance * 0.3
-        );
-
-        setMetrics({
-          readingCompliance,
-          manualLogCompliance,
-          alertResponseCompliance,
-          overall,
-        });
-      } catch (err) {
-        console.error("Error calculating compliance:", err);
-      } finally {
-        setIsLoading(false);
-      }
+  // Compute metrics from tRPC data
+  const metrics = useMemo<ComplianceMetrics | null>(() => {
+    if (
+      readingsQuery.data === undefined &&
+      logsQuery.data === undefined &&
+      alertsQuery.data === undefined
+    ) {
+      return null;
     }
 
-    calculateCompliance();
-  }, [entityId]);
+    const readingCount = readingsQuery.data?.length ?? 0;
+    const expectedReadings = 144; // 24h * 6 per hour
+    const readingCompliance = Math.min(
+      100,
+      (readingCount / expectedReadings) * 100
+    );
+
+    const logCount = logsQuery.data?.length ?? 0;
+    const expectedLogs = 6; // 4-hour intervals
+    const manualLogCompliance = Math.min(100, (logCount / expectedLogs) * 100);
+
+    const alerts = alertsQuery.data ?? [];
+    const totalAlerts = alerts.length;
+    const resolvedAlerts = alerts.filter((a) => a.resolvedAt).length;
+    const alertResponseCompliance =
+      totalAlerts > 0 ? (resolvedAlerts / totalAlerts) * 100 : 100;
+
+    // Calculate overall (weighted average)
+    const overall =
+      readingCompliance * 0.4 +
+      manualLogCompliance * 0.3 +
+      alertResponseCompliance * 0.3;
+
+    return {
+      readingCompliance,
+      manualLogCompliance,
+      alertResponseCompliance,
+      overall,
+    };
+  }, [readingsQuery.data, logsQuery.data, alertsQuery.data]);
 
   if (isLoading) {
     return (
