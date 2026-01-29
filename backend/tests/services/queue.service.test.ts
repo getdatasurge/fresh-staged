@@ -1,39 +1,94 @@
-import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
+import { MockQueue, MockWorker, MockQueueEvents } from '../mocks/bullmq.mock.js';
+
+// Mock bullmq before importing QueueService
+vi.mock('bullmq', () => ({
+  Queue: MockQueue,
+  Worker: MockWorker,
+  QueueEvents: MockQueueEvents,
+}));
+
+// Mock ioredis to avoid actual Redis connection
+vi.mock('ioredis', () => ({
+  Redis: class MockRedis {
+    private connected = false;
+
+    on(_event: string, _callback: () => void) {
+      return this;
+    }
+
+    async connect() {
+      this.connected = true;
+    }
+
+    async ping() {
+      return 'PONG';
+    }
+
+    async quit() {
+      this.connected = false;
+    }
+  },
+  default: class MockRedis {
+    private connected = false;
+
+    on(_event: string, _callback: () => void) {
+      return this;
+    }
+
+    async connect() {
+      this.connected = true;
+    }
+
+    async ping() {
+      return 'PONG';
+    }
+
+    async quit() {
+      this.connected = false;
+    }
+  },
+}));
+
+// Import after mocks are set up
 import { QueueService } from '../../src/services/queue.service.js';
 import { QueueNames, JobNames, type SmsNotificationJobData } from '../../src/jobs/index.js';
 
 /**
- * Queue Service Integration Tests
+ * Queue Service Unit Tests
  *
- * These tests require a running Redis instance.
- * Run: docker compose up redis -d
- * Then: npm test -- queue.service.test.ts
+ * These tests use mocked BullMQ and ioredis to avoid requiring real Redis.
+ * Mock implementations are in: tests/mocks/bullmq.mock.ts
  *
  * Tests verify:
- * - QueueService initialization
+ * - QueueService initialization with mocked dependencies
  * - Job addition with organization isolation
  * - Queue retrieval
  * - Graceful shutdown
+ *
+ * For integration tests with real Redis, use:
+ *   docker compose up redis -d
+ *   npm test -- queue.service.test.ts
  */
 
 describe('QueueService', () => {
   let queueService: QueueService;
 
   beforeAll(async () => {
-    // Set Redis env for test
-    process.env.REDIS_HOST = process.env.REDIS_HOST || 'localhost';
-    process.env.REDIS_PORT = process.env.REDIS_PORT || '6379';
+    // Set Redis env for test - mocked Redis will be used
+    process.env.REDIS_HOST = 'localhost';
+    process.env.REDIS_PORT = '6379';
 
     queueService = new QueueService();
     await queueService.initialize();
-  }, 10000); // 10 second timeout for Redis connection
+  });
 
   afterAll(async () => {
     await queueService.shutdown();
   });
 
   describe('initialization', () => {
-    it('should initialize and connect to Redis', () => {
+    it('should initialize and report Redis as enabled', () => {
       expect(queueService.isRedisEnabled()).toBe(true);
     });
 
@@ -63,6 +118,8 @@ describe('QueueService', () => {
 
       expect(jobId).toBeDefined();
       expect(typeof jobId).toBe('string');
+      // Mock returns deterministic job IDs: job-1, job-2, etc.
+      expect(jobId).toMatch(/^job-\d+$/);
     });
 
     it('should add a delayed job', async () => {
@@ -80,6 +137,7 @@ describe('QueueService', () => {
       );
 
       expect(jobId).toBeDefined();
+      expect(jobId).toMatch(/^job-\d+$/);
     });
   });
 
