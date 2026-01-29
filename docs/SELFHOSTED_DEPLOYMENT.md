@@ -1320,6 +1320,6 @@ cat .deployment-history
 
 ---
 
-**Last updated:** 2026-01-24
-**Phase:** 11-self-hosted-deployment
-**Version:** 1.1
+**Last updated:** 2026-01-29
+**Phase:** 37-documentation
+**Version:** 1.2

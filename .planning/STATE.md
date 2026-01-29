@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 
 Milestone: v2.3 Deployment Orchestration
 Phase: 37 - Documentation
-Plan: 04 of 4 complete (also 01 complete)
+Plan: 03 of 4 complete (01, 03, 04 complete)
 Status: In progress
-Last activity: 2026-01-29 — Completed 37-04-PLAN.md (operations manual)
+Last activity: 2026-01-29 — Completed 37-03-PLAN.md (enhanced troubleshooting)
 
-Progress: [=========-] 85% (3.5/4 phases complete)
+Progress: [=========-] 90% (3.75/4 phases complete)
 
 ## v2.3 Phase Overview
 
@@ -24,7 +24,7 @@ Progress: [=========-] 85% (3.5/4 phases complete)
 | 34 | Deployment Orchestration | DEPLOY-01 to DEPLOY-05 | Complete (2/2 plans) |
 | 35 | Verification | VERIFY-01 to VERIFY-06 | Complete (2/2 plans) |
 | 36 | Post-Deployment Setup | POST-01 to POST-05 | Complete (3/3 plans) |
-| 37 | Documentation | DOCS-01 to DOCS-04 | In progress (2/4 plans: 01, 04) |
+| 37 | Documentation | DOCS-01 to DOCS-04 | In progress (3/4 plans: 01, 03, 04) |
 
 ## Milestones Shipped
 
@@ -64,6 +64,8 @@ Progress: [=========-] 85% (3.5/4 phases complete)
 | 37-04 | Combined all 8 sections in single document | Comprehensive coverage in one location |
 | 37-04 | ASCII diagram for horizontal scaling | Works in terminal and markdown |
 | 37-04 | Threshold tables for monitoring alerts | Quick reference for operators |
+| 37-03 | Organized by deployment phase | Users quickly find relevant troubleshooting for their failure point |
+| 37-03 | Error reference table with quick fixes | Rapid lookup for common errors without reading full sections |
 
 ## Tech Debt Carried Forward
 
@@ -83,6 +85,15 @@ Progress: [=========-] 85% (3.5/4 phases complete)
 - Updated docs/deployment/deploy-guide.md as quick reference with cross-links
 - All script references updated from deploy-selfhosted.sh to deploy-automated.sh
 
+**What 37-03 built:**
+- Enhanced docs/SELFHOSTED_DEPLOYMENT.md with comprehensive troubleshooting:
+  - Quick Diagnosis section with diagnostic commands
+  - Pre-flight Failures section (RAM, disk, network)
+  - Checkpoint Recovery Failures section (invalid state, hung resume, permissions)
+  - Verification Script Failures (VERIFY-01 through VERIFY-05)
+  - Error Quick Reference table (12 common errors mapped)
+  - Getting Help section with diagnostic bundle script
+
 **What 37-04 built:**
 - docs/deployment/operations.md (720 lines, comprehensive operations manual)
 - 8 major sections: daily ops, updates, backups, disaster recovery, scaling, monitoring, security, service management
@@ -93,7 +104,7 @@ Progress: [=========-] 85% (3.5/4 phases complete)
 
 ## Session Continuity
 
-Last session: 2026-01-29 11:51 UTC
-Stopped at: Completed 37-04-PLAN.md
+Last session: 2026-01-29 11:52 UTC
+Stopped at: Completed 37-03-PLAN.md
 Resume file: None
-Next action: Execute 37-02-PLAN.md and 37-03-PLAN.md
+Next action: Execute 37-02-PLAN.md (script reference documentation)
