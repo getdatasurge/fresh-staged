@@ -45,14 +45,15 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
 **Milestone Goal:** Eliminate Supabase dependency and stabilize TTN integration for long-term maintainability
 
 - [x] **Phase 27: TTN SDK Integration** - Complete.
-- [x] **Phase 28: Supabase Removal** - Complete migration of remaining frontend pages off Supabase.
+- [~] **Phase 28: Supabase Removal** - Partial. Edge function calls remain (25 in 9 files).
     - [x] Wave 1: Audit & Event Logging
     - [x] Wave 2: Site & Alert Settings
     - [x] Wave 3: Alert Rules & History
     - [x] Wave 4: System Pages & Sync
     - [x] Wave 5: Core Entity Dashboards (Dashboard, Units, Sites, Alerts)
-        - [x] Wave 6: Detail Views & Maintenance
-        - [x] Wave 7: Platform Admin & Remaining Cleanup
+    - [x] Wave 6: Detail Views & Maintenance
+    - [x] Wave 7: Platform Admin & Remaining Cleanup
+    - [ ] **Gap:** 25 edge function calls not migrated to tRPC
 - [x] ~~**Phase 29: Production Data Migration**~~ - SKIPPED (no Supabase production access)
 - [x] **Phase 30: System Hardening** - Complete. Final security audit and performance tuning.
     - [x] 30-01: Backend security headers (@fastify/helmet), body limits, request timeout
@@ -60,7 +61,25 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
     - [x] 30-03: Enhanced supabase-placeholder error handling
     - [x] 30-04: Integration verification
 
+### Gap Closure Phases (from v2.2 Audit)
+
+- [ ] **Phase 31: TTN Provisioning UI Migration**
+    - **Goal:** Wire TTN provisioning UI to Phase 27 tRPC endpoints
+    - **Closes:** Integration gap (TTN UI → tRPC), Flow gap (TTN Organization Provisioning)
+    - **Files:** TTNCredentialsPanel.tsx (6 calls), useTTNSetupWizard.ts
+    - **Tasks:** Map edge functions → tRPC, update components, verify flow
+
+- [ ] **Phase 32: Remaining Edge Function Migration**
+    - **Goal:** Migrate remaining supabase.functions.invoke calls to tRPC
+    - **Closes:** 19 remaining edge function calls in 7 files
+    - **Files:** EmulatorTTNRoutingCard.tsx (2), SensorManager.tsx (1), 5+ other files
+    - **Tasks:** Audit remaining calls, migrate each file, verify
+
+- [ ] **Phase 33: Error Handling UI Integration**
+    - **Goal:** Wire SupabaseMigrationError to UI error boundaries
+    - **Closes:** Integration gap (SupabaseMigrationError → UI consumers)
+    - **Tasks:** Add error boundary for migration errors, update components, fix BLOCKED docs
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 30 complete)*
+*Last updated: 2026-01-28 (Gap closure phases 31-33 added from audit)*
