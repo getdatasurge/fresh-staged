@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.3 Deployment Orchestration — Phase 34 complete
+**Current focus:** v2.3 Deployment Orchestration — Phase 35 in progress
 
 ## Current Position
 
 Milestone: v2.3 Deployment Orchestration
-Phase: 34 - Deployment Orchestration
-Plan: 02 of 2 complete
-Status: Phase complete
-Last activity: 2026-01-29 — Completed 34-02-PLAN.md (health wait enhancement)
+Phase: 35 - Verification
+Plan: 01 of 3 complete
+Status: In progress
+Last activity: 2026-01-29 — Completed 35-01-PLAN.md (verify library extension)
 
-Progress: [====------] 50% (1/4 phases complete, phase 34 done)
+Progress: [=====-----] 50% (1/4 phases complete, 35-01 done)
 
 ## v2.3 Phase Overview
 
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
 | 34 | Deployment Orchestration | DEPLOY-01 to DEPLOY-05 | Complete (2/2 plans) |
-| 35 | Verification | VERIFY-01 to VERIFY-06 | Ready |
+| 35 | Verification | VERIFY-01 to VERIFY-06 | In progress (1/3 plans) |
 | 36 | Post-Deployment Setup | POST-01 to POST-05 | Blocked by 35 |
 | 37 | Documentation | DOCS-01 to DOCS-04 | Blocked by 36 |
 
@@ -48,6 +48,9 @@ Progress: [====------] 50% (1/4 phases complete, phase 34 done)
 | 34-02 | 3 consecutive passes required by default | Prevents false positives from transient healthy responses |
 | 34-02 | Health counter resets to 0 on any failure | Ensures sustained health, not just accumulated passes |
 | 34-02 | 10-second initialization delay | Gives services time to start before checking health |
+| 35-01 | Worker health check is warning, not failure | Worker endpoint may be internal-only in some deployments |
+| 35-01 | Consecutive health scoped to dashboard | Matches Phase 34 pattern where consecutive passes apply to main health endpoint |
+| 35-01 | Environment-overridable VERIFY_* config | Allows deployment-specific tuning of verification parameters |
 
 ## Tech Debt Carried Forward
 
@@ -55,22 +58,23 @@ Progress: [====------] 50% (1/4 phases complete, phase 34 done)
 - supabase-placeholder.ts remains (intentional graceful degradation)
 - SensorSimulatorPanel edge function call kept (admin testing tool)
 
-## Context for Phase 34 (Complete)
+## Context for Phase 35 (In Progress)
 
-**What Phase 34 built:**
-- scripts/lib/deploy-lib.sh - Deployment state management with checkpoint tracking and health wait
-- scripts/deploy-orchestrated.sh - Main orchestration script with resume capability and health verification
-- 10-phase deployment workflow with 3-consecutive-pass health requirement
-- Environment-configurable health check parameters
+**What Phase 35-01 built:**
+- scripts/lib/verify-lib.sh extended with 4 new functions
+- verify_monitoring_stack() - Prometheus and Grafana validation
+- verify_all_services() - Combined backend/frontend/worker check
+- verify_worker_health() - Worker endpoint validation
+- verify_consecutive_health() - 3-consecutive-pass dashboard verification
 
-**Key functions added:**
-- wait_for_healthy_services() - 3 consecutive healthy responses required
-- check_service_health() - Individual container health checking
-- display_deployment_summary() - Service URLs and management commands
+**Configuration variables added:**
+- VERIFY_CONSECUTIVE_REQUIRED (default 3)
+- VERIFY_CHECK_INTERVAL (default 5s)
+- VERIFY_MAX_ATTEMPTS (default 12)
 
 ## Session Continuity
 
-Last session: 2026-01-29 10:15 UTC
-Stopped at: Verified Phase 34 complete (5/5 must-haves)
+Last session: 2026-01-29 10:32 UTC
+Stopped at: Completed 35-01-PLAN.md
 Resume file: None
-Next action: Plan phase 35 (Verification) or audit milestone
+Next action: Execute 35-02-PLAN.md (verify-deployment.sh script)
