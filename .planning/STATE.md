@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 
 Milestone: v2.2 Technical Debt & Stabilization
 Phase: 32 of 33 (Remaining Edge Function Migration)
-Plan: 2 of 4
+Plan: 3 of 4 complete
 Status: In progress
-Last activity: 2026-01-29 - Completed 32-02-PLAN.md (reports export migration)
+Last activity: 2026-01-29 - Completed 32-03-PLAN.md (Telnyx tRPC migration)
 
-Progress: ████████░░ 84% (31.5/33 phases)
+Progress: ████████░░ 85% (31.75/33 phases)
 
 ## Progress
 - [x] **27. TTN SDK Integration**: Complete.
@@ -23,17 +23,17 @@ Progress: ████████░░ 84% (31.5/33 phases)
 - [x] ~~**29. Production Data Migration**~~: SKIPPED - No access to Supabase production database.
 - [x] **30. System Hardening**: Complete. All 4 plans executed and verified.
 - [x] **31. TTN Provisioning UI Migration**: VERIFIED. All tRPC procedures + frontend migration complete.
-- [~] **32. Remaining Edge Function Migration**: In progress. Plan 02 complete (reports export).
+- [~] **32. Remaining Edge Function Migration**: In progress. Plans 01-03 complete.
 - [ ] **33. Error Handling UI Integration**: Pending. Wire SupabaseMigrationError to UI.
 
 ## Recent Achievements
-- **Phase 32 Plan 02 Complete** - Reports export migration to tRPC
-- Created reports.router.ts with export procedure
-- Migrated Reports.tsx, Inspector.tsx, ComplianceReportCard.tsx to tRPC
-- Removed 3 supabase.functions.invoke calls for export-temperature-logs
+- **Phase 32 Plan 03 Complete** - Telnyx tRPC migration
+- Created telnyx.router.ts with 3 procedures (verificationStatus, configureWebhook, verifyPublicAsset)
+- Migrated TollFreeVerificationCard, WebhookStatusCard, OptInImageStatusCard, UploadTelnyxImage to tRPC
+- Removed 4 supabase.functions.invoke calls for Telnyx edge functions
 
 ## Next Steps
-1. Continue Phase 32: Plans 03 and 04
+1. Execute Phase 32 Plan 04
 2. Plan and execute Phase 33: Error Handling UI Integration
 3. Re-audit milestone with `/gsd:audit-milestone`
 4. Complete milestone when audit passes
@@ -57,6 +57,9 @@ Progress: ████████░░ 84% (31.5/33 phases)
 | 31-02 | Use useQuery with enabled:false + refetch() for imperative data loading | Manual control over when credentials are fetched |
 | 31-02 | Dual error display (toast + inline) | Per CONTEXT.md for actionable guidance |
 | 32-02 | Shared export mutation across all 3 components | Single tRPC procedure replaces 3 identical edge function calls |
+| 32-03 | verificationStatus uses publicProcedure | Read-only status check, no auth needed |
+| 32-03 | configureWebhook uses orgProcedure with admin/owner check | Webhook configuration requires elevated permissions |
+| 32-03 | verifyPublicAsset uses publicProcedure | Public URL HEAD check, no auth needed |
 
 ## Blockers/Concerns Carried Forward
 - Placeholder TTN/layout/restore/health flows need backend replacements.
@@ -65,6 +68,6 @@ Progress: ████████░░ 84% (31.5/33 phases)
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 32-02-PLAN.md
+Stopped at: Completed 32-03-PLAN.md
 Resume file: None
-Next action: Execute 32-03-PLAN.md (if exists)
+Next action: Execute 32-04-PLAN.md (if exists)
