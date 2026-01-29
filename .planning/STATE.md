@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 
 Milestone: v2.7 tRPC Client Fix
 Phase: 47 of 48 - tRPC Proxy Call Migration
-Plan: 2/3 (in progress)
+Plan: 2/3 complete (47-01, 47-02 done; 47-03 remaining)
 Status: In progress
-Last activity: 2026-01-29 — Completed 47-02-PLAN.md (entity layout + billing migration)
+Last activity: 2026-01-29 — Completed 47-01-PLAN.md (hook tRPC proxy call migration)
 
-Progress: ██████░░░░ 60%
+Progress: ████████░░ 80%
 
 ## Milestones Shipped
 
@@ -38,10 +38,10 @@ Progress: ██████░░░░ 60%
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
 | 46 | Dependency Cleanup | DEP-01, DEP-02, DEP-03 | Complete |
-| 47 | tRPC Proxy Call Migration | TRPC-01 to TRPC-04 | In Progress (2/3 plans) |
+| 47 | tRPC Proxy Call Migration | TRPC-01 to TRPC-04 | In Progress (2/3 plans: 47-01, 47-02 done) |
 | 48 | Production Redeploy & Verification | PROD-01 to PROD-03 | Not Started |
 
-**v2.7 scope:** 10 requirements, 3 phases, 5 plans — **3/5 plans complete (60%)**
+**v2.7 scope:** 10 requirements, 3 phases, 5 plans — **4/5 plans complete (80%)**
 
 ## Root Cause Reference
 
@@ -75,6 +75,6 @@ Progress: ██████░░░░ 60%
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 47-02-PLAN.md (entity layout + billing migration)
+Stopped at: Completed 47-01-PLAN.md (hook tRPC proxy call migration)
 Resume file: None
-Next action: Execute 47-03-PLAN.md (remaining file migrations)
+Next action: Execute 47-03-PLAN.md (remaining page/component file migrations)
