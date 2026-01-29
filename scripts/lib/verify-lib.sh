@@ -119,6 +119,33 @@ verify_ssl_cert() {
     fi
 }
 
+# VERIFY-05: Validate monitoring stack (Prometheus + Grafana)
+# Args: $1 = domain
+# Returns: 0 if both healthy, 1 otherwise
+verify_monitoring_stack() {
+    local domain="$1"
+    local failed=0
+
+    step "Verifying monitoring stack..."
+
+    # Prometheus health check
+    if ! verify_endpoint_health "Prometheus" "https://${domain}/prometheus/-/healthy"; then
+        failed=1
+    fi
+
+    # Grafana health check
+    if ! verify_endpoint_health "Grafana" "https://${domain}/grafana/api/health"; then
+        failed=1
+    fi
+
+    if [[ $failed -eq 0 ]]; then
+        success "Monitoring stack healthy"
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Check Docker service state
 # Args: $1 = service name (e.g. backend, postgres)
 # Returns: 0 if Running, 1 otherwise
