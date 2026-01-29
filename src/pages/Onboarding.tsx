@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@stackframe/react";
-import { supabase, isSupabaseMigrationError } from "@/lib/supabase-placeholder";
 import { useTRPC } from "@/lib/trpc";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -152,7 +151,7 @@ const Onboarding = () => {
   }, []);
 
   // Check if user already has an organization
-  // MIGRATED: Now uses Stack Auth user instead of Supabase auth
+  // MIGRATED: Now uses tRPC instead of Supabase
   useEffect(() => {
     const checkExistingOrg = async () => {
       // Wait for Stack Auth to initialize
@@ -167,29 +166,22 @@ const Onboarding = () => {
       }
 
       try {
-        // Use Stack Auth user ID for profile lookup
-        const { data: profile, error } = await supabase
-          .from("profiles")
-          .select("organization_id")
-          .eq("user_id", stackUser.id)
-          .maybeSingle();
+        // Use tRPC to check for existing organization
+        const result = await trpc.onboarding.checkExistingOrg.query();
 
         setIsCheckingOrg(false);
 
-        // Redirect to callback if profile has an org
-        if (!error && profile?.organization_id) {
+        // Redirect to callback if user has an org
+        if (result.hasOrg && result.organizationId) {
           navigate("/auth/callback", { replace: true });
         }
       } catch (err) {
         console.error("Error checking org:", err);
-        if (isSupabaseMigrationError(err)) {
-          console.warn("[Onboarding] Profile check unavailable during migration");
-        }
         setIsCheckingOrg(false);
       }
     };
     checkExistingOrg();
-  }, [navigate, stackUser]);
+  }, [navigate, stackUser, trpc]);
 
   const generateSlug = (name: string) => {
     return name
@@ -322,77 +314,56 @@ const Onboarding = () => {
 
     // Check if slug was marked as unavailable
     if (slugStatus.available === false) {
-      toast({ 
-        title: "URL Already Taken", 
-        description: slugStatus.suggestions.length > 0 
+      toast({
+        title: "URL Already Taken",
+        description: slugStatus.suggestions.length > 0
           ? `Try one of these: ${slugStatus.suggestions.slice(0, 3).join(", ")}`
           : "Please choose a different URL slug.",
-        variant: "destructive" 
+        variant: "destructive"
       });
       return;
     }
 
     setIsLoading(true);
     try {
-      const { data: result, error } = await supabase.rpc("create_organization_with_owner", {
-        p_name: (nameResult as { success: true; data: string }).data,
-        p_slug: (slugResult as { success: true; data: string }).data,
-        p_timezone: data.organization.timezone,
+      const response = await trpc.onboarding.createOrganization.mutate({
+        name: (nameResult as { success: true; data: string }).data,
+        slug: (slugResult as { success: true; data: string }).data,
+        timezone: data.organization.timezone,
       });
 
-      // Handle RPC transport errors
-      if (error) {
-        toast({ 
-          title: "Could not create organization", 
-          description: "A server error occurred. Please try again.", 
-          variant: "destructive" 
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // Parse structured response from the RPC
-      const response = result as { 
-        ok: boolean; 
-        organization_id?: string; 
-        slug?: string;
-        code?: string; 
-        message?: string; 
-        suggestions?: string[];
-      };
-
-      if (response.ok && response.organization_id) {
-        setCreatedIds((prev) => ({ ...prev, orgId: response.organization_id }));
+      if (response.ok && response.organizationId) {
+        setCreatedIds((prev) => ({ ...prev, orgId: response.organizationId }));
         toast({ title: "Organization created!" });
-        
+
         // Trigger TTN provisioning in background (non-blocking)
         // Don't await - let it run while user continues onboarding
-        provisionTTN(response.organization_id).then((success) => {
+        provisionTTN(response.organizationId).then((success) => {
           if (success) {
             console.log('[Onboarding] TTN provisioning completed successfully');
           } else {
             console.warn('[Onboarding] TTN provisioning failed, user can retry from Settings');
           }
         });
-        
+
         setCurrentStep("site");
       } else {
         // Handle specific error codes
         switch (response.code) {
           case "SLUG_TAKEN":
-            toast({ 
-              title: "URL Already Taken", 
-              description: response.suggestions?.length 
+            toast({
+              title: "URL Already Taken",
+              description: response.suggestions?.length
                 ? `Try: ${response.suggestions.slice(0, 3).join(", ")}`
                 : "Please choose a different URL.",
-              variant: "destructive" 
+              variant: "destructive"
             });
             break;
           case "ALREADY_IN_ORG":
-            toast({ 
-              title: "Already Registered", 
-              description: "Your account is already associated with an organization.", 
-              variant: "destructive" 
+            toast({
+              title: "Already Registered",
+              description: "Your account is already associated with an organization.",
+              variant: "destructive"
             });
             setTimeout(() => navigate("/auth/callback", { replace: true }), 2000);
             break;
@@ -401,36 +372,27 @@ const Onboarding = () => {
             navigate("/auth", { replace: true });
             break;
           case "VALIDATION_ERROR":
-            toast({ 
-              title: "Invalid Input", 
-              description: response.message || "Please check your input.", 
-              variant: "destructive" 
+            toast({
+              title: "Invalid Input",
+              description: response.message || "Please check your input.",
+              variant: "destructive"
             });
             break;
           default:
-            toast({ 
-              title: "Could not create organization", 
-              description: response.message || "Please try again.", 
-              variant: "destructive" 
+            toast({
+              title: "Could not create organization",
+              description: response.message || "Please try again.",
+              variant: "destructive"
             });
         }
       }
     } catch (err: unknown) {
-      // Check for migration error
-      if (isSupabaseMigrationError(err)) {
-        toast({
-          title: "Feature temporarily unavailable",
-          description: "Organization creation is being migrated. Please try again later.",
-          variant: "destructive"
-        });
-      } else {
-        // Network/unexpected errors - never show "slug taken" for these
-        toast({
-          title: "Could not create organization",
-          description: "A server error occurred. Please try again.",
-          variant: "destructive"
-        });
-      }
+      console.error("Error creating organization:", err);
+      toast({
+        title: "Could not create organization",
+        description: "A server error occurred. Please try again.",
+        variant: "destructive"
+      });
     }
     setIsLoading(false);
   };
@@ -481,25 +443,21 @@ const Onboarding = () => {
 
     setIsLoading(true);
     try {
-      const { data: siteId, error } = await supabase.rpc("create_site_for_org", {
-        p_name: nameResult.data,
-        p_address: addressResult.data || null,
-        p_city: cityResult.data || null,
-        p_state: stateResult.data || null,
-        p_postal_code: postalResult.data || null,
+      const result = await trpc.onboarding.createSite.mutate({
+        organizationId: createdIds.orgId!,
+        name: nameResult.data as string,
+        address: (addressResult.data as string) || undefined,
+        city: (cityResult.data as string) || undefined,
+        state: (stateResult.data as string) || undefined,
+        postalCode: (postalResult.data as string) || undefined,
       });
 
-      if (error) throw error;
-
-      setCreatedIds((prev) => ({ ...prev, siteId }));
+      setCreatedIds((prev) => ({ ...prev, siteId: result.siteId }));
       toast({ title: "Site created!" });
       setCurrentStep("area");
     } catch (error: unknown) {
-      if (isSupabaseMigrationError(error)) {
-        toast({ title: "Feature temporarily unavailable", description: "Site creation is being migrated.", variant: "destructive" });
-      } else {
-        toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
-      }
+      console.error("Error creating site:", error);
+      toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
     }
     setIsLoading(false);
   };
@@ -527,31 +485,27 @@ const Onboarding = () => {
 
     setIsLoading(true);
     try {
-      const { data: areaId, error } = await supabase.rpc("create_area_for_site", {
-        p_site_id: createdIds.siteId,
-        p_name: (nameResult as { success: true; data: string }).data,
-        p_description: (descResult as { success: true; data: string | undefined }).data || null,
+      const result = await trpc.onboarding.createArea.mutate({
+        organizationId: createdIds.orgId!,
+        siteId: createdIds.siteId!,
+        name: (nameResult as { success: true; data: string }).data,
+        description: (descResult as { success: true; data: string | undefined }).data || undefined,
       });
 
-      if (error) throw error;
-
-      setCreatedIds((prev) => ({ ...prev, areaId }));
+      setCreatedIds((prev) => ({ ...prev, areaId: result.areaId }));
       toast({ title: "Area created!" });
       setCurrentStep("unit");
     } catch (error: unknown) {
-      if (isSupabaseMigrationError(error)) {
-        toast({ title: "Feature temporarily unavailable", description: "Area creation is being migrated.", variant: "destructive" });
-      } else {
-        toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
-      }
+      console.error("Error creating area:", error);
+      toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
     }
     setIsLoading(false);
   };
 
   const handleCreateUnit = async () => {
-    // If unit was already created, just move to complete
+    // If unit was already created, just move to gateway step
     if (createdIds.unitId) {
-      setCurrentStep("complete");
+      setCurrentStep("gateway");
       return;
     }
 
@@ -564,23 +518,19 @@ const Onboarding = () => {
 
     setIsLoading(true);
     try {
-      const { data: unitId, error } = await supabase.rpc("create_unit_for_area", {
-        p_area_id: createdIds.areaId,
-        p_name: (nameResult as { success: true; data: string }).data,
-        p_unit_type: data.unit.type as "fridge" | "freezer" | "walk_in_cooler" | "walk_in_freezer" | "display_case" | "blast_chiller",
+      const result = await trpc.onboarding.createUnit.mutate({
+        organizationId: createdIds.orgId!,
+        areaId: createdIds.areaId!,
+        name: (nameResult as { success: true; data: string }).data,
+        unitType: data.unit.type as "fridge" | "freezer" | "walk_in_cooler" | "walk_in_freezer" | "display_case" | "blast_chiller",
       });
 
-      if (error) throw error;
-
-      setCreatedIds((prev) => ({ ...prev, unitId }));
+      setCreatedIds((prev) => ({ ...prev, unitId: result.unitId }));
       toast({ title: "Unit created!" });
       setCurrentStep("gateway");
     } catch (error: unknown) {
-      if (isSupabaseMigrationError(error)) {
-        toast({ title: "Feature temporarily unavailable", description: "Unit creation is being migrated.", variant: "destructive" });
-      } else {
-        toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
-      }
+      console.error("Error creating unit:", error);
+      toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
     }
     setIsLoading(false);
   };
@@ -607,28 +557,19 @@ const Onboarding = () => {
 
     setIsLoading(true);
     try {
-      const { data: gateway, error } = await supabase
-        .from("gateways")
-        .insert({
-          organization_id: createdIds.orgId!,
-          name: data.gateway.name.trim(),
-          gateway_eui: data.gateway.eui.toUpperCase(),
-          site_id: createdIds.siteId,
-        })
-        .select()
-        .single();
+      const result = await trpc.onboarding.createGateway.mutate({
+        organizationId: createdIds.orgId!,
+        name: data.gateway.name.trim(),
+        gatewayEui: data.gateway.eui.toUpperCase(),
+        siteId: createdIds.siteId,
+      });
 
-      if (error) throw error;
-
-      setCreatedIds((prev) => ({ ...prev, gatewayId: gateway.id }));
+      setCreatedIds((prev) => ({ ...prev, gatewayId: result.gatewayId }));
       toast({ title: "Gateway registered!" });
       setCurrentStep("complete");
     } catch (error: unknown) {
-      if (isSupabaseMigrationError(error)) {
-        toast({ title: "Feature temporarily unavailable", description: "Gateway registration is being migrated.", variant: "destructive" });
-      } else {
-        toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
-      }
+      console.error("Error creating gateway:", error);
+      toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
     }
     setIsLoading(false);
   };
