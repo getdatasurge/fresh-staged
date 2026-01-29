@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useUser } from "@stackframe/react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,30 +18,13 @@ import {
 } from "@/hooks/useTTNDeprovision";
 
 export default function TTNCleanup() {
-  const user = useUser();
+  const { effectiveOrgId: orgId, isInitialized } = useEffectiveIdentity();
   const [selectedOrphans, setSelectedOrphans] = useState<TTNDevice[]>([]);
   const [scanResult, setScanResult] = useState<{
     ttn_application_id: string;
     devices: TTNDevice[];
     orphans: TTNDevice[];
   } | null>(null);
-
-  // Get user's org
-  const { data: profile } = useQuery({
-    queryKey: ["user-profile", user?.id],
-    queryFn: async () => {
-      if (!user) return null;
-      const { data } = await supabase
-        .from("profiles")
-        .select("organization_id")
-        .eq("user_id", user.id)
-        .single();
-      return data;
-    },
-    enabled: !!user,
-  });
-
-  const orgId = profile?.organization_id;
 
   const { data: jobStats, isLoading: statsLoading } = useTTNJobStats(orgId);
   const { data: jobs, isLoading: jobsLoading, refetch: refetchJobs } = useTTNDeprovisionJobs(orgId);
