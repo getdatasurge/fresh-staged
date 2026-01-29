@@ -4,7 +4,7 @@
  * Uses tRPC to interact with widget health metrics procedures.
  */
 
-import { useTRPC } from '@/lib/trpc'
+import { useTRPCClient } from '@/lib/trpc'
 
 import type {
 	FailingLayer,
@@ -29,7 +29,7 @@ export interface WidgetHealthEvent {
 }
 
 export function useWidgetHealthMetrics() {
-	const trpc = useTRPC()
+	const trpcClient = useTRPCClient()
 
 	/**
 	 * Track a widget health status change
@@ -38,7 +38,7 @@ export function useWidgetHealthMetrics() {
 		event: Omit<WidgetHealthEvent, 'eventType' | 'timestamp'>,
 	) => {
 		try {
-			await trpc.widgetHealth.trackHealthChange.mutate(event)
+			await trpcClient.widgetHealth.trackHealthChange.mutate(event)
 		} catch (error) {
 			console.error('Failed to track widget health change:', error)
 		}
@@ -51,7 +51,7 @@ export function useWidgetHealthMetrics() {
 		orgId: string,
 	): Promise<Record<WidgetHealthStatus, number>> => {
 		try {
-			return await trpc.widgetHealth.getHealthDistribution.query({ orgId })
+			return await trpcClient.widgetHealth.getHealthDistribution.query({ orgId })
 		} catch (error) {
 			console.error('Failed to get health distribution:', error)
 			return {
@@ -82,7 +82,7 @@ export function useWidgetHealthMetrics() {
 		orgId: string,
 	): Promise<Record<FailingLayer, number>> => {
 		try {
-			return await trpc.widgetHealth.getFailuresByLayer.query({ orgId })
+			return await trpcClient.widgetHealth.getFailuresByLayer.query({ orgId })
 		} catch (error) {
 			console.error('Failed to get failures by layer:', error)
 			return {
@@ -102,7 +102,7 @@ export function useWidgetHealthMetrics() {
 	 */
 	const hasCriticalIssues = async (orgId: string): Promise<boolean> => {
 		try {
-			return await trpc.widgetHealth.hasCriticalIssues.query({ orgId })
+			return await trpcClient.widgetHealth.hasCriticalIssues.query({ orgId })
 		} catch (error) {
 			console.error('Failed to check critical issues:', error)
 			return false
@@ -116,7 +116,7 @@ export function useWidgetHealthMetrics() {
 		orgId: string,
 	): Promise<WidgetHealthEvent[]> => {
 		try {
-			return await trpc.widgetHealth.getBufferedEvents.query({ orgId })
+			return await trpcClient.widgetHealth.getBufferedEvents.query({ orgId })
 		} catch (error) {
 			console.error('Failed to get buffered events:', error)
 			return []
@@ -128,7 +128,7 @@ export function useWidgetHealthMetrics() {
 	 */
 	const flushHealthMetrics = async (orgId: string): Promise<void> => {
 		try {
-			await trpc.widgetHealth.flushHealthMetrics.mutate({ orgId })
+			await trpcClient.widgetHealth.flushHealthMetrics.mutate({ orgId })
 		} catch (error) {
 			console.error('Failed to flush health metrics:', error)
 		}
@@ -139,7 +139,7 @@ export function useWidgetHealthMetrics() {
 	 */
 	const resetOrgCounters = async (orgId: string): Promise<void> => {
 		try {
-			await trpc.widgetHealth.resetOrgCounters.mutate({ orgId })
+			await trpcClient.widgetHealth.resetOrgCounters.mutate({ orgId })
 		} catch (error) {
 			console.error('Failed to reset org counters:', error)
 		}
