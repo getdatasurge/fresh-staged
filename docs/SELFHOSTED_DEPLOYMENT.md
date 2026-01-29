@@ -1037,6 +1037,48 @@ docker compose logs postgres_backup | grep webhook
 
 **Note:** Webhook failures do NOT cause deployment rollback (exit 0 on notification failure).
 
+### Error Quick Reference
+
+| Error Message | Phase | Likely Cause | Quick Fix |
+|---------------|-------|--------------|-----------|
+| `Pre-flight failed: RAM below minimum` | 1 | Insufficient RAM | Upgrade to 8GB+ |
+| `Pre-flight failed: Disk below minimum` | 1 | Insufficient disk | Run `docker system prune -a` |
+| `Cannot reach docker.com` | 1 | Network blocked | Check firewall outbound |
+| `Docker install failed` | 2 | apt lock or network | Wait 5 min, retry |
+| `UFW configuration failed` | 2 | UFW not installed | `apt install ufw` |
+| `Domain validation failed` | 3 | Invalid domain format | Use FQDN like app.example.com |
+| `DNS resolution failed` | 4 | DNS not propagated | Wait, check `dig domain` |
+| `Health check failed after N attempts` | 5 | Service not starting | Check `docker compose logs` |
+| `VERIFY-01: Backend unhealthy` | Verify | Backend error | `docker compose logs backend` |
+| `VERIFY-02: SSL invalid` | Verify | Cert not issued | Check Caddy logs, port 80 |
+| `VERIFY-03: Dashboard 502` | Verify | Frontend not ready | Wait 60s, retry |
+| `POST-03: Seed failed` | Post | DB not ready | `./scripts/seed-demo-data.sh` |
+
+### Getting Help
+
+If you cannot resolve an issue:
+
+1. **Gather diagnostics:**
+   ```bash
+   # Create diagnostic bundle
+   mkdir -p /tmp/freshtrack-diag
+   docker compose ps > /tmp/freshtrack-diag/containers.txt
+   docker compose logs --tail=200 > /tmp/freshtrack-diag/logs.txt
+   cat .deploy-state/checkpoints.txt > /tmp/freshtrack-diag/checkpoints.txt 2>/dev/null
+   cat /etc/os-release > /tmp/freshtrack-diag/os.txt
+   free -h > /tmp/freshtrack-diag/memory.txt
+   df -h > /tmp/freshtrack-diag/disk.txt
+   ```
+
+2. **Check documentation:**
+   - [SSL Certificates](SSL_CERTIFICATES.md) - Certificate troubleshooting
+   - [Database Operations](DATABASE.md) - Database issues
+   - [Production Deployment](PRODUCTION_DEPLOYMENT.md) - Advanced configuration
+
+3. **Report issue:**
+   - GitHub Issues: Include diagnostic bundle
+   - Email: admin@yourdomain.com
+
 ---
 
 ## Maintenance
