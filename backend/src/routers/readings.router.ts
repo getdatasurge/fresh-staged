@@ -11,7 +11,11 @@
  */
 
 import { TRPCError } from '@trpc/server'
+import { and, desc, eq, inArray } from 'drizzle-orm'
 import { z } from 'zod'
+import { db } from '../db/client.js'
+import { eventLogs } from '../db/schema/audit.js'
+import { profiles } from '../db/schema/users.js'
 import { ReadingResponseSchema } from '../schemas/readings.js'
 import * as readingsService from '../services/readings.service.js'
 import { router } from '../trpc/index.js'
@@ -186,5 +190,104 @@ export const readingsRouter = router({
         unitId: input.unitId,
         limit: input.limit || 10,
       });
+    }),
+
+  /**
+   * List event logs (annotations) for a unit
+   * Returns event logs with author profile info joined
+   */
+  listEventLogs: orgProcedure
+    .input(z.object({
+      organizationId: z.string().uuid(),
+      unitId: z.string().uuid(),
+      eventTypes: z.array(z.string()).optional(),
+      limit: z.number().int().min(1).max(100).optional(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const limit = input.limit ?? 20;
+      const eventTypes = input.eventTypes ?? ['note_added', 'comment', 'shift_handoff', 'annotation'];
+
+      const logs = await db
+        .select({
+          id: eventLogs.id,
+          title: eventLogs.title,
+          eventData: eventLogs.eventData,
+          recordedAt: eventLogs.recordedAt,
+          actorId: eventLogs.actorId,
+          authorName: profiles.fullName,
+          authorEmail: profiles.email,
+        })
+        .from(eventLogs)
+        .leftJoin(profiles, eq(eventLogs.actorId, profiles.id))
+        .where(
+          and(
+            eq(eventLogs.unitId, input.unitId),
+            eq(eventLogs.organizationId, ctx.user.organizationId),
+            inArray(eventLogs.eventType, eventTypes)
+          )
+        )
+        .orderBy(desc(eventLogs.recordedAt))
+        .limit(limit);
+
+      return logs;
+    }),
+
+  /**
+   * Create an event log (annotation)
+   */
+  createEventLog: orgProcedure
+    .input(z.object({
+      organizationId: z.string().uuid(),
+      unitId: z.string().uuid(),
+      eventType: z.string(),
+      eventData: z.record(z.string(), z.unknown()),
+      title: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const [log] = await db
+        .insert(eventLogs)
+        .values({
+          organizationId: ctx.user.organizationId,
+          unitId: input.unitId,
+          eventType: input.eventType,
+          eventData: input.eventData,
+          title: input.title,
+          actorId: ctx.user.profileId,
+          actorType: 'user',
+          recordedAt: new Date(),
+        })
+        .returning();
+
+      return log;
+    }),
+
+  /**
+   * Delete an event log (annotation)
+   * Only managers, admins, and owners can delete
+   */
+  deleteEventLog: orgProcedure
+    .input(z.object({
+      organizationId: z.string().uuid(),
+      eventLogId: z.string().uuid(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Role check - only managers and above can delete
+      if (!['manager', 'admin', 'owner'].includes(ctx.user.role)) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only managers, admins, and owners can delete annotations',
+        });
+      }
+
+      await db
+        .delete(eventLogs)
+        .where(
+          and(
+            eq(eventLogs.id, input.eventLogId),
+            eq(eventLogs.organizationId, ctx.user.organizationId)
+          )
+        );
+
+      return { success: true };
     }),
 });
