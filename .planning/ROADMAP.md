@@ -1,8 +1,8 @@
-# Roadmap: FreshTrack Pro v2.4
+# Roadmap: FreshTrack Pro v2.5
 
 ## Overview
 
-Complete the Supabase-to-tRPC migration by fixing 60 failing tests and migrating 35 frontend files. The test infrastructure must be fixed first to establish proper tRPC mocking patterns, then systematic migration of widgets, settings, pages, and components, concluding with cleanup of deprecated code.
+Fix the 15 pre-existing test failures in the TTN device bootstrap endpoint. These tests have been failing since before the tRPC migration and need proper error handling to return correct HTTP status codes.
 
 ## Milestones
 
@@ -13,15 +13,20 @@ Complete the Supabase-to-tRPC migration by fixing 60 failing tests and migrating
 - ✅ **v2.2 Technical Debt & Stabilization** - Phases 27-33 (shipped 2026-01-29)
 - ✅ **v2.3 Deployment Orchestration** - Phases 34-37 (shipped 2026-01-29)
 - ✅ **v2.4 Tech Debt Cleanup** - Phases 38-43 (shipped 2026-01-29)
+- 🚧 **v2.5 TTN Test Fixes** - Phase 44 (in progress)
 
 ## Phases
 
+### v2.4 Tech Debt Cleanup (Complete)
 - [x] **Phase 38: Test Infrastructure** - Fix tRPC and BullMQ test mocking
 - [x] **Phase 39: Dashboard Widget Migration** - Migrate 9 widgets to tRPC
 - [x] **Phase 40: Settings Components Migration** - Migrate 7 settings components to tRPC
 - [x] **Phase 41: Pages Migration** - Migrate 7 pages to tRPC
 - [x] **Phase 42: Admin/Debug + Other Components** - Migrate 8 remaining components to tRPC
 - [x] **Phase 43: Cleanup & Verification** - Delete supabase-placeholder, verify all tests pass
+
+### v2.5 TTN Test Fixes (Complete)
+- [x] **Phase 44: TTN Bootstrap Fix** - Fix bootstrap endpoint error handling and all 15 failing tests
 
 ## Phase Details
 
@@ -170,6 +175,37 @@ Phase 38 (Test Infrastructure)
 ```
 
 Note: Phases 39-42 can execute in parallel after Phase 38 completes. Phase 43 must be last.
+
+---
+
+### v2.5 TTN Test Fixes (Current)
+
+**Milestone Goal:** Fix 15 pre-existing test failures in TTN bootstrap endpoint
+
+---
+
+### Phase 44: TTN Bootstrap Fix
+**Goal**: Fix TTN device bootstrap endpoint to return correct HTTP status codes and pass all tests
+**Depends on**: Nothing (isolated fix)
+**Requirements**: TTN-01, TTN-02, TTN-03
+**Success Criteria** (what must be TRUE):
+  1. Bootstrap endpoint returns 400 for invalid requests (not 500)
+  2. Bootstrap endpoint returns 401 for unauthenticated requests (not 500)
+  3. Bootstrap endpoint returns 403 for unauthorized requests (not 500)
+  4. Bootstrap endpoint returns 201 for successful device creation
+  5. All 45 tests in ttn-devices.test.ts pass (currently 30/45)
+**Plans**: 1 plan
+
+Plans:
+- [x] 44-01-PLAN.md — Mock subscription middleware in TTN device tests
+
+---
+
+## v2.5 Progress
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 44. TTN Bootstrap Fix | v2.5 | 1/1 | Complete | 2026-01-29 |
 
 ---
 *Roadmap created: 2026-01-29*
