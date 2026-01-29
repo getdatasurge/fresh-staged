@@ -145,9 +145,58 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 
 ### Active
 
-<!-- Current milestone scope — none until /gsd:new-milestone -->
+<!-- Current milestone scope — v2.4 Tech Debt Cleanup -->
 
-*No active milestone. Run `/gsd:new-milestone` to start next milestone planning.*
+**Test Infrastructure (v2.4)**
+- [ ] All 38 frontend tests pass with proper tRPC mocking (TEST-01) — v2.4
+- [ ] All 22 backend queue.service tests pass with proper Redis/BullMQ mocking (TEST-02) — v2.4
+- [ ] Test infrastructure supports tRPC queryOptions pattern mocking (TEST-03) — v2.4
+
+**Dashboard Widget Migration (v2.4)**
+- [ ] UnitComparisonWidget uses tRPC instead of supabase (WIDGET-01) — v2.4
+- [ ] AnnotationsWidget uses tRPC instead of supabase (WIDGET-02) — v2.4
+- [ ] SiteActivityGraphWidget uses tRPC instead of supabase (WIDGET-03) — v2.4
+- [ ] SensorSignalTrendWidget uses tRPC instead of supabase (WIDGET-04) — v2.4
+- [ ] UnitComplianceScoreWidget uses tRPC instead of supabase (WIDGET-05) — v2.4
+- [ ] UnitsStatusGridWidget uses tRPC instead of supabase (WIDGET-06) — v2.4
+- [ ] EventTimelineWidget uses tRPC instead of supabase (WIDGET-07) — v2.4
+- [ ] DowntimeTrackerWidget uses tRPC instead of supabase (WIDGET-08) — v2.4
+- [ ] ManualLogStatusWidget uses tRPC instead of supabase (WIDGET-09) — v2.4
+
+**Settings Components Migration (v2.4)**
+- [ ] EmulatorSyncHistory uses tRPC instead of supabase (SETTINGS-01) — v2.4
+- [ ] NotificationSettingsCard uses tRPC instead of supabase (SETTINGS-02) — v2.4
+- [ ] WebhookStatusCard uses tRPC instead of supabase (SETTINGS-03) — v2.4
+- [ ] AlertRulesScopedEditor uses tRPC instead of supabase (SETTINGS-04) — v2.4
+- [ ] EmulatorResyncCard uses tRPC instead of supabase (SETTINGS-05) — v2.4
+- [ ] SmsAlertHistory uses tRPC instead of supabase (SETTINGS-06) — v2.4
+- [ ] TTNProvisioningLogs uses tRPC instead of supabase (SETTINGS-07) — v2.4
+
+**Pages Migration (v2.4)**
+- [ ] Inspector page uses tRPC instead of supabase (PAGE-01) — v2.4
+- [ ] OrganizationDashboard uses tRPC instead of supabase (PAGE-02) — v2.4
+- [ ] ManualLog page uses tRPC instead of supabase (PAGE-03) — v2.4
+- [ ] Reports page uses tRPC instead of supabase (PAGE-04) — v2.4
+- [ ] Onboarding page uses tRPC instead of supabase (PAGE-05) — v2.4
+- [ ] TTNCleanup page uses tRPC instead of supabase (PAGE-06) — v2.4
+- [ ] HealthDashboard uses tRPC instead of supabase (PAGE-07) — v2.4
+
+**Admin/Debug Components Migration (v2.4)**
+- [ ] SensorSimulatorPanel uses tRPC instead of supabase (ADMIN-01) — v2.4
+- [ ] RBACDebugPanel uses tRPC instead of supabase (ADMIN-02) — v2.4
+- [ ] UnitDebugBanner uses tRPC instead of supabase (ADMIN-03) — v2.4
+- [ ] GlobalUserSearch uses tRPC instead of supabase (ADMIN-04) — v2.4
+
+**Other Components Migration (v2.4)**
+- [ ] LogTempModal uses tRPC instead of supabase (COMP-01) — v2.4
+- [ ] NotificationDropdown uses tRPC instead of supabase (COMP-02) — v2.4
+- [ ] UnitSettingsSection uses tRPC instead of supabase (COMP-03) — v2.4
+- [ ] InvoiceHistory uses tRPC instead of supabase (COMP-04) — v2.4
+
+**Cleanup (v2.4)**
+- [ ] supabase-placeholder.ts deleted, all imports removed (CLEAN-01) — v2.4
+- [ ] Error handling utilities updated for tRPC error patterns (CLEAN-02) — v2.4
+- [ ] All tests pass: frontend 145+, backend 1050+ (CLEAN-03) — v2.4
 
 ### Out of Scope
 
@@ -181,9 +230,9 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Multi-target deployment (self-hosted, DigitalOcean)
 
 **Tech Debt:**
-- 53 test failures need mock updates (38 frontend, 15 backend pre-existing)
-- supabase-placeholder.ts remains (intentional graceful degradation)
-- SensorSimulatorPanel edge function call kept (admin testing tool)
+- 60 test failures need mock updates (38 frontend, 22 backend)
+- 35 files still import supabase-placeholder.ts
+- Target: Complete Supabase removal in v2.4
 
 **Known Issues:**
 - None critical — production ready
@@ -223,4 +272,4 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 | 3-consecutive-pass health check | Prevents transient false positives | Good — v2.3 stability verification |
 
 ---
-*Last updated: 2026-01-29 after v2.3 milestone shipped*
+*Last updated: 2026-01-29 after v2.4 milestone started*

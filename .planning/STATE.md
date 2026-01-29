@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** Planning next milestone
+**Current focus:** v2.4 Tech Debt Cleanup — Complete Supabase removal
 
 ## Current Position
 
-Milestone: None — ready for `/gsd:new-milestone`
-Phase: Not started
-Plan: Not started
-Status: Between milestones
-Last activity: 2026-01-29 — v2.3 Deployment Orchestration shipped
+Milestone: v2.4 Tech Debt Cleanup
+Phase: Not started (creating roadmap)
+Plan: —
+Status: Defining roadmap
+Last activity: 2026-01-29 — v2.4 requirements defined
 
-Progress: Ready for next milestone planning
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestones Shipped
 
@@ -30,15 +30,30 @@ Progress: Ready for next milestone planning
 
 **Total:** 6 milestones, 37 phases, 167 plans
 
-## Tech Debt Carried Forward
+## v2.4 Scope
 
-- 53 test failures need mock updates (38 frontend, 15 backend pre-existing)
-- supabase-placeholder.ts remains (intentional graceful degradation)
-- SensorSimulatorPanel edge function call kept (admin testing tool)
+**Goal:** Complete Supabase removal and fix all failing tests
+
+**Work items:**
+- Fix 60 failing tests (38 frontend tRPC mocks, 22 backend queue mocks)
+- Migrate 35 files from supabase-placeholder to tRPC
+- Delete supabase-placeholder.ts
+- Update error handling for tRPC patterns
+
+**Categories:**
+- Test Infrastructure: 3 requirements
+- Dashboard Widgets: 9 requirements
+- Settings Components: 7 requirements
+- Pages: 7 requirements
+- Admin/Debug Components: 4 requirements
+- Other Components: 4 requirements
+- Cleanup: 3 requirements
+
+**Total:** 37 requirements across 6 phases (38-43)
 
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: v2.3 Deployment Orchestration milestone archived
+Stopped at: Creating roadmap for v2.4
 Resume file: None
-Next action: `/gsd:new-milestone` to start next milestone
+Next action: Complete roadmap creation
