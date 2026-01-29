@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 
 Milestone: v2.2 Technical Debt & Stabilization
 Phase: 32 of 33 (Remaining Edge Function Migration)
-Plan: 4 of 4 complete
-Status: Phase complete
-Last activity: 2026-01-29 - Completed 32-04-PLAN.md (Final edge function cleanup)
+Plan: 5 of 6 complete (gap closure plans)
+Status: Executing gap closure plans
+Last activity: 2026-01-29 - Completed 32-05-PLAN.md (Reports export implementation)
 
 Progress: ████████░░ 97% (32/33 phases)
 
@@ -27,16 +27,15 @@ Progress: ████████░░ 97% (32/33 phases)
 - [ ] **33. Error Handling UI Integration**: Pending. Wire SupabaseMigrationError to UI.
 
 ## Recent Achievements
-- **Phase 32 Plan 04 Complete** - Final edge function cleanup
-- Added ttnDevices.diagnose procedure for device connectivity diagnostics
-- Migrated SensorManager from edge function to tRPC
-- Deleted EdgeFunctionDiagnostics.tsx (dead code)
-- Documented SensorSimulatorPanel edge function decision (kept for admin tooling)
+- **Phase 32 Plan 05 Complete** - Reports export implementation (gap closure)
+- Implemented real database queries for reports.export procedure
+- Added CSV/HTML export formatting for sensor readings
+- Added unit filtering by unitId, siteId, or organizationId hierarchy
 
 ## Next Steps
-1. Plan and execute Phase 33: Error Handling UI Integration
-2. Re-audit milestone with `/gsd:audit-milestone`
-3. Complete milestone when audit passes
+1. Execute 32-06-PLAN.md (Manual temperature logging - Gap 2 closure)
+2. Re-audit Phase 32 after gap closure
+3. Plan and execute Phase 33: Error Handling UI Integration
 
 ## Decisions
 | Phase | Decision | Rationale |
@@ -64,6 +63,7 @@ Progress: ████████░░ 97% (32/33 phases)
 | 32-01 | Interval-based polling with cleanup for Onboarding status | Consistent with other polling patterns, prevents memory leaks |
 | 32-04 | Keep SensorSimulatorPanel edge function as-is | Admin-only dev tool, migration to tRPC not required |
 | 32-04 | Map tRPC diagnose response to TtnDiagnoseResult format | Modal compatibility with existing UI |
+| 32-05 | Filter exceptions in-memory after DB query | Avoid complex SQL CAST for numeric comparison |
 
 ## Blockers/Concerns Carried Forward
 - Placeholder TTN/layout/restore/health flows need backend replacements.
@@ -72,6 +72,6 @@ Progress: ████████░░ 97% (32/33 phases)
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 32-04-PLAN.md
+Stopped at: Completed 32-05-PLAN.md
 Resume file: None
-Next action: Execute Phase 33 plans
+Next action: Execute 32-06-PLAN.md (Gap 2 closure)
