@@ -29,11 +29,31 @@ if ! docker compose ps postgres | grep -q "running"; then
     exit 1
 fi
 
+# Wait for postgres to be accepting connections
+step "Waiting for database to be ready..."
+for i in {1..30}; do
+    if docker compose exec -T postgres pg_isready -U postgres >/dev/null 2>&1; then
+        success "Database is ready"
+        break
+    fi
+    if [[ $i -eq 30 ]]; then
+        error "Database not ready after 30 seconds"
+        exit 1
+    fi
+    sleep 1
+done
+
 # Execute SQL
 cat "$SQL_FILE" | docker compose exec -T postgres psql -U postgres -d freshtrack >/dev/null
 
 success "Demo data seeded successfully!"
-echo "  Organization: Demo Foods Inc."
-echo "  Site:         Downtown Kitchen"
-echo "  Unit:         Freezer 01"
-echo "  Sensor:       Sensor-F01 (96 readings)"
+echo ""
+echo "  Demo Organization: Demo Foods Inc."
+echo "  Demo Site:         Downtown Kitchen"
+echo "  Demo Unit:         Freezer 01 (Walk-in Freezer)"
+echo "  Demo Sensor:       Sensor-F01"
+echo "  Sample Data:       96 temperature readings (24h history)"
+echo "  Demo Alert:        1 active temperature alert (temperature_high)"
+echo ""
+echo "  Login and navigate to the Dashboard to see the demo data."
+echo ""
