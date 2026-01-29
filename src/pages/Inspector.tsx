@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "@stackframe/react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useMutation } from "@tanstack/react-query";
 import { useTRPC } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -119,7 +119,8 @@ const Inspector = () => {
   const [monitoringGaps, setMonitoringGaps] = useState<MonitoringGap[]>([]);
 
   // tRPC mutation for exporting reports
-  const exportMutation = trpc.reports.export.useMutation({
+  const exportMutation = useMutation({
+    ...trpc.reports.export.mutationOptions(),
     onSuccess: (data) => {
       // Add inspector watermark
       let content = data.content;
@@ -166,26 +167,16 @@ const Inspector = () => {
     try {
       // Check if using token-based access
       if (tokenFromUrl) {
-        const { data: session } = await supabase
-          .from("inspector_sessions")
-          .select("organization_id, expires_at, is_active, allowed_site_ids")
-          .eq("token", tokenFromUrl)
-          .maybeSingle();
-
-        if (!session || !session.is_active || new Date(session.expires_at) < new Date()) {
+        try {
+          const session = await trpc.inspector.validateSession.mutate({ token: tokenFromUrl });
+          setOrganizationId(session.organizationId);
+          await loadOrgData(session.organizationId, session.allowedSiteIds || null);
+        } catch (err: unknown) {
+          console.error("Token validation error:", err);
           toast.error("Invalid or expired inspector link");
           navigate("/auth");
           return;
         }
-
-        // Update last used
-        await supabase
-          .from("inspector_sessions")
-          .update({ last_used_at: new Date().toISOString() })
-          .eq("token", tokenFromUrl);
-
-        setOrganizationId(session.organization_id);
-        await loadOrgData(session.organization_id, session.allowed_site_ids);
       } else {
         // Check user auth and inspector role - use effectiveOrgId for impersonation
         if (!user) {
@@ -203,15 +194,11 @@ const Inspector = () => {
           return;
         }
 
-        // Check if user has inspector role or higher
-        const { data: role } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .eq("organization_id", effectiveOrgId)
-          .maybeSingle();
-
-        if (!role) {
+        // Check if user has inspector access via tRPC
+        try {
+          await trpc.inspector.checkUserAccess.query({ organizationId: effectiveOrgId });
+        } catch (err: unknown) {
+          console.error("User access error:", err);
           toast.error("No access to inspector mode");
           navigate("/");
           return;
@@ -228,60 +215,40 @@ const Inspector = () => {
   };
 
   const loadOrgData = async (orgId: string, allowedSiteIds: string[] | null) => {
-    // Get org info
-    const { data: org } = await supabase
-      .from("organizations")
-      .select("name, timezone")
-      .eq("id", orgId)
-      .maybeSingle();
+    try {
+      const orgData = await trpc.inspector.getOrgData.query({
+        organizationId: orgId,
+        allowedSiteIds: allowedSiteIds || undefined,
+      });
 
-    if (org) {
-      setOrganizationName(org.name);
-      setTimezone(org.timezone);
+      setOrganizationName(orgData.name);
+      setTimezone(orgData.timezone);
+      setSites(orgData.sites);
+    } catch (error) {
+      console.error("Error loading org data:", error);
     }
-
-    // Get sites
-    let sitesQuery = supabase
-      .from("sites")
-      .select("id, name, timezone")
-      .eq("organization_id", orgId)
-      .eq("is_active", true);
-
-    if (allowedSiteIds && allowedSiteIds.length > 0) {
-      sitesQuery = sitesQuery.in("id", allowedSiteIds);
-    }
-
-    const { data: sitesData } = await sitesQuery;
-    setSites(sitesData || []);
   };
 
   const loadUnits = async () => {
     if (!organizationId) return;
 
-    const query = supabase
-      .from("units")
-      .select(`
-        id, name, unit_type, temp_limit_high, temp_limit_low,
-        area:areas!inner(name, site:sites!inner(id, organization_id))
-      `)
-      .eq("is_active", true);
+    try {
+      const unitsData = await trpc.inspector.getUnits.query({
+        organizationId,
+        siteId: selectedSiteId !== "all" ? selectedSiteId : undefined,
+      });
 
-    const { data } = await query;
-    
-    const filteredUnits = (data || []).filter((u: any) => {
-      if (u.area?.site?.organization_id !== organizationId) return false;
-      if (selectedSiteId !== "all" && u.area?.site?.id !== selectedSiteId) return false;
-      return true;
-    }).map((u: any) => ({
-      id: u.id,
-      name: u.name,
-      unit_type: u.unit_type,
-      temp_limit_high: u.temp_limit_high,
-      temp_limit_low: u.temp_limit_low,
-      area: { name: u.area.name },
-    }));
-
-    setUnits(filteredUnits);
+      setUnits(unitsData.map(u => ({
+        id: u.id,
+        name: u.name,
+        unit_type: u.unit_type,
+        temp_limit_high: u.temp_limit_high,
+        temp_limit_low: u.temp_limit_low ?? null,
+        area: u.area,
+      })));
+    } catch (error) {
+      console.error("Error loading units:", error);
+    }
   };
 
   const loadData = async () => {
@@ -291,170 +258,104 @@ const Inspector = () => {
     const endDate = dateRange.to.toISOString();
 
     // Get unit IDs to filter
-    const unitIds = selectedUnitId !== "all" 
+    const unitIds = selectedUnitId !== "all"
       ? [selectedUnitId]
       : units.map(u => u.id);
 
     if (unitIds.length === 0) return;
 
-    // Load sensor readings
-    const { data: sensorData } = await supabase
-      .from("sensor_readings")
-      .select("id, unit_id, temperature, recorded_at")
-      .in("unit_id", unitIds)
-      .gte("recorded_at", startDate)
-      .lte("recorded_at", endDate)
-      .order("recorded_at", { ascending: false });
-
-    // Load manual logs
-    const { data: manualData } = await supabase
-      .from("manual_temperature_logs")
-      .select("id, unit_id, temperature, logged_at, logged_by, is_in_range, notes")
-      .in("unit_id", unitIds)
-      .gte("logged_at", startDate)
-      .lte("logged_at", endDate)
-      .order("logged_at", { ascending: false });
-
-    // Get user names
-    const userIds = [...new Set((manualData || []).map(m => m.logged_by))];
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("user_id, full_name, email")
-      .in("user_id", userIds);
-
-    const userMap: Record<string, string> = {};
-    (profiles || []).forEach(p => {
-      userMap[p.user_id] = p.full_name || p.email;
-    });
-
-    // Create unit map
-    const unitMap: Record<string, Unit> = {};
-    units.forEach(u => { unitMap[u.id] = u; });
-
-    // Combine logs
-    const logs: TemperatureLog[] = [];
-    
-    (sensorData || []).forEach(r => {
-      const unit = unitMap[r.unit_id];
-      if (!unit) return;
-      const inRange = r.temperature <= unit.temp_limit_high && 
-        (unit.temp_limit_low === null || r.temperature >= unit.temp_limit_low);
-      logs.push({
-        id: r.id,
-        unit_id: r.unit_id,
-        unit_name: unit.name,
-        temperature: r.temperature,
-        logged_at: r.recorded_at,
-        type: "sensor",
-        logged_by: "Automated",
-        is_in_range: inRange,
+    try {
+      const data = await trpc.inspector.getInspectionData.query({
+        organizationId,
+        unitIds,
+        startDate,
+        endDate,
       });
-    });
 
-    (manualData || []).forEach(m => {
-      const unit = unitMap[m.unit_id];
-      if (!unit) return;
-      logs.push({
-        id: m.id,
-        unit_id: m.unit_id,
-        unit_name: unit.name,
-        temperature: m.temperature,
-        logged_at: m.logged_at,
-        type: "manual",
-        logged_by: userMap[m.logged_by] || "Unknown",
-        is_in_range: m.is_in_range ?? true,
-        notes: m.notes || undefined,
+      // Create unit map
+      const unitMap: Record<string, Unit> = {};
+      units.forEach(u => { unitMap[u.id] = u; });
+
+      // Combine sensor readings and manual logs into temperature logs
+      const logs: TemperatureLog[] = [];
+
+      data.sensorReadings.forEach(r => {
+        const unit = unitMap[r.unit_id];
+        if (!unit) return;
+        const inRange = r.temperature <= unit.temp_limit_high &&
+          (unit.temp_limit_low === null || r.temperature >= unit.temp_limit_low);
+        logs.push({
+          id: r.id,
+          unit_id: r.unit_id,
+          unit_name: unit.name,
+          temperature: r.temperature,
+          logged_at: r.recorded_at,
+          type: "sensor",
+          logged_by: "Automated",
+          is_in_range: inRange,
+        });
       });
-    });
 
-    logs.sort((a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime());
-    setTemperatureLogs(logs);
+      data.manualLogs.forEach(m => {
+        const unit = unitMap[m.unit_id];
+        if (!unit) return;
+        const inRange = m.temperature <= unit.temp_limit_high &&
+          (unit.temp_limit_low === null || m.temperature >= unit.temp_limit_low);
+        logs.push({
+          id: m.id,
+          unit_id: m.unit_id,
+          unit_name: unit.name,
+          temperature: m.temperature,
+          logged_at: m.logged_at,
+          type: "manual",
+          logged_by: m.logged_by,
+          is_in_range: inRange,
+          notes: m.notes || undefined,
+        });
+      });
 
-    // Load alerts as exceptions
-    const { data: alertsData } = await supabase
-      .from("alerts")
-      .select("id, unit_id, alert_type, title, severity, status, triggered_at, acknowledged_by, acknowledgment_notes")
-      .in("unit_id", unitIds)
-      .gte("triggered_at", startDate)
-      .lte("triggered_at", endDate)
-      .order("triggered_at", { ascending: false });
+      logs.sort((a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime());
+      setTemperatureLogs(logs);
 
-    const exceptions: ExceptionLog[] = (alertsData || []).map(a => {
-      const unit = unitMap[a.unit_id];
-      return {
+      // Transform alerts to exceptions
+      const exceptionsData: ExceptionLog[] = data.alerts.map(a => ({
         id: a.id,
         unit_id: a.unit_id,
-        unit_name: unit?.name || "Unknown",
+        unit_name: unitMap[a.unit_id]?.name || "Unknown",
         event_type: a.alert_type,
         details: a.title,
         severity: a.severity,
         recorded_at: a.triggered_at,
-        acknowledged_by: a.acknowledged_by ? userMap[a.acknowledged_by] : undefined,
+        acknowledged_by: a.acknowledged_by || undefined,
         action_taken: a.acknowledgment_notes || undefined,
-      };
-    });
-    setExceptions(exceptions);
+      }));
+      setExceptions(exceptionsData);
 
-    // Load corrective actions
-    const { data: caData } = await supabase
-      .from("corrective_actions")
-      .select("id, unit_id, action_taken, root_cause, completed_at, created_by")
-      .in("unit_id", unitIds)
-      .gte("completed_at", startDate)
-      .lte("completed_at", endDate)
-      .order("completed_at", { ascending: false });
+      // Transform corrective actions
+      const caData: CorrectiveAction[] = data.correctiveActions.map(ca => ({
+        id: ca.id,
+        unit_id: ca.unit_id,
+        unit_name: unitMap[ca.unit_id]?.name || "Unknown",
+        action_taken: ca.action_taken,
+        root_cause: ca.root_cause || undefined,
+        completed_at: ca.completed_at,
+        created_by: ca.created_by,
+      }));
+      setCorrectiveActions(caData);
 
-    const caUserIds = [...new Set((caData || []).map(c => c.created_by))];
-    const { data: caProfiles } = await supabase
-      .from("profiles")
-      .select("user_id, full_name, email")
-      .in("user_id", caUserIds);
-
-    const caUserMap: Record<string, string> = {};
-    (caProfiles || []).forEach(p => {
-      caUserMap[p.user_id] = p.full_name || p.email;
-    });
-
-    const correctiveActions: CorrectiveAction[] = (caData || []).map(ca => ({
-      id: ca.id,
-      unit_id: ca.unit_id,
-      unit_name: unitMap[ca.unit_id]?.name || "Unknown",
-      action_taken: ca.action_taken,
-      root_cause: ca.root_cause || undefined,
-      completed_at: ca.completed_at,
-      created_by: caUserMap[ca.created_by] || "Unknown",
-    }));
-    setCorrectiveActions(correctiveActions);
-
-    // Load monitoring gaps from event logs
-    const { data: gapsData } = await supabase
-      .from("event_logs")
-      .select("id, unit_id, event_type, event_data, recorded_at")
-      .in("unit_id", unitIds)
-      .in("event_type", ["unit_state_change", "missed_manual_log"])
-      .gte("recorded_at", startDate)
-      .lte("recorded_at", endDate)
-      .order("recorded_at", { ascending: false });
-
-    const gaps: MonitoringGap[] = (gapsData || [])
-      .filter(g => {
-        const data = g.event_data as any;
-        return data?.to_status === "offline" || 
-               data?.to_status === "monitoring_interrupted" ||
-               g.event_type === "missed_manual_log";
-      })
-      .map(g => {
-        const data = g.event_data as any;
-        return {
-          id: g.id,
-          unit_id: g.unit_id || "",
-          unit_name: unitMap[g.unit_id || ""]?.name || "Unknown",
-          gap_type: g.event_type === "missed_manual_log" ? "Missed Manual Log" : `${data.from_status} → ${data.to_status}`,
-          start_at: g.recorded_at,
-          duration_minutes: data.duration_minutes || 0,
-        };
-      });
-    setMonitoringGaps(gaps);
+      // Transform monitoring gaps
+      const gapsData: MonitoringGap[] = data.monitoringGaps.map(g => ({
+        id: g.id,
+        unit_id: g.unit_id,
+        unit_name: unitMap[g.unit_id]?.name || "Unknown",
+        gap_type: g.gap_type,
+        start_at: g.start_at,
+        duration_minutes: g.duration_minutes,
+      }));
+      setMonitoringGaps(gapsData);
+    } catch (error) {
+      console.error("Error loading inspection data:", error);
+    }
   };
 
   const handleQuickDate = (days: number) => {

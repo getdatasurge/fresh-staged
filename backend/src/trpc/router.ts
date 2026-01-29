@@ -15,6 +15,7 @@ import { availabilityRouter } from '../routers/availability.router.js'
 import { dashboardLayoutRouter } from '../routers/dashboard-layout.router.js'
 import { escalationContactsRouter } from '../routers/escalation-contacts.router.js'
 import { healthRouter } from '../routers/health.router.js'
+import { inspectorRouter } from '../routers/inspector.router.js'
 import { notificationPoliciesRouter } from '../routers/notification-policies.router.js'
 import { organizationsRouter } from '../routers/organizations.router.js'
 import { paymentsRouter } from '../routers/payments.router.js'
@@ -205,6 +206,12 @@ export const appRouter = router({
 	 * Procedures: list, create, update, remove, setDefault
 	 */
 	dashboardLayouts: dashboardLayoutRouter,
+
+	/**
+	 * Inspector domain router
+	 * Procedures: validateSession, checkUserAccess, getOrgData, getUnits, getInspectionData
+	 */
+	inspector: inspectorRouter,
 })
 
 /**
