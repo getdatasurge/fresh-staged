@@ -1,5 +1,3 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase-placeholder';
 import { CheckCircle, XCircle, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 import { useUser } from '@stackframe/react';
 
@@ -31,33 +29,12 @@ export function UnitDebugBanner({
   lastError,
 }: UnitDebugBannerProps) {
   const user = useUser();
-  const [doorEventsCount, setDoorEventsCount] = useState<number | null>(null);
-  const [rlsCheck, setRlsCheck] = useState<'pending' | 'ok' | 'fail'>('pending');
 
-  // Fetch door events count and verify RLS
-  useEffect(() => {
-    if (!unitId) return;
+  // RLS check replaced with user auth check (Supabase RLS no longer used)
+  const rlsCheck: 'pending' | 'ok' | 'fail' = user?.id ? 'ok' : 'fail';
 
-    const checkData = async () => {
-      // RLS check via profiles
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .limit(1);
-      
-      setRlsCheck(profileError ? 'fail' : 'ok');
-
-      // Door events count
-      const { count } = await supabase
-        .from('door_events')
-        .select('*', { count: 'exact', head: true })
-        .eq('unit_id', unitId);
-      
-      setDoorEventsCount(count ?? 0);
-    };
-
-    checkData();
-  }, [unitId]);
+  // Door events count removed - Supabase query no longer available
+  const doorEventsCount: number | null = null;
 
   const StatusIcon = ({ ok }: { ok: boolean }) =>
     ok ? (
