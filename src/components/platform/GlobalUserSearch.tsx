@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase-placeholder';
+import { useQuery } from '@tanstack/react-query';
+import { useTRPC } from '@/lib/trpc';
 import { useSuperAdmin } from '@/contexts/SuperAdminContext';
 import { useImpersonateAndNavigate } from '@/hooks/useImpersonateAndNavigate';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useState } from 'react';
 
 interface SearchResult {
   user_id: string;
@@ -39,6 +41,7 @@ interface SearchResult {
 
 export function GlobalUserSearch() {
   const navigate = useNavigate();
+  const trpc = useTRPC();
   const {
     isSuperAdmin,
     isSupportModeActive,
@@ -48,73 +51,40 @@ export function GlobalUserSearch() {
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
 
   const debouncedQuery = useDebounce(query, 300);
 
-  // Search users
-  useEffect(() => {
-    if (!debouncedQuery || debouncedQuery.length < 2) {
-      setResults([]);
-      return;
+  // Search users via tRPC
+  const { data: searchResults, isLoading: isSearching } = useQuery(
+    trpc.admin.searchUsers.queryOptions(
+      { query: debouncedQuery },
+      {
+        enabled: debouncedQuery.length >= 2 && isSuperAdmin && isSupportModeActive,
+      }
+    )
+  );
+
+  // Transform results to match expected interface
+  const results: SearchResult[] = useMemo(() => {
+    if (!searchResults) return [];
+
+    // Log search action
+    if (searchResults.length > 0) {
+      logSuperAdminAction('GLOBAL_USER_SEARCH', undefined, undefined, undefined, {
+        query: debouncedQuery,
+        result_count: searchResults.length,
+      });
     }
 
-    const searchUsers = async () => {
-      setIsSearching(true);
-      try {
-        // Search profiles
-        const { data: profiles, error } = await supabase
-          .from('profiles')
-          .select(`
-            user_id,
-            email,
-            full_name,
-            organization_id,
-            organization:organizations (
-              name
-            )
-          `)
-          .or(`email.ilike.%${debouncedQuery}%,full_name.ilike.%${debouncedQuery}%`)
-          .limit(10);
-
-        if (error) throw error;
-
-        // Get roles for these users
-        const userIds = profiles?.map(p => p.user_id) || [];
-        const { data: roles } = await supabase
-          .from('user_roles')
-          .select('user_id, role')
-          .in('user_id', userIds);
-
-        const rolesMap = new Map(roles?.map(r => [r.user_id, r.role]));
-
-        const searchResults: SearchResult[] = (profiles || []).map(profile => ({
-          user_id: profile.user_id,
-          email: profile.email,
-          full_name: profile.full_name,
-          organization_id: profile.organization_id,
-          organization_name: (profile.organization as { name: string } | null)?.name || null,
-          role: rolesMap.get(profile.user_id) || null,
-        }));
-
-        setResults(searchResults);
-
-        // Log search action
-        logSuperAdminAction('GLOBAL_USER_SEARCH', undefined, undefined, undefined, {
-          query: debouncedQuery,
-          result_count: searchResults.length,
-        });
-      } catch (err) {
-        console.error('Error searching users:', err);
-        setResults([]);
-      } finally {
-        setIsSearching(false);
-      }
-    };
-
-    searchUsers();
-  }, [debouncedQuery, logSuperAdminAction]);
+    return searchResults.map(u => ({
+      user_id: u.userId,
+      email: u.email,
+      full_name: u.fullName,
+      organization_id: u.organizationId,
+      organization_name: u.organizationName,
+      role: u.role,
+    }));
+  }, [searchResults, debouncedQuery, logSuperAdminAction]);
 
   const handleSelectUser = (user: SearchResult) => {
     setOpen(false);

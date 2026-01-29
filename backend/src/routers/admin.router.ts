@@ -8,7 +8,7 @@
  * All procedures require authentication.
  */
 
-import { and, count, desc, eq, isNull, sql } from 'drizzle-orm'
+import { and, count, desc, eq, ilike, isNull, or, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db/client.js'
 import { eventLogs } from '../db/schema/audit.js'
@@ -357,6 +357,63 @@ export const adminRouter = router({
 				createdAt: r.createdAt.toISOString(),
 				role: r.role || null,
 				organizationName: r.organizationName || null,
+			}))
+		}),
+
+	/**
+	 * Search users by email or name
+	 * Used by GlobalUserSearch component for super admin support mode
+	 */
+	searchUsers: protectedProcedure
+		.input(z.object({ query: z.string().min(2) }))
+		.output(
+			z.array(
+				z.object({
+					userId: z.string(),
+					email: z.string(),
+					fullName: z.string().nullable(),
+					organizationId: z.string().nullable(),
+					organizationName: z.string().nullable(),
+					role: z.string().nullable(),
+				}),
+			),
+		)
+		.query(async ({ input }) => {
+			const searchPattern = `%${input.query}%`
+
+			const results = await db
+				.select({
+					userId: profiles.userId,
+					email: profiles.email,
+					fullName: profiles.fullName,
+					organizationId: profiles.organizationId,
+					organizationName: organizations.name,
+					role: userRoles.role,
+				})
+				.from(profiles)
+				.leftJoin(organizations, eq(profiles.organizationId, organizations.id))
+				.leftJoin(
+					userRoles,
+					and(
+						eq(profiles.userId, userRoles.userId),
+						eq(profiles.organizationId, userRoles.organizationId),
+					),
+				)
+				.where(
+					or(
+						ilike(profiles.email, searchPattern),
+						ilike(profiles.fullName, searchPattern),
+					),
+				)
+				.limit(10)
+
+			return results.map(r => ({
+				userId: r.userId,
+				email: r.email,
+				fullName: r.fullName,
+				organizationId: r.organizationId,
+				organizationName: r.organizationName,
+				role: r.role,
 			}))
 		}),
 
