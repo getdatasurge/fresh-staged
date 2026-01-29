@@ -78,9 +78,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 40-01-PLAN.md — Read-only lists: SmsAlertHistory, TTNProvisioningLogs, EmulatorSyncHistory
-- [ ] 40-02-PLAN.md — Medium complexity: WebhookStatusCard, AlertRulesScopedEditor
-- [ ] 40-03-PLAN.md — CRUD operations: NotificationSettingsCard, EmulatorResyncCard
+- [x] 40-01-PLAN.md — Read-only lists: SmsAlertHistory, TTNProvisioningLogs, EmulatorSyncHistory
+- [x] 40-02-PLAN.md — Medium complexity: WebhookStatusCard, AlertRulesScopedEditor
+- [x] 40-03-PLAN.md — CRUD operations: NotificationSettingsCard, EmulatorResyncCard
 
 ---
 
@@ -93,11 +93,12 @@ Plans:
   2. No page imports from supabase-placeholder.ts
   3. Page tests pass using established tRPC mock patterns
   4. Navigation between migrated pages works without errors
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 41-01: TBD (pages batch 1)
-- [ ] 41-02: TBD (pages batch 2)
+- [ ] 41-01-PLAN.md — Simple pages: HealthDashboard, TTNCleanup, Reports
+- [ ] 41-02-PLAN.md — Medium pages: ManualLog, OrganizationDashboard
+- [ ] 41-03-PLAN.md — Complex pages: Inspector, Onboarding (with new backend routers)
 
 ---
 
@@ -140,12 +141,12 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 38. Test Infrastructure | v2.4 | 3/3 | Complete | 2026-01-29 |
 | 39. Dashboard Widget Migration | v2.4 | 3/3 | Complete | 2026-01-29 |
-| 40. Settings Components Migration | v2.4 | 0/3 | Not started | - |
-| 41. Pages Migration | v2.4 | 0/2 | Not started | - |
+| 40. Settings Components Migration | v2.4 | 3/3 | Complete | 2026-01-29 |
+| 41. Pages Migration | v2.4 | 0/3 | Not started | - |
 | 42. Admin/Debug + Other Components | v2.4 | 0/2 | Not started | - |
 | 43. Cleanup & Verification | v2.4 | 0/1 | Not started | - |
 
-**v2.4 Total:** 6/14 plans complete (43%)
+**v2.4 Total:** 9/15 plans complete (60%)
 
 ---
 
