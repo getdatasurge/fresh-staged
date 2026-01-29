@@ -9,31 +9,45 @@ Requirements for one-script deployment automation milestone.
 
 ### Pre-Deployment Validation
 
-- [ ] **PREFLIGHT-01**: Script validates minimum RAM available (2GB+ for FreshTrack stack)
-- [ ] **PREFLIGHT-02**: Script validates minimum disk space available (10GB+ for Docker images and data)
-- [ ] **PREFLIGHT-03**: Script validates CPU cores (2+ cores recommended)
-- [ ] **PREFLIGHT-04**: Script validates OS version (Ubuntu 20.04+ or Debian 11+)
-- [ ] **PREFLIGHT-05**: Script validates network connectivity to Docker Hub and GitHub
-- [ ] **PREFLIGHT-06**: Script validates DNS resolution for user's domain points to server IP
+- [x] **PREFLIGHT-01**: Script validates minimum RAM available (2GB+ for FreshTrack stack)
+- [x] **PREFLIGHT-02**: Script validates minimum disk space available (10GB+ for Docker images and data)
+- [x] **PREFLIGHT-03**: Script validates CPU cores (2+ cores recommended)
+- [x] **PREFLIGHT-04**: Script validates OS version (Ubuntu 20.04+ or Debian 11+)
+- [x] **PREFLIGHT-05**: Script validates network connectivity to Docker Hub and GitHub
+- [x] **PREFLIGHT-06**: Script validates DNS resolution for user's domain points to server IP
 
 ### Prerequisites Installation
 
-- [ ] **PREREQ-01**: Script installs Docker Engine 29.x via get.docker.com if not present
-- [ ] **PREREQ-02**: Script installs Docker Compose v2 (bundled with Docker Engine)
-- [ ] **PREREQ-03**: Script configures UFW firewall to allow ports 22, 80, 443
-- [ ] **PREREQ-04**: Script installs jq for JSON parsing in health checks
-- [ ] **PREREQ-05**: Script installs fail2ban for SSH brute-force protection
-- [ ] **PREREQ-06**: All prerequisite installations are idempotent (safe to re-run)
+- [x] **PREREQ-01**: Script installs Docker Engine 29.x via get.docker.com if not present
+- [x] **PREREQ-02**: Script installs Docker Compose v2 (bundled with Docker Engine)
+- [x] **PREREQ-03**: Script configures UFW firewall to allow ports 22, 80, 443
+- [x] **PREREQ-04**: Script installs jq for JSON parsing in health checks
+- [x] **PREREQ-05**: Script installs fail2ban for SSH brute-force protection
+- [x] **PREREQ-06**: All prerequisite installations are idempotent (safe to re-run)
 
 ### Interactive Configuration
 
-- [ ] **CONFIG-01**: Script prompts for domain name with validation (FQDN format)
-- [ ] **CONFIG-02**: Script prompts for admin email with validation (email format)
-- [ ] **CONFIG-03**: Script prompts for database passwords with confirmation
-- [ ] **CONFIG-04**: Script validates DNS resolution before attempting SSL certificate
-- [ ] **CONFIG-05**: Script auto-generates .env.production configuration file
-- [ ] **CONFIG-06**: Script auto-generates secure secrets using openssl rand -base64
-- [ ] **CONFIG-07**: Script displays configuration summary for user review before deployment
+- [x] **CONFIG-01**: Script prompts for domain name with validation (FQDN format)
+- [x] **CONFIG-02**: Script prompts for admin email with validation (email format)
+- [x] **CONFIG-03**: Script prompts for database passwords with confirmation
+- [x] **CONFIG-04**: Script validates DNS resolution before attempting SSL certificate
+- [x] **CONFIG-05**: Script auto-generates .env.production configuration file
+- [x] **CONFIG-06**: Script auto-generates secure secrets using openssl rand -base64
+- [x] **CONFIG-07**: Script displays configuration summary for user review before deployment
+
+### Error Handling & Recovery
+
+- [x] **ERROR-01**: Script uses trap ERR to capture all command failures
+- [x] **ERROR-02**: Script provides diagnostic context (line number, command) on failures
+- [x] **ERROR-03**: Script categorizes errors (transient, recoverable, critical, fatal)
+- [x] **ERROR-04**: Script automatically rolls back on critical failures (preserves data)
+- [x] **ERROR-05**: Script prompts user for recovery on recoverable failures
+- [x] **ERROR-06**: Script displays clear recovery guidance when deployment fails
+- [x] **ERROR-07**: Script never exposes credentials in logs or error messages
+
+## v2.3 Requirements: Deployment Orchestration
+
+Requirements for completing deployment automation (continuation of v2.1 Phases 25-26).
 
 ### Deployment Orchestration
 
@@ -43,22 +57,12 @@ Requirements for one-script deployment automation milestone.
 - [ ] **DEPLOY-04**: Script calls Docker Compose with production overlay configuration
 - [ ] **DEPLOY-05**: Script waits for all services to reach healthy state before proceeding
 
-### Error Handling & Recovery
-
-- [ ] **ERROR-01**: Script uses trap ERR to capture all command failures
-- [ ] **ERROR-02**: Script provides diagnostic context (line number, command) on failures
-- [ ] **ERROR-03**: Script categorizes errors (transient, recoverable, critical, fatal)
-- [ ] **ERROR-04**: Script automatically rolls back on critical failures (preserves data)
-- [ ] **ERROR-05**: Script prompts user for recovery on recoverable failures
-- [ ] **ERROR-06**: Script displays clear recovery guidance when deployment fails
-- [ ] **ERROR-07**: Script never exposes credentials in logs or error messages
-
 ### Verification
 
 - [ ] **VERIFY-01**: Script validates all service health endpoints return 200 OK
 - [ ] **VERIFY-02**: Script validates SSL certificate is valid and trusted
 - [ ] **VERIFY-03**: Script validates dashboard accessible via HTTPS in browser
-- [ ] **VERIFY-04**: Script runs integrated E2E test (sensor → storage → alert pipeline)
+- [ ] **VERIFY-04**: Script runs integrated E2E test (sensor -> storage -> alert pipeline)
 - [ ] **VERIFY-05**: Script validates monitoring dashboards (Prometheus/Grafana) accessible
 - [ ] **VERIFY-06**: Script waits for 3 consecutive health check passes (not just 1)
 
@@ -77,7 +81,7 @@ Requirements for one-script deployment automation milestone.
 - [ ] **DOCS-03**: Troubleshooting playbook documents common failures and fixes
 - [ ] **DOCS-04**: Post-deployment operations guide documents updates, backups, scaling
 
-## Future Requirements (Deferred to v2.2+)
+## Future Requirements (Deferred to v2.4+)
 
 ### Advanced Features
 
@@ -121,11 +125,6 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONFIG-05 | Phase 24 | Complete |
 | CONFIG-06 | Phase 24 | Complete |
 | CONFIG-07 | Phase 24 | Complete |
-| DEPLOY-01 | Phase 25 | Pending |
-| DEPLOY-02 | Phase 25 | Pending |
-| DEPLOY-03 | Phase 25 | Pending |
-| DEPLOY-04 | Phase 25 | Pending |
-| DEPLOY-05 | Phase 25 | Pending |
 | ERROR-01 | Phase 22 | Complete |
 | ERROR-02 | Phase 22 | Complete |
 | ERROR-03 | Phase 22 | Complete |
@@ -133,27 +132,32 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ERROR-05 | Phase 22 | Complete |
 | ERROR-06 | Phase 22 | Complete |
 | ERROR-07 | Phase 22 | Complete |
-| VERIFY-01 | Phase 26 | Pending |
-| VERIFY-02 | Phase 26 | Pending |
-| VERIFY-03 | Phase 26 | Pending |
-| VERIFY-04 | Phase 26 | Pending |
-| VERIFY-05 | Phase 26 | Pending |
-| VERIFY-06 | Phase 26 | Pending |
-| POST-01 | Phase 26 | Pending |
-| POST-02 | Phase 26 | Pending |
-| POST-03 | Phase 26 | Pending |
-| POST-04 | Phase 26 | Pending |
-| POST-05 | Phase 26 | Pending |
-| DOCS-01 | Phase 26 | Pending |
-| DOCS-02 | Phase 26 | Pending |
-| DOCS-03 | Phase 26 | Pending |
-| DOCS-04 | Phase 26 | Pending |
+| DEPLOY-01 | Phase 34 | Pending |
+| DEPLOY-02 | Phase 34 | Pending |
+| DEPLOY-03 | Phase 34 | Pending |
+| DEPLOY-04 | Phase 34 | Pending |
+| DEPLOY-05 | Phase 34 | Pending |
+| VERIFY-01 | Phase 35 | Pending |
+| VERIFY-02 | Phase 35 | Pending |
+| VERIFY-03 | Phase 35 | Pending |
+| VERIFY-04 | Phase 35 | Pending |
+| VERIFY-05 | Phase 35 | Pending |
+| VERIFY-06 | Phase 35 | Pending |
+| POST-01 | Phase 36 | Pending |
+| POST-02 | Phase 36 | Pending |
+| POST-03 | Phase 36 | Pending |
+| POST-04 | Phase 36 | Pending |
+| POST-05 | Phase 36 | Pending |
+| DOCS-01 | Phase 37 | Pending |
+| DOCS-02 | Phase 37 | Pending |
+| DOCS-03 | Phase 37 | Pending |
+| DOCS-04 | Phase 37 | Pending |
 
 **Coverage:**
-- v2.1 requirements: 37 total
-- Mapped to phases: 37
+- v2.1 requirements (PREFLIGHT, PREREQ, CONFIG, ERROR): 26 total, 26 complete
+- v2.3 requirements (DEPLOY, VERIFY, POST, DOCS): 20 total, 0 complete
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-25*
-*Last updated: 2026-01-25 (Phase 22-24 requirements complete)*
+*Last updated: 2026-01-29 (v2.3 traceability added)*

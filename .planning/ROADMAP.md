@@ -2,98 +2,130 @@
 
 ## Milestones
 
-- ✅ **v1.0 Self-Hosted MVP** - Phases 1-7 (shipped 2026-01-23)
-- ✅ **v1.1 Production Ready** - Phases 8-13 (shipped 2026-01-24)
-- ✅ **v2.0 Real-Time & Billing** - Phases 14-21 (shipped 2026-01-25)
-- ✅ **v2.1 Streamlined Deployment** - Phases 22-26 (shipped 2026-01-25)
-- ✅ **v2.2 Technical Debt & Stabilization** - Phases 27-33 (shipped 2026-01-29)
+- **v1.0 Self-Hosted MVP** - Phases 1-7 (shipped 2026-01-23)
+- **v1.1 Production Ready** - Phases 8-13 (shipped 2026-01-24)
+- **v2.0 Real-Time & Billing** - Phases 14-21 (shipped 2026-01-25)
+- **v2.1 Streamlined Deployment** - Phases 22-26 (shipped 2026-01-25)
+- **v2.2 Technical Debt & Stabilization** - Phases 27-33 (shipped 2026-01-29)
+- **v2.3 Deployment Orchestration** - Phases 34-37 (in progress)
 
 ## Phases
 
 <details>
-<summary>✅ v1.0 Self-Hosted MVP (Phases 1-7) - SHIPPED 2026-01-23</summary>
+<summary>v1.0 Self-Hosted MVP (Phases 1-7) - SHIPPED 2026-01-23</summary>
 
 See MILESTONES.md for details. 47 plans completed.
 
 </details>
 
 <details>
-<summary>✅ v1.1 Production Ready (Phases 8-13) - SHIPPED 2026-01-24</summary>
+<summary>v1.1 Production Ready (Phases 8-13) - SHIPPED 2026-01-24</summary>
 
 See MILESTONES.md for details. 31 plans completed.
 
 </details>
 
 <details>
-<summary>✅ v2.0 Real-Time & Billing (Phases 14-21) - SHIPPED 2026-01-25</summary>
+<summary>v2.0 Real-Time & Billing (Phases 14-21) - SHIPPED 2026-01-25</summary>
 
 See MILESTONES.md for details. 40 plans completed.
 
 </details>
 
 <details>
-<summary>✅ v2.1 Streamlined Deployment (Phases 22-26) - SHIPPED 2026-01-25</summary>
+<summary>v2.1 Streamlined Deployment (Phases 22-26) - SHIPPED 2026-01-25</summary>
 
 See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
 
 </details>
 
+<details>
+<summary>v2.2 Technical Debt & Stabilization (Phases 27-33) - SHIPPED 2026-01-29</summary>
 
-## Phases
+See ROADMAP.md archive. 27 plans completed.
 
-### ✅ v2.2 Technical Debt & Stabilization — COMPLETE
+Phases: TTN SDK Integration, Supabase Removal (7 waves), System Hardening, TTN Provisioning UI Migration, Remaining Edge Function Migration, Error Handling UI Integration.
 
-**Milestone Goal:** Eliminate Supabase dependency and stabilize TTN integration for long-term maintainability
+</details>
 
-- [x] **Phase 27: TTN SDK Integration** - Complete.
-- [~] **Phase 28: Supabase Removal** - Partial. Edge function calls remain (25 in 9 files).
-    - [x] Wave 1: Audit & Event Logging
-    - [x] Wave 2: Site & Alert Settings
-    - [x] Wave 3: Alert Rules & History
-    - [x] Wave 4: System Pages & Sync
-    - [x] Wave 5: Core Entity Dashboards (Dashboard, Units, Sites, Alerts)
-    - [x] Wave 6: Detail Views & Maintenance
-    - [x] Wave 7: Platform Admin & Remaining Cleanup
-    - [ ] **Gap:** 25 edge function calls not migrated to tRPC
-- [x] ~~**Phase 29: Production Data Migration**~~ - SKIPPED (no Supabase production access)
-- [x] **Phase 30: System Hardening** - Complete. Final security audit and performance tuning.
-    - [x] 30-01: Backend security headers (@fastify/helmet), body limits, request timeout
-    - [x] 30-02: Dependency vulnerability audit (npm audit fix)
-    - [x] 30-03: Enhanced supabase-placeholder error handling
-    - [x] 30-04: Integration verification
+---
 
-### Gap Closure Phases (from v2.2 Audit)
+## v2.3 Deployment Orchestration
 
-- [x] **Phase 31: TTN Provisioning UI Migration** - VERIFIED
-    - **Goal:** Wire TTN provisioning UI to Phase 27 tRPC endpoints
-    - **Closes:** Integration gap (TTN UI → tRPC), Flow gap (TTN Organization Provisioning)
-    - **Plans:** 3 plans
-    Plans:
-    - [x] 31-01-PLAN.md — Add missing tRPC procedures for TTN provisioning
-    - [x] 31-02-PLAN.md — Migrate TTNCredentialsPanel to tRPC
-    - [x] 31-03-PLAN.md — Add integration tests and verify UI
+**Milestone Goal:** Complete one-script deployment automation with orchestration, verification, post-deployment setup, and documentation — finishing the work started in v2.1.
 
-- [x] **Phase 32: Remaining Edge Function Migration** — COMPLETE
-    - **Goal:** Migrate remaining supabase.functions.invoke calls to tRPC
-    - **Closes:** 15 remaining edge function calls in 12 files
-    - **Plans:** 6 plans (4 migration + 2 gap closure)
-    Plans:
-    - [x] 32-01-PLAN.md — Migrate TTN domain (EmulatorTTNRoutingCard, Onboarding)
-    - [x] 32-02-PLAN.md — Create reports router + migrate 3 export files
-    - [x] 32-03-PLAN.md — Create telnyx router + migrate 4 Telnyx files
-    - [x] 32-04-PLAN.md — Add ttnDevices.diagnose + cleanup dead code
-    - [x] 32-05-PLAN.md — Gap closure: Implement reports.export with real database queries
-    - [x] 32-06-PLAN.md — Gap closure: Implement Telnyx API integration (verification + webhook)
+### Phase 34: Deployment Orchestration
 
-- [x] **Phase 33: Error Handling UI Integration** — COMPLETE
-    - **Goal:** Wire SupabaseMigrationError to UI error boundaries for user-friendly error messages
-    - **Closes:** Integration gap (SupabaseMigrationError → UI consumers)
-    - **Plans:** 3 plans
-    Plans:
-    - [x] 33-01-PLAN.md — Extend errorHandler.ts + create MigrationErrorBoundary components
-    - [x] 33-02-PLAN.md — Wire UI components + visual verification
-    - [x] 33-03-PLAN.md — Gap closure: Integrate MigrationErrorBoundary into DashboardLayout + tRPC pattern fix
+**Goal:** User can deploy FreshTrack Pro with checkpoint-based recovery from any failure point
+
+**Dependencies:** Requires v2.1 Phases 22-24 (pre-flight, prerequisites, configuration)
+
+**Requirements:** DEPLOY-01, DEPLOY-02, DEPLOY-03, DEPLOY-04, DEPLOY-05
+
+**Success Criteria:**
+1. User can run deployment script that integrates with existing deploy.sh (no duplicated logic)
+2. User can see checkpoint markers created at each deployment phase (build, deploy, configure)
+3. User can resume deployment from last checkpoint after a failure (state persisted to disk)
+4. User can observe Docker Compose running with production overlay configuration
+5. User sees deployment wait for all services to report healthy before completion
+
+### Phase 35: Verification
+
+**Goal:** User can trust deployment succeeded through automated multi-layer validation
+
+**Dependencies:** Phase 34 (deployment must complete before verification)
+
+**Requirements:** VERIFY-01, VERIFY-02, VERIFY-03, VERIFY-04, VERIFY-05, VERIFY-06
+
+**Success Criteria:**
+1. User sees verification script check all service health endpoints (backend, frontend, workers)
+2. User sees SSL certificate validation pass (certificate valid, trusted, not expiring soon)
+3. User can access dashboard via HTTPS in browser after script reports success
+4. User sees E2E test pass (simulated sensor reading flows through to alert)
+5. User sees monitoring stack validation (Prometheus and Grafana accessible)
+
+### Phase 36: Post-Deployment Setup
+
+**Goal:** User has a working demo environment with clear next steps for production use
+
+**Dependencies:** Phase 35 (verification must pass before post-deployment)
+
+**Requirements:** POST-01, POST-02, POST-03, POST-04, POST-05
+
+**Success Criteria:**
+1. User sees complete URL summary displayed (dashboard, API, Prometheus, Grafana, Bull Board)
+2. User sees credential summary displayed securely (masked in logs, visible in terminal only)
+3. User can log in and see sample organization with demo site and sensor data
+4. User can access Grafana with pre-configured sensor metrics dashboards
+5. User sees clear next steps guide for creating first admin account and inviting team
+
+### Phase 37: Documentation
+
+**Goal:** User can self-serve deployment without expert assistance
+
+**Dependencies:** Phases 34-36 (document what was built)
+
+**Requirements:** DOCS-01, DOCS-02, DOCS-03, DOCS-04
+
+**Success Criteria:**
+1. User can follow prerequisites guide to prepare VM (specs, DNS, firewall) without asking questions
+2. User can follow step-by-step walkthrough from fresh VM to running FreshTrack Pro
+3. User can diagnose and fix common deployment failures using troubleshooting playbook
+4. User can perform post-deployment operations (updates, backups, scaling) using operations guide
+
+---
+
+## Progress
+
+| Phase | Name | Status | Plans |
+|-------|------|--------|-------|
+| 34 | Deployment Orchestration | Pending | - |
+| 35 | Verification | Pending | - |
+| 36 | Post-Deployment Setup | Pending | - |
+| 37 | Documentation | Pending | - |
+
+**Milestone Progress:** 0/4 phases complete (0%)
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-29 (v2.2 milestone complete - Phase 33 verified)*
+*Last updated: 2026-01-29 (v2.3 phases added)*
