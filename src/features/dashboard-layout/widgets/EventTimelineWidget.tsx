@@ -1,23 +1,24 @@
 /**
  * Event Timeline Widget
- * 
- * Unified timeline of alerts, readings, manual logs, and door events.
- * Includes filter chips and load more functionality.
+ *
+ * Unified timeline of alerts, manual logs, and door events.
+ * Includes filter chips. Uses tRPC for data fetching.
  */
 
-import { useEffect, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { 
-  Clock, 
-  AlertTriangle, 
-  ClipboardList, 
+import {
+  Clock,
+  AlertTriangle,
+  ClipboardList,
   DoorOpen,
   Activity,
   Loader2
 } from "lucide-react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "@/lib/trpc";
 import type { WidgetProps } from "../types";
 import { format, isToday, isYesterday } from "date-fns";
 
@@ -26,7 +27,7 @@ interface TimelineEvent {
   type: "alert" | "reading" | "manual_log" | "door";
   title: string;
   description?: string;
-  timestamp: string;
+  timestamp: string | Date;
 }
 
 type FilterType = "alert" | "manual_log" | "door";
@@ -42,133 +43,112 @@ function formatDateHeader(date: Date): string {
 function groupEventsByDate(events: TimelineEvent[]): Map<string, TimelineEvent[]> {
   const groups = new Map<string, TimelineEvent[]>();
   events.forEach(event => {
-    const dateKey = format(new Date(event.timestamp), "yyyy-MM-dd");
+    const timestamp = typeof event.timestamp === 'string' ? new Date(event.timestamp) : event.timestamp;
+    const dateKey = format(timestamp, "yyyy-MM-dd");
     if (!groups.has(dateKey)) groups.set(dateKey, []);
     groups.get(dateKey)!.push(event);
   });
   return groups;
 }
 
-export function EventTimelineWidget({ entityId }: WidgetProps) {
-  const [events, setEvents] = useState<TimelineEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+export function EventTimelineWidget({ entityId, organizationId }: WidgetProps) {
   const [filters, setFilters] = useState<Record<FilterType, boolean>>({
     alert: true,
     manual_log: true,
     door: true,
   });
 
-  const fetchEvents = useCallback(async (append = false) => {
-    if (!entityId) {
-      setIsLoading(false);
-      return;
+  const trpc = useTRPC();
+
+  // Query alerts
+  const alertsQueryOptions = trpc.alerts.list.queryOptions({
+    organizationId: organizationId!,
+    unitId: entityId,
+    limit: EVENTS_PER_PAGE,
+  });
+
+  const alertsQuery = useQuery({
+    ...alertsQueryOptions,
+    enabled: !!entityId && !!organizationId && filters.alert,
+  });
+
+  // Query manual logs
+  const logsQueryOptions = trpc.readings.listManual.queryOptions({
+    organizationId: organizationId!,
+    unitId: entityId,
+    limit: EVENTS_PER_PAGE,
+  });
+
+  const logsQuery = useQuery({
+    ...logsQueryOptions,
+    enabled: !!entityId && !!organizationId && filters.manual_log,
+  });
+
+  // Query door events
+  const doorEventsQueryOptions = trpc.readings.listDoorEvents.queryOptions({
+    organizationId: organizationId!,
+    unitId: entityId,
+    limit: EVENTS_PER_PAGE,
+  });
+
+  const doorEventsQuery = useQuery({
+    ...doorEventsQueryOptions,
+    enabled: !!entityId && !!organizationId && filters.door,
+  });
+
+  const isLoading = alertsQuery.isLoading || logsQuery.isLoading || doorEventsQuery.isLoading;
+
+  // Combine and transform events
+  const events = useMemo((): TimelineEvent[] => {
+    const allEvents: TimelineEvent[] = [];
+
+    // Add alerts
+    if (filters.alert && alertsQuery.data) {
+      alertsQuery.data.forEach(a => {
+        allEvents.push({
+          id: `alert-${a.id}`,
+          type: 'alert',
+          title: a.title,
+          description: `${a.severity} alert`,
+          timestamp: a.triggeredAt || a.createdAt,
+        });
+      });
     }
 
-    if (append) {
-      setIsLoadingMore(true);
-    } else {
-      setIsLoading(true);
+    // Add manual logs
+    if (filters.manual_log && logsQuery.data) {
+      logsQuery.data.forEach(l => {
+        allEvents.push({
+          id: `log-${l.id}`,
+          type: 'manual_log',
+          title: `Manual log: ${l.temperature}°`,
+          description: l.notes || undefined,
+          timestamp: l.loggedAt,
+        });
+      });
     }
 
-    try {
-      const allEvents: TimelineEvent[] = [];
-      const currentCount = append ? events.length : 0;
-      const limit = EVENTS_PER_PAGE;
-
-      // Fetch alerts if filter enabled
-      if (filters.alert) {
-        const { data: alerts } = await supabase
-          .from("alerts")
-          .select("id, title, severity, created_at")
-          .eq("unit_id", entityId)
-          .order("created_at", { ascending: false })
-          .range(currentCount, currentCount + limit - 1);
-
-        alerts?.forEach(a => {
-          allEvents.push({
-            id: `alert-${a.id}`,
-            type: "alert",
-            title: a.title,
-            description: `${a.severity} alert`,
-            timestamp: a.created_at,
-          });
+    // Add door events
+    if (filters.door && doorEventsQuery.data) {
+      doorEventsQuery.data.forEach(d => {
+        allEvents.push({
+          id: `door-${d.id}`,
+          type: 'door',
+          title: `Door ${d.state}`,
+          timestamp: d.occurredAt,
         });
-      }
-
-      // Fetch manual logs if filter enabled
-      if (filters.manual_log) {
-        const { data: logs } = await supabase
-          .from("manual_temperature_logs")
-          .select("id, temperature, notes, logged_at")
-          .eq("unit_id", entityId)
-          .order("logged_at", { ascending: false })
-          .range(currentCount, currentCount + limit - 1);
-
-        logs?.forEach(l => {
-          allEvents.push({
-            id: `log-${l.id}`,
-            type: "manual_log",
-            title: `Manual log: ${l.temperature}°`,
-            description: l.notes || undefined,
-            timestamp: l.logged_at,
-          });
-        });
-      }
-
-      // Fetch door events if filter enabled
-      if (filters.door) {
-        const { data: doorEvents } = await supabase
-          .from("door_events")
-          .select("id, state, occurred_at")
-          .eq("unit_id", entityId)
-          .order("occurred_at", { ascending: false })
-          .range(currentCount, currentCount + limit - 1);
-
-        doorEvents?.forEach(d => {
-          allEvents.push({
-            id: `door-${d.id}`,
-            type: "door",
-            title: `Door ${d.state}`,
-            timestamp: d.occurred_at,
-          });
-        });
-      }
-
-      // Sort all events by timestamp
-      allEvents.sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-
-      // Limit to page size
-      const pageEvents = allEvents.slice(0, EVENTS_PER_PAGE);
-      
-      if (append) {
-        setEvents(prev => [...prev, ...pageEvents]);
-      } else {
-        setEvents(pageEvents);
-      }
-
-      // Check if there might be more events
-      setHasMore(allEvents.length >= EVENTS_PER_PAGE);
-    } catch (err) {
-      console.error("Error fetching timeline events:", err);
-    } finally {
-      setIsLoading(false);
-      setIsLoadingMore(false);
+      });
     }
-  }, [entityId, filters, events.length]);
 
-  useEffect(() => {
-    setEvents([]);
-    fetchEvents(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entityId, filters]);
+    // Sort by timestamp descending
+    allEvents.sort((a, b) => {
+      const aTime = typeof a.timestamp === 'string' ? new Date(a.timestamp).getTime() : a.timestamp.getTime();
+      const bTime = typeof b.timestamp === 'string' ? new Date(b.timestamp).getTime() : b.timestamp.getTime();
+      return bTime - aTime;
+    });
 
-  const handleLoadMore = () => {
-    fetchEvents(true);
-  };
+    return allEvents.slice(0, EVENTS_PER_PAGE);
+  }, [filters, alertsQuery.data, logsQuery.data, doorEventsQuery.data]);
 
   const toggleFilter = (type: FilterType) => {
     setFilters(prev => ({ ...prev, [type]: !prev[type] }));
@@ -244,6 +224,9 @@ export function EventTimelineWidget({ entityId }: WidgetProps) {
                     {dateEvents.map((event) => {
                       const config = typeConfig[event.type];
                       const Icon = config.icon;
+                      const timestamp = typeof event.timestamp === 'string'
+                        ? new Date(event.timestamp)
+                        : event.timestamp;
                       return (
                         <div
                           key={event.id}
@@ -260,7 +243,7 @@ export function EventTimelineWidget({ entityId }: WidgetProps) {
                               </p>
                             )}
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {format(new Date(event.timestamp), "h:mm a")}
+                              {format(timestamp, "h:mm a")}
                             </p>
                           </div>
                         </div>
@@ -269,27 +252,6 @@ export function EventTimelineWidget({ entityId }: WidgetProps) {
                   </div>
                 </div>
               ))}
-              
-              {hasMore && (
-                <div className="pt-2 pb-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={handleLoadMore}
-                    disabled={isLoadingMore}
-                  >
-                    {isLoadingMore ? (
-                      <>
-                        <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                        Loading...
-                      </>
-                    ) : (
-                      "Load more"
-                    )}
-                  </Button>
-                </div>
-              )}
             </div>
           </ScrollArea>
         )}
