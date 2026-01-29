@@ -2,6 +2,48 @@
  * Vitest setup file
  *
  * Mocks problematic dependencies that don't work well with Vitest's ESM resolver.
+ *
+ * ## BullMQ/Redis Test Mocking Pattern
+ *
+ * Queue service tests use mocked BullMQ to avoid Redis dependency.
+ * Mock is in: tests/mocks/bullmq.mock.ts
+ *
+ * Usage in test files:
+ * ```typescript
+ * import { MockQueue, MockWorker, MockQueueEvents } from '../mocks/bullmq.mock.js';
+ *
+ * vi.mock('bullmq', () => ({
+ *   Queue: MockQueue,
+ *   Worker: MockWorker,
+ *   QueueEvents: MockQueueEvents,
+ * }));
+ *
+ * // Also mock ioredis for QueueService initialization
+ * vi.mock('ioredis', () => ({
+ *   Redis: class MockRedis {
+ *     on() { return this; }
+ *     async connect() {}
+ *     async ping() { return 'PONG'; }
+ *     async quit() {}
+ *   },
+ *   default: class MockRedis {
+ *     on() { return this; }
+ *     async connect() {}
+ *     async ping() { return 'PONG'; }
+ *     async quit() {}
+ *   },
+ * }));
+ * ```
+ *
+ * The mock provides in-memory queue simulation for testing:
+ * - Jobs are stored in memory, not Redis
+ * - Job IDs are deterministic (job-1, job-2, etc.)
+ * - No actual job processing occurs
+ * - MockQueue.getStoredJobs() for test verification
+ * - MockQueue.reset() for test isolation
+ *
+ * For integration tests requiring real Redis, use docker compose:
+ * `docker compose up redis -d`
  */
 
 import { vi } from 'vitest';
