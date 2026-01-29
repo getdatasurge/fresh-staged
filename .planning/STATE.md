@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.4 Tech Debt Cleanup — Complete Supabase removal
+**Current focus:** v2.4 Tech Debt Cleanup — Phase 38 Test Infrastructure
 
 ## Current Position
 
 Milestone: v2.4 Tech Debt Cleanup
-Phase: Not started (creating roadmap)
-Plan: —
-Status: Defining roadmap
-Last activity: 2026-01-29 — v2.4 requirements defined
+Phase: 38 of 43 (Test Infrastructure)
+Plan: Ready to plan
+Status: Phase ready to plan
+Last activity: 2026-01-29 — Roadmap created for v2.4
 
 Progress: ░░░░░░░░░░ 0%
 
@@ -28,32 +28,36 @@ Progress: ░░░░░░░░░░ 0%
 | v2.2 | Technical Debt & Stabilization | 27-33 | 27 | 2026-01-29 |
 | v2.3 | Deployment Orchestration | 34-37 | 11 | 2026-01-29 |
 
-**Total:** 6 milestones, 37 phases, 167 plans
+**Total shipped:** 6 milestones, 37 phases, 167 plans
 
-## v2.4 Scope
+## v2.4 Progress
 
-**Goal:** Complete Supabase removal and fix all failing tests
+| Phase | Name | Requirements | Status |
+|-------|------|--------------|--------|
+| 38 | Test Infrastructure | TEST-01, TEST-02, TEST-03 | Ready to plan |
+| 39 | Dashboard Widget Migration | WIDGET-01-09 | Not started |
+| 40 | Settings Components Migration | SETTINGS-01-07 | Not started |
+| 41 | Pages Migration | PAGE-01-07 | Not started |
+| 42 | Admin/Debug + Other Components | ADMIN-01-04, COMP-01-04 | Not started |
+| 43 | Cleanup & Verification | CLEAN-01-03 | Not started |
 
-**Work items:**
-- Fix 60 failing tests (38 frontend tRPC mocks, 22 backend queue mocks)
-- Migrate 35 files from supabase-placeholder to tRPC
-- Delete supabase-placeholder.ts
-- Update error handling for tRPC patterns
+**v2.4 scope:** 37 requirements, 6 phases, ~12 plans
 
-**Categories:**
-- Test Infrastructure: 3 requirements
-- Dashboard Widgets: 9 requirements
-- Settings Components: 7 requirements
-- Pages: 7 requirements
-- Admin/Debug Components: 4 requirements
-- Other Components: 4 requirements
-- Cleanup: 3 requirements
+## Accumulated Context
 
-**Total:** 37 requirements across 6 phases (38-43)
+### Decisions
+
+None yet for v2.4.
+
+### Blockers/Concerns
+
+- 38 frontend tests fail with `trpc.X.Y.queryOptions is not a function`
+- 22 backend tests fail in queue.service.test.ts (BullMQ/Redis mocking)
+- 35 files still import from supabase-placeholder.ts
 
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Creating roadmap for v2.4
+Stopped at: Roadmap created for v2.4
 Resume file: None
-Next action: Complete roadmap creation
+Next action: `/gsd:plan-phase 38` to plan Test Infrastructure
