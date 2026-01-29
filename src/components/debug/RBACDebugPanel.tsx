@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@stackframe/react';
-import { supabase, isSupabaseMigrationError } from '@/lib/supabase-placeholder';
 import { useSuperAdmin, RoleLoadStatus } from '@/contexts/SuperAdminContext';
 import { Shield, Database, Clock, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -52,44 +51,17 @@ export function RBACDebugPanel() {
 
     setFetchTimestamp(new Date().toISOString());
 
-    // Get current user
+    // Get current user from Stack Auth
     if (stackUser) {
       setUserInfo({ email: stackUser.primaryEmail || 'unknown', id: stackUser.id });
     }
 
-    // Direct RPC call to test the function
-    try {
-      const { data, error } = await supabase.rpc('is_current_user_super_admin');
-      if (error) {
-        if (isSupabaseMigrationError(error)) {
-          setDirectRpcError('RPC unavailable during migration');
-        } else {
-          setDirectRpcError(error.message);
-        }
-        setDirectRpcResult(null);
-      } else {
-        setDirectRpcResult(data);
-        setDirectRpcError(null);
-      }
-    } catch (err) {
-      if (isSupabaseMigrationError(err)) {
-        setDirectRpcError('RPC unavailable during migration');
-      } else {
-        setDirectRpcError(err instanceof Error ? err.message : 'Unknown error');
-      }
-    }
+    // Supabase RPC removed - show static message
+    setDirectRpcResult(null);
+    setDirectRpcError('Supabase RPC removed (migration complete)');
 
-    // Count platform_roles (will fail if RLS blocks, which is expected for non-admins)
-    try {
-      const { count, error } = await supabase
-        .from('platform_roles')
-        .select('*', { count: 'exact', head: true });
-      if (!error) {
-        setPlatformRolesCount(count);
-      }
-    } catch {
-      setPlatformRolesCount(null);
-    }
+    // platform_roles query removed - no longer using Supabase RLS
+    setPlatformRolesCount(null);
   }, [isDebugEnabled, stackUser]);
 
   useEffect(() => {

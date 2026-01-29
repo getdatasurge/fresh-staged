@@ -1,7 +1,7 @@
 import { useToast } from '@/hooks/use-toast'
 import { useTRPC } from '@/lib/trpc'
-import { isSupabaseMigrationError } from '@/lib/supabase-placeholder'
 import { useUser } from '@stackframe/react'
+import { useMutation } from '@tanstack/react-query'
 import {
 	createContext,
 	ReactNode,
@@ -96,7 +96,7 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
 	const { toast } = useToast()
 	const stackUser = useUser()
 	const trpc = useTRPC()
-	const logSuperAdminActionMutation = trpc.admin.logSuperAdminAction.useMutation()
+	const logSuperAdminActionMutation = useMutation(trpc.admin.logSuperAdminAction.mutationOptions())
 
 	// Super admin status with explicit state machine
 	const [isSuperAdmin, setIsSuperAdmin] = useState(false)
@@ -204,11 +204,7 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
 			rbacLog('role fetch exception:', errorMessage)
 			console.error('Error checking super admin status:', err)
 			setIsSuperAdmin(false)
-			if (isSupabaseMigrationError(err)) {
-				updateRoleStatus('error', 'Super admin check unavailable during migration')
-			} else {
-				updateRoleStatus('error', errorMessage)
-			}
+			updateRoleStatus('error', errorMessage)
 		}
 	}, [rbacLog, updateRoleStatus, stackUser])
 
