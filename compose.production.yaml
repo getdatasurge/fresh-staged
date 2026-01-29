@@ -373,6 +373,7 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@freshtrackpro.com}
     volumes:
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./docker/caddy/certs:/etc/caddy/certs:ro
       - caddy_data:/data
       - caddy_config:/config
     ports:
@@ -390,10 +391,11 @@ services:
           cpus: '0.1'
           memory: 128M
     healthcheck:
-      test: ['CMD', 'wget', '-qO-', 'http://localhost:2019/metrics']
+      test: ['CMD-SHELL', 'wget -S -O /dev/null http://localhost:80/ 2>&1 | grep -qE "30[18]"']
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 10s
     restart: unless-stopped
 
 # ===========================================
