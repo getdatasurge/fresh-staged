@@ -43,23 +43,18 @@ export function useEffectiveIdentity(): EffectiveIdentity {
 		data: profile,
 		isLoading,
 		refetch,
-		error: profileError,
 	} = useQuery({
 		queryKey: qk.user(stackUser?.id ?? null).profile(),
 		queryFn: async () => {
 			if (!stackUser) {
-				console.log('[useEffectiveIdentity] No stackUser, returning null')
 				return null
 			}
-			console.log('[useEffectiveIdentity] Fetching profile for user:', stackUser.id)
 			try {
 				const authJson = await stackUser.getAuthJson()
-				console.log('[useEffectiveIdentity] Got auth token, calling users.me')
 				const trpcClient = createTRPCClientInstance(
 					async () => authJson.accessToken,
 				)
 				const result = await trpcClient.users.me.query()
-				console.log('[useEffectiveIdentity] users.me result:', result)
 				return result
 			} catch (err) {
 				console.error('[useEffectiveIdentity] Error fetching profile:', err)
@@ -69,9 +64,6 @@ export function useEffectiveIdentity(): EffectiveIdentity {
 		enabled: !!stackUser,
 		staleTime: 1000 * 60 * 5,
 	})
-
-	// Debug logging
-	console.log('[useEffectiveIdentity] profile data:', profile, 'isLoading:', isLoading, 'error:', profileError)
 
 	const realUserId = stackUser?.id ?? null
 	const realOrgId = profile?.profile?.organizationId ?? null
