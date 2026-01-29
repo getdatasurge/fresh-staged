@@ -18,6 +18,10 @@ services:
       context: .
       dockerfile: docker/frontend/Dockerfile
       target: production
+      args:
+        VITE_STACK_PROJECT_ID: ${VITE_STACK_PROJECT_ID}
+        VITE_STACK_PUBLISHABLE_CLIENT_KEY: ${VITE_STACK_PUBLISHABLE_CLIENT_KEY}
+        VITE_API_URL: ${VITE_API_URL:-}
     container_name: frostguard-frontend
     environment:
       NODE_ENV: production

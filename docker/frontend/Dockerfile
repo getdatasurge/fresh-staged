@@ -34,6 +34,14 @@ COPY . .
 # Set production environment for build
 ENV NODE_ENV=production
 
+# Build args for Vite (must be available at build time)
+ARG VITE_STACK_PROJECT_ID
+ARG VITE_STACK_PUBLISHABLE_CLIENT_KEY
+ARG VITE_API_URL
+ENV VITE_STACK_PROJECT_ID=$VITE_STACK_PROJECT_ID
+ENV VITE_STACK_PUBLISHABLE_CLIENT_KEY=$VITE_STACK_PUBLISHABLE_CLIENT_KEY
+ENV VITE_API_URL=$VITE_API_URL
+
 # Build static assets
 RUN pnpm build
 
