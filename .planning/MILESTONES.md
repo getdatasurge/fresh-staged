@@ -1,5 +1,45 @@
 # Project Milestones: FreshTrack Pro Migration
 
+## v2.3 Deployment Orchestration (Shipped: 2026-01-29)
+
+**Delivered:** Complete one-script deployment automation with checkpoint-based recovery, multi-layer verification, secure credential display, and comprehensive documentation for self-service deployment.
+
+**Phases completed:** 34-37 (11 plans total)
+
+**Key accomplishments:**
+
+- Deployment Orchestration — Checkpoint-based deployment with resume capability via deploy-orchestrated.sh and deploy-lib.sh, 10-phase workflow integrating with existing preflight, prereq, and config libraries
+- Multi-Layer Verification — verify-deployment.sh validates 6 checks: service health endpoints (VERIFY-01), SSL certificates (VERIFY-02), dashboard accessibility (VERIFY-03), E2E pipeline (VERIFY-04), monitoring stack (VERIFY-05), and 3-consecutive-pass stability (VERIFY-06)
+- Secure Credential Display — post-deploy-lib.sh outputs credentials to `/dev/tty` only (prevents log capture), with masking showing first/last 4 characters for identification
+- Grafana Sensor Dashboard — 6-panel freshtrack-sensors.json dashboard auto-provisioned with active sensors, readings count, temperature timeseries, and battery gauge
+- Comprehensive Documentation — Prerequisites guide with VM specs/DNS/firewall checklists, step-by-step deployment walkthrough with 5-phase table, troubleshooting playbook with VERIFY-* error codes and quick reference table, and 720-line operations manual
+
+**Stats:**
+
+- 45 commits across v2.3 development
+- 4 phases, 11 plans
+- 2,836 lines added to scripts/ and docs/
+- Same day from milestone start to ship (2026-01-29)
+
+**Git range:** `39b73bb` → `a8da76b`
+
+**Requirements shipped:**
+
+- DEPLOY-01 through DEPLOY-05 (Deployment Orchestration)
+- VERIFY-01 through VERIFY-06 (Verification)
+- POST-01 through POST-05 (Post-Deployment Setup)
+- DOCS-01 through DOCS-04 (Documentation)
+
+**Tech debt carried forward:**
+
+- 53 test failures need mock updates (38 frontend, 15 backend pre-existing)
+- supabase-placeholder.ts remains (intentional graceful degradation)
+- SensorSimulatorPanel edge function call kept (admin testing tool)
+
+**What's next:** Next milestone planning — potential areas include mobile PWA improvements, advanced analytics, or new product capabilities
+
+---
+
 ## v2.2 Technical Debt & Stabilization (Shipped: 2026-01-29)
 
 **Delivered:** Complete elimination of Supabase edge function dependency, stabilized TTN integration on tRPC backend, error handling UI integration with graceful degradation, and tRPC pattern standardization across 165+ call sites.

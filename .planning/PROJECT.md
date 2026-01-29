@@ -136,39 +136,18 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Request body limits and timeouts (SEC-02) — v2.2
 - Dependency vulnerability audit complete (SEC-03) — v2.2
 
+**Deployment Orchestration (v2.3)**
+- Checkpoint-based deployment with resume capability (DEPLOY-01 to DEPLOY-05) — v2.3
+- Multi-layer verification: health, SSL, dashboard, E2E, monitoring, 3-pass (VERIFY-01 to VERIFY-06) — v2.3
+- Secure credential display via /dev/tty (POST-01 to POST-05) — v2.3
+- Grafana sensor metrics dashboard auto-provisioned — v2.3
+- Comprehensive documentation: prerequisites, walkthrough, troubleshooting, operations (DOCS-01 to DOCS-04) — v2.3
+
 ### Active
 
-<!-- Current milestone scope -->
+<!-- Current milestone scope — none until /gsd:new-milestone -->
 
-**v2.3 Deployment Orchestration**
-
-Deployment Orchestration:
-- [ ] DEPLOY-01: Script integrates with existing deploy.sh (no code duplication)
-- [ ] DEPLOY-02: Script creates checkpoint markers at each deployment phase
-- [ ] DEPLOY-03: Script enables resume from failure point using state tracking
-- [ ] DEPLOY-04: Script calls Docker Compose with production overlay configuration
-- [ ] DEPLOY-05: Script waits for all services to reach healthy state before proceeding
-
-Verification:
-- [ ] VERIFY-01: Script validates all service health endpoints return 200 OK
-- [ ] VERIFY-02: Script validates SSL certificate is valid and trusted
-- [ ] VERIFY-03: Script validates dashboard accessible via HTTPS in browser
-- [ ] VERIFY-04: Script runs integrated E2E test (sensor → storage → alert pipeline)
-- [ ] VERIFY-05: Script validates monitoring dashboards (Prometheus/Grafana) accessible
-- [ ] VERIFY-06: Script waits for 3 consecutive health check passes (not just 1)
-
-Post-Deployment:
-- [ ] POST-01: Script displays complete URL summary (dashboard, monitoring, API)
-- [ ] POST-02: Script displays credential summary securely (no passwords in plaintext logs)
-- [ ] POST-03: Script creates sample organization and site with demo data
-- [ ] POST-04: Script configures Grafana dashboards for sensor metrics
-- [ ] POST-05: Script displays next steps guide for first admin user setup
-
-Documentation:
-- [ ] DOCS-01: Prerequisites guide documents VM specs, DNS setup, firewall requirements
-- [ ] DOCS-02: Step-by-step walkthrough documents deployment process with examples
-- [ ] DOCS-03: Troubleshooting playbook documents common failures and fixes
-- [ ] DOCS-04: Post-deployment operations guide documents updates, backups, scaling
+*No active milestone. Run `/gsd:new-milestone` to start next milestone planning.*
 
 ### Out of Scope
 
@@ -182,24 +161,14 @@ Documentation:
 - Blue-green/canary deployments — Over-engineering for current scale
 - Data migration from Supabase — No access to production Supabase data
 
-## Current Milestone: v2.3 Deployment Orchestration
-
-**Goal:** Complete one-script deployment automation with orchestration, verification, post-deployment setup, and documentation — finishing the work started in v2.1.
-
-**Target features:**
-- Deployment orchestration with checkpoint-based resume
-- Multi-layer verification (health, SSL, E2E)
-- Post-deployment setup (sample data, Grafana dashboards)
-- Comprehensive documentation (prerequisites, walkthrough, troubleshooting, operations)
-
-## Current State (v2.2 Shipped)
+## Current State (v2.3 Shipped)
 
 **Codebase:**
 - Backend: ~55K LOC TypeScript (Fastify, Drizzle, PostgreSQL, tRPC, Socket.io, BullMQ)
 - Frontend: ~100K LOC TypeScript/TSX (React, TanStack Query, tRPC client)
 - Migration scripts: 1,354 LOC TypeScript
-- Test/deployment scripts: ~4,500 LOC Shell/TypeScript
-- 33 phases, 145 plans completed across v1.0, v1.1, v2.0, v2.1, and v2.2
+- Test/deployment scripts: ~7,000 LOC Shell/TypeScript (includes 2,800+ lines added in v2.3)
+- 37 phases, 167 plans completed across v1.0, v1.1, v2.0, v2.1, v2.2, and v2.3
 - 1,030 backend tests passing, 107 frontend tests passing
 
 **Infrastructure:**
@@ -215,7 +184,6 @@ Documentation:
 - 53 test failures need mock updates (38 frontend, 15 backend pre-existing)
 - supabase-placeholder.ts remains (intentional graceful degradation)
 - SensorSimulatorPanel edge function call kept (admin testing tool)
-- v2.1 Phases 25-26 deployment orchestration not completed
 
 **Known Issues:**
 - None critical — production ready
@@ -250,6 +218,9 @@ Documentation:
 | createTRPCContext over createTRPCReact | queryOptions pattern used across codebase | Good — 165+ call sites standardized |
 | MigrationErrorBoundary wraps children only | Preserve header/sidebar on page errors | Good — graceful degradation working |
 | supabase-placeholder with SupabaseMigrationError | Graceful degradation during migration | Good — user-friendly error messages |
+| Checkpoint-based deployment | Resume from failure point | Good — v2.3 deploy-orchestrated.sh working |
+| /dev/tty for credentials | Prevents log capture of secrets | Good — v2.3 secure display working |
+| 3-consecutive-pass health check | Prevents transient false positives | Good — v2.3 stability verification |
 
 ---
-*Last updated: 2026-01-29 after v2.3 milestone start*
+*Last updated: 2026-01-29 after v2.3 milestone shipped*
