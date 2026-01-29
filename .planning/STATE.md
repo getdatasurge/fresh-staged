@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.4 Tech Debt Cleanup — Phase 39 Dashboard Widget Migration COMPLETE
+**Current focus:** v2.4 Tech Debt Cleanup — Phase 40 Settings Components Migration IN PROGRESS
 
 ## Current Position
 
 Milestone: v2.4 Tech Debt Cleanup
-Phase: 39 of 43 (Dashboard Widget Migration) COMPLETE
-Plan: 03 of 3 complete
-Status: Phase complete
-Last activity: 2026-01-29 — Completed Phase 39 (all 9 widgets migrated to tRPC)
+Phase: 40 of 43 (Settings Components Migration)
+Plan: 02 of 3 complete
+Status: In progress
+Last activity: 2026-01-29 — Completed 40-02-PLAN.md (medium settings components)
 
-Progress: █████░░░░░ 46%
+Progress: █████░░░░░ 50%
 
 ## Milestones Shipped
 
@@ -36,7 +36,7 @@ Progress: █████░░░░░ 46%
 |-------|------|--------------|--------|
 | 38 | Test Infrastructure | TEST-01, TEST-02, TEST-03 | COMPLETE (3 plans) |
 | 39 | Dashboard Widget Migration | WIDGET-01-09 | COMPLETE (3 plans) |
-| 40 | Settings Components Migration | SETTINGS-01-07 | Not started |
+| 40 | Settings Components Migration | SETTINGS-01-07 | In progress (2/3 plans) |
 | 41 | Pages Migration | PAGE-01-07 | Not started |
 | 42 | Admin/Debug + Other Components | ADMIN-01-04, COMP-01-04 | Not started |
 | 43 | Cleanup & Verification | CLEAN-01-03 | Not started |
@@ -59,6 +59,8 @@ Progress: █████░░░░░ 46%
 | DEC-39-02-B | Replace useEffect+setState with useQuery+useMemo | Declarative data fetching pattern in UnitComplianceScoreWidget |
 | DEC-39-03-A | Event log procedures in readings router | Readings router already handles manual logs and door events |
 | DEC-39-03-B | Profile join in listEventLogs | Single query with join vs multiple queries |
+| DEC-40-02-A | WebhookStatusCard uses localStorage for config state | telnyx_webhook_config table does not exist in drizzle schema |
+| DEC-40-02-B | AlertRulesScopedEditor filters units client-side | siteId available directly on listByOrg response |
 
 ### Blockers/Concerns
 
@@ -70,7 +72,7 @@ Progress: █████░░░░░ 46%
 
 ## Session Continuity
 
-Last session: 2026-01-29T14:15:00Z
-Stopped at: Completed Phase 39 Dashboard Widget Migration
+Last session: 2026-01-29T14:47:00Z
+Stopped at: Completed 40-02-PLAN.md (medium settings components)
 Resume file: None
-Next action: Plan and execute Phase 40 Settings Components Migration
+Next action: Execute 40-03-PLAN.md (complex settings components)
