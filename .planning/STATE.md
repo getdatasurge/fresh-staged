@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Milestone: v2.4 Tech Debt Cleanup
-Phase: 40 of 43 (Settings Components Migration)
-Plan: 02 of 3 complete
+Phase: 41 of 43 (Pages Migration)
+Plan: 01 of 3 complete
 Status: In progress
-Last activity: 2026-01-29 — Completed 40-02-PLAN.md (medium settings components)
+Last activity: 2026-01-29 — Completed 41-01-PLAN.md (simple pages migration)
 
-Progress: █████░░░░░ 50%
+Progress: █████░░░░░ 55%
 
 ## Milestones Shipped
 
@@ -36,8 +36,8 @@ Progress: █████░░░░░ 50%
 |-------|------|--------------|--------|
 | 38 | Test Infrastructure | TEST-01, TEST-02, TEST-03 | COMPLETE (3 plans) |
 | 39 | Dashboard Widget Migration | WIDGET-01-09 | COMPLETE (3 plans) |
-| 40 | Settings Components Migration | SETTINGS-01-07 | In progress (2/3 plans) |
-| 41 | Pages Migration | PAGE-01-07 | Not started |
+| 40 | Settings Components Migration | SETTINGS-01-07 | COMPLETE (3 plans) |
+| 41 | Pages Migration | PAGE-01-07 | In progress (1/3 plans) |
 | 42 | Admin/Debug + Other Components | ADMIN-01-04, COMP-01-04 | Not started |
 | 43 | Cleanup & Verification | CLEAN-01-03 | Not started |
 
@@ -61,6 +61,7 @@ Progress: █████░░░░░ 50%
 | DEC-39-03-B | Profile join in listEventLogs | Single query with join vs multiple queries |
 | DEC-40-02-A | WebhookStatusCard uses localStorage for config state | telnyx_webhook_config table does not exist in drizzle schema |
 | DEC-40-02-B | AlertRulesScopedEditor filters units client-side | siteId available directly on listByOrg response |
+| DEC-41-01-A | Use useMemo for derived state instead of useState+useEffect | Cleaner reactive data flow for filtering and transformations |
 
 ### Blockers/Concerns
 
@@ -72,7 +73,7 @@ Progress: █████░░░░░ 50%
 
 ## Session Continuity
 
-Last session: 2026-01-29T14:47:00Z
-Stopped at: Completed 40-02-PLAN.md (medium settings components)
+Last session: 2026-01-29T15:10:00Z
+Stopped at: Completed 41-01-PLAN.md (simple pages migration)
 Resume file: None
-Next action: Execute 40-03-PLAN.md (complex settings components)
+Next action: Execute 41-02-PLAN.md (medium pages migration)
