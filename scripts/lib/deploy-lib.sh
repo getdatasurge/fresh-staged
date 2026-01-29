@@ -22,7 +22,16 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/preflight-lib.sh"
 
-LIB_VERSION="1.0.0"
+LIB_VERSION="1.1.0"
+
+# ===========================================
+# Health Check Configuration
+# ===========================================
+HEALTH_CHECK_URL="${HEALTH_CHECK_URL:-http://localhost:3000/health}"
+HEALTH_CHECK_INTERVAL="${HEALTH_CHECK_INTERVAL:-5}"      # Seconds between checks
+HEALTH_CHECK_TIMEOUT="${HEALTH_CHECK_TIMEOUT:-10}"       # Curl timeout per check
+HEALTH_CHECK_MAX_ATTEMPTS="${HEALTH_CHECK_MAX_ATTEMPTS:-60}"  # Max attempts (5 min total)
+HEALTH_CONSECUTIVE_REQUIRED="${HEALTH_CONSECUTIVE_REQUIRED:-3}"  # Consecutive passes needed
 
 # ===========================================
 # Deployment Phase Constants
@@ -213,6 +222,100 @@ show_deployment_status() {
 }
 
 # ===========================================
+# Health Check Functions
+# ===========================================
+
+# Check if a specific service container is healthy
+# Args: $1 = service name (e.g., "backend", "postgres")
+# Returns: 0 if healthy, 1 if not
+check_service_health() {
+  local service="$1"
+  local status
+
+  status=$(docker compose -f docker-compose.yml -f compose.production.yaml ps --format json "$service" 2>/dev/null | jq -r '.[0].Health // "none"' 2>/dev/null) || status="unknown"
+
+  case "$status" in
+    healthy)
+      return 0
+      ;;
+    starting)
+      return 1
+      ;;
+    unhealthy|none|unknown)
+      return 1
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+# Wait for all services to be healthy with 3-consecutive-pass requirement
+# Returns: 0 when healthy, 1 on timeout
+# Satisfies: DEPLOY-05
+wait_for_healthy_services() {
+  local consecutive_passes=0
+  local total_attempts=0
+  local last_response=""
+
+  step "Waiting for services to be healthy..."
+  echo "  Checking: $HEALTH_CHECK_URL"
+  echo "  Requirement: $HEALTH_CONSECUTIVE_REQUIRED consecutive passes"
+  echo "  Max attempts: $HEALTH_CHECK_MAX_ATTEMPTS ($(( HEALTH_CHECK_MAX_ATTEMPTS * HEALTH_CHECK_INTERVAL / 60 )) minutes)"
+  echo ""
+
+  while [[ $total_attempts -lt $HEALTH_CHECK_MAX_ATTEMPTS ]]; do
+    total_attempts=$((total_attempts + 1))
+
+    # Attempt health check
+    local http_code
+    local response
+    response=$(curl -s --max-time "$HEALTH_CHECK_TIMEOUT" "$HEALTH_CHECK_URL" 2>/dev/null) || response=""
+    http_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$HEALTH_CHECK_TIMEOUT" "$HEALTH_CHECK_URL" 2>/dev/null) || http_code="000"
+
+    # Check for healthy response
+    if [[ "$http_code" == "200" ]] && echo "$response" | grep -q '"status":"healthy"'; then
+      consecutive_passes=$((consecutive_passes + 1))
+      echo -e "  [${GREEN}PASS${NC}] Attempt $total_attempts: HTTP $http_code - consecutive: $consecutive_passes/$HEALTH_CONSECUTIVE_REQUIRED"
+
+      if [[ $consecutive_passes -ge $HEALTH_CONSECUTIVE_REQUIRED ]]; then
+        echo ""
+        success "Services healthy after $consecutive_passes consecutive passes!"
+        return 0
+      fi
+    else
+      # Reset consecutive counter on failure
+      if [[ $consecutive_passes -gt 0 ]]; then
+        warning "Consecutive pass streak reset (was $consecutive_passes)"
+      fi
+      consecutive_passes=0
+
+      if [[ "$http_code" == "000" ]]; then
+        echo -e "  [${RED}FAIL${NC}] Attempt $total_attempts: Connection failed"
+      else
+        echo -e "  [${RED}FAIL${NC}] Attempt $total_attempts: HTTP $http_code"
+      fi
+    fi
+
+    # Wait before next attempt
+    sleep "$HEALTH_CHECK_INTERVAL"
+  done
+
+  # Timeout reached
+  echo ""
+  error "Health check timeout after $total_attempts attempts"
+  echo ""
+  echo "Services did not achieve $HEALTH_CONSECUTIVE_REQUIRED consecutive healthy responses."
+  echo ""
+  echo "Troubleshooting:"
+  echo "  1. Check backend logs: docker compose logs backend"
+  echo "  2. Check service status: docker compose ps"
+  echo "  3. Test health endpoint: curl -v $HEALTH_CHECK_URL"
+  echo ""
+  return 1
+}
+
+# ===========================================
 # Self-test when run directly
 # ===========================================
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
@@ -358,6 +461,52 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     echo "PASS: DEPLOY_PHASES starts with 'preflight' and ends with 'cleanup'"
   else
     echo "FAIL: DEPLOY_PHASES order incorrect"
+    rm -rf "$STATE_DIR"
+    exit 1
+  fi
+  echo ""
+
+  # Test 7: Health check configuration defaults
+  echo "Testing health check configuration defaults..."
+  if [[ "$HEALTH_CONSECUTIVE_REQUIRED" == "3" ]]; then
+    echo "PASS: HEALTH_CONSECUTIVE_REQUIRED defaults to 3"
+  else
+    echo "FAIL: HEALTH_CONSECUTIVE_REQUIRED should default to 3, got: $HEALTH_CONSECUTIVE_REQUIRED"
+    rm -rf "$STATE_DIR"
+    exit 1
+  fi
+
+  if [[ "$HEALTH_CHECK_INTERVAL" == "5" ]]; then
+    echo "PASS: HEALTH_CHECK_INTERVAL defaults to 5"
+  else
+    echo "FAIL: HEALTH_CHECK_INTERVAL should default to 5, got: $HEALTH_CHECK_INTERVAL"
+    rm -rf "$STATE_DIR"
+    exit 1
+  fi
+
+  if [[ "$HEALTH_CHECK_URL" == "http://localhost:3000/health" ]]; then
+    echo "PASS: HEALTH_CHECK_URL defaults to http://localhost:3000/health"
+  else
+    echo "FAIL: HEALTH_CHECK_URL should default to http://localhost:3000/health, got: $HEALTH_CHECK_URL"
+    rm -rf "$STATE_DIR"
+    exit 1
+  fi
+  echo ""
+
+  # Test 8: Health function definitions
+  echo "Testing health function definitions..."
+  if type wait_for_healthy_services &>/dev/null; then
+    echo "PASS: wait_for_healthy_services function is defined"
+  else
+    echo "FAIL: wait_for_healthy_services function not defined"
+    rm -rf "$STATE_DIR"
+    exit 1
+  fi
+
+  if type check_service_health &>/dev/null; then
+    echo "PASS: check_service_health function is defined"
+  else
+    echo "FAIL: check_service_health function not defined"
     rm -rf "$STATE_DIR"
     exit 1
   fi
