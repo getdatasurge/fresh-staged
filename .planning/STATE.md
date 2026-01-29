@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 
 Milestone: v2.2 Technical Debt & Stabilization
 Phase: 33 of 33 (Error Handling UI Integration)
-Plan: 1 of 3 complete
+Plan: 2 of 3 complete
 Status: In progress
-Last activity: 2026-01-29 - Completed 33-01-PLAN.md (error handling infrastructure)
+Last activity: 2026-01-29 - Completed 33-02-PLAN.md (error-wrapped UI components)
 
 Progress: ████████░░ 97% (32/33 phases)
 
@@ -24,18 +24,17 @@ Progress: ████████░░ 97% (32/33 phases)
 - [x] **30. System Hardening**: Complete. All 4 plans executed and verified.
 - [x] **31. TTN Provisioning UI Migration**: VERIFIED. All tRPC procedures + frontend migration complete.
 - [x] **32. Remaining Edge Function Migration**: VERIFIED. All 6 plans + gap closure, 13/13 must-haves passed.
-- [~] **33. Error Handling UI Integration**: In progress. Plan 1/3 complete (error infrastructure).
+- [~] **33. Error Handling UI Integration**: In progress. Plan 2/3 complete (error infrastructure + UI components).
 
 ## Recent Achievements
-- **Phase 33 Plan 01 Complete** - Error handling infrastructure created
-- Extended errorHandler.ts with isMigrationError/getMigrationErrorMessage
-- Created MigrationErrorBoundary and MigrationErrorFallback components
-- Migration errors now checked first in handleError() before permission errors
+- **Phase 33 Plan 02 Complete** - Migration error handling wired to 6 UI components
+- LogTempModal, NotificationDropdown, SuperAdminContext, RBACDebugPanel, Onboarding, SensorSimulatorPanel updated
+- Graceful degradation with user-friendly "temporarily unavailable" messaging
+- User verified on /settings - no crashes, migration errors handled correctly
 
 ## Next Steps
-1. Execute 33-02-PLAN.md (Error-wrapped UI components)
-2. Execute 33-03-PLAN.md (Per-feature error state)
-3. Audit milestone completion (`/gsd:audit-milestone`)
+1. Execute 33-03-PLAN.md (Per-feature error state with manual retry)
+2. Audit milestone completion (`/gsd:audit-milestone`)
 
 ## Decisions
 | Phase | Decision | Rationale |
@@ -69,6 +68,8 @@ Progress: ████████░░ 97% (32/33 phases)
 | 33-01 | Check migration errors FIRST in handleError before permission errors | Ensure migration-specific messages appear for Supabase placeholder errors |
 | 33-01 | Migration toasts use 5s duration | Longer reading time for migration messages |
 | 33-01 | Non-migration errors re-thrown to parent boundaries | MigrationErrorBoundary only handles migration-specific errors |
+| 33-02 | Background operations fail silently with console.warn | User experience - don't interrupt with toasts for non-user-initiated operations |
+| 33-02 | Feature-specific migration messages per operation | Context helps users understand scope of unavailability |
 
 ## Blockers/Concerns Carried Forward
 - Placeholder TTN/layout/restore/health flows need backend replacements.
@@ -77,6 +78,6 @@ Progress: ████████░░ 97% (32/33 phases)
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 33-01-PLAN.md (error handling infrastructure)
+Stopped at: Completed 33-02-PLAN.md (error-wrapped UI components)
 Resume file: None
-Next action: Execute 33-02-PLAN.md
+Next action: Execute 33-03-PLAN.md
