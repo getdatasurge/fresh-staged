@@ -13,7 +13,7 @@ Milestone: v2.2 Technical Debt & Stabilization
 Phase: 32 of 33 (Remaining Edge Function Migration)
 Plan: 3 of 4 complete
 Status: In progress
-Last activity: 2026-01-29 - Completed 32-03-PLAN.md (Telnyx tRPC migration)
+Last activity: 2026-01-29 - Completed 32-01-PLAN.md (TTN domain tRPC migration)
 
 Progress: ████████░░ 85% (31.75/33 phases)
 
@@ -27,13 +27,13 @@ Progress: ████████░░ 85% (31.75/33 phases)
 - [ ] **33. Error Handling UI Integration**: Pending. Wire SupabaseMigrationError to UI.
 
 ## Recent Achievements
-- **Phase 32 Plan 03 Complete** - Telnyx tRPC migration
-- Created telnyx.router.ts with 3 procedures (verificationStatus, configureWebhook, verifyPublicAsset)
-- Migrated TollFreeVerificationCard, WebhookStatusCard, OptInImageStatusCard, UploadTelnyxImage to tRPC
-- Removed 4 supabase.functions.invoke calls for Telnyx edge functions
+- **Phase 32 Plan 01 Complete** - TTN domain tRPC migration
+- Migrated EmulatorTTNRoutingCard to tRPC (2 edge function calls removed)
+- Migrated Onboarding page to tRPC (2 edge function calls removed)
+- Used existing ttnSettings router procedures (get, test, getStatus)
 
 ## Next Steps
-1. Execute Phase 32 Plan 04
+1. Execute Phase 32 Plan 04: Remaining Edge Function Cleanup
 2. Plan and execute Phase 33: Error Handling UI Integration
 3. Re-audit milestone with `/gsd:audit-milestone`
 4. Complete milestone when audit passes
@@ -60,6 +60,8 @@ Progress: ████████░░ 85% (31.75/33 phases)
 | 32-03 | verificationStatus uses publicProcedure | Read-only status check, no auth needed |
 | 32-03 | configureWebhook uses orgProcedure with admin/owner check | Webhook configuration requires elevated permissions |
 | 32-03 | verifyPublicAsset uses publicProcedure | Public URL HEAD check, no auth needed |
+| 32-01 | Database trigger handles initial TTN provisioning | Frontend only polls for status, trigger queues job on org creation |
+| 32-01 | Interval-based polling with cleanup for Onboarding status | Consistent with other polling patterns, prevents memory leaks |
 
 ## Blockers/Concerns Carried Forward
 - Placeholder TTN/layout/restore/health flows need backend replacements.
@@ -68,6 +70,6 @@ Progress: ████████░░ 85% (31.75/33 phases)
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Completed 32-03-PLAN.md
+Stopped at: Completed 32-01-PLAN.md
 Resume file: None
-Next action: Execute 32-04-PLAN.md (if exists)
+Next action: Execute 32-04-PLAN.md
