@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@stackframe/react';
-import { supabase } from '@/lib/supabase-placeholder';
+import { supabase, isSupabaseMigrationError } from '@/lib/supabase-placeholder';
 import { useSuperAdmin, RoleLoadStatus } from '@/contexts/SuperAdminContext';
 import { Shield, Database, Clock, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -61,14 +61,22 @@ export function RBACDebugPanel() {
     try {
       const { data, error } = await supabase.rpc('is_current_user_super_admin');
       if (error) {
-        setDirectRpcError(error.message);
+        if (isSupabaseMigrationError(error)) {
+          setDirectRpcError('RPC unavailable during migration');
+        } else {
+          setDirectRpcError(error.message);
+        }
         setDirectRpcResult(null);
       } else {
         setDirectRpcResult(data);
         setDirectRpcError(null);
       }
     } catch (err) {
-      setDirectRpcError(err instanceof Error ? err.message : 'Unknown error');
+      if (isSupabaseMigrationError(err)) {
+        setDirectRpcError('RPC unavailable during migration');
+      } else {
+        setDirectRpcError(err instanceof Error ? err.message : 'Unknown error');
+      }
     }
 
     // Count platform_roles (will fail if RLS blocks, which is expected for non-admins)

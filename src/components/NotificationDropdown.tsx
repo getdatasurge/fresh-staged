@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@stackframe/react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { supabase, isSupabaseMigrationError } from "@/lib/supabase-placeholder";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -162,6 +162,10 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
       setNotifications(mappedNotifications);
     } catch (error) {
       console.error("Error loading notifications:", error);
+      if (isSupabaseMigrationError(error)) {
+        // Don't show toast for background loading - just log and show empty
+        console.warn("[NotificationDropdown] Notifications unavailable during migration");
+      }
       setNotifications([]);
     }
     setIsLoading(false);
@@ -201,7 +205,10 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
 
       return false;
     } catch (error) {
-      console.error("Error checking notification policy:", error);
+      // Silently fail for migration errors - notification policy not available
+      if (!isSupabaseMigrationError(error)) {
+        console.error("Error checking notification policy:", error);
+      }
       return false;
     }
   };

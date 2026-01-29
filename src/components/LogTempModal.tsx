@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { supabase, isSupabaseMigrationError } from "@/lib/supabase-placeholder";
+import { handleError } from "@/lib/errorHandler";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -163,6 +164,19 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
       onSuccess?.();
     } catch (error) {
       console.error("Error saving log:", error);
+
+      // Show migration-specific message instead of silently falling back to offline
+      if (isSupabaseMigrationError(error)) {
+        handleError(error, "save temperature log");
+        // Still save offline as fallback
+        await saveLogOffline(logEntry);
+        onOpenChange(false);
+        onSuccess?.();
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Original fallback for network errors
       await saveLogOffline(logEntry);
       toast({
         title: "Saved offline",

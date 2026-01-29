@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { supabase, isSupabaseMigrationError } from "@/lib/supabase-placeholder";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -260,7 +260,11 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
       ]);
     } catch (error: unknown) {
       console.error("Simulator error:", error);
-      toast.error(error instanceof Error ? error.message : "Simulator action failed");
+      if (isSupabaseMigrationError(error)) {
+        toast.error("Sensor simulator unavailable during migration");
+      } else {
+        toast.error(error instanceof Error ? error.message : "Simulator action failed");
+      }
     }
     setLoadingAction(null);
   };

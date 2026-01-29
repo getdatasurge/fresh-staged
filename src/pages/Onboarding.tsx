@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@stackframe/react";
-import { supabase } from "@/lib/supabase-placeholder";
+import { supabase, isSupabaseMigrationError } from "@/lib/supabase-placeholder";
 import { useTRPC } from "@/lib/trpc";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -182,6 +182,9 @@ const Onboarding = () => {
         }
       } catch (err) {
         console.error("Error checking org:", err);
+        if (isSupabaseMigrationError(err)) {
+          console.warn("[Onboarding] Profile check unavailable during migration");
+        }
         setIsCheckingOrg(false);
       }
     };
@@ -413,12 +416,21 @@ const Onboarding = () => {
         }
       }
     } catch (err: unknown) {
-      // Network/unexpected errors - never show "slug taken" for these
-      toast({ 
-        title: "Could not create organization", 
-        description: "A server error occurred. Please try again.", 
-        variant: "destructive" 
-      });
+      // Check for migration error
+      if (isSupabaseMigrationError(err)) {
+        toast({
+          title: "Feature temporarily unavailable",
+          description: "Organization creation is being migrated. Please try again later.",
+          variant: "destructive"
+        });
+      } else {
+        // Network/unexpected errors - never show "slug taken" for these
+        toast({
+          title: "Could not create organization",
+          description: "A server error occurred. Please try again.",
+          variant: "destructive"
+        });
+      }
     }
     setIsLoading(false);
   };
@@ -482,8 +494,12 @@ const Onboarding = () => {
       setCreatedIds((prev) => ({ ...prev, siteId }));
       toast({ title: "Site created!" });
       setCurrentStep("area");
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } catch (error: unknown) {
+      if (isSupabaseMigrationError(error)) {
+        toast({ title: "Feature temporarily unavailable", description: "Site creation is being migrated.", variant: "destructive" });
+      } else {
+        toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
+      }
     }
     setIsLoading(false);
   };
@@ -522,8 +538,12 @@ const Onboarding = () => {
       setCreatedIds((prev) => ({ ...prev, areaId }));
       toast({ title: "Area created!" });
       setCurrentStep("unit");
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } catch (error: unknown) {
+      if (isSupabaseMigrationError(error)) {
+        toast({ title: "Feature temporarily unavailable", description: "Area creation is being migrated.", variant: "destructive" });
+      } else {
+        toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
+      }
     }
     setIsLoading(false);
   };
@@ -555,8 +575,12 @@ const Onboarding = () => {
       setCreatedIds((prev) => ({ ...prev, unitId }));
       toast({ title: "Unit created!" });
       setCurrentStep("gateway");
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } catch (error: unknown) {
+      if (isSupabaseMigrationError(error)) {
+        toast({ title: "Feature temporarily unavailable", description: "Unit creation is being migrated.", variant: "destructive" });
+      } else {
+        toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
+      }
     }
     setIsLoading(false);
   };
@@ -599,8 +623,12 @@ const Onboarding = () => {
       setCreatedIds((prev) => ({ ...prev, gatewayId: gateway.id }));
       toast({ title: "Gateway registered!" });
       setCurrentStep("complete");
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } catch (error: unknown) {
+      if (isSupabaseMigrationError(error)) {
+        toast({ title: "Feature temporarily unavailable", description: "Gateway registration is being migrated.", variant: "destructive" });
+      } else {
+        toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
+      }
     }
     setIsLoading(false);
   };
