@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.3 Deployment Orchestration — Phase 36 complete
+**Current focus:** v2.3 Deployment Orchestration — Phase 37 in progress
 
 ## Current Position
 
 Milestone: v2.3 Deployment Orchestration
-Phase: 36 - Post-Deployment Setup
-Plan: 03 of 3 complete
-Status: Phase complete
-Last activity: 2026-01-29 — Completed 36-03-PLAN.md (post-deploy.sh orchestration)
+Phase: 37 - Documentation
+Plan: 01 of 4 complete
+Status: In progress
+Last activity: 2026-01-29 — Completed 37-01-PLAN.md (prerequisites documentation)
 
-Progress: [=======---] 75% (3/4 phases complete)
+Progress: [========--] 80% (3.25/4 phases complete)
 
 ## v2.3 Phase Overview
 
@@ -24,7 +24,7 @@ Progress: [=======---] 75% (3/4 phases complete)
 | 34 | Deployment Orchestration | DEPLOY-01 to DEPLOY-05 | Complete (2/2 plans) |
 | 35 | Verification | VERIFY-01 to VERIFY-06 | Complete (2/2 plans) |
 | 36 | Post-Deployment Setup | POST-01 to POST-05 | Complete (3/3 plans) |
-| 37 | Documentation | DOCS-01 to DOCS-04 | Ready |
+| 37 | Documentation | DOCS-01 to DOCS-04 | In progress (1/4 plans) |
 
 ## Milestones Shipped
 
@@ -59,6 +59,8 @@ Progress: [=======---] 75% (3/4 phases complete)
 | 36-01 | Mask secrets showing first/last 4 chars | Allows identification without full exposure |
 | 36-03 | post-deploy.sh follows verify-deployment.sh pattern | Consistent domain loading from config.env or CLI arg |
 | 36-03 | pg_isready loop with 30s timeout | Robust database readiness waiting before seeding |
+| 37-01 | Added notes column to server requirements | Links preflight validation context directly in requirements |
+| 37-01 | deploy-guide.md as quick reference | Avoids duplication by linking to SELFHOSTED_DEPLOYMENT.md for details |
 
 ## Tech Debt Carried Forward
 
@@ -66,22 +68,24 @@ Progress: [=======---] 75% (3/4 phases complete)
 - supabase-placeholder.ts remains (intentional graceful degradation)
 - SensorSimulatorPanel edge function call kept (admin testing tool)
 
-## Context for Phase 37 (Next)
+## Context for Phase 37 (Current)
 
-**What Phase 36 built (complete):**
-- scripts/lib/post-deploy-lib.sh (credential display library)
-- display_credential_summary() with /dev/tty output for security
-- display_next_steps() with 5-step onboarding guide
-- docker/grafana/dashboards/freshtrack-sensors.json (6-panel dashboard)
-- scripts/post-deploy.sh (POST-01 through POST-05 orchestration)
-- Enhanced scripts/seed-demo-data.sh with database readiness check
+**What 37-01 built:**
+- Updated docs/SELFHOSTED_DEPLOYMENT.md with comprehensive prerequisites:
+  - Server requirements table with preflight validation notes
+  - External services checklist with specific credential fields
+  - DNS records table with Required/Purpose columns
+  - Firewall Requirements subsection
+  - Pre-Deployment Checklist
+- Updated docs/deployment/deploy-guide.md as quick reference with cross-links
+- All script references updated from deploy-selfhosted.sh to deploy-automated.sh
 
-**Deployment workflow now complete:**
-- preflight.sh -> deploy-selfhosted.sh -> verify-deployment.sh -> post-deploy.sh
+**Deployment workflow documentation updated:**
+- preflight.sh -> deploy-automated.sh -> verify-deployment.sh -> post-deploy.sh
 
 ## Session Continuity
 
-Last session: 2026-01-29 11:12 UTC
-Stopped at: Completed 36-03-PLAN.md
+Last session: 2026-01-29 11:50 UTC
+Stopped at: Completed 37-01-PLAN.md
 Resume file: None
-Next action: Execute Phase 37 (Documentation)
+Next action: Execute 37-02-PLAN.md (Core Workflow Documentation)
