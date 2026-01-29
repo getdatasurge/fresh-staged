@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 ## Current Position
 
 Milestone: v2.2 Technical Debt & Stabilization
-Phase: 32 of 33 (Remaining Edge Function Migration)
-Plan: 6 of 6 complete (gap closure plans)
-Status: Phase 32 VERIFIED - all 13/13 must-haves passed
-Last activity: 2026-01-29 - Phase 32 verification passed (gap closure complete)
+Phase: 33 of 33 (Error Handling UI Integration)
+Plan: 1 of 3 complete
+Status: In progress
+Last activity: 2026-01-29 - Completed 33-01-PLAN.md (error handling infrastructure)
 
 Progress: ████████░░ 97% (32/33 phases)
 
@@ -24,18 +24,17 @@ Progress: ████████░░ 97% (32/33 phases)
 - [x] **30. System Hardening**: Complete. All 4 plans executed and verified.
 - [x] **31. TTN Provisioning UI Migration**: VERIFIED. All tRPC procedures + frontend migration complete.
 - [x] **32. Remaining Edge Function Migration**: VERIFIED. All 6 plans + gap closure, 13/13 must-haves passed.
-- [ ] **33. Error Handling UI Integration**: Pending. Wire SupabaseMigrationError to UI.
+- [~] **33. Error Handling UI Integration**: In progress. Plan 1/3 complete (error infrastructure).
 
 ## Recent Achievements
-- **Phase 32 Verified (13/13)** - All edge function migrations complete
-- Real database queries in reports.export (sensorReadings, manualTemperatureLogs)
-- Real Telnyx API calls for verificationStatus and configureWebhook
-- Migrated 15 edge function calls across 12 files to tRPC
-- Created reports.router.ts (298 lines) and enhanced telnyx.router.ts (279 lines)
+- **Phase 33 Plan 01 Complete** - Error handling infrastructure created
+- Extended errorHandler.ts with isMigrationError/getMigrationErrorMessage
+- Created MigrationErrorBoundary and MigrationErrorFallback components
+- Migration errors now checked first in handleError() before permission errors
 
 ## Next Steps
-1. Plan Phase 33: Error Handling UI Integration (`/gsd:plan-phase 33`)
-2. Execute Phase 33
+1. Execute 33-02-PLAN.md (Error-wrapped UI components)
+2. Execute 33-03-PLAN.md (Per-feature error state)
 3. Audit milestone completion (`/gsd:audit-milestone`)
 
 ## Decisions
@@ -67,6 +66,9 @@ Progress: ████████░░ 97% (32/33 phases)
 | 32-05 | Filter exceptions in-memory after DB query | Avoid complex SQL CAST for numeric comparison |
 | 32-06 | Use messagingTollfree.verification.requests.list for toll-free status | Telnyx SDK pattern for verification lookup by phone number |
 | 32-06 | Map Telnyx statuses to simplified enum (approved/pending/rejected/unknown) | UI needs simple status categories, not all Telnyx variations |
+| 33-01 | Check migration errors FIRST in handleError before permission errors | Ensure migration-specific messages appear for Supabase placeholder errors |
+| 33-01 | Migration toasts use 5s duration | Longer reading time for migration messages |
+| 33-01 | Non-migration errors re-thrown to parent boundaries | MigrationErrorBoundary only handles migration-specific errors |
 
 ## Blockers/Concerns Carried Forward
 - Placeholder TTN/layout/restore/health flows need backend replacements.
@@ -75,6 +77,6 @@ Progress: ████████░░ 97% (32/33 phases)
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Phase 32 verified (13/13 must-haves passed)
+Stopped at: Completed 33-01-PLAN.md (error handling infrastructure)
 Resume file: None
-Next action: Plan Phase 33 (Error Handling UI Integration)
+Next action: Execute 33-02-PLAN.md
