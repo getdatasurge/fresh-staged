@@ -1,5 +1,6 @@
 import BrandedLogo from "@/components/BrandedLogo"
 import { ConnectionStatus } from "@/components/common/ConnectionStatus"
+import { MigrationErrorBoundary } from "@/components/errors/MigrationErrorBoundary"
 import NotificationDropdown from "@/components/NotificationDropdown"
 import { SupportDiagnosticsPanel } from "@/components/platform/SupportDiagnosticsPanel"
 import { ImpersonationBanner, SupportModeBanner } from "@/components/platform/SupportModeBanner"
@@ -15,7 +16,7 @@ import { clearOfflineStorage } from "@/lib/offlineStorage"
 import { useTRPC } from "@/lib/trpc"
 import { cn } from "@/lib/utils"
 import { useUser } from "@stackframe/react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   Building2,
   ChevronLeft,
@@ -63,9 +64,11 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
   const { effectiveOrgId, effectiveOrgName, isImpersonating, isInitialized, impersonationChecked } = useEffectiveIdentity();
   const trpc = useTRPC();
   
-  const alertsQuery = trpc.alerts.listByOrg.useQuery(
-    { organizationId: effectiveOrgId || "", status: "active", limit: 0 },
-    { enabled: !!effectiveOrgId }
+  const alertsQuery = useQuery(
+    trpc.alerts.listByOrg.queryOptions(
+      { organizationId: effectiveOrgId || "", status: "active", limit: 0 },
+      { enabled: !!effectiveOrgId }
+    )
   );
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -437,7 +440,9 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
             {title && (
               <h1 className="text-2xl font-bold text-foreground mb-6">{title}</h1>
             )}
-            {children}
+            <MigrationErrorBoundary>
+              {children}
+            </MigrationErrorBoundary>
           </div>
         </main>
         
