@@ -1,26 +1,17 @@
-# Deployment Guide: FreshTrack Pro v2.1
+# Deployment Quick Reference
 
-## Overview
-
-This guide covers the automated deployment of FreshTrack Pro on a fresh Ubuntu server.
-The automated script handles:
-- System verification (RAM, Disk, OS)
-- Dependency installation (Docker, fail2ban)
-- Interactive configuration (Domain, Secrets)
-- SSL provisioning (Caddy)
-- Service orchestration
+Quick start guide for deploying FreshTrack Pro. For detailed documentation, see [SELFHOSTED_DEPLOYMENT.md](../SELFHOSTED_DEPLOYMENT.md).
 
 ## Prerequisites
 
-- **OS:** Ubuntu 22.04 LTS or 24.04 LTS
-- **Hardware:**
-  - CPU: 2+ cores highly recommended
-  - RAM: 2GB (4GB recommended)
-  - Disk: 10GB free
-- **Network:**
-  - Ports 80 (HTTP) and 443 (HTTPS) open
-  - Port 22 (SSH) open
-- **Domain:** A valid domain name pointing to your server's IP (A Record)
+Before deploying, complete the full prerequisites checklist:
+**[See SELFHOSTED_DEPLOYMENT.md Prerequisites](../SELFHOSTED_DEPLOYMENT.md#prerequisites)**
+
+**Quick requirements:**
+- Ubuntu 22.04/24.04 LTS
+- 4+ vCPU, 8+ GB RAM, 100+ GB SSD
+- Domain with DNS pointing to server
+- Stack Auth account credentials
 
 ## Quick Start
 
@@ -38,43 +29,48 @@ The automated script handles:
 
 3. **Follow the prompts:**
    - Enter your domain name (e.g., `app.freshtrack.io`)
-   - Enter admin email (for SSL)
-   - Configure Stack Auth credentials (if not already set)
+   - Enter admin email (for SSL certificates)
+   - Configure Stack Auth credentials
 
-## The Deployment Process
-
-1. **Pre-flight Checks:** Validates your system meets requirements.
-2. **Prerequisites:** Installs Docker Engine, UFW firewall, and utilities.
-3. **Configuration:** Generates secure passwords and `.env.production`.
-4. **Deployment:** Pulls images, builds containers, and starts services.
-5. **Verification:** Waits for all services to be healthy.
+> **Note:** The script is checkpoint-based and will resume from the last successful step if interrupted.
 
 ## Post-Deployment
 
-Once complete, access your dashboard at: `https://your-domain.com`
+After deployment completes:
 
-**Verify Installation:**
-```bash
-./scripts/verify-deployment.sh your-domain.com
-```
+1. **Verify installation:**
+   ```bash
+   ./scripts/verify-deployment.sh your-domain.com
+   ```
 
-**Seed Demo Data (Optional):**
+2. **Complete setup:**
+   ```bash
+   ./scripts/post-deploy.sh your-domain.com
+   ```
+
+3. **Access dashboard:** `https://your-domain.com`
+
+**Optional - Seed Demo Data:**
 ```bash
 ./scripts/seed-demo-data.sh
 ```
 
 ## Troubleshooting
 
-If the script fails, it will output a clear error message and categorization.
+For detailed troubleshooting, see:
+**[SELFHOSTED_DEPLOYMENT.md Troubleshooting](../SELFHOSTED_DEPLOYMENT.md#troubleshooting)**
 
-**Resume Deployment:**
-Running the script again will resume from the last successful step.
-```bash
-sudo ./scripts/deploy-automated.sh
-```
+**Quick fixes:**
 
-**Reset and Start Over:**
-To clear all progress and start fresh:
-```bash
-sudo ./scripts/deploy-automated.sh --reset
-```
+| Issue | Solution |
+|-------|----------|
+| Resume after failure | `sudo ./scripts/deploy-automated.sh` (auto-resumes) |
+| Start fresh | `sudo ./scripts/deploy-automated.sh --reset` |
+| Verify health | `./scripts/verify-deployment.sh your-domain.com` |
+| View logs | `docker compose logs -f` |
+
+## Related Documentation
+
+- [Full Deployment Guide](../SELFHOSTED_DEPLOYMENT.md) - Complete self-hosted deployment documentation
+- [Database Operations](../DATABASE.md) - Backup, restore, and disaster recovery
+- [SSL Certificates](../SSL_CERTIFICATES.md) - Certificate configuration and troubleshooting
