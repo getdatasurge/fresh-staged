@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 
 Milestone: v2.3 Deployment Orchestration
 Phase: 36 - Post-Deployment Setup
-Plan: 02 of 3 complete
+Plan: 02 of 3 complete (01 + 02)
 Status: In progress
-Last activity: 2026-01-29 — Completed 36-02-PLAN.md (sensor metrics Grafana dashboard)
+Last activity: 2026-01-29 — Completed 36-01-PLAN.md (URL summary + credential display)
 
 Progress: [======----] 58% (2/4 phases complete, phase 36 plan 2/3)
 
@@ -55,6 +55,8 @@ Progress: [======----] 58% (2/4 phases complete, phase 36 plan 2/3)
 | 35-02 | E2E test auto-detection via TTN_WEBHOOK_SECRET | Conditional test based on environment availability |
 | 36-02 | Prometheus datasource with fallback queries | Dashboard works even without FreshTrack-specific metrics exposed |
 | 36-02 | Dashboard co-located with freshtrack-overview.json | Auto-provisioning via existing dashboards.yml |
+| 36-01 | Use /dev/tty for credential display | Prevents secrets from being captured in log redirections |
+| 36-01 | Mask secrets showing first/last 4 chars | Allows identification without full exposure |
 
 ## Tech Debt Carried Forward
 
@@ -64,6 +66,13 @@ Progress: [======----] 58% (2/4 phases complete, phase 36 plan 2/3)
 
 ## Context for Phase 36 (In Progress)
 
+**What Phase 36-01 built:**
+- scripts/lib/post-deploy-lib.sh (credential display library)
+- Extended verify-lib.sh with Bull Board URL
+- display_credential_summary() with /dev/tty output for security
+- display_next_steps() with 5-step onboarding guide
+- mask_secret() helper for consistent credential masking
+
 **What Phase 36-02 built:**
 - docker/grafana/dashboards/freshtrack-sensors.json
 - 6-panel sensor metrics dashboard
@@ -72,17 +81,12 @@ Progress: [======----] 58% (2/4 phases complete, phase 36 plan 2/3)
 - Sensor reading rate (ops/sec) and battery status panels
 - Prometheus queries with fallback for graceful degradation
 
-**Dashboard panels:**
-- Row 1: Stats (h:8) - Active Sensors, Readings Today, Active Alerts
-- Row 2: Temperature Over Time (h:10) - Full-width timeseries
-- Row 3: Details (h:8) - Reading Rate + Battery Status
-
 **Remaining in Phase 36:**
 - Plan 03: Backup configuration
 
 ## Session Continuity
 
-Last session: 2026-01-29 11:08 UTC
-Stopped at: Completed 36-02-PLAN.md
+Last session: 2026-01-29 11:15 UTC
+Stopped at: Completed 36-01-PLAN.md
 Resume file: None
 Next action: Execute 36-03-PLAN.md (backup configuration)
