@@ -75,11 +75,12 @@ Plans:
   1. All 7 settings components render with data from tRPC endpoints
   2. No settings component imports from supabase-placeholder.ts
   3. Settings component tests pass using established tRPC mock patterns
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 40-01: TBD (settings batch 1)
-- [ ] 40-02: TBD (settings batch 2)
+- [ ] 40-01-PLAN.md — Read-only lists: SmsAlertHistory, TTNProvisioningLogs, EmulatorSyncHistory
+- [ ] 40-02-PLAN.md — Medium complexity: WebhookStatusCard, AlertRulesScopedEditor
+- [ ] 40-03-PLAN.md — CRUD operations: NotificationSettingsCard, EmulatorResyncCard
 
 ---
 
@@ -139,12 +140,12 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 38. Test Infrastructure | v2.4 | 3/3 | Complete | 2026-01-29 |
 | 39. Dashboard Widget Migration | v2.4 | 3/3 | Complete | 2026-01-29 |
-| 40. Settings Components Migration | v2.4 | 0/2 | Not started | - |
+| 40. Settings Components Migration | v2.4 | 0/3 | Not started | - |
 | 41. Pages Migration | v2.4 | 0/2 | Not started | - |
 | 42. Admin/Debug + Other Components | v2.4 | 0/2 | Not started | - |
 | 43. Cleanup & Verification | v2.4 | 0/1 | Not started | - |
 
-**v2.4 Total:** 6/13 plans complete (46%)
+**v2.4 Total:** 6/14 plans complete (43%)
 
 ---
 
