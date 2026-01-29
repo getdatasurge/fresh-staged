@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { supabase } from "@/lib/supabase-placeholder";
-import { useUser } from "@stackframe/react";
+import { useTRPC } from "@/lib/trpc";
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -24,64 +24,56 @@ export function ComplianceReportCard({
   siteName,
   unitName,
 }: ComplianceReportCardProps) {
-  const user = useUser();
-  const [isExporting, setIsExporting] = useState(false);
+  const { effectiveOrgId } = useEffectiveIdentity();
+  const trpc = useTRPC();
   const [exportFormat, setExportFormat] = useState<"csv" | "pdf">("csv");
 
-  const handleExport = async (formatType: "csv" | "pdf") => {
+  // tRPC mutation for exporting compliance reports
+  const exportMutation = trpc.reports.export.useMutation({
+    onSuccess: (data) => {
+      // Download file
+      const blob = new Blob([data.content], { type: data.contentType });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = data.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast.success("Compliance report exported");
+    },
+    onError: (err) => {
+      console.error("Export error:", err);
+      toast.error("Failed to export report");
+    },
+  });
+
+  const handleExport = (formatType: "csv" | "pdf") => {
     if (!startDate || !endDate) {
       toast.error("Please select a date range");
       return;
     }
 
-    setIsExporting(true);
+    // Check authentication
+    if (!effectiveOrgId) {
+      toast.error("Session expired. Please sign in again.");
+      window.location.href = "/auth";
+      return;
+    }
+
     setExportFormat(formatType);
 
-    try {
-      // Check authentication
-      if (!user) {
-        toast.error("Session expired. Please sign in again.");
-        window.location.href = "/auth";
-        return;
-      }
-
-      const requestBody: Record<string, unknown> = {
-        start_date: format(startDate, "yyyy-MM-dd"),
-        end_date: format(endDate, "yyyy-MM-dd"),
-        report_type: "compliance",
-        format: formatType,
-      };
-
-      if (unitId) {
-        requestBody.unit_id = unitId;
-      } else if (siteId) {
-        requestBody.site_id = siteId;
-      }
-
-      const response = await supabase.functions.invoke("export-temperature-logs", {
-        body: requestBody,
-      });
-
-      if (response.error) throw new Error(response.error.message);
-
-      const contentType = formatType === "pdf" ? "application/pdf" : "text/csv";
-      const extension = formatType === "pdf" ? "pdf" : "csv";
-      const blob = new Blob([response.data], { type: contentType });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `compliance-report-${format(startDate, "yyyy-MM-dd")}-to-${format(endDate, "yyyy-MM-dd")}.${extension}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-
-      toast.success("Compliance report exported");
-    } catch (error) {
-      console.error("Export error:", error);
-      toast.error("Failed to export report");
-    }
-    setIsExporting(false);
+    // Use tRPC mutation for export
+    exportMutation.mutate({
+      organizationId: effectiveOrgId,
+      startDate: format(startDate, "yyyy-MM-dd"),
+      endDate: format(endDate, "yyyy-MM-dd"),
+      reportType: "compliance",
+      format: formatType === "pdf" ? "html" : "csv",
+      siteId: unitId ? undefined : siteId,
+      unitId: unitId || undefined,
+    });
   };
 
   return (
@@ -119,10 +111,10 @@ export function ComplianceReportCard({
           <div className="flex items-center gap-2">
             <Button
               onClick={() => handleExport("csv")}
-              disabled={isExporting || !startDate || !endDate}
+              disabled={exportMutation.isPending || !startDate || !endDate}
               variant="outline"
             >
-              {isExporting && exportFormat === "csv" ? (
+              {exportMutation.isPending && exportFormat === "csv" ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <FileText className="w-4 h-4 mr-2" />
@@ -131,9 +123,9 @@ export function ComplianceReportCard({
             </Button>
             <Button
               onClick={() => handleExport("pdf")}
-              disabled={isExporting || !startDate || !endDate}
+              disabled={exportMutation.isPending || !startDate || !endDate}
             >
-              {isExporting && exportFormat === "pdf" ? (
+              {exportMutation.isPending && exportFormat === "pdf" ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <Download className="w-4 h-4 mr-2" />

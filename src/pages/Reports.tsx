@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase-placeholder";
+import { useTRPC } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import { ComplianceReportCard } from "@/components/reports/ComplianceReportCard";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@stackframe/react";
+import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
 
 interface Site {
   id: string;
@@ -50,6 +52,8 @@ interface DateRange {
 const Reports = () => {
   const { toast } = useToast();
   const user = useUser();
+  const { effectiveOrgId } = useEffectiveIdentity();
+  const trpc = useTRPC();
   const [sites, setSites] = useState<Site[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [filteredUnits, setFilteredUnits] = useState<Unit[]>([]);
@@ -59,8 +63,35 @@ const Reports = () => {
     from: subDays(new Date(), 7),
     to: new Date(),
   });
-  const [isExporting, setIsExporting] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // tRPC mutation for exporting reports
+  const exportMutation = trpc.reports.export.useMutation({
+    onSuccess: (data) => {
+      // Download file
+      const blob = new Blob([data.content], { type: data.contentType });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = data.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast({
+        title: "Export complete",
+        description: `Report downloaded successfully.`,
+      });
+    },
+    onError: (err) => {
+      console.error("Export error:", err);
+      toast({
+        title: "Export failed",
+        description: err.message || "Unknown error",
+        variant: "destructive",
+      });
+    },
+  });
 
   useEffect(() => {
     if (user) {
@@ -124,7 +155,7 @@ const Reports = () => {
     }
   };
 
-  const handleExport = async (reportType: "daily" | "exceptions" | "manual" | "compliance", format: "csv" | "pdf" = "csv") => {
+  const handleExport = (reportType: "daily" | "exceptions" | "manual" | "compliance", format: "csv" | "pdf" = "csv") => {
     if (!dateRange.from || !dateRange.to) {
       toast({
         title: "Date range required",
@@ -134,63 +165,23 @@ const Reports = () => {
       return;
     }
 
-    setIsExporting(true);
-    try {
-      // Ensure user is authenticated
-      if (!user) {
-        toast({ title: "Session expired. Please sign in again.", variant: "destructive" });
-        window.location.href = "/auth";
-        return;
-      }
-
-      const requestBody: Record<string, unknown> = {
-        start_date: format_(dateRange.from, "yyyy-MM-dd"),
-        end_date: format_(dateRange.to, "yyyy-MM-dd"),
-        report_type: reportType,
-        format,
-      };
-
-      if (selectedUnit !== "all") {
-        requestBody.unit_id = selectedUnit;
-      } else if (selectedSite !== "all") {
-        requestBody.site_id = selectedSite;
-      }
-
-      const response = await supabase.functions.invoke("export-temperature-logs", {
-        body: requestBody,
-      });
-
-      if (response.error) {
-        throw new Error(response.error.message);
-      }
-
-      // Download the file
-      const contentType = format === "pdf" ? "text/html" : "text/csv";
-      const extension = format === "pdf" ? "html" : "csv";
-      const blob = new Blob([response.data], { type: contentType });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${reportType}-report-${format_(dateRange.from, "yyyy-MM-dd")}-to-${format_(dateRange.to, "yyyy-MM-dd")}.${extension}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-
-      toast({
-        title: "Export complete",
-        description: `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} report downloaded as ${format.toUpperCase()}.`,
-      });
-    } catch (error) {
-      console.error("Export error:", error);
-      toast({
-        title: "Export failed",
-        description: error instanceof Error ? error.message : "Unknown error",
-        variant: "destructive",
-      });
-    } finally {
-      setIsExporting(false);
+    // Ensure user is authenticated and has organization context
+    if (!user || !effectiveOrgId) {
+      toast({ title: "Session expired. Please sign in again.", variant: "destructive" });
+      window.location.href = "/auth";
+      return;
     }
+
+    // Use tRPC mutation for export
+    exportMutation.mutate({
+      organizationId: effectiveOrgId,
+      startDate: format_(dateRange.from, "yyyy-MM-dd"),
+      endDate: format_(dateRange.to, "yyyy-MM-dd"),
+      reportType,
+      format: format === "pdf" ? "html" : "csv",
+      siteId: selectedSite !== "all" ? selectedSite : undefined,
+      unitId: selectedUnit !== "all" ? selectedUnit : undefined,
+    });
   };
 
   const reportTypes = [
@@ -410,10 +401,10 @@ const Reports = () => {
                   <div className="flex flex-wrap gap-2">
                     <Button
                       onClick={() => handleExport(report.id as "daily" | "exceptions" | "manual" | "compliance", "csv")}
-                      disabled={isExporting || !dateRange.from || !dateRange.to}
+                      disabled={exportMutation.isPending || !dateRange.from || !dateRange.to}
                       variant="outline"
                     >
-                      {isExporting ? (
+                      {exportMutation.isPending ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                           Exporting...
@@ -427,9 +418,9 @@ const Reports = () => {
                     </Button>
                     <Button
                       onClick={() => handleExport(report.id as "daily" | "exceptions" | "manual" | "compliance", "pdf")}
-                      disabled={isExporting || !dateRange.from || !dateRange.to}
+                      disabled={exportMutation.isPending || !dateRange.from || !dateRange.to}
                     >
-                      {isExporting ? (
+                      {exportMutation.isPending ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                           Exporting...
@@ -463,7 +454,7 @@ const Reports = () => {
                   size="sm"
                   variant="outline"
                   onClick={() => handleExport(report.id as "daily" | "exceptions" | "manual" | "compliance")}
-                  disabled={isExporting}
+                  disabled={exportMutation.isPending}
                 >
                   <Download className="w-4 h-4" />
                 </Button>
