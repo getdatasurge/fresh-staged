@@ -21,8 +21,10 @@ import { paymentsRouter } from '../routers/payments.router.js'
 import { pilotFeedbackRouter } from '../routers/pilot-feedback.router.js'
 import { preferencesRouter } from '../routers/preferences.router.js'
 import { readingsRouter } from '../routers/readings.router.js'
+import { reportsRouter } from '../routers/reports.router.js'
 import { sitesRouter } from '../routers/sites.router.js'
 import { smsConfigRouter } from '../routers/sms-config.router.js'
+import { telnyxRouter } from '../routers/telnyx.router.js'
 import { ttnDevicesRouter } from '../routers/ttn-devices.router.js'
 import { ttnGatewaysRouter } from '../routers/ttn-gateways.router.js'
 import { ttnSettingsRouter } from '../routers/ttn-settings.router.js'
@@ -84,6 +86,13 @@ export const appRouter = router({
 	readings: readingsRouter,
 
 	/**
+	 * Reports domain router
+	 * Procedures: export
+	 * Replaces: export-temperature-logs edge function
+	 */
+	reports: reportsRouter,
+
+	/**
 	 * Alerts domain router
 	 * Procedures: list, get, acknowledge, resolve
 	 */
@@ -136,6 +145,12 @@ export const appRouter = router({
 	 * Procedures: get, update, test
 	 */
 	ttnSettings: ttnSettingsRouter,
+
+	/**
+	 * Telnyx domain router
+	 * Procedures: verificationStatus, configureWebhook, verifyPublicAsset
+	 */
+	telnyx: telnyxRouter,
 
 	/**
 	 * Availability domain router (PUBLIC - no auth required)
