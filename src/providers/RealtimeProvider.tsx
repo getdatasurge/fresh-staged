@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { socket, connectSocket, disconnectSocket } from '@/lib/socket';
 import { useUser } from '@stackframe/react';
 import { useRealtimeSensorData } from '@/hooks/useRealtimeSensorData';
@@ -42,6 +42,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const connectErrorCountRef = useRef(0);
 
   useEffect(() => {
     // Only connect if user is authenticated
@@ -49,6 +50,9 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       disconnectSocket();
       return;
     }
+
+    // Reset error count on new connection attempt
+    connectErrorCountRef.current = 0;
 
     // Get access token from Stack Auth
     const connectWithAuth = async () => {
@@ -71,6 +75,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
 
     // Connection handlers - register OUTSIDE of connect event to avoid duplicates
     function onConnect() {
+      connectErrorCountRef.current = 0;
       setIsConnected(true);
       setIsConnecting(false);
       console.log('Socket.io connected');
@@ -82,9 +87,15 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     }
 
     function onConnectError(error: Error) {
+      connectErrorCountRef.current += 1;
       setIsConnecting(false);
       setConnectionError(error.message);
-      console.error('Socket.io connection error:', error.message);
+      // Only log the first error and a final summary to avoid console spam
+      if (connectErrorCountRef.current === 1) {
+        console.warn('Socket.io connection error:', error.message);
+      } else if (connectErrorCountRef.current === 5) {
+        console.warn(`Socket.io: giving up after ${connectErrorCountRef.current} failed attempts (${error.message})`);
+      }
     }
 
     socket.on('connect', onConnect);

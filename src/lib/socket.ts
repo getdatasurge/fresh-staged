@@ -25,9 +25,9 @@ export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
   {
     autoConnect: false, // Connect manually after auth
     reconnection: true,
-    reconnectionAttempts: Infinity,
-    reconnectionDelay: 1000,
-    reconnectionDelayMax: 5000,
+    reconnectionAttempts: 5, // Stop after 5 failures to avoid infinite error spam
+    reconnectionDelay: 2000,
+    reconnectionDelayMax: 10000,
     timeout: 20000,
   }
 );
