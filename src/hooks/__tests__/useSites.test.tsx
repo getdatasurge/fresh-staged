@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createQueryOptionsMock } from '@/test/trpc-test-utils'
 
 // Mock Stack Auth before importing hook
 vi.mock('@stackframe/react', () => ({
@@ -93,27 +94,20 @@ describe('useSites hooks', () => {
 				},
 			]
 
-			const mockSitesQuery = {
-				data: mockSites,
-				isLoading: false,
-				error: null,
-			}
-
-			const mockUnitsQuery = {
-				data: mockUnits,
-				isLoading: false,
-				error: null,
-			}
-
+			// Mock queryOptions pattern: trpc.router.procedure.queryOptions() returns { queryKey, queryFn }
 			mockUseTRPC.mockReturnValue({
 				sites: {
 					list: {
-						useQuery: vi.fn().mockReturnValue(mockSitesQuery),
+						queryOptions: createQueryOptionsMock(mockSites, {
+							queryKey: ['sites', 'list', { organizationId: 'org-1' }],
+						}),
 					},
 				},
 				units: {
 					listByOrg: {
-						useQuery: vi.fn().mockReturnValue(mockUnitsQuery),
+						queryOptions: createQueryOptionsMock(mockUnits, {
+							queryKey: ['units', 'listByOrg', { organizationId: 'org-1' }],
+						}),
 					},
 				},
 			})
@@ -147,27 +141,19 @@ describe('useSites hooks', () => {
 				},
 			]
 
-			const mockSitesQuery = {
-				data: mockSites,
-				isLoading: false,
-				error: null,
-			}
-
-			const mockUnitsQuery = {
-				data: mockUnits,
-				isLoading: false,
-				error: null,
-			}
-
 			mockUseTRPC.mockReturnValue({
 				sites: {
 					list: {
-						useQuery: vi.fn().mockReturnValue(mockSitesQuery),
+						queryOptions: createQueryOptionsMock(mockSites, {
+							queryKey: ['sites', 'list', { organizationId: 'org-1' }],
+						}),
 					},
 				},
 				units: {
 					listByOrg: {
-						useQuery: vi.fn().mockReturnValue(mockUnitsQuery),
+						queryOptions: createQueryOptionsMock(mockUnits, {
+							queryKey: ['units', 'listByOrg', { organizationId: 'org-1' }],
+						}),
 					},
 				},
 			})
@@ -194,27 +180,19 @@ describe('useSites hooks', () => {
 				},
 			]
 
-			const mockSitesQuery = {
-				data: mockSites,
-				isLoading: false,
-				error: null,
-			}
-
-			const mockUnitsQuery = {
-				data: [],
-				isLoading: false,
-				error: null,
-			}
-
 			mockUseTRPC.mockReturnValue({
 				sites: {
 					list: {
-						useQuery: vi.fn().mockReturnValue(mockSitesQuery),
+						queryOptions: createQueryOptionsMock(mockSites, {
+							queryKey: ['sites', 'list', { organizationId: 'org-1' }],
+						}),
 					},
 				},
 				units: {
 					listByOrg: {
-						useQuery: vi.fn().mockReturnValue(mockUnitsQuery),
+						queryOptions: createQueryOptionsMock([], {
+							queryKey: ['units', 'listByOrg', { organizationId: 'org-1' }],
+						}),
 					},
 				},
 			})
@@ -242,27 +220,19 @@ describe('useSites hooks', () => {
 				},
 			]
 
-			const mockSitesQuery = {
-				data: mockSites,
-				isLoading: false,
-				error: null,
-			}
-
-			const mockUnitsQuery = {
-				data: [],
-				isLoading: false,
-				error: null,
-			}
-
 			mockUseTRPC.mockReturnValue({
 				sites: {
 					list: {
-						useQuery: vi.fn().mockReturnValue(mockSitesQuery),
+						queryOptions: createQueryOptionsMock(mockSites, {
+							queryKey: ['sites', 'list', { organizationId: 'org-1' }],
+						}),
 					},
 				},
 				units: {
 					listByOrg: {
-						useQuery: vi.fn().mockReturnValue(mockUnitsQuery),
+						queryOptions: createQueryOptionsMock([], {
+							queryKey: ['units', 'listByOrg', { organizationId: 'org-1' }],
+						}),
 					},
 				},
 			})
@@ -276,22 +246,19 @@ describe('useSites hooks', () => {
 		})
 
 		it('returns empty when organizationId is null', () => {
+			// When organizationId is null, queries are disabled but still need queryOptions
 			mockUseTRPC.mockReturnValue({
 				sites: {
 					list: {
-						useQuery: vi.fn().mockReturnValue({
-							data: null,
-							isLoading: false,
-							error: null,
+						queryOptions: createQueryOptionsMock([], {
+							enabled: false,
 						}),
 					},
 				},
 				units: {
 					listByOrg: {
-						useQuery: vi.fn().mockReturnValue({
-							data: null,
-							isLoading: false,
-							error: null,
+						queryOptions: createQueryOptionsMock([], {
+							enabled: false,
 						}),
 					},
 				},
@@ -304,27 +271,25 @@ describe('useSites hooks', () => {
 		})
 
 		it('handles errors gracefully', async () => {
-			const mockSitesQuery = {
-				data: null,
-				isLoading: false,
-				error: new Error('API Error'),
-			}
-
-			const mockUnitsQuery = {
-				data: null,
-				isLoading: false,
-				error: null,
-			}
+			// Mock queryOptions that will cause an error when queryFn is called
+			const apiError = new Error('API Error')
 
 			mockUseTRPC.mockReturnValue({
 				sites: {
 					list: {
-						useQuery: vi.fn().mockReturnValue(mockSitesQuery),
+						queryOptions: vi.fn().mockReturnValue({
+							queryKey: ['sites', 'list', { organizationId: 'org-1' }],
+							queryFn: () => Promise.reject(apiError),
+							enabled: true,
+							staleTime: 30000,
+						}),
 					},
 				},
 				units: {
 					listByOrg: {
-						useQuery: vi.fn().mockReturnValue(mockUnitsQuery),
+						queryOptions: createQueryOptionsMock([], {
+							queryKey: ['units', 'listByOrg', { organizationId: 'org-1' }],
+						}),
 					},
 				},
 			})
