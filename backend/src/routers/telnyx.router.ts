@@ -8,8 +8,43 @@
  */
 
 import { z } from 'zod'
+import { Telnyx } from 'telnyx'
 import { router, publicProcedure } from '../trpc/index.js'
 import { orgProcedure } from '../trpc/procedures.js'
+import type { TfVerificationStatus } from 'telnyx/resources/messaging-tollfree/verification/requests.js'
+
+/**
+ * Create a Telnyx client if API key is configured
+ * Returns null if TELNYX_API_KEY is not set
+ */
+function getTelnyxClient(): Telnyx | null {
+	const apiKey = process.env.TELNYX_API_KEY
+	if (!apiKey) return null
+	return new Telnyx({ apiKey, maxRetries: 0, timeout: 30000 })
+}
+
+/**
+ * Map Telnyx verification status to our simplified enum
+ */
+function mapVerificationStatus(
+	telnyxStatus: TfVerificationStatus | undefined,
+): 'approved' | 'pending' | 'rejected' | 'unknown' {
+	if (!telnyxStatus) return 'unknown'
+	// Telnyx statuses: 'Verified' | 'Rejected' | 'Waiting For Vendor' | 'Waiting For Customer' | 'Waiting For Telnyx' | 'In Progress'
+	switch (telnyxStatus) {
+		case 'Verified':
+			return 'approved'
+		case 'Rejected':
+			return 'rejected'
+		case 'Waiting For Vendor':
+		case 'Waiting For Customer':
+		case 'Waiting For Telnyx':
+		case 'In Progress':
+			return 'pending'
+		default:
+			return 'unknown'
+	}
+}
 
 export const telnyxRouter = router({
 	/**
@@ -29,16 +64,80 @@ export const telnyxRouter = router({
 			}),
 		)
 		.query(async () => {
-			// Port logic from telnyx-verification-status edge function
-			// Query Telnyx API for verification status
+			const client = getTelnyxClient()
+			if (!client) {
+				return {
+					status: 'unknown' as const,
+					verificationId: null,
+					phoneNumber: null,
+					details: 'Telnyx API key not configured',
+					lastChecked: new Date().toISOString(),
+				}
+			}
 
-			// Placeholder - implement based on edge function source
-			return {
-				status: 'pending' as const,
-				verificationId: null,
-				phoneNumber: '+18889890560',
-				details: null,
-				lastChecked: new Date().toISOString(),
+			const phoneNumber = process.env.TELNYX_PHONE_NUMBER
+			if (!phoneNumber) {
+				return {
+					status: 'unknown' as const,
+					verificationId: null,
+					phoneNumber: null,
+					details: 'Telnyx phone number not configured',
+					lastChecked: new Date().toISOString(),
+				}
+			}
+
+			try {
+				// List toll-free verifications filtered by phone number
+				const response =
+					await client.messagingTollfree.verification.requests.list({
+						phone_number: phoneNumber,
+						page: 1,
+						page_size: 1,
+					})
+
+				// Get the first (most recent) verification for this phone number
+				const verifications: Array<{
+					id?: string
+					verificationStatus?: TfVerificationStatus
+					phoneNumbers?: Array<{ phoneNumber: string }>
+					reason?: string
+				}> = []
+				for await (const v of response) {
+					verifications.push(v)
+					break // Only need the first one
+				}
+
+				const verification = verifications[0]
+				if (!verification) {
+					return {
+						status: 'unknown' as const,
+						verificationId: null,
+						phoneNumber,
+						details: 'No verification found for this number',
+						lastChecked: new Date().toISOString(),
+					}
+				}
+
+				return {
+					status: mapVerificationStatus(verification.verificationStatus),
+					verificationId: verification.id || null,
+					phoneNumber:
+						verification.phoneNumbers?.[0]?.phoneNumber || phoneNumber,
+					details: verification.reason || null,
+					lastChecked: new Date().toISOString(),
+				}
+			} catch (error) {
+				console.error('[telnyx.verificationStatus] API error:', error)
+				return {
+					status: 'unknown' as const,
+					verificationId: null,
+					phoneNumber,
+					details:
+						error instanceof Error
+							? error.message
+							: 'Failed to fetch verification status',
+					lastChecked: new Date().toISOString(),
+				}
 			}
 		}),
 
@@ -70,13 +169,53 @@ export const telnyxRouter = router({
 				}
 			}
 
-			// Port logic from telnyx-configure-webhook edge function
-			// Configure webhook in Telnyx API
+			const client = getTelnyxClient()
+			if (!client) {
+				return {
+					success: false,
+					error: 'Telnyx API key not configured',
+				}
+			}
 
-			// Placeholder - implement based on edge function source
-			return {
-				success: true,
-				webhookUrl: `${process.env.API_URL || 'http://localhost:3000'}/webhooks/telnyx`,
+			const profileId = process.env.TELNYX_MESSAGING_PROFILE_ID
+			if (!profileId) {
+				return {
+					success: false,
+					error: 'Telnyx messaging profile ID not configured',
+				}
+			}
+
+			try {
+				// Build webhook URL from API_URL or FRONTEND_URL
+				const apiUrl =
+					process.env.API_URL ||
+					process.env.FRONTEND_URL ||
+					'http://localhost:3000'
+				const webhookUrl = `${apiUrl}/webhooks/telnyx`
+
+				// Update the messaging profile with webhook URL
+				await client.messagingProfiles.update(profileId, {
+					webhook_url: webhookUrl,
+					webhook_api_version: '2',
+				})
+
+				console.log(
+					`[telnyx.configureWebhook] Webhook configured: ${webhookUrl}`,
+				)
+
+				return {
+					success: true,
+					webhookUrl,
+				}
+			} catch (error) {
+				console.error('[telnyx.configureWebhook] API error:', error)
+				return {
+					success: false,
+					error:
+						error instanceof Error
+							? error.message
+							: 'Failed to configure webhook',
+				}
 			}
 		}),
 
