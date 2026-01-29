@@ -59,12 +59,12 @@ Requirements for completing deployment automation (continuation of v2.1 Phases 2
 
 ### Verification
 
-- [ ] **VERIFY-01**: Script validates all service health endpoints return 200 OK
-- [ ] **VERIFY-02**: Script validates SSL certificate is valid and trusted
-- [ ] **VERIFY-03**: Script validates dashboard accessible via HTTPS in browser
-- [ ] **VERIFY-04**: Script runs integrated E2E test (sensor -> storage -> alert pipeline)
-- [ ] **VERIFY-05**: Script validates monitoring dashboards (Prometheus/Grafana) accessible
-- [ ] **VERIFY-06**: Script waits for 3 consecutive health check passes (not just 1)
+- [x] **VERIFY-01**: Script validates all service health endpoints return 200 OK
+- [x] **VERIFY-02**: Script validates SSL certificate is valid and trusted
+- [x] **VERIFY-03**: Script validates dashboard accessible via HTTPS in browser
+- [x] **VERIFY-04**: Script runs integrated E2E test (sensor -> storage -> alert pipeline)
+- [x] **VERIFY-05**: Script validates monitoring dashboards (Prometheus/Grafana) accessible
+- [x] **VERIFY-06**: Script waits for 3 consecutive health check passes (not just 1)
 
 ### Post-Deployment
 
@@ -137,12 +137,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEPLOY-03 | Phase 34 | Complete |
 | DEPLOY-04 | Phase 34 | Complete |
 | DEPLOY-05 | Phase 34 | Complete |
-| VERIFY-01 | Phase 35 | Pending |
-| VERIFY-02 | Phase 35 | Pending |
-| VERIFY-03 | Phase 35 | Pending |
-| VERIFY-04 | Phase 35 | Pending |
-| VERIFY-05 | Phase 35 | Pending |
-| VERIFY-06 | Phase 35 | Pending |
+| VERIFY-01 | Phase 35 | Complete |
+| VERIFY-02 | Phase 35 | Complete |
+| VERIFY-03 | Phase 35 | Complete |
+| VERIFY-04 | Phase 35 | Complete |
+| VERIFY-05 | Phase 35 | Complete |
+| VERIFY-06 | Phase 35 | Complete |
 | POST-01 | Phase 36 | Pending |
 | POST-02 | Phase 36 | Pending |
 | POST-03 | Phase 36 | Pending |
@@ -155,7 +155,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 **Coverage:**
 - v2.1 requirements (PREFLIGHT, PREREQ, CONFIG, ERROR): 26 total, 26 complete
-- v2.3 requirements (DEPLOY, VERIFY, POST, DOCS): 20 total, 5 complete
+- v2.3 requirements (DEPLOY, VERIFY, POST, DOCS): 20 total, 11 complete
 - Unmapped: 0
 
 ---
