@@ -85,10 +85,13 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
     - [x] 32-06-PLAN.md — Gap closure: Implement Telnyx API integration (verification + webhook)
 
 - [ ] **Phase 33: Error Handling UI Integration**
-    - **Goal:** Wire SupabaseMigrationError to UI error boundaries
+    - **Goal:** Wire SupabaseMigrationError to UI error boundaries for user-friendly error messages
     - **Closes:** Integration gap (SupabaseMigrationError → UI consumers)
-    - **Tasks:** Add error boundary for migration errors, update components, fix BLOCKED docs
+    - **Plans:** 2 plans
+    Plans:
+    - [ ] 33-01-PLAN.md — Extend errorHandler.ts + create MigrationErrorBoundary components
+    - [ ] 33-02-PLAN.md — Wire UI components + visual verification
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-28 (Phase 32 complete with gap closure)*
+*Last updated: 2026-01-29 (Phase 33 planned)*
