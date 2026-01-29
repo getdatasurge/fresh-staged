@@ -104,6 +104,13 @@ Plans:
 
 **Requirements:** POST-01, POST-02, POST-03, POST-04, POST-05
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 36-01-PLAN.md — URL summary extension and secure credential display library
+- [ ] 36-02-PLAN.md — Grafana sensor metrics dashboard
+- [ ] 36-03-PLAN.md — Post-deployment orchestration script
+
 **Success Criteria:**
 1. User sees complete URL summary displayed (dashboard, API, Prometheus, Grafana, Bull Board)
 2. User sees credential summary displayed securely (masked in logs, visible in terminal only)
@@ -133,11 +140,11 @@ Plans:
 |-------|------|--------|-------|
 | 34 | Deployment Orchestration | Complete | 2 |
 | 35 | Verification | Complete | 2 |
-| 36 | Post-Deployment Setup | Ready | - |
+| 36 | Post-Deployment Setup | Planned | 3 |
 | 37 | Documentation | Pending | - |
 
 **Milestone Progress:** 2/4 phases complete (50%)
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 35 complete)*
+*Last updated: 2026-01-29 (Phase 36 planned)*
