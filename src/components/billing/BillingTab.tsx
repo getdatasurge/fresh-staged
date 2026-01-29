@@ -14,7 +14,7 @@ import type {
 	SubscriptionStatus,
 } from '@/lib/api-types'
 import { PlanKey, STRIPE_PLANS } from '@/lib/stripe'
-import { useTRPC } from '@/lib/trpc'
+import { useTRPCClient } from '@/lib/trpc'
 import { useUser } from '@stackframe/react'
 import {
 	AlertTriangle,
@@ -82,7 +82,7 @@ export const BillingTab = ({
 	)
 	const [isPortalLoading, setIsPortalLoading] = useState(false)
 
-	const trpc = useTRPC()
+	const trpcClient = useTRPCClient()
 
 	// Handle Stripe redirect results
 	useEffect(() => {
@@ -115,7 +115,7 @@ export const BillingTab = ({
 		}
 
 		try {
-			const data = await trpc.payments.getSubscription.query({ organizationId })
+			const data = await trpcClient.payments.getSubscription.query({ organizationId })
 			setSubscription(data)
 		} catch (error) {
 			console.error('Error loading subscription:', error)
@@ -141,7 +141,7 @@ export const BillingTab = ({
 
 		setIsCheckoutLoading(planKey)
 		try {
-			const { url } = await trpc.payments.createCheckoutSession.mutate({
+			const { url } = await trpcClient.payments.createCheckoutSession.mutate({
 				organizationId,
 				data: { plan: planKey as Exclude<SubscriptionPlan, 'enterprise'> },
 			})
@@ -163,7 +163,7 @@ export const BillingTab = ({
 
 		setIsPortalLoading(true)
 		try {
-			const { url } = await trpc.payments.createPortalSession.mutate({
+			const { url } = await trpcClient.payments.createPortalSession.mutate({
 				organizationId,
 				data: {},
 			})
