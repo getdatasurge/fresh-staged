@@ -10,33 +10,31 @@ See: .planning/PROJECT.md (updated 2026-01-25)
 ## Current Position
 
 Milestone: v2.2 Technical Debt & Stabilization
-Phase: 31 of 33 (TTN Provisioning UI Migration)
-Plan: 2 of 3 complete
+Phase: 32 of 33 (Remaining Edge Function Migration)
+Plan: 2 of 4
 Status: In progress
-Last activity: 2026-01-28 - Completed 31-02-PLAN.md (frontend tRPC migration)
+Last activity: 2026-01-29 - Completed 32-02-PLAN.md (reports export migration)
 
-Progress: ███████░░░ 77% (30.6/33 phases)
+Progress: ████████░░ 84% (31.5/33 phases)
 
 ## Progress
 - [x] **27. TTN SDK Integration**: Complete.
 - [~] **28. Supabase Removal**: Partial. Edge function calls remain in other files.
 - [x] ~~**29. Production Data Migration**~~: SKIPPED - No access to Supabase production database.
 - [x] **30. System Hardening**: Complete. All 4 plans executed and verified.
-- [~] **31. TTN Provisioning UI Migration**: In progress. Plans 01-02 complete (backend + frontend).
-- [ ] **32. Remaining Edge Function Migration**: Pending. Migrate remaining edge function calls.
+- [x] **31. TTN Provisioning UI Migration**: VERIFIED. All tRPC procedures + frontend migration complete.
+- [~] **32. Remaining Edge Function Migration**: In progress. Plan 02 complete (reports export).
 - [ ] **33. Error Handling UI Integration**: Pending. Wire SupabaseMigrationError to UI.
 
 ## Recent Achievements
-- TTNCredentialsPanel.tsx fully migrated to tRPC (no supabase.functions.invoke calls)
-- Added 5 new tRPC procedures to ttn-settings router: getCredentials, getStatus, provision, startFresh, deepClean
-- Extended TtnProvisioningService with retryProvisioning, startFresh, and deepClean methods
-- Added Zod schemas for credentials and provisioning response types
-- Extended Drizzle ttnConnections schema with provisioning state columns
-- Added 18 new tests (35 total) for TTN settings router
+- **Phase 32 Plan 02 Complete** - Reports export migration to tRPC
+- Created reports.router.ts with export procedure
+- Migrated Reports.tsx, Inspector.tsx, ComplianceReportCard.tsx to tRPC
+- Removed 3 supabase.functions.invoke calls for export-temperature-logs
 
 ## Next Steps
-1. Execute 31-03 if testing plan exists, or move to phase 32
-2. Execute remaining gap closure phases 32-33
+1. Continue Phase 32: Plans 03 and 04
+2. Plan and execute Phase 33: Error Handling UI Integration
 3. Re-audit milestone with `/gsd:audit-milestone`
 4. Complete milestone when audit passes
 
@@ -58,6 +56,7 @@ Progress: ███████░░░ 77% (30.6/33 phases)
 | 31-01 | Role-based access: manager read-only, admin/owner write | Match edge function permissions |
 | 31-02 | Use useQuery with enabled:false + refetch() for imperative data loading | Manual control over when credentials are fetched |
 | 31-02 | Dual error display (toast + inline) | Per CONTEXT.md for actionable guidance |
+| 32-02 | Shared export mutation across all 3 components | Single tRPC procedure replaces 3 identical edge function calls |
 
 ## Blockers/Concerns Carried Forward
 - Placeholder TTN/layout/restore/health flows need backend replacements.
@@ -65,7 +64,7 @@ Progress: ███████░░░ 77% (30.6/33 phases)
 
 ## Session Continuity
 
-Last session: 2026-01-28
-Stopped at: Completed 31-02-PLAN.md
+Last session: 2026-01-29
+Stopped at: Completed 32-02-PLAN.md
 Resume file: None
-Next action: Execute 31-03 if exists, or move to phase 32
+Next action: Execute 32-03-PLAN.md (if exists)
