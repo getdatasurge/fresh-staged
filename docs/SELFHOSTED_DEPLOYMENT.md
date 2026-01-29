@@ -228,53 +228,115 @@ See `scripts/deploy.config.example` for all available options and detailed comme
 
 ## Deployment
 
-### Run Deployment Script
+### Step 1: Clone Repository
+
+```bash
+ssh root@YOUR_SERVER_IP
+git clone https://github.com/your-org/freshtrack-pro.git /opt/freshtrack-pro
+cd /opt/freshtrack-pro
+```
+
+### Step 2: Run Automated Deployment
 
 ```bash
 chmod +x scripts/deploy-automated.sh
 sudo ./scripts/deploy-automated.sh
 ```
 
-The script will:
-1. Install dependencies (Docker, firewall, fail2ban, etc.)
-2. Verify DNS configuration
-3. Create secure secret files
-4. Start all services
-5. Validate health checks
-6. Report deployment status
+The script orchestrates 5 phases with checkpoint-based recovery:
 
-### Deployment Output
+| Phase | Name | What It Does | Duration |
+|-------|------|--------------|----------|
+| 1 | Pre-flight | Validates RAM, disk, network, OS | ~10 sec |
+| 2 | Prerequisites | Installs Docker, UFW, fail2ban, jq | 2-5 min |
+| 3 | Configuration | Prompts for domain, email, Stack Auth | Interactive |
+| 4 | Deployment | Calls deploy.sh (builds, migrates, starts) | 5-15 min |
+| 5 | Health Verification | Waits for services to report healthy | 1-5 min |
+
+**Total time:** 15-30 minutes for first deployment
+
+### Step 3: Follow Interactive Prompts
+
+During the Configuration phase, you'll be prompted for:
+
+```
+Enter your domain name (e.g., app.freshtrack.io): _
+Enter admin email (for SSL certificates): _
+Enter Stack Auth Project ID: _
+Enter Stack Auth Publishable Key: _
+Enter Stack Auth Secret Key: _
+```
+
+**Tip:** Have your Stack Auth credentials ready before starting.
+
+### Step 4: Monitor Progress
+
+The script provides real-time progress output:
 
 ```
 ========================================
-FreshTrack Pro Self-Hosted Deployment
+FreshTrack Pro Automated Deployment
 ========================================
 
-==> Loading configuration...
-✓ Configuration loaded
+Start time: 2026-01-29 10:00:00
 
-==> Installing Docker...
-✓ Docker already installed
+[1/5] Pre-flight checks...
+  ✓ RAM: 8GB (minimum: 4GB)
+  ✓ Disk: 100GB free (minimum: 10GB)
+  ✓ OS: Ubuntu 24.04 LTS
+  ✓ Network: Can reach docker.com
 
-==> Configuring firewall...
-✓ Firewall configured
+[2/5] Installing prerequisites...
+  ✓ Docker installed
+  ✓ UFW firewall configured
+  ✓ fail2ban installed
 
-==> Checking DNS resolution...
-Server public IP: 159.89.123.456
-✓ DNS resolved correctly: yourdomain.com -> 159.89.123.456
+[3/5] Configuration...
+  ✓ Domain configured: app.example.com
+  ✓ Secrets generated
 
-==> Starting services...
-✓ All services started
+[4/5] Deploying services...
+  ✓ Building images...
+  ✓ Running migrations...
+  ✓ Starting services...
 
-==> Validating deployment health...
-Timeout: 30s per attempt, 30 attempts max
-Total timeout: 15 minutes
-✓ Health check passed on attempt 5
-✓ Backend reports healthy status
+[5/5] Verifying health...
+  Waiting for backend... (attempt 1/60)
+  Waiting for backend... (attempt 2/60)
+  ✓ All services healthy
 
 ========================================
-Deployment Complete
+     FreshTrack Pro Deployment Complete!
 ========================================
+
+Access URLs:
+  Dashboard:    https://app.example.com
+  API:          https://app.example.com/api
+  Health:       https://app.example.com/api/health
+  Monitoring:   https://monitoring.app.example.com
+```
+
+### Checkpoint-Based Recovery
+
+If deployment fails or is interrupted, simply re-run the script:
+
+```bash
+sudo ./scripts/deploy-automated.sh
+```
+
+The script automatically resumes from the last successful checkpoint. Completed phases are skipped.
+
+**Example recovery output:**
+```
+[1/5] Pre-flight checks... SKIPPED (checkpoint exists)
+[2/5] Installing prerequisites... SKIPPED (checkpoint exists)
+[3/5] Configuration... SKIPPED (checkpoint exists)
+[4/5] Deploying services... Resuming...
+```
+
+**To start fresh (clear all checkpoints):**
+```bash
+sudo ./scripts/deploy-automated.sh --reset
 ```
 
 ### DNS Check Behavior
@@ -295,88 +357,158 @@ After starting services, the script validates deployment health:
 
 1. Makes HTTP request to `http://localhost:3000/health`
 2. Verifies response contains `{"status":"healthy"}`
-3. Retries up to 30 times with 30-second delays (15-minute total window)
-4. If health checks fail, automatically rolls back to previous version
+3. Retries up to 60 times with 5-second delays (5-minute total window)
+4. If health checks fail, check logs with `docker compose logs`
 
 ---
 
 ## Verification
 
-### 1. Check Application
-
-Open in browser:
-- Main app: https://yourdomain.com
-- Health check: https://yourdomain.com/health
-- API health: https://yourdomain.com/api/health
-
-Expected health response:
-```json
-{
-  "status": "healthy"
-}
-```
-
-### 2. Check SSL Certificate
+After deployment completes, run the verification script to validate all components:
 
 ```bash
-# Verify certificate issuer and expiry
-echo | openssl s_client -connect yourdomain.com:443 2>/dev/null | openssl x509 -noout -dates -issuer
-
-# Expected output:
-# issuer=C = US, O = Let's Encrypt, CN = R3
-# notBefore=Jan 24 00:00:00 2026 GMT
-# notAfter=Apr 24 23:59:59 2026 GMT
+./scripts/verify-deployment.sh your-domain.com
 ```
 
-### 3. Check Services
+The script performs 6 verification checks:
+
+| Check | Code | What It Validates |
+|-------|------|-------------------|
+| Service Health | VERIFY-01 | Backend, frontend, worker endpoints return 200 |
+| SSL Certificate | VERIFY-02 | Certificate valid, trusted, >30 days until expiry |
+| Dashboard Access | VERIFY-03 | Dashboard accessible via HTTPS (curl 200 OK) |
+| E2E Pipeline | VERIFY-04 | Sensor data flows through system (if TTN configured) |
+| Monitoring Stack | VERIFY-05 | Prometheus and Grafana accessible |
+| Consecutive Health | VERIFY-06 | Dashboard passes 3 consecutive health checks |
+
+**Expected output:**
+```
+========================================
+FreshTrack Pro Deployment Verification
+========================================
+Domain: app.example.com
+
+==> Checking container status...
+  ✓ backend: running
+  ✓ postgres: running
+  ✓ redis: running
+  ✓ caddy: running
+
+==> VERIFY-01: Checking all service endpoints...
+  ✓ Backend API is healthy (HTTP 200)
+  ✓ Frontend is healthy (HTTP 200)
+
+==> VERIFY-02: Validating SSL certificate...
+  ✓ SSL Certificate valid (87 days remaining)
+
+==> VERIFY-03 + VERIFY-06: Dashboard accessibility (3 consecutive passes)...
+  [PASS] Attempt 1: consecutive 1/3
+  [PASS] Attempt 2: consecutive 2/3
+  [PASS] Attempt 3: consecutive 3/3
+  ✓ Dashboard verified (3 consecutive passes)
+
+==> VERIFY-05: Checking monitoring stack...
+  ✓ Prometheus is healthy (HTTP 200)
+  ✓ Grafana is healthy (HTTP 200)
+
+========================================
+       DEPLOYMENT VERIFIED & LIVE
+========================================
+```
+
+### Manual Verification
+
+You can also verify manually:
 
 ```bash
-cd /opt/freshtrack-pro
-docker compose -f docker-compose.yml -f docker/compose.prod.yaml -f docker/compose.selfhosted.yaml ps
-```
+# Check service health
+curl https://your-domain.com/api/health
 
-All services should show `Up` status:
-```
-NAME                STATUS
-freshtrack-backend  Up
-freshtrack-frontend Up
-postgres            Up
-caddy               Up
-grafana             Up
-prometheus          Up
-loki                Up
-minio               Up
-```
+# Check SSL certificate
+echo | openssl s_client -connect your-domain.com:443 2>/dev/null | openssl x509 -noout -dates
 
-### 4. Check Logs
-
-```bash
-# All services
-docker compose logs -f
-
-# Specific service
-docker compose logs -f backend
-
-# Last 100 lines
-docker compose logs --tail=100 backend
+# Check container status
+docker compose ps
 ```
 
 ---
 
 ## Post-Deployment
 
-### Access Monitoring
+Run the post-deployment script to complete setup:
 
-**Grafana Dashboard:**
-- URL: https://monitoring.yourdomain.com
-- Default login: `admin` / (from `GRAFANA_ADMIN_PASSWORD` in config)
-- Change password on first login
+```bash
+./scripts/post-deploy.sh your-domain.com
+```
 
-**Prometheus (internal):**
-- URL: http://localhost:9090 (SSH tunnel only)
-- Not exposed to internet for security
+The script performs 5 setup steps:
+
+| Step | Code | What It Does |
+|------|------|--------------|
+| URL Summary | POST-01 | Displays all service URLs |
+| Credentials | POST-02 | Shows credentials (terminal only, not logged) |
+| Demo Data | POST-03 | Seeds sample organization and sensor data |
+| Grafana Note | POST-04 | Confirms dashboards are provisioned |
+| Next Steps | POST-05 | Displays 5-step onboarding guide |
+
+**Expected output:**
+```
+========================================
+FreshTrack Pro Post-Deployment Setup
+========================================
+Domain: app.example.com
+
+==> POST-01: Displaying service URLs...
+
+  Dashboard:  https://app.example.com
+  API:        https://app.example.com/api/health
+  Grafana:    https://app.example.com/grafana
+  Prometheus: https://app.example.com/prometheus
+  Bull Board: https://app.example.com/api/admin/queues
+
+==> POST-02: Displaying credentials (terminal only)...
+========================================
+  CREDENTIAL SUMMARY (Terminal Only)
+========================================
+PostgreSQL: abcd...wxyz
+Grafana:    efgh...uvwx
+...
+
+==> POST-03: Seeding demo data...
+  ✓ Demo organization created
+  ✓ Sample site created
+  ✓ Sensor readings seeded
+
+==> POST-04: Grafana dashboards...
+  Pre-configured dashboards automatically provisioned:
+    - FreshTrack Pro Overview
+    - FreshTrack Sensor Metrics
+
+==> POST-05: Next steps...
+========================================
+       NEXT STEPS
+========================================
+  1. Sign up at https://app.example.com/signup
+  2. Create organization in dashboard
+  3. Invite team members
+  4. Configure TTN integration
+  5. Set up alerting rules
+```
+
+### Access Your Application
+
+After post-deployment completes:
+
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| Dashboard | https://your-domain.com | Sign up to create admin |
+| Grafana | https://your-domain.com/grafana | admin / (from secrets) |
+| Prometheus | https://your-domain.com/prometheus | None (internal) |
+| Bull Board | https://your-domain.com/api/admin/queues | None (admin only) |
 
 ### SSH Tunnel for Prometheus
+
+If Prometheus is not exposed publicly, access via SSH tunnel:
 
 ```bash
 # From your local machine
