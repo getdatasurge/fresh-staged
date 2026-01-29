@@ -10,6 +10,8 @@
 
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
+import { desc, sql } from 'drizzle-orm';
+import { db } from '../db/client.js';
 import { router } from '../trpc/index.js';
 import { orgProcedure } from '../trpc/procedures.js';
 import * as smsConfigService from '../services/sms-config.service.js';
@@ -94,5 +96,60 @@ export const smsConfigRouter = router({
         }
         throw error;
       }
+    }),
+
+  /**
+   * List SMS alert history
+   * Returns recent SMS alerts sent for the organization
+   */
+  listAlertHistory: orgProcedure
+    .input(z.object({
+      organizationId: z.string().uuid(),
+      limit: z.number().int().min(1).max(100).optional().default(20),
+    }))
+    .output(z.array(z.object({
+      id: z.string().uuid(),
+      phoneNumber: z.string(),
+      fromNumber: z.string().nullable(),
+      alertType: z.string(),
+      message: z.string(),
+      status: z.string(),
+      createdAt: z.date(),
+      errorMessage: z.string().nullable(),
+      providerMessageId: z.string().nullable(),
+      deliveryUpdatedAt: z.date().nullable(),
+    })))
+    .query(async ({ ctx, input }) => {
+      // Query sms_alert_log table directly via raw SQL since it's not in Drizzle schema
+      const logs = await db.execute(sql`
+        SELECT
+          id,
+          phone_number,
+          from_number,
+          alert_type,
+          message,
+          status,
+          created_at,
+          error_message,
+          provider_message_id,
+          delivery_updated_at
+        FROM sms_alert_log
+        WHERE organization_id = ${ctx.user.organizationId}
+        ORDER BY created_at DESC
+        LIMIT ${input.limit}
+      `);
+
+      return logs.rows.map((log: any) => ({
+        id: log.id,
+        phoneNumber: log.phone_number,
+        fromNumber: log.from_number,
+        alertType: log.alert_type,
+        message: log.message,
+        status: log.status,
+        createdAt: new Date(log.created_at),
+        errorMessage: log.error_message,
+        providerMessageId: log.provider_message_id,
+        deliveryUpdatedAt: log.delivery_updated_at ? new Date(log.delivery_updated_at) : null,
+      }));
     }),
 });

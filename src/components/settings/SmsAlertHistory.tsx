@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useTRPC } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -130,24 +130,31 @@ interface SmsAlertHistoryProps {
 export function SmsAlertHistory({ organizationId }: SmsAlertHistoryProps) {
   const queryClient = useQueryClient();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const trpc = useTRPC();
 
-  const { data: logs, isLoading, isRefetching } = useQuery({
-    queryKey: ["sms-alert-history", organizationId],
-    queryFn: async () => {
-      if (!organizationId) return [];
-      
-      const { data, error } = await supabase
-        .from("sms_alert_log")
-        .select("id, phone_number, from_number, alert_type, message, status, created_at, error_message, provider_message_id, delivery_updated_at")
-        .eq("organization_id", organizationId)
-        .order("created_at", { ascending: false })
-        .limit(20);
+  const queryOptions = trpc.smsConfig.listAlertHistory.queryOptions({
+    organizationId: organizationId!,
+    limit: 20,
+  });
 
-      if (error) throw error;
-      return data as SmsLogEntry[];
-    },
+  const { data: trpcLogs, isLoading, isRefetching } = useQuery({
+    ...queryOptions,
     enabled: !!organizationId,
   });
+
+  // Transform tRPC response to match component's expected snake_case format
+  const logs: SmsLogEntry[] | undefined = trpcLogs?.map(log => ({
+    id: log.id,
+    phone_number: log.phoneNumber,
+    from_number: log.fromNumber,
+    alert_type: log.alertType,
+    message: log.message,
+    status: log.status,
+    created_at: log.createdAt.toISOString(),
+    error_message: log.errorMessage,
+    provider_message_id: log.providerMessageId,
+    delivery_updated_at: log.deliveryUpdatedAt?.toISOString() ?? null,
+  }));
 
   const toggleExpanded = (id: string) => {
     setExpandedIds(prev => {
@@ -162,7 +169,7 @@ export function SmsAlertHistory({ organizationId }: SmsAlertHistoryProps) {
   };
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ["sms-alert-history", organizationId] });
+    queryClient.invalidateQueries({ queryKey: queryOptions.queryKey });
   };
 
   const copyMessageId = (id: string) => {
