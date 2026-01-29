@@ -22,7 +22,7 @@ Complete guide for deploying FreshTrack Pro to a self-hosted Ubuntu 24.04 VM.
 
 ## Overview
 
-This guide covers deploying FreshTrack Pro using the automated `deploy-selfhosted.sh` script. The script is idempotent and can be safely rerun after failures.
+This guide covers deploying FreshTrack Pro using the automated `deploy-automated.sh` script. The script is checkpoint-based, idempotent, and automatically resumes from the last successful step after failures.
 
 **What the script does:**
 - Installs Docker and Docker Compose
@@ -43,25 +43,35 @@ This guide covers deploying FreshTrack Pro using the automated `deploy-selfhoste
 
 ### Server Requirements
 
-| Requirement | Minimum | Recommended |
-|-------------|---------|-------------|
-| CPU | 4 vCPU | 4+ vCPU |
-| RAM | 8 GB | 16 GB |
-| Storage | 100 GB SSD | 200 GB SSD |
-| OS | Ubuntu 24.04 LTS | Ubuntu 24.04 LTS |
-| Network | Static IP | Static IP |
+| Requirement | Minimum | Recommended | Notes |
+|-------------|---------|-------------|-------|
+| CPU | 4 vCPU | 4+ vCPU | `preflight.sh` validates automatically |
+| RAM | 8 GB | 16 GB | Deployment fails preflight if less than minimum |
+| Storage | 100 GB SSD | 200 GB SSD | For database growth and Docker images |
+| OS | Ubuntu 22.04 LTS | Ubuntu 24.04 LTS | Other distros not officially supported |
+| Network | Static IP | Static IP | Required for DNS configuration |
 
-### External Services
+> **Note:** The `preflight.sh` script validates server requirements automatically. Deployment will abort early with clear error messages if minimums are not met.
+
+### External Services Checklist
 
 **Required:**
 - [ ] Domain name with DNS access
+  - Primary domain (e.g., `freshtrack.example.com`)
+  - Subdomain for monitoring (`monitoring.example.com`)
 - [ ] Stack Auth account (https://stack-auth.com)
-  - Project ID
-  - Publishable Key
-  - Secret Key
+  - Project ID (found in Dashboard > Settings)
+  - Publishable Key (`pk_...`) - safe to expose in frontend
+  - Secret Key (`sk_...`) - store securely, never commit to git
 
 **Optional:**
-- [ ] Telnyx account for SMS notifications
+- [ ] Telnyx account for SMS alerts
+  - API Key (from Telnyx portal)
+  - Messaging Profile ID (configured in portal)
+  - Phone Number (purchased in Telnyx)
+- [ ] The Things Network (TTN) for LoRaWAN sensors
+  - Application ID (from TTN console)
+  - API Key (generated in TTN console)
 - [ ] Slack/Discord webhook for deployment notifications
 
 ### Local Tools
@@ -77,12 +87,12 @@ Configure DNS records BEFORE running deployment. The deployment script verifies 
 
 ### Required Records
 
-| Type | Name | Value | TTL |
-|------|------|-------|-----|
-| A | @ (or yourdomain.com) | YOUR_SERVER_IP | 300 |
-| A | www | YOUR_SERVER_IP | 300 |
-| A | monitoring | YOUR_SERVER_IP | 300 |
-| A | status | YOUR_SERVER_IP | 300 |
+| Type | Name | Value | Required | Purpose |
+|------|------|-------|----------|---------|
+| A | @ (or yourdomain.com) | YOUR_SERVER_IP | Yes | Main application |
+| A | monitoring | YOUR_SERVER_IP | Yes | Grafana/Prometheus dashboards |
+| A | status | YOUR_SERVER_IP | No | Uptime Kuma status page |
+| A | www | YOUR_SERVER_IP | No | WWW redirect |
 
 ### Verify DNS Propagation
 
@@ -100,6 +110,30 @@ dig yourdomain.com +short
 - Typical: 5-60 minutes
 - Worst case: up to 24 hours
 - Use `dig` command to verify before deploying
+
+### Firewall Requirements
+
+Ensure these ports are accessible BEFORE deployment:
+
+| Port | Protocol | Direction | Purpose |
+|------|----------|-----------|---------|
+| 22 | TCP | Inbound | SSH access (required) |
+| 80 | TCP | Inbound | HTTP - Let's Encrypt ACME challenge |
+| 443 | TCP | Inbound | HTTPS - Production traffic |
+
+> **Note:** The deployment script configures UFW (host firewall) automatically, but **cloud provider firewalls** (AWS Security Groups, DigitalOcean Firewall, GCP VPC rules) must be configured manually before deployment.
+
+### Pre-Deployment Checklist
+
+Complete this checklist BEFORE running `deploy-automated.sh`:
+
+- [ ] VM provisioned with minimum specs (4 vCPU, 8 GB RAM, 100 GB SSD)
+- [ ] SSH access confirmed: `ssh root@YOUR_IP`
+- [ ] DNS A records created for domain and monitoring subdomain
+- [ ] DNS propagated: `dig yourdomain.com +short` returns server IP
+- [ ] Cloud firewall allows ports 22, 80, 443 inbound
+- [ ] Stack Auth credentials ready (Project ID, Publishable Key, Secret Key)
+- [ ] Admin email ready (for SSL certificate notifications)
 
 ---
 
@@ -197,8 +231,8 @@ See `scripts/deploy.config.example` for all available options and detailed comme
 ### Run Deployment Script
 
 ```bash
-chmod +x scripts/deploy-selfhosted.sh
-sudo ./scripts/deploy-selfhosted.sh
+chmod +x scripts/deploy-automated.sh
+sudo ./scripts/deploy-automated.sh
 ```
 
 The script will:
@@ -540,7 +574,7 @@ See [docs/DATABASE.md](DATABASE.md) for complete restoration procedures. Quick r
 
 4. Retry deployment after DNS propagates:
    ```bash
-   sudo ./scripts/deploy-selfhosted.sh
+   sudo ./scripts/deploy-automated.sh
    ```
 
 **DNS propagation checkers:**
@@ -704,7 +738,7 @@ ls -la /opt/freshtrack-pro/secrets/
 # -rw------- minio_secret_key.txt
 
 # Recreate if missing
-sudo ./scripts/deploy-selfhosted.sh
+sudo ./scripts/deploy-automated.sh
 ```
 
 **2. Resource limits exceeded:**
@@ -773,7 +807,7 @@ Deploy new version:
 ```bash
 cd /opt/freshtrack-pro
 git pull origin main
-sudo ./scripts/deploy-selfhosted.sh
+sudo ./scripts/deploy-automated.sh
 ```
 
 The script handles:
@@ -873,7 +907,7 @@ cd /opt/freshtrack-pro
 docker compose pull
 
 # Deploy with health check validation
-sudo ./scripts/deploy-selfhosted.sh
+sudo ./scripts/deploy-automated.sh
 ```
 
 **fail2ban status:**
@@ -949,7 +983,7 @@ docker image prune -a
 
 ```bash
 # Deploy or update
-sudo ./scripts/deploy-selfhosted.sh
+sudo ./scripts/deploy-automated.sh
 
 # View logs
 docker compose logs -f [service-name]
@@ -980,7 +1014,7 @@ cat .deployment-history
 │   ├── compose.prod.yaml          # Production config
 │   └── compose.selfhosted.yaml    # Self-hosted overrides
 ├── scripts/
-│   ├── deploy-selfhosted.sh       # Deployment script
+│   ├── deploy-automated.sh       # Deployment script
 │   ├── deploy.config              # Configuration (gitignored)
 │   └── test-restore.sh            # Backup test script
 ├── secrets/                       # Secret files (600 permissions)
