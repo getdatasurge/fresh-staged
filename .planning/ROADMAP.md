@@ -55,8 +55,14 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
         - [x] Wave 7: Platform Admin & Remaining Cleanup
 - [x] ~~**Phase 29: Production Data Migration**~~ - SKIPPED (no Supabase production access)
 - [ ] **Phase 30: System Hardening** - Final security audit and performance tuning
+    **Plans:** 4 plans
+    Plans:
+    - [ ] 30-01-PLAN.md — Backend security headers, body limits, and request timeout
+    - [ ] 30-02-PLAN.md — Dependency vulnerability audit and fixes
+    - [ ] 30-03-PLAN.md — Enhanced supabase-placeholder error handling
+    - [ ] 30-04-PLAN.md — Integration verification and final testing
 
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-26 (Phase 28 complete)*
+*Last updated: 2026-01-28 (Phase 30 planned)*
