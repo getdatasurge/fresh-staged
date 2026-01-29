@@ -146,6 +146,48 @@ verify_monitoring_stack() {
     fi
 }
 
+# VERIFY-01: Validate worker health endpoint
+# Args: $1 = domain
+# Returns: 0 if healthy, 1 otherwise
+verify_worker_health() {
+    local domain="$1"
+    verify_endpoint_health "Worker" "https://${domain}/api/worker/health"
+}
+
+# VERIFY-01: Validate all service health endpoints
+# Args: $1 = domain
+# Returns: 0 if core services healthy, 1 otherwise
+verify_all_services() {
+    local domain="$1"
+    local failed=0
+
+    step "Verifying all service endpoints..."
+
+    # Backend health
+    if ! verify_endpoint_health "Backend API" "https://${domain}/api/health"; then
+        failed=1
+    fi
+
+    # Frontend accessibility
+    if ! verify_endpoint_health "Frontend" "https://${domain}"; then
+        failed=1
+    fi
+
+    # Worker health (optional - may not exist in all deployments)
+    if ! verify_endpoint_health "Worker" "https://${domain}/api/worker/health"; then
+        warning "Worker health check failed (may not be exposed externally)"
+        # Don't fail on worker - it may be internal only
+    fi
+
+    if [[ $failed -eq 0 ]]; then
+        success "All core services healthy"
+        return 0
+    else
+        error "One or more core services unhealthy"
+        return 1
+    fi
+}
+
 # Check Docker service state
 # Args: $1 = service name (e.g. backend, postgres)
 # Returns: 0 if Running, 1 otherwise
