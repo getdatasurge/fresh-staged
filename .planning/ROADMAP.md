@@ -5,7 +5,8 @@
 - ✅ **v1.0 Self-Hosted MVP** - Phases 1-7 (shipped 2026-01-23)
 - ✅ **v1.1 Production Ready** - Phases 8-13 (shipped 2026-01-24)
 - ✅ **v2.0 Real-Time & Billing** - Phases 14-21 (shipped 2026-01-25)
-- 🚧 **v2.1 Streamlined Deployment** - Phases 22-26 (shipped 2026-01-25)
+- ✅ **v2.1 Streamlined Deployment** - Phases 22-26 (shipped 2026-01-25)
+- ✅ **v2.2 Technical Debt & Stabilization** - Phases 27-33 (shipped 2026-01-29)
 
 ## Phases
 
@@ -40,7 +41,7 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
 
 ## Phases
 
-### 🚧 v2.2 Technical Debt & Stabilization (Planned)
+### ✅ v2.2 Technical Debt & Stabilization — COMPLETE
 
 **Milestone Goal:** Eliminate Supabase dependency and stabilize TTN integration for long-term maintainability
 
@@ -84,15 +85,15 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
     - [x] 32-05-PLAN.md — Gap closure: Implement reports.export with real database queries
     - [x] 32-06-PLAN.md — Gap closure: Implement Telnyx API integration (verification + webhook)
 
-- [ ] **Phase 33: Error Handling UI Integration**
+- [x] **Phase 33: Error Handling UI Integration** — COMPLETE
     - **Goal:** Wire SupabaseMigrationError to UI error boundaries for user-friendly error messages
     - **Closes:** Integration gap (SupabaseMigrationError → UI consumers)
     - **Plans:** 3 plans
     Plans:
     - [x] 33-01-PLAN.md — Extend errorHandler.ts + create MigrationErrorBoundary components
     - [x] 33-02-PLAN.md — Wire UI components + visual verification
-    - [ ] 33-03-PLAN.md — Gap closure: Integrate MigrationErrorBoundary into DashboardLayout
+    - [x] 33-03-PLAN.md — Gap closure: Integrate MigrationErrorBoundary into DashboardLayout + tRPC pattern fix
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-29 (Phase 33 gap closure plan added)*
+*Last updated: 2026-01-29 (v2.2 milestone complete - Phase 33 verified)*

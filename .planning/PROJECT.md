@@ -115,15 +115,36 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - 15 tRPC routers, 169 backend tests passing — v2.0
 - 9 frontend hooks migrated from Supabase to tRPC — v2.0
 
+**TTN Integration (v2.2)**
+- TTN settings/provisioning via tRPC (TTN-01) — v2.2
+- TTN provisioning UI wired to tRPC backend (TTN-02) — v2.2
+- TTN device diagnostics via tRPC (TTN-03) — v2.2
+
+**Edge Function Migration (v2.2)**
+- Reports export with real database queries (EDGE-01) — v2.2
+- Telnyx verification status via real API (EDGE-02) — v2.2
+- Telnyx webhook configuration via real API (EDGE-03) — v2.2
+- All edge function calls migrated to tRPC (EDGE-04) — v2.2
+
+**Error Handling (v2.2)**
+- MigrationErrorBoundary integrated into DashboardLayout (ERR-01) — v2.2
+- SupabaseMigrationError with isSupabaseMigrationError helper (ERR-02) — v2.2
+- Graceful degradation in 6+ UI components (ERR-03) — v2.2
+
+**System Hardening (v2.2)**
+- Security headers via @fastify/helmet (SEC-01) — v2.2
+- Request body limits and timeouts (SEC-02) — v2.2
+- Dependency vulnerability audit complete (SEC-03) — v2.2
+
 ### Active
 
 <!-- Next milestone features - to be planned -->
 
 *Awaiting next milestone planning. Potential areas:*
-- TTN SDK integration for complete Supabase removal (AUTH-02 completion)
+- Complete v2.1 deployment orchestration (Phases 25-26)
 - AWS ECS/Fargate deployment option (ENT-01)
 - Advanced billing analytics and reporting
-- Additional real-time features and optimizations
+- Mobile PWA improvements
 
 ### Out of Scope
 
@@ -137,28 +158,15 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Blue-green/canary deployments — Over-engineering for current scale
 - Data migration from Supabase — No access to production Supabase data
 
-## Current Milestone: v2.1 Streamlined Deployment
-
-**Goal:** Transform deployment from multi-step documentation-following to one-script automated experience
-
-**Target features:**
-- One-script deployment from fresh Ubuntu/Debian VM to production-ready system
-- Interactive configuration (domain, admin email, database passwords)
-- Automated prerequisite installation (Docker, Docker Compose, firewall rules)
-- Comprehensive deployment verification (health checks, browser access, E2E test, monitoring)
-- Intelligent error handling (auto-rollback for critical failures, diagnostics for fixable issues)
-- Complete deployment documentation (prerequisites, walkthrough, troubleshooting, operations)
-- Post-deployment setup (admin user invitation, sample data, configured dashboards)
-
-## Current State (v2.0 Shipped)
+## Current State (v2.2 Shipped)
 
 **Codebase:**
-- Backend: ~50K LOC TypeScript (Fastify, Drizzle, PostgreSQL, tRPC, Socket.io, BullMQ)
-- Frontend: ~95K LOC TypeScript/TSX (React, TanStack Query, tRPC client)
+- Backend: ~55K LOC TypeScript (Fastify, Drizzle, PostgreSQL, tRPC, Socket.io, BullMQ)
+- Frontend: ~100K LOC TypeScript/TSX (React, TanStack Query, tRPC client)
 - Migration scripts: 1,354 LOC TypeScript
 - Test/deployment scripts: ~4,500 LOC Shell/TypeScript
-- 21 phases, 118 plans completed across v1.0, v1.1, and v2.0
-- 169 backend tests (tRPC routers + original REST), 45 frontend tests
+- 33 phases, 145 plans completed across v1.0, v1.1, v2.0, v2.1, and v2.2
+- 1,030 backend tests passing, 107 frontend tests passing
 
 **Infrastructure:**
 - Docker Compose with 15+ services (backend, worker, Socket.io server, production overlay)
@@ -170,9 +178,10 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Multi-target deployment (self-hosted, DigitalOcean)
 
 **Tech Debt:**
-- AUTH-02 partial: 9 hooks migrated to tRPC, 6 TTN hooks require backend TTN SDK integration, 11 hooks outside scope still use Supabase
-- TTN provisioning requires @ttn-lw/grpc-web-api-client integration and BullMQ job queue
-- Production data migration pending Supabase access (deferred)
+- 53 test failures need mock updates (38 frontend, 15 backend pre-existing)
+- supabase-placeholder.ts remains (intentional graceful degradation)
+- SensorSimulatorPanel edge function call kept (admin testing tool)
+- v2.1 Phases 25-26 deployment orchestration not completed
 
 **Known Issues:**
 - None critical — production ready
@@ -204,6 +213,9 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 | PgBouncer transaction mode | ORM compatible with max_prepared_statements | Good — validated in 10-04 |
 | Bash E2E tests over Jest | Portable across deployment targets | Good — works locally and remote |
 | Health check-based deployments | Zero-downtime via Docker health checks | Good — >95% success rate |
+| createTRPCContext over createTRPCReact | queryOptions pattern used across codebase | Good — 165+ call sites standardized |
+| MigrationErrorBoundary wraps children only | Preserve header/sidebar on page errors | Good — graceful degradation working |
+| supabase-placeholder with SupabaseMigrationError | Graceful degradation during migration | Good — user-friendly error messages |
 
 ---
-*Last updated: 2026-01-25 after v2.0 milestone*
+*Last updated: 2026-01-29 after v2.2 milestone*

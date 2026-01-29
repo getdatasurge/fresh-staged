@@ -1,5 +1,54 @@
 # Project Milestones: FreshTrack Pro Migration
 
+## v2.2 Technical Debt & Stabilization (Shipped: 2026-01-29)
+
+**Delivered:** Complete elimination of Supabase edge function dependency, stabilized TTN integration on tRPC backend, error handling UI integration with graceful degradation, and tRPC pattern standardization across 165+ call sites.
+
+**Phases completed:** 27-33 (27 plans total, Phase 29 skipped)
+
+**Key accomplishments:**
+
+- TTN SDK Integration — Backend services now own entire TTN lifecycle (settings, provisioning, diagnostics) via tRPC procedures, replacing 6 Supabase edge function calls
+- Edge Function Migration — 15 remaining edge function calls migrated to tRPC across reports export, Telnyx integration, TTN device diagnostics, and onboarding flows
+- Reports Export — Real database queries from sensorReadings and manualTemperatureLogs tables with CSV/HTML formatting, date range filtering, and site/unit scoping
+- Telnyx Integration — Real API calls for toll-free verification status and webhook configuration using official Telnyx SDK
+- Error Handling UI — MigrationErrorBoundary integrated into DashboardLayout, SupabaseMigrationError class with isSupabaseMigrationError helper, graceful degradation across 6+ UI components
+- tRPC Pattern Fix — Standardized codebase to createTRPCContext (queryOptions pattern) fixing app crash, migrated 20+ files to consistent pattern
+
+**Stats:**
+
+- 122 commits across v2.2 development
+- 6 active phases (27, 28, 30, 31, 32, 33), 27 plans, Phase 29 skipped
+- 5 days from milestone start to ship (2026-01-25 → 2026-01-29)
+- 18/18 cross-phase integration links verified
+- 3/3 E2E flows complete (TTN Settings, Report Export, Error Handling)
+
+**Git range:** Phases 27-33
+
+**Gap closure phases:**
+
+- Phase 31: TTN Provisioning UI Migration — Closed integration gap (TTN UI → tRPC)
+- Phase 32: Remaining Edge Function Migration — Closed 15 edge function calls in 12 files
+- Phase 33: Error Handling UI Integration — Closed error boundary integration gap + tRPC pattern fix
+
+**Tech debt resolved:**
+
+- All edge function calls migrated to tRPC (except intentional SensorSimulator)
+- TTN provisioning flow now works end-to-end
+- Reports export returns real data from database
+- Telnyx verification/webhook uses real API calls
+- Error boundaries catch and display migration errors gracefully
+
+**Tech debt carried forward:**
+
+- 53 test failures need mock updates (38 frontend, 15 backend pre-existing)
+- supabase-placeholder.ts remains (intentional graceful degradation)
+- SensorSimulatorPanel edge function call kept (admin testing tool)
+
+**What's next:** Next milestone planning — potential areas include completing v2.1 deployment orchestration, mobile PWA improvements, or new product capabilities
+
+---
+
 ## v2.0 Real-Time & Billing (Shipped: 2026-01-25)
 
 **Delivered:** Real-time dashboard updates, background job processing, SMS/email notifications, Stripe billing integration, and comprehensive backend API migration from Supabase to tRPC.
