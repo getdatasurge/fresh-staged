@@ -66,8 +66,11 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
 - [ ] **Phase 31: TTN Provisioning UI Migration**
     - **Goal:** Wire TTN provisioning UI to Phase 27 tRPC endpoints
     - **Closes:** Integration gap (TTN UI → tRPC), Flow gap (TTN Organization Provisioning)
-    - **Files:** TTNCredentialsPanel.tsx (6 calls), useTTNSetupWizard.ts
-    - **Tasks:** Map edge functions → tRPC, update components, verify flow
+    - **Plans:** 3 plans
+    Plans:
+    - [ ] 31-01-PLAN.md — Add missing tRPC procedures for TTN provisioning
+    - [ ] 31-02-PLAN.md — Migrate TTNCredentialsPanel to tRPC
+    - [ ] 31-03-PLAN.md — Add integration tests and verify UI
 
 - [ ] **Phase 32: Remaining Edge Function Migration**
     - **Goal:** Migrate remaining supabase.functions.invoke calls to tRPC
@@ -82,4 +85,4 @@ See .planning/milestones/v2.1-SUMMARY.md for details. 9 plans completed.
 
 ---
 *Roadmap created: 2026-01-25*
-*Last updated: 2026-01-28 (Gap closure phases 31-33 added from audit)*
+*Last updated: 2026-01-28 (Phase 31 planned with 3 plans)*
