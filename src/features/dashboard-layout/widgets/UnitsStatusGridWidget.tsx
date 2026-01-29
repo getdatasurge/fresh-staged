@@ -1,16 +1,17 @@
 /**
  * Units Status Grid Widget
- * 
+ *
  * Displays a grid of all units in the site with their current status.
  */
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/lib/supabase-placeholder";
+import { useQuery } from "@tanstack/react-query";
 import { Thermometer, Wifi, WifiOff, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTRPC } from "@/lib/trpc";
 import type { WidgetProps } from "../types";
 
 interface UnitStatus {
@@ -23,43 +24,39 @@ interface UnitStatus {
   area_name: string;
 }
 
-export function UnitsStatusGridWidget({ 
+export function UnitsStatusGridWidget({
   entityId,
+  organizationId,
 }: WidgetProps) {
-  const [units, setUnits] = useState<UnitStatus[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const trpc = useTRPC();
 
-  useEffect(() => {
-    if (!entityId) return;
-    
-    const loadUnits = async () => {
-      const { data } = await supabase
-        .from("units")
-        .select(`
-          id, name, unit_type, temp_limit_high, last_temp_reading, last_reading_at,
-          area:areas!inner(name, site_id)
-        `)
-        .eq("areas.site_id", entityId)
-        .eq("is_active", true)
-        .order("name")
-        .limit(50);
+  // Fetch all units for the organization
+  const queryOptions = trpc.units.listByOrg.queryOptions({
+    organizationId: organizationId!,
+  });
 
-      if (data) {
-        setUnits(data.map(u => ({
-          id: u.id,
-          name: u.name,
-          unit_type: u.unit_type,
-          temp_limit_high: u.temp_limit_high,
-          last_temp_reading: u.last_temp_reading,
-          last_reading_at: u.last_reading_at,
-          area_name: (u.area as any).name,
-        })));
-      }
-      setIsLoading(false);
-    };
+  const { data: allUnits, isLoading } = useQuery({
+    ...queryOptions,
+    enabled: !!organizationId,
+    staleTime: 60_000, // 1 minute
+  });
 
-    loadUnits();
-  }, [entityId]);
+  // Filter for site (entityId is siteId for site-level widgets) and transform to expected shape
+  const units = useMemo<UnitStatus[]>(() => {
+    if (!allUnits || !entityId) return [];
+    return allUnits
+      .filter((u) => u.siteId === entityId && u.isActive)
+      .slice(0, 50)
+      .map((u) => ({
+        id: u.id,
+        name: u.name,
+        unit_type: u.unitType,
+        temp_limit_high: u.tempMax,
+        last_temp_reading: u.lastTemperature,
+        last_reading_at: u.lastReadingAt ? new Date(u.lastReadingAt).toISOString() : null,
+        area_name: u.areaName,
+      }));
+  }, [allUnits, entityId]);
 
   const getUnitStatus = (unit: UnitStatus) => {
     const now = Date.now();
