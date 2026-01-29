@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.4 Tech Debt Cleanup — Phase 38 Test Infrastructure COMPLETE
+**Current focus:** v2.4 Tech Debt Cleanup — Phase 39 Dashboard Widget Migration IN PROGRESS
 
 ## Current Position
 
 Milestone: v2.4 Tech Debt Cleanup
-Phase: 38 of 43 (Test Infrastructure) COMPLETE
-Plan: 03 of 3 complete
-Status: Phase complete
-Last activity: 2026-01-29 — Completed 38-03-PLAN.md (Frontend Test Mock Migration)
+Phase: 39 of 43 (Dashboard Widget Migration)
+Plan: 01 complete
+Status: In progress
+Last activity: 2026-01-29 — Completed 39-01-PLAN.md (Simple Widgets Migration)
 
-Progress: ███░░░░░░░ 25%
+Progress: ███░░░░░░░ 27%
 
 ## Milestones Shipped
 
@@ -35,7 +35,7 @@ Progress: ███░░░░░░░ 25%
 | Phase | Name | Requirements | Status |
 |-------|------|--------------|--------|
 | 38 | Test Infrastructure | TEST-01, TEST-02, TEST-03 | COMPLETE (3 plans) |
-| 39 | Dashboard Widget Migration | WIDGET-01-09 | Not started |
+| 39 | Dashboard Widget Migration | WIDGET-01-09 | In progress (1 plan) |
 | 40 | Settings Components Migration | SETTINGS-01-07 | Not started |
 | 41 | Pages Migration | PAGE-01-07 | Not started |
 | 42 | Admin/Debug + Other Components | ADMIN-01-04, COMP-01-04 | Not started |
@@ -53,18 +53,20 @@ Progress: ███░░░░░░░ 25%
 | DEC-38-02-A | Mock both bullmq and ioredis | Complete Redis isolation requires mocking both for QueueService |
 | DEC-38-02-B | Deterministic job IDs | job-1, job-2 format enables reliable test assertions |
 | DEC-38-03-A | Reduce TTNCredentialsPanel test suite | Component's manual refetch() pattern creates test isolation challenges; deferred full coverage |
+| DEC-39-01-A | useMemo for client-side filtering in widgets | listByOrg returns all org units; filter by siteId client-side for simplicity |
+| DEC-39-01-B | Keep snake_case interfaces, transform tRPC responses | Maintain component compatibility while using camelCase tRPC data |
 
 ### Blockers/Concerns
 
 - ~~32 frontend tests fail with queryOptions/mutationOptions errors~~ FIXED in 38-03
 - ~~22 backend tests fail in queue.service.test.ts~~ FIXED in 38-02
 - 15 pre-existing failures in tests/api/ttn-devices.test.ts (unrelated)
-- 35 files still import from supabase-placeholder.ts
+- 32 files still import from supabase-placeholder.ts (3 widgets migrated in 39-01)
 - TTNCredentialsPanel has reduced test coverage (5 tests vs original 21) due to component complexity
 
 ## Session Continuity
 
-Last session: 2026-01-29T13:24:00Z
-Stopped at: Completed 38-03-PLAN.md (Phase 38 complete)
+Last session: 2026-01-29T14:09:02Z
+Stopped at: Completed 39-01-PLAN.md (Simple Widgets Migration)
 Resume file: None
-Next action: Plan and execute Phase 39 Dashboard Widget Migration
+Next action: Execute 39-02-PLAN.md (Complex Widgets Migration)
