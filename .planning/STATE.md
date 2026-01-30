@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.9 Quality Assurance -- Phase 54 plan 02 complete
+**Current focus:** v2.9 Quality Assurance -- Phase 54 complete (both plans done)
 
 ## Current Position
 
 Milestone: v2.9 Quality Assurance
 Phase: 54 of 55 (Frontend Test Restoration)
-Plan: 02 of 2 (complete)
-Status: In progress (plan 02 complete)
-Last activity: 2026-01-30 -- Completed 54-02-PLAN.md (widget health states test cleanup)
+Plan: 02 of 2 (all complete)
+Status: Phase complete
+Last activity: 2026-01-30 -- Completed 54-01-PLAN.md (TTNCredentialsPanel test restoration)
 
 Progress: [█████░░░░░] 50%
 
@@ -51,6 +51,7 @@ Progress: [█████░░░░░] 50%
 - Sites tests: removed 2 skipped tRPC update tests (duplicated by REST API file with 25 passing tests)
 - Readings tests: fixed 5 ingest tests via socket plugin mock, removed 3 duplicate query tests; fixed invalid UUID in TEST_READING_ID causing Zod serialization failure
 - Widget health tests: deleted 12 skipped tests targeting deprecated no-op stub functions rather than implementing them
+- TTNCredentialsPanel tests: replaced vi.mock('@tanstack/react-query') with mockUseTRPC + createQueryOptionsMock; mock SecretField for decoupling; check mutation mock.calls[0][0] due to TanStack context arg
 
 ### Blockers/Concerns
 
@@ -59,6 +60,6 @@ None -- all known issues resolved through v2.8.
 ## Session Continuity
 
 Last session: 2026-01-30
-Stopped at: Completed 54-02-PLAN.md
+Stopped at: Completed 54-01-PLAN.md (Phase 54 fully complete)
 Resume file: None
-Next action: Execute 54-01-PLAN.md or continue Phase 54
+Next action: Execute Phase 55 (Final Cleanup) or ship v2.9
