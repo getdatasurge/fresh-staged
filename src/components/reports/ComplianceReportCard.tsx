@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useTRPC } from "@/lib/trpc";
 import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,8 @@ export function ComplianceReportCard({
   const [exportFormat, setExportFormat] = useState<"csv" | "pdf">("csv");
 
   // tRPC mutation for exporting compliance reports
-  const exportMutation = trpc.reports.export.useMutation({
+  const exportMutation = useMutation({
+    ...trpc.reports.export.mutationOptions(),
     onSuccess: (data) => {
       // Download file
       const blob = new Blob([data.content], { type: data.contentType });

@@ -26,6 +26,7 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
@@ -45,14 +46,18 @@ const Dashboard = () => {
   const { effectiveOrgId, isImpersonating, isInitialized } = useEffectiveIdentity();
 
   // Queries
-  const statsQuery = trpc.organizations.stats.useQuery(
-    { organizationId: effectiveOrgId || "" },
-    { enabled: !!effectiveOrgId }
+  const statsQuery = useQuery(
+    trpc.organizations.stats.queryOptions(
+      { organizationId: effectiveOrgId || "" },
+      { enabled: !!effectiveOrgId }
+    )
   );
-  
-  const unitsQuery = trpc.units.listByOrg.useQuery(
-    { organizationId: effectiveOrgId || "" },
-    { enabled: !!effectiveOrgId }
+
+  const unitsQuery = useQuery(
+    trpc.units.listByOrg.queryOptions(
+      { organizationId: effectiveOrgId || "" },
+      { enabled: !!effectiveOrgId }
+    )
   );
 
   const [isLoading, setIsLoading] = useState(true);

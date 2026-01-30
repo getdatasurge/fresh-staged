@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@stackframe/react";
-import { useTRPC } from "@/lib/trpc";
+import { useTRPC, useTRPCClient } from "@/lib/trpc";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,6 +100,7 @@ const Onboarding = () => {
   const stackUser = useUser();
   const { toast } = useToast();
   const trpc = useTRPC();
+  const trpcClient = useTRPCClient();
   const [currentStep, setCurrentStep] = useState<Step>("organization");
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingOrg, setIsCheckingOrg] = useState(true);
@@ -167,7 +168,7 @@ const Onboarding = () => {
 
       try {
         // Use tRPC to check for existing organization
-        const result = await trpc.onboarding.checkExistingOrg.query();
+        const result = await trpcClient.onboarding.checkExistingOrg.query();
 
         setIsCheckingOrg(false);
 
@@ -181,7 +182,7 @@ const Onboarding = () => {
       }
     };
     checkExistingOrg();
-  }, [navigate, stackUser, trpc]);
+  }, [navigate, stackUser, trpcClient]);
 
   const generateSlug = (name: string) => {
     return name
@@ -326,7 +327,7 @@ const Onboarding = () => {
 
     setIsLoading(true);
     try {
-      const response = await trpc.onboarding.createOrganization.mutate({
+      const response = await trpcClient.onboarding.createOrganization.mutate({
         name: (nameResult as { success: true; data: string }).data,
         slug: (slugResult as { success: true; data: string }).data,
         timezone: data.organization.timezone,
@@ -443,7 +444,7 @@ const Onboarding = () => {
 
     setIsLoading(true);
     try {
-      const result = await trpc.onboarding.createSite.mutate({
+      const result = await trpcClient.onboarding.createSite.mutate({
         organizationId: createdIds.orgId!,
         name: nameResult.data as string,
         address: (addressResult.data as string) || undefined,
@@ -485,7 +486,7 @@ const Onboarding = () => {
 
     setIsLoading(true);
     try {
-      const result = await trpc.onboarding.createArea.mutate({
+      const result = await trpcClient.onboarding.createArea.mutate({
         organizationId: createdIds.orgId!,
         siteId: createdIds.siteId!,
         name: (nameResult as { success: true; data: string }).data,
@@ -518,7 +519,7 @@ const Onboarding = () => {
 
     setIsLoading(true);
     try {
-      const result = await trpc.onboarding.createUnit.mutate({
+      const result = await trpcClient.onboarding.createUnit.mutate({
         organizationId: createdIds.orgId!,
         areaId: createdIds.areaId!,
         name: (nameResult as { success: true; data: string }).data,
@@ -557,7 +558,7 @@ const Onboarding = () => {
 
     setIsLoading(true);
     try {
-      const result = await trpc.onboarding.createGateway.mutate({
+      const result = await trpcClient.onboarding.createGateway.mutate({
         organizationId: createdIds.orgId!,
         name: data.gateway.name.trim(),
         gatewayEui: data.gateway.eui.toUpperCase(),

@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity'
 import { useTRPC, useTRPCClient } from '@/lib/trpc'
+import { useQuery } from '@tanstack/react-query'
 import {
 	Building2,
 	ChevronRight,
@@ -38,9 +39,11 @@ const Areas = () => {
 	const trpc = useTRPC()
 	const trpcClient = useTRPCClient()
 
-	const areasQuery = trpc.areas.listWithUnitCount.useQuery(
-		{ organizationId: effectiveOrgId || '', siteId: siteId! },
-		{ enabled: !!effectiveOrgId && !!siteId },
+	const areasQuery = useQuery(
+		trpc.areas.listWithUnitCount.queryOptions(
+			{ organizationId: effectiveOrgId || '', siteId: siteId! },
+			{ enabled: !!effectiveOrgId && !!siteId }
+		)
 	)
 
 	const [dialogOpen, setDialogOpen] = useState(false)

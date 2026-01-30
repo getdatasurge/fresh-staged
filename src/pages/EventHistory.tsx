@@ -28,6 +28,7 @@ import {
   type EventSeverity,
 } from "@/lib/eventTypeMapper"
 import { useTRPC } from "@/lib/trpc"
+import { useQuery } from "@tanstack/react-query"
 import { format, formatDistanceToNow } from "date-fns"
 import {
   ChevronDown,
@@ -86,24 +87,28 @@ const EventHistory = () => {
 
   const isAdmin = role === "owner" || role === "admin";
 
-  const sitesQuery = trpc.sites.list.useQuery(
-    { organizationId: effectiveOrgId! },
-    { enabled: !!effectiveOrgId && identityInitialized }
+  const sitesQuery = useQuery(
+    trpc.sites.list.queryOptions(
+      { organizationId: effectiveOrgId! },
+      { enabled: !!effectiveOrgId && identityInitialized }
+    )
   );
 
-  const eventsQuery = trpc.audit.list.useQuery(
-    {
-      organizationId: effectiveOrgId!,
-      siteId: siteFilter !== "all" ? siteFilter : undefined,
-      category: categoryFilter !== "all" ? (categoryFilter as any) : undefined,
-      severity: severityFilter !== "all" ? (severityFilter as any) : undefined,
-      page: page,
-      limit: PAGE_SIZE,
-    },
-    { 
-      enabled: !!effectiveOrgId && identityInitialized,
-      keepPreviousData: true
-    }
+  const eventsQuery = useQuery(
+    trpc.audit.list.queryOptions(
+      {
+        organizationId: effectiveOrgId!,
+        siteId: siteFilter !== "all" ? siteFilter : undefined,
+        category: categoryFilter !== "all" ? (categoryFilter as any) : undefined,
+        severity: severityFilter !== "all" ? (severityFilter as any) : undefined,
+        page: page,
+        limit: PAGE_SIZE,
+      },
+      {
+        enabled: !!effectiveOrgId && identityInitialized,
+        placeholderData: (previousData) => previousData
+      }
+    )
   );
 
   const isLoading = eventsQuery.isLoading || !identityInitialized;

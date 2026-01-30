@@ -7,24 +7,22 @@
  * Type safety flows from backend AppRouter via monorepo import.
  */
 
-import { httpBatchLink } from '@trpc/client'
-import { createTRPCReact } from '@trpc/react-query'
+import { createTRPCClient, httpBatchLink } from '@trpc/client'
+import { createTRPCContext } from '@trpc/tanstack-react-query'
 import type { AppRouter } from '../../backend/src/trpc/router'
 
 // Base API URL from environment
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 /**
- * tRPC React hooks (classic pattern)
+ * tRPC React context with queryOptions/mutationOptions pattern
  *
- * Uses createTRPCReact which provides direct hooks like .useQuery(), .useMutation()
- * This is the classic pattern that works with trpc.router.procedure.useQuery() syntax.
+ * Uses createTRPCContext which provides .queryOptions() and .mutationOptions()
+ * for use with @tanstack/react-query's useQuery and useMutation.
  */
-const trpc = createTRPCReact<AppRouter>()
+const { TRPCProvider, useTRPC, useTRPCClient } = createTRPCContext<AppRouter>()
 
-export const TRPCProvider = trpc.Provider
-export const useTRPC = () => trpc
-export const useTRPCClient = trpc.useUtils
+export { TRPCProvider, useTRPC, useTRPCClient }
 
 /**
  * Create tRPC client instance with authentication
@@ -47,7 +45,7 @@ export const useTRPCClient = trpc.useUtils
 export function createTRPCClientInstance(
 	getAccessToken: () => Promise<string>,
 ) {
-	return trpc.createClient({
+	return createTRPCClient<AppRouter>({
 		links: [
 			httpBatchLink({
 				url: `${API_BASE_URL}/trpc`,

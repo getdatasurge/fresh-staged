@@ -7,12 +7,13 @@ import {
 } from "@/lib/offlineStorage"
 import { useTRPC } from "@/lib/trpc"
 import { useUser } from "@stackframe/react"
+import { useMutation } from "@tanstack/react-query"
 import { useCallback, useEffect, useState } from "react"
 
 export function useOfflineSync() {
   const user = useUser();
   const trpc = useTRPC();
-  const createManualMutation = trpc.readings.createManual.useMutation();
+  const createManualMutation = useMutation(trpc.readings.createManual.mutationOptions());
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pendingCount, setPendingCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -43,12 +44,13 @@ export function useOfflineSync() {
     refreshPendingCount();
   }, [refreshPendingCount]);
 
-  // Auto-sync when coming back online
+  // Auto-sync when coming back online (only trigger on online status change)
   useEffect(() => {
     if (isOnline && pendingCount > 0) {
       syncPendingLogs();
     }
-  }, [isOnline, pendingCount]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
 
   const saveLogOffline = useCallback(
     async (log: Omit<PendingManualLog, "synced">) => {

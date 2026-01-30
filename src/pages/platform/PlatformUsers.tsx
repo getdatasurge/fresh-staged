@@ -20,6 +20,7 @@ import {
 import { useSuperAdmin } from '@/contexts/SuperAdminContext';
 import { ImpersonationTarget, useImpersonateAndNavigate } from '@/hooks/useImpersonateAndNavigate';
 import { useTRPC } from '@/lib/trpc';
+import { useQuery } from '@tanstack/react-query';
 import {
     Building2,
     ChevronRight,
@@ -30,7 +31,7 @@ import {
     Shield,
     User,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function PlatformUsers() {
@@ -47,11 +48,16 @@ export default function PlatformUsers() {
 
   const [searchQuery, setSearchQuery] = useState('');
 
-  const usersQuery = trpc.admin.listUsers.useQuery(undefined, {
-    onSuccess: () => {
+  const usersQuery = useQuery(
+    trpc.admin.listUsers.queryOptions(undefined)
+  );
+
+  // Handle side effect for logging
+  useEffect(() => {
+    if (usersQuery.isSuccess) {
       logSuperAdminAction('VIEWED_USERS_LIST');
     }
-  });
+  }, [usersQuery.isSuccess, logSuperAdminAction]);
 
   const users = usersQuery.data || [];
   const isLoading = usersQuery.isLoading;

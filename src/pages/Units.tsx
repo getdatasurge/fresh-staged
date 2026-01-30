@@ -18,6 +18,7 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 
@@ -45,9 +46,11 @@ const Units = () => {
   const { isSupportModeActive } = useSuperAdmin();
   const trpc = useTRPC();
 
-  const unitsQuery = trpc.units.listByOrg.useQuery(
-    { organizationId: effectiveOrgId || "" },
-    { enabled: !!effectiveOrgId }
+  const unitsQuery = useQuery(
+    trpc.units.listByOrg.queryOptions(
+      { organizationId: effectiveOrgId || "" },
+      { enabled: !!effectiveOrgId }
+    )
   );
 
   const [searchQuery, setSearchQuery] = useState("");

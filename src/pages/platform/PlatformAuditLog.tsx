@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useSuperAdmin } from '@/contexts/SuperAdminContext';
 import { useTRPC } from '@/lib/trpc';
 import PlatformLayout from '@/components/platform/PlatformLayout';
@@ -70,14 +71,16 @@ export default function PlatformAuditLog() {
   const [actionTypeFilter, setActionTypeFilter] = useState<string>('all');
   const [expandedEntries, setExpandedEntries] = useState<Set<string>>(new Set());
 
-  const auditLogQuery = trpc.admin.listSuperAdminAuditLog.useQuery(
-    { limit: 500 },
-    {
-      onSuccess: () => {
-        logSuperAdminAction('VIEWED_AUDIT_LOG');
-      },
-    }
+  const auditLogQuery = useQuery(
+    trpc.admin.listSuperAdminAuditLog.queryOptions({ limit: 500 })
   );
+
+  // Handle side effect for logging
+  useEffect(() => {
+    if (auditLogQuery.isSuccess) {
+      logSuperAdminAction('VIEWED_AUDIT_LOG');
+    }
+  }, [auditLogQuery.isSuccess, logSuperAdminAction]);
 
   const entries = auditLogQuery.data || [];
   const isLoading = auditLogQuery.isLoading;

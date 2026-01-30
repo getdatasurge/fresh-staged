@@ -13,6 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSuperAdmin } from '@/contexts/SuperAdminContext';
 import { useTRPC } from '@/lib/trpc';
+import { useQuery } from '@tanstack/react-query';
 import {
     Activity,
     AlertCircle,
@@ -49,14 +50,18 @@ interface SystemHealth {
 export default function PlatformDeveloperTools() {
   const { logSuperAdminAction, isSupportModeActive } = useSuperAdmin();
   const trpc = useTRPC();
-  const statsQuery = trpc.admin.systemStats.useQuery(undefined, {
-    enabled: isSupportModeActive,
-    refetchOnWindowFocus: false,
-  });
-  const ttnQuery = trpc.admin.ttnConnections.useQuery(undefined, {
-    enabled: isSupportModeActive,
-    refetchOnWindowFocus: false,
-  });
+  const statsQuery = useQuery(
+    trpc.admin.systemStats.queryOptions(undefined, {
+      enabled: isSupportModeActive,
+      refetchOnWindowFocus: false,
+    })
+  );
+  const ttnQuery = useQuery(
+    trpc.admin.ttnConnections.queryOptions(undefined, {
+      enabled: isSupportModeActive,
+      refetchOnWindowFocus: false,
+    })
+  );
 
   const [systemHealth, setSystemHealth] = useState<SystemHealth>({
     database: 'healthy',

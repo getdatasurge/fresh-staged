@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useUser } from "@stackframe/react";
+import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/DashboardLayout";
 import { HierarchyBreadcrumb, BreadcrumbSibling } from "@/components/HierarchyBreadcrumb";
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
@@ -96,24 +97,32 @@ const AreaDetail = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // tRPC queries
-  const areaQuery = trpc.areas.get.useQuery(
-    { organizationId: effectiveOrgId!, siteId: siteId!, areaId: areaId! },
-    { enabled: !!areaId && !!siteId && !!effectiveOrgId && identityInitialized }
+  const areaQuery = useQuery(
+    trpc.areas.get.queryOptions(
+      { organizationId: effectiveOrgId!, siteId: siteId!, areaId: areaId! },
+      { enabled: !!areaId && !!siteId && !!effectiveOrgId && identityInitialized }
+    )
   );
 
-  const unitsQuery = trpc.units.list.useQuery(
-    { organizationId: effectiveOrgId!, siteId: siteId!, areaId: areaId! },
-    { enabled: !!areaId && !!siteId && !!effectiveOrgId && identityInitialized }
+  const unitsQuery = useQuery(
+    trpc.units.list.queryOptions(
+      { organizationId: effectiveOrgId!, siteId: siteId!, areaId: areaId! },
+      { enabled: !!areaId && !!siteId && !!effectiveOrgId && identityInitialized }
+    )
   );
 
-  const siblingAreasQuery = trpc.areas.list.useQuery(
-    { organizationId: effectiveOrgId!, siteId: siteId! },
-    { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
+  const siblingAreasQuery = useQuery(
+    trpc.areas.list.queryOptions(
+      { organizationId: effectiveOrgId!, siteId: siteId! },
+      { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
+    )
   );
 
-  const siteQuery = trpc.sites.get.useQuery(
-    { organizationId: effectiveOrgId!, siteId: siteId! },
-    { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
+  const siteQuery = useQuery(
+    trpc.sites.get.queryOptions(
+      { organizationId: effectiveOrgId!, siteId: siteId! },
+      { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
+    )
   );
 
   const isLoading = areaQuery.isLoading || !identityInitialized;

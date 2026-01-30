@@ -46,6 +46,7 @@ import {
   Thermometer,
   Trash2
 } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 
@@ -85,19 +86,25 @@ const SiteDetail = () => {
   const { layoutKey } = useEntityDashboardUrl();
   const { canDeleteEntities, isLoading: permissionsLoading } = usePermissions();
 
-  const siteQuery = trpc.sites.get.useQuery(
-    { siteId: siteId!, organizationId: effectiveOrgId! },
-    { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
+  const siteQuery = useQuery(
+    trpc.sites.get.queryOptions(
+      { siteId: siteId!, organizationId: effectiveOrgId! },
+      { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
+    )
   );
 
-  const areasQuery = trpc.areas.listWithUnitCount.useQuery(
-    { siteId: siteId!, organizationId: effectiveOrgId! },
-    { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
+  const areasQuery = useQuery(
+    trpc.areas.listWithUnitCount.queryOptions(
+      { siteId: siteId!, organizationId: effectiveOrgId! },
+      { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
+    )
   );
 
-  const siblingSitesQuery = trpc.sites.list.useQuery(
-    { organizationId: effectiveOrgId! },
-    { enabled: !!effectiveOrgId && identityInitialized }
+  const siblingSitesQuery = useQuery(
+    trpc.sites.list.queryOptions(
+      { organizationId: effectiveOrgId! },
+      { enabled: !!effectiveOrgId && identityInitialized }
+    )
   );
 
   const [dialogOpen, setDialogOpen] = useState(false);

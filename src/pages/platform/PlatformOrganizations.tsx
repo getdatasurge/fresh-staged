@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/table'
 import { useSuperAdmin } from '@/contexts/SuperAdminContext'
 import { useTRPC } from '@/lib/trpc'
+import { useQuery } from '@tanstack/react-query'
 import {
   Building2,
   ChevronRight,
@@ -20,7 +21,7 @@ import {
   Search,
   Users,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 export default function PlatformOrganizations() {
@@ -28,11 +29,16 @@ export default function PlatformOrganizations() {
   const trpc = useTRPC();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const orgsQuery = trpc.admin.listOrganizations.useQuery(undefined, {
-    onSuccess: () => {
+  const orgsQuery = useQuery(
+    trpc.admin.listOrganizations.queryOptions(undefined)
+  );
+
+  // Handle side effect for logging
+  useEffect(() => {
+    if (orgsQuery.isSuccess) {
       logSuperAdminAction('VIEWED_ORGANIZATIONS_LIST');
     }
-  });
+  }, [orgsQuery.isSuccess, logSuperAdminAction]);
 
   const organizations = orgsQuery.data || [];
   const isLoading = orgsQuery.isLoading;

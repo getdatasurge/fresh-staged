@@ -1,7 +1,7 @@
 import { useOrgScope } from '@/hooks/useOrgScope'
 import { qk } from '@/lib/queryKeys'
 import { useTRPC } from '@/lib/trpc'
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { AlertRules, DEFAULT_ALERT_RULES } from './useAlertRules'
 import { computeUnitStatus, UnitStatusInfo } from './useUnitStatus'
@@ -266,18 +266,20 @@ export function useFetchUnitAlerts(
 ) {
 	const { orgId, isReady } = useOrgScope()
 	const trpc = useTRPC()
-	const alerts = trpc.alerts.listByOrg.useQuery(
-		{
-			organizationId: orgId || '',
-			unitId: unitId || '',
-			status: params?.status,
-			page: params?.page,
-			limit: params?.limit,
-		},
-		{
-			enabled: isReady && !!orgId && !!unitId,
-			staleTime: 10000, // Cache for 10 seconds
-		},
+	const alerts = useQuery(
+		trpc.alerts.listByOrg.queryOptions(
+			{
+				organizationId: orgId || '',
+				unitId: unitId || '',
+				status: params?.status,
+				page: params?.page,
+				limit: params?.limit,
+			},
+			{
+				enabled: isReady && !!orgId && !!unitId,
+				staleTime: 60_000, // Cache for 60 seconds
+			}
+		)
 	)
 
 	return alerts
@@ -296,19 +298,21 @@ export function useFetchAlerts(params?: {
 }) {
 	const { orgId, isReady } = useOrgScope()
 	const trpc = useTRPC()
-	const alerts = trpc.alerts.listByOrg.useQuery(
-		{
-			organizationId: orgId || '',
-			status: params?.status,
-			unitId: params?.unitId,
-			siteId: params?.siteId,
-			page: params?.page,
-			limit: params?.limit,
-		},
-		{
-			enabled: isReady && !!orgId,
-			staleTime: 10000, // Cache for 10 seconds
-		},
+	const alerts = useQuery(
+		trpc.alerts.listByOrg.queryOptions(
+			{
+				organizationId: orgId || '',
+				status: params?.status,
+				unitId: params?.unitId,
+				siteId: params?.siteId,
+				page: params?.page,
+				limit: params?.limit,
+			},
+			{
+				enabled: isReady && !!orgId,
+				staleTime: 60_000, // Cache for 60 seconds
+			}
+		)
 	)
 
 	return alerts
@@ -322,7 +326,8 @@ export function useAcknowledgeAlert() {
 	const { orgId } = useOrgScope()
 	const queryClient = useQueryClient()
 	const trpc = useTRPC()
-	return trpc.alerts.acknowledge.useMutation({
+	return useMutation({
+		...trpc.alerts.acknowledge.mutationOptions(),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: qk.org(orgId).alerts() })
 		},
@@ -337,7 +342,8 @@ export function useResolveAlert() {
 	const { orgId } = useOrgScope()
 	const queryClient = useQueryClient()
 	const trpc = useTRPC()
-	return trpc.alerts.resolve.useMutation({
+	return useMutation({
+		...trpc.alerts.resolve.mutationOptions(),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: qk.org(orgId).alerts() })
 		},
