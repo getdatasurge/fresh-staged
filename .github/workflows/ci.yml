@@ -43,6 +43,40 @@ jobs:
       - name: Test
         run: pnpm test
 
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install backend dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: backend
+
+      - name: Audit frontend dependencies
+        run: pnpm audit --audit-level=critical
+
+      - name: Audit backend dependencies
+        run: pnpm audit --audit-level=critical
+        working-directory: backend
+
   frontend:
     name: Frontend
     runs-on: ubuntu-latest
