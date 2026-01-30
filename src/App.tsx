@@ -96,14 +96,14 @@ const App = () => {
 				<StackTheme>
 					<QueryClientProvider client={queryClient}>
 						<TRPCWrapper>
-							<RealtimeProvider>
-								<TooltipProvider>
-									<DebugProvider>
-										<TTNConfigProvider>
-											<Toaster />
-											<Sonner />
-											<BrowserRouter>
-												<SuperAdminProvider>
+							<TooltipProvider>
+								<DebugProvider>
+									<TTNConfigProvider>
+										<Toaster />
+										<Sonner />
+										<BrowserRouter>
+											<SuperAdminProvider>
+												<RealtimeProvider>
 													<ImpersonationCacheSync />
 													<RouteLogger />
 													<Routes>
@@ -364,12 +364,12 @@ const App = () => {
 														<Route path='*' element={<NotFound />} />
 													</Routes>
 													<DebugTerminal />
-												</SuperAdminProvider>
-											</BrowserRouter>
-										</TTNConfigProvider>
-									</DebugProvider>
-								</TooltipProvider>
-							</RealtimeProvider>
+												</RealtimeProvider>
+											</SuperAdminProvider>
+										</BrowserRouter>
+									</TTNConfigProvider>
+								</DebugProvider>
+							</TooltipProvider>
 						</TRPCWrapper>
 					</QueryClientProvider>
 				</StackTheme>

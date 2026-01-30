@@ -66,7 +66,7 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
   
   const alertsQuery = useQuery(
     trpc.alerts.listByOrg.queryOptions(
-      { organizationId: effectiveOrgId || "", status: "active", limit: 0 },
+      { organizationId: effectiveOrgId || "", status: "active", limit: 1 },
       { enabled: !!effectiveOrgId }
     )
   );
