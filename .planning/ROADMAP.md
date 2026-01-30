@@ -89,7 +89,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 55-01-PLAN.md -- Run full test suites and resolve any remaining failures
+- [ ] 55-01-PLAN.md -- Fix vi.resetAllMocks bug in reading-ingestion tests, validate both suites green
 
 ---
 
