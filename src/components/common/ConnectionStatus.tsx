@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Wifi, WifiOff, Loader2 } from 'lucide-react';
 import { useRealtimeStatus } from '@/providers/RealtimeProvider';
 import {
@@ -11,8 +12,19 @@ import { cn } from '@/lib/utils';
 export function ConnectionStatus() {
   const { isConnected, isConnecting, connectionError } = useRealtimeStatus();
 
-  const getStatusConfig = () => {
+  // Debounce the connecting state to suppress brief flicker during reconnections
+  const [showConnecting, setShowConnecting] = useState(false);
+
+  useEffect(() => {
     if (isConnecting) {
+      const timer = setTimeout(() => setShowConnecting(true), 500);
+      return () => clearTimeout(timer);
+    }
+    setShowConnecting(false);
+  }, [isConnecting]);
+
+  const getStatusConfig = () => {
+    if (showConnecting) {
       return {
         icon: Loader2,
         color: 'text-yellow-500',
