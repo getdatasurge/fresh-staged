@@ -1,4 +1,6 @@
 import { DebugTerminal, RouteLogger } from '@/components/debug';
+import { AppErrorBoundary } from '@/components/errors/AppErrorBoundary';
+import { RouteErrorFallback } from '@/components/errors/RouteErrorFallback';
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -80,6 +82,52 @@ function TRPCWrapper({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Per-route error boundary wrapper for dashboard routes.
+ * Catches render errors from a single page without crashing the whole app.
+ */
+function DashboardErrorBoundary({ children }: { children: React.ReactNode }) {
+  return (
+    <AppErrorBoundary
+      fallbackRender={({ error, onRetry }) => (
+        <RouteErrorFallback error={error} title="Dashboard Error" onRetry={onRetry} />
+      )}
+    >
+      <RequireImpersonationGuard>{children}</RequireImpersonationGuard>
+    </AppErrorBoundary>
+  );
+}
+
+/**
+ * Per-route error boundary wrapper for admin routes.
+ */
+function AdminErrorBoundary({ children }: { children: React.ReactNode }) {
+  return (
+    <AppErrorBoundary
+      fallbackRender={({ error, onRetry }) => (
+        <RouteErrorFallback error={error} title="Admin Page Error" onRetry={onRetry} />
+      )}
+    >
+      <RequireImpersonationGuard>{children}</RequireImpersonationGuard>
+    </AppErrorBoundary>
+  );
+}
+
+/**
+ * Per-route error boundary wrapper for platform routes.
+ */
+function PlatformErrorBoundary({ children }: { children: React.ReactNode }) {
+  return (
+    <AppErrorBoundary
+      fallbackRender={({ error, onRetry }) => (
+        <RouteErrorFallback error={error} title="Platform Error" onRetry={onRetry} />
+      )}
+    >
+      <PlatformGuard>{children}</PlatformGuard>
+    </AppErrorBoundary>
+  );
+}
+
 const App = () => {
   return (
     <Suspense fallback={<PageSkeleton />}>
@@ -98,245 +146,253 @@ const App = () => {
                           <ImpersonationCacheSync />
                           <RouteLogger />
                           <Routes>
+                            {/* Public routes - no error boundary needed */}
                             <Route path="/" element={<Index />} />
                             <Route path="/privacy" element={<PrivacyPolicy />} />
                             <Route path="/terms" element={<TermsConditions />} />
                             <Route path="/auth" element={<Auth />} />
                             <Route path="/auth/callback" element={<AuthCallback />} />
+                            <Route path="/onboarding" element={<Onboarding />} />
+                            <Route path="/account-deleted" element={<AccountDeleted />} />
+
+                            {/* Dashboard routes - per-route error boundary */}
                             <Route
                               path="/dashboard"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <Dashboard />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/organization"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <OrganizationDashboard />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
-                            <Route path="/onboarding" element={<Onboarding />} />
                             <Route
                               path="/sites"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <Sites />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/sites/:siteId/layout/:layoutKey"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <SiteDetail />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/sites/:siteId"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <SiteDetail />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/sites/:siteId/areas"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <Areas />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/sites/:siteId/areas/:areaId"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <AreaDetail />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/units"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <Units />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/units/:unitId/layout/:layoutKey"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <UnitDetail />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/units/:unitId"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <UnitDetail />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/manual-log"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <ManualLog />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/alerts"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <Alerts />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/reports"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <Reports />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/settings"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <Settings />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/inspector"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <Inspector />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/pilot-setup"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <PilotSetup />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
                             <Route
                               path="/events"
                               element={
-                                <RequireImpersonationGuard>
+                                <DashboardErrorBoundary>
                                   <EventHistory />
-                                </RequireImpersonationGuard>
+                                </DashboardErrorBoundary>
                               }
                             />
+
+                            {/* Admin routes - per-route error boundary */}
                             <Route
                               path="/admin/recently-deleted"
                               element={
-                                <RequireImpersonationGuard>
+                                <AdminErrorBoundary>
                                   <RecentlyDeleted />
-                                </RequireImpersonationGuard>
+                                </AdminErrorBoundary>
                               }
                             />
                             <Route
                               path="/admin/ttn-cleanup"
                               element={
-                                <RequireImpersonationGuard>
+                                <AdminErrorBoundary>
                                   <TTNCleanup />
-                                </RequireImpersonationGuard>
+                                </AdminErrorBoundary>
                               }
                             />
                             <Route
                               path="/admin/data-maintenance"
                               element={
-                                <RequireImpersonationGuard>
+                                <AdminErrorBoundary>
                                   <DataMaintenance />
-                                </RequireImpersonationGuard>
+                                </AdminErrorBoundary>
                               }
                             />
                             <Route
                               path="/admin/health"
                               element={
-                                <RequireImpersonationGuard>
+                                <AdminErrorBoundary>
                                   <HealthDashboard />
-                                </RequireImpersonationGuard>
+                                </AdminErrorBoundary>
                               }
                             />
                             <Route
                               path="/admin/upload-telnyx-image"
                               element={
-                                <RequireImpersonationGuard>
+                                <AdminErrorBoundary>
                                   <UploadTelnyxImage />
-                                </RequireImpersonationGuard>
+                                </AdminErrorBoundary>
                               }
                             />
-                            <Route path="/account-deleted" element={<AccountDeleted />} />
+
+                            {/* Platform routes - per-route error boundary */}
                             <Route
                               path="/platform"
                               element={
-                                <PlatformGuard>
+                                <PlatformErrorBoundary>
                                   <PlatformOrganizations />
-                                </PlatformGuard>
+                                </PlatformErrorBoundary>
                               }
                             />
                             <Route
                               path="/platform/organizations"
                               element={
-                                <PlatformGuard>
+                                <PlatformErrorBoundary>
                                   <PlatformOrganizations />
-                                </PlatformGuard>
+                                </PlatformErrorBoundary>
                               }
                             />
                             <Route
                               path="/platform/organizations/:orgId"
                               element={
-                                <PlatformGuard>
+                                <PlatformErrorBoundary>
                                   <PlatformOrganizationDetail />
-                                </PlatformGuard>
+                                </PlatformErrorBoundary>
                               }
                             />
                             <Route
                               path="/platform/users"
                               element={
-                                <PlatformGuard>
+                                <PlatformErrorBoundary>
                                   <PlatformUsers />
-                                </PlatformGuard>
+                                </PlatformErrorBoundary>
                               }
                             />
                             <Route
                               path="/platform/users/:userId"
                               element={
-                                <PlatformGuard>
+                                <PlatformErrorBoundary>
                                   <PlatformUserDetail />
-                                </PlatformGuard>
+                                </PlatformErrorBoundary>
                               }
                             />
                             <Route
                               path="/platform/audit"
                               element={
-                                <PlatformGuard>
+                                <PlatformErrorBoundary>
                                   <PlatformAuditLog />
-                                </PlatformGuard>
+                                </PlatformErrorBoundary>
                               }
                             />
                             <Route
                               path="/platform/developer-tools"
                               element={
-                                <PlatformGuard>
+                                <PlatformErrorBoundary>
                                   <PlatformDeveloperTools />
-                                </PlatformGuard>
+                                </PlatformErrorBoundary>
                               }
                             />
+
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                           <DebugTerminal />
