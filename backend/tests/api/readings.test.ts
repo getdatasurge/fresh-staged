@@ -451,17 +451,8 @@ describe('Readings API', () => {
       expect(response.statusCode).toBe(401);
     });
 
-    it.skip('should return 200 with valid JWT', async () => {
-      // Skipped: Fastify response serialization issue with mocks - covered in integration tests
-    });
-
-    it.skip('should support pagination with limit and offset', async () => {
-      // Skipped: Fastify response serialization issue with mocks - covered in integration tests
-    });
-
-    it.skip('should filter by start and end time', async () => {
-      // Skipped: Fastify response serialization issue with mocks - covered in integration tests
-    });
+    // Query tests (200 with valid JWT, pagination, time filters) removed:
+    // duplicated by tests/trpc/readings.router.test.ts (8 passing tests)
 
     it('should return 404 for unit in different org', async () => {
       mockValidAuth();
