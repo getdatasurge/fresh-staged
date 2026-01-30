@@ -36,18 +36,18 @@ Fix known production issues discovered during v2.7 deployment verification. The 
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SA-01 | TBD | Pending |
-| SA-02 | TBD | Pending |
-| SW-01 | TBD | Pending |
-| SW-02 | TBD | Pending |
-| WS-01 | TBD | Pending |
-| WS-02 | TBD | Pending |
-| WS-03 | TBD | Pending |
+| SA-01 | Phase 49 | Pending |
+| SA-02 | Phase 49 | Pending |
+| SW-01 | Phase 50 | Pending |
+| SW-02 | Phase 50 | Pending |
+| WS-01 | Phase 51 | Pending |
+| WS-02 | Phase 51 | Pending |
+| WS-03 | Phase 51 | Pending |
 
 **Coverage:**
 - v2.8 requirements: 7 total
-- Mapped to phases: 0 (awaiting roadmap)
-- Unmapped: 7
+- Mapped to phases: 7
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-30*
