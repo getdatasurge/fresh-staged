@@ -1,5 +1,31 @@
 # Project Milestones: FreshTrack Pro Migration
 
+## v2.8 Production Polish (Shipped: 2026-01-30)
+
+**Delivered:** Fixed 3 production issues: useSuperAdmin context error, ServiceWorker uncaught promise rejection on self-signed SSL, and WebSocket reconnection flicker from JWT refresh race condition.
+
+**Phases completed:** 49-51 (3 plans total)
+
+**Key accomplishments:**
+
+- SuperAdmin Safe Default — `useSuperAdmin` returns SUPER_ADMIN_DEFAULT constant instead of throwing when context unavailable during initial render
+- ServiceWorker Graceful Handling — Replaced auto-generated `registerSW.js` (no `.catch()`) with React hook using `onRegisterError` callback for silent degradation on self-signed SSL
+- Socket.io Auth Callback — Converted from imperative `socket.auth = { token }` to `auth: (cb) => {...}` callback pattern that Socket.io invokes on every connect/reconnect, eliminating async race condition
+- ConnectionStatus Debounce — 500ms delay before showing connecting spinner suppresses brief visual transitions during reconnection
+
+**Stats:**
+
+- 18 commits, 28 files changed, +2,715 / -57 lines
+- 3 phases, 3 plans
+- 7/7 requirements shipped
+- Timeline: 2026-01-30
+
+**Git range:** `36f7d8f` → `66c10fd`
+
+**What's next:** Next milestone planning
+
+---
+
 ## v2.7 tRPC Client Fix (Shipped: 2026-01-30)
 
 **Delivered:** Fixed tRPC runtime crash preventing React from mounting in production by migrating 30+ `.mutate()`/`.query()` proxy calls to `useTRPCClient()`, cleaning dependencies, and fixing production URL configuration and Caddy routing.

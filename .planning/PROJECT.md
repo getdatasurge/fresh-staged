@@ -167,11 +167,18 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Frontend tests pass after migration (TRPC-04) — v2.7
 - Production URL fallback fixed (`import.meta.env.DEV` ternary), Caddy routes added (PROD-01..03) — v2.7
 
+**Production Polish (v2.8)**
+- `useSuperAdmin` returns safe default instead of throwing (SA-01, SA-02) — v2.8
+- ServiceWorker registration failure handled gracefully on self-signed SSL (SW-01, SW-02) — v2.8
+- Socket.io auth callback pattern eliminates JWT refresh race condition (WS-01) — v2.8
+- Socket.io uses WebSocket transport directly, no polling upgrade (WS-02) — v2.8
+- No visible connection flicker during normal usage (WS-03) — v2.8
+
 ### Active
 
-<!-- Current milestone: v2.8 Production Polish -->
+<!-- Next milestone TBD -->
 
-(Requirements defined in `.planning/REQUIREMENTS.md`)
+(No active requirements — run `/gsd:new-milestone` to define next milestone)
 
 ### Out of Scope
 
@@ -185,14 +192,14 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Blue-green/canary deployments — Over-engineering for current scale
 - Data migration from Supabase — No access to production Supabase data
 
-## Current State (v2.7 Shipped)
+## Current State (v2.8 Shipped)
 
 **Codebase:**
 - Backend: ~55K LOC TypeScript (Fastify, Drizzle, PostgreSQL, tRPC, Socket.io, BullMQ)
 - Frontend: ~100K LOC TypeScript/TSX (React, TanStack Query, tRPC client)
 - Migration scripts: 1,354 LOC TypeScript
 - Test/deployment scripts: ~7,000 LOC Shell/TypeScript
-- 48 phases, 192 plans completed across v1.0 through v2.7
+- 51 phases, 195 plans completed across v1.0 through v2.8
 - 1,050+ backend tests passing, 141 frontend tests passing
 
 **Infrastructure:**
@@ -209,11 +216,9 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Zero Supabase imports remaining (migration complete)
 - 15 pre-existing failures in tests/api/ttn-devices.test.ts (unrelated to migration)
 - TTNCredentialsPanel has reduced test coverage (5 vs 21 tests)
-- ServiceWorker registration fails on self-signed cert (non-blocking)
-- `useSuperAdmin` context error (pre-existing)
 
 **Known Issues:**
-- None critical — production deployed and rendering
+- None critical — production deployed, rendering, and polished
 
 ## Constraints
 
@@ -252,18 +257,18 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 | Port-based Caddy matching (:443/:80) | IP deployments have no hostname to match | Good — accepts any hostname/IP |
 | import.meta.env.DEV URL ternary | Empty string VITE_API_URL is falsy in JS || operator | Good — relative URLs in prod |
 | Self-signed SSL for IP deployment | No domain available, IP-only access | Good — works with cert exception |
+| Safe default from useSuperAdmin | Prevents render cascade when context unavailable | Good — loading state instead of crash |
+| injectRegister: false + React hook | Auto-generated SW script had no error handling | Good — graceful degradation on self-signed SSL |
+| Socket.io auth callback pattern | Imperative socket.auth assignment has async race condition | Good — Socket.io waits for cb() before handshake |
+| 500ms debounce on ConnectionStatus | Brief reconnections cause visual flicker | Good — smooth UX during reconnection |
 
-## Current Milestone: v2.8 Production Polish
+## Latest Milestone: v2.8 Production Polish (Shipped 2026-01-30)
 
-**Goal:** Fix known production issues (useSuperAdmin context error, ServiceWorker registration, WebSocket stability) and address additional bugs discovered during QA.
+All 7 requirements shipped. Console errors eliminated, ServiceWorker gracefully handled, WebSocket stable.
 
-**Target fixes:**
-- Fix `useSuperAdmin` context error appearing in browser console
-- Gracefully handle ServiceWorker registration failure on self-signed SSL certs
-- Stabilize WebSocket reconnection behavior (reduce flicker)
-- Additional QA-discovered bugs (insert phases as needed)
+## Next Milestone
 
-**Approach:** IP-based deployment stays (no domain). Self-signed certs remain. Focus on graceful handling and stability.
+Not yet defined. Run `/gsd:new-milestone` to start next milestone planning.
 
 ---
-*Last updated: 2026-01-30 after v2.8 milestone started*
+*Last updated: 2026-01-30 after v2.8 milestone shipped*

@@ -5,17 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.8 Production Polish — executing phases
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Milestone: v2.8 Production Polish
-Phase: 51 of 51 - WebSocket Reconnection Stability
-Plan: 1/1 complete
-Status: Milestone complete
-Last activity: 2026-01-30 — Completed 51-01-PLAN.md
-
-Progress: ██████████ 100%
+Milestone: None active (v2.8 shipped)
+Phase: N/A
+Plan: N/A
+Status: Ready for next milestone
+Last activity: 2026-01-30 — v2.8 Production Polish milestone archived
 
 ## Milestones Shipped
 
@@ -31,8 +29,9 @@ Progress: ██████████ 100%
 | v2.5 | TTN Test Fixes | 44 | 1 | 2026-01-29 |
 | v2.6 | Production Deployment | 45 | 3 | 2026-01-29 |
 | v2.7 | tRPC Client Fix | 46-48 | 5 | 2026-01-30 |
+| v2.8 | Production Polish | 49-51 | 3 | 2026-01-30 |
 
-**Total shipped:** 10 milestones, 48 phases, 192 plans
+**Total shipped:** 11 milestones, 51 phases, 195 plans
 
 ## Accumulated Context
 
@@ -44,19 +43,17 @@ Progress: ██████████ 100%
 - Caddy uses port-based matching (`:443`/`:80`) for IP deployments
 - `useTRPCClient()` for imperative `.mutate()`/`.query()` calls
 - `useTRPC()` only for `.queryOptions()`/`.mutationOptions()`
-- v2.8: Keep self-signed certs, disable ServiceWorker gracefully
 - `useSuperAdmin` returns safe default (isLoadingSuperAdmin: true) instead of throwing when context unavailable
-- Socket.io `auth: (cb) =>` callback pattern for dynamic JWT on connect/reconnect (replaces imperative `socket.auth = { token }`)
+- ServiceWorker uses `injectRegister: false` + React hook for graceful error handling
+- Socket.io `auth: (cb) =>` callback pattern for dynamic JWT on connect/reconnect
 
 ### Blockers/Concerns
 
-- ~~ServiceWorker registration fails due to self-signed cert (non-blocking, to fix in phase 50)~~ FIXED in phase 50
-- ~~`useSuperAdmin` context error (pre-existing, to fix in v2.8)~~ FIXED in phase 49
-- ~~WebSocket reconnection flicker (to fix in phase 51)~~ FIXED in phase 51
+None — all known issues resolved through v2.8.
 
 ## Session Continuity
 
-Last session: 2026-01-30T06:30:00Z
-Stopped at: Completed 51-01-PLAN.md (WebSocket Reconnection Stability)
+Last session: 2026-01-30
+Stopped at: v2.8 milestone archived
 Resume file: None
-Next action: v2.8 milestone complete — all 3 phases shipped
+Next action: `/gsd:new-milestone` to define next milestone
