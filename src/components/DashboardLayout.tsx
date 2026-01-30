@@ -201,7 +201,7 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
             <div className="flex items-center gap-3 lg:hidden">
               {showBack && backHref ? (
                 <Link to={backHref}>
-                  <Button variant="ghost" size="icon" className="shrink-0">
+                  <Button variant="ghost" size="icon" className="shrink-0" aria-label="Go back">
                     <ChevronLeft className="w-5 h-5" />
                   </Button>
                 </Link>
@@ -211,6 +211,7 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
                   size="icon"
                   className="shrink-0"
                   onClick={() => setMobileNavOpen(!mobileNavOpen)}
+                  aria-label={mobileNavOpen ? 'Close navigation menu' : 'Open navigation menu'}
                 >
                   {mobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </Button>
@@ -224,7 +225,7 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
             <div className="hidden lg:flex items-center gap-3 min-w-0">
               {showBack && backHref && (
                 <Link to={backHref}>
-                  <Button variant="ghost" size="icon" className="shrink-0">
+                  <Button variant="ghost" size="icon" className="shrink-0" aria-label="Go back">
                     <ChevronLeft className="w-5 h-5" />
                   </Button>
                 </Link>
@@ -255,7 +256,13 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
               </Button>
-              <Button variant="ghost" size="icon" onClick={handleSignOut} className="sm:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSignOut}
+                className="sm:hidden"
+                aria-label="Sign out"
+              >
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
