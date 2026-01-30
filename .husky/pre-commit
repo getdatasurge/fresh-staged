@@ -1,1 +1,12 @@
+# Run lint-staged for code formatting/linting
 npx lint-staged
+
+# Run gitleaks to scan staged changes for secrets
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --verbose
+elif [ -f "$HOME/bin/gitleaks" ]; then
+  "$HOME/bin/gitleaks" protect --staged --verbose
+else
+  echo "WARNING: gitleaks is not installed. Skipping secret scanning."
+  echo "Install: https://github.com/gitleaks/gitleaks#installing"
+fi
