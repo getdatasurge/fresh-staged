@@ -20,7 +20,9 @@
     "docs:tag": "node scripts/docs/create-docs-tag.js",
     "docs:site:dev": "cd docs-site && mkdocs serve",
     "docs:site:build": "cd docs-site && mkdocs build --strict",
-    "adr:new": "node scripts/docs/adr-new.js"
+    "adr:new": "node scripts/docs/adr-new.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -107,6 +109,7 @@
     "happy-dom": "^20.4.0",
     "lovable-tagger": "^1.1.13",
     "postcss": "^8.5.6",
+    "prettier": "^3.8.1",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.21.0",
     "typescript": "^5.8.3",
