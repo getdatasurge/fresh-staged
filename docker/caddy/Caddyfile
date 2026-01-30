@@ -49,10 +49,6 @@
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
-
-            # WebSocket support for real-time features
-            header_up Connection {>Connection}
-            header_up Upgrade {>Upgrade}
         }
     }
 
@@ -70,23 +66,19 @@
     }
 
     # Reverse proxy for Socket.io (real-time features)
+    # Caddy handles WebSocket upgrades automatically — do NOT add
+    # header_up Connection/Upgrade as it interferes with built-in handling
     handle /socket.io/* {
         reverse_proxy backend:3000 {
             header_up Host {host}
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto {scheme}
-            header_up Connection {>Connection}
-            header_up Upgrade {>Upgrade}
         }
     }
 
     # Static frontend files (served by nginx in production)
-    reverse_proxy /* frontend:8080 {
-        # WebSocket support for HMR (dev) or real-time features
-        header_up Connection {>Connection}
-        header_up Upgrade {>Upgrade}
-    }
+    reverse_proxy /* frontend:8080
 
     # Response compression
     encode gzip zstd
