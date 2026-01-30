@@ -70,7 +70,7 @@ Plans:
   2. Deferred TTNCredentialsPanel scenarios (loading states, mutation success/failure, validation errors) are implemented and passing
   3. `widgetHealthStates.test.ts` has `describe.skip` removed and all tests in the suite pass
   4. Frontend `pnpm test` runs with zero skipped tests in these files
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 54-01-PLAN.md -- Restore TTNCredentialsPanel test coverage (~21 tests)
