@@ -19,9 +19,9 @@ Fix known production issues discovered during v2.7 deployment verification. The 
 
 ### WebSocket Stability
 
-- [ ] **WS-01**: Socket.io connection does not disconnect/reconnect on JWT token refresh
-- [ ] **WS-02**: Socket.io uses WebSocket transport directly (no polling upgrade)
-- [ ] **WS-03**: No visible connection flicker during normal app usage
+- [x] **WS-01**: Socket.io connection does not disconnect/reconnect on JWT token refresh
+- [x] **WS-02**: Socket.io uses WebSocket transport directly (no polling upgrade)
+- [x] **WS-03**: No visible connection flicker during normal app usage
 
 ## Out of Scope
 
@@ -40,9 +40,9 @@ Fix known production issues discovered during v2.7 deployment verification. The 
 | SA-02 | Phase 49 | Complete |
 | SW-01 | Phase 50 | Complete |
 | SW-02 | Phase 50 | Complete |
-| WS-01 | Phase 51 | Pending |
-| WS-02 | Phase 51 | Pending |
-| WS-03 | Phase 51 | Pending |
+| WS-01 | Phase 51 | Complete |
+| WS-02 | Phase 51 | Complete |
+| WS-03 | Phase 51 | Complete |
 
 **Coverage:**
 - v2.8 requirements: 7 total
@@ -51,4 +51,4 @@ Fix known production issues discovered during v2.7 deployment verification. The 
 
 ---
 *Requirements defined: 2026-01-30*
-*Last updated: 2026-01-30 — SW-01, SW-02 complete (Phase 50)*
+*Last updated: 2026-01-30 — WS-01, WS-02, WS-03 complete (Phase 51)*

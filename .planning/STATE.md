@@ -46,6 +46,7 @@ Progress: ██████████ 100%
 - `useTRPC()` only for `.queryOptions()`/`.mutationOptions()`
 - v2.8: Keep self-signed certs, disable ServiceWorker gracefully
 - `useSuperAdmin` returns safe default (isLoadingSuperAdmin: true) instead of throwing when context unavailable
+- Socket.io `auth: (cb) =>` callback pattern for dynamic JWT on connect/reconnect (replaces imperative `socket.auth = { token }`)
 
 ### Blockers/Concerns
 

@@ -73,7 +73,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [x] 51-01-PLAN.md — Stabilize useEffect dependency, force WebSocket transport, refresh token on reconnect
+- [x] 51-01-PLAN.md — Convert socket auth to callback pattern, eliminate reconnect race condition, add 500ms debounce
 
 ---
 
@@ -101,4 +101,4 @@ All phases are independent — no dependencies between them.
 
 ---
 *Roadmap created: 2026-01-30*
-*Last updated: 2026-01-30 — Phase 49 complete*
+*Last updated: 2026-01-30 — Phase 51 complete, v2.8 milestone shipped*
