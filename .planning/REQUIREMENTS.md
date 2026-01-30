@@ -9,8 +9,8 @@ Fix known skipped tests and restore test coverage across backend and frontend. F
 
 ### Backend TTN Webhook Tests
 
-- [ ] **TTN-01**: All 16 skipped tests in `ttn-webhooks.test.ts` are implemented and passing
-- [ ] **TTN-02**: TTN webhook ingestion path (reading creation, alert triggers, device metadata) covered
+- [x] **TTN-01**: All 14 skipped tests in `ttn-webhooks.test.ts` are eliminated and passing
+- [x] **TTN-02**: TTN webhook ingestion path (reading creation, alert triggers, device metadata) covered
 
 ### Backend Alert API Tests
 
@@ -54,8 +54,8 @@ Fix known skipped tests and restore test coverage across backend and frontend. F
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TTN-01 | Phase 52 | Pending |
-| TTN-02 | Phase 52 | Pending |
+| TTN-01 | Phase 52 | Complete |
+| TTN-02 | Phase 52 | Complete |
 | ALERT-01 | Phase 53 | Pending |
 | ALERT-02 | Phase 53 | Pending |
 | READ-01 | Phase 53 | Pending |

@@ -38,7 +38,7 @@ Milestone v2.9 eliminates all skipped tests across backend and frontend, restori
 **Plans**: 1 plan
 
 Plans:
-- [ ] 52-01-PLAN.md -- Consolidate TTN webhook tests (replace broken api/ file with working routes/ file)
+- [x] 52-01-PLAN.md -- Consolidate TTN webhook tests (replace broken api/ file with working routes/ file)
 
 ---
 
@@ -97,7 +97,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 52. Backend TTN Webhook Tests | v2.9 | 0/1 | Planned | - |
+| 52. Backend TTN Webhook Tests | v2.9 | 1/1 | ✓ Complete | 2026-01-30 |
 | 53. Backend API Tests | v2.9 | 0/3 | Not started | - |
 | 54. Frontend Test Restoration | v2.9 | 0/2 | Not started | - |
 | 55. Test Suite Health Validation | v2.9 | 0/1 | Not started | - |
