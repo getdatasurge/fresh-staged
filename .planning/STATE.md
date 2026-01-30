@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.9 Quality Assurance -- Phase 53 complete, ready for Phase 54
+**Current focus:** v2.9 Quality Assurance -- Phase 54 plan 02 complete
 
 ## Current Position
 
 Milestone: v2.9 Quality Assurance
-Phase: 53 of 55 (Backend API Tests)
-Plan: 53-01 through 53-03 (3 plans, all complete)
-Status: Phase 53 complete — verified ✓ (5/5 must-haves passed)
-Last activity: 2026-01-30 -- Phase 53 executed and verified (24 skipped tests eliminated)
+Phase: 54 of 55 (Frontend Test Restoration)
+Plan: 02 of 2 (complete)
+Status: In progress (plan 02 complete)
+Last activity: 2026-01-30 -- Completed 54-02-PLAN.md (widget health states test cleanup)
 
 Progress: [█████░░░░░] 50%
 
@@ -50,6 +50,7 @@ Progress: [█████░░░░░] 50%
 - Alert tests: deleted REST duplicate (`tests/api/alerts.test.ts`), kept tRPC version (19 passing tests, full lifecycle coverage)
 - Sites tests: removed 2 skipped tRPC update tests (duplicated by REST API file with 25 passing tests)
 - Readings tests: fixed 5 ingest tests via socket plugin mock, removed 3 duplicate query tests; fixed invalid UUID in TEST_READING_ID causing Zod serialization failure
+- Widget health tests: deleted 12 skipped tests targeting deprecated no-op stub functions rather than implementing them
 
 ### Blockers/Concerns
 
@@ -58,6 +59,6 @@ None -- all known issues resolved through v2.8.
 ## Session Continuity
 
 Last session: 2026-01-30
-Stopped at: Phase 53 complete — verified ✓
+Stopped at: Completed 54-02-PLAN.md
 Resume file: None
-Next action: Plan Phase 54 (Frontend Test Restoration)
+Next action: Execute 54-01-PLAN.md or continue Phase 54
