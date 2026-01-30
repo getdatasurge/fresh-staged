@@ -28,12 +28,12 @@ Fix known skipped tests and restore test coverage across backend and frontend. F
 
 ### Frontend TTNCredentialsPanel Tests
 
-- [ ] **FE-01**: TTNCredentialsPanel test coverage restored to ~21 tests (async data loading, mutations, error handling)
-- [ ] **FE-02**: TTNCredentialsPanel deferred test scenarios implemented
+- [x] **FE-01**: TTNCredentialsPanel test coverage restored to ~21 tests (actual: 26 tests covering async data loading, mutations, error handling)
+- [x] **FE-02**: TTNCredentialsPanel deferred test scenarios implemented (5 describe groups: rendering, data loading, credential display, mutations, error handling)
 
 ### Frontend Widget Health Tests
 
-- [ ] **FE-03**: `widgetHealthStates.test.ts` `describe.skip` removed and suite passes
+- [x] **FE-03**: `widgetHealthStates.test.ts` `describe.skip` removed and suite passes (12 deprecated tests deleted, 21 remaining pass)
 
 ### Test Suite Health
 
@@ -61,9 +61,9 @@ Fix known skipped tests and restore test coverage across backend and frontend. F
 | READ-01 | Phase 53 | Complete |
 | READ-02 | Phase 53 | Complete |
 | SITE-01 | Phase 53 | Complete |
-| FE-01 | Phase 54 | Pending |
-| FE-02 | Phase 54 | Pending |
-| FE-03 | Phase 54 | Pending |
+| FE-01 | Phase 54 | Complete |
+| FE-02 | Phase 54 | Complete |
+| FE-03 | Phase 54 | Complete |
 | HEALTH-01 | Phase 55 | Pending |
 | HEALTH-02 | Phase 55 | Pending |
 

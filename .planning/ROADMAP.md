@@ -73,8 +73,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 54-01-PLAN.md -- Restore TTNCredentialsPanel test coverage (~21 tests)
-- [ ] 54-02-PLAN.md -- Remove widget health states skip and fix suite
+- [x] 54-01-PLAN.md -- Restore TTNCredentialsPanel test coverage (26 tests, mock restructuring to mockUseTRPC pattern)
+- [x] 54-02-PLAN.md -- Remove widget health states skip (12 deprecated tests deleted, 21 remaining pass)
 
 ---
 
@@ -99,7 +99,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 52. Backend TTN Webhook Tests | v2.9 | 1/1 | ✓ Complete | 2026-01-30 |
 | 53. Backend API Tests | v2.9 | 3/3 | ✓ Complete | 2026-01-30 |
-| 54. Frontend Test Restoration | v2.9 | 0/2 | Not started | - |
+| 54. Frontend Test Restoration | v2.9 | 2/2 | ✓ Complete | 2026-01-30 |
 | 55. Test Suite Health Validation | v2.9 | 0/1 | Not started | - |
 
 ## Dependency Graph
