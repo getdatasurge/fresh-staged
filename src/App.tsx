@@ -1,6 +1,5 @@
 import { DebugTerminal, RouteLogger } from '@/components/debug';
-import { AppErrorBoundary } from '@/components/errors/AppErrorBoundary';
-import { RouteErrorFallback } from '@/components/errors/RouteErrorFallback';
+import { QueryErrorBoundary } from '@/components/errors/QueryErrorBoundary';
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -84,47 +83,37 @@ function TRPCWrapper({ children }: { children: React.ReactNode }) {
 
 /**
  * Per-route error boundary wrapper for dashboard routes.
- * Catches render errors from a single page without crashing the whole app.
+ * Uses QueryErrorBoundary so that "Try Again" also resets failed TanStack queries.
  */
 function DashboardErrorBoundary({ children }: { children: React.ReactNode }) {
   return (
-    <AppErrorBoundary
-      fallbackRender={({ error, onRetry }) => (
-        <RouteErrorFallback error={error} title="Dashboard Error" onRetry={onRetry} />
-      )}
-    >
+    <QueryErrorBoundary title="Dashboard Error">
       <RequireImpersonationGuard>{children}</RequireImpersonationGuard>
-    </AppErrorBoundary>
+    </QueryErrorBoundary>
   );
 }
 
 /**
  * Per-route error boundary wrapper for admin routes.
+ * Uses QueryErrorBoundary so that "Try Again" also resets failed TanStack queries.
  */
 function AdminErrorBoundary({ children }: { children: React.ReactNode }) {
   return (
-    <AppErrorBoundary
-      fallbackRender={({ error, onRetry }) => (
-        <RouteErrorFallback error={error} title="Admin Page Error" onRetry={onRetry} />
-      )}
-    >
+    <QueryErrorBoundary title="Admin Page Error">
       <RequireImpersonationGuard>{children}</RequireImpersonationGuard>
-    </AppErrorBoundary>
+    </QueryErrorBoundary>
   );
 }
 
 /**
  * Per-route error boundary wrapper for platform routes.
+ * Uses QueryErrorBoundary so that "Try Again" also resets failed TanStack queries.
  */
 function PlatformErrorBoundary({ children }: { children: React.ReactNode }) {
   return (
-    <AppErrorBoundary
-      fallbackRender={({ error, onRetry }) => (
-        <RouteErrorFallback error={error} title="Platform Error" onRetry={onRetry} />
-      )}
-    >
+    <QueryErrorBoundary title="Platform Error">
       <PlatformGuard>{children}</PlatformGuard>
-    </AppErrorBoundary>
+    </QueryErrorBoundary>
   );
 }
 
