@@ -12,7 +12,7 @@ import { createTRPCContext } from '@trpc/tanstack-react-query'
 import type { AppRouter } from '../../backend/src/trpc/router'
 
 // Base API URL from environment
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : '')
 
 /**
  * tRPC React context with queryOptions/mutationOptions pattern

@@ -30,11 +30,11 @@
 }
 
 # Main application
-# When DOMAIN is an IP address, use self-signed cert from /etc/caddy/certs/
-# When DOMAIN is a real domain, Let's Encrypt handles it automatically
-https://{$DOMAIN:localhost} {
-    # TLS: Uses self-signed certs by default. For Let's Encrypt, set TLS_CERT and TLS_KEY to empty strings.
-    tls {$TLS_CERT:/etc/caddy/certs/server.crt} {$TLS_KEY:/etc/caddy/certs/server.key}
+# Port-based matching accepts any hostname/IP.
+# For domain-specific matching, replace :443 with your domain.
+:443 {
+    # TLS: Use self-signed certs for IP-based deployments, or Let's Encrypt for domains.
+    tls /etc/caddy/certs/server.crt /etc/caddy/certs/server.key
 
     # Reverse proxy to backend API (strip /api prefix)
     handle_path /api/* {
@@ -58,6 +58,28 @@ https://{$DOMAIN:localhost} {
 
     # Health endpoint for external monitoring
     reverse_proxy /health backend:3000
+
+    # Reverse proxy to backend tRPC API
+    handle /trpc/* {
+        reverse_proxy backend:3000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Reverse proxy for Socket.io (real-time features)
+    handle /socket.io/* {
+        reverse_proxy backend:3000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up Connection {>Connection}
+            header_up Upgrade {>Upgrade}
+        }
+    }
 
     # Static frontend files (served by nginx in production)
     reverse_proxy /* frontend:8080 {
@@ -98,7 +120,7 @@ https://{$DOMAIN:localhost} {
 }
 
 # HTTP to HTTPS redirect
-http://{$DOMAIN:localhost} {
+:80 {
     redir https://{host}{uri} permanent
 }
 
