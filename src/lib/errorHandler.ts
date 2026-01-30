@@ -22,16 +22,16 @@ interface PostgrestError {
 }
 
 /**
- * Check if an error is a migration error (deprecated - always returns false)
+ * Check if an error is an app-level error (deprecated - always returns false)
  */
-export function isMigrationError(_error: unknown): boolean {
-  return false; // Migration complete
+export function isAppError(_error: unknown): boolean {
+  return false;
 }
 
 /**
- * Get user-friendly message for migration errors (deprecated)
+ * Get user-friendly message for app errors (deprecated)
  */
-export function getMigrationErrorMessage(_error: unknown): string {
+export function getAppErrorMessage(_error: unknown): string {
   return 'An unexpected error occurred.';
 }
 

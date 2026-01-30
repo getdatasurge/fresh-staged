@@ -1,6 +1,6 @@
 import BrandedLogo from '@/components/BrandedLogo';
 import { ConnectionStatus } from '@/components/common/ConnectionStatus';
-import { MigrationErrorBoundary } from '@/components/errors/MigrationErrorBoundary';
+import { AppErrorBoundary } from '@/components/errors/AppErrorBoundary';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import { SupportDiagnosticsPanel } from '@/components/platform/SupportDiagnosticsPanel';
 import { ImpersonationBanner, SupportModeBanner } from '@/components/platform/SupportModeBanner';
@@ -470,7 +470,7 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
         <main className="flex-1 lg:ml-64 min-w-0 overflow-x-hidden">
           <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
             {title && <h1 className="text-2xl font-bold text-foreground mb-6">{title}</h1>}
-            <MigrationErrorBoundary>{children}</MigrationErrorBoundary>
+            <AppErrorBoundary>{children}</AppErrorBoundary>
           </div>
         </main>
 

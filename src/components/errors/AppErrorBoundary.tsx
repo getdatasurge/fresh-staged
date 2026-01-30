@@ -1,33 +1,29 @@
 /**
- * Error Boundary
+ * App Error Boundary
  *
  * Catches render-time errors and displays a user-friendly fallback.
- * Simplified from migration-specific handling to generic error boundary.
  */
 
 import React, { Component, ReactNode } from 'react';
-import { MigrationErrorFallback } from './MigrationErrorFallback';
+import { ErrorFallback } from './ErrorFallback';
 
-interface MigrationErrorBoundaryProps {
+interface AppErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
 }
 
-interface MigrationErrorBoundaryState {
+interface AppErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
 }
 
-export class MigrationErrorBoundary extends Component<
-  MigrationErrorBoundaryProps,
-  MigrationErrorBoundaryState
-> {
-  constructor(props: MigrationErrorBoundaryProps) {
+export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorBoundaryState> {
+  constructor(props: AppErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
   }
 
-  static getDerivedStateFromError(error: Error): MigrationErrorBoundaryState {
+  static getDerivedStateFromError(error: Error): AppErrorBoundaryState {
     return {
       hasError: true,
       error,
@@ -48,9 +44,7 @@ export class MigrationErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        this.props.fallback || (
-          <MigrationErrorFallback error={this.state.error} onRetry={this.handleRetry} />
-        )
+        this.props.fallback || <ErrorFallback error={this.state.error} onRetry={this.handleRetry} />
       );
     }
 

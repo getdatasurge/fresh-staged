@@ -146,9 +146,9 @@ vi.mock('@/components/ThemeToggle', () => ({
   ),
 }));
 
-// Mock MigrationErrorBoundary
-vi.mock('@/components/errors/MigrationErrorBoundary', () => ({
-  MigrationErrorBoundary: ({ children }: { children: ReactNode }) => <>{children}</>,
+// Mock AppErrorBoundary
+vi.mock('@/components/errors/AppErrorBoundary', () => ({
+  AppErrorBoundary: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 // Mock SupportModeBanner and ImpersonationBanner
