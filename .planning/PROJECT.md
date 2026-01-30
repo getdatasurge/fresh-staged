@@ -153,14 +153,25 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - 8 admin/debug and other components migrated to tRPC — v2.4
 - supabase-placeholder.ts deleted, zero Supabase imports remaining — v2.4
 
+**Production Deployment (v2.6)**
+- VM provisioned with Ubuntu 24.04 LTS, 4 vCPU, 8GB RAM, IP 192.168.4.181 — v2.6
+- 14 Docker containers deployed and healthy — v2.6
+- Caddy reverse proxy with self-signed SSL for IP deployment — v2.6
+- External services configured (Stack Auth, Stripe, TTN) — v2.6
+- Playwright E2E smoke test infrastructure created — v2.6
+
+**tRPC Client Fix (v2.7)**
+- Phantom `@trpc/react-query` removed, tRPC pinned to 11.9.0, Zod aligned to v4 (DEP-01..03) — v2.7
+- 30+ `.mutate()`/`.query()` proxy calls migrated to `useTRPCClient()` (TRPC-01..02) — v2.7
+- React mounts in production, no `TypeError: e[i] is not a function` (TRPC-03) — v2.7
+- Frontend tests pass after migration (TRPC-04) — v2.7
+- Production URL fallback fixed (`import.meta.env.DEV` ternary), Caddy routes added (PROD-01..03) — v2.7
+
 ### Active
 
-<!-- Current milestone: v2.5 TTN Test Fixes -->
+<!-- No active milestone — v2.7 shipped, next milestone not yet defined -->
 
-**TTN Test Fixes (v2.5)**
-- [x] **TTN-01**: Bootstrap endpoint returns correct status codes (400/401/403/201 instead of 500) — v2.5
-- [x] **TTN-02**: All 15 failing tests in ttn-devices.test.ts pass — v2.5
-- [x] **TTN-03**: Proper error handling in bootstrap service/route — v2.5
+(No active requirements — run `/gsd:new-milestone` to define next milestone)
 
 ### Out of Scope
 
@@ -174,32 +185,35 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Blue-green/canary deployments — Over-engineering for current scale
 - Data migration from Supabase — No access to production Supabase data
 
-## Current State (v2.4 Shipped)
+## Current State (v2.7 Shipped)
 
 **Codebase:**
 - Backend: ~55K LOC TypeScript (Fastify, Drizzle, PostgreSQL, tRPC, Socket.io, BullMQ)
 - Frontend: ~100K LOC TypeScript/TSX (React, TanStack Query, tRPC client)
 - Migration scripts: 1,354 LOC TypeScript
 - Test/deployment scripts: ~7,000 LOC Shell/TypeScript
-- 43 phases, 183 plans completed across v1.0, v1.1, v2.0, v2.1, v2.2, v2.3, and v2.4
+- 48 phases, 192 plans completed across v1.0 through v2.7
 - 1,050+ backend tests passing, 141 frontend tests passing
 
 **Infrastructure:**
-- Docker Compose with 15+ services (backend, worker, Socket.io server, production overlay)
+- Docker Compose with 14 containers in production (backend, worker, frontend, PostgreSQL, Redis, MinIO, Caddy, Prometheus, Grafana, Loki, Promtail, Uptime Kuma, Node Exporter, Blackbox)
+- Production deployed at 192.168.4.181 (Ubuntu 24.04 LTS, 4 vCPU, 8GB RAM)
+- Caddy reverse proxy with port-based matching, self-signed SSL
 - PgBouncer connection pooling (transaction mode)
 - Redis for Socket.io adapter and BullMQ job queue
 - Prometheus/Grafana/Loki/Blackbox monitoring stack
-- Bull Board dashboard for queue monitoring
 - Automated daily backups with MinIO storage
-- Multi-target deployment (self-hosted, DigitalOcean)
+- Playwright E2E smoke test suite (4 tests)
 
 **Tech Debt:**
 - Zero Supabase imports remaining (migration complete)
 - 15 pre-existing failures in tests/api/ttn-devices.test.ts (unrelated to migration)
 - TTNCredentialsPanel has reduced test coverage (5 vs 21 tests)
+- ServiceWorker registration fails on self-signed cert (non-blocking)
+- `useSuperAdmin` context error (pre-existing)
 
 **Known Issues:**
-- None critical — production ready
+- None critical — production deployed and rendering
 
 ## Constraints
 
@@ -234,15 +248,16 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 | Checkpoint-based deployment | Resume from failure point | Good — v2.3 deploy-orchestrated.sh working |
 | /dev/tty for credentials | Prevents log capture of secrets | Good — v2.3 secure display working |
 | 3-consecutive-pass health check | Prevents transient false positives | Good — v2.3 stability verification |
+| useTRPCClient for imperative calls | tRPC v11 proxy only supports .queryOptions()/.mutationOptions() | Good — 30+ call sites fixed |
+| Port-based Caddy matching (:443/:80) | IP deployments have no hostname to match | Good — accepts any hostname/IP |
+| import.meta.env.DEV URL ternary | Empty string VITE_API_URL is falsy in JS || operator | Good — relative URLs in prod |
+| Self-signed SSL for IP deployment | No domain available, IP-only access | Good — works with cert exception |
 
-## Current Milestone: v2.5 TTN Test Fixes
+## Last Shipped: v2.7 tRPC Client Fix (2026-01-30)
 
-**Goal:** Fix the 15 pre-existing test failures in the TTN device bootstrap endpoint.
+Fixed tRPC runtime crash preventing React from mounting in production. All 10 milestones shipped (v1.0 through v2.7), 48 phases, 192 plans.
 
-**Target features:**
-- Fix bootstrap endpoint to return correct HTTP status codes
-- Proper error handling (400/401/403 vs 500)
-- All 45 tests in ttn-devices.test.ts passing
+**Next:** Run `/gsd:new-milestone` to define next milestone.
 
 ---
-*Last updated: 2026-01-29 after v2.5 milestone started*
+*Last updated: 2026-01-30 after v2.7 milestone*

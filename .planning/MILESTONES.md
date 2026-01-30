@@ -1,5 +1,89 @@
 # Project Milestones: FreshTrack Pro Migration
 
+## v2.7 tRPC Client Fix (Shipped: 2026-01-30)
+
+**Delivered:** Fixed tRPC runtime crash preventing React from mounting in production by migrating 30+ `.mutate()`/`.query()` proxy calls to `useTRPCClient()`, cleaning dependencies, and fixing production URL configuration and Caddy routing.
+
+**Phases completed:** 46-48 (5 plans total)
+
+**Key accomplishments:**
+
+- Dependency Cleanup — Removed phantom `@trpc/react-query`, pinned all tRPC packages to 11.9.0, upgraded frontend Zod from v3 to v4
+- tRPC Proxy Migration — 30+ `.mutate()`/`.query()` calls across 12 files migrated from `useTRPC()` proxy to `useTRPCClient()` vanilla client
+- Root Cause Eliminated — `TypeError: e[i] is not a function` completely resolved, React mounts successfully with 5 root children
+- Production URL Fix — Changed `|| 'http://localhost:3000'` fallback to `import.meta.env.DEV` ternary in 3 frontend files
+- Caddy Routing Fix — Added `/trpc/*` and `/socket.io/*` reverse proxy routes, switched to port-based matching for IP deployments
+- Full Verification — 4/4 Playwright smoke tests pass, user-verified browser console clean, Socket.io connects through Caddy
+
+**Stats:**
+
+- 15 commits, 47 files changed, +1,768 / -597 lines
+- 3 phases, 5 plans
+- 10/10 requirements shipped
+- Timeline: 2026-01-29 → 2026-01-30
+
+**Git range:** `55b2350` → `0b6d664`
+
+**What's next:** Next milestone planning
+
+---
+
+## v2.6 Production Deployment (Shipped: 2026-01-29)
+
+**Delivered:** Full production deployment to self-hosted Ubuntu VM at 192.168.4.181 with 14 Docker containers, Caddy reverse proxy with self-signed SSL, and comprehensive E2E smoke testing infrastructure.
+
+**Phases completed:** 45 (3 plans total)
+
+**Key accomplishments:**
+
+- VM Prerequisites Validation — Ubuntu 24.04 LTS, 4 vCPU, 8GB RAM, 96GB disk, IP-based deployment (192.168.4.181)
+- Docker Deployment — 14 containers deployed via `docker-compose.yml` + `compose.production.yaml`, all services healthy (backend, worker, frontend, PostgreSQL, Redis, MinIO, Caddy, Prometheus, Grafana, Loki, Promtail, Uptime Kuma, Node Exporter, Blackbox)
+- Post-Deployment Validation — TLS 1.3 verified, API health endpoint healthy (DB 1ms, Redis 1ms), webhooks configured
+- Bug Fixes Deployed — TTNCredentialsPanel infinite refetch loop (429 errors), excessive useEffectiveIdentity logging, Socket.io reconnection spam
+- Playwright E2E Infrastructure — `playwright.production.config.ts` and `e2e/production-smoke.spec.ts` with 4 smoke tests (all pass)
+
+**Stats:**
+
+- 3 plans, 3 commits for bug fixes
+- 14 Docker containers running, 10 with health checks passing
+- Disk usage 17% (16GB/96GB)
+
+**Requirements shipped:**
+
+- DEPLOY-01 (VM provisioned), DEPLOY-03 (services running), DEPLOY-04 (external services configured)
+- DEPLOY-02 (domain/SSL) — partial: IP-based with self-signed cert instead of domain + Let's Encrypt
+- DEPLOY-05 (E2E validation) — partial: infrastructure works but app doesn't render (tRPC crash)
+
+**Critical issue discovered:**
+
+- React fails to mount due to `TypeError: e[i] is not a function` — tRPC proxy incompatibility with `@trpc/tanstack-react-query` v11
+- 30+ call sites use `.mutate()`/`.query()` on `useTRPC()` proxy which only supports `.mutationOptions()`/`.queryOptions()`
+- Phantom `@trpc/react-query` dependency, tRPC version mismatch, Zod version mismatch
+
+**What's next:** v2.7 tRPC Client Fix to unblock production app render
+
+---
+
+## v2.5 TTN Test Fixes (Shipped: 2026-01-29)
+
+**Delivered:** Fixed 15 pre-existing test failures in TTN bootstrap endpoint by mocking subscription middleware.
+
+**Phases completed:** 44 (1 plan total)
+
+**What's next:** v2.6 Production Deployment
+
+---
+
+## v2.4 Tech Debt Cleanup (Shipped: 2026-01-29)
+
+**Delivered:** Complete Supabase removal — 35 files migrated to tRPC, 60 tests fixed, supabase-placeholder.ts deleted, zero Supabase imports remaining.
+
+**Phases completed:** 38-43 (16 plans total)
+
+**What's next:** v2.5 TTN Test Fixes
+
+---
+
 ## v2.3 Deployment Orchestration (Shipped: 2026-01-29)
 
 **Delivered:** Complete one-script deployment automation with checkpoint-based recovery, multi-layer verification, secure credential display, and comprehensive documentation for self-service deployment.

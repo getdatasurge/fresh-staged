@@ -2,20 +2,20 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-29)
+See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.7 tRPC Client Fix — unblock production app render
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Milestone: v2.7 tRPC Client Fix
-Phase: 47 of 48 - tRPC Proxy Call Migration
-Plan: 3/3 complete (47-01, 47-02, 47-03 done)
-Status: Phase complete
-Last activity: 2026-01-29 — Completed 47-03-PLAN.md (remaining page/widget tRPC proxy migration + full codebase verification)
+Milestone: None active (v2.7 shipped)
+Phase: N/A
+Plan: N/A
+Status: Between milestones
+Last activity: 2026-01-30 — v2.7 milestone archived
 
-Progress: █████████░ 90%
+Progress: Ready for next milestone
 
 ## Milestones Shipped
 
@@ -30,51 +30,29 @@ Progress: █████████░ 90%
 | v2.4 | Tech Debt Cleanup | 38-43 | 16 | 2026-01-29 |
 | v2.5 | TTN Test Fixes | 44 | 1 | 2026-01-29 |
 | v2.6 | Production Deployment | 45 | 3 | 2026-01-29 |
+| v2.7 | tRPC Client Fix | 46-48 | 5 | 2026-01-30 |
 
-**Total shipped:** 9 milestones, 45 phases, 187 plans
-
-## v2.7 Progress
-
-| Phase | Name | Requirements | Status |
-|-------|------|--------------|--------|
-| 46 | Dependency Cleanup | DEP-01, DEP-02, DEP-03 | Complete |
-| 47 | tRPC Proxy Call Migration | TRPC-01 to TRPC-04 | Complete (3/3 plans done) |
-| 48 | Production Redeploy & Verification | PROD-01 to PROD-03 | Not Started |
-
-**v2.7 scope:** 10 requirements, 3 phases, 5 plans — **5/5 plans in phases 46-47 complete (100% code changes); phase 48 (redeploy) not started**
-
-## Root Cause Reference
-
-**Bug:** `TypeError: e[i] is not a function` — React fails to mount
-
-**Primary cause:** 30+ call sites use `.mutate()`/`.query()` on `useTRPC()` proxy, which only supports `.mutationOptions()`/`.queryOptions()` in `@trpc/tanstack-react-query` v11. The proxy's `contextMap` doesn't contain `"mutate"` or `"query"` keys.
-
-**Contributing factors:**
-1. Phantom `@trpc/react-query` dependency bundled (not imported)
-2. tRPC version mismatch (server 11.9.0, client 11.8.1)
-3. Zod major version mismatch (frontend v3, backend v4)
-
-**Affected files (`.mutate()`):** useAlertRules.ts, useAlertRulesHistory.ts, useWidgetHealthMetrics.ts, useSiteLocationMutation.ts, eventLogger.ts, useEntityLayoutStorage.ts, BillingTab.tsx, Inspector.tsx
-**Affected files (`.query()`):** useWidgetHealthMetrics.ts, useEntityLayoutStorage.ts, SiteAlertsSummaryWidget.tsx, AlertHistoryWidget.tsx, BillingTab.tsx, Inspector.tsx, PilotSetup.tsx
+**Total shipped:** 10 milestones, 48 phases, 192 plans (v2.5 tag missing)
 
 ## Accumulated Context
 
 ### Decisions
 
 - IP-based deployment (192.168.4.181), no domain
-- Self-signed SSL via Caddy auto-TLS
+- Self-signed SSL via Caddy (static certs in `/etc/caddy/certs/`)
 - Docker compose: base `docker-compose.yml` + overlay `compose.production.yaml`
-- Env vars in `.env.production` (must export before docker compose commands)
-- Playwright E2E tests for deployment validation
-- Fix pattern: `.mutate()`/`.query()` → `useTRPCClient()` (vanilla client supports these methods)
+- Caddy uses port-based matching (`:443`/`:80`) for IP deployments
+- `useTRPCClient()` for imperative `.mutate()`/`.query()` calls
+- `useTRPC()` only for `.queryOptions()`/`.mutationOptions()`
 
 ### Blockers/Concerns
 
 - ServiceWorker registration fails due to self-signed cert (non-blocking)
+- `useSuperAdmin` context error (pre-existing)
 
 ## Session Continuity
 
-Last session: 2026-01-29
-Stopped at: Completed 47-03-PLAN.md (remaining page/widget tRPC proxy migration + full verification)
+Last session: 2026-01-30
+Stopped at: v2.7 milestone archived
 Resume file: None
-Next action: Phase 48 - Production Redeploy & Verification
+Next action: `/gsd:new-milestone` to define next milestone
