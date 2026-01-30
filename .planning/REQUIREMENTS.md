@@ -14,8 +14,8 @@ Fix known production issues discovered during v2.7 deployment verification. The 
 
 ### ServiceWorker Handling
 
-- [ ] **SW-01**: ServiceWorker registration failure on self-signed cert does not produce uncaught promise rejection
-- [ ] **SW-02**: App functions normally when ServiceWorker registration is unavailable
+- [x] **SW-01**: ServiceWorker registration failure on self-signed cert does not produce uncaught promise rejection
+- [x] **SW-02**: App functions normally when ServiceWorker registration is unavailable
 
 ### WebSocket Stability
 
@@ -38,8 +38,8 @@ Fix known production issues discovered during v2.7 deployment verification. The 
 |-------------|-------|--------|
 | SA-01 | Phase 49 | Complete |
 | SA-02 | Phase 49 | Complete |
-| SW-01 | Phase 50 | Pending |
-| SW-02 | Phase 50 | Pending |
+| SW-01 | Phase 50 | Complete |
+| SW-02 | Phase 50 | Complete |
 | WS-01 | Phase 51 | Pending |
 | WS-02 | Phase 51 | Pending |
 | WS-03 | Phase 51 | Pending |
@@ -51,4 +51,4 @@ Fix known production issues discovered during v2.7 deployment verification. The 
 
 ---
 *Requirements defined: 2026-01-30*
-*Last updated: 2026-01-30 — SA-01, SA-02 complete (Phase 49)*
+*Last updated: 2026-01-30 — SW-01, SW-02 complete (Phase 50)*
