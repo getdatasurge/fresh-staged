@@ -1,33 +1,43 @@
 /**
  * useWidgetState Hook
- * 
+ *
  * Centralized logic for determining widget health status.
  * Each widget type has specific rules for what constitutes healthy, stale, error, etc.
  */
 
-import { useMemo } from "react";
-import { differenceInMinutes, differenceInHours } from "date-fns";
-import type { WidgetStateInfo, WidgetHealthStatus, FailingLayer } from "../types/widgetState";
-import type { WidgetProps } from "../types";
-import { Settings, Radio, Calendar, RefreshCw, ExternalLink, Thermometer, Wifi, Lock, AlertTriangle } from "lucide-react";
-import { translateError } from "@/lib/errors/userFriendlyErrors";
+import { useMemo } from 'react';
+import { differenceInMinutes, differenceInHours } from 'date-fns';
+import type { WidgetStateInfo, WidgetHealthStatus, FailingLayer } from '../types/widgetState';
+import type { WidgetProps } from '../types';
+import {
+  Settings,
+  Radio,
+  Calendar,
+  RefreshCw,
+  ExternalLink,
+  Thermometer,
+  Wifi,
+  Lock,
+  AlertTriangle,
+} from 'lucide-react';
+import { translateError } from '@/lib/errors/userFriendlyErrors';
 
 /**
  * Thresholds for determining staleness (in minutes).
  */
 const STALE_THRESHOLDS = {
-  sensor: 60,      // 1 hour without reading = stale
-  gateway: 30,     // 30 min without gateway heartbeat = stale
-  external: 120,   // 2 hours for external APIs = stale
+  sensor: 60, // 1 hour without reading = stale
+  gateway: 30, // 30 min without gateway heartbeat = stale
+  external: 120, // 2 hours for external APIs = stale
 };
 
 /**
  * Thresholds for determining error state (in hours).
  */
 const ERROR_THRESHOLDS = {
-  sensor: 24,      // 24 hours without reading = error
-  gateway: 4,      // 4 hours without gateway = error
-  external: 24,    // 24 hours for external APIs = error
+  sensor: 24, // 24 hours without reading = error
+  gateway: 4, // 4 hours without gateway = error
+  external: 24, // 24 hours for external APIs = error
 };
 
 interface UseWidgetStateOptions {
@@ -66,8 +76,8 @@ export function useWidgetState(options: UseWidgetStateOptions): WidgetStateInfo 
     // Loading state
     if (isLoading) {
       return {
-        status: "loading" as const,
-        message: "Loading data...",
+        status: 'loading' as const,
+        message: 'Loading data...',
         lastUpdated: null,
       };
     }
@@ -75,11 +85,11 @@ export function useWidgetState(options: UseWidgetStateOptions): WidgetStateInfo 
     // Error state
     if (error) {
       return {
-        status: "error" as const,
-        message: "Failed to load data",
-        rootCause: error.message || "An unexpected error occurred",
+        status: 'error' as const,
+        message: 'Failed to load data',
+        rootCause: error.message || 'An unexpected error occurred',
         action: {
-          label: "Retry",
+          label: 'Retry',
           icon: RefreshCw,
           onClick: () => window.location.reload(),
         },
@@ -106,41 +116,41 @@ export function useWidgetState(options: UseWidgetStateOptions): WidgetStateInfo 
  */
 function getDefaultMessage(status: WidgetHealthStatus): string {
   switch (status) {
-    case "healthy":
-      return "Data is up to date";
-    case "degraded":
-      return "Some data issues detected";
-    case "stale":
-      return "No recent data";
-    case "error":
-      return "Data unavailable";
-    case "no_data":
-      return "No data available";
-    case "misconfigured":
-      return "Widget configuration error";
-    case "permission_denied":
-      return "Access denied";
-    case "not_configured":
-      return "Setup required";
-    case "loading":
-      return "Loading...";
-    case "empty":
-      return "No data in selected period";
+    case 'healthy':
+      return 'Data is up to date';
+    case 'degraded':
+      return 'Some data issues detected';
+    case 'stale':
+      return 'No recent data';
+    case 'error':
+      return 'Data unavailable';
+    case 'no_data':
+      return 'No data available';
+    case 'misconfigured':
+      return 'Widget configuration error';
+    case 'permission_denied':
+      return 'Access denied';
+    case 'not_configured':
+      return 'Setup required';
+    case 'loading':
+      return 'Loading...';
+    case 'empty':
+      return 'No data in selected period';
     // Epic 3: New states
-    case "offline":
-      return "Sensor offline";
-    case "mismatch":
-      return "Payload type mismatch";
-    case "decoder_error":
-      return "Decoder error";
-    case "schema_failed":
-      return "Invalid data format";
-    case "partial_payload":
-      return "Missing data fields";
-    case "out_of_order":
-      return "Timestamps out of sequence";
+    case 'offline':
+      return 'Sensor offline';
+    case 'mismatch':
+      return 'Payload type mismatch';
+    case 'decoder_error':
+      return 'Decoder error';
+    case 'schema_failed':
+      return 'Invalid data format';
+    case 'partial_payload':
+      return 'Missing data fields';
+    case 'out_of_order':
+      return 'Timestamps out of sequence';
     default:
-      return "Unknown state";
+      return 'Unknown state';
   }
 }
 
@@ -151,20 +161,20 @@ function getWidgetSpecificState(
   widgetId: string,
   props: WidgetProps,
   hasData: boolean,
-  lastFetchTime: Date | null
+  lastFetchTime: Date | null,
 ): WidgetStateInfo {
   const { sensor, unit, site, readings, loraSensors, device } = props;
 
   // Temperature widgets - need sensor
-  if (widgetId.includes("temperature") || widgetId === "current_temp") {
+  if (widgetId.includes('temperature') || widgetId === 'current_temp') {
     if (!sensor && !device) {
       return {
-        status: "not_configured",
-        message: "No sensor assigned",
-        rootCause: "This unit needs a temperature sensor to display readings",
+        status: 'not_configured',
+        message: 'No sensor assigned',
+        rootCause: 'This unit needs a temperature sensor to display readings',
         action: {
-          label: "Assign Sensor",
-          href: unit?.id ? `/settings?tab=sensors&unitId=${unit.id}` : "/settings?tab=sensors",
+          label: 'Assign Sensor',
+          href: unit?.id ? `/settings?tab=sensors&unitId=${unit.id}` : '/settings?tab=sensors',
           icon: Settings,
         },
         lastUpdated: null,
@@ -180,13 +190,13 @@ function getWidgetSpecificState(
 
       if (hoursAgo >= ERROR_THRESHOLDS.sensor) {
         return {
-          status: "offline",  // Epic 3: Use new "offline" state instead of "error"
-          message: "Sensor offline",
+          status: 'offline', // Epic 3: Use new "offline" state instead of "error"
+          message: 'Sensor offline',
           rootCause: `Last reading was ${hoursAgo} hours ago`,
-          failingLayer: "sensor",
+          failingLayer: 'sensor',
           action: {
-            label: "Check Gateway",
-            href: "/settings?tab=gateways",
+            label: 'Check Gateway',
+            href: '/settings?tab=gateways',
             icon: Radio,
           },
           lastUpdated: lastSeenDate,
@@ -195,8 +205,8 @@ function getWidgetSpecificState(
 
       if (minutesAgo >= STALE_THRESHOLDS.sensor) {
         return {
-          status: "stale",
-          message: "No recent readings",
+          status: 'stale',
+          message: 'No recent readings',
           rootCause: `Last reading was ${minutesAgo} minutes ago`,
           lastUpdated: lastSeenDate,
         };
@@ -206,11 +216,11 @@ function getWidgetSpecificState(
     // Check if we have readings data
     if (!hasData || (readings && readings.length === 0)) {
       return {
-        status: "empty",
-        message: "No readings in period",
-        rootCause: "Try selecting a different time range",
+        status: 'empty',
+        message: 'No readings in period',
+        rootCause: 'Try selecting a different time range',
         action: {
-          label: "Change Range",
+          label: 'Change Range',
           icon: Calendar,
         },
         lastUpdated: lastFetchTime,
@@ -218,22 +228,22 @@ function getWidgetSpecificState(
     }
 
     return {
-      status: "healthy",
-      message: "Receiving data normally",
+      status: 'healthy',
+      message: 'Receiving data normally',
       lastUpdated: lastFetchTime || (sensor?.last_seen_at ? new Date(sensor.last_seen_at) : null),
     };
   }
 
   // Battery widget
-  if (widgetId === "battery_health") {
+  if (widgetId === 'battery_health') {
     if (!sensor && loraSensors?.length === 0) {
       return {
-        status: "not_configured",
-        message: "No sensor assigned",
-        rootCause: "Assign a sensor to monitor battery health",
+        status: 'not_configured',
+        message: 'No sensor assigned',
+        rootCause: 'Assign a sensor to monitor battery health',
         action: {
-          label: "Assign Sensor",
-          href: "/settings?tab=sensors",
+          label: 'Assign Sensor',
+          href: '/settings?tab=sensors',
           icon: Settings,
         },
         lastUpdated: null,
@@ -243,34 +253,34 @@ function getWidgetSpecificState(
     const batteryLevel = sensor?.battery_level ?? loraSensors?.[0]?.battery_level;
     if (batteryLevel === null || batteryLevel === undefined) {
       return {
-        status: "empty",
-        message: "No battery data",
-        rootCause: "Sensor has not reported battery level yet",
+        status: 'empty',
+        message: 'No battery data',
+        rootCause: 'Sensor has not reported battery level yet',
         lastUpdated: null,
       };
     }
 
     return {
-      status: "healthy",
+      status: 'healthy',
       message: `Battery at ${batteryLevel}%`,
       lastUpdated: lastFetchTime,
     };
   }
 
   // Door activity widget
-  if (widgetId === "door_activity") {
+  if (widgetId === 'door_activity') {
     // Check if unit has door sensor capability
-    const hasDoorSensor = sensor?.sensor_type === "door" || 
-      loraSensors?.some(s => s.sensor_type === "door");
+    const hasDoorSensor =
+      sensor?.sensor_type === 'door' || loraSensors?.some((s) => s.sensor_type === 'door');
 
-    if (!hasDoorSensor && sensor?.sensor_type !== "door") {
+    if (!hasDoorSensor && sensor?.sensor_type !== 'door') {
       return {
-        status: "not_configured",
-        message: "No door sensor",
+        status: 'not_configured',
+        message: 'No door sensor',
         rootCause: "This unit doesn't have a door sensor assigned",
         action: {
-          label: "Configure Sensors",
-          href: "/settings?tab=sensors",
+          label: 'Configure Sensors',
+          href: '/settings?tab=sensors',
           icon: Settings,
         },
         lastUpdated: null,
@@ -279,30 +289,30 @@ function getWidgetSpecificState(
 
     if (!hasData) {
       return {
-        status: "empty",
-        message: "No door events recorded",
-        rootCause: "Door sensor is configured but no events logged yet",
+        status: 'empty',
+        message: 'No door events recorded',
+        rootCause: 'Door sensor is configured but no events logged yet',
         lastUpdated: lastFetchTime,
       };
     }
 
     return {
-      status: "healthy",
-      message: "Door monitoring active",
+      status: 'healthy',
+      message: 'Door monitoring active',
       lastUpdated: lastFetchTime,
     };
   }
 
   // External weather widget
-  if (widgetId === "external_weather" || widgetId === "temperature_vs_external") {
+  if (widgetId === 'external_weather' || widgetId === 'temperature_vs_external') {
     if (!site?.latitude || !site?.longitude) {
       return {
-        status: "not_configured",
-        message: "Location not set",
-        rootCause: "Site location is required for weather data",
+        status: 'not_configured',
+        message: 'Location not set',
+        rootCause: 'Site location is required for weather data',
         action: {
-          label: "Set Location",
-          href: site?.id ? `/sites/${site.id}/settings` : "/settings",
+          label: 'Set Location',
+          href: site?.id ? `/sites/${site.id}/settings` : '/settings',
           icon: Settings,
         },
         lastUpdated: null,
@@ -311,11 +321,11 @@ function getWidgetSpecificState(
 
     if (!hasData) {
       return {
-        status: "stale",
-        message: "Weather unavailable",
-        rootCause: "Unable to fetch weather data for this location",
+        status: 'stale',
+        message: 'Weather unavailable',
+        rootCause: 'Unable to fetch weather data for this location',
         action: {
-          label: "Retry",
+          label: 'Retry',
           icon: RefreshCw,
         },
         lastUpdated: lastFetchTime,
@@ -323,22 +333,22 @@ function getWidgetSpecificState(
     }
 
     return {
-      status: "healthy",
-      message: "Weather data available",
+      status: 'healthy',
+      message: 'Weather data available',
       lastUpdated: lastFetchTime,
     };
   }
 
   // Connected sensors widget
-  if (widgetId === "connected_sensors") {
+  if (widgetId === 'connected_sensors') {
     if (!loraSensors || loraSensors.length === 0) {
       return {
-        status: "not_configured",
-        message: "No sensors connected",
-        rootCause: "Add sensors to monitor this unit",
+        status: 'not_configured',
+        message: 'No sensors connected',
+        rootCause: 'Add sensors to monitor this unit',
         action: {
-          label: "Add Sensor",
-          href: "/settings?tab=sensors",
+          label: 'Add Sensor',
+          href: '/settings?tab=sensors',
           icon: Settings,
         },
         lastUpdated: null,
@@ -346,7 +356,7 @@ function getWidgetSpecificState(
     }
 
     // Check if any sensors are offline
-    const offlineCount = loraSensors.filter(s => {
+    const offlineCount = loraSensors.filter((s) => {
       if (!s.last_seen_at) return true;
       const hoursAgo = differenceInHours(new Date(), new Date(s.last_seen_at));
       return hoursAgo >= ERROR_THRESHOLDS.sensor;
@@ -354,13 +364,13 @@ function getWidgetSpecificState(
 
     if (offlineCount === loraSensors.length) {
       return {
-        status: "offline",  // Epic 3: Use new "offline" state
-        message: "All sensors offline",
+        status: 'offline', // Epic 3: Use new "offline" state
+        message: 'All sensors offline',
         rootCause: `${offlineCount} sensor(s) have not reported recently`,
-        failingLayer: "sensor",
+        failingLayer: 'sensor',
         action: {
-          label: "Check Gateway",
-          href: "/settings?tab=gateways",
+          label: 'Check Gateway',
+          href: '/settings?tab=gateways',
           icon: Wifi,
         },
         lastUpdated: lastFetchTime,
@@ -369,47 +379,48 @@ function getWidgetSpecificState(
 
     if (offlineCount > 0) {
       return {
-        status: "stale",
+        status: 'stale',
         message: `${offlineCount} sensor(s) offline`,
-        rootCause: "Some sensors have not reported recently",
+        rootCause: 'Some sensors have not reported recently',
         lastUpdated: lastFetchTime,
       };
     }
 
     return {
-      status: "healthy",
+      status: 'healthy',
       message: `${loraSensors.length} sensor(s) connected`,
       lastUpdated: lastFetchTime,
     };
   }
 
   // Humidity chart widget
-  if (widgetId === "humidity_chart") {
+  if (widgetId === 'humidity_chart') {
     // Check if sensor supports humidity
-    const supportsHumidity = sensor?.sensor_type === "temperature_humidity" ||
-      loraSensors?.some(s => s.sensor_type === "temperature_humidity");
+    const supportsHumidity =
+      sensor?.sensor_type === 'temperature_humidity' ||
+      loraSensors?.some((s) => s.sensor_type === 'temperature_humidity');
 
     if (!supportsHumidity) {
       return {
-        status: "not_configured",
-        message: "No humidity sensor",
+        status: 'not_configured',
+        message: 'No humidity sensor',
         rootCause: "Current sensor doesn't report humidity",
         action: {
-          label: "Upgrade Sensor",
-          href: "/settings?tab=sensors",
+          label: 'Upgrade Sensor',
+          href: '/settings?tab=sensors',
           icon: Thermometer,
         },
         lastUpdated: null,
       };
     }
 
-    if (!hasData || (readings && readings.every(r => r.humidity === null))) {
+    if (!hasData || (readings && readings.every((r) => r.humidity === null))) {
       return {
-        status: "empty",
-        message: "No humidity data",
-        rootCause: "No humidity readings in selected period",
+        status: 'empty',
+        message: 'No humidity data',
+        rootCause: 'No humidity readings in selected period',
         action: {
-          label: "Change Range",
+          label: 'Change Range',
           icon: Calendar,
         },
         lastUpdated: lastFetchTime,
@@ -417,35 +428,39 @@ function getWidgetSpecificState(
     }
 
     return {
-      status: "healthy",
-      message: "Humidity data available",
+      status: 'healthy',
+      message: 'Humidity data available',
       lastUpdated: lastFetchTime,
     };
   }
 
   // Site-level widgets - need site context
-  if (widgetId.includes("site_") || widgetId === "units_status_grid" || widgetId === "site_overview") {
+  if (
+    widgetId.includes('site_') ||
+    widgetId === 'units_status_grid' ||
+    widgetId === 'site_overview'
+  ) {
     if (!site) {
       return {
-        status: "not_configured",
-        message: "No site context",
-        rootCause: "This widget requires a site to be selected",
+        status: 'not_configured',
+        message: 'No site context',
+        rootCause: 'This widget requires a site to be selected',
         lastUpdated: null,
       };
     }
 
     if (!hasData) {
       return {
-        status: "empty",
-        message: "No data available",
-        rootCause: "Site has no data to display",
+        status: 'empty',
+        message: 'No data available',
+        rootCause: 'Site has no data to display',
         lastUpdated: lastFetchTime,
       };
     }
 
     return {
-      status: "healthy",
-      message: "Site data loaded",
+      status: 'healthy',
+      message: 'Site data loaded',
       lastUpdated: lastFetchTime,
     };
   }
@@ -453,16 +468,16 @@ function getWidgetSpecificState(
   // Default fallback - assume healthy if we have data
   if (!hasData) {
     return {
-      status: "empty",
-      message: "No data available",
-      rootCause: "No data found for the selected criteria",
+      status: 'empty',
+      message: 'No data available',
+      rootCause: 'No data found for the selected criteria',
       lastUpdated: lastFetchTime,
     };
   }
 
   return {
-    status: "healthy",
-    message: "Data loaded",
+    status: 'healthy',
+    message: 'Data loaded',
     lastUpdated: lastFetchTime,
   };
 }
@@ -472,8 +487,8 @@ function getWidgetSpecificState(
  */
 export function createHealthyState(lastUpdated?: Date | null): WidgetStateInfo {
   return {
-    status: "healthy",
-    message: "Data is up to date",
+    status: 'healthy',
+    message: 'Data is up to date',
     lastUpdated: lastUpdated ?? null,
   };
 }
@@ -483,8 +498,8 @@ export function createHealthyState(lastUpdated?: Date | null): WidgetStateInfo {
  */
 export function createLoadingState(): WidgetStateInfo {
   return {
-    status: "loading",
-    message: "Loading data...",
+    status: 'loading',
+    message: 'Loading data...',
     lastUpdated: null,
   };
 }
@@ -493,21 +508,21 @@ export function createLoadingState(): WidgetStateInfo {
  * Helper to create an error state with user-friendly translation.
  */
 export function createErrorState(
-  error: Error | string, 
+  error: Error | string,
   lastUpdated?: Date | null,
-  failingLayer?: FailingLayer
+  failingLayer?: FailingLayer,
 ): WidgetStateInfo {
-  const errorString = typeof error === "string" ? error : error.message;
+  const errorString = typeof error === 'string' ? error : error.message;
   const translated = translateError(errorString);
-  
+
   return {
-    status: "error",
+    status: 'error',
     message: translated.user,
     rootCause: translated.suggestion || errorString,
     failingLayer,
     technicalDetails: translated.technical,
     action: {
-      label: "Retry",
+      label: 'Retry',
       icon: RefreshCw,
       onClick: () => window.location.reload(),
     },
@@ -521,10 +536,10 @@ export function createErrorState(
 export function createEmptyState(
   message: string,
   rootCause?: string,
-  lastUpdated?: Date | null
+  lastUpdated?: Date | null,
 ): WidgetStateInfo {
   return {
-    status: "empty",
+    status: 'empty',
     message,
     rootCause,
     lastUpdated: lastUpdated ?? null,
@@ -538,10 +553,10 @@ export function createNotConfiguredState(
   message: string,
   rootCause: string,
   actionLabel: string,
-  actionHref: string
+  actionHref: string,
 ): WidgetStateInfo {
   return {
-    status: "not_configured",
+    status: 'not_configured',
     message,
     rootCause,
     action: {
@@ -560,10 +575,10 @@ export function createDegradedState(
   message: string,
   rootCause?: string,
   failingLayer?: FailingLayer,
-  lastUpdated?: Date | null
+  lastUpdated?: Date | null,
 ): WidgetStateInfo {
   return {
-    status: "degraded",
+    status: 'degraded',
     message,
     rootCause,
     failingLayer,
@@ -576,11 +591,13 @@ export function createDegradedState(
  */
 export function createPermissionDeniedState(resource?: string): WidgetStateInfo {
   return {
-    status: "permission_denied",
-    message: "Access denied",
-    rootCause: resource ? `You don't have permission to view ${resource}` : "Contact your administrator for access",
+    status: 'permission_denied',
+    message: 'Access denied',
+    rootCause: resource
+      ? `You don't have permission to view ${resource}`
+      : 'Contact your administrator for access',
     action: {
-      label: "Request Access",
+      label: 'Request Access',
       icon: Lock,
     },
     lastUpdated: null,
@@ -594,17 +611,19 @@ export function createMisconfiguredState(
   message: string,
   suggestion: string,
   actionLabel?: string,
-  actionHref?: string
+  actionHref?: string,
 ): WidgetStateInfo {
   return {
-    status: "misconfigured",
+    status: 'misconfigured',
     message,
     rootCause: suggestion,
-    action: actionLabel ? {
-      label: actionLabel,
-      href: actionHref,
-      icon: AlertTriangle,
-    } : undefined,
+    action: actionLabel
+      ? {
+          label: actionLabel,
+          href: actionHref,
+          icon: AlertTriangle,
+        }
+      : undefined,
     lastUpdated: null,
   };
 }
@@ -619,16 +638,16 @@ export function createMisconfiguredState(
 export function createOfflineState(
   message: string,
   rootCause: string,
-  lastUpdated?: Date | null
+  lastUpdated?: Date | null,
 ): WidgetStateInfo {
   return {
-    status: "offline",
+    status: 'offline',
     message,
     rootCause,
-    failingLayer: "sensor",
+    failingLayer: 'sensor',
     action: {
-      label: "Check Gateway",
-      href: "/settings?tab=gateways",
+      label: 'Check Gateway',
+      href: '/settings?tab=gateways',
       icon: Radio,
     },
     lastUpdated: lastUpdated ?? null,
@@ -641,17 +660,17 @@ export function createOfflineState(
 export function createMismatchState(
   expectedType: string,
   receivedType: string,
-  lastUpdated?: Date | null
+  lastUpdated?: Date | null,
 ): WidgetStateInfo {
   return {
-    status: "mismatch",
-    message: "Payload type mismatch",
+    status: 'mismatch',
+    message: 'Payload type mismatch',
     rootCause: `Expected "${expectedType}" but received "${receivedType}"`,
-    failingLayer: "decoder",
+    failingLayer: 'decoder',
     technicalDetails: `Widget requires payload type "${expectedType}" but sensor is sending "${receivedType}". Update the sensor binding or switch to a compatible widget.`,
     action: {
-      label: "View Sensor",
-      href: "/settings?tab=sensors",
+      label: 'View Sensor',
+      href: '/settings?tab=sensors',
       icon: Settings,
     },
     lastUpdated: lastUpdated ?? null,
@@ -663,17 +682,18 @@ export function createMismatchState(
  */
 export function createDecoderErrorState(
   errorMessage: string,
-  lastUpdated?: Date | null
+  lastUpdated?: Date | null,
 ): WidgetStateInfo {
   return {
-    status: "decoder_error",
-    message: "Decoder error",
+    status: 'decoder_error',
+    message: 'Decoder error',
     rootCause: errorMessage,
-    failingLayer: "decoder",
-    technicalDetails: "The TTN decoder returned an error or invalid data. Check the decoder configuration in The Things Network console.",
+    failingLayer: 'decoder',
+    technicalDetails:
+      'The TTN decoder returned an error or invalid data. Check the decoder configuration in The Things Network console.',
     action: {
-      label: "View Documentation",
-      href: "https://docs.lovable.dev/features/security",
+      label: 'View Documentation',
+      href: 'https://docs.lovable.dev/features/security',
       icon: ExternalLink,
     },
     lastUpdated: lastUpdated ?? null,
@@ -685,16 +705,17 @@ export function createDecoderErrorState(
  */
 export function createSchemaFailedState(
   missingFields: string[],
-  lastUpdated?: Date | null
+  lastUpdated?: Date | null,
 ): WidgetStateInfo {
   return {
-    status: "schema_failed",
-    message: "Invalid data format",
-    rootCause: `Missing required fields: ${missingFields.join(", ")}`,
-    failingLayer: "webhook",
-    technicalDetails: "The payload does not match the expected schema. Ensure the decoder is outputting all required fields.",
+    status: 'schema_failed',
+    message: 'Invalid data format',
+    rootCause: `Missing required fields: ${missingFields.join(', ')}`,
+    failingLayer: 'webhook',
+    technicalDetails:
+      'The payload does not match the expected schema. Ensure the decoder is outputting all required fields.',
     action: {
-      label: "View Diagnostics",
+      label: 'View Diagnostics',
       icon: AlertTriangle,
     },
     lastUpdated: lastUpdated ?? null,
@@ -706,14 +727,15 @@ export function createSchemaFailedState(
  */
 export function createPartialPayloadState(
   missingOptional: string[],
-  lastUpdated?: Date | null
+  lastUpdated?: Date | null,
 ): WidgetStateInfo {
   return {
-    status: "partial_payload",
-    message: "Missing optional data",
-    rootCause: `Missing fields: ${missingOptional.join(", ")}`,
-    failingLayer: "decoder",
-    technicalDetails: "Some optional fields are missing from the payload. Widget functionality may be limited.",
+    status: 'partial_payload',
+    message: 'Missing optional data',
+    rootCause: `Missing fields: ${missingOptional.join(', ')}`,
+    failingLayer: 'decoder',
+    technicalDetails:
+      'Some optional fields are missing from the payload. Widget functionality may be limited.',
     lastUpdated: lastUpdated ?? null,
   };
 }
@@ -721,17 +743,16 @@ export function createPartialPayloadState(
 /**
  * Helper to create an out-of-order timestamps state.
  */
-export function createOutOfOrderState(
-  lastUpdated?: Date | null
-): WidgetStateInfo {
+export function createOutOfOrderState(lastUpdated?: Date | null): WidgetStateInfo {
   return {
-    status: "out_of_order",
-    message: "Timestamps out of sequence",
-    rootCause: "Readings arrived in non-chronological order",
-    failingLayer: "database",
-    technicalDetails: "Sensor readings have timestamps that are out of order. This may indicate clock sync issues or delayed message delivery.",
+    status: 'out_of_order',
+    message: 'Timestamps out of sequence',
+    rootCause: 'Readings arrived in non-chronological order',
+    failingLayer: 'database',
+    technicalDetails:
+      'Sensor readings have timestamps that are out of order. This may indicate clock sync issues or delayed message delivery.',
     action: {
-      label: "View Diagnostics",
+      label: 'View Diagnostics',
       icon: AlertTriangle,
     },
     lastUpdated: lastUpdated ?? null,
@@ -748,10 +769,10 @@ export function createOutOfOrderState(
  * Returns true if any reading has a newer timestamp than the one before it.
  */
 export function detectOutOfOrderTimestamps(
-  readings: Array<{ recorded_at: string }> | null | undefined
+  readings: Array<{ recorded_at: string }> | null | undefined,
 ): boolean {
   if (!readings || readings.length < 2) return false;
-  
+
   for (let i = 1; i < readings.length; i++) {
     const prev = new Date(readings[i - 1].recorded_at).getTime();
     const curr = new Date(readings[i].recorded_at).getTime();

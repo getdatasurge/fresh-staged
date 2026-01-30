@@ -2,10 +2,7 @@ import { useEffect } from 'react';
 import { socket } from '@/lib/socket';
 import { useRealtimeStatus } from '@/providers/RealtimeProvider';
 
-export function useRealtimeSubscription(
-  type: 'site' | 'unit',
-  id: string | undefined
-) {
+export function useRealtimeSubscription(type: 'site' | 'unit', id: string | undefined) {
   const { isConnected } = useRealtimeStatus();
 
   useEffect(() => {

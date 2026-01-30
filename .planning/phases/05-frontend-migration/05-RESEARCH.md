@@ -16,31 +16,32 @@ The standard approach combines: (1) a typed API client built with Ky (lightweigh
 
 ### Core
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| ky | ^1.7.x | HTTP client | Built on fetch, 157KB, automatic error handling, retry logic, TypeScript-first. Better DX than raw fetch without Axios bloat. |
-| @stackframe/stack | Latest | Auth SDK | Official Stack Auth React SDK with token management, auth hooks, and automatic token refresh. |
-| @tanstack/react-query | 5.83.0 | State management | Already in project. Industry standard for server state caching, invalidation, and mutations. |
-| zod | 3.25.76 | Runtime validation | Already in project for backend schemas. Enables type-safe API contracts via z.infer. |
+| Library               | Version | Purpose            | Why Standard                                                                                                                  |
+| --------------------- | ------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| ky                    | ^1.7.x  | HTTP client        | Built on fetch, 157KB, automatic error handling, retry logic, TypeScript-first. Better DX than raw fetch without Axios bloat. |
+| @stackframe/stack     | Latest  | Auth SDK           | Official Stack Auth React SDK with token management, auth hooks, and automatic token refresh.                                 |
+| @tanstack/react-query | 5.83.0  | State management   | Already in project. Industry standard for server state caching, invalidation, and mutations.                                  |
+| zod                   | 3.25.76 | Runtime validation | Already in project for backend schemas. Enables type-safe API contracts via z.infer.                                          |
 
 ### Supporting
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| zod-to-ts | ^1.3.x | Type generation | Generate TypeScript types from backend Zod schemas for API client types. |
-| vitest | 2.1.8 | Testing | Already in project (frontend). Unit tests for hooks and API client. |
-| @testing-library/react | 16.3.1 | Component testing | Already in project. Test hooks with React Query integration. |
+| Library                | Version | Purpose           | When to Use                                                              |
+| ---------------------- | ------- | ----------------- | ------------------------------------------------------------------------ |
+| zod-to-ts              | ^1.3.x  | Type generation   | Generate TypeScript types from backend Zod schemas for API client types. |
+| vitest                 | 2.1.8   | Testing           | Already in project (frontend). Unit tests for hooks and API client.      |
+| @testing-library/react | 16.3.1  | Component testing | Already in project. Test hooks with React Query integration.             |
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Ky | Axios | Axios is 5x larger (800KB vs 157KB), has more features but unnecessary complexity for this use case. |
-| Ky | Fetch API | Native fetch requires manual retry logic, error handling, and request/response interceptors. Ky provides these out-of-box. |
-| zod-to-ts | OpenAPI codegen | Backend doesn't expose OpenAPI spec. Zod schemas already exist - reuse them vs new tooling. |
-| Stack Auth SDK | Custom JWT handling | SDK handles token refresh, storage, and expiry automatically. Manual JWT handling error-prone. |
+| Instead of     | Could Use           | Tradeoff                                                                                                                   |
+| -------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Ky             | Axios               | Axios is 5x larger (800KB vs 157KB), has more features but unnecessary complexity for this use case.                       |
+| Ky             | Fetch API           | Native fetch requires manual retry logic, error handling, and request/response interceptors. Ky provides these out-of-box. |
+| zod-to-ts      | OpenAPI codegen     | Backend doesn't expose OpenAPI spec. Zod schemas already exist - reuse them vs new tooling.                                |
+| Stack Auth SDK | Custom JWT handling | SDK handles token refresh, storage, and expiry automatically. Manual JWT handling error-prone.                             |
 
 **Installation:**
+
 ```bash
 pnpm add ky zod-to-ts
 # Stack Auth SDK already installed: @stackframe/stack
@@ -50,6 +51,7 @@ pnpm add ky zod-to-ts
 ## Architecture Patterns
 
 ### Recommended Project Structure
+
 ```
 src/
 ├── lib/
@@ -77,6 +79,7 @@ src/
 **When to use:** All API calls should go through this client for consistent auth and error handling.
 
 **Example:**
+
 ```typescript
 // src/lib/api-client.ts
 import ky from 'ky';
@@ -100,7 +103,7 @@ export const apiClient = ky.create({
         // Note: Cannot use hooks in non-component context
         // Token must be passed per-request or via factory function
         // See Pattern 2 for hook-based usage
-      }
+      },
     ],
     afterResponse: [
       async (request, options, response) => {
@@ -114,9 +117,9 @@ export const apiClient = ky.create({
           throw new Error(error.message || `API error: ${response.status}`);
         }
         return response;
-      }
-    ]
-  }
+      },
+    ],
+  },
 });
 ```
 
@@ -127,6 +130,7 @@ export const apiClient = ky.create({
 **When to use:** All query and mutation functions that need authentication.
 
 **Example:**
+
 ```typescript
 // src/lib/api/organizations.ts
 import { apiClient } from '../api-client';
@@ -134,26 +138,32 @@ import type { OrganizationResponse, UpdateOrganizationRequest } from '../api-typ
 
 export const organizationsApi = {
   getOrganization: async (orgId: string, accessToken: string) => {
-    return apiClient.get(`api/orgs/${orgId}`, {
-      headers: { 'x-stack-access-token': accessToken }
-    }).json<OrganizationResponse>();
+    return apiClient
+      .get(`api/orgs/${orgId}`, {
+        headers: { 'x-stack-access-token': accessToken },
+      })
+      .json<OrganizationResponse>();
   },
 
   updateOrganization: async (
     orgId: string,
     updates: UpdateOrganizationRequest,
-    accessToken: string
+    accessToken: string,
   ) => {
-    return apiClient.put(`api/orgs/${orgId}`, {
-      json: updates,
-      headers: { 'x-stack-access-token': accessToken }
-    }).json<OrganizationResponse>();
+    return apiClient
+      .put(`api/orgs/${orgId}`, {
+        json: updates,
+        headers: { 'x-stack-access-token': accessToken },
+      })
+      .json<OrganizationResponse>();
   },
 
   listMembers: async (orgId: string, accessToken: string) => {
-    return apiClient.get(`api/orgs/${orgId}/members`, {
-      headers: { 'x-stack-access-token': accessToken }
-    }).json<MemberResponse[]>();
+    return apiClient
+      .get(`api/orgs/${orgId}/members`, {
+        headers: { 'x-stack-access-token': accessToken },
+      })
+      .json<MemberResponse[]>();
   },
 };
 ```
@@ -165,20 +175,21 @@ export const organizationsApi = {
 **When to use:** For every hook migration to maintain cache behavior.
 
 **Example:**
+
 ```typescript
 // src/hooks/useOrganizations.ts - BEFORE (Supabase)
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { qk } from "@/lib/queryKeys";
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { qk } from '@/lib/queryKeys';
 
 export function useOrganization(orgId: string) {
   return useQuery({
     queryKey: qk.org(orgId).profile(),
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("organizations")
-        .select("*")
-        .eq("id", orgId)
+        .from('organizations')
+        .select('*')
+        .eq('id', orgId)
         .single();
       if (error) throw error;
       return data;
@@ -188,10 +199,10 @@ export function useOrganization(orgId: string) {
 }
 
 // src/hooks/useOrganizations.ts - AFTER (New API)
-import { useQuery } from "@tanstack/react-query";
-import { useUser } from "@stackframe/stack";
-import { organizationsApi } from "@/lib/api/organizations";
-import { qk } from "@/lib/queryKeys";
+import { useQuery } from '@tanstack/react-query';
+import { useUser } from '@stackframe/stack';
+import { organizationsApi } from '@/lib/api/organizations';
+import { qk } from '@/lib/queryKeys';
 
 export function useOrganization(orgId: string) {
   const user = useUser();
@@ -214,12 +225,13 @@ export function useOrganization(orgId: string) {
 **When to use:** All create/update/delete operations.
 
 **Example:**
+
 ```typescript
 // src/hooks/useOrganizations.ts - Mutation
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUser } from "@stackframe/stack";
-import { organizationsApi } from "@/lib/api/organizations";
-import { qk } from "@/lib/queryKeys";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useUser } from '@stackframe/stack';
+import { organizationsApi } from '@/lib/api/organizations';
+import { qk } from '@/lib/queryKeys';
 
 export function useUpdateOrganization(orgId: string) {
   const queryClient = useQueryClient();
@@ -249,6 +261,7 @@ export function useUpdateOrganization(orgId: string) {
 **When to use:** Before implementing API client to ensure type alignment.
 
 **Example:**
+
 ```typescript
 // Script: scripts/generate-api-types.ts
 import { printNode, zodToTs } from 'zod-to-ts';
@@ -273,10 +286,7 @@ for (const [name, schema] of Object.entries(schemas)) {
   output += printNode(node) + '\n\n';
 }
 
-fs.writeFileSync(
-  path.join(__dirname, '../src/lib/api-types.ts'),
-  output
-);
+fs.writeFileSync(path.join(__dirname, '../src/lib/api-types.ts'), output);
 ```
 
 ### Anti-Patterns to Avoid
@@ -289,14 +299,14 @@ fs.writeFileSync(
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| HTTP retry logic | Custom exponential backoff | Ky's built-in `retry` option | Handles edge cases: network failures, rate limits, jitter to prevent thundering herd. |
-| Token refresh | useEffect checking expiry | Stack Auth SDK | Handles refresh timing, storage, concurrent requests, token rotation. |
-| Request deduplication | Custom pending request tracking | TanStack Query | Built-in deduplication prevents race conditions and redundant network calls. |
-| Optimistic updates | Manual cache mutations | TanStack Query `optimisticData` | Handles rollback on error, merge strategies, race conditions. |
-| Network status detection | Custom online/offline state | Existing `useOfflineSync` hook | Already implemented with proper event listeners and cleanup. |
-| Type generation | Manual TypeScript interfaces | zod-to-ts + z.infer | Auto-generates types from Zod schemas, prevents drift between FE/BE. |
+| Problem                  | Don't Build                     | Use Instead                     | Why                                                                                   |
+| ------------------------ | ------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------- |
+| HTTP retry logic         | Custom exponential backoff      | Ky's built-in `retry` option    | Handles edge cases: network failures, rate limits, jitter to prevent thundering herd. |
+| Token refresh            | useEffect checking expiry       | Stack Auth SDK                  | Handles refresh timing, storage, concurrent requests, token rotation.                 |
+| Request deduplication    | Custom pending request tracking | TanStack Query                  | Built-in deduplication prevents race conditions and redundant network calls.          |
+| Optimistic updates       | Manual cache mutations          | TanStack Query `optimisticData` | Handles rollback on error, merge strategies, race conditions.                         |
+| Network status detection | Custom online/offline state     | Existing `useOfflineSync` hook  | Already implemented with proper event listeners and cleanup.                          |
+| Type generation          | Manual TypeScript interfaces    | zod-to-ts + z.infer             | Auto-generates types from Zod schemas, prevents drift between FE/BE.                  |
 
 **Key insight:** API client infrastructure is deceptively complex. Token management, retries, error handling, and caching all have subtle edge cases. Use proven libraries that handle these correctly rather than reinventing solutions.
 
@@ -309,11 +319,13 @@ fs.writeFileSync(
 **Why it happens:** Stack Auth SDK isn't designed for high-concurrency token access. Each hook independently requests token.
 
 **How to avoid:**
+
 - Stack Auth SDK handles token caching internally - calling `getAuthJson()` multiple times is safe.
 - For extreme concurrency, create token cache wrapper with promise deduplication.
 - Monitor for 401 responses - if seeing many, investigate token refresh timing.
 
 **Warning signs:**
+
 ```
 - Multiple 401 responses in rapid succession
 - "Token refresh in progress" logs
@@ -327,6 +339,7 @@ fs.writeFileSync(
 **Why it happens:** Developer forgets to check existing `queryKeys.ts` structure and invents new pattern.
 
 **How to avoid:**
+
 - ALWAYS reference `qk.*` from `src/lib/queryKeys.ts` for keys
 - Never hardcode query keys in hooks
 - Before migrating hook, read current implementation's query key
@@ -334,12 +347,13 @@ fs.writeFileSync(
 - Test invalidation chains after migration
 
 **Warning signs:**
+
 ```typescript
 // BAD - hardcoded key
-queryKey: ['organization', orgId]
+queryKey: ['organization', orgId];
 
 // GOOD - reuses factory
-queryKey: qk.org(orgId).profile()
+queryKey: qk.org(orgId).profile();
 ```
 
 ### Pitfall 3: Error Messages Hidden from Users
@@ -349,6 +363,7 @@ queryKey: qk.org(orgId).profile()
 **Why it happens:** Hook returns error state but component doesn't render it, or error boundary swallows it.
 
 **How to avoid:**
+
 - Every hook consuming component must handle `error` state
 - Use toast notifications for transient errors (network, 5xx)
 - Use inline error messages for validation errors (4xx)
@@ -356,6 +371,7 @@ queryKey: qk.org(orgId).profile()
 - Log errors to console AND show in UI
 
 **Warning signs:**
+
 ```typescript
 // BAD - error ignored
 const { data } = useQuery(...);
@@ -374,6 +390,7 @@ return <div>{data?.name}</div>;
 **Why it happens:** Type generation script not run after backend schema updates.
 
 **How to avoid:**
+
 - Add pre-commit hook running type generation script
 - Include type generation in CI pipeline
 - Version API types file and track in git
@@ -381,6 +398,7 @@ return <div>{data?.name}</div>;
 - Consider monorepo setup for true type sharing
 
 **Warning signs:**
+
 ```
 - TypeScript errors on API response fields
 - Runtime errors: "Cannot read property X of undefined"
@@ -395,6 +413,7 @@ return <div>{data?.name}</div>;
 **Why it happens:** Invalidating `qk.org(orgId).all` only refetches migrated hooks, Supabase hooks show stale data.
 
 **How to avoid:**
+
 - Migrate by domain (all org-related hooks together)
 - Document migration status in STATE.md
 - Add `// TODO: Migrate to API client` comments on unmigrated hooks
@@ -402,6 +421,7 @@ return <div>{data?.name}</div>;
 - Consider feature flags to toggle between implementations
 
 **Warning signs:**
+
 ```
 - Data shows correctly in one component, stale in another
 - Mutations succeed but UI doesn't update
@@ -490,9 +510,9 @@ const api = ky.create({
           console.error('[API Error]', error);
           throw new Error(error.message);
         }
-      }
-    ]
-  }
+      },
+    ],
+  },
 });
 ```
 
@@ -502,7 +522,7 @@ Based on: [React Network Status Detection](https://dev.to/thelamina/handling-net
 
 ```typescript
 // Already exists in project: src/hooks/useOfflineSync.ts
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 export function useNetworkStatus() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -511,12 +531,12 @@ export function useNetworkStatus() {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
@@ -542,22 +562,22 @@ const orgQuery = useQuery({
     // Retry up to 3 times on network errors and 5xx
     return failureCount < 3;
   },
-  retryDelay: (attemptIndex) =>
-    Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+  retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
 });
 ```
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Axios for HTTP | Ky (fetch-based) | 2024-2025 | Lighter bundle (157KB vs 800KB), modern fetch API, better TypeScript support |
-| Manual JWT handling | Auth SDK management | 2024+ | Token refresh, rotation, and storage handled by SDK. Eliminates custom refresh logic. |
-| Supabase client | REST API + TanStack Query | 2024+ | Decouples frontend from database vendor, enables self-hosted backend, clearer separation of concerns |
-| Manual type definitions | Type generation (zod-to-ts) | 2024+ | Types auto-generated from backend schemas, eliminates drift between FE/BE contracts |
-| navigator.fetch retries | Built-in retry in Ky | 2023+ | No manual retry logic needed, exponential backoff with jitter out-of-box |
+| Old Approach            | Current Approach            | When Changed | Impact                                                                                               |
+| ----------------------- | --------------------------- | ------------ | ---------------------------------------------------------------------------------------------------- |
+| Axios for HTTP          | Ky (fetch-based)            | 2024-2025    | Lighter bundle (157KB vs 800KB), modern fetch API, better TypeScript support                         |
+| Manual JWT handling     | Auth SDK management         | 2024+        | Token refresh, rotation, and storage handled by SDK. Eliminates custom refresh logic.                |
+| Supabase client         | REST API + TanStack Query   | 2024+        | Decouples frontend from database vendor, enables self-hosted backend, clearer separation of concerns |
+| Manual type definitions | Type generation (zod-to-ts) | 2024+        | Types auto-generated from backend schemas, eliminates drift between FE/BE contracts                  |
+| navigator.fetch retries | Built-in retry in Ky        | 2023+        | No manual retry logic needed, exponential backoff with jitter out-of-box                             |
 
 **Deprecated/outdated:**
+
 - **Axios**: Still works but losing ground to lighter fetch-based clients. Bundle size bloat for simple use cases.
 - **react-query v3**: Should use v4+ (or v5 in this project). Key features: simplified API, better TypeScript inference.
 - **Custom token storage**: Auth SDKs now handle storage securely. Manual localStorage patterns error-prone.
@@ -619,6 +639,7 @@ const orgQuery = useQuery({
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - TanStack Query and Stack Auth SDK are authoritative official tools with verified documentation
 - Architecture: HIGH - Patterns verified in Context7 docs and existing codebase analysis
 - Pitfalls: MEDIUM - Based on common patterns observed in issue trackers and blog posts, not official docs
@@ -629,6 +650,7 @@ const orgQuery = useQuery({
 ---
 
 **Codebase Context:**
+
 - 44 existing hooks with established TanStack Query patterns
 - 27 hooks currently using Supabase SDK (identified for migration)
 - Existing `queryKeys.ts` with hierarchical structure (org/unit/site scopes)
@@ -637,6 +659,7 @@ const orgQuery = useQuery({
 - Stack Auth integration already exists (mentioned in requirements)
 
 **Migration Scope:**
+
 - Replace Supabase client calls with API client calls in 27 hooks
 - Preserve existing query key structure and caching behavior
 - Integrate Stack Auth SDK for token management

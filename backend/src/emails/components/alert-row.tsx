@@ -8,13 +8,7 @@ interface AlertRowProps {
   triggeredAt: Date;
 }
 
-export function AlertRow({
-  severity,
-  message,
-  unitName,
-  siteName,
-  triggeredAt,
-}: AlertRowProps) {
+export function AlertRow({ severity, message, unitName, siteName, triggeredAt }: AlertRowProps) {
   // Severity colors
   const severityColors: Record<string, string> = {
     critical: '#dc3545',

@@ -1,22 +1,22 @@
 /**
  * Pipeline Health Service
- * 
+ *
  * Provides health checking for the data pipeline from sensor to database.
  * Each layer (sensor, gateway, TTN, decoder, webhook, database) can be checked
  * independently or as a complete pipeline.
  */
 
-import { differenceInMinutes, differenceInHours } from "date-fns";
+import { differenceInMinutes, differenceInHours } from 'date-fns';
 
 /**
  * Layers in the data pipeline.
  */
-export type PipelineLayer = 
-  | 'sensor' 
-  | 'gateway' 
-  | 'ttn' 
-  | 'decoder' 
-  | 'webhook' 
+export type PipelineLayer =
+  | 'sensor'
+  | 'gateway'
+  | 'ttn'
+  | 'decoder'
+  | 'webhook'
   | 'database'
   | 'external_api';
 
@@ -72,44 +72,46 @@ export interface PipelineHealthReport {
  */
 const LAYER_THRESHOLDS = {
   sensor: {
-    stale: 60,    // 1 hour
+    stale: 60, // 1 hour
     failed: 1440, // 24 hours
   },
   gateway: {
-    stale: 30,    // 30 minutes
-    failed: 240,  // 4 hours
+    stale: 30, // 30 minutes
+    failed: 240, // 4 hours
   },
   ttn: {
-    stale: 15,    // 15 minutes
-    failed: 60,   // 1 hour
+    stale: 15, // 15 minutes
+    failed: 60, // 1 hour
   },
   decoder: {
     stale: 30,
     failed: 60,
   },
   webhook: {
-    stale: 10,    // 10 minutes
-    failed: 30,   // 30 minutes
+    stale: 10, // 10 minutes
+    failed: 30, // 30 minutes
   },
   database: {
-    stale: 5,     // 5 minutes
-    failed: 15,   // 15 minutes
+    stale: 5, // 5 minutes
+    failed: 15, // 15 minutes
   },
   external_api: {
-    stale: 120,   // 2 hours
-    failed: 360,  // 6 hours
+    stale: 120, // 2 hours
+    failed: 360, // 6 hours
   },
 };
 
 /**
  * Check sensor layer health.
  */
-export function checkSensorHealth(sensor: {
-  last_seen_at?: string | null;
-  battery_level?: number | null;
-  signal_strength?: number | null;
-  status?: string;
-} | null): PipelineCheckResult {
+export function checkSensorHealth(
+  sensor: {
+    last_seen_at?: string | null;
+    battery_level?: number | null;
+    signal_strength?: number | null;
+    status?: string;
+  } | null,
+): PipelineCheckResult {
   if (!sensor) {
     return {
       layer: 'sensor',
@@ -119,7 +121,7 @@ export function checkSensorHealth(sensor: {
   }
 
   const lastSeen = sensor.last_seen_at ? new Date(sensor.last_seen_at) : null;
-  
+
   if (!lastSeen) {
     return {
       layer: 'sensor',
@@ -180,10 +182,12 @@ export function checkSensorHealth(sensor: {
 /**
  * Check gateway layer health.
  */
-export function checkGatewayHealth(gateway: {
-  last_seen_at?: string | null;
-  status?: string;
-} | null): PipelineCheckResult {
+export function checkGatewayHealth(
+  gateway: {
+    last_seen_at?: string | null;
+    status?: string;
+  } | null,
+): PipelineCheckResult {
   if (!gateway) {
     return {
       layer: 'gateway',
@@ -239,10 +243,12 @@ export function checkGatewayHealth(gateway: {
 /**
  * Check database ingestion health based on recent readings.
  */
-export function checkDatabaseHealth(lastReading: {
-  created_at?: string;
-  recorded_at?: string;
-} | null): PipelineCheckResult {
+export function checkDatabaseHealth(
+  lastReading: {
+    created_at?: string;
+    recorded_at?: string;
+  } | null,
+): PipelineCheckResult {
   if (!lastReading) {
     return {
       layer: 'database',
@@ -296,7 +302,10 @@ export function checkDatabaseHealth(lastReading: {
 /**
  * Check external API health (e.g., weather API).
  */
-export function checkExternalApiHealth(lastFetch: Date | null, error?: string): PipelineCheckResult {
+export function checkExternalApiHealth(
+  lastFetch: Date | null,
+  error?: string,
+): PipelineCheckResult {
   if (!lastFetch) {
     return {
       layer: 'external_api',
@@ -349,20 +358,20 @@ export function checkExternalApiHealth(lastFetch: Date | null, error?: string): 
  * Compute overall status from individual checks.
  */
 export function computeOverallStatus(checks: PipelineCheckResult[]): LayerStatus {
-  const activeChecks = checks.filter(c => c.status !== 'not_applicable');
-  
+  const activeChecks = checks.filter((c) => c.status !== 'not_applicable');
+
   if (activeChecks.length === 0) return 'unknown';
-  
-  const hasFailed = activeChecks.some(c => c.status === 'failed');
-  const hasDegraded = activeChecks.some(c => c.status === 'degraded');
-  const hasUnknown = activeChecks.some(c => c.status === 'unknown');
-  const allHealthy = activeChecks.every(c => c.status === 'healthy');
-  
+
+  const hasFailed = activeChecks.some((c) => c.status === 'failed');
+  const hasDegraded = activeChecks.some((c) => c.status === 'degraded');
+  const hasUnknown = activeChecks.some((c) => c.status === 'unknown');
+  const allHealthy = activeChecks.every((c) => c.status === 'healthy');
+
   if (hasFailed) return 'failed';
   if (hasDegraded) return 'degraded';
   if (allHealthy) return 'healthy';
   if (hasUnknown) return 'unknown';
-  
+
   return 'unknown';
 }
 
@@ -371,36 +380,48 @@ export function computeOverallStatus(checks: PipelineCheckResult[]): LayerStatus
  */
 export function findFailingLayer(checks: PipelineCheckResult[]): PipelineLayer | undefined {
   // Order of layers in the pipeline
-  const layerOrder: PipelineLayer[] = ['sensor', 'gateway', 'ttn', 'decoder', 'webhook', 'database'];
-  
+  const layerOrder: PipelineLayer[] = [
+    'sensor',
+    'gateway',
+    'ttn',
+    'decoder',
+    'webhook',
+    'database',
+  ];
+
   for (const layer of layerOrder) {
-    const check = checks.find(c => c.layer === layer);
+    const check = checks.find((c) => c.layer === layer);
     if (check && (check.status === 'failed' || check.status === 'degraded')) {
       return layer;
     }
   }
-  
+
   // Check external API separately
-  const externalCheck = checks.find(c => c.layer === 'external_api');
+  const externalCheck = checks.find((c) => c.layer === 'external_api');
   if (externalCheck && (externalCheck.status === 'failed' || externalCheck.status === 'degraded')) {
     return 'external_api';
   }
-  
+
   return undefined;
 }
 
 /**
  * Generate a user-friendly message from pipeline health.
  */
-export function generateUserMessage(report: { overallStatus: LayerStatus; failingLayer?: PipelineLayer }): string {
+export function generateUserMessage(report: {
+  overallStatus: LayerStatus;
+  failingLayer?: PipelineLayer;
+}): string {
   if (report.overallStatus === 'healthy') {
     return 'All systems operational';
   }
-  
+
   if (!report.failingLayer) {
-    return report.overallStatus === 'unknown' ? 'Unable to determine system status' : 'System experiencing issues';
+    return report.overallStatus === 'unknown'
+      ? 'Unable to determine system status'
+      : 'System experiencing issues';
   }
-  
+
   const layerMessages: Record<PipelineLayer, string> = {
     sensor: 'Sensor may be offline or out of range',
     gateway: 'Network gateway may be offline',
@@ -410,21 +431,24 @@ export function generateUserMessage(report: { overallStatus: LayerStatus; failin
     database: 'Data storage issue detected',
     external_api: 'External service unavailable',
   };
-  
+
   return layerMessages[report.failingLayer] || 'System experiencing issues';
 }
 
 /**
  * Build a complete pipeline health report.
  */
-export function buildPipelineReport(checks: PipelineCheckResult[], context?: {
-  unitId?: string;
-  sensorId?: string;
-  gatewayId?: string;
-}): PipelineHealthReport {
+export function buildPipelineReport(
+  checks: PipelineCheckResult[],
+  context?: {
+    unitId?: string;
+    sensorId?: string;
+    gatewayId?: string;
+  },
+): PipelineHealthReport {
   const overallStatus = computeOverallStatus(checks);
   const failingLayer = findFailingLayer(checks);
-  
+
   return {
     unitId: context?.unitId,
     sensorId: context?.sensorId,
@@ -434,8 +458,8 @@ export function buildPipelineReport(checks: PipelineCheckResult[], context?: {
     checks,
     userMessage: generateUserMessage({ overallStatus, failingLayer }),
     adminDetails: checks
-      .filter(c => c.technicalDetails)
-      .map(c => `[${c.layer}] ${c.technicalDetails}`)
+      .filter((c) => c.technicalDetails)
+      .map((c) => `[${c.layer}] ${c.technicalDetails}`)
       .join('\n'),
     checkedAt: new Date(),
   };

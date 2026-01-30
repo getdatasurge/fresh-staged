@@ -115,18 +115,18 @@ Drizzle does not generate automatic rollback migrations. For rollbacks:
 
 The schema is organized by domain:
 
-| File | Description |
-|------|-------------|
-| `enums.ts` | PostgreSQL enum types |
-| `tenancy.ts` | Organizations, subscriptions |
-| `users.ts` | Profiles, roles, escalation contacts |
-| `hierarchy.ts` | Sites, areas, units, hubs |
-| `devices.ts` | Sensors, LoRa config, calibration |
-| `telemetry.ts` | Sensor readings, door events, manual logs |
-| `reading-metrics.ts` | Aggregated reading statistics |
-| `alerts.ts` | Alert rules, active alerts, corrective actions |
-| `notifications.ts` | Notification delivery tracking |
-| `audit.ts` | Event logging for compliance |
+| File                 | Description                                    |
+| -------------------- | ---------------------------------------------- |
+| `enums.ts`           | PostgreSQL enum types                          |
+| `tenancy.ts`         | Organizations, subscriptions                   |
+| `users.ts`           | Profiles, roles, escalation contacts           |
+| `hierarchy.ts`       | Sites, areas, units, hubs                      |
+| `devices.ts`         | Sensors, LoRa config, calibration              |
+| `telemetry.ts`       | Sensor readings, door events, manual logs      |
+| `reading-metrics.ts` | Aggregated reading statistics                  |
+| `alerts.ts`          | Alert rules, active alerts, corrective actions |
+| `notifications.ts`   | Notification delivery tracking                 |
+| `audit.ts`           | Event logging for compliance                   |
 
 ## Troubleshooting
 

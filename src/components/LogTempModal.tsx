@@ -1,28 +1,17 @@
-import { useState, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { useTRPC } from "@/lib/trpc";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Thermometer,
-  Loader2,
-  WifiOff,
-  Clock,
-  Check,
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useOfflineSync } from "@/hooks/useOfflineSync";
-import { temperatureSchema, notesSchema, validateInput } from "@/lib/validation";
-import { useUser } from "@stackframe/react";
+import { useState, useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { useTRPC } from '@/lib/trpc';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Thermometer, Loader2, WifiOff, Clock, Check } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useOfflineSync } from '@/hooks/useOfflineSync';
+import { temperatureSchema, notesSchema, validateInput } from '@/lib/validation';
+import { useUser } from '@stackframe/react';
 
 export interface LogTempUnit {
   id: string;
@@ -45,7 +34,7 @@ interface LogTempModalProps {
 const formatCadence = (seconds: number) => {
   const hours = seconds / 3600;
   if (hours < 1) return `${Math.round(seconds / 60)} min`;
-  if (hours === 1) return "1 hour";
+  if (hours === 1) return '1 hour';
   return `${hours} hours`;
 };
 
@@ -55,28 +44,26 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
   const { isOnline, saveLogOffline } = useOfflineSync();
   const { effectiveOrgId: orgId } = useEffectiveIdentity();
   const trpc = useTRPC();
-  const [temperature, setTemperature] = useState("");
-  const [notes, setNotes] = useState("");
-  const [correctiveAction, setCorrectiveAction] = useState("");
+  const [temperature, setTemperature] = useState('');
+  const [notes, setNotes] = useState('');
+  const [correctiveAction, setCorrectiveAction] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // tRPC mutation for logging temperature
-  const logTemperatureMutation = useMutation(
-    trpc.readings.logManualTemperature.mutationOptions()
-  );
+  const logTemperatureMutation = useMutation(trpc.readings.logManualTemperature.mutationOptions());
 
   // Reset form when unit changes
   useEffect(() => {
     if (unit) {
-      setTemperature("");
-      setNotes("");
-      setCorrectiveAction("");
+      setTemperature('');
+      setNotes('');
+      setCorrectiveAction('');
     }
   }, [unit?.id]);
 
   const handleSubmit = async () => {
     if (!unit) {
-      toast({ title: "Please select a unit", variant: "destructive" });
+      toast({ title: 'Please select a unit', variant: 'destructive' });
       return;
     }
 
@@ -84,33 +71,41 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
     const temp = parseFloat(temperature);
     const tempResult = validateInput(temperatureSchema, temp);
     if (!tempResult.success) {
-      toast({ title: (tempResult as { success: false; error: string }).error, variant: "destructive" });
+      toast({
+        title: (tempResult as { success: false; error: string }).error,
+        variant: 'destructive',
+      });
       return;
     }
 
     // Validate notes
     const notesResult = validateInput(notesSchema, notes);
     if (!notesResult.success) {
-      toast({ title: (notesResult as { success: false; error: string }).error, variant: "destructive" });
+      toast({
+        title: (notesResult as { success: false; error: string }).error,
+        variant: 'destructive',
+      });
       return;
     }
 
     // Check if out of range and require corrective action
     const validatedTemp = (tempResult as { success: true; data: number }).data;
-    const isOutOfRange = validatedTemp > unit.temp_limit_high ||
+    const isOutOfRange =
+      validatedTemp > unit.temp_limit_high ||
       (unit.temp_limit_low !== null && validatedTemp < unit.temp_limit_low);
 
     if (isOutOfRange && !correctiveAction.trim()) {
       toast({
-        title: "Corrective action required",
-        description: "Temperature is out of range. Please describe the corrective action taken.",
-        variant: "destructive"
+        title: 'Corrective action required',
+        description: 'Temperature is out of range. Please describe the corrective action taken.',
+        variant: 'destructive',
       });
       return;
     }
 
     setIsSubmitting(true);
-    const validatedNotes = (notesResult as { success: true; data: string | undefined }).data?.trim() || null;
+    const validatedNotes =
+      (notesResult as { success: true; data: string | undefined }).data?.trim() || null;
 
     const logEntry = {
       id: crypto.randomUUID(),
@@ -132,12 +127,12 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
           correctiveAction: isOutOfRange ? correctiveAction.trim() : null,
           isInRange: !isOutOfRange,
         });
-        toast({ title: "Temperature logged successfully" });
+        toast({ title: 'Temperature logged successfully' });
       } else {
         await saveLogOffline(logEntry);
         toast({
-          title: "Saved offline",
-          description: "Will sync when back online",
+          title: 'Saved offline',
+          description: 'Will sync when back online',
         });
       }
 
@@ -145,14 +140,14 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
-      console.error("Error saving log:", error);
+      console.error('Error saving log:', error);
 
       // Fallback to offline storage on any error
       await saveLogOffline(logEntry);
       toast({
-        title: "Saved offline",
-        description: "Will sync when back online",
-        variant: "default",
+        title: 'Saved offline',
+        description: 'Will sync when back online',
+        variant: 'default',
       });
       onOpenChange(false);
       onSuccess?.();
@@ -165,22 +160,23 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
     if (!newOpen && !isOnline) {
       // Prevent silent dismissal when offline - require confirmation
       const confirmed = window.confirm(
-        "You are offline. Are you sure you want to close without logging? The unit may require a temperature log."
+        'You are offline. Are you sure you want to close without logging? The unit may require a temperature log.',
       );
       if (!confirmed) return;
     }
     if (!newOpen) {
-      setTemperature("");
-      setNotes("");
-      setCorrectiveAction("");
+      setTemperature('');
+      setNotes('');
+      setCorrectiveAction('');
     }
     onOpenChange(newOpen);
   };
 
-  const isOutOfRange = temperature && unit && (
-    parseFloat(temperature) > unit.temp_limit_high ||
-    (unit.temp_limit_low !== null && parseFloat(temperature) < unit.temp_limit_low)
-  );
+  const isOutOfRange =
+    temperature &&
+    unit &&
+    (parseFloat(temperature) > unit.temp_limit_high ||
+      (unit.temp_limit_low !== null && parseFloat(temperature) < unit.temp_limit_low));
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -198,9 +194,11 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
             <div className="p-3 rounded-lg bg-muted/50">
               <div className="flex items-center justify-between mb-1">
                 <p className="font-semibold text-foreground">{unit.name}</p>
-                {(unit.status === "manual_required" || unit.status === "monitoring_interrupted" || unit.status === "offline") && (
+                {(unit.status === 'manual_required' ||
+                  unit.status === 'monitoring_interrupted' ||
+                  unit.status === 'offline') && (
                   <Badge variant="destructive" className="text-xs">
-                    {unit.status === "offline" ? "Sensor Offline" : "Manual Required"}
+                    {unit.status === 'offline' ? 'Sensor Offline' : 'Manual Required'}
                   </Badge>
                 )}
               </div>
@@ -270,7 +268,8 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
                   className="border-destructive/30 focus:border-destructive"
                 />
                 <p className="text-xs text-destructive/80 mt-2">
-                  Temperature is out of range. You must document the corrective action before submitting.
+                  Temperature is out of range. You must document the corrective action before
+                  submitting.
                 </p>
               </div>
             )}
@@ -288,11 +287,7 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
             </div>
 
             <div className="flex gap-2 pt-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => handleClose(false)}
-              >
+              <Button variant="outline" className="flex-1" onClick={() => handleClose(false)}>
                 Cancel
               </Button>
               <Button

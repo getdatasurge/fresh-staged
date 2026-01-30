@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useCreateLoraSensor } from "@/hooks/useLoraSensors";
-import { LoraSensorType } from "@/types/ttn";
-import { SENSOR_TYPE_OPTIONS, SENSOR_TYPE_VALUES } from "@/lib/sensorTypeOptions";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useCreateLoraSensor } from '@/hooks/useLoraSensors';
+import { LoraSensorType } from '@/types/ttn';
+import { SENSOR_TYPE_OPTIONS, SENSOR_TYPE_VALUES } from '@/lib/sensorTypeOptions';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -21,40 +21,40 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+} from '@/components/ui/select';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 const EUI_REGEX = /^[0-9A-Fa-f]{16}$/;
 const APPKEY_REGEX = /^[0-9A-Fa-f]{32}$/;
 
 const addSensorSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
   dev_eui: z
     .string()
-    .min(1, "DevEUI is required")
-    .regex(EUI_REGEX, "DevEUI must be exactly 16 hexadecimal characters"),
+    .min(1, 'DevEUI is required')
+    .regex(EUI_REGEX, 'DevEUI must be exactly 16 hexadecimal characters'),
   app_eui: z
     .string()
-    .min(1, "AppEUI is required")
-    .regex(EUI_REGEX, "AppEUI must be exactly 16 hexadecimal characters"),
+    .min(1, 'AppEUI is required')
+    .regex(EUI_REGEX, 'AppEUI must be exactly 16 hexadecimal characters'),
   app_key: z
     .string()
-    .min(1, "AppKey is required")
-    .regex(APPKEY_REGEX, "AppKey must be exactly 32 hexadecimal characters"),
+    .min(1, 'AppKey is required')
+    .regex(APPKEY_REGEX, 'AppKey must be exactly 32 hexadecimal characters'),
   sensor_type: z.enum(SENSOR_TYPE_VALUES),
-  site_id: z.string().min(1, "Site is required"),
+  site_id: z.string().min(1, 'Site is required'),
   unit_id: z.string().optional(),
-  description: z.string().max(500, "Description must be less than 500 characters").optional(),
+  description: z.string().max(500, 'Description must be less than 500 characters').optional(),
 });
 
 type AddSensorFormData = z.infer<typeof addSensorSchema>;
@@ -95,23 +95,21 @@ export function AddSensorDialog({
   const form = useForm<AddSensorFormData>({
     resolver: zodResolver(addSensorSchema),
     defaultValues: {
-      name: "",
-      dev_eui: "",
-      app_eui: "",
-      app_key: "",
-      sensor_type: "temperature",
-      site_id: defaultSiteId || "",
+      name: '',
+      dev_eui: '',
+      app_eui: '',
+      app_key: '',
+      sensor_type: 'temperature',
+      site_id: defaultSiteId || '',
       unit_id: defaultUnitId || undefined,
-      description: "",
+      description: '',
     },
   });
 
-  const selectedSiteId = form.watch("site_id");
+  const selectedSiteId = form.watch('site_id');
 
   // Filter units based on selected site
-  const filteredUnits = selectedSiteId
-    ? units.filter((u) => u.site_id === selectedSiteId)
-    : [];
+  const filteredUnits = selectedSiteId ? units.filter((u) => u.site_id === selectedSiteId) : [];
 
   const onSubmit = (data: AddSensorFormData) => {
     createSensor.mutate(
@@ -132,21 +130,21 @@ export function AddSensorDialog({
           setShowAppKey(false);
           onOpenChange(false);
         },
-      }
+      },
     );
   };
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       form.reset({
-        name: "",
-        dev_eui: "",
-        app_eui: "",
-        app_key: "",
-        sensor_type: "temperature",
-        site_id: defaultSiteId || "",
+        name: '',
+        dev_eui: '',
+        app_eui: '',
+        app_key: '',
+        sensor_type: 'temperature',
+        site_id: defaultSiteId || '',
         unit_id: defaultUnitId || undefined,
-        description: "",
+        description: '',
       });
       setShowAppKey(false);
     }
@@ -155,8 +153,8 @@ export function AddSensorDialog({
 
   // Reset unit when site changes
   const handleSiteChange = (value: string) => {
-    form.setValue("site_id", value === "none" ? undefined : value);
-    form.setValue("unit_id", undefined);
+    form.setValue('site_id', value === 'none' ? undefined : value);
+    form.setValue('unit_id', undefined);
   };
 
   return (
@@ -223,9 +221,7 @@ export function AddSensorDialog({
                       onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                     />
                   </FormControl>
-                  <FormDescription>
-                    16 hexadecimal characters
-                  </FormDescription>
+                  <FormDescription>16 hexadecimal characters</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -240,7 +236,7 @@ export function AddSensorDialog({
                   <FormControl>
                     <div className="relative">
                       <Input
-                        type={showAppKey ? "text" : "password"}
+                        type={showAppKey ? 'text' : 'password'}
                         placeholder="32 character hex key"
                         className="font-mono uppercase pr-10"
                         maxLength={32}
@@ -254,11 +250,7 @@ export function AddSensorDialog({
                         className="absolute right-0 top-0 h-full px-3"
                         onClick={() => setShowAppKey(!showAppKey)}
                       >
-                        {showAppKey ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
+                        {showAppKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
                   </FormControl>
@@ -304,10 +296,7 @@ export function AddSensorDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Site *</FormLabel>
-                  <Select
-                    onValueChange={handleSiteChange}
-                    value={field.value || ""}
-                  >
+                  <Select onValueChange={handleSiteChange} value={field.value || ''}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a site" />
@@ -336,19 +325,21 @@ export function AddSensorDialog({
                 <FormItem>
                   <FormLabel>Unit (Optional)</FormLabel>
                   <Select
-                    onValueChange={(v) => field.onChange(v === "none" ? undefined : v)}
-                    value={field.value || "none"}
+                    onValueChange={(v) => field.onChange(v === 'none' ? undefined : v)}
+                    value={field.value || 'none'}
                     disabled={!selectedSiteId || filteredUnits.length === 0}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={
-                          !selectedSiteId 
-                            ? "Select a site first" 
-                            : filteredUnits.length === 0 
-                              ? "No units in this site" 
-                              : "Select a unit"
-                        } />
+                        <SelectValue
+                          placeholder={
+                            !selectedSiteId
+                              ? 'Select a site first'
+                              : filteredUnits.length === 0
+                                ? 'No units in this site'
+                                : 'Select a unit'
+                          }
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -384,17 +375,11 @@ export function AddSensorDialog({
             />
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={createSensor.isPending}>
-                {createSensor.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {createSensor.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Add Sensor
               </Button>
             </DialogFooter>

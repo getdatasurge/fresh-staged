@@ -11,8 +11,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Service {{ $labels.job }} is down"
-          description: "Service {{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute."
+          summary: 'Service {{ $labels.job }} is down'
+          description: 'Service {{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute.'
 
       # Warning: High CPU usage on host
       - alert: HighCPUUsage
@@ -21,8 +21,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "High CPU usage detected"
-          description: "CPU usage is above 80% for more than 5 minutes. Current value: {{ $value | printf \"%.2f\" }}%"
+          summary: 'High CPU usage detected'
+          description: 'CPU usage is above 80% for more than 5 minutes. Current value: {{ $value | printf "%.2f" }}%'
 
       # Critical: Very high CPU usage
       - alert: CriticalCPUUsage
@@ -31,8 +31,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Critical CPU usage detected"
-          description: "CPU usage is above 95% for more than 2 minutes. Current value: {{ $value | printf \"%.2f\" }}%"
+          summary: 'Critical CPU usage detected'
+          description: 'CPU usage is above 95% for more than 2 minutes. Current value: {{ $value | printf "%.2f" }}%'
 
       # Warning: High memory usage
       - alert: HighMemoryUsage
@@ -41,8 +41,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "High memory usage detected"
-          description: "Memory usage is above 85% for more than 5 minutes. Current value: {{ $value | printf \"%.2f\" }}%"
+          summary: 'High memory usage detected'
+          description: 'Memory usage is above 85% for more than 5 minutes. Current value: {{ $value | printf "%.2f" }}%'
 
       # Critical: Very high memory usage
       - alert: CriticalMemoryUsage
@@ -51,8 +51,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Critical memory usage detected"
-          description: "Memory usage is above 95% for more than 2 minutes. System may become unstable."
+          summary: 'Critical memory usage detected'
+          description: 'Memory usage is above 95% for more than 2 minutes. System may become unstable.'
 
       # Warning: Disk space running low
       - alert: DiskSpaceLow
@@ -61,8 +61,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Disk space is running low"
-          description: "Root filesystem has less than 20% free space. Current available: {{ $value | printf \"%.2f\" }}%"
+          summary: 'Disk space is running low'
+          description: 'Root filesystem has less than 20% free space. Current available: {{ $value | printf "%.2f" }}%'
 
       # Critical: Disk space critically low
       - alert: DiskSpaceCritical
@@ -71,8 +71,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Disk space is critically low"
-          description: "Root filesystem has less than 10% free space. Immediate action required."
+          summary: 'Disk space is critically low'
+          description: 'Root filesystem has less than 10% free space. Immediate action required.'
 
   - name: backend_health
     rules:
@@ -83,8 +83,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Backend health check is failing"
-          description: "Backend service health check has been failing for more than 2 minutes."
+          summary: 'Backend health check is failing'
+          description: 'Backend service health check has been failing for more than 2 minutes.'
 
       # Critical: Backend is completely unreachable
       - alert: BackendUnreachable
@@ -93,8 +93,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Backend service is unreachable"
-          description: "Backend service is not responding to Prometheus scrapes for more than 1 minute."
+          summary: 'Backend service is unreachable'
+          description: 'Backend service is not responding to Prometheus scrapes for more than 1 minute.'
 
   - name: caddy_health
     rules:
@@ -105,8 +105,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Caddy reverse proxy is down"
-          description: "Caddy is not responding. All external traffic is blocked."
+          summary: 'Caddy reverse proxy is down'
+          description: 'Caddy is not responding. All external traffic is blocked.'
 
   - name: observability_health
     rules:
@@ -117,8 +117,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Prometheus storage growing rapidly"
-          description: "Prometheus storage is predicted to double within 24 hours. Consider increasing retention or disk space."
+          summary: 'Prometheus storage growing rapidly'
+          description: 'Prometheus storage is predicted to double within 24 hours. Consider increasing retention or disk space.'
 
       # Warning: Loki not receiving logs
       - alert: LokiNotReceivingLogs
@@ -127,5 +127,5 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Loki is not receiving logs"
-          description: "No new log chunks have been created in the last 15 minutes. Check Promtail or log drivers."
+          summary: 'Loki is not receiving logs'
+          description: 'No new log chunks have been created in the last 15 minutes. Check Promtail or log drivers.'

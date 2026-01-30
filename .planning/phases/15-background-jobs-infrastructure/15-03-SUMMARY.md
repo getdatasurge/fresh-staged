@@ -18,35 +18,35 @@ affects:
 # Tech stack
 tech-stack:
   added:
-    - "@bull-board/api": "Queue monitoring dashboard"
-    - "@bull-board/fastify": "Fastify adapter for Bull Board"
+    - '@bull-board/api': 'Queue monitoring dashboard'
+    - '@bull-board/fastify': 'Fastify adapter for Bull Board'
   patterns:
-    - "Fastify plugin context with onRequest authentication hook"
-    - "Health check endpoints for queue statistics"
+    - 'Fastify plugin context with onRequest authentication hook'
+    - 'Health check endpoints for queue statistics'
 
 # Key files
 key-files:
   created:
-    - backend/src/routes/admin.ts: "Admin routes with queue health checks and authentication"
+    - backend/src/routes/admin.ts: 'Admin routes with queue health checks and authentication'
   modified:
-    - backend/src/plugins/queue.plugin.ts: "Added Bull Board dashboard with authentication wrapper"
-    - backend/src/app.ts: "Registered admin routes at /api/admin prefix"
-    - backend/package.json: "Added @bull-board/api and @bull-board/fastify"
+    - backend/src/plugins/queue.plugin.ts: 'Added Bull Board dashboard with authentication wrapper'
+    - backend/src/app.ts: 'Registered admin routes at /api/admin prefix'
+    - backend/package.json: 'Added @bull-board/api and @bull-board/fastify'
 
 # Decisions made
 decisions:
   - id: BOARD-01
-    decision: "Wrap Bull Board in plugin context with onRequest authentication hook"
-    rationale: "Ensures all dashboard routes require JWT validation without modifying Bull Board internals"
-    alternatives: "Custom authentication in serverAdapter (not supported by Bull Board)"
+    decision: 'Wrap Bull Board in plugin context with onRequest authentication hook'
+    rationale: 'Ensures all dashboard routes require JWT validation without modifying Bull Board internals'
+    alternatives: 'Custom authentication in serverAdapter (not supported by Bull Board)'
   - id: BOARD-02
-    decision: "Mount dashboard at /admin/queues (not /api/admin/queues)"
-    rationale: "Follows Bull Board conventions and plan requirements for clean dashboard path"
-    alternatives: "Mount under /api/admin (would complicate Bull Board basePath configuration)"
+    decision: 'Mount dashboard at /admin/queues (not /api/admin/queues)'
+    rationale: 'Follows Bull Board conventions and plan requirements for clean dashboard path'
+    alternatives: 'Mount under /api/admin (would complicate Bull Board basePath configuration)'
   - id: BOARD-03
-    decision: "Separate health check endpoints at /api/admin"
-    rationale: "Provides API-friendly JSON endpoints for programmatic queue monitoring"
-    alternatives: "Rely only on Bull Board UI (not machine-readable)"
+    decision: 'Separate health check endpoints at /api/admin'
+    rationale: 'Provides API-friendly JSON endpoints for programmatic queue monitoring'
+    alternatives: 'Rely only on Bull Board UI (not machine-readable)'
 
 tags:
   - bull-board
@@ -62,6 +62,7 @@ tags:
 ## What Was Built
 
 ### Bull Board Dashboard Integration
+
 1. **Updated queue.plugin.ts** (`backend/src/plugins/queue.plugin.ts`)
    - Added Bull Board imports: `createBullBoard`, `BullMQAdapter`, `FastifyAdapter`
    - Created `setupBullBoard()` function to initialize dashboard
@@ -94,6 +95,7 @@ tags:
 ## Technical Implementation
 
 ### Bull Board Authentication Pattern
+
 ```typescript
 // Wrap Bull Board in plugin context with authentication
 fastify.register(async (fastifyInstance) => {
@@ -108,6 +110,7 @@ fastify.register(async (fastifyInstance) => {
 ```
 
 **Why this works:**
+
 - Creates isolated plugin context for Bull Board routes
 - `onRequest` hook runs before all routes in this context
 - JWT validation via existing `requireAuth` middleware
@@ -115,6 +118,7 @@ fastify.register(async (fastifyInstance) => {
 - Dashboard accessible only with valid JWT token
 
 ### Queue Health Check Response
+
 ```json
 {
   "redisEnabled": true,
@@ -145,6 +149,7 @@ fastify.register(async (fastifyInstance) => {
 ```
 
 ### Error Handling
+
 - **Redis not configured**: Health check returns 503 with `redisEnabled: false`
 - **Queue stats unavailable**: Individual queue returns error message in stats
 - **Invalid JWT**: Bull Board and admin routes return 401 Unauthorized
@@ -153,6 +158,7 @@ fastify.register(async (fastifyInstance) => {
 ## Dashboard Features
 
 ### Bull Board UI Capabilities
+
 - **Queue overview**: Shows all registered queues (sms-notifications, email-digests)
 - **Job details**: View job data, progress, status, timestamps
 - **Job management**: Retry failed jobs, remove jobs, promote delayed jobs
@@ -161,6 +167,7 @@ fastify.register(async (fastifyInstance) => {
 - **Job search**: Search jobs by ID or data content
 
 ### Access Requirements
+
 - **Authentication**: Valid JWT token required (Authorization header or x-stack-access-token)
 - **URL**: `/admin/queues`
 - **Example**:
@@ -176,21 +183,27 @@ None - plan executed exactly as written.
 ## Verification Results
 
 ### Build Status
+
 ✅ **PASS** - TypeScript compilation succeeds with no errors
+
 ```bash
 cd backend && npm run build
 # Output: tsc completes successfully
 ```
 
 ### Type Checking
+
 ✅ **PASS** - All new files type-check correctly
+
 ```bash
 cd backend && npx tsc --noEmit
 # No errors in admin.ts, queue.plugin.ts, or app.ts
 ```
 
 ### Package Installation
+
 ✅ **PASS** - Bull Board packages installed correctly
+
 ```bash
 npm ls @bull-board/api @bull-board/fastify
 # Shows both packages at version 6.16.4
@@ -198,27 +211,30 @@ npm ls @bull-board/api @bull-board/fastify
 
 ## Success Criteria Status
 
-| Criterion | Status | Evidence |
-|-----------|--------|----------|
-| Bull Board packages installed | ✅ | `@bull-board/api@6.16.4` and `@bull-board/fastify@6.16.4` in package.json |
-| Queue plugin updated with Bull Board dashboard setup | ✅ | `setupBullBoard()` function creates dashboard with FastifyAdapter |
-| Dashboard accessible at /admin/queues | ✅ | Bull Board registered at `/admin/queues` with authentication |
-| Dashboard requires authentication | ✅ | `requireAuth` middleware applied via `onRequest` hook |
-| Admin API endpoints for status and health checks | ✅ | `/api/admin/queues/health` and `/api/admin/status` endpoints created |
+| Criterion                                            | Status | Evidence                                                                  |
+| ---------------------------------------------------- | ------ | ------------------------------------------------------------------------- |
+| Bull Board packages installed                        | ✅     | `@bull-board/api@6.16.4` and `@bull-board/fastify@6.16.4` in package.json |
+| Queue plugin updated with Bull Board dashboard setup | ✅     | `setupBullBoard()` function creates dashboard with FastifyAdapter         |
+| Dashboard accessible at /admin/queues                | ✅     | Bull Board registered at `/admin/queues` with authentication              |
+| Dashboard requires authentication                    | ✅     | `requireAuth` middleware applied via `onRequest` hook                     |
+| Admin API endpoints for status and health checks     | ✅     | `/api/admin/queues/health` and `/api/admin/status` endpoints created      |
 
 ## Next Phase Readiness
 
 ### Phase 16: SMS Notifications
+
 - ✅ Bull Board dashboard ready to monitor SMS queue
 - ✅ Health check endpoint provides SMS job statistics
 - ✅ Failed SMS jobs visible and retryable in dashboard
 
 ### Phase 17: Email Digests
+
 - ✅ Bull Board dashboard ready to monitor digest queue
 - ✅ Health check endpoint provides digest job statistics
 - ✅ Scheduled digests visible in dashboard
 
 ### Production Readiness
+
 - ✅ **Authentication**: JWT validation prevents unauthorized access
 - ✅ **Monitoring**: Health check endpoint for programmatic monitoring
 - ✅ **Observability**: Dashboard provides visual queue inspection
@@ -232,6 +248,7 @@ npm ls @bull-board/api @bull-board/fastify
 None identified. Dashboard integration is production-ready with authentication.
 
 **Future Enhancement:**
+
 - Add role-based access control to restrict dashboard to admin users only
 - Current: Any authenticated user can access dashboard
 - Recommended: Apply `requireRole('admin')` to admin routes
@@ -239,9 +256,11 @@ None identified. Dashboard integration is production-ready with authentication.
 ## Files Changed
 
 ### Created
+
 - `backend/src/routes/admin.ts` (115 lines) - Admin routes with authentication and health checks
 
 ### Modified
+
 - `backend/src/plugins/queue.plugin.ts` (+9 lines) - Added Bull Board integration with auth wrapper
 - `backend/src/app.ts` (+2 lines) - Registered admin routes
 - `backend/package.json` (+2 dependencies) - Added Bull Board packages
@@ -249,11 +268,11 @@ None identified. Dashboard integration is production-ready with authentication.
 
 ## Commits
 
-| Commit | Type | Description |
-|--------|------|-------------|
-| 18d8563 | chore(15-03) | Install Bull Board packages (@bull-board/api, @bull-board/fastify) |
-| 3623447 | feat(15-03) | Add Bull Board dashboard to queue plugin with authentication wrapper |
-| d814b0b | feat(15-03) | Add admin routes with authentication for Bull Board and health checks |
+| Commit  | Type         | Description                                                           |
+| ------- | ------------ | --------------------------------------------------------------------- |
+| 18d8563 | chore(15-03) | Install Bull Board packages (@bull-board/api, @bull-board/fastify)    |
+| 3623447 | feat(15-03)  | Add Bull Board dashboard to queue plugin with authentication wrapper  |
+| d814b0b | feat(15-03)  | Add admin routes with authentication for Bull Board and health checks |
 
 **Total:** 3 commits (2 features, 1 chore)
 

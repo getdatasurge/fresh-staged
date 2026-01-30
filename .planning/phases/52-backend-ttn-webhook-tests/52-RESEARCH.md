@@ -18,32 +18,32 @@ However, `backend/tests/routes/ttn-webhook.test.ts` already has 32 PASSING tests
 
 Every skipped test in `tests/api/ttn-webhooks.test.ts` has an equivalent passing test in `tests/routes/ttn-webhook.test.ts`:
 
-| # | Skipped test in `api/` | Covered by in `routes/` | Status |
-|---|------------------------|-------------------------|--------|
-| 1 | should accept X-Webhook-Secret header | should accept X-Webhook-Secret header as alternative auth (line 256) | EXACT match |
-| 2 | should use device_id when dev_eui is missing | should fall back to device_id when dev_eui is absent (line 329) | EXACT match |
-| 3 | should return 400 for invalid payload structure | should return 400 for structurally invalid payload (line 508) | EXACT match |
-| 4 | should return 200 and process valid webhook | should return 200 and process valid webhook (line 529) | EXACT match |
-| 5 | should ingest reading with correct data | should store reading with correct sensor/unit association (line 547) | EXACT match |
-| 6 | should trigger alert evaluation | should trigger alert evaluation for the unit (line 593) | EXACT match |
-| 7 | should report alertsTriggered when alert is created | should report alertsTriggered=1 when alert is created (line 613) | EXACT match |
-| 8 | should update device metadata | should update device metadata after processing (line 653) | EXACT match |
-| 9 | should handle simulated uplinks | should handle simulated uplinks (line 798) | EXACT match |
-| 10 | should handle temp field instead of temperature | should handle "temp" field instead of "temperature" (line 708) | EXACT match |
-| 11 | should handle battery_voltage field | should handle battery_voltage and convert to percentage (line 750) | EXACT match |
-| 12 | should use best signal strength from multiple gateways | should use best signal strength from multiple gateways (line 773) | EXACT match |
-| 13 | should continue processing if alert evaluation fails | should continue processing if alert evaluation fails (line 819) | EXACT match |
-| 14 | should continue processing if device metadata update fails | should continue processing if device metadata update fails (line 838) | EXACT match |
+| #   | Skipped test in `api/`                                     | Covered by in `routes/`                                               | Status      |
+| --- | ---------------------------------------------------------- | --------------------------------------------------------------------- | ----------- |
+| 1   | should accept X-Webhook-Secret header                      | should accept X-Webhook-Secret header as alternative auth (line 256)  | EXACT match |
+| 2   | should use device_id when dev_eui is missing               | should fall back to device_id when dev_eui is absent (line 329)       | EXACT match |
+| 3   | should return 400 for invalid payload structure            | should return 400 for structurally invalid payload (line 508)         | EXACT match |
+| 4   | should return 200 and process valid webhook                | should return 200 and process valid webhook (line 529)                | EXACT match |
+| 5   | should ingest reading with correct data                    | should store reading with correct sensor/unit association (line 547)  | EXACT match |
+| 6   | should trigger alert evaluation                            | should trigger alert evaluation for the unit (line 593)               | EXACT match |
+| 7   | should report alertsTriggered when alert is created        | should report alertsTriggered=1 when alert is created (line 613)      | EXACT match |
+| 8   | should update device metadata                              | should update device metadata after processing (line 653)             | EXACT match |
+| 9   | should handle simulated uplinks                            | should handle simulated uplinks (line 798)                            | EXACT match |
+| 10  | should handle temp field instead of temperature            | should handle "temp" field instead of "temperature" (line 708)        | EXACT match |
+| 11  | should handle battery_voltage field                        | should handle battery_voltage and convert to percentage (line 750)    | EXACT match |
+| 12  | should use best signal strength from multiple gateways     | should use best signal strength from multiple gateways (line 773)     | EXACT match |
+| 13  | should continue processing if alert evaluation fails       | should continue processing if alert evaluation fails (line 819)       | EXACT match |
+| 14  | should continue processing if device metadata update fails | should continue processing if device metadata update fails (line 838) | EXACT match |
 
 Additionally, the 6 PASSING tests in `api/ttn-webhooks.test.ts` are also duplicated:
 
-| Passing test in `api/` | Also passing in `routes/` |
-|-------------------------|---------------------------|
-| should return 401 without API key header | should return 401 when API key is missing (line 270) |
-| should return 401 with invalid API key | should return 401 with invalid API key (line 285) |
-| should return 404 when device not found | should handle unknown DevEUI gracefully (line 382) |
-| should return 401 when device belongs to different organization | should return 401 when device belongs to different organization (line 399) |
-| should return 422 when decoded_payload is missing | should return 422 when decoded_payload is missing (line 448) |
+| Passing test in `api/`                                             | Also passing in `routes/`                                                     |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| should return 401 without API key header                           | should return 401 when API key is missing (line 270)                          |
+| should return 401 with invalid API key                             | should return 401 with invalid API key (line 285)                             |
+| should return 404 when device not found                            | should handle unknown DevEUI gracefully (line 382)                            |
+| should return 401 when device belongs to different organization    | should return 401 when device belongs to different organization (line 399)    |
+| should return 422 when decoded_payload is missing                  | should return 422 when decoded_payload is missing (line 448)                  |
 | should return 422 when temperature is missing from decoded_payload | should return 422 when temperature is missing from decoded_payload (line 468) |
 
 **Result: All 20 tests (6 passing + 14 skipped) in the api file are exact duplicates of tests already passing in the routes file.**
@@ -131,7 +131,7 @@ vi.mock('../../src/plugins/socket.plugin.js', () => {
       },
       // CRITICAL: fastify-plugin reads Symbol.for('skip-override')
       // to propagate decorators to the parent scope
-      { [Symbol.for('skip-override')]: true }
+      { [Symbol.for('skip-override')]: true },
     ),
   };
 });
@@ -141,28 +141,31 @@ vi.mock('../../src/plugins/socket.plugin.js', () => {
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Fixing 14 skipped tests | Re-implement all 14 test bodies in `api/` file | Delete `api/` file, keep `routes/` file | 100% duplicate coverage already exists |
-| Socket plugin mocking | Custom mock per test file | The `Symbol.for('skip-override')` pattern | `fastify-plugin` requires this for decorator propagation |
+| Problem                 | Don't Build                                    | Use Instead                               | Why                                                      |
+| ----------------------- | ---------------------------------------------- | ----------------------------------------- | -------------------------------------------------------- |
+| Fixing 14 skipped tests | Re-implement all 14 test bodies in `api/` file | Delete `api/` file, keep `routes/` file   | 100% duplicate coverage already exists                   |
+| Socket plugin mocking   | Custom mock per test file                      | The `Symbol.for('skip-override')` pattern | `fastify-plugin` requires this for decorator propagation |
 
 **Key insight:** The right action here is deletion, not implementation. The "fix all skipped tests" goal is achieved by recognizing they are already passing elsewhere and removing the dead code.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Implementing Duplicate Tests
+
 **What goes wrong:** Developer implements all 14 skipped tests, creating a maintenance burden with two identical test suites
 **Why it happens:** Phase description says "fix all skipped tests" which implies writing test bodies
 **How to avoid:** Recognize that `tests/routes/ttn-webhook.test.ts` already covers everything
 **Warning signs:** Two test files testing the same route with the same mocking pattern
 
 ### Pitfall 2: Keeping Both Files with Different "Layers"
+
 **What goes wrong:** Attempting to justify both files by claiming they test "different layers"
 **Why it happens:** `tests/api/` and `tests/routes/` directory names suggest different test levels
 **How to avoid:** Both files use `buildApp()` + `app.inject()` -- they are the SAME layer (route-level integration tests). The directory difference is accidental, not intentional.
 **Warning signs:** Both files import `buildApp`, use `app.inject()`, mock the same services
 
 ### Pitfall 3: Missing the Socket Plugin Mock
+
 **What goes wrong:** If someone tries to un-skip tests in the `api/` file by just adding test bodies, they hit the same `sensorStreamService is undefined` error
 **Why it happens:** The `api/` file mocks individual services but not the socket plugin that provides `sensorStreamService`
 **How to avoid:** Either add the socket plugin mock (making it identical to `routes/` file) or just delete the file
@@ -176,6 +179,7 @@ vi.mock('../../src/plugins/socket.plugin.js', () => {
 3. Net result: -14 skipped tests, -6 duplicate passing tests, 0 coverage loss
 
 **Impact on test counts:**
+
 - Before: 1252 passed, 38 skipped (14 from this file)
 - After: 1246 passed, 24 skipped (removes 6 passing duplicates + 14 skips)
 - Coverage: Identical (routes file covers everything)
@@ -198,10 +202,10 @@ vi.mock('../../src/plugins/socket.plugin.js', () => {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
+| Old Approach                        | Current Approach                                      | When Changed                  | Impact                        |
+| ----------------------------------- | ----------------------------------------------------- | ----------------------------- | ----------------------------- |
 | Skip tests that need socket mocking | Mock socket plugin with `Symbol.for('skip-override')` | When routes/ file was created | All 14 scenarios now testable |
-| `tests/api/` only | `tests/api/` + `tests/routes/` | When routes/ file was created | Created inconsistency |
+| `tests/api/` only                   | `tests/api/` + `tests/routes/`                        | When routes/ file was created | Created inconsistency         |
 
 ## Open Questions
 
@@ -218,6 +222,7 @@ vi.mock('../../src/plugins/socket.plugin.js', () => {
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - `backend/tests/api/ttn-webhooks.test.ts` - Read in full, all 399 lines
 - `backend/tests/routes/ttn-webhook.test.ts` - Read in full, all 943 lines
 - `backend/src/routes/ttn-webhooks.ts` - Read in full, all 239 lines
@@ -225,6 +230,7 @@ vi.mock('../../src/plugins/socket.plugin.js', () => {
 - Vitest test run output - Both files executed, results verified
 
 ### Verification
+
 - API file: 6 passed, 14 skipped (confirmed via `vitest run`)
 - Routes file: 32 passed, 0 skipped (confirmed via `vitest run`)
 - Full suite: 1252 passed, 38 skipped, 10 failed (confirmed via `vitest run`)
@@ -232,6 +238,7 @@ vi.mock('../../src/plugins/socket.plugin.js', () => {
 ## Metadata
 
 **Confidence breakdown:**
+
 - Test duplication analysis: HIGH - Both files read line-by-line and compared
 - Socket mock pattern: HIGH - Verified in working test and source plugin
 - Recommendation: HIGH - Clear evidence that consolidation is correct

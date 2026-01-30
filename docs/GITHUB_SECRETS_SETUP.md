@@ -12,12 +12,12 @@ The CD pipeline (`deploy.yml`) uses GitHub Secrets for sensitive values that sho
 
 These secrets enable SSH access to your production server:
 
-| Secret Name | Description | Example |
-|-------------|-------------|---------|
-| `VPS_HOST` | Hostname or IP of production server | `app.freshtrackpro.com` or `203.0.113.50` |
-| `VPS_USER` | SSH username | `deploy` |
-| `VPS_SSH_KEY` | SSH private key (full key including headers) | See below |
-| `VPS_PORT` | SSH port (optional, defaults to 22) | `22` |
+| Secret Name   | Description                                  | Example                                   |
+| ------------- | -------------------------------------------- | ----------------------------------------- |
+| `VPS_HOST`    | Hostname or IP of production server          | `app.freshtrackpro.com` or `203.0.113.50` |
+| `VPS_USER`    | SSH username                                 | `deploy`                                  |
+| `VPS_SSH_KEY` | SSH private key (full key including headers) | See below                                 |
+| `VPS_PORT`    | SSH port (optional, defaults to 22)          | `22`                                      |
 
 **SSH Key Setup:**
 
@@ -33,6 +33,7 @@ cat deploy_key
 ```
 
 The `VPS_SSH_KEY` should contain the entire private key including:
+
 ```
 -----BEGIN OPENSSH PRIVATE KEY-----
 ...key content...
@@ -43,32 +44,32 @@ The `VPS_SSH_KEY` should contain the entire private key including:
 
 These secrets are passed to your application at runtime:
 
-| Secret Name | Required | Description | How to Obtain |
-|-------------|----------|-------------|---------------|
-| `STACK_AUTH_SECRET_KEY` | Yes | Stack Auth server-side secret | Stack Auth Dashboard > Project > API Keys |
-| `STRIPE_SECRET_KEY` | For payments | Stripe API secret key | Stripe Dashboard > Developers > API Keys |
-| `STRIPE_WEBHOOK_SECRET` | For payments | Webhook signing secret | Stripe Dashboard > Developers > Webhooks |
+| Secret Name             | Required     | Description                   | How to Obtain                             |
+| ----------------------- | ------------ | ----------------------------- | ----------------------------------------- |
+| `STACK_AUTH_SECRET_KEY` | Yes          | Stack Auth server-side secret | Stack Auth Dashboard > Project > API Keys |
+| `STRIPE_SECRET_KEY`     | For payments | Stripe API secret key         | Stripe Dashboard > Developers > API Keys  |
+| `STRIPE_WEBHOOK_SECRET` | For payments | Webhook signing secret        | Stripe Dashboard > Developers > Webhooks  |
 
 ### Optional Service Secrets
 
 Enable additional features by adding these secrets:
 
-| Secret Name | Feature | Description | How to Obtain |
-|-------------|---------|-------------|---------------|
-| `TTN_API_KEY` | IoT | TTN API key | The Things Stack Console > Applications > API Keys |
-| `TTN_WEBHOOK_SECRET` | IoT | Webhook verification | Generate: `openssl rand -base64 32` |
-| `TELNYX_API_KEY` | SMS | Telnyx API key | Telnyx Portal > API Keys |
-| `RESEND_API_KEY` | Email | Resend API key | Resend Dashboard > API Keys |
-| `SENTRY_DSN` | Monitoring | Sentry project DSN | Sentry > Settings > Client Keys |
+| Secret Name          | Feature    | Description          | How to Obtain                                      |
+| -------------------- | ---------- | -------------------- | -------------------------------------------------- |
+| `TTN_API_KEY`        | IoT        | TTN API key          | The Things Stack Console > Applications > API Keys |
+| `TTN_WEBHOOK_SECRET` | IoT        | Webhook verification | Generate: `openssl rand -base64 32`                |
+| `TELNYX_API_KEY`     | SMS        | Telnyx API key       | Telnyx Portal > API Keys                           |
+| `RESEND_API_KEY`     | Email      | Resend API key       | Resend Dashboard > API Keys                        |
+| `SENTRY_DSN`         | Monitoring | Sentry project DSN   | Sentry > Settings > Client Keys                    |
 
 ## GitHub Variables (Non-Sensitive)
 
 For non-sensitive configuration, use GitHub Variables instead of Secrets:
 
-| Variable Name | Description | Example |
-|---------------|-------------|---------|
+| Variable Name         | Description                      | Example                                |
+| --------------------- | -------------------------------- | -------------------------------------- |
 | `DISCORD_WEBHOOK_URL` | Discord deployment notifications | `https://discord.com/api/webhooks/...` |
-| `SLACK_WEBHOOK_URL` | Slack deployment notifications | `https://hooks.slack.com/...` |
+| `SLACK_WEBHOOK_URL`   | Slack deployment notifications   | `https://hooks.slack.com/...`          |
 
 ## Setting Up Secrets
 
@@ -125,6 +126,7 @@ After setting up secrets, verify the pipeline can access them:
 3. Verify the "Deploy via SSH" step completes successfully
 
 If secrets are missing, you'll see errors like:
+
 ```
 Error: Input required and not supplied: host
 ```

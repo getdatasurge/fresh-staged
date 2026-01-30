@@ -43,7 +43,7 @@ services:
         max_attempts: 5
         window: 120s
     ports:
-      - "127.0.0.1:5432:5432"
+      - '127.0.0.1:5432:5432'
 
   # PostgreSQL backup service (must be in same profile as postgres and minio)
   postgres_backup:
@@ -58,7 +58,7 @@ services:
     profiles:
       - self-hosted-db
     ports:
-      - "127.0.0.1:6432:6432"
+      - '127.0.0.1:6432:6432'
 
   # PgBouncer metrics exporter (must be in same profile as pgbouncer)
   pgbouncer_exporter:
@@ -83,7 +83,7 @@ services:
         max_attempts: 5
         window: 120s
     ports:
-      - "127.0.0.1:6379:6379"
+      - '127.0.0.1:6379:6379'
 
   # ===========================================
   # MinIO (S3-Compatible Object Storage)
@@ -107,8 +107,8 @@ services:
         max_attempts: 5
         window: 120s
     ports:
-      - "127.0.0.1:9000:9000"
-      - "127.0.0.1:9001:9001"
+      - '127.0.0.1:9000:9000'
+      - '127.0.0.1:9001:9001'
 
   # MinIO setup service (must be in same profile as minio)
   minio-setup:

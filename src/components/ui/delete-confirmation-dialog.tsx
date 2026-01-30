@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,13 +8,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { AlertTriangle, Trash2, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { AlertTriangle, Trash2, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export type DeleteEntityType = "unit" | "area" | "site" | "device" | "sensor";
+export type DeleteEntityType = 'unit' | 'area' | 'site' | 'device' | 'sensor';
 
 interface DeleteConfirmationDialogProps {
   open: boolean;
@@ -29,11 +29,11 @@ interface DeleteConfirmationDialogProps {
 }
 
 const entityTypeLabels: Record<DeleteEntityType, string> = {
-  unit: "Unit",
-  area: "Area",
-  site: "Site",
-  device: "Device",
-  sensor: "Sensor",
+  unit: 'Unit',
+  area: 'Area',
+  site: 'Site',
+  device: 'Device',
+  sensor: 'Sensor',
 };
 
 export function DeleteConfirmationDialog({
@@ -47,7 +47,7 @@ export function DeleteConfirmationDialog({
   hasChildren = false,
   childrenCount = 0,
 }: DeleteConfirmationDialogProps) {
-  const [confirmInput, setConfirmInput] = React.useState("");
+  const [confirmInput, setConfirmInput] = React.useState('');
   const [isDeleting, setIsDeleting] = React.useState(false);
 
   const nameMatches = confirmInput === entityName;
@@ -58,25 +58,25 @@ export function DeleteConfirmationDialog({
     : `This will move "${entityName}" to Recently Deleted. Historical data will be preserved and can be restored by an admin.`;
 
   const childWarning = hasChildren
-    ? ` This ${typeLabel.toLowerCase()} contains ${childrenCount} active item${childrenCount !== 1 ? "s" : ""} that will also be deleted.`
-    : "";
+    ? ` This ${typeLabel.toLowerCase()} contains ${childrenCount} active item${childrenCount !== 1 ? 's' : ''} that will also be deleted.`
+    : '';
 
   React.useEffect(() => {
     if (!open) {
-      setConfirmInput("");
+      setConfirmInput('');
       setIsDeleting(false);
     }
   }, [open]);
 
   const handleConfirm = async () => {
     if (!nameMatches || isDeleting) return;
-    
+
     setIsDeleting(true);
     try {
       await onConfirm();
       onOpenChange(false);
     } catch (error) {
-      console.error("Delete failed:", error);
+      console.error('Delete failed:', error);
     } finally {
       setIsDeleting(false);
     }
@@ -88,7 +88,7 @@ export function DeleteConfirmationDialog({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="h-5 w-5" />
-            {isPermanent ? "Permanently Delete" : "Delete"} {typeLabel}
+            {isPermanent ? 'Permanently Delete' : 'Delete'} {typeLabel}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-left space-y-3">
             <p>
@@ -96,16 +96,15 @@ export function DeleteConfirmationDialog({
               {childWarning}
             </p>
             {isPermanent && (
-              <p className="font-semibold text-destructive">
-                ⚠️ This action is irreversible!
-              </p>
+              <p className="font-semibold text-destructive">⚠️ This action is irreversible!</p>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="space-y-3 py-2">
           <Label htmlFor="confirm-delete" className="text-sm text-muted-foreground">
-            Type <span className="font-mono font-semibold text-foreground">{entityName}</span> to confirm
+            Type <span className="font-mono font-semibold text-foreground">{entityName}</span> to
+            confirm
           </Label>
           <Input
             id="confirm-delete"
@@ -113,10 +112,11 @@ export function DeleteConfirmationDialog({
             onChange={(e) => setConfirmInput(e.target.value)}
             placeholder={entityName}
             className={cn(
-              "font-mono",
-              confirmInput.length > 0 && (nameMatches 
-                ? "border-green-500 focus-visible:ring-green-500" 
-                : "border-destructive focus-visible:ring-destructive")
+              'font-mono',
+              confirmInput.length > 0 &&
+                (nameMatches
+                  ? 'border-green-500 focus-visible:ring-green-500'
+                  : 'border-destructive focus-visible:ring-destructive'),
             )}
             disabled={isDeleting}
             autoComplete="off"
@@ -134,8 +134,8 @@ export function DeleteConfirmationDialog({
             onClick={handleConfirm}
             disabled={!nameMatches || isDeleting}
             className={cn(
-              "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-              (!nameMatches || isDeleting) && "opacity-50 cursor-not-allowed"
+              'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+              (!nameMatches || isDeleting) && 'opacity-50 cursor-not-allowed',
             )}
           >
             {isDeleting ? (
@@ -146,7 +146,7 @@ export function DeleteConfirmationDialog({
             ) : (
               <>
                 <Trash2 className="mr-2 h-4 w-4" />
-                {isPermanent ? "Permanently Delete" : "Delete"}
+                {isPermanent ? 'Permanently Delete' : 'Delete'}
               </>
             )}
           </AlertDialogAction>

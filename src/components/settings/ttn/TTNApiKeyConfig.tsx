@@ -1,9 +1,9 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Loader2,
   CheckCircle,
@@ -12,13 +12,16 @@ import {
   Copy,
   AlertTriangle,
   Info,
-  Save
-} from "lucide-react";
-import { toast } from "sonner";
-import { TTNValidationResultPanel, REQUIRED_SCOPES } from "@/components/ttn/TTNValidationResultPanel";
-import type { TTNValidationResult } from "@/components/ttn/TTNValidationResultPanel";
-import type { TTNSettings, TTN_REGIONS } from "@/hooks/useTTNSettings";
-import type { BootstrapResult } from "@/hooks/useTTNApiKey";
+  Save,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import {
+  TTNValidationResultPanel,
+  REQUIRED_SCOPES,
+} from '@/components/ttn/TTNValidationResultPanel';
+import type { TTNValidationResult } from '@/components/ttn/TTNValidationResultPanel';
+import type { TTNSettings, TTN_REGIONS } from '@/hooks/useTTNSettings';
+import type { BootstrapResult } from '@/hooks/useTTNApiKey';
 
 const InfoTooltip: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <TooltipProvider>
@@ -53,17 +56,17 @@ interface TTNApiKeyConfigProps {
 }
 
 function formatSourceLabel(source: string | null): string {
-  if (!source) return "Unknown";
-  return source === "emulator" ? "Emulator" : "FrostGuard";
+  if (!source) return 'Unknown';
+  return source === 'emulator' ? 'Emulator' : 'FrostGuard';
 }
 
 function generateTTNSetupInstructions(region: string, applicationId: string): string {
   const regions = [
-    { value: "nam1", label: "North America (nam1)" },
-    { value: "eu1", label: "Europe (eu1)" },
-    { value: "au1", label: "Australia (au1)" },
+    { value: 'nam1', label: 'North America (nam1)' },
+    { value: 'eu1', label: 'Europe (eu1)' },
+    { value: 'au1', label: 'Australia (au1)' },
   ];
-  const clusterLabel = regions.find(r => r.value === region)?.label || region;
+  const clusterLabel = regions.find((r) => r.value === region)?.label || region;
 
   return `TTN API Key Setup Instructions for FrostGuard
 
@@ -113,15 +116,15 @@ export function TTNApiKeyConfig({
   onRefresh,
 }: TTNApiKeyConfigProps) {
   const handleCopySetupInstructions = async () => {
-    const appId = newApplicationId.trim() || settings?.ttn_application_id || "<your-app-id>";
+    const appId = newApplicationId.trim() || settings?.ttn_application_id || '<your-app-id>';
     const instructions = generateTTNSetupInstructions(region, appId);
     try {
       await navigator.clipboard.writeText(instructions);
-      toast.success("Setup instructions copied!", {
-        description: "Paste into your notes or share with team members"
+      toast.success('Setup instructions copied!', {
+        description: 'Paste into your notes or share with team members',
       });
     } catch {
-      toast.error("Failed to copy to clipboard");
+      toast.error('Failed to copy to clipboard');
     }
   };
 
@@ -130,7 +133,9 @@ export function TTNApiKeyConfig({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Label className="text-base font-medium">TTN API Configuration</Label>
-          <InfoTooltip>Enter your TTN Application ID and API key. Webhook will be configured automatically.</InfoTooltip>
+          <InfoTooltip>
+            Enter your TTN Application ID and API key. Webhook will be configured automatically.
+          </InfoTooltip>
         </div>
         <div className="flex items-center gap-1">
           <Button
@@ -142,7 +147,13 @@ export function TTNApiKeyConfig({
             <Copy className="h-3 w-3 mr-1" />
             Copy Setup Instructions
           </Button>
-          <Button variant="ghost" size="sm" onClick={onRefresh} disabled={isLoading} className="h-7 px-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onRefresh}
+            disabled={isLoading}
+            className="h-7 px-2"
+          >
             <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
@@ -155,7 +166,9 @@ export function TTNApiKeyConfig({
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Current key:</span>
             <div className="flex items-center gap-2">
-              <code className="bg-muted px-2 py-0.5 rounded text-xs">****{settings.api_key_last4}</code>
+              <code className="bg-muted px-2 py-0.5 rounded text-xs">
+                ****{settings.api_key_last4}
+              </code>
               {settings.last_updated_source && (
                 <Badge variant="outline" className="text-xs">
                   {formatSourceLabel(settings.last_updated_source)}
@@ -177,14 +190,15 @@ export function TTNApiKeyConfig({
           <div className="flex items-center gap-2">
             <CheckCircle className="h-4 w-4 text-safe" />
             <span className="text-sm font-medium text-safe">
-              {bootstrapResult.webhook_action === "created"
-                ? "Webhook created in TTN!"
-                : "Webhook updated in TTN!"}
+              {bootstrapResult.webhook_action === 'created'
+                ? 'Webhook created in TTN!'
+                : 'Webhook updated in TTN!'}
             </span>
           </div>
           {bootstrapResult.permissions && (
             <p className="text-xs text-muted-foreground mt-1">
-              Permissions validated: {bootstrapResult.permissions.rights?.length || 0} rights granted
+              Permissions validated: {bootstrapResult.permissions.rights?.length || 0} rights
+              granted
             </p>
           )}
         </div>
@@ -200,20 +214,21 @@ export function TTNApiKeyConfig({
                 {bootstrapResult.error.message}
               </span>
               {bootstrapResult.error.hint && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  {bootstrapResult.error.hint}
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">{bootstrapResult.error.hint}</p>
               )}
-              {bootstrapResult.error.missing_permissions && bootstrapResult.error.missing_permissions.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-xs font-medium">Missing permissions:</p>
-                  <ul className="text-xs text-muted-foreground list-disc list-inside mt-1">
-                    {bootstrapResult.error.missing_permissions.map(p => (
-                      <li key={p}>{p.replace("RIGHT_APPLICATION_", "").toLowerCase().replace(/_/g, " ")}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              {bootstrapResult.error.missing_permissions &&
+                bootstrapResult.error.missing_permissions.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-xs font-medium">Missing permissions:</p>
+                    <ul className="text-xs text-muted-foreground list-disc list-inside mt-1">
+                      {bootstrapResult.error.missing_permissions.map((p) => (
+                        <li key={p}>
+                          {p.replace('RIGHT_APPLICATION_', '').toLowerCase().replace(/_/g, ' ')}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
             </div>
           </div>
         </div>
@@ -241,9 +256,7 @@ export function TTNApiKeyConfig({
             className="font-mono text-xs"
             disabled={readOnly}
           />
-          <p className="text-xs text-muted-foreground">
-            Find this in TTN Console → Applications
-          </p>
+          <p className="text-xs text-muted-foreground">Find this in TTN Console → Applications</p>
         </div>
 
         {/* API Key */}
@@ -273,7 +286,7 @@ export function TTNApiKeyConfig({
         {validationResult && (
           <TTNValidationResultPanel
             result={validationResult}
-            applicationId={newApplicationId.trim() || settings?.ttn_application_id || ""}
+            applicationId={newApplicationId.trim() || settings?.ttn_application_id || ''}
           />
         )}
 
@@ -330,15 +343,20 @@ export function TTNApiKeyConfig({
                 <TooltipContent className="max-w-xs">
                   <p className="font-medium mb-1">Cannot save - fix these issues:</p>
                   <ul className="text-xs space-y-0.5">
-                    {validationResult.permissions?.missing_core?.map(p => {
-                      const scope = REQUIRED_SCOPES.find(s => s.right === p);
+                    {validationResult.permissions?.missing_core?.map((p) => {
+                      const scope = REQUIRED_SCOPES.find((s) => s.right === p);
                       return (
-                        <li key={p}>• Missing: {scope?.label || p.replace("RIGHT_APPLICATION_", "").toLowerCase().replace(/_/g, " ")}</li>
+                        <li key={p}>
+                          • Missing:{' '}
+                          {scope?.label ||
+                            p.replace('RIGHT_APPLICATION_', '').toLowerCase().replace(/_/g, ' ')}
+                        </li>
                       );
                     })}
-                    {validationResult.error && !validationResult.permissions?.missing_core?.length && (
-                      <li>• {validationResult.error.message}</li>
-                    )}
+                    {validationResult.error &&
+                      !validationResult.permissions?.missing_core?.length && (
+                        <li>• {validationResult.error.message}</li>
+                      )}
                   </ul>
                 </TooltipContent>
               )}

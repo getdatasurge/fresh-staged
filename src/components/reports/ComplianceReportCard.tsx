@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { useTRPC } from "@/lib/trpc";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
-import { Download, FileText, Loader2, ShieldCheck } from "lucide-react";
-import { format } from "date-fns";
+import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { useTRPC } from '@/lib/trpc';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { Download, FileText, Loader2, ShieldCheck } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface ComplianceReportCardProps {
   siteId?: string;
@@ -27,7 +27,7 @@ export function ComplianceReportCard({
 }: ComplianceReportCardProps) {
   const { effectiveOrgId } = useEffectiveIdentity();
   const trpc = useTRPC();
-  const [exportFormat, setExportFormat] = useState<"csv" | "pdf">("csv");
+  const [exportFormat, setExportFormat] = useState<'csv' | 'pdf'>('csv');
 
   // tRPC mutation for exporting compliance reports
   const exportMutation = useMutation({
@@ -36,31 +36,31 @@ export function ComplianceReportCard({
       // Download file
       const blob = new Blob([data.content], { type: data.contentType });
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
       a.download = data.filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-      toast.success("Compliance report exported");
+      toast.success('Compliance report exported');
     },
     onError: (err) => {
-      console.error("Export error:", err);
-      toast.error("Failed to export report");
+      console.error('Export error:', err);
+      toast.error('Failed to export report');
     },
   });
 
-  const handleExport = (formatType: "csv" | "pdf") => {
+  const handleExport = (formatType: 'csv' | 'pdf') => {
     if (!startDate || !endDate) {
-      toast.error("Please select a date range");
+      toast.error('Please select a date range');
       return;
     }
 
     // Check authentication
     if (!effectiveOrgId) {
-      toast.error("Session expired. Please sign in again.");
-      window.location.href = "/auth";
+      toast.error('Session expired. Please sign in again.');
+      window.location.href = '/auth';
       return;
     }
 
@@ -69,10 +69,10 @@ export function ComplianceReportCard({
     // Use tRPC mutation for export
     exportMutation.mutate({
       organizationId: effectiveOrgId,
-      startDate: format(startDate, "yyyy-MM-dd"),
-      endDate: format(endDate, "yyyy-MM-dd"),
-      reportType: "compliance",
-      format: formatType === "pdf" ? "html" : "csv",
+      startDate: format(startDate, 'yyyy-MM-dd'),
+      endDate: format(endDate, 'yyyy-MM-dd'),
+      reportType: 'compliance',
+      format: formatType === 'pdf' ? 'html' : 'csv',
       siteId: unitId ? undefined : siteId,
       unitId: unitId || undefined,
     });
@@ -89,8 +89,8 @@ export function ComplianceReportCard({
             <div>
               <CardTitle>Compliance Report</CardTitle>
               <CardDescription className="mt-1">
-                Complete audit-ready report with all temperature logs, exceptions,
-                corrective actions, and compliance status
+                Complete audit-ready report with all temperature logs, exceptions, corrective
+                actions, and compliance status
               </CardDescription>
             </div>
           </div>
@@ -112,11 +112,11 @@ export function ComplianceReportCard({
           </div>
           <div className="flex items-center gap-2">
             <Button
-              onClick={() => handleExport("csv")}
+              onClick={() => handleExport('csv')}
               disabled={exportMutation.isPending || !startDate || !endDate}
               variant="outline"
             >
-              {exportMutation.isPending && exportFormat === "csv" ? (
+              {exportMutation.isPending && exportFormat === 'csv' ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <FileText className="w-4 h-4 mr-2" />
@@ -124,10 +124,10 @@ export function ComplianceReportCard({
               Export CSV
             </Button>
             <Button
-              onClick={() => handleExport("pdf")}
+              onClick={() => handleExport('pdf')}
               disabled={exportMutation.isPending || !startDate || !endDate}
             >
-              {exportMutation.isPending && exportFormat === "pdf" ? (
+              {exportMutation.isPending && exportFormat === 'pdf' ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <Download className="w-4 h-4 mr-2" />

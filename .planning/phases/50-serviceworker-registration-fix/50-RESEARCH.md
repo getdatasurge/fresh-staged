@@ -15,21 +15,24 @@ The fix involves switching from the auto-generated registration script to the pl
 ## Standard Stack
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| vite-plugin-pwa | 1.2.0 | PWA support for Vite (already installed) | De facto standard for Vite PWA |
+
+| Library         | Version | Purpose                                  | Why Standard                   |
+| --------------- | ------- | ---------------------------------------- | ------------------------------ |
+| vite-plugin-pwa | 1.2.0   | PWA support for Vite (already installed) | De facto standard for Vite PWA |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
+
+| Library                    | Version                        | Purpose                        | When to Use                                 |
+| -------------------------- | ------------------------------ | ------------------------------ | ------------------------------------------- |
 | virtual:pwa-register/react | (bundled with vite-plugin-pwa) | React hook for SW registration | Always for React apps using vite-plugin-pwa |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Virtual module hook | Manual `navigator.serviceWorker.register()` | More control but loses auto-update, workbox integration, and offline-ready detection |
-| `injectRegister: false` + hook | Completely remove VitePWA plugin | Loses manifest generation, workbox caching, and future PWA capability |
-| `selfDestroying: true` | Unregisters existing SW permanently | Overkill -- we want SW to work when SSL is valid |
+
+| Instead of                     | Could Use                                   | Tradeoff                                                                             |
+| ------------------------------ | ------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Virtual module hook            | Manual `navigator.serviceWorker.register()` | More control but loses auto-update, workbox integration, and offline-ready detection |
+| `injectRegister: false` + hook | Completely remove VitePWA plugin            | Loses manifest generation, workbox caching, and future PWA capability                |
+| `selfDestroying: true`         | Unregisters existing SW permanently         | Overkill -- we want SW to work when SSL is valid                                     |
 
 **Installation:** No new packages needed. `vite-plugin-pwa` v1.2.0 is already installed and includes the React virtual module.
 
@@ -107,6 +110,7 @@ export function ServiceWorkerRegistration() {
 ```
 
 Then in `App.tsx` (or layout root):
+
 ```typescript
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
 
@@ -121,6 +125,7 @@ function App() {
 ```
 
 ### Anti-Patterns to Avoid
+
 - **Wrapping registration in try/catch at the vite.config level:** The config file runs at build time, not runtime. The error happens in the browser.
 - **Using `selfDestroying: true`:** This permanently unregisters the SW. We want it to work when SSL is valid (future domain setup).
 - **Conditionally removing VitePWA plugin based on mode:** This prevents the SW and manifest from being generated at all, breaking future PWA capability.
@@ -128,41 +133,46 @@ function App() {
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| SW registration with error handling | Custom `navigator.serviceWorker.register()` wrapper | `virtual:pwa-register/react` hook | Hook handles workbox-window import, auto-update lifecycle, offline-ready detection, and error callbacks properly |
-| SW update prompts | Custom update detection logic | `useRegisterSW` with `onNeedRefresh` callback | Plugin handles installed/waiting/activated event lifecycle correctly |
-| SW unregistration | Custom unregister logic | `selfDestroying: true` config option (if needed later) | Plugin generates correct self-destroying SW with cache cleanup |
+| Problem                             | Don't Build                                         | Use Instead                                            | Why                                                                                                              |
+| ----------------------------------- | --------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| SW registration with error handling | Custom `navigator.serviceWorker.register()` wrapper | `virtual:pwa-register/react` hook                      | Hook handles workbox-window import, auto-update lifecycle, offline-ready detection, and error callbacks properly |
+| SW update prompts                   | Custom update detection logic                       | `useRegisterSW` with `onNeedRefresh` callback          | Plugin handles installed/waiting/activated event lifecycle correctly                                             |
+| SW unregistration                   | Custom unregister logic                             | `selfDestroying: true` config option (if needed later) | Plugin generates correct self-destroying SW with cache cleanup                                                   |
 
 **Key insight:** The vite-plugin-pwa virtual module already solves the error handling problem. The bug exists only because the default `injectRegister: 'auto'` mode generates a minimal script without the virtual module's error handling capabilities. Switching to the virtual module is the intended React integration path.
 
 ## Common Pitfalls
 
 ### Pitfall 1: TypeScript Cannot Find Virtual Module
+
 **What goes wrong:** `Cannot find module 'virtual:pwa-register/react' or its corresponding type declarations`
 **Why it happens:** TypeScript does not know about vite-plugin-pwa's virtual modules by default.
 **How to avoid:** Add `/// <reference types="vite-plugin-pwa/client" />` to `src/vite-env.d.ts`, or add `"vite-plugin-pwa/client"` to `compilerOptions.types` in `tsconfig.app.json`.
 **Warning signs:** TypeScript build errors mentioning `virtual:pwa-register`.
 
 ### Pitfall 2: Forgetting `injectRegister: false`
+
 **What goes wrong:** Both the auto-generated script AND the virtual module hook try to register the SW, causing double registration.
 **Why it happens:** `injectRegister` defaults to `'auto'`, and if `auto` detects no virtual module import (e.g., tree-shaking, dynamic import), it falls back to script injection.
 **How to avoid:** Explicitly set `injectRegister: false` in the VitePWA config when using the virtual module.
 **Warning signs:** Two SW registration attempts in network tab, or the uncaught promise rejection persists alongside the caught one.
 
 ### Pitfall 3: Using `registerType: false` Instead of Keeping `"autoUpdate"`
+
 **What goes wrong:** The `registerType` controls the SW update strategy (auto-update vs prompt). Setting it to `false` disables the update mechanism.
 **Why it happens:** Confusion between `registerType` (update strategy) and `injectRegister` (how registration code is delivered).
 **How to avoid:** Keep `registerType: "autoUpdate"` (the current setting). Only change `injectRegister`.
 **Warning signs:** SW never auto-updates after deployment.
 
 ### Pitfall 4: The `onRegisterError` Callback Uses Stale Reference
+
 **What goes wrong:** If the callback references React state, it captures the initial render's state, not the latest.
 **Why it happens:** vite-plugin-pwa docs explicitly warn: "The options provided to hooks are not reactive."
 **How to avoid:** Use a stable function reference (no state dependencies) for the error callback. For this use case, just `console.info()` is sufficient -- no state needed.
 **Warning signs:** Unexpected behavior if trying to set state from within the callback.
 
 ### Pitfall 5: E2E Test Already Filters SW Errors
+
 **What goes wrong:** The existing e2e test at `e2e/production-smoke.spec.ts` already filters `sw.js` and `registerSW` from failed requests (lines 86-87). After the fix, these filters remain valid but the test should also verify no uncaught promise rejections.
 **Why it happens:** The test was written to tolerate the SW failure as a known issue.
 **How to avoid:** After fixing, consider adding a positive assertion that no `pageerror` events related to ServiceWorker occur.
@@ -170,18 +180,24 @@ function App() {
 ## Code Examples
 
 ### Example 1: vite.config.ts Change (The Key Config Change)
+
 ```typescript
 // Source: Official vite-plugin-pwa docs - https://vite-pwa-org.netlify.app/guide/register-service-worker.html
 VitePWA({
-  registerType: "autoUpdate",
+  registerType: 'autoUpdate',
   injectRegister: false, // ← ADD THIS: Disable auto-generated registerSW.js script
-  includeAssets: ["favicon.ico", "robots.txt", "icon.svg"],
-  manifest: { /* ... existing manifest config unchanged ... */ },
-  workbox: { /* ... existing workbox config unchanged ... */ },
-})
+  includeAssets: ['favicon.ico', 'robots.txt', 'icon.svg'],
+  manifest: {
+    /* ... existing manifest config unchanged ... */
+  },
+  workbox: {
+    /* ... existing workbox config unchanged ... */
+  },
+});
 ```
 
 ### Example 2: TypeScript Type Declaration
+
 ```typescript
 // src/vite-env.d.ts
 // Source: https://github.com/vite-pwa/vite-plugin-pwa/issues/277
@@ -190,6 +206,7 @@ VitePWA({
 ```
 
 ### Example 3: React Hook Registration with Error Handling
+
 ```typescript
 // src/components/ServiceWorkerRegistration.tsx
 // Source: https://vite-pwa-org.netlify.app/frameworks/react
@@ -218,6 +235,7 @@ export function ServiceWorkerRegistration() {
 ```
 
 ### Example 4: Integration in App.tsx
+
 ```typescript
 // src/App.tsx (add near the root)
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
@@ -233,6 +251,7 @@ function App() {
 ```
 
 ### Example 5: Minimal Approach (No Separate Component)
+
 ```typescript
 // Alternative: directly in src/main.tsx using non-React virtual module
 // Source: https://vite-pwa-org.netlify.app/guide/register-service-worker.html
@@ -247,11 +266,11 @@ registerSW({
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| `injectRegister: 'auto'` (default, no error handling) | `injectRegister: false` + virtual module import | Available since vite-plugin-pwa 0.12+ | Virtual module provides callbacks for all lifecycle events |
-| `injectRegister: 'script'` generating external JS | `virtual:pwa-register/react` hook | Available since framework-specific modules added | React-idiomatic integration with hooks |
-| No `onRegisteredSW` callback | `onRegisteredSW(swUrl, registration)` | vite-plugin-pwa 0.12.8+ | More info about registration available |
+| Old Approach                                          | Current Approach                                | When Changed                                     | Impact                                                     |
+| ----------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------- |
+| `injectRegister: 'auto'` (default, no error handling) | `injectRegister: false` + virtual module import | Available since vite-plugin-pwa 0.12+            | Virtual module provides callbacks for all lifecycle events |
+| `injectRegister: 'script'` generating external JS     | `virtual:pwa-register/react` hook               | Available since framework-specific modules added | React-idiomatic integration with hooks                     |
+| No `onRegisteredSW` callback                          | `onRegisteredSW(swUrl, registration)`           | vite-plugin-pwa 0.12.8+                          | More info about registration available                     |
 
 **Current (installed):** vite-plugin-pwa v1.2.0 -- all features described above are available.
 
@@ -270,6 +289,7 @@ registerSW({
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - vite-plugin-pwa official docs: [Register Service Worker](https://vite-pwa-org.netlify.app/guide/register-service-worker.html) - injectRegister options, virtual module usage
 - vite-plugin-pwa official docs: [React Framework](https://vite-pwa-org.netlify.app/frameworks/react) - useRegisterSW hook API, RegisterSWOptions interface
 - vite-plugin-pwa source code: `node_modules/vite-plugin-pwa/dist/client/build/register.js` - Verified registerSW() has onRegisterError callback with .catch() handlers
@@ -278,16 +298,19 @@ registerSW({
 - Codebase verification: `vite.config.ts` - Confirmed current config uses registerType: "autoUpdate" with no injectRegister setting
 
 ### Secondary (MEDIUM confidence)
+
 - [W3C ServiceWorker Issue #1159](https://github.com/w3c/ServiceWorker/issues/1159) - SSL certificate error is by spec design, not a bug
 - [vite-pwa/vite-plugin-pwa Issue #277](https://github.com/vite-pwa/vite-plugin-pwa/issues/277) - TypeScript virtual module type resolution
 - [vite-pwa/vite-plugin-pwa Issue #314](https://github.com/vite-pwa/vite-plugin-pwa/issues/314) - injectRegister default behavior confusion
 
 ### Tertiary (LOW confidence)
+
 - None -- all findings verified with primary sources.
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - Verified against installed package version and official docs
 - Architecture: HIGH - Verified virtual module source code, confirmed .catch() exists in hook path but NOT in auto-generated script path
 - Pitfalls: HIGH - TypeScript issue verified by checking tsconfig (no PWA types configured); double-registration documented in official docs; stale callback warning from official React docs page

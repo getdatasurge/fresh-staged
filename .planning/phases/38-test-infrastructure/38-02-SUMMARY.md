@@ -18,9 +18,9 @@ affects: [future-queue-tests, ci-pipeline]
 tech-stack:
   added: []
   patterns:
-    - "vi.mock for BullMQ dependency injection"
-    - "MockQueue with deterministic job IDs"
-    - "In-memory job storage for test verification"
+    - 'vi.mock for BullMQ dependency injection'
+    - 'MockQueue with deterministic job IDs'
+    - 'In-memory job storage for test verification'
 
 key-files:
   created:
@@ -30,14 +30,14 @@ key-files:
     - backend/tests/setup.ts
 
 key-decisions:
-  - "Mock both bullmq and ioredis to fully isolate from Redis"
-  - "Deterministic job IDs (job-1, job-2) for reliable assertions"
-  - "In-memory job storage enables test verification without side effects"
+  - 'Mock both bullmq and ioredis to fully isolate from Redis'
+  - 'Deterministic job IDs (job-1, job-2) for reliable assertions'
+  - 'In-memory job storage enables test verification without side effects'
 
 patterns-established:
   - "BullMQ mocking: vi.mock('bullmq') + vi.mock('ioredis') before imports"
-  - "MockQueue.getStoredJobs() for verifying job addition"
-  - "MockQueue.reset() for test isolation between test cases"
+  - 'MockQueue.getStoredJobs() for verifying job addition'
+  - 'MockQueue.reset() for test isolation between test cases'
 
 # Metrics
 duration: 3min
@@ -88,6 +88,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Added ioredis mock to queue.service.test.ts**
+
 - **Found during:** Task 2 (refactoring queue.service.test.ts)
 - **Issue:** Plan only mentioned mocking bullmq, but QueueService.initialize() also uses ioredis Redis client
 - **Fix:** Added vi.mock('ioredis') with MockRedis class alongside vi.mock('bullmq')
@@ -115,5 +116,6 @@ None - no external service configuration required.
 - Pattern documented for other developers
 
 ---
-*Phase: 38-test-infrastructure*
-*Completed: 2026-01-29*
+
+_Phase: 38-test-infrastructure_
+_Completed: 2026-01-29_

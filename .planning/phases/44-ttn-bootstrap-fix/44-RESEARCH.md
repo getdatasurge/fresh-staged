@@ -20,17 +20,20 @@ The tests mock the TTN device service (`ttn-device.service.js`) but do NOT mock:
 ## Evidence
 
 From test output:
+
 ```
 expected 500 to be 201 // Object.is equality
 expected 500 to be 400 // Object.is equality
 ```
 
 From route definition (`routes/ttn-devices.ts:39,69`):
+
 ```typescript
 preHandler: [requireAuth, requireOrgContext, requireRole('manager'), requireSensorCapacity],
 ```
 
 The `requireSensorCapacity` middleware:
+
 - Queries `organizations` table for sensor limit
 - Queries joined `devices/units/areas/sites` tables for count
 - Both queries will fail without proper mocking
@@ -38,6 +41,7 @@ The `requireSensorCapacity` middleware:
 ## Solution Options
 
 ### Option A: Mock the subscription middleware (Recommended)
+
 Add mocks for the subscription middleware functions in the test file:
 
 ```typescript
@@ -48,30 +52,38 @@ vi.mock('../../src/middleware/subscription.js', () => ({
 ```
 
 **Pros:**
+
 - Simple, follows existing pattern (JWT, user service are mocked)
 - Test stays focused on TTN device logic
 - No database setup required
 
 **Cons:**
+
 - Doesn't test capacity enforcement (but that should be in subscription.test.ts)
 
 ### Option B: Mock the db client for subscription queries
+
 Mock only the specific db queries needed by the middleware.
 
 **Pros:**
+
 - Tests middleware integration
 
 **Cons:**
+
 - Complex, brittle
 - Subscription logic should be tested separately
 
 ### Option C: Set up test database
+
 Initialize a test database with required tables/data.
 
 **Pros:**
+
 - More realistic integration test
 
 **Cons:**
+
 - Slower tests
 - More setup required
 - Overkill for these unit tests
@@ -87,5 +99,6 @@ Initialize a test database with required tables/data.
 ## Verification
 
 After fix:
+
 - All 45 tests in ttn-devices.test.ts should pass
 - `npm test -- ttn-devices` returns 45/45 passing

@@ -1,88 +1,88 @@
 /**
  * Centralized cache invalidation for org-scoped queries.
- * 
+ *
  * @deprecated Use functions from src/lib/invalidation.ts instead.
  * This file is kept for backward compatibility during migration.
  */
 
-import { QueryClient } from "@tanstack/react-query";
-import { invalidateAllOrgData } from "./invalidation";
+import { QueryClient } from '@tanstack/react-query';
+import { invalidateAllOrgData } from './invalidation';
 
 /**
  * @deprecated Use invalidateAllOrgData from src/lib/invalidation.ts
- * 
+ *
  * All query keys that are scoped to an organization.
  * These caches must be invalidated when switching orgs (via impersonation).
  */
 export const ORG_SCOPED_QUERY_KEYS = [
   // Core entity caches
-  ["sites"],
-  ["units"],
-  ["areas"],
-  ["alerts"],
-  ["sensors"],
-  ["lora-sensors"],
-  ["devices"],
-  
+  ['sites'],
+  ['units'],
+  ['areas'],
+  ['alerts'],
+  ['sensors'],
+  ['lora-sensors'],
+  ['devices'],
+
   // Navigation & layout caches
-  ["nav-tree"],
-  ["nav-tree-all-sites"],
-  ["nav-tree-areas"],
-  ["nav-tree-units"],
-  ["nav-tree-layouts"],
-  ["nav-tree-sensors"],
-  ["entity-layouts"],
-  ["navTree"], // Legacy key format
-  
+  ['nav-tree'],
+  ['nav-tree-all-sites'],
+  ['nav-tree-areas'],
+  ['nav-tree-units'],
+  ['nav-tree-layouts'],
+  ['nav-tree-sensors'],
+  ['entity-layouts'],
+  ['navTree'], // Legacy key format
+
   // Organization & profile caches
-  ["organizations"],
-  ["organization"],
-  ["profile"],
-  ["branding"],
-  ["user-role"],
-  
+  ['organizations'],
+  ['organization'],
+  ['profile'],
+  ['branding'],
+  ['user-role'],
+
   // Alert & notification caches
-  ["alert-rules"],
-  ["notification-policies"],
-  ["notification-settings"],
-  ["escalation-contacts"],
-  ["escalation-policies"],
-  
+  ['alert-rules'],
+  ['notification-policies'],
+  ['notification-settings'],
+  ['escalation-contacts'],
+  ['escalation-policies'],
+
   // Health & status caches
-  ["health-check"],
-  ["unit-status"],
-  ["pipeline-status"],
-  
+  ['health-check'],
+  ['unit-status'],
+  ['pipeline-status'],
+
   // Event & audit caches
-  ["events"],
-  ["event-logs"],
-  ["audit-logs"],
-  
+  ['events'],
+  ['event-logs'],
+  ['audit-logs'],
+
   // Report caches
-  ["reports"],
-  ["compliance-reports"],
-  
+  ['reports'],
+  ['compliance-reports'],
+
   // Gateway & sensor caches
-  ["gateways"],
-  ["ttn-settings"],
-  ["provisioning"],
-  
+  ['gateways'],
+  ['ttn-settings'],
+  ['provisioning'],
+
   // Dashboard & widget caches
-  ["dashboard-layouts"],
-  ["widget-data"],
-  ["temperature-readings"],
-  ["manual-logs"],
+  ['dashboard-layouts'],
+  ['widget-data'],
+  ['temperature-readings'],
+  ['manual-logs'],
 ] as const;
 
 /**
  * @deprecated Use invalidateAllOrgData from src/lib/invalidation.ts
- * 
+ *
  * Invalidates all org-scoped caches.
  * Call this when starting or stopping impersonation to ensure fresh data.
  */
 export async function invalidateAllOrgScopedCaches(
   queryClient: QueryClient,
-  reason?: string
+  reason?: string,
 ): Promise<void> {
   // Delegate to new centralized function
   await invalidateAllOrgData(queryClient, reason);
@@ -91,13 +91,11 @@ export async function invalidateAllOrgScopedCaches(
 /**
  * Clears (removes) all org-scoped caches entirely.
  * More aggressive than invalidation - use when you need to force fresh fetches.
- * 
+ *
  * @param queryClient - The React Query client instance
  */
-export async function clearAllOrgScopedCaches(
-  queryClient: QueryClient
-): Promise<void> {
-  console.log("[OrgCache] Clearing all org-scoped caches");
+export async function clearAllOrgScopedCaches(queryClient: QueryClient): Promise<void> {
+  console.log('[OrgCache] Clearing all org-scoped caches');
 
   // Remove all org-scoped query keys using prefix matching
   queryClient.removeQueries({
@@ -106,13 +104,13 @@ export async function clearAllOrgScopedCaches(
       return key === 'org' || key === 'unit' || key === 'site' || key === 'sensor';
     },
   });
-  
+
   // Also remove legacy keys
   ORG_SCOPED_QUERY_KEYS.forEach((key) => {
     queryClient.removeQueries({ queryKey: key });
   });
 
-  console.log("[OrgCache] Cache clear complete");
+  console.log('[OrgCache] Cache clear complete');
 }
 
 /**

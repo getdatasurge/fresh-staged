@@ -1,7 +1,7 @@
 ---
 name: gsd:restore-milestone
 description: Restore archived milestone from history back to active planning
-argument-hint: "[milestone-name]"
+argument-hint: '[milestone-name]'
 allowed-tools:
   - Read
   - Write
@@ -30,6 +30,7 @@ Provides safety valve for archiving operations: enables recovery if milestone wa
 Milestone name: $ARGUMENTS (required - must specify which milestone to restore)
 
 **Validate archive exists:**
+
 ```bash
 ls .planning/history/[milestone-name]/ 2>/dev/null
 ```
@@ -37,6 +38,7 @@ ls .planning/history/[milestone-name]/ 2>/dev/null
 If archive directory missing, suggest `/gsd:list-milestones` to see available archives.
 
 **Check for conflicts:**
+
 ```bash
 ls .planning/ROADMAP.md .planning/STATE.md .planning/PROJECT.md 2>/dev/null
 ```
@@ -50,22 +52,26 @@ If active planning files exist, warn user about overwrite and prompt for confirm
 ## 1. Validate milestone name
 
 If $ARGUMENTS not provided:
+
 - Display error: "Milestone name required. Usage: /gsd:restore-milestone [milestone-name]"
 - Suggest: "Use /gsd:list-milestones to see available archives"
 - Exit
 
 If $ARGUMENTS provided:
+
 - Use as milestone name
 - Validate format (alphanumeric, dash, underscore only)
 
 ## 2. Check archive exists
 
 Verify archive directory exists:
+
 ```bash
 ls .planning/history/[milestone-name]/ 2>/dev/null
 ```
 
 If missing:
+
 - Display error: "Archive not found: .planning/history/[milestone-name]/"
 - Suggest: "Use /gsd:list-milestones to see available archives"
 - Exit
@@ -78,7 +84,7 @@ Call restore-milestone.md workflow with milestone name:
 # Workflow handles:
 # - Git validation
 # - Conflict detection
-# - User confirmation  
+# - User confirmation
 # - Move files atomically
 # - Update MILESTONES.md
 # - Git commit
@@ -87,6 +93,7 @@ Call restore-milestone.md workflow with milestone name:
 ## 4. Present results
 
 Display workflow output with:
+
 - Restore location
 - Files moved
 - Git commit created
@@ -109,6 +116,7 @@ Display workflow output with:
 ## Examples
 
 Restore specific milestone:
+
 ```
 /gsd:restore-milestone v1.0-mvp
 ```

@@ -114,7 +114,10 @@ describe('TTN Gateways tRPC Router', () => {
 
   describe('list', () => {
     it('should list gateways for organization', async () => {
-      const mockGateways = [mockGateway, { ...mockGateway, id: '423e4567-e89b-12d3-a456-426614174003', name: 'Gateway 2' }];
+      const mockGateways = [
+        mockGateway,
+        { ...mockGateway, id: '423e4567-e89b-12d3-a456-426614174003', name: 'Gateway 2' },
+      ];
       mockListTTNGateways.mockResolvedValue(mockGateways);
 
       const ctx = createOrgContext();
@@ -157,13 +160,9 @@ describe('TTN Gateways tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.get({ organizationId: orgId, gatewayId })
-      ).rejects.toThrow(TRPCError);
+      await expect(caller.get({ organizationId: orgId, gatewayId })).rejects.toThrow(TRPCError);
 
-      await expect(
-        caller.get({ organizationId: orgId, gatewayId })
-      ).rejects.toMatchObject({
+      await expect(caller.get({ organizationId: orgId, gatewayId })).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Gateway not found',
       });
@@ -234,7 +233,7 @@ describe('TTN Gateways tRPC Router', () => {
         caller.register({
           organizationId: orgId,
           data: registerData,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -250,7 +249,7 @@ describe('TTN Gateways tRPC Router', () => {
         caller.register({
           organizationId: orgId,
           data: registerData,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -260,9 +259,7 @@ describe('TTN Gateways tRPC Router', () => {
       mockGetUserRoleInOrg.mockResolvedValue('manager');
 
       const { TTNConfigError } = await import('../../src/services/ttn-gateway.service.js');
-      mockRegisterTTNGateway.mockRejectedValue(
-        new TTNConfigError('TTN connection not configured')
-      );
+      mockRegisterTTNGateway.mockRejectedValue(new TTNConfigError('TTN connection not configured'));
 
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
@@ -271,7 +268,7 @@ describe('TTN Gateways tRPC Router', () => {
         caller.register({
           organizationId: orgId,
           data: registerData,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'BAD_REQUEST',
         message: 'TTN connection not configured',
@@ -283,7 +280,7 @@ describe('TTN Gateways tRPC Router', () => {
 
       const { TTNRegistrationError } = await import('../../src/services/ttn-gateway.service.js');
       mockRegisterTTNGateway.mockRejectedValue(
-        new TTNRegistrationError('Failed to register in TTN')
+        new TTNRegistrationError('Failed to register in TTN'),
       );
 
       const ctx = createOrgContext();
@@ -293,7 +290,7 @@ describe('TTN Gateways tRPC Router', () => {
         caller.register({
           organizationId: orgId,
           data: registerData,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'BAD_REQUEST',
         message: 'Failed to register in TTN',
@@ -317,11 +314,9 @@ describe('TTN Gateways tRPC Router', () => {
       });
 
       expect(result).toEqual(updatedGateway);
-      expect(mockUpdateTTNGateway).toHaveBeenCalledWith(
-        gatewayId,
-        orgId,
-        { name: 'Updated Gateway' }
-      );
+      expect(mockUpdateTTNGateway).toHaveBeenCalledWith(gatewayId, orgId, {
+        name: 'Updated Gateway',
+      });
     });
 
     it('should update gateway when user is admin', async () => {
@@ -352,7 +347,7 @@ describe('TTN Gateways tRPC Router', () => {
           organizationId: orgId,
           gatewayId,
           data: { name: 'Updated Gateway' },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -370,7 +365,7 @@ describe('TTN Gateways tRPC Router', () => {
           organizationId: orgId,
           gatewayId,
           data: { name: 'Updated Gateway' },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Gateway not found',
@@ -421,9 +416,7 @@ describe('TTN Gateways tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.deregister({ organizationId: orgId, gatewayId })
-      ).rejects.toMatchObject({
+      await expect(caller.deregister({ organizationId: orgId, gatewayId })).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
     });
@@ -434,9 +427,7 @@ describe('TTN Gateways tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.deregister({ organizationId: orgId, gatewayId })
-      ).rejects.toMatchObject({
+      await expect(caller.deregister({ organizationId: orgId, gatewayId })).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
     });
@@ -448,9 +439,7 @@ describe('TTN Gateways tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.deregister({ organizationId: orgId, gatewayId })
-      ).rejects.toMatchObject({
+      await expect(caller.deregister({ organizationId: orgId, gatewayId })).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Gateway not found',
       });
@@ -478,7 +467,7 @@ describe('TTN Gateways tRPC Router', () => {
       const caller = createCaller(ctx);
 
       await expect(
-        caller.refreshStatus({ organizationId: orgId, gatewayId })
+        caller.refreshStatus({ organizationId: orgId, gatewayId }),
       ).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Gateway not found',

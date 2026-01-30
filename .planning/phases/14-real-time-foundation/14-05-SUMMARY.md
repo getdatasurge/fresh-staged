@@ -25,10 +25,10 @@ affects: [15-billing-foundation, alert-rules, notification-policies]
 tech-stack:
   added: []
   patterns:
-    - "Alert evaluator emits Socket.io events after database mutations"
-    - "useRealtimeAlerts hook for client-side alert event handling"
-    - "Toast notifications via sonner library with severity-based styling"
-    - "TanStack Query cache updates via setQueryData on real-time events"
+    - 'Alert evaluator emits Socket.io events after database mutations'
+    - 'useRealtimeAlerts hook for client-side alert event handling'
+    - 'Toast notifications via sonner library with severity-based styling'
+    - 'TanStack Query cache updates via setQueryData on real-time events'
 
 key-files:
   created:
@@ -42,15 +42,15 @@ key-files:
     - src/providers/RealtimeProvider.tsx
 
 key-decisions:
-  - "Pass socketService as optional parameter to evaluateUnitAfterReading"
-  - "Emit alert events immediately after database mutations in transaction"
-  - "Use qk.org().alerts() and qk.unit().status() query keys for cache updates"
-  - "Toast duration based on severity: 10s critical, 5s warning/resolved"
+  - 'Pass socketService as optional parameter to evaluateUnitAfterReading'
+  - 'Emit alert events immediately after database mutations in transaction'
+  - 'Use qk.org().alerts() and qk.unit().status() query keys for cache updates'
+  - 'Toast duration based on severity: 10s critical, 5s warning/resolved'
 
 patterns-established:
-  - "Real-time event handlers in RealtimeProvider via RealtimeHandlers component"
-  - "Socket event listeners with cleanup in useEffect return"
-  - "Invalidate queries for list views, update cache for detail views"
+  - 'Real-time event handlers in RealtimeProvider via RealtimeHandlers component'
+  - 'Socket event listeners with cleanup in useEffect return'
+  - 'Invalidate queries for list views, update cache for detail views'
 
 # Metrics
 duration: 4min
@@ -87,10 +87,12 @@ Each task was committed atomically:
 ## Files Created/Modified
 
 **Created:**
+
 - `src/hooks/useRealtimeAlerts.ts` - Hook for real-time alert event handling with toast notifications and cache updates
 - `src/components/common/AlertToast.tsx` - Toast UI component with severity-based icon and styling
 
 **Modified:**
+
 - `backend/src/services/alert-evaluator.service.ts` - Added socketService parameter, emits events after alert mutations
 - `backend/src/types/socket.d.ts` - Added AlertNotification interface and alert:escalated event
 - `backend/src/routes/readings.ts` - Pass socketService to evaluateUnitAfterReading
@@ -100,21 +102,25 @@ Each task was committed atomically:
 ## Decisions Made
 
 **REALTIME-15: Optional socketService parameter for alert evaluator**
+
 - Pass via function parameter rather than global singleton
 - Enables testing without Socket.io dependency
 - Clear dependency injection pattern
 
 **REALTIME-16: Emit events after database mutations in transaction**
+
 - Events emitted after successful alert creation/resolution/escalation
 - Organization ID retrieved from unit hierarchy join
 - Ensures event delivery only for committed database changes
 
 **REALTIME-17: Toast duration based on severity**
+
 - Critical alerts: 10 seconds (more time to notice)
 - Warning/resolved: 5 seconds (standard notification duration)
 - Toast ID based on alertId prevents duplicate notifications
 
 **REALTIME-18: Query cache strategy for alerts**
+
 - Invalidate qk.org().alerts() for list refresh
 - Update qk.unit().status() via setQueryData for instant UI feedback
 - Combines optimistic updates with eventual consistency
@@ -139,10 +145,12 @@ None - no external service configuration required.
 - Alert escalation events stream correctly, ready for escalation policy integration
 
 **Verification performed:**
+
 - TypeScript compilation passes on backend and frontend
 - Alert event types match between backend and frontend interfaces
 - Organization-scoped room isolation ensures multi-tenancy security
 
 ---
-*Phase: 14-real-time-foundation*
-*Completed: 2026-01-24*
+
+_Phase: 14-real-time-foundation_
+_Completed: 2026-01-24_

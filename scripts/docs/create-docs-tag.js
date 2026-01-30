@@ -22,7 +22,7 @@ function git(command, options = {}) {
   try {
     return execSync(`git ${command}`, {
       encoding: 'utf-8',
-      ...options
+      ...options,
     }).trim();
   } catch (error) {
     if (options.throwOnError !== false) {
@@ -53,7 +53,7 @@ function parseArgs() {
     version: null,
     push: false,
     dryRun: false,
-    help: false
+    help: false,
   };
 
   for (const arg of args) {
@@ -132,9 +132,7 @@ function main() {
   }
 
   // Normalize version (ensure it starts with 'v')
-  const version = args.version.startsWith('v')
-    ? args.version
-    : `v${args.version}`;
+  const version = args.version.startsWith('v') ? args.version : `v${args.version}`;
 
   const docsTag = `docs/${version}`;
   const currentCommit = git('rev-parse --short HEAD');
@@ -180,7 +178,7 @@ function main() {
   try {
     const tags = git(`tag -l "${version}" "docs/${version}"`);
     if (tags) {
-      tags.split('\n').forEach(t => console.log(`   - ${t}`));
+      tags.split('\n').forEach((t) => console.log(`   - ${t}`));
     }
   } catch {
     // Ignore errors listing tags

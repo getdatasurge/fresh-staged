@@ -21,10 +21,10 @@ affects: [21-frontend-api-migration]
 tech-stack:
   added: []
   patterns:
-    - "Query router pattern (readings) - read-only with pagination and filters"
-    - "Workflow router pattern (alerts) - state transition methods like acknowledge/resolve"
-    - "Staff role access for alert mutations (broader than admin/owner)"
-    - "Manager role access for unit mutations (includes manager/admin/owner)"
+    - 'Query router pattern (readings) - read-only with pagination and filters'
+    - 'Workflow router pattern (alerts) - state transition methods like acknowledge/resolve'
+    - 'Staff role access for alert mutations (broader than admin/owner)'
+    - 'Manager role access for unit mutations (includes manager/admin/owner)'
 
 key-files:
   created:
@@ -40,13 +40,13 @@ key-files:
 key-decisions:
   - "Manager/admin/owner role check for unit mutations (matches REST requireRole('manager'))"
   - "Staff/manager/admin/owner role check for alert mutations (matches REST requireRole('staff'))"
-  - "Readings router has list and latest only - bulk ingest stays REST (API key auth)"
-  - "CONFLICT error for already-acknowledged alerts (matches REST 409 response)"
+  - 'Readings router has list and latest only - bulk ingest stays REST (API key auth)'
+  - 'CONFLICT error for already-acknowledged alerts (matches REST 409 response)'
 
 patterns-established:
-  - "Query router pattern: minimal procedures for read-only data (list, latest)"
-  - "Workflow router pattern: status transitions as mutations (acknowledge, resolve)"
-  - "Role hierarchy: viewer < staff < manager < admin < owner for different operations"
+  - 'Query router pattern: minimal procedures for read-only data (list, latest)'
+  - 'Workflow router pattern: status transitions as mutations (acknowledge, resolve)'
+  - 'Role hierarchy: viewer < staff < manager < admin < owner for different operations'
 
 # Metrics
 duration: 6min
@@ -66,6 +66,7 @@ completed: 2026-01-25
 - **Files modified:** 7
 
 ## Accomplishments
+
 - Units tRPC router with list, get, create, update, delete procedures (manager/admin/owner)
 - Readings tRPC router with list and latest procedures for sensor data queries
 - Alerts tRPC router with list, get, acknowledge, resolve procedures (staff+)
@@ -81,6 +82,7 @@ Each task was committed atomically:
 3. **Task 3: Add unit tests for all routers** - `f3c3135` (test)
 
 ## Files Created/Modified
+
 - `backend/src/routers/units.router.ts` - Units domain tRPC router with 5 procedures
 - `backend/src/routers/readings.router.ts` - Readings domain tRPC router with 2 procedures
 - `backend/src/routers/alerts.router.ts` - Alerts domain tRPC router with 4 procedures
@@ -90,6 +92,7 @@ Each task was committed atomically:
 - `backend/tests/trpc/alerts.router.test.ts` - 19 unit tests for alerts router
 
 ## Decisions Made
+
 - Manager role for unit mutations matches REST `requireRole('manager')` pattern
 - Staff role for alert mutations matches REST `requireRole('staff')` pattern
 - Bulk ingest endpoint stays REST - uses API key auth, not tRPC
@@ -100,6 +103,7 @@ Each task was committed atomically:
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 - Test assertion mismatch with Zod default values: CreateUnitSchema adds defaults (status, manualMonitoringRequired, sortOrder). Fixed by using `expect.objectContaining()` for service call assertions.
 - Profile ID in test mocks needed to be valid UUID for output validation. Fixed by using proper UUID format.
 
@@ -119,11 +123,13 @@ All plan verification checks passed:
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - All core domain routers now available in appRouter
 - Pattern coverage complete: CRUD, query-only, and workflow routers
 - Ready for frontend API migration (Plan 20-03)
 - Devices and profiles routers remain for later plans
 
 ---
-*Phase: 20-backend-api-migration-core*
-*Completed: 2026-01-25*
+
+_Phase: 20-backend-api-migration-core_
+_Completed: 2026-01-25_

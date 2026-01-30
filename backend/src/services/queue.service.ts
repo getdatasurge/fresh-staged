@@ -75,7 +75,7 @@ export class QueueService {
     if (!redisUrl && !process.env.REDIS_HOST) {
       console.log(
         '[QueueService] Redis not configured - queues disabled. ' +
-        'Set REDIS_URL or REDIS_HOST for background job support.'
+          'Set REDIS_URL or REDIS_HOST for background job support.',
       );
       return;
     }
@@ -188,14 +188,14 @@ export class QueueService {
     queueName: string,
     jobName: string,
     data: T,
-    options?: JobsOptions
+    options?: JobsOptions,
   ): Promise<string | null> {
     const queue = this.queues.get(queueName);
 
     if (!queue) {
       console.warn(
         `[QueueService] Queue ${queueName} not available - job ${jobName} not queued. ` +
-        'Ensure Redis is configured.'
+          'Ensure Redis is configured.',
       );
       return null;
     }
@@ -204,14 +204,11 @@ export class QueueService {
       const job = await queue.add(jobName, data, options);
       console.log(
         `[QueueService] Job ${jobName} queued in ${queueName} with ID ${job.id} ` +
-        `for organization ${data.organizationId}`
+          `for organization ${data.organizationId}`,
       );
       return job.id || null;
     } catch (error) {
-      console.error(
-        `[QueueService] Failed to queue job ${jobName} in ${queueName}:`,
-        error
-      );
+      console.error(`[QueueService] Failed to queue job ${jobName} in ${queueName}:`, error);
       throw error;
     }
   }
@@ -238,7 +235,7 @@ export class QueueService {
       QueueNames.SMS_NOTIFICATIONS,
       JobNames.SMS_SEND,
       data,
-      smsJobOptions
+      smsJobOptions,
     );
   }
 
@@ -263,7 +260,7 @@ export class QueueService {
       QueueNames.METER_REPORTING,
       JobNames.METER_REPORT,
       data,
-      meterReportJobOptions
+      meterReportJobOptions,
     );
   }
 
@@ -349,8 +346,8 @@ export class QueueService {
         Array.from(this.queues.values()).map((queue) =>
           queue.close().catch((err) => {
             console.error(`[QueueService] Error closing queue ${queue.name}:`, err);
-          })
-        )
+          }),
+        ),
       );
 
       this.queues.clear();

@@ -86,15 +86,15 @@ If found, extract and use:
 ```yaml
 must_haves:
   truths:
-    - "User can see existing messages"
-    - "User can send a message"
+    - 'User can see existing messages'
+    - 'User can send a message'
   artifacts:
-    - path: "src/components/Chat.tsx"
-      provides: "Message list rendering"
+    - path: 'src/components/Chat.tsx'
+      provides: 'Message list rendering'
   key_links:
-    - from: "Chat.tsx"
-      to: "api/chat"
-      via: "fetch in useEffect"
+    - from: 'Chat.tsx'
+      to: 'api/chat'
+      via: 'fetch in useEffect'
 ```
 
 **Option B: Derive from phase goal**
@@ -104,17 +104,14 @@ If no must_haves in frontmatter, derive using goal-backward process:
 1. **State the goal:** Take phase goal from ROADMAP.md
 
 2. **Derive truths:** Ask "What must be TRUE for this goal to be achieved?"
-
    - List 3-7 observable behaviors from user perspective
    - Each truth should be testable by a human using the app
 
 3. **Derive artifacts:** For each truth, ask "What must EXIST?"
-
    - Map truths to concrete files (components, routes, schemas)
    - Be specific: `src/components/Chat.tsx`, not "chat component"
 
 4. **Derive key links:** For each artifact, ask "What must be CONNECTED?"
-
    - Identify critical wiring (component calls API, API queries DB)
    - These are where stubs hide
 
@@ -497,25 +494,25 @@ verified: YYYY-MM-DDTHH:MM:SSZ
 status: gaps_found
 score: N/M must-haves verified
 gaps:
-  - truth: "User can see existing messages"
+  - truth: 'User can see existing messages'
     status: failed
     reason: "Chat.tsx exists but doesn't fetch from API"
     artifacts:
-      - path: "src/components/Chat.tsx"
-        issue: "No useEffect with fetch call"
+      - path: 'src/components/Chat.tsx'
+        issue: 'No useEffect with fetch call'
     missing:
-      - "API call in useEffect to /api/chat"
-      - "State for storing fetched messages"
-      - "Render messages array in JSX"
-  - truth: "User can send a message"
+      - 'API call in useEffect to /api/chat'
+      - 'State for storing fetched messages'
+      - 'Render messages array in JSX'
+  - truth: 'User can send a message'
     status: failed
-    reason: "Form exists but onSubmit is stub"
+    reason: 'Form exists but onSubmit is stub'
     artifacts:
-      - path: "src/components/Chat.tsx"
-        issue: "onSubmit only calls preventDefault()"
+      - path: 'src/components/Chat.tsx'
+        issue: 'onSubmit only calls preventDefault()'
     missing:
-      - "POST request to /api/chat"
-      - "Add new message to state after success"
+      - 'POST request to /api/chat'
+      - 'Add new message to state after success'
 ---
 ```
 
@@ -549,22 +546,22 @@ re_verification: # Only include if previous VERIFICATION.md existed
   previous_status: gaps_found
   previous_score: 2/5
   gaps_closed:
-    - "Truth that was fixed"
+    - 'Truth that was fixed'
   gaps_remaining: []
-  regressions: []  # Items that passed before but now fail
+  regressions: [] # Items that passed before but now fail
 gaps: # Only include if status: gaps_found
-  - truth: "Observable truth that failed"
+  - truth: 'Observable truth that failed'
     status: failed
-    reason: "Why it failed"
+    reason: 'Why it failed'
     artifacts:
-      - path: "src/path/to/file.tsx"
+      - path: 'src/path/to/file.tsx'
         issue: "What's wrong with this file"
     missing:
-      - "Specific thing to add/fix"
-      - "Another specific thing"
+      - 'Specific thing to add/fix'
+      - 'Another specific thing'
 human_verification: # Only include if status: human_needed
-  - test: "What to do"
-    expected: "What should happen"
+  - test: 'What to do'
+    expected: 'What should happen'
     why_human: "Why can't verify programmatically"
 ---
 
@@ -725,7 +722,7 @@ onSubmit={(e) => e.preventDefault()}  // Only prevents default
 ```typescript
 // RED FLAGS:
 export async function POST() {
-  return Response.json({ message: "Not implemented" });
+  return Response.json({ message: 'Not implemented' });
 }
 
 export async function GET() {
@@ -775,4 +772,4 @@ return <div>No messages</div>  // Always shows "no messages"
 - [ ] Re-verification metadata included (if previous existed)
 - [ ] VERIFICATION.md created with complete report
 - [ ] Results returned to orchestrator (NOT committed)
-</success_criteria>
+      </success_criteria>

@@ -2,7 +2,16 @@
 phase: 05-frontend-migration
 plan: 09
 subsystem: hooks-utility
-tags: [stack-auth, hooks-migration, offline-sync, battery-forecast, account-deletion, audit-logging, layout-management]
+tags:
+  [
+    stack-auth,
+    hooks-migration,
+    offline-sync,
+    battery-forecast,
+    account-deletion,
+    audit-logging,
+    layout-management,
+  ]
 requires: [05-04]
 provides: [utility-hooks-stack-auth]
 affects: [05-10, 05-11, 05-12, 05-13, 05-14]
@@ -21,16 +30,16 @@ key-files:
     - src/hooks/useQuickCreateEntityLayout.ts
 
 decisions:
-  - decision: "Mark all data operations with TODO for backend migration"
-    rationale: "These hooks need backend endpoints - temporarily keep Supabase calls with Stack Auth context"
-  - decision: "Preserve existing functionality exactly"
-    rationale: "Zero-copy migration - hooks work identically, only auth mechanism changed"
-  - decision: "Use Stack Auth user.id for all user references"
-    rationale: "Consistent identity source across all operations"
+  - decision: 'Mark all data operations with TODO for backend migration'
+    rationale: 'These hooks need backend endpoints - temporarily keep Supabase calls with Stack Auth context'
+  - decision: 'Preserve existing functionality exactly'
+    rationale: 'Zero-copy migration - hooks work identically, only auth mechanism changed'
+  - decision: 'Use Stack Auth user.id for all user references'
+    rationale: 'Consistent identity source across all operations'
 
 metrics:
   completed: 2026-01-23
-  duration: "5 minutes 7 seconds"
+  duration: '5 minutes 7 seconds'
   tasks_completed: 3/3
   commits: 3
 ---
@@ -50,6 +59,7 @@ These hooks provide specialized functionality across the app - account managemen
 ### Task 1: Account and Audit Hooks
 
 **useAccountDeletion**
+
 - **Before:** Used `supabase.auth.getUser()` and `supabase.auth.signOut()`
 - **After:** Uses Stack Auth `useUser()` and `getAuthJson()` for token
 - **Migration path:**
@@ -61,6 +71,7 @@ These hooks provide specialized functionality across the app - account managemen
 - **Preserved:** All deletion flow states, progress tracking, error handling
 
 **useAuditedWrite**
+
 - **Before:** Used Supabase auth from `useOrgScope` and `useEffectiveIdentity`
 - **After:** Added Stack Auth `useUser()` for authentication
 - **Migration path:**
@@ -73,6 +84,7 @@ These hooks provide specialized functionality across the app - account managemen
 ### Task 2: Battery Forecast and Offline Sync
 
 **useBatteryForecast**
+
 - **Before:** No auth (directly queried Supabase)
 - **After:** Added Stack Auth `useUser()` for authentication
 - **Migration path:**
@@ -83,6 +95,7 @@ These hooks provide specialized functionality across the app - account managemen
 - **Preserved:** All battery forecasting logic (linear regression, trend analysis, decay rate calculations)
 
 **useOfflineSync**
+
 - **Before:** Used `supabase.auth.getSession()` to get user ID
 - **After:** Uses Stack Auth `useUser()` for identity
 - **Migration path:**
@@ -96,6 +109,7 @@ These hooks provide specialized functionality across the app - account managemen
 ### Task 3: Quick Create Entity Layout
 
 **useQuickCreateEntityLayout**
+
 - **Before:** Used `supabase.auth.getUser()` to get user ID
 - **After:** Uses Stack Auth `useUser()` for authentication
 - **Migration path:**
@@ -148,6 +162,7 @@ None - plan executed exactly as written.
 ### Authentication Pattern
 
 All 5 hooks follow the consistent Stack Auth pattern:
+
 ```typescript
 const user = useUser();
 if (!user) throw new Error('Not authenticated');
@@ -169,6 +184,7 @@ Each hook has a clear migration path documented with TODO markers:
 ### Identity Consistency
 
 All hooks now use Stack Auth `user.id` for user references:
+
 - `useOfflineSync` uses `user.id` for `logged_by` field
 - `useQuickCreateEntityLayout` prepared for backend to extract `user_id` from token
 - `useAccountDeletion` and `useAuditedWrite` leverage identity from other hooks
@@ -182,6 +198,7 @@ All hooks now use Stack Auth `user.id` for user references:
 **Concerns:** None
 
 **Backend migration requirements:**
+
 - Account deletion endpoint (integrates with Stack Auth)
 - Audit logging middleware (automatic impersonation tracking)
 - Battery forecast endpoint (sensor data aggregation)

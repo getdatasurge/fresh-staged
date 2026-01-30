@@ -5,15 +5,15 @@
  * Helps visualize sensor activity patterns at a glance.
  */
 
-import { useMemo } from "react";
-import { useQuery, useQueries } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Activity } from "lucide-react";
-import { useTRPC } from "@/lib/trpc";
-import { subHours, format, startOfHour } from "date-fns";
-import type { WidgetProps } from "../types";
+import { useMemo } from 'react';
+import { useQuery, useQueries } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Activity } from 'lucide-react';
+import { useTRPC } from '@/lib/trpc';
+import { subHours, format, startOfHour } from 'date-fns';
+import type { WidgetProps } from '../types';
 
 interface UnitActivity {
   id: string;
@@ -43,7 +43,7 @@ export function SiteActivityGraphWidget({ organizationId, site }: WidgetProps) {
   // Filter units for this site
   const siteUnits = useMemo(
     () => allUnits?.filter((u) => u.siteId === site?.id && u.isActive) ?? [],
-    [allUnits, site?.id]
+    [allUnits, site?.id],
   );
 
   // Fetch readings for each unit via parallel queries
@@ -68,10 +68,7 @@ export function SiteActivityGraphWidget({ organizationId, site }: WidgetProps) {
     if (!siteUnits.length) return [];
 
     // Group readings by unit and hour
-    const unitReadings: Record<
-      string,
-      { byHour: Record<string, number>; total: number }
-    > = {};
+    const unitReadings: Record<string, { byHour: Record<string, number>; total: number }> = {};
 
     siteUnits.forEach((u) => {
       unitReadings[u.id] = { byHour: {}, total: 0 };
@@ -81,12 +78,8 @@ export function SiteActivityGraphWidget({ organizationId, site }: WidgetProps) {
       const readings = readingsQueries[idx]?.data ?? [];
       readings.forEach((r) => {
         if (!unitReadings[unit.id]) return;
-        const hourKey = format(
-          startOfHour(new Date(r.recordedAt)),
-          "yyyy-MM-dd HH:00"
-        );
-        unitReadings[unit.id].byHour[hourKey] =
-          (unitReadings[unit.id].byHour[hourKey] || 0) + 1;
+        const hourKey = format(startOfHour(new Date(r.recordedAt)), 'yyyy-MM-dd HH:00');
+        unitReadings[unit.id].byHour[hourKey] = (unitReadings[unit.id].byHour[hourKey] || 0) + 1;
         unitReadings[unit.id].total++;
       });
     });
@@ -98,14 +91,14 @@ export function SiteActivityGraphWidget({ organizationId, site }: WidgetProps) {
       // Build 24 hours of data
       for (let i = 23; i >= 0; i--) {
         const hourStart = subHours(now, i);
-        const hourKey = format(startOfHour(hourStart), "yyyy-MM-dd HH:00");
+        const hourKey = format(startOfHour(hourStart), 'yyyy-MM-dd HH:00');
         hourlyReadings.push(unitReadings[unit.id].byHour[hourKey] || 0);
       }
 
       return {
         id: unit.id,
         name: unit.name,
-        areaName: unit.areaName || "",
+        areaName: unit.areaName || '',
         hourlyReadings,
         totalReadings: unitReadings[unit.id].total,
         lastReadingAt: unit.lastReadingAt,
@@ -127,7 +120,7 @@ export function SiteActivityGraphWidget({ organizationId, site }: WidgetProps) {
         const y = height - (val / max) * height;
         return `${x},${y}`;
       })
-      .join(" ");
+      .join(' ');
 
     return (
       <svg width={width} height={height} className="shrink-0">
@@ -196,8 +189,8 @@ export function SiteActivityGraphWidget({ organizationId, site }: WidgetProps) {
         <ScrollArea className="h-full">
           <div className="space-y-2 pr-4">
             {activityData.map((unit) => (
-              <div 
-                key={unit.id} 
+              <div
+                key={unit.id}
                 className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 transition-colors"
               >
                 <div className="flex-1 min-w-0">

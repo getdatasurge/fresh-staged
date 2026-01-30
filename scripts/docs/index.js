@@ -27,7 +27,7 @@ const COMMANDS = {
   lint: runLint,
   build: runBuild,
   all: runAll,
-  help: showHelp
+  help: showHelp,
 };
 
 async function runGenerate() {

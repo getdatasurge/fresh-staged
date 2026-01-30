@@ -14,6 +14,7 @@ Production-ready Docker Compose configuration with secrets management, resource 
 ## Implementation Decisions
 
 ### Secrets Management
+
 - Use Infisical as external secrets manager
 - Self-hosted Infisical instance (runs in Docker Compose stack)
 - All sensitive credentials managed through Infisical:
@@ -22,18 +23,21 @@ Production-ready Docker Compose configuration with secrets management, resource 
   - SSL/TLS certificates and private keys
 
 ### Resource Limits
+
 - Claude's discretion on specific values per service
 - Claude's discretion on OOM behavior per service type
 - Claude's discretion on per-target limit differences
 - Claude's discretion on minimum server spec assumptions
 
 ### Health Checks
+
 - Endpoint-based health checks (dedicated /health endpoints)
 - Claude's discretion on depth (shallow vs deep with DB verification)
 - Claude's discretion on timeout/retry values per service
 - Claude's discretion on startup ordering vs parallel + retries
 
 ### Production Overrides
+
 - Layered approach: base production + target-specific overrides
   - `compose.prod.yaml` — shared production settings
   - `compose.selfhosted.yaml` — self-hosted specific overrides
@@ -43,6 +47,7 @@ Production-ready Docker Compose configuration with secrets management, resource 
 - Claude's discretion on port exposure strategy
 
 ### Claude's Discretion
+
 - Resource limit values and OOM behavior
 - Health check depth, timeouts, and startup ordering
 - Base image selection for production
@@ -70,5 +75,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 09-production-environment-hardening*
-*Context gathered: 2026-01-23*
+_Phase: 09-production-environment-hardening_
+_Context gathered: 2026-01-23_

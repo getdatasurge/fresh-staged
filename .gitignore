@@ -38,3 +38,5 @@ dist-docs
 .worktrees/
 .security-key
 logs/security/
+.aider*
+.env

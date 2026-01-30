@@ -13,43 +13,43 @@
  */
 export const TABLE_IMPORT_ORDER = [
   // Level 0: No dependencies - root tables
-  "organizations",
+  'organizations',
 
   // Level 1: Depends on organizations only
-  "subscriptions", // organization_id -> organizations
-  "profiles", // organization_id -> organizations
-  "sites", // organization_id -> organizations
-  "ttn_connections", // organization_id -> organizations
+  'subscriptions', // organization_id -> organizations
+  'profiles', // organization_id -> organizations
+  'sites', // organization_id -> organizations
+  'ttn_connections', // organization_id -> organizations
 
   // Level 2: Depends on Level 1 tables
-  "user_roles", // user_id -> profiles, organization_id -> organizations
-  "escalation_contacts", // profile_id -> profiles, organization_id -> organizations
-  "areas", // site_id -> sites
-  "hubs", // site_id -> sites
-  "alert_rules", // organization_id -> organizations, site_id -> sites (nullable unit_id)
+  'user_roles', // user_id -> profiles, organization_id -> organizations
+  'escalation_contacts', // profile_id -> profiles, organization_id -> organizations
+  'areas', // site_id -> sites
+  'hubs', // site_id -> sites
+  'alert_rules', // organization_id -> organizations, site_id -> sites (nullable unit_id)
 
   // Level 3: Depends on Level 2 tables
-  "units", // area_id -> areas
-  "devices", // hub_id -> hubs (nullable unit_id -> units)
+  'units', // area_id -> areas
+  'devices', // hub_id -> hubs (nullable unit_id -> units)
 
   // Level 4: Depends on Level 3 tables
-  "lora_sensors", // device_id -> devices
-  "calibration_records", // device_id -> devices
-  "sensor_readings", // unit_id -> units, device_id -> devices
-  "manual_temperature_logs", // unit_id -> units, profile_id -> profiles
-  "door_events", // unit_id -> units
+  'lora_sensors', // device_id -> devices
+  'calibration_records', // device_id -> devices
+  'sensor_readings', // unit_id -> units, device_id -> devices
+  'manual_temperature_logs', // unit_id -> units, profile_id -> profiles
+  'door_events', // unit_id -> units
 
   // Level 5: Depends on units and alert_rules
-  "alerts", // unit_id -> units
-  "alert_rules_history", // alert_rule_id -> alert_rules
+  'alerts', // unit_id -> units
+  'alert_rules_history', // alert_rule_id -> alert_rules
 
   // Level 6: Depends on alerts
-  "corrective_actions", // alert_id -> alerts, unit_id -> units, profile_id -> profiles
-  "notification_deliveries", // alert_id -> alerts, profile_id -> profiles
+  'corrective_actions', // alert_id -> alerts, unit_id -> units, profile_id -> profiles
+  'notification_deliveries', // alert_id -> alerts, profile_id -> profiles
 
   // Level 7: Standalone tables (no FK dependencies but import last for completeness)
-  "event_logs", // organization_id -> organizations (audit trail - import last)
-  "pairing_sessions", // device_id -> devices (temporary pairing data)
+  'event_logs', // organization_id -> organizations (audit trail - import last)
+  'pairing_sessions', // device_id -> devices (temporary pairing data)
 ] as const;
 
 /**
@@ -66,25 +66,25 @@ export type TableName = (typeof TABLE_IMPORT_ORDER)[number];
  */
 export const TABLES_WITH_USER_IDS: Record<string, string[]> = {
   // profiles.user_id is the primary user identifier from Supabase auth.users
-  profiles: ["user_id"],
+  profiles: ['user_id'],
 
   // user_roles.user_id references the profile's user_id
-  user_roles: ["user_id"],
+  user_roles: ['user_id'],
 
   // escalation_contacts.profile_id references profiles (which has user_id)
-  escalation_contacts: ["profile_id"],
+  escalation_contacts: ['profile_id'],
 
   // manual_temperature_logs.profile_id references the user who logged the entry
-  manual_temperature_logs: ["profile_id"],
+  manual_temperature_logs: ['profile_id'],
 
   // corrective_actions.profile_id references the user who performed the action
-  corrective_actions: ["profile_id"],
+  corrective_actions: ['profile_id'],
 
   // notification_deliveries.profile_id references the notification recipient
-  notification_deliveries: ["profile_id"],
+  notification_deliveries: ['profile_id'],
 
   // event_logs.actor_id references the user who performed the action
-  event_logs: ["actor_id"],
+  event_logs: ['actor_id'],
 };
 
 /**
@@ -125,20 +125,20 @@ export function getUserIdColumns(tableName: string): string[] {
  */
 export function getTableLevel(tableName: string): number {
   const levelBoundaries: Record<number, string[]> = {
-    0: ["organizations"],
-    1: ["subscriptions", "profiles", "sites", "ttn_connections"],
-    2: ["user_roles", "escalation_contacts", "areas", "hubs", "alert_rules"],
-    3: ["units", "devices"],
+    0: ['organizations'],
+    1: ['subscriptions', 'profiles', 'sites', 'ttn_connections'],
+    2: ['user_roles', 'escalation_contacts', 'areas', 'hubs', 'alert_rules'],
+    3: ['units', 'devices'],
     4: [
-      "lora_sensors",
-      "calibration_records",
-      "sensor_readings",
-      "manual_temperature_logs",
-      "door_events",
+      'lora_sensors',
+      'calibration_records',
+      'sensor_readings',
+      'manual_temperature_logs',
+      'door_events',
     ],
-    5: ["alerts", "alert_rules_history"],
-    6: ["corrective_actions", "notification_deliveries"],
-    7: ["event_logs", "pairing_sessions"],
+    5: ['alerts', 'alert_rules_history'],
+    6: ['corrective_actions', 'notification_deliveries'],
+    7: ['event_logs', 'pairing_sessions'],
   };
 
   for (const [level, tables] of Object.entries(levelBoundaries)) {

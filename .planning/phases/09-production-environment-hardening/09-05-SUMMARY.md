@@ -29,17 +29,17 @@ key-files:
 
 decisions:
   - id: NOTIFY-01
-    decision: "Exit 0 on notification failure to prevent deployment rollback"
+    decision: 'Exit 0 on notification failure to prevent deployment rollback'
     rationale: "Notification failure shouldn't fail deployment - notifications are observability, not critical path"
   - id: NOTIFY-02
-    decision: "Support Slack-compatible payload format for Discord via /slack endpoint"
-    rationale: "Discord supports Slack webhook format, enabling single payload structure for both platforms"
+    decision: 'Support Slack-compatible payload format for Discord via /slack endpoint'
+    rationale: 'Discord supports Slack webhook format, enabling single payload structure for both platforms'
   - id: NOTIFY-03
-    decision: "Retry 3 times with exponential backoff (5s, 10s base delays)"
-    rationale: "Handles transient network issues without excessive delays"
+    decision: 'Retry 3 times with exponential backoff (5s, 10s base delays)'
+    rationale: 'Handles transient network issues without excessive delays'
 
 metrics:
-  duration: "2m"
+  duration: '2m'
   completed: 2026-01-24
 ---
 
@@ -68,10 +68,10 @@ Created deployment notification infrastructure supporting Slack, Discord, and ge
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Create Deployment Notification Script | c13f2be | scripts/deploy/notify.sh |
-| 2 | Create Notification Configuration Documentation | f169c59 | scripts/deploy/README.md |
+| Task | Name                                            | Commit  | Files                    |
+| ---- | ----------------------------------------------- | ------- | ------------------------ |
+| 1    | Create Deployment Notification Script           | c13f2be | scripts/deploy/notify.sh |
+| 2    | Create Notification Configuration Documentation | f169c59 | scripts/deploy/README.md |
 
 ## Verification Results
 
@@ -85,6 +85,7 @@ All verification checks passed:
 - [x] JSON payload includes all required fields
 
 **Test results:**
+
 ```bash
 $ DEPLOY_WEBHOOK_URL="" ./scripts/deploy/notify.sh success "Test"
 Warning: DEPLOY_WEBHOOK_URL not set, skipping notification
@@ -93,6 +94,7 @@ Warning: DEPLOY_WEBHOOK_URL not set, skipping notification
 ## Decisions Made
 
 ### NOTIFY-01: Fail-safe notification behavior
+
 **Decision:** Notification failures exit with code 0 (success) to prevent deployment rollback
 
 **Rationale:** Notifications are observability tooling, not critical deployment infrastructure. A failed notification (webhook down, network issue) should not cause a successful deployment to be marked as failed.
@@ -100,6 +102,7 @@ Warning: DEPLOY_WEBHOOK_URL not set, skipping notification
 **Implementation:** Final line of script: `exit 0  # Don't fail deployment due to notification failure`
 
 ### NOTIFY-02: Slack-compatible payload for Discord
+
 **Decision:** Use Slack webhook payload format for both Slack and Discord
 
 **Rationale:** Discord webhooks support Slack's payload format when URL ends with `/slack`, allowing single payload structure for both platforms. Reduces code complexity and maintenance burden.
@@ -107,9 +110,11 @@ Warning: DEPLOY_WEBHOOK_URL not set, skipping notification
 **Alternative considered:** Separate payload formats for each platform (rejected - unnecessary complexity)
 
 ### NOTIFY-03: Retry with exponential backoff
+
 **Decision:** 3 retry attempts with delays of 5s, 10s (exponential backoff)
 
 **Rationale:**
+
 - Handles transient network issues and webhook service hiccups
 - Exponential backoff prevents overwhelming failed services
 - 3 attempts balances reliability with deployment speed
@@ -124,27 +129,33 @@ None - plan executed exactly as written.
 ## Technical Notes
 
 ### Webhook Format
+
 The script sends Slack-compatible attachments format:
+
 ```json
 {
-  "attachments": [{
-    "color": "#36a64f",
-    "title": ":white_check_mark: FreshTrack Pro Deployment",
-    "fields": [
-      {"title": "Status", "value": "success", "short": true},
-      {"title": "Environment", "value": "production", "short": true},
-      {"title": "Version", "value": "v1.2.3", "short": true},
-      {"title": "Host", "value": "prod-server-1", "short": true},
-      {"title": "Message", "value": "Deployment completed", "short": false}
-    ],
-    "footer": "FreshTrack Pro Deployment System",
-    "ts": 1769224859
-  }]
+  "attachments": [
+    {
+      "color": "#36a64f",
+      "title": ":white_check_mark: FreshTrack Pro Deployment",
+      "fields": [
+        { "title": "Status", "value": "success", "short": true },
+        { "title": "Environment", "value": "production", "short": true },
+        { "title": "Version", "value": "v1.2.3", "short": true },
+        { "title": "Host", "value": "prod-server-1", "short": true },
+        { "title": "Message", "value": "Deployment completed", "short": false }
+      ],
+      "footer": "FreshTrack Pro Deployment System",
+      "ts": 1769224859
+    }
+  ]
 }
 ```
 
 ### Version Detection
+
 Script auto-detects version from git:
+
 ```bash
 VERSION="${DEPLOY_VERSION:-$(git describe --tags --always 2>/dev/null || echo 'unknown')}"
 ```
@@ -152,16 +163,19 @@ VERSION="${DEPLOY_VERSION:-$(git describe --tags --always 2>/dev/null || echo 'u
 Falls back to 'unknown' if git is unavailable or not in a git repository.
 
 ### Environment Variables
-| Variable | Required | Default | Purpose |
-|----------|----------|---------|---------|
-| `DEPLOY_WEBHOOK_URL` | No | empty | Webhook endpoint (skip if empty) |
-| `DEPLOY_ENVIRONMENT` | No | production | Environment name |
-| `DEPLOY_VERSION` | No | git-detected | Version string |
+
+| Variable             | Required | Default      | Purpose                          |
+| -------------------- | -------- | ------------ | -------------------------------- |
+| `DEPLOY_WEBHOOK_URL` | No       | empty        | Webhook endpoint (skip if empty) |
+| `DEPLOY_ENVIRONMENT` | No       | production   | Environment name                 |
+| `DEPLOY_VERSION`     | No       | git-detected | Version string                   |
 
 ## Integration Points
 
 ### Phase 11: Production Deployment
+
 Deployment scripts will call `notify.sh`:
+
 ```bash
 # In deployment script
 ./scripts/deploy/notify.sh info "Starting deployment..."

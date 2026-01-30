@@ -11,9 +11,7 @@ export function ResizeSizeLabel({ width, height, isVisible }: ResizeSizeLabelPro
   if (!isVisible) return null;
 
   return (
-    <div 
-      className="fixed top-4 right-4 z-50 bg-accent text-accent-foreground px-3 py-1.5 rounded-md shadow-lg text-sm font-mono font-medium animate-in fade-in slide-in-from-top-2 duration-150"
-    >
+    <div className="fixed top-4 right-4 z-50 bg-accent text-accent-foreground px-3 py-1.5 rounded-md shadow-lg text-sm font-mono font-medium animate-in fade-in slide-in-from-top-2 duration-150">
       {width} × {height}
     </div>
   );

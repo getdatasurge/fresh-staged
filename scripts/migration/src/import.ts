@@ -19,33 +19,29 @@
  * 3. Use --truncate-first only when you want to restart from scratch
  */
 
-import "dotenv/config";
-import { Command } from "commander";
-import ora, { type Ora } from "ora";
-import path from "node:path";
-import fs from "node:fs/promises";
-import readline from "node:readline";
-import { fileURLToPath } from "node:url";
+import 'dotenv/config';
+import { Command } from 'commander';
+import ora, { type Ora } from 'ora';
+import path from 'node:path';
+import fs from 'node:fs/promises';
+import readline from 'node:readline';
+import { fileURLToPath } from 'node:url';
 import {
   logger,
   logMigrationStart,
   logMigrationComplete,
   logMigrationError,
   closeLogger,
-} from "../lib/logger.js";
-import {
-  newDbPool,
-  testNewDbConnection,
-  closeNewDbPool,
-} from "../lib/new-db-client.js";
+} from '../lib/logger.js';
+import { newDbPool, testNewDbConnection, closeNewDbPool } from '../lib/new-db-client.js';
 import {
   getTableImportOrder,
   requiresUserMapping,
   getUserIdColumns,
   TABLE_IMPORT_ORDER,
   type TableName,
-} from "../lib/table-metadata.js";
-import { loadMapping, mappingExists } from "../lib/user-mapping.js";
+} from '../lib/table-metadata.js';
+import { loadMapping, mappingExists } from '../lib/user-mapping.js';
 import {
   importTable,
   importTableWithMapping,
@@ -55,7 +51,7 @@ import {
   jsonFileExists,
   getJsonRowCount,
   type ImportResult,
-} from "../lib/import-helpers.js";
+} from '../lib/import-helpers.js';
 
 // Get the directory name in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -63,27 +59,24 @@ const __dirname = path.dirname(__filename);
 
 // CLI program setup
 const program = new Command()
-  .name("import")
-  .description("Import FreshTrack data from JSON files into new PostgreSQL database")
-  .version("1.0.0")
+  .name('import')
+  .description('Import FreshTrack data from JSON files into new PostgreSQL database')
+  .version('1.0.0')
   .option(
-    "-i, --input-dir <path>",
-    "Input directory containing JSON export files",
-    "./migration-data"
+    '-i, --input-dir <path>',
+    'Input directory containing JSON export files',
+    './migration-data',
   )
   .option(
-    "-m, --mapping <path>",
-    "Path to user mapping JSON file",
-    "./migration-data/user-mapping.json"
+    '-m, --mapping <path>',
+    'Path to user mapping JSON file',
+    './migration-data/user-mapping.json',
   )
-  .option("-t, --table <name>", "Import a single table only")
-  .option(
-    "--truncate-first",
-    "Truncate target tables before import (DANGER! requires --yes)"
-  )
-  .option("--disable-fk", "Disable foreign key checks during import")
-  .option("--yes", "Skip confirmation prompts (required for --truncate-first)")
-  .option("--dry-run", "Validate export files exist without importing")
+  .option('-t, --table <name>', 'Import a single table only')
+  .option('--truncate-first', 'Truncate target tables before import (DANGER! requires --yes)')
+  .option('--disable-fk', 'Disable foreign key checks during import')
+  .option('--yes', 'Skip confirmation prompts (required for --truncate-first)')
+  .option('--dry-run', 'Validate export files exist without importing')
   .parse(process.argv);
 
 // CLI options interface
@@ -111,7 +104,7 @@ interface ExportMetadata {
     string,
     {
       rowCount: number;
-      exportMethod: "streaming" | "small-table";
+      exportMethod: 'streaming' | 'small-table';
       durationMs: number;
     }
   >;
@@ -134,7 +127,7 @@ async function promptConfirmation(message: string): Promise<boolean> {
   return new Promise((resolve) => {
     rl.question(message, (answer) => {
       rl.close();
-      resolve(answer.toLowerCase() === "yes");
+      resolve(answer.toLowerCase() === 'yes');
     });
   });
 }
@@ -151,16 +144,14 @@ function validateTableName(tableName: string): tableName is TableName {
  */
 async function getTablesToImport(
   options: ImportOptions,
-  metadata: ExportMetadata | null
+  metadata: ExportMetadata | null,
 ): Promise<TableName[]> {
   const allTables = getTableImportOrder();
 
   // Single table mode
   if (options.table) {
     if (!validateTableName(options.table)) {
-      throw new Error(
-        `Unknown table: ${options.table}. Valid tables: ${allTables.join(", ")}`
-      );
+      throw new Error(`Unknown table: ${options.table}. Valid tables: ${allTables.join(', ')}`);
     }
     return [options.table];
   }
@@ -181,46 +172,44 @@ async function getTablesToImport(
 async function dryRun(options: ImportOptions): Promise<void> {
   const inputDir = path.resolve(options.inputDir);
 
-  console.log("\n=== DRY RUN: Import Plan ===\n");
+  console.log('\n=== DRY RUN: Import Plan ===\n');
   console.log(`Input directory: ${inputDir}`);
   console.log(`Mapping file: ${path.resolve(options.mapping)}`);
-  console.log(`Truncate first: ${options.truncateFirst ? "Yes" : "No"}`);
-  console.log(`Disable FK checks: ${options.disableFk ? "Yes" : "No"}`);
-  console.log("");
+  console.log(`Truncate first: ${options.truncateFirst ? 'Yes' : 'No'}`);
+  console.log(`Disable FK checks: ${options.disableFk ? 'Yes' : 'No'}`);
+  console.log('');
 
   // Check if metadata exists
-  const metadataPath = path.join(inputDir, "metadata.json");
+  const metadataPath = path.join(inputDir, 'metadata.json');
   let metadata: ExportMetadata | null = null;
 
   try {
-    const metadataContent = await fs.readFile(metadataPath, "utf-8");
+    const metadataContent = await fs.readFile(metadataPath, 'utf-8');
     metadata = JSON.parse(metadataContent);
     console.log(`Export metadata found:`);
     console.log(`  - Exported at: ${metadata!.exportedAt}`);
     console.log(`  - Tables exported: ${Object.keys(metadata!.tables).length}`);
-    console.log("");
+    console.log('');
   } catch {
-    console.log("WARNING: No metadata.json found in input directory");
-    console.log("Will attempt to import all known tables.\n");
+    console.log('WARNING: No metadata.json found in input directory');
+    console.log('Will attempt to import all known tables.\n');
   }
 
   // Check user mapping file
   const mappingPath = path.resolve(options.mapping);
   if (await mappingExists(mappingPath)) {
-    console.log("User mapping file: FOUND");
+    console.log('User mapping file: FOUND');
     const mapping = loadMapping(mappingPath);
     console.log(`  - Mappings: ${mapping.size}`);
   } else {
-    console.log("User mapping file: NOT FOUND");
-    console.log(
-      "  WARNING: Tables with user IDs will keep original Supabase IDs"
-    );
+    console.log('User mapping file: NOT FOUND');
+    console.log('  WARNING: Tables with user IDs will keep original Supabase IDs');
   }
-  console.log("");
+  console.log('');
 
   // Get tables to import
   const tables = await getTablesToImport(options, metadata);
-  console.log("--- Tables to Import (dependency order) ---\n");
+  console.log('--- Tables to Import (dependency order) ---\n');
 
   let totalRows = 0;
   let foundFiles = 0;
@@ -236,15 +225,15 @@ async function dryRun(options: ImportOptions): Promise<void> {
       foundFiles++;
 
       const needsMapping = requiresUserMapping(table);
-      const mappingMark = needsMapping ? " [USER-ID]" : "";
-      const columns = needsMapping ? ` (${getUserIdColumns(table).join(", ")})` : "";
+      const mappingMark = needsMapping ? ' [USER-ID]' : '';
+      const columns = needsMapping ? ` (${getUserIdColumns(table).join(', ')})` : '';
 
       console.log(
-        `  ${table.padEnd(25)} ${String(rowCount).padStart(10)} rows  OK${mappingMark}${columns}`
+        `  ${table.padEnd(25)} ${String(rowCount).padStart(10)} rows  OK${mappingMark}${columns}`,
       );
     } else {
       missingFiles++;
-      console.log(`  ${table.padEnd(25)} ${" ".repeat(10)}       MISSING`);
+      console.log(`  ${table.padEnd(25)} ${' '.repeat(10)}       MISSING`);
     }
   }
 
@@ -254,23 +243,19 @@ async function dryRun(options: ImportOptions): Promise<void> {
   console.log(`Files missing: ${missingFiles}`);
 
   if (missingFiles > 0) {
-    console.log(
-      "\nWARNING: Missing files will be skipped during import."
-    );
+    console.log('\nWARNING: Missing files will be skipped during import.');
   }
 
   // Test database connection
-  console.log("\n--- Database Connection ---\n");
-  const spinner = ora("Testing target database connection...").start();
+  console.log('\n--- Database Connection ---\n');
+  const spinner = ora('Testing target database connection...').start();
   const connected = await testNewDbConnection();
 
   if (connected) {
-    spinner.succeed("Target database connection OK");
+    spinner.succeed('Target database connection OK');
   } else {
-    spinner.fail("Target database connection FAILED");
-    console.log(
-      "\nSet DATABASE_URL in .env to enable import to target database."
-    );
+    spinner.fail('Target database connection FAILED');
+    console.log('\nSet DATABASE_URL in .env to enable import to target database.');
   }
 }
 
@@ -281,7 +266,7 @@ async function main(): Promise<void> {
   const options = program.opts<ImportOptions>();
   const startTime = Date.now();
 
-  logMigrationStart("import", { options });
+  logMigrationStart('import', { options });
 
   // Dry run mode
   if (options.dryRun) {
@@ -291,12 +276,8 @@ async function main(): Promise<void> {
 
   // Validate truncate-first requires --yes
   if (options.truncateFirst && !options.yes) {
-    console.error(
-      "ERROR: --truncate-first requires --yes flag for confirmation"
-    );
-    console.error(
-      "This operation will DELETE ALL DATA in target tables!"
-    );
+    console.error('ERROR: --truncate-first requires --yes flag for confirmation');
+    console.error('This operation will DELETE ALL DATA in target tables!');
     process.exit(1);
   }
 
@@ -305,36 +286,34 @@ async function main(): Promise<void> {
   const mappingPath = path.resolve(options.mapping);
 
   // Test database connection
-  const spinner = ora("Testing target database connection...").start();
+  const spinner = ora('Testing target database connection...').start();
   const connected = await testNewDbConnection();
 
   if (!connected) {
-    spinner.fail("Target database connection failed");
-    logMigrationError("import", new Error("Target database connection failed"));
+    spinner.fail('Target database connection failed');
+    logMigrationError('import', new Error('Target database connection failed'));
     process.exit(1);
   }
-  spinner.succeed("Target database connection OK");
+  spinner.succeed('Target database connection OK');
 
   // Load export metadata
-  const metadataPath = path.join(inputDir, "metadata.json");
+  const metadataPath = path.join(inputDir, 'metadata.json');
   let metadata: ExportMetadata | null = null;
 
-  spinner.start("Loading export metadata...");
+  spinner.start('Loading export metadata...');
   try {
-    const metadataContent = await fs.readFile(metadataPath, "utf-8");
+    const metadataContent = await fs.readFile(metadataPath, 'utf-8');
     metadata = JSON.parse(metadataContent);
     spinner.succeed(
-      `Export metadata loaded (${Object.keys(metadata!.tables).length} tables exported at ${metadata!.exportedAt})`
+      `Export metadata loaded (${Object.keys(metadata!.tables).length} tables exported at ${metadata!.exportedAt})`,
     );
   } catch {
-    spinner.warn(
-      "No metadata.json found - will attempt to import all known tables"
-    );
+    spinner.warn('No metadata.json found - will attempt to import all known tables');
   }
 
   // Load user mapping if it exists
   let userMapping = new Map<string, string>();
-  spinner.start("Loading user mapping...");
+  spinner.start('Loading user mapping...');
 
   if (await mappingExists(mappingPath)) {
     try {
@@ -342,16 +321,14 @@ async function main(): Promise<void> {
       spinner.succeed(`User mapping loaded (${userMapping.size} mappings)`);
     } catch (error) {
       spinner.fail(`Failed to load user mapping: ${(error as Error).message}`);
-      logMigrationError("import", error, { mappingPath });
+      logMigrationError('import', error, { mappingPath });
       process.exit(1);
     }
   } else {
-    spinner.warn(
-      "User mapping file not found - tables with user IDs will keep original values"
-    );
+    spinner.warn('User mapping file not found - tables with user IDs will keep original values');
     logger.warn(
       { mappingPath },
-      "User mapping not found - import will proceed without user ID transformation"
+      'User mapping not found - import will proceed without user ID transformation',
     );
   }
 
@@ -359,36 +336,36 @@ async function main(): Promise<void> {
   if (options.truncateFirst) {
     if (!options.yes) {
       const confirmed = await promptConfirmation(
-        "This will DELETE ALL DATA in target tables. Type 'yes' to confirm: "
+        "This will DELETE ALL DATA in target tables. Type 'yes' to confirm: ",
       );
       if (!confirmed) {
-        console.log("Aborted.");
+        console.log('Aborted.');
         process.exit(1);
       }
     }
 
-    spinner.start("Truncating target tables...");
+    spinner.start('Truncating target tables...');
     try {
       // Truncate in REVERSE dependency order
       const reverseOrder = [...TABLE_IMPORT_ORDER].reverse();
       await truncateAllTables(newDbPool, reverseOrder);
-      spinner.succeed("All tables truncated");
+      spinner.succeed('All tables truncated');
     } catch (error) {
       spinner.fail(`Truncate failed: ${(error as Error).message}`);
-      logMigrationError("import", error);
+      logMigrationError('import', error);
       process.exit(1);
     }
   }
 
   // Handle disable-fk option
   if (options.disableFk) {
-    spinner.start("Disabling foreign key checks...");
+    spinner.start('Disabling foreign key checks...');
     try {
       await disableForeignKeys(newDbPool);
-      spinner.succeed("Foreign key checks disabled");
+      spinner.succeed('Foreign key checks disabled');
     } catch (error) {
       spinner.fail(`Failed to disable FK checks: ${(error as Error).message}`);
-      logMigrationError("import", error);
+      logMigrationError('import', error);
       process.exit(1);
     }
   }
@@ -414,7 +391,7 @@ async function main(): Promise<void> {
     // Check if file exists
     if (!(await jsonFileExists(jsonPath))) {
       importSpinner.warn(`${progressPrefix} ${table}: SKIPPED (file not found)`);
-      logger.warn({ table, jsonPath }, "Skipping table - JSON file not found");
+      logger.warn({ table, jsonPath }, 'Skipping table - JSON file not found');
       skippedCount++;
       continue;
     }
@@ -431,7 +408,7 @@ async function main(): Promise<void> {
           table,
           jsonPath,
           userMapping,
-          userIdColumns
+          userIdColumns,
         );
         totalMappingsApplied += result.mappingsApplied ?? 0;
         totalMappingsNotFound += result.mappingsNotFound ?? 0;
@@ -445,10 +422,10 @@ async function main(): Promise<void> {
       const mappingInfo =
         result.mappingsApplied !== undefined
           ? ` (${result.mappingsApplied} mapped, ${result.mappingsNotFound} not found)`
-          : "";
+          : '';
 
       importSpinner.succeed(
-        `${progressPrefix} ${table}: ${result.rowCount.toLocaleString()} rows (${result.durationMs}ms)${mappingInfo}`
+        `${progressPrefix} ${table}: ${result.rowCount.toLocaleString()} rows (${result.durationMs}ms)${mappingInfo}`,
       );
 
       logger.info(
@@ -459,11 +436,11 @@ async function main(): Promise<void> {
           mappingsApplied: result.mappingsApplied,
           mappingsNotFound: result.mappingsNotFound,
         },
-        `Imported ${table}`
+        `Imported ${table}`,
       );
     } catch (error) {
       importSpinner.fail(`${progressPrefix} ${table}: FAILED`);
-      logMigrationError("import", error, { table });
+      logMigrationError('import', error, { table });
 
       // Fail fast - re-enable FK checks if needed and exit
       if (options.disableFk) {
@@ -480,18 +457,13 @@ async function main(): Promise<void> {
 
   // Re-enable foreign key checks if they were disabled
   if (options.disableFk) {
-    importSpinner.start("Re-enabling foreign key checks...");
+    importSpinner.start('Re-enabling foreign key checks...');
     try {
       await enableForeignKeys(newDbPool);
-      importSpinner.succeed("Foreign key checks re-enabled");
+      importSpinner.succeed('Foreign key checks re-enabled');
     } catch (error) {
-      importSpinner.fail(
-        `Failed to re-enable FK checks: ${(error as Error).message}`
-      );
-      logger.error(
-        { error: (error as Error).message },
-        "Failed to re-enable FK checks"
-      );
+      importSpinner.fail(`Failed to re-enable FK checks: ${(error as Error).message}`);
+      logger.error({ error: (error as Error).message }, 'Failed to re-enable FK checks');
       // Don't exit - import was successful, this is just cleanup
     }
   }
@@ -501,7 +473,7 @@ async function main(): Promise<void> {
   const totalRows = results.reduce((sum, r) => sum + r.rowCount, 0);
 
   // Summary
-  console.log("\n=== Import Complete ===");
+  console.log('\n=== Import Complete ===');
   console.log(`Tables imported: ${importedCount}`);
   console.log(`Tables skipped: ${skippedCount}`);
   console.log(`Total rows: ${totalRows.toLocaleString()}`);
@@ -510,7 +482,7 @@ async function main(): Promise<void> {
   console.log(`Duration: ${(totalDurationMs / 1000).toFixed(2)}s`);
   console.log(`Input: ${inputDir}`);
 
-  logMigrationComplete("import", totalDurationMs, {
+  logMigrationComplete('import', totalDurationMs, {
     tables: importedCount,
     skipped: skippedCount,
     totalRows,
@@ -523,8 +495,8 @@ async function main(): Promise<void> {
 // Run the import
 main()
   .catch((error) => {
-    logger.error({ error: error.message, stack: error.stack }, "Import failed");
-    console.error("\nImport failed:", error.message);
+    logger.error({ error: error.message, stack: error.stack }, 'Import failed');
+    console.error('\nImport failed:', error.message);
     process.exit(1);
   })
   .finally(async () => {

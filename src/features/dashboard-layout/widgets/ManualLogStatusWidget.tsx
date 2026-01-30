@@ -4,14 +4,14 @@
  * Shows next log due, overdue indicator, streak, and compliance percentage.
  */
 
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { ClipboardList, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { useTRPC } from "@/lib/trpc";
-import type { WidgetProps } from "../types";
-import { formatDistanceToNow, isAfter, addHours } from "date-fns";
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { ClipboardList, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useTRPC } from '@/lib/trpc';
+import type { WidgetProps } from '../types';
+import { formatDistanceToNow, isAfter, addHours } from 'date-fns';
 
 export function ManualLogStatusWidget({ entityId, organizationId, site }: WidgetProps) {
   const trpc = useTRPC();
@@ -40,16 +40,14 @@ export function ManualLogStatusWidget({ entityId, organizationId, site }: Widget
 
   const logCount = logs?.length ?? 0;
 
-  const cadenceHours = site?.manual_log_cadence_seconds 
-    ? site.manual_log_cadence_seconds / 3600 
+  const cadenceHours = site?.manual_log_cadence_seconds
+    ? site.manual_log_cadence_seconds / 3600
     : 4; // Default 4 hours
 
   const expectedLogsPerDay = 24 / cadenceHours;
   const compliancePercent = Math.min(100, (logCount / expectedLogsPerDay) * 100);
 
-  const nextDue = lastLog 
-    ? addHours(new Date(lastLog.logged_at), cadenceHours)
-    : new Date();
+  const nextDue = lastLog ? addHours(new Date(lastLog.logged_at), cadenceHours) : new Date();
   const isOverdue = isAfter(new Date(), nextDue);
 
   if (isLoading) {
@@ -84,15 +82,13 @@ export function ManualLogStatusWidget({ entityId, organizationId, site }: Widget
             <CheckCircle2 className="h-8 w-8 text-green-500" />
           )}
           <div>
-            <p className="text-sm font-medium">
-              {isOverdue ? "Overdue" : "On Track"}
-            </p>
+            <p className="text-sm font-medium">{isOverdue ? 'Overdue' : 'On Track'}</p>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Clock className="h-3 w-3" />
               {lastLog ? (
                 <>Next due {formatDistanceToNow(nextDue, { addSuffix: true })}</>
               ) : (
-                "No logs recorded"
+                'No logs recorded'
               )}
             </p>
           </div>

@@ -23,9 +23,9 @@ affects: [production-operations, self-hosted-deployment]
 tech-stack:
   added: []
   patterns:
-    - "Complete deployment journey documentation (prerequisites → DNS → deployment → verification)"
-    - "Troubleshooting sections aligned with common failure modes"
-    - "Cross-references to specialized docs (SSL_CERTIFICATES.md, DATABASE.md)"
+    - 'Complete deployment journey documentation (prerequisites → DNS → deployment → verification)'
+    - 'Troubleshooting sections aligned with common failure modes'
+    - 'Cross-references to specialized docs (SSL_CERTIFICATES.md, DATABASE.md)'
 
 key-files:
   created:
@@ -33,14 +33,14 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Single comprehensive guide approach vs fragmented documentation"
-  - "DNS configuration must precede deployment (not during deployment)"
-  - "Rollback is code-only, database remains untouched (forward-only migrations)"
-  - "Health check failures trigger automatic rollback to previous version"
+  - 'Single comprehensive guide approach vs fragmented documentation'
+  - 'DNS configuration must precede deployment (not during deployment)'
+  - 'Rollback is code-only, database remains untouched (forward-only migrations)'
+  - 'Health check failures trigger automatic rollback to previous version'
 
 patterns-established:
-  - "Complete deployment guide structure: Overview → Prerequisites → Deployment → Verification → Post-Deployment → Rollback → Troubleshooting → Maintenance"
-  - "Troubleshooting organized by symptom → solutions pattern"
+  - 'Complete deployment guide structure: Overview → Prerequisites → Deployment → Verification → Post-Deployment → Rollback → Troubleshooting → Maintenance'
+  - 'Troubleshooting organized by symptom → solutions pattern'
   - "DNS verification emphasized to prevent Let's Encrypt rate limit exhaustion"
 
 # Metrics
@@ -94,18 +94,22 @@ completed: 2026-01-24
 ## Decisions Made
 
 **Single comprehensive guide approach:**
+
 - Consolidated all self-hosted deployment knowledge into one document rather than fragmenting across multiple files
 - Rationale: Reduces cognitive load for operators, ensures all steps are visible in proper sequence
 
 **DNS-first configuration:**
+
 - Documented DNS setup as prerequisite step BEFORE deployment execution
 - Rationale: Prevents Let's Encrypt rate limit exhaustion (5 failures/hour), aligns with deploy-selfhosted.sh DNS pre-check
 
 **Code-only rollback policy:**
+
 - Explicitly documented that rollback affects Docker images only, not database
 - Rationale: Database migrations are forward-only, schema rollback requires restore from backup (documented separately in DATABASE.md)
 
 **Troubleshooting by symptom:**
+
 - Organized troubleshooting section by error symptoms, not by component
 - Rationale: Operators see errors first, need solution paths from symptom → root cause → fix
 
@@ -131,11 +135,13 @@ None - documentation is a reference guide, no external service configuration nee
 ## Next Phase Readiness
 
 **Ready for Phase 11 continuation:**
+
 - DEPLOY-01 requirement satisfied: Self-hosted deployment documentation complete
 - DEPLOY-02 requirement satisfied: Scripts validated through documentation review
 - DEPLOY-03 requirement satisfied: SSL/TLS configuration documented (Caddy automatic HTTPS)
 
 **Documentation deliverables complete:**
+
 - docs/SELFHOSTED_DEPLOYMENT.md provides complete deployment workflow
 - Cross-references to docs/SSL_CERTIFICATES.md for SSL details
 - Cross-references to docs/DATABASE.md for backup/restore procedures
@@ -143,6 +149,7 @@ None - documentation is a reference guide, no external service configuration nee
 **No blockers or concerns.**
 
 ---
-*Phase: 11-self-hosted-deployment*
-*Plan: 04*
-*Completed: 2026-01-24*
+
+_Phase: 11-self-hosted-deployment_
+_Plan: 04_
+_Completed: 2026-01-24_

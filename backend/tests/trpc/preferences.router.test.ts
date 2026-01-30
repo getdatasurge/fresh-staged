@@ -194,7 +194,7 @@ describe('Preferences tRPC Router', () => {
         expect.objectContaining({
           dailyEnabled: true,
           weeklyEnabled: false,
-        })
+        }),
       );
     });
 

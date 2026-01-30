@@ -1,32 +1,32 @@
-import { useMemo, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { useUser } from "@stackframe/react";
-import { useQuery } from "@tanstack/react-query";
-import DashboardLayout from "@/components/DashboardLayout";
-import { HierarchyBreadcrumb, BreadcrumbSibling } from "@/components/HierarchyBreadcrumb";
-import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog";
-import { usePermissions } from "@/hooks/useUserRole";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { useTRPC, useTRPCClient } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { useMemo, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useUser } from '@stackframe/react';
+import { useQuery } from '@tanstack/react-query';
+import DashboardLayout from '@/components/DashboardLayout';
+import { HierarchyBreadcrumb, BreadcrumbSibling } from '@/components/HierarchyBreadcrumb';
+import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
+import { usePermissions } from '@/hooks/useUserRole';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { useTRPC, useTRPCClient } from '@/lib/trpc';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Plus,
   ChevronRight,
@@ -37,10 +37,16 @@ import {
   Wifi,
   WifiOff,
   Trash2,
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-type UnitType = "fridge" | "freezer" | "walk_in_cooler" | "walk_in_freezer" | "display_case" | "blast_chiller";
+type UnitType =
+  | 'fridge'
+  | 'freezer'
+  | 'walk_in_cooler'
+  | 'walk_in_freezer'
+  | 'display_case'
+  | 'blast_chiller';
 
 interface Unit {
   id: string;
@@ -64,15 +70,15 @@ interface AreaData {
 }
 
 const unitTypes: { value: UnitType; label: string }[] = [
-  { value: "fridge", label: "Refrigerator" },
-  { value: "freezer", label: "Freezer" },
-  { value: "walk_in_cooler", label: "Walk-in Cooler" },
-  { value: "walk_in_freezer", label: "Walk-in Freezer" },
-  { value: "display_case", label: "Display Case" },
-  { value: "blast_chiller", label: "Blast Chiller" },
+  { value: 'fridge', label: 'Refrigerator' },
+  { value: 'freezer', label: 'Freezer' },
+  { value: 'walk_in_cooler', label: 'Walk-in Cooler' },
+  { value: 'walk_in_freezer', label: 'Walk-in Freezer' },
+  { value: 'display_case', label: 'Display Case' },
+  { value: 'blast_chiller', label: 'Blast Chiller' },
 ];
 
-import { STATUS_CONFIG } from "@/lib/statusConfig";
+import { STATUS_CONFIG } from '@/lib/statusConfig';
 
 const AreaDetail = () => {
   const { siteId, areaId } = useParams();
@@ -88,41 +94,41 @@ const AreaDetail = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
-    unit_type: "fridge" as UnitType,
-    temp_limit_high: "41",
-    temp_limit_low: "",
+    name: '',
+    unit_type: 'fridge' as UnitType,
+    temp_limit_high: '41',
+    temp_limit_low: '',
   });
-  const [editFormData, setEditFormData] = useState({ name: "", description: "" });
+  const [editFormData, setEditFormData] = useState({ name: '', description: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // tRPC queries
   const areaQuery = useQuery(
     trpc.areas.get.queryOptions(
       { organizationId: effectiveOrgId!, siteId: siteId!, areaId: areaId! },
-      { enabled: !!areaId && !!siteId && !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!areaId && !!siteId && !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   const unitsQuery = useQuery(
     trpc.units.list.queryOptions(
       { organizationId: effectiveOrgId!, siteId: siteId!, areaId: areaId! },
-      { enabled: !!areaId && !!siteId && !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!areaId && !!siteId && !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   const siblingAreasQuery = useQuery(
     trpc.areas.list.queryOptions(
       { organizationId: effectiveOrgId!, siteId: siteId! },
-      { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!siteId && !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   const siteQuery = useQuery(
     trpc.sites.get.queryOptions(
       { organizationId: effectiveOrgId!, siteId: siteId! },
-      { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!siteId && !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   const isLoading = areaQuery.isLoading || !identityInitialized;
@@ -142,7 +148,7 @@ const AreaDetail = () => {
   }, [areaQuery.data, siteQuery.data]);
 
   const units = useMemo((): Unit[] => {
-    return (unitsQuery.data || []).map(u => ({
+    return (unitsQuery.data || []).map((u) => ({
       id: u.id,
       name: u.name,
       unit_type: u.unitType,
@@ -157,8 +163,8 @@ const AreaDetail = () => {
   const siblingAreas = useMemo((): BreadcrumbSibling[] => {
     if (!siblingAreasQuery.data) return [];
     return siblingAreasQuery.data
-      .filter(a => a.id !== areaId)
-      .map(a => ({
+      .filter((a) => a.id !== areaId)
+      .map((a) => ({
         id: a.id,
         name: a.name,
         href: `/sites/${siteId}/areas/${a.id}`,
@@ -170,7 +176,7 @@ const AreaDetail = () => {
     if (areaQuery.data) {
       setEditFormData({
         name: areaQuery.data.name,
-        description: areaQuery.data.description || "",
+        description: areaQuery.data.description || '',
       });
     }
   }, [areaQuery.data]);
@@ -183,7 +189,7 @@ const AreaDetail = () => {
 
   const handleCreateUnit = async () => {
     if (!formData.name.trim()) {
-      toast({ title: "Unit name is required", variant: "destructive" });
+      toast({ title: 'Unit name is required', variant: 'destructive' });
       return;
     }
 
@@ -198,22 +204,22 @@ const AreaDetail = () => {
           unitType: formData.unit_type,
           tempMax: parseFloat(formData.temp_limit_high) || 41,
           tempMin: formData.temp_limit_low ? parseFloat(formData.temp_limit_low) : null,
-        }
+        },
       });
-      toast({ title: "Unit created successfully" });
-      setFormData({ name: "", unit_type: "fridge", temp_limit_high: "41", temp_limit_low: "" });
+      toast({ title: 'Unit created successfully' });
+      setFormData({ name: '', unit_type: 'fridge', temp_limit_high: '41', temp_limit_low: '' });
       setDialogOpen(false);
       refreshAreaData();
     } catch (error) {
-      console.error("Error creating unit:", error);
-      toast({ title: "Failed to create unit", variant: "destructive" });
+      console.error('Error creating unit:', error);
+      toast({ title: 'Failed to create unit', variant: 'destructive' });
     }
     setIsSubmitting(false);
   };
 
   const handleUpdateArea = async () => {
     if (!editFormData.name.trim()) {
-      toast({ title: "Area name is required", variant: "destructive" });
+      toast({ title: 'Area name is required', variant: 'destructive' });
       return;
     }
 
@@ -226,14 +232,14 @@ const AreaDetail = () => {
         data: {
           name: editFormData.name,
           description: editFormData.description || null,
-        }
+        },
       });
-      toast({ title: "Area updated successfully" });
+      toast({ title: 'Area updated successfully' });
       setEditDialogOpen(false);
       refreshAreaData();
     } catch (error) {
-      console.error("Error updating area:", error);
-      toast({ title: "Failed to update area", variant: "destructive" });
+      console.error('Error updating area:', error);
+      toast({ title: 'Failed to update area', variant: 'destructive' });
     }
     setIsSubmitting(false);
   };
@@ -246,27 +252,27 @@ const AreaDetail = () => {
         siteId: siteId,
         areaId: areaId,
       });
-      toast({ title: "Area deleted" });
+      toast({ title: 'Area deleted' });
       navigate(`/sites/${siteId}`);
     } catch (err) {
-      console.error("Error deleting area:", err);
-      toast({ title: "Failed to delete area", variant: "destructive" });
+      console.error('Error deleting area:', err);
+      toast({ title: 'Failed to delete area', variant: 'destructive' });
     }
   };
 
   const formatTemp = (temp: number | null) => {
-    if (temp === null) return "--";
+    if (temp === null) return '--';
     return `${temp.toFixed(1)}°F`;
   };
 
   const getTimeAgo = (dateStr: string | null) => {
-    if (!dateStr) return "Never";
+    if (!dateStr) return 'Never';
     const date = new Date(dateStr);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
 
-    if (diffMins < 1) return "Just now";
+    if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `${diffHours}h ago`;
@@ -274,12 +280,12 @@ const AreaDetail = () => {
   };
 
   const handleUnitTypeChange = (value: UnitType) => {
-    const isFreezer = ["freezer", "walk_in_freezer", "blast_chiller"].includes(value);
+    const isFreezer = ['freezer', 'walk_in_freezer', 'blast_chiller'].includes(value);
     setFormData({
       ...formData,
       unit_type: value,
-      temp_limit_high: isFreezer ? "0" : "41",
-      temp_limit_low: isFreezer ? "-20" : "",
+      temp_limit_high: isFreezer ? '0' : '41',
+      temp_limit_low: isFreezer ? '-20' : '',
     });
   };
 
@@ -307,7 +313,7 @@ const AreaDetail = () => {
     <DashboardLayout>
       <HierarchyBreadcrumb
         items={[
-          { label: "All Equipment", href: "/sites" },
+          { label: 'All Equipment', href: '/sites' },
           { label: area.site.name, href: `/sites/${area.site.id}` },
           { label: area.name, isCurrentPage: true, siblings: siblingAreas },
         ]}
@@ -338,7 +344,9 @@ const AreaDetail = () => {
                     <Textarea
                       id="edit-desc"
                       value={editFormData.description}
-                      onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                      onChange={(e) =>
+                        setEditFormData({ ...editFormData, description: e.target.value })
+                      }
                     />
                   </div>
                   <div className="flex justify-end gap-2 pt-4">
@@ -376,7 +384,7 @@ const AreaDetail = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground">{area.name}</h1>
             <p className="text-muted-foreground">
-              {area.site.name} · {area.description || "No description"}
+              {area.site.name} · {area.description || 'No description'}
             </p>
           </div>
         </div>
@@ -428,7 +436,9 @@ const AreaDetail = () => {
                         id="temp-high"
                         type="number"
                         value={formData.temp_limit_high}
-                        onChange={(e) => setFormData({ ...formData, temp_limit_high: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, temp_limit_high: e.target.value })
+                        }
                       />
                     </div>
                     <div className="space-y-2">
@@ -438,7 +448,9 @@ const AreaDetail = () => {
                         type="number"
                         placeholder="Optional"
                         value={formData.temp_limit_low}
-                        onChange={(e) => setFormData({ ...formData, temp_limit_low: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, temp_limit_low: e.target.value })
+                        }
                       />
                     </div>
                   </div>
@@ -464,7 +476,7 @@ const AreaDetail = () => {
             <div className="grid gap-3">
               {units.map((unit) => {
                 const status = STATUS_CONFIG[unit.status] || STATUS_CONFIG.offline;
-                const isOnline = unit.status !== "offline" && unit.last_reading_at;
+                const isOnline = unit.status !== 'offline' && unit.last_reading_at;
 
                 return (
                   <Link key={unit.id} to={`/units/${unit.id}`}>
@@ -472,29 +484,36 @@ const AreaDetail = () => {
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-xl ${status.bgColor} flex items-center justify-center`}>
+                            <div
+                              className={`w-12 h-12 rounded-xl ${status.bgColor} flex items-center justify-center`}
+                            >
                               <Thermometer className={`w-6 h-6 ${status.color}`} />
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
                                 <h3 className="font-semibold text-foreground">{unit.name}</h3>
-                                <span className={`text-xs px-2 py-0.5 rounded-full ${status.bgColor} ${status.color}`}>
+                                <span
+                                  className={`text-xs px-2 py-0.5 rounded-full ${status.bgColor} ${status.color}`}
+                                >
                                   {status.label}
                                 </span>
                               </div>
                               <p className="text-sm text-muted-foreground capitalize">
-                                {unit.unit_type.replace(/_/g, " ")}
+                                {unit.unit_type.replace(/_/g, ' ')}
                               </p>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-6">
                             <div className="text-right hidden sm:block">
-                              <div className={`temp-display text-xl font-semibold ${
-                                unit.last_temp_reading && unit.last_temp_reading > unit.temp_limit_high
-                                  ? "text-alarm"
-                                  : status.color
-                              }`}>
+                              <div
+                                className={`temp-display text-xl font-semibold ${
+                                  unit.last_temp_reading &&
+                                  unit.last_temp_reading > unit.temp_limit_high
+                                    ? 'text-alarm'
+                                    : status.color
+                                }`}
+                              >
                                 {formatTemp(unit.last_temp_reading)}
                               </div>
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -520,11 +539,14 @@ const AreaDetail = () => {
                             )}
                             {getTimeAgo(unit.last_reading_at)}
                           </div>
-                          <div className={`temp-display text-xl font-semibold ${
-                            unit.last_temp_reading && unit.last_temp_reading > unit.temp_limit_high
-                              ? "text-alarm"
-                              : status.color
-                          }`}>
+                          <div
+                            className={`temp-display text-xl font-semibold ${
+                              unit.last_temp_reading &&
+                              unit.last_temp_reading > unit.temp_limit_high
+                                ? 'text-alarm'
+                                : status.color
+                            }`}
+                          >
                             {formatTemp(unit.last_temp_reading)}
                           </div>
                         </div>

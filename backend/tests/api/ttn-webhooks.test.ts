@@ -51,7 +51,7 @@ vi.mock('../../src/plugins/socket.plugin.js', () => {
         });
       },
       // fastify-plugin reads Symbol.for('skip-override') to propagate decorators
-      { [Symbol.for('skip-override')]: true }
+      { [Symbol.for('skip-override')]: true },
     ),
   };
 });
@@ -441,7 +441,7 @@ describe('TTN Webhook Route Handler', () => {
             source: 'ttn',
           }),
         ],
-        TEST_ORG_ID
+        TEST_ORG_ID,
       );
     });
 
@@ -586,7 +586,7 @@ describe('TTN Webhook Route Handler', () => {
           deviceId: TEST_DEVICE_ID,
           temperature: 25.5,
           source: 'ttn',
-        })
+        }),
       );
     });
 
@@ -606,7 +606,7 @@ describe('TTN Webhook Route Handler', () => {
         TEST_UNIT_ID,
         255, // Math.round(25.5 * 10)
         expect.any(Date),
-        expect.anything() // socketService
+        expect.anything(), // socketService
       );
     });
 
@@ -668,7 +668,7 @@ describe('TTN Webhook Route Handler', () => {
           humidity: 60.2,
           battery: 85,
           signalStrength: -62, // channel_rssi from rx_metadata
-        })
+        }),
       );
     });
   });
@@ -723,7 +723,7 @@ describe('TTN Webhook Route Handler', () => {
       expect(response.statusCode).toBe(200);
       expect(mockIngestReadings).toHaveBeenCalledWith(
         [expect.objectContaining({ temperature: 22.3 })],
-        TEST_ORG_ID
+        TEST_ORG_ID,
       );
     });
 
@@ -766,7 +766,7 @@ describe('TTN Webhook Route Handler', () => {
       expect(response.statusCode).toBe(200);
       expect(mockUpdateDeviceMetadata).toHaveBeenCalledWith(
         TEST_DEVICE_ID,
-        expect.objectContaining({ battery: 50 })
+        expect.objectContaining({ battery: 50 }),
       );
     });
 
@@ -791,7 +791,7 @@ describe('TTN Webhook Route Handler', () => {
       // Best signal = -62 (least negative)
       expect(mockUpdateDeviceMetadata).toHaveBeenCalledWith(
         TEST_DEVICE_ID,
-        expect.objectContaining({ signalStrength: -62 })
+        expect.objectContaining({ signalStrength: -62 }),
       );
     });
 
@@ -903,7 +903,12 @@ describe('TTN Webhook Route Handler', () => {
       });
       mockLookupDevice.mockImplementation(async () => {
         callOrder.push('lookupDevice');
-        return { deviceId: TEST_DEVICE_ID, unitId: TEST_UNIT_ID, organizationId: TEST_ORG_ID, deviceEui: TEST_DEV_EUI };
+        return {
+          deviceId: TEST_DEVICE_ID,
+          unitId: TEST_UNIT_ID,
+          organizationId: TEST_ORG_ID,
+          deviceEui: TEST_DEV_EUI,
+        };
       });
       mockIngestReadings.mockImplementation(async () => {
         callOrder.push('ingestReadings');

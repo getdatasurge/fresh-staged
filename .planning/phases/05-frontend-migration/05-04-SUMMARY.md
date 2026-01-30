@@ -24,16 +24,16 @@ key-files:
     - src/hooks/useAuthAndOnboarding.ts
 
 decisions:
-  - decision: "Use auth/me endpoint for identity resolution"
-    rationale: "Single endpoint returns user profile with all org memberships - efficient for frontend"
-  - decision: "Share query cache between useEffectiveIdentity and useUserRole"
-    rationale: "Both use qk.user(userId).profile() - 5min staleTime prevents duplicate requests"
-  - decision: "Defer impersonation to Phase 6"
-    rationale: "Core identity resolution works without it - TODO markers preserve existing behavior"
+  - decision: 'Use auth/me endpoint for identity resolution'
+    rationale: 'Single endpoint returns user profile with all org memberships - efficient for frontend'
+  - decision: 'Share query cache between useEffectiveIdentity and useUserRole'
+    rationale: 'Both use qk.user(userId).profile() - 5min staleTime prevents duplicate requests'
+  - decision: 'Defer impersonation to Phase 6'
+    rationale: 'Core identity resolution works without it - TODO markers preserve existing behavior'
 
 metrics:
   completed: 2026-01-23
-  duration: "4 minutes 38 seconds"
+  duration: '4 minutes 38 seconds'
   tasks_completed: 3/3
   commits: 3
 ---
@@ -62,6 +62,7 @@ These hooks provide orgId and userId scope for every data-fetching component in 
 - Registered at /api/auth prefix in app.ts
 
 **Response format:**
+
 ```typescript
 {
   userId: string;
@@ -92,6 +93,7 @@ These hooks provide orgId and userId scope for every data-fetching component in 
 **After:** Stack Auth useUser() + authApi.getMe() + TanStack Query
 
 **Key changes:**
+
 - Replaced `supabase.auth.getUser()` with `useUser()` from Stack Auth
 - Replaced `supabase.from('profiles')` with `authApi.getMe()`
 - Used TanStack Query with qk.user(userId).profile() for 5min cache
@@ -113,6 +115,7 @@ This hook depends on useEffectiveIdentity and continues to work exactly as befor
 **After:** Stack Auth useUser() + authApi.getMe()
 
 **Key changes:**
+
 - Replaced Supabase calls with Stack Auth useUser()
 - Uses authApi.getMe() which includes org roles
 - Finds role by filtering organizations array
@@ -128,6 +131,7 @@ This hook depends on useEffectiveIdentity and continues to work exactly as befor
 **After:** Stack Auth useUser() + useEffectiveIdentity
 
 **Key changes:**
+
 - Replaced `supabase.auth.getSession()` with `useUser()`
 - Uses useEffectiveIdentity for org state
 - isAuthenticated = !!stackUser
@@ -192,6 +196,7 @@ All identity hooks use `qk.user(userId).profile()` as the query key. This create
 ### Token Injection Pattern
 
 Stack Auth integration follows the established pattern:
+
 ```typescript
 const user = useUser();
 const authJson = await user.getAuthJson();
@@ -203,6 +208,7 @@ This is consistent with all other API functions (organizationsApi, sitesApi, etc
 ### Impersonation Migration Strategy
 
 Impersonation is marked TODO for Phase 6:
+
 - SuperAdminContext state continues to work (provides impersonatedUserId/OrgId)
 - Server-side validation (supabase.rpc('get_active_impersonation')) deferred
 - Core identity resolution works for 90% of users (non-super-admins)
@@ -215,10 +221,12 @@ Impersonation is marked TODO for Phase 6:
 **Blockers:** None
 
 **Concerns:**
+
 - Super Admin impersonation needs Phase 6 backend implementation
 - Until then, super admins can use the app but impersonation features are disabled
 
 **Dependencies satisfied for:**
+
 - 05-05: Data-fetching hooks (sites, areas, units) - they all use useOrgScope()
 - 05-06: Alert hooks - they use useEffectiveIdentity for orgId
 - All subsequent plans - core identity resolution is now Stack Auth-based

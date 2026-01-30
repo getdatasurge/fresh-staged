@@ -69,20 +69,29 @@ describe('Stripe Billing', () => {
       const mockSelectChain = {
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue([{
-          id: 'test-uuid',
-          eventId,
-          eventType,
-          processedAt: new Date(),
-        }]),
+        limit: vi.fn().mockResolvedValue([
+          {
+            id: 'test-uuid',
+            eventId,
+            eventType,
+            processedAt: new Date(),
+          },
+        ]),
       };
       mockDb.select.mockReturnValue(mockSelectChain as any);
 
       // Simulate inserting an event
-      await mockDb.insert({} as any).values({ eventId, eventType }).onConflictDoNothing();
+      await mockDb
+        .insert({} as any)
+        .values({ eventId, eventType })
+        .onConflictDoNothing();
 
       // Verify the event was recorded
-      const [found] = await mockDb.select().from({} as any).where({} as any).limit(1);
+      const [found] = await mockDb
+        .select()
+        .from({} as any)
+        .where({} as any)
+        .limit(1);
 
       expect(found).toBeDefined();
       expect(found.eventId).toBe(eventId);
@@ -103,29 +112,40 @@ describe('Stripe Billing', () => {
       // Mock db.select to return single record (simulating unique constraint)
       const mockSelectChain = {
         from: vi.fn().mockReturnThis(),
-        where: vi.fn().mockResolvedValue([{
-          id: 'test-uuid',
-          eventId,
-          eventType: 'checkout.session.completed',
-          processedAt: new Date(),
-        }]),
+        where: vi.fn().mockResolvedValue([
+          {
+            id: 'test-uuid',
+            eventId,
+            eventType: 'checkout.session.completed',
+            processedAt: new Date(),
+          },
+        ]),
       };
       mockDb.select.mockReturnValue(mockSelectChain as any);
 
       // First insert
-      await mockDb.insert({} as any).values({
-        eventId,
-        eventType: 'checkout.session.completed',
-      }).onConflictDoNothing();
+      await mockDb
+        .insert({} as any)
+        .values({
+          eventId,
+          eventType: 'checkout.session.completed',
+        })
+        .onConflictDoNothing();
 
       // Second insert with onConflictDoNothing
-      await mockDb.insert({} as any).values({
-        eventId,
-        eventType: 'checkout.session.completed',
-      }).onConflictDoNothing();
+      await mockDb
+        .insert({} as any)
+        .values({
+          eventId,
+          eventType: 'checkout.session.completed',
+        })
+        .onConflictDoNothing();
 
       // Query should return single record
-      const records = await mockDb.select().from({} as any).where({} as any);
+      const records = await mockDb
+        .select()
+        .from({} as any)
+        .where({} as any);
 
       expect(records.length).toBe(1);
     });
@@ -263,7 +283,11 @@ describe('Stripe Billing', () => {
       };
       mockDb.select.mockReturnValue(mockSelectChain as any);
 
-      const result = await mockDb.select().from({} as any).where({} as any).limit(1);
+      const result = await mockDb
+        .select()
+        .from({} as any)
+        .where({} as any)
+        .limit(1);
       const customerId = result[0]?.stripeCustomerId || null;
 
       expect(customerId).toBeNull();
@@ -274,15 +298,21 @@ describe('Stripe Billing', () => {
       const mockSelectChain = {
         from: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockResolvedValue([{
-          id: 'sub-uuid',
-          organizationId: testOrgId,
-          stripeCustomerId: testCustomerId,
-        }]),
+        limit: vi.fn().mockResolvedValue([
+          {
+            id: 'sub-uuid',
+            organizationId: testOrgId,
+            stripeCustomerId: testCustomerId,
+          },
+        ]),
       };
       mockDb.select.mockReturnValue(mockSelectChain as any);
 
-      const result = await mockDb.select().from({} as any).where({} as any).limit(1);
+      const result = await mockDb
+        .select()
+        .from({} as any)
+        .where({} as any)
+        .limit(1);
       const customerId = result[0]?.stripeCustomerId || null;
 
       expect(customerId).toBe(testCustomerId);

@@ -1,15 +1,10 @@
-import { GripHorizontal, EyeOff, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { WIDGET_REGISTRY } from "../registry/widgetRegistry";
-import { WidgetRenderer } from "./WidgetRenderer";
+import { GripHorizontal, EyeOff, Lock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { WIDGET_REGISTRY } from '../registry/widgetRegistry';
+import { WidgetRenderer } from './WidgetRenderer';
 
 interface WidgetWrapperProps {
   widgetId: string;
@@ -86,8 +81,8 @@ export function WidgetWrapper({
 
       {/* Widget content */}
       <div
-        className={`h-full flex flex-col min-h-0 ${isCustomizing ? "pt-8" : ""}`}
-        style={{ pointerEvents: isCustomizing ? "none" : "auto" }}
+        className={`h-full flex flex-col min-h-0 ${isCustomizing ? 'pt-8' : ''}`}
+        style={{ pointerEvents: isCustomizing ? 'none' : 'auto' }}
       >
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
           {isResizing ? (

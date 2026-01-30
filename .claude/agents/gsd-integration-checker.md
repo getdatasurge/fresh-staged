@@ -312,19 +312,19 @@ Structure findings for milestone auditor.
 ```yaml
 wiring:
   connected:
-    - export: "getCurrentUser"
-      from: "Phase 1 (Auth)"
-      used_by: ["Phase 3 (Dashboard)", "Phase 4 (Settings)"]
+    - export: 'getCurrentUser'
+      from: 'Phase 1 (Auth)'
+      used_by: ['Phase 3 (Dashboard)', 'Phase 4 (Settings)']
 
   orphaned:
-    - export: "formatUserData"
-      from: "Phase 2 (Utils)"
-      reason: "Exported but never imported"
+    - export: 'formatUserData'
+      from: 'Phase 2 (Utils)'
+      reason: 'Exported but never imported'
 
   missing:
-    - expected: "Auth check in Dashboard"
-      from: "Phase 1"
-      to: "Phase 3"
+    - expected: 'Auth check in Dashboard'
+      from: 'Phase 1'
+      to: 'Phase 3'
       reason: "Dashboard doesn't call useAuth or check session"
 ```
 
@@ -333,15 +333,15 @@ wiring:
 ```yaml
 flows:
   complete:
-    - name: "User signup"
-      steps: ["Form", "API", "DB", "Redirect"]
+    - name: 'User signup'
+      steps: ['Form', 'API', 'DB', 'Redirect']
 
   broken:
-    - name: "View dashboard"
-      broken_at: "Data fetch"
+    - name: 'View dashboard'
+      broken_at: 'Data fetch'
       reason: "Dashboard component doesn't fetch user data"
-      steps_complete: ["Route", "Component render"]
-      steps_missing: ["Fetch", "State", "Display"]
+      steps_complete: ['Route', 'Component render']
+      steps_missing: ['Fetch', 'State', 'Display']
 ```
 
 </verification_process>

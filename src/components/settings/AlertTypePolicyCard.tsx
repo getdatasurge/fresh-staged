@@ -1,34 +1,34 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { toast } from "sonner";
-import { 
-  Save, 
-  Loader2, 
-  Plus, 
-  Trash2, 
-  ChevronDown, 
+import { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { toast } from 'sonner';
+import {
+  Save,
+  Loader2,
+  Plus,
+  Trash2,
+  ChevronDown,
   X,
   Bell,
   Mail,
   MessageSquare,
   Smartphone,
   Users,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   NotificationPolicy,
   NotificationChannel,
@@ -38,15 +38,15 @@ import {
   useUpsertNotificationPolicy,
   useDeleteNotificationPolicy,
   AlertType,
-} from "@/hooks/useNotificationPolicies";
-import { useEscalationContacts } from "@/hooks/useEscalationContacts";
+} from '@/hooks/useNotificationPolicies';
+import { useEscalationContacts } from '@/hooks/useEscalationContacts';
 
 const ROLE_LABELS: Record<AppRole, string> = {
-  owner: "Owners",
-  admin: "Admins",
-  manager: "Managers",
-  staff: "Staff",
-  viewer: "Viewers",
+  owner: 'Owners',
+  admin: 'Admins',
+  manager: 'Managers',
+  staff: 'Staff',
+  viewer: 'Viewers',
 };
 
 interface AlertTypePolicyCardProps {
@@ -60,10 +60,10 @@ interface AlertTypePolicyCardProps {
 }
 
 const CHANNEL_LABELS: Record<NotificationChannel, { label: string; icon: React.ReactNode }> = {
-  WEB_TOAST: { label: "Web Push Toast", icon: <Bell className="w-4 h-4" /> },
-  IN_APP_CENTER: { label: "In-App Notification Center", icon: <Smartphone className="w-4 h-4" /> },
-  EMAIL: { label: "Email", icon: <Mail className="w-4 h-4" /> },
-  SMS: { label: "SMS", icon: <MessageSquare className="w-4 h-4" /> },
+  WEB_TOAST: { label: 'Web Push Toast', icon: <Bell className="w-4 h-4" /> },
+  IN_APP_CENTER: { label: 'In-App Notification Center', icon: <Smartphone className="w-4 h-4" /> },
+  EMAIL: { label: 'Email', icon: <Mail className="w-4 h-4" /> },
+  SMS: { label: 'SMS', icon: <MessageSquare className="w-4 h-4" /> },
 };
 
 export function AlertTypePolicyCard({
@@ -86,17 +86,17 @@ export function AlertTypePolicyCard({
   // Form state
   const [initialChannels, setInitialChannels] = useState<NotificationChannel[]>([]);
   const [requiresAck, setRequiresAck] = useState(false);
-  const [ackDeadlineMinutes, setAckDeadlineMinutes] = useState<string>("");
+  const [ackDeadlineMinutes, setAckDeadlineMinutes] = useState<string>('');
   const [escalationSteps, setEscalationSteps] = useState<EscalationStep[]>([]);
   const [sendResolvedNotifications, setSendResolvedNotifications] = useState(false);
   const [remindersEnabled, setRemindersEnabled] = useState(false);
-  const [reminderIntervalMinutes, setReminderIntervalMinutes] = useState<string>("");
+  const [reminderIntervalMinutes, setReminderIntervalMinutes] = useState<string>('');
   const [quietHoursEnabled, setQuietHoursEnabled] = useState(false);
-  const [quietHoursStart, setQuietHoursStart] = useState<string>("");
-  const [quietHoursEnd, setQuietHoursEnd] = useState<string>("");
+  const [quietHoursStart, setQuietHoursStart] = useState<string>('');
+  const [quietHoursEnd, setQuietHoursEnd] = useState<string>('');
   const [allowWarningNotifications, setAllowWarningNotifications] = useState(false);
   // Recipient state
-  const [notifyRoles, setNotifyRoles] = useState<AppRole[]>(["owner", "admin"]);
+  const [notifyRoles, setNotifyRoles] = useState<AppRole[]>(['owner', 'admin']);
   const [notifySiteManagers, setNotifySiteManagers] = useState(true);
   const [notifyAssignedUsers, setNotifyAssignedUsers] = useState(false);
 
@@ -120,34 +120,40 @@ export function AlertTypePolicyCard({
   // Initialize from existing policy
   useEffect(() => {
     if (existingPolicy) {
-      setInitialChannels(Array.isArray(existingPolicy.initial_channels) ? existingPolicy.initial_channels : []);
+      setInitialChannels(
+        Array.isArray(existingPolicy.initial_channels) ? existingPolicy.initial_channels : [],
+      );
       setRequiresAck(existingPolicy.requires_ack);
-      setAckDeadlineMinutes(existingPolicy.ack_deadline_minutes?.toString() || "");
+      setAckDeadlineMinutes(existingPolicy.ack_deadline_minutes?.toString() || '');
       setEscalationSteps(parseEscalationSteps(existingPolicy.escalation_steps));
       setSendResolvedNotifications(existingPolicy.send_resolved_notifications);
       setRemindersEnabled(existingPolicy.reminders_enabled);
-      setReminderIntervalMinutes(existingPolicy.reminder_interval_minutes?.toString() || "");
+      setReminderIntervalMinutes(existingPolicy.reminder_interval_minutes?.toString() || '');
       setQuietHoursEnabled(existingPolicy.quiet_hours_enabled);
-      setQuietHoursStart(existingPolicy.quiet_hours_start_local || "");
-      setQuietHoursEnd(existingPolicy.quiet_hours_end_local || "");
+      setQuietHoursStart(existingPolicy.quiet_hours_start_local || '');
+      setQuietHoursEnd(existingPolicy.quiet_hours_end_local || '');
       setAllowWarningNotifications(existingPolicy.allow_warning_notifications);
-      setNotifyRoles(Array.isArray(existingPolicy.notify_roles) ? existingPolicy.notify_roles : ["owner", "admin"]);
+      setNotifyRoles(
+        Array.isArray(existingPolicy.notify_roles)
+          ? existingPolicy.notify_roles
+          : ['owner', 'admin'],
+      );
       setNotifySiteManagers(existingPolicy.notify_site_managers ?? true);
       setNotifyAssignedUsers(existingPolicy.notify_assigned_users ?? false);
     } else {
       // Clear form
       setInitialChannels([]);
       setRequiresAck(false);
-      setAckDeadlineMinutes("");
+      setAckDeadlineMinutes('');
       setEscalationSteps([]);
       setSendResolvedNotifications(false);
       setRemindersEnabled(false);
-      setReminderIntervalMinutes("");
+      setReminderIntervalMinutes('');
       setQuietHoursEnabled(false);
-      setQuietHoursStart("");
-      setQuietHoursEnd("");
+      setQuietHoursStart('');
+      setQuietHoursEnd('');
       setAllowWarningNotifications(false);
-      setNotifyRoles(["owner", "admin"]);
+      setNotifyRoles(['owner', 'admin']);
       setNotifySiteManagers(true);
       setNotifyAssignedUsers(false);
     }
@@ -156,43 +162,43 @@ export function AlertTypePolicyCard({
   const getEffectiveValue = <T,>(
     localValue: T | undefined | null,
     parentValue: T | undefined | null,
-    defaultValue: T
-  ): { value: T; source: "local" | "inherited" | "default" } => {
-    if (localValue !== undefined && localValue !== null && (Array.isArray(localValue) ? localValue.length > 0 : true)) {
-      return { value: localValue, source: "local" };
+    defaultValue: T,
+  ): { value: T; source: 'local' | 'inherited' | 'default' } => {
+    if (
+      localValue !== undefined &&
+      localValue !== null &&
+      (Array.isArray(localValue) ? localValue.length > 0 : true)
+    ) {
+      return { value: localValue, source: 'local' };
     }
     if (parentValue !== undefined && parentValue !== null) {
-      return { value: parentValue, source: "inherited" };
+      return { value: parentValue, source: 'inherited' };
     }
-    return { value: defaultValue, source: "default" };
+    return { value: defaultValue, source: 'default' };
   };
 
   const toggleChannel = (channel: NotificationChannel) => {
     setInitialChannels((prev) =>
-      prev.includes(channel)
-        ? prev.filter((c) => c !== channel)
-        : [...prev, channel]
+      prev.includes(channel) ? prev.filter((c) => c !== channel) : [...prev, channel],
     );
   };
 
   const toggleRole = (role: AppRole) => {
     setNotifyRoles((prev) =>
-      prev.includes(role)
-        ? prev.filter((r) => r !== role)
-        : [...prev, role]
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role],
     );
   };
 
   const addEscalationStep = () => {
     setEscalationSteps((prev) => [
       ...prev,
-      { delay_minutes: 10, channels: ["EMAIL"], contact_priority: 1, repeat: false },
+      { delay_minutes: 10, channels: ['EMAIL'], contact_priority: 1, repeat: false },
     ]);
   };
 
   const updateEscalationStep = (index: number, updates: Partial<EscalationStep>) => {
     setEscalationSteps((prev) =>
-      prev.map((step, i) => (i === index ? { ...step, ...updates } : step))
+      prev.map((step, i) => (i === index ? { ...step, ...updates } : step)),
     );
   };
 
@@ -200,7 +206,7 @@ export function AlertTypePolicyCard({
     setEscalationSteps((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const toggleEscalationChannel = (index: number, channel: "EMAIL" | "SMS") => {
+  const toggleEscalationChannel = (index: number, channel: 'EMAIL' | 'SMS') => {
     setEscalationSteps((prev) =>
       prev.map((step, i) => {
         if (i !== index) return step;
@@ -208,7 +214,7 @@ export function AlertTypePolicyCard({
           ? step.channels.filter((c) => c !== channel)
           : [...step.channels, channel];
         return { ...step, channels };
-      })
+      }),
     );
   };
 
@@ -217,39 +223,44 @@ export function AlertTypePolicyCard({
     return (
       initialChannels.length > 0 ||
       requiresAck ||
-      ackDeadlineMinutes !== "" ||
+      ackDeadlineMinutes !== '' ||
       escalationSteps.length > 0 ||
       sendResolvedNotifications ||
       remindersEnabled ||
-      reminderIntervalMinutes !== "" ||
+      reminderIntervalMinutes !== '' ||
       quietHoursEnabled ||
-      quietHoursStart !== "" ||
-      quietHoursEnd !== "" ||
+      quietHoursStart !== '' ||
+      quietHoursEnd !== '' ||
       allowWarningNotifications
     );
   };
 
   const handleSave = async () => {
     // Get the org ID from any available scope identifier
-    const orgId = scope.organization_id || "";
+    const orgId = scope.organization_id || '';
     if (!orgId) {
-      toast.error("Organization ID is required");
+      toast.error('Organization ID is required');
       return;
     }
 
     try {
       const policy: Partial<NotificationPolicy> = {
-        initial_channels: initialChannels.length > 0 ? initialChannels : DEFAULT_NOTIFICATION_POLICY.initial_channels,
+        initial_channels:
+          initialChannels.length > 0
+            ? initialChannels
+            : DEFAULT_NOTIFICATION_POLICY.initial_channels,
         requires_ack: requiresAck,
         ack_deadline_minutes: ackDeadlineMinutes ? parseInt(ackDeadlineMinutes) : null,
         escalation_steps: escalationSteps,
         send_resolved_notifications: sendResolvedNotifications,
         reminders_enabled: remindersEnabled,
-        reminder_interval_minutes: reminderIntervalMinutes ? parseInt(reminderIntervalMinutes) : null,
+        reminder_interval_minutes: reminderIntervalMinutes
+          ? parseInt(reminderIntervalMinutes)
+          : null,
         quiet_hours_enabled: quietHoursEnabled,
         quiet_hours_start_local: quietHoursStart || null,
         quiet_hours_end_local: quietHoursEnd || null,
-        severity_threshold: "WARNING",
+        severity_threshold: 'WARNING',
         allow_warning_notifications: allowWarningNotifications,
         notify_roles: notifyRoles,
         notify_site_managers: notifySiteManagers,
@@ -266,8 +277,8 @@ export function AlertTypePolicyCard({
       toast.success(`Notification policy saved for ${alertTypeLabel}`);
       onSave?.();
     } catch (error) {
-      console.error("Error saving notification policy:", error);
-      toast.error("Failed to save notification policy");
+      console.error('Error saving notification policy:', error);
+      toast.error('Failed to save notification policy');
     }
   };
 
@@ -275,9 +286,9 @@ export function AlertTypePolicyCard({
     if (!existingPolicy) return;
 
     // Get the org ID from any available scope identifier
-    const orgId = scope.organization_id || "";
+    const orgId = scope.organization_id || '';
     if (!orgId) {
-      toast.error("Organization ID is required");
+      toast.error('Organization ID is required');
       return;
     }
 
@@ -291,24 +302,24 @@ export function AlertTypePolicyCard({
       // Clear form
       setInitialChannels([]);
       setRequiresAck(false);
-      setAckDeadlineMinutes("");
+      setAckDeadlineMinutes('');
       setEscalationSteps([]);
       setSendResolvedNotifications(false);
       setRemindersEnabled(false);
-      setReminderIntervalMinutes("");
+      setReminderIntervalMinutes('');
       setQuietHoursEnabled(false);
-      setQuietHoursStart("");
-      setQuietHoursEnd("");
+      setQuietHoursStart('');
+      setQuietHoursEnd('');
       setAllowWarningNotifications(false);
-      setNotifyRoles(["owner", "admin"]);
+      setNotifyRoles(['owner', 'admin']);
       setNotifySiteManagers(true);
       setNotifyAssignedUsers(false);
 
-      toast.success("Override cleared - now inherits from parent");
+      toast.success('Override cleared - now inherits from parent');
       onSave?.();
     } catch (error) {
-      console.error("Error clearing override:", error);
-      toast.error("Failed to clear override");
+      console.error('Error clearing override:', error);
+      toast.error('Failed to clear override');
     }
   };
 
@@ -316,7 +327,7 @@ export function AlertTypePolicyCard({
   const effectiveChannels = getEffectiveValue(
     initialChannels.length > 0 ? initialChannels : undefined,
     parentPolicy?.initial_channels,
-    DEFAULT_NOTIFICATION_POLICY.initial_channels
+    DEFAULT_NOTIFICATION_POLICY.initial_channels,
   );
 
   return (
@@ -330,17 +341,17 @@ export function AlertTypePolicyCard({
               variant="outline"
               className={
                 initialChannels.length > 0
-                  ? "bg-primary/10 text-primary border-primary/30"
-                  : effectiveChannels.source === "inherited"
-                  ? "bg-accent/10 text-accent border-accent/30"
-                  : "bg-muted text-muted-foreground"
+                  ? 'bg-primary/10 text-primary border-primary/30'
+                  : effectiveChannels.source === 'inherited'
+                    ? 'bg-accent/10 text-accent border-accent/30'
+                    : 'bg-muted text-muted-foreground'
               }
             >
               {initialChannels.length > 0
-                ? "Override"
-                : effectiveChannels.source === "inherited"
-                ? "Inherited"
-                : "Default"}
+                ? 'Override'
+                : effectiveChannels.source === 'inherited'
+                  ? 'Inherited'
+                  : 'Default'}
             </Badge>
           )}
         </div>
@@ -368,7 +379,7 @@ export function AlertTypePolicyCard({
         </div>
         {initialChannels.length === 0 && (
           <p className="text-xs text-muted-foreground">
-            Effective: {effectiveChannels.value.join(", ") || "None"}
+            Effective: {effectiveChannels.value.join(', ') || 'None'}
           </p>
         )}
       </div>
@@ -382,10 +393,11 @@ export function AlertTypePolicyCard({
           <Label className="text-sm font-medium">Initial Notification Recipients</Label>
         </div>
         <p className="text-xs text-muted-foreground">
-          Select which roles receive the initial notification. Users can manage their preferences in their profile.
+          Select which roles receive the initial notification. Users can manage their preferences in
+          their profile.
         </p>
         <div className="grid grid-cols-2 gap-3">
-          {(["owner", "admin", "manager", "staff"] as AppRole[]).map((role) => (
+          {(['owner', 'admin', 'manager', 'staff'] as AppRole[]).map((role) => (
             <div
               key={role}
               className="flex items-center space-x-2 p-2 rounded-md border bg-background"
@@ -413,10 +425,7 @@ export function AlertTypePolicyCard({
               onCheckedChange={(checked) => setNotifySiteManagers(!!checked)}
               disabled={!canEdit}
             />
-            <label
-              htmlFor={`${alertType}-site-managers`}
-              className="text-sm cursor-pointer"
-            >
+            <label htmlFor={`${alertType}-site-managers`} className="text-sm cursor-pointer">
               Include Site Managers
             </label>
           </div>
@@ -427,10 +436,7 @@ export function AlertTypePolicyCard({
               onCheckedChange={(checked) => setNotifyAssignedUsers(!!checked)}
               disabled={!canEdit}
             />
-            <label
-              htmlFor={`${alertType}-assigned-users`}
-              className="text-sm cursor-pointer"
-            >
+            <label htmlFor={`${alertType}-assigned-users`} className="text-sm cursor-pointer">
               Include Users Assigned to Unit
             </label>
           </div>
@@ -448,11 +454,7 @@ export function AlertTypePolicyCard({
               User must acknowledge this alert before it stops escalating
             </p>
           </div>
-          <Switch
-            checked={requiresAck}
-            onCheckedChange={setRequiresAck}
-            disabled={!canEdit}
-          />
+          <Switch checked={requiresAck} onCheckedChange={setRequiresAck} disabled={!canEdit} />
         </div>
 
         {requiresAck && (
@@ -481,12 +483,7 @@ export function AlertTypePolicyCard({
         <div className="flex items-center justify-between">
           <Label className="text-sm font-medium">Escalation Steps</Label>
           {canEdit && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={addEscalationStep}
-              className="h-7 text-xs"
-            >
+            <Button variant="outline" size="sm" onClick={addEscalationStep} className="h-7 text-xs">
               <Plus className="w-3 h-3 mr-1" />
               Add Step
             </Button>
@@ -500,14 +497,9 @@ export function AlertTypePolicyCard({
         ) : (
           <div className="space-y-3">
             {escalationSteps.map((step, index) => (
-              <div
-                key={index}
-                className="flex flex-col gap-2 p-3 rounded-md border bg-muted/30"
-              >
+              <div key={index} className="flex flex-col gap-2 p-3 rounded-md border bg-muted/30">
                 <div className="flex items-center gap-3 flex-wrap">
-                  <span className="text-sm text-muted-foreground whitespace-nowrap">
-                    After
-                  </span>
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">After</span>
                   <Input
                     type="number"
                     min="1"
@@ -524,8 +516,10 @@ export function AlertTypePolicyCard({
                     min, notify:
                   </span>
                   <Select
-                    value={step.contact_priority?.toString() || "1"}
-                    onValueChange={(val) => updateEscalationStep(index, { contact_priority: parseInt(val) })}
+                    value={step.contact_priority?.toString() || '1'}
+                    onValueChange={(val) =>
+                      updateEscalationStep(index, { contact_priority: parseInt(val) })
+                    }
                     disabled={!canEdit}
                   >
                     <SelectTrigger className="w-[180px] h-8">
@@ -533,14 +527,18 @@ export function AlertTypePolicyCard({
                     </SelectTrigger>
                     <SelectContent>
                       {escalationContacts && escalationContacts.length > 0 ? (
-                        [...new Set(escalationContacts.map(c => c.priority))].sort().map((priority) => {
-                          const contactsAtLevel = escalationContacts.filter(c => c.priority === priority);
-                          return (
-                            <SelectItem key={priority} value={priority.toString()}>
-                              Level {priority} ({contactsAtLevel.map(c => c.name).join(", ")})
-                            </SelectItem>
-                          );
-                        })
+                        [...new Set(escalationContacts.map((c) => c.priority))]
+                          .sort()
+                          .map((priority) => {
+                            const contactsAtLevel = escalationContacts.filter(
+                              (c) => c.priority === priority,
+                            );
+                            return (
+                              <SelectItem key={priority} value={priority.toString()}>
+                                Level {priority} ({contactsAtLevel.map((c) => c.name).join(', ')})
+                              </SelectItem>
+                            );
+                          })
                       ) : (
                         <>
                           <SelectItem value="1">Level 1 (Primary)</SelectItem>
@@ -566,8 +564,8 @@ export function AlertTypePolicyCard({
                   <div className="flex items-center space-x-1">
                     <Checkbox
                       id={`${alertType}-esc-${index}-email`}
-                      checked={step.channels.includes("EMAIL")}
-                      onCheckedChange={() => toggleEscalationChannel(index, "EMAIL")}
+                      checked={step.channels.includes('EMAIL')}
+                      onCheckedChange={() => toggleEscalationChannel(index, 'EMAIL')}
                       disabled={!canEdit}
                     />
                     <label
@@ -580,8 +578,8 @@ export function AlertTypePolicyCard({
                   <div className="flex items-center space-x-1">
                     <Checkbox
                       id={`${alertType}-esc-${index}-sms`}
-                      checked={step.channels.includes("SMS")}
-                      onCheckedChange={() => toggleEscalationChannel(index, "SMS")}
+                      checked={step.channels.includes('SMS')}
+                      onCheckedChange={() => toggleEscalationChannel(index, 'SMS')}
                       disabled={!canEdit}
                     />
                     <label
@@ -603,15 +601,10 @@ export function AlertTypePolicyCard({
       {/* Advanced Options */}
       <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
         <CollapsibleTrigger asChild>
-          <Button
-            variant="ghost"
-            className="w-full justify-between h-9 px-2"
-          >
+          <Button variant="ghost" className="w-full justify-between h-9 px-2">
             <span className="text-sm font-medium">Advanced Options</span>
             <ChevronDown
-              className={`w-4 h-4 transition-transform ${
-                advancedOpen ? "rotate-180" : ""
-              }`}
+              className={`w-4 h-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`}
             />
           </Button>
         </CollapsibleTrigger>

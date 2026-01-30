@@ -3,28 +3,28 @@
  * Core types for the registry-driven device rendering system
  */
 
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from 'lucide-react';
 
 // ============================================================================
 // Device Categories
 // ============================================================================
 
 export type DeviceCategory =
-  | "motion"
-  | "temperature"
-  | "leak"
-  | "metering"
-  | "door"
-  | "gps"
-  | "air_quality"
-  | "multi_sensor"
-  | "unknown";
+  | 'motion'
+  | 'temperature'
+  | 'leak'
+  | 'metering'
+  | 'door'
+  | 'gps'
+  | 'air_quality'
+  | 'multi_sensor'
+  | 'unknown';
 
 // ============================================================================
 // Telemetry Field Definitions
 // ============================================================================
 
-export type TelemetryFieldType = "number" | "boolean" | "string" | "datetime";
+export type TelemetryFieldType = 'number' | 'boolean' | 'string' | 'datetime';
 
 export interface TelemetryFieldDefinition {
   /** Field key in telemetry data (e.g., 'temperature') */
@@ -113,31 +113,31 @@ export interface NormalizedDevice {
   id: string;
   name: string;
   model: string | null;
-  
+
   // Registry resolution
   resolvedModel: DeviceDefinition;
   category: DeviceCategory;
   isUnknownModel: boolean;
-  
+
   // Type mismatch detection
   hasMismatch: boolean;
   mismatchReason?: string;
-  
+
   // Location context
   siteId: string | null;
   siteName: string | null;
   unitId: string | null;
   unitName: string | null;
-  
+
   // Device identifiers
   devEui: string;
   ttnDeviceId: string | null;
-  
+
   // OTAA credentials
   appEui: string | null;
   appKey: string | null;
   credentialsGenerated?: boolean;
-  
+
   // Status information
   status: string;
   provisioningState: string;
@@ -145,7 +145,7 @@ export interface NormalizedDevice {
   lastJoinAt: string | null;
   batteryLevel: number | null;
   signalStrength: number | null;
-  
+
   // Telemetry data (raw values)
   telemetry: Record<string, unknown>;
 }
@@ -156,15 +156,15 @@ export interface NormalizedDevice {
 
 /** Maps sensor_type values to their expected categories */
 export const SENSOR_TYPE_TO_CATEGORY: Record<string, DeviceCategory> = {
-  temperature: "temperature",
-  temperature_humidity: "temperature",
-  door: "door",
-  combo: "multi_sensor",
-  contact: "door",
-  motion: "motion",
-  leak: "leak",
-  metering: "metering",
-  gps: "gps",
-  air_quality: "air_quality",
-  multi_sensor: "multi_sensor",
+  temperature: 'temperature',
+  temperature_humidity: 'temperature',
+  door: 'door',
+  combo: 'multi_sensor',
+  contact: 'door',
+  motion: 'motion',
+  leak: 'leak',
+  metering: 'metering',
+  gps: 'gps',
+  air_quality: 'air_quality',
+  multi_sensor: 'multi_sensor',
 };

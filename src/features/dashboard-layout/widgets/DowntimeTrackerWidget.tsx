@@ -5,17 +5,21 @@
  * Shows total downtime, interval count, and longest interval.
  */
 
-import { useMemo } from "react";
-import { useQuery, useQueries } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
-import { Timer, WifiOff, TrendingUp, Clock, AlertTriangle } from "lucide-react";
-import { useTRPC } from "@/lib/trpc";
-import { findDowntimeIntervals, calculateUptimePercentage, DEFAULT_OFFLINE_THRESHOLD_MS } from "@/lib/downtime/gapDetection";
-import { format, subDays } from "date-fns";
-import type { WidgetProps } from "../types";
+import { useMemo } from 'react';
+import { useQuery, useQueries } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
+import { Timer, WifiOff, TrendingUp, Clock, AlertTriangle } from 'lucide-react';
+import { useTRPC } from '@/lib/trpc';
+import {
+  findDowntimeIntervals,
+  calculateUptimePercentage,
+  DEFAULT_OFFLINE_THRESHOLD_MS,
+} from '@/lib/downtime/gapDetection';
+import { format, subDays } from 'date-fns';
+import type { WidgetProps } from '../types';
 
 export function DowntimeTrackerWidget({ entityType, entityId, organizationId, site }: WidgetProps) {
   const trpc = useTRPC();
@@ -26,7 +30,7 @@ export function DowntimeTrackerWidget({ entityType, entityId, organizationId, si
       start: subDays(new Date(), 7),
       end: new Date(),
     }),
-    []
+    [],
   );
 
   // For site-level, get all units first
@@ -36,17 +40,17 @@ export function DowntimeTrackerWidget({ entityType, entityId, organizationId, si
 
   const { data: allUnits } = useQuery({
     ...unitsQueryOptions,
-    enabled: !!organizationId && entityType === "site" && !!site?.id,
+    enabled: !!organizationId && entityType === 'site' && !!site?.id,
     staleTime: 60_000,
   });
 
   // Filter units for this site
   const siteUnits = useMemo(
     () =>
-      entityType === "site"
-        ? allUnits?.filter((u) => u.siteId === site?.id && u.isActive) ?? []
+      entityType === 'site'
+        ? (allUnits?.filter((u) => u.siteId === site?.id && u.isActive) ?? [])
         : [],
-    [allUnits, site?.id, entityType]
+    [allUnits, site?.id, entityType],
   );
 
   // For unit-level, fetch readings for single unit
@@ -60,7 +64,7 @@ export function DowntimeTrackerWidget({ entityType, entityId, organizationId, si
 
   const { data: unitReadings, isLoading: unitReadingsLoading } = useQuery({
     ...unitReadingsQueryOptions,
-    enabled: !!entityId && !!organizationId && entityType === "unit",
+    enabled: !!entityId && !!organizationId && entityType === 'unit',
     staleTime: 5 * 60_000,
   });
 
@@ -79,24 +83,20 @@ export function DowntimeTrackerWidget({ entityType, entityId, organizationId, si
     })),
   });
 
-  const siteReadingsLoading =
-    siteUnits.length > 0 && siteReadingsQueries.some((q) => q.isLoading);
-  const isLoading =
-    entityType === "unit" ? unitReadingsLoading : siteReadingsLoading;
+  const siteReadingsLoading = siteUnits.length > 0 && siteReadingsQueries.some((q) => q.isLoading);
+  const isLoading = entityType === 'unit' ? unitReadingsLoading : siteReadingsLoading;
 
   // Compute downtime summary from tRPC data
   const downtimeSummary = useMemo(() => {
     const emptyResult = {
-      intervals: [] as ReturnType<typeof findDowntimeIntervals>["intervals"],
+      intervals: [] as ReturnType<typeof findDowntimeIntervals>['intervals'],
       totalDowntimeMs: 0,
-      totalDowntimeFormatted: "0m",
+      totalDowntimeFormatted: '0m',
       intervalCount: 0,
-      longestInterval: null as ReturnType<
-        typeof findDowntimeIntervals
-      >["longestInterval"],
+      longestInterval: null as ReturnType<typeof findDowntimeIntervals>['longestInterval'],
     };
 
-    if (entityType === "unit" && entityId) {
+    if (entityType === 'unit' && entityId) {
       if (!unitReadings) return emptyResult;
 
       // Transform readings for gap detection
@@ -107,11 +107,11 @@ export function DowntimeTrackerWidget({ entityType, entityId, organizationId, si
       return findDowntimeIntervals(
         readingsForGapDetection,
         DEFAULT_OFFLINE_THRESHOLD_MS,
-        timeRange
+        timeRange,
       );
     }
 
-    if (entityType === "site" && site?.id) {
+    if (entityType === 'site' && site?.id) {
       if (siteUnits.length === 0) return emptyResult;
 
       // Combine all readings from all units
@@ -125,27 +125,14 @@ export function DowntimeTrackerWidget({ entityType, entityId, organizationId, si
 
       // Sort by recorded_at for gap detection
       allReadings.sort(
-        (a, b) =>
-          new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()
+        (a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime(),
       );
 
-      return findDowntimeIntervals(
-        allReadings,
-        DEFAULT_OFFLINE_THRESHOLD_MS,
-        timeRange
-      );
+      return findDowntimeIntervals(allReadings, DEFAULT_OFFLINE_THRESHOLD_MS, timeRange);
     }
 
     return emptyResult;
-  }, [
-    entityType,
-    entityId,
-    unitReadings,
-    site?.id,
-    siteUnits,
-    siteReadingsQueries,
-    timeRange,
-  ]);
+  }, [entityType, entityId, unitReadings, site?.id, siteUnits, siteReadingsQueries, timeRange]);
 
   // Calculate uptime percentage
   const uptimePercent = useMemo(() => {
@@ -190,14 +177,13 @@ export function DowntimeTrackerWidget({ entityType, entityId, organizationId, si
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Uptime</span>
-            <span className={`font-medium ${uptimePercent >= 99 ? 'text-green-500' : uptimePercent >= 95 ? 'text-yellow-500' : 'text-red-500'}`}>
+            <span
+              className={`font-medium ${uptimePercent >= 99 ? 'text-green-500' : uptimePercent >= 95 ? 'text-yellow-500' : 'text-red-500'}`}
+            >
               {uptimePercent.toFixed(1)}%
             </span>
           </div>
-          <Progress 
-            value={uptimePercent} 
-            className="h-2"
-          />
+          <Progress value={uptimePercent} className="h-2" />
         </div>
 
         {/* Stats grid */}
@@ -209,13 +195,13 @@ export function DowntimeTrackerWidget({ entityType, entityId, organizationId, si
           </div>
           <div className="p-3 rounded-lg bg-muted/50 text-center">
             <Clock className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-            <p className="text-lg font-bold">{downtimeSummary?.totalDowntimeFormatted ?? "0m"}</p>
+            <p className="text-lg font-bold">{downtimeSummary?.totalDowntimeFormatted ?? '0m'}</p>
             <p className="text-xs text-muted-foreground">Total Downtime</p>
           </div>
           <div className="p-3 rounded-lg bg-muted/50 text-center">
             <TrendingUp className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
             <p className="text-lg font-bold">
-              {downtimeSummary?.longestInterval?.durationFormatted ?? "0m"}
+              {downtimeSummary?.longestInterval?.durationFormatted ?? '0m'}
             </p>
             <p className="text-xs text-muted-foreground">Longest</p>
           </div>
@@ -228,14 +214,14 @@ export function DowntimeTrackerWidget({ entityType, entityId, organizationId, si
             <ScrollArea className="h-full max-h-[150px]">
               <div className="space-y-2 pr-4">
                 {downtimeSummary.intervals.slice(0, 10).map((interval, idx) => (
-                  <div 
+                  <div
                     key={idx}
                     className="flex items-center justify-between p-2 rounded bg-muted/30 text-sm"
                   >
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="h-3 w-3 text-yellow-500" />
                       <span className="text-muted-foreground">
-                        {format(interval.start, "MMM d, h:mm a")}
+                        {format(interval.start, 'MMM d, h:mm a')}
                       </span>
                     </div>
                     <span className="font-medium">{interval.durationFormatted}</span>

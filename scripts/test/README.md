@@ -5,6 +5,7 @@ This directory contains end-to-end (E2E) test scripts for validating FreshTrack 
 ## Overview
 
 These scripts are designed for:
+
 - Production validation after deployment
 - Staging environment testing
 - Local development verification
@@ -21,6 +22,7 @@ All scripts are self-contained bash scripts with clear output and exit codes sui
 Tests the complete sensor data flow from ingestion to alert trigger.
 
 **What it tests:**
+
 - Backend health and database connectivity
 - Sensor reading ingestion via API (normal temperature)
 - Sensor reading storage verification
@@ -29,6 +31,7 @@ Tests the complete sensor data flow from ingestion to alert trigger.
 - Alert state machine transitions
 
 **Test Flow:**
+
 1. Pre-flight health checks (backend /health and /health/ready endpoints)
 2. Generate unique test device ID
 3. POST normal reading (below threshold) → verify ingestion success
@@ -38,13 +41,13 @@ Tests the complete sensor data flow from ingestion to alert trigger.
 
 **Environment Variables:**
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `BASE_URL` | No | `http://localhost:3000` | Backend API URL |
-| `TTN_WEBHOOK_SECRET` | **Yes** | - | API key for `/api/ingest/readings` endpoint |
-| `TEST_JWT` | No | - | JWT token for authenticated endpoints (alert query) |
-| `ALERT_TIMEOUT` | No | `10` | Seconds to wait for alert processing |
-| `TEST_TEMP_BREACH` | No | `5.0` | Temperature above threshold (°C) |
+| Variable             | Required | Default                 | Description                                         |
+| -------------------- | -------- | ----------------------- | --------------------------------------------------- |
+| `BASE_URL`           | No       | `http://localhost:3000` | Backend API URL                                     |
+| `TTN_WEBHOOK_SECRET` | **Yes**  | -                       | API key for `/api/ingest/readings` endpoint         |
+| `TEST_JWT`           | No       | -                       | JWT token for authenticated endpoints (alert query) |
+| `ALERT_TIMEOUT`      | No       | `10`                    | Seconds to wait for alert processing                |
+| `TEST_TEMP_BREACH`   | No       | `5.0`                   | Temperature above threshold (°C)                    |
 
 **Usage - Local Testing:**
 
@@ -121,10 +124,12 @@ Total Tests: 8
 ```
 
 **Exit Codes:**
+
 - `0` - All tests passed
 - `1` - One or more tests failed
 
 **Notes:**
+
 - Script is idempotent - generates unique device IDs on each run
 - If TEST_JWT not provided, alert verification steps are skipped
 - Uses `/api/ingest/readings` endpoint (direct API, not TTN webhook)
@@ -135,6 +140,7 @@ Total Tests: 8
 Tests the complete alert lifecycle and notification delivery pipeline.
 
 **What it tests:**
+
 - Alert trigger on high-temperature reading
 - Alert creation in database
 - Alert acknowledgment by staff
@@ -143,6 +149,7 @@ Tests the complete alert lifecycle and notification delivery pipeline.
 - Complete state transitions: triggered → acknowledged → resolved
 
 **Required environment variables:**
+
 ```bash
 BASE_URL=http://localhost:3000
 TEST_API_KEY=your-api-key           # For readings ingestion
@@ -152,6 +159,7 @@ TEST_UNIT_ID=unit-with-alert-rule   # Must have alert rule configured
 ```
 
 **Optional environment variables:**
+
 ```bash
 WEBHOOK_TEST=true                   # Enable webhook delivery test
 WEBHOOK_PORT=8888                   # Port for webhook receiver
@@ -159,6 +167,7 @@ TEMPERATURE_HIGH=40.0               # Temperature to trigger alert
 ```
 
 **Usage:**
+
 ```bash
 # Basic test (no webhook)
 export BASE_URL=http://localhost:3000
@@ -174,6 +183,7 @@ export WEBHOOK_TEST=true
 ```
 
 **Test flow:**
+
 1. Pre-flight checks (backend health, dependencies)
 2. Start webhook receiver (if WEBHOOK_TEST=true)
 3. Inject high-temperature reading via API
@@ -185,6 +195,7 @@ export WEBHOOK_TEST=true
 9. Verify webhook notification received (if enabled)
 
 **Output:**
+
 - Color-coded pass/fail for each step
 - Test summary with duration
 - Exit code 0 on success, 1 on failure
@@ -194,11 +205,13 @@ export WEBHOOK_TEST=true
 Simple HTTP server for capturing webhook notifications during E2E testing.
 
 **Purpose:**
+
 - Capture alert notification payloads
 - Verify webhook delivery in tests
 - Inspect notification structure
 
 **Usage:**
+
 ```bash
 # Default (port 8888, 60s timeout)
 ./webhook-receiver.sh
@@ -208,12 +221,14 @@ Simple HTTP server for capturing webhook notifications during E2E testing.
 ```
 
 **Options:**
+
 - `--port PORT` - Listen on PORT (default: 8888)
 - `--timeout SECONDS` - Timeout after SECONDS (default: 60)
 - `--output FILE` - Write payload to FILE (default: /tmp/webhook-test-<timestamp>.json)
 - `--help` - Show help message
 
 **How it works:**
+
 1. Starts Python HTTP server on specified port
 2. Listens for POST requests to any path
 3. Logs received payload to stdout and file
@@ -221,6 +236,7 @@ Simple HTTP server for capturing webhook notifications during E2E testing.
 5. Exits after first request or timeout
 
 **Running alongside tests:**
+
 ```bash
 # Terminal 1: Start webhook receiver
 ./webhook-receiver.sh --port 8888 --timeout 300
@@ -238,11 +254,13 @@ export WEBHOOK_PORT=8888
 Webhook delivery can be tested end-to-end using the scripts above.
 
 **Setup:**
+
 1. Configure webhook URL in organization notification settings
 2. Set `WEBHOOK_TEST=true` when running `e2e-alert-notifications.sh`
 3. Script automatically starts webhook receiver and verifies delivery
 
 **Verification:**
+
 - Webhook receiver captures notification payload
 - Test validates alert ID in payload
 - Payload saved to file for inspection
@@ -252,17 +270,20 @@ Webhook delivery can be tested end-to-end using the scripts above.
 Email delivery requires manual verification as it depends on external SMTP provider.
 
 **Setup requirements:**
+
 - SMTP configuration in environment variables
 - Valid recipient email addresses in organization settings
 - Email notification channel enabled for alert rules
 
 **Manual verification steps:**
+
 1. Run `e2e-alert-notifications.sh` to trigger alert
 2. Check application logs for email send attempts
 3. Verify email received in recipient inbox
 4. Inspect email content for alert details
 
 **Log inspection:**
+
 ```bash
 # Check backend logs for email sending
 docker compose logs backend | grep -i "email\|smtp\|notification"
@@ -272,6 +293,7 @@ docker compose logs backend | grep "Notification sent"
 ```
 
 **Common issues:**
+
 - SMTP credentials incorrect → Check logs for authentication errors
 - Rate limiting → Wait and retry
 - Spam filtering → Check spam folder
@@ -282,11 +304,13 @@ docker compose logs backend | grep "Notification sent"
 ### 1. Direct API Mode (Default - e2e-sensor-pipeline.sh)
 
 The E2E sensor pipeline test uses the direct ingestion endpoint:
+
 - POST to `/api/ingest/readings`
 - Requires `X-API-Key` header with `TTN_WEBHOOK_SECRET`
 - Mimics sensor data flow from TTN integration
 
 **When to use:**
+
 - Validating backend ingestion logic
 - Testing alert evaluation service
 - Local development testing
@@ -295,11 +319,13 @@ The E2E sensor pipeline test uses the direct ingestion endpoint:
 ### 2. TTN Webhook Mode (via TTN Integration)
 
 For testing the complete TTN integration flow:
+
 - Use actual TTN webhook endpoint (if configured)
 - Data flows through TTN decoder → webhook → backend
 - Tests complete end-to-end integration
 
 **When to use:**
+
 - Validating TTN integration setup
 - Testing TTN payload decoder
 - Production integration testing
@@ -313,6 +339,7 @@ For manual testing and debugging, use the built-in Sensor Simulator:
 **Location:** Settings → Admin → Sensor Simulator
 
 **Features:**
+
 - Select any unit to simulate sensor data
 - Configure temperature, humidity, battery, signal strength
 - Enable streaming mode (continuous readings at interval)
@@ -322,6 +349,7 @@ For manual testing and debugging, use the built-in Sensor Simulator:
 - Visual feedback for sensor online/offline states
 
 **How to use:**
+
 1. Navigate to **Settings → Admin → Sensor Simulator**
 2. Select a unit from the dropdown
 3. Adjust temperature slider or enter specific value
@@ -330,6 +358,7 @@ For manual testing and debugging, use the built-in Sensor Simulator:
 6. Check event log at bottom of simulator panel
 
 **When to use:**
+
 - Manual testing during development
 - Demonstrating sensor flow to stakeholders
 - Debugging specific unit configurations
@@ -341,28 +370,33 @@ For manual testing and debugging, use the built-in Sensor Simulator:
 For production validation, run tests in this order:
 
 ### 1. Sensor Data Ingestion Test
+
 ```bash
 ./e2e-sensor-pipeline.sh
 ```
 
 **Expected result:**
+
 - Sensor reading successfully ingested
 - Data appears in database
 - API returns success response
 
 ### 2. Alert Notification Test
+
 ```bash
 export WEBHOOK_TEST=true
 ./e2e-alert-notifications.sh
 ```
 
 **Expected result:**
+
 - Alert triggered on high temperature
 - Alert can be acknowledged
 - Alert can be resolved
 - Webhook notification delivered (if configured)
 
 ### 3. Manual Verification
+
 - Check Grafana dashboards for sensor data visualization
 - Verify alerts appear in UI
 - Test acknowledgment/resolution in UI
@@ -436,6 +470,7 @@ jobs:
 ### Exit Codes
 
 All scripts follow standard exit code conventions:
+
 - `0` - All tests passed
 - `1` - One or more tests failed
 - `2` - Configuration error (missing env vars, dependencies)
@@ -443,27 +478,32 @@ All scripts follow standard exit code conventions:
 ## Dependencies
 
 ### Required
+
 - `bash` (version 4.0+)
 - `curl` - HTTP requests
 - `jq` - JSON parsing
 - `python3` - Webhook receiver (standard library only)
 
 ### Optional
+
 - `dos2unix` - Line ending normalization (recommended on Windows)
 
 ### Installation
 
 **Ubuntu/Debian:**
+
 ```bash
 sudo apt-get install curl jq python3
 ```
 
 **macOS:**
+
 ```bash
 brew install curl jq python3
 ```
 
 **Alpine Linux (Docker):**
+
 ```bash
 apk add bash curl jq python3
 ```
@@ -477,12 +517,14 @@ apk add bash curl jq python3
 **Cause:** Missing API key for sensor ingestion endpoint
 
 **Solution:**
+
 ```bash
 # Get API key from backend configuration
 export TTN_WEBHOOK_SECRET="your-api-key"
 ```
 
 The API key is configured in backend `.env`:
+
 ```
 TTN_WEBHOOK_SECRET=your-secret-key-here
 ```
@@ -492,6 +534,7 @@ TTN_WEBHOOK_SECRET=your-secret-key-here
 **Cause:** Backend server not running or not accessible at BASE_URL
 
 **Solution:**
+
 1. Verify backend is running:
    ```bash
    curl http://localhost:3000/health
@@ -511,6 +554,7 @@ TTN_WEBHOOK_SECRET=your-secret-key-here
 **Cause:** Database not available or backend can't connect
 
 **Solution:**
+
 1. Check database container:
    ```bash
    docker ps | grep postgres
@@ -526,6 +570,7 @@ TTN_WEBHOOK_SECRET=your-secret-key-here
 **Cause:** Incorrect `TTN_WEBHOOK_SECRET` or API key not configured in backend
 
 **Solution:**
+
 1. Check backend logs for authentication errors:
    ```bash
    docker compose logs backend | grep -i "auth\|403"
@@ -545,6 +590,7 @@ TTN_WEBHOOK_SECRET=your-secret-key-here
 **Note:** This is not necessarily an error - it may indicate expected behavior.
 
 **Possible causes:**
+
 1. **Unit has no thresholds configured**
    - Check `units.temp_min` and `units.temp_max` in database
    - Configure thresholds via UI (Settings → Units) or SQL
@@ -563,6 +609,7 @@ TTN_WEBHOOK_SECRET=your-secret-key-here
    - Resolve existing alerts before re-running test
 
 **Debugging:**
+
 ```bash
 # Check unit configuration
 psql -h localhost -U postgres -d freshtrack -c \
@@ -582,21 +629,24 @@ psql -h localhost -U postgres -d freshtrack -c \
 **Solution (if you want full testing):**
 
 **Option 1: Browser DevTools**
+
 1. Login to FreshTrack Pro UI
 2. Open browser DevTools → Network tab
 3. Look for API requests with `Authorization: Bearer ...` header
 4. Copy the JWT token
 
 **Option 2: Stack Auth CLI**
+
 ```bash
 # Login via Stack Auth and extract token
 # (Exact method depends on Stack Auth configuration)
 ```
 
 **Option 3: Manual extraction from browser**
+
 ```javascript
 // In browser console after login
-localStorage.getItem('stack-auth-token')
+localStorage.getItem('stack-auth-token');
 ```
 
 ### General Troubleshooting
@@ -606,6 +656,7 @@ localStorage.getItem('stack-auth-token')
 **Cause:** Backend server not running or not accessible
 
 **Solution:**
+
 1. Verify backend is running: `curl http://localhost:3000/health`
 2. Check BASE_URL is correct
 3. Check network connectivity
@@ -614,11 +665,13 @@ localStorage.getItem('stack-auth-token')
 ### Test Fails: "Alert not found after 30 seconds"
 
 **Possible causes:**
+
 1. No alert rule configured for test unit
 2. Temperature threshold not exceeded
 3. Alert evaluator service error
 
 **Solution:**
+
 1. Verify alert rule exists: Check UI or query database
 2. Adjust TEMPERATURE_HIGH to exceed threshold
 3. Check backend logs: `docker compose logs backend | grep -i alert`
@@ -626,11 +679,13 @@ localStorage.getItem('stack-auth-token')
 ### Test Fails: "Alert acknowledgment failed"
 
 **Possible causes:**
+
 1. Invalid JWT token
 2. User lacks 'staff' role
 3. Alert already acknowledged
 
 **Solution:**
+
 1. Verify JWT is valid and not expired
 2. Check user role in database
 3. Use fresh alert for testing
@@ -638,11 +693,13 @@ localStorage.getItem('stack-auth-token')
 ### Test Fails: "No webhook notification received"
 
 **Possible causes:**
+
 1. Webhook URL not configured
 2. Notification service disabled
 3. Network connectivity issue
 
 **Solution:**
+
 1. Configure webhook URL in organization settings
 2. Verify webhook receiver is running: `ps aux | grep webhook`
 3. Check backend logs for notification send attempts
@@ -678,7 +735,7 @@ Estimate maintenance window for production database migration by measuring pg_du
 
 **RTO target:** 30 minutes (Recovery Time Objective)
 **RPO target:** 24 hours (Recovery Point Objective)
-*Source: Phase 10 Database Production Readiness*
+_Source: Phase 10 Database Production Readiness_
 
 ### Prerequisites
 
@@ -704,10 +761,10 @@ npx tsx scripts/test/generate-test-data.ts --yes
 
 #### Configurable Parameters
 
-| Environment Variable | Default | Description |
-|---------------------|---------|-------------|
-| `TARGET_RECORDS` | 100000 | Number of records to generate |
-| `BATCH_SIZE` | 5000 | Records per batch (transaction size) |
+| Environment Variable | Default | Description                          |
+| -------------------- | ------- | ------------------------------------ |
+| `TARGET_RECORDS`     | 100000  | Number of records to generate        |
+| `BATCH_SIZE`         | 5000    | Records per batch (transaction size) |
 
 Example with custom parameters:
 
@@ -903,12 +960,12 @@ Phase 13 delivers a comprehensive E2E validation suite for production readiness.
 
 ### Test Scripts Overview
 
-| Script | Purpose | Required | Duration |
-|--------|---------|----------|----------|
-| `e2e-sensor-pipeline.sh` | Sensor ingestion → storage → alert | ✓ | ~30 seconds |
-| `e2e-alert-notifications.sh` | Alert lifecycle + webhook delivery | ✓ | ~45 seconds |
-| `validate-migration-timing.sh` | Migration timing measurement | Optional | ~2-5 minutes |
-| `validate-zero-downtime.sh` | Zero-downtime deployment validation | ✓ | ~45 seconds |
+| Script                         | Purpose                             | Required | Duration     |
+| ------------------------------ | ----------------------------------- | -------- | ------------ |
+| `e2e-sensor-pipeline.sh`       | Sensor ingestion → storage → alert  | ✓        | ~30 seconds  |
+| `e2e-alert-notifications.sh`   | Alert lifecycle + webhook delivery  | ✓        | ~45 seconds  |
+| `validate-migration-timing.sh` | Migration timing measurement        | Optional | ~2-5 minutes |
+| `validate-zero-downtime.sh`    | Zero-downtime deployment validation | ✓        | ~45 seconds  |
 
 ### Test Execution Order
 
@@ -937,38 +994,38 @@ All environment variables used across test scripts:
 
 #### Common Variables
 
-| Variable | Required | Default | Used By |
-|----------|----------|---------|---------|
-| `BASE_URL` | No | `http://localhost:3000` | All scripts |
+| Variable   | Required | Default                 | Used By     |
+| ---------- | -------- | ----------------------- | ----------- |
+| `BASE_URL` | No       | `http://localhost:3000` | All scripts |
 
 #### Authentication
 
-| Variable | Required | Scripts |
-|----------|----------|---------|
-| `TTN_WEBHOOK_SECRET` | **Yes** | e2e-sensor-pipeline.sh |
-| `TEST_JWT` | Recommended | e2e-sensor-pipeline.sh, e2e-alert-notifications.sh |
-| `TEST_API_KEY` | **Yes** | e2e-alert-notifications.sh |
+| Variable             | Required    | Scripts                                            |
+| -------------------- | ----------- | -------------------------------------------------- |
+| `TTN_WEBHOOK_SECRET` | **Yes**     | e2e-sensor-pipeline.sh                             |
+| `TEST_JWT`           | Recommended | e2e-sensor-pipeline.sh, e2e-alert-notifications.sh |
+| `TEST_API_KEY`       | **Yes**     | e2e-alert-notifications.sh                         |
 
 #### Test Configuration
 
-| Variable | Required | Default | Scripts |
-|----------|----------|---------|---------|
-| `ORGANIZATION_ID` | **Yes** | - | e2e-alert-notifications.sh |
-| `TEST_UNIT_ID` | **Yes** | - | e2e-alert-notifications.sh |
-| `ALERT_TIMEOUT` | No | `10` | e2e-sensor-pipeline.sh |
-| `TEST_TEMP_BREACH` | No | `5.0` | e2e-sensor-pipeline.sh |
-| `TEMPERATURE_HIGH` | No | `40.0` | e2e-alert-notifications.sh |
-| `WEBHOOK_TEST` | No | `false` | e2e-alert-notifications.sh |
-| `WEBHOOK_PORT` | No | `8888` | e2e-alert-notifications.sh |
-| `COMPOSE_FILE` | No | `docker/docker-compose.yml` | validate-zero-downtime.sh |
-| `HEALTH_ENDPOINT` | No | `/health` | validate-zero-downtime.sh |
+| Variable           | Required | Default                     | Scripts                    |
+| ------------------ | -------- | --------------------------- | -------------------------- |
+| `ORGANIZATION_ID`  | **Yes**  | -                           | e2e-alert-notifications.sh |
+| `TEST_UNIT_ID`     | **Yes**  | -                           | e2e-alert-notifications.sh |
+| `ALERT_TIMEOUT`    | No       | `10`                        | e2e-sensor-pipeline.sh     |
+| `TEST_TEMP_BREACH` | No       | `5.0`                       | e2e-sensor-pipeline.sh     |
+| `TEMPERATURE_HIGH` | No       | `40.0`                      | e2e-alert-notifications.sh |
+| `WEBHOOK_TEST`     | No       | `false`                     | e2e-alert-notifications.sh |
+| `WEBHOOK_PORT`     | No       | `8888`                      | e2e-alert-notifications.sh |
+| `COMPOSE_FILE`     | No       | `docker/docker-compose.yml` | validate-zero-downtime.sh  |
+| `HEALTH_ENDPOINT`  | No       | `/health`                   | validate-zero-downtime.sh  |
 
 #### Migration Testing
 
-| Variable | Default | Script |
-|----------|---------|--------|
+| Variable         | Default  | Script                |
+| ---------------- | -------- | --------------------- |
 | `TARGET_RECORDS` | `100000` | generate-test-data.ts |
-| `BATCH_SIZE` | `5000` | generate-test-data.ts |
+| `BATCH_SIZE`     | `5000`   | generate-test-data.ts |
 
 ### Example .env.test File
 
@@ -1096,6 +1153,7 @@ Before deploying to production, complete the validation checklist:
 **See:** `docs/E2E_VALIDATION_CHECKLIST.md`
 
 This comprehensive checklist covers:
+
 - All TEST-01 through TEST-04 requirements
 - Pre-cutover infrastructure readiness
 - Post-cutover verification steps
@@ -1104,6 +1162,7 @@ This comprehensive checklist covers:
 ### Test Environments
 
 All tests can run against:
+
 - **Local development** (`http://localhost:3000`)
 - **Staging** (`https://staging.freshtrack.example.com`)
 - **Production** (`https://freshtrack.example.com`)
@@ -1142,12 +1201,14 @@ Simply set `BASE_URL` to the target environment.
 ### Getting Help
 
 If tests fail, refer to troubleshooting sections in this README:
+
 - **e2e-sensor-pipeline.sh issues:** See "Troubleshooting → e2e-sensor-pipeline.sh Specific"
 - **e2e-alert-notifications.sh issues:** See "Troubleshooting → General Troubleshooting"
 - **Migration timing issues:** See "Migration Timing Validation → Interpreting Results"
 - **Zero-downtime issues:** See script output for specific recommendations
 
 For deployment issues, see:
+
 - `docs/SELFHOSTED_DEPLOYMENT.md`
 - `docs/DIGITALOCEAN_DEPLOYMENT.md`
 - `docs/DEPLOYMENT_DECISION_GUIDE.md`
@@ -1157,4 +1218,3 @@ For deployment issues, see:
 **Test suite version:** 1.0
 **Last updated:** 2026-01-24 (Phase 13 Plan 05)
 **Related:** Phase 13 (E2E Validation & Cutover) - v1.1 Production Ready milestone
-

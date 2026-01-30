@@ -53,7 +53,9 @@ describe('TTN Webhook Service', () => {
         .update(testPayload)
         .digest('hex');
 
-      expect(verifyHmacSignature(originalSignature, '{"test": "tampered"}', testSecret)).toBe(false);
+      expect(verifyHmacSignature(originalSignature, '{"test": "tampered"}', testSecret)).toBe(
+        false,
+      );
     });
 
     it('should handle Buffer payloads', () => {
@@ -108,29 +110,17 @@ describe('TTN Webhook Service', () => {
     });
 
     it('should return strongest signal from multiple gateways', () => {
-      const metadata = [
-        { rssi: -90 },
-        { rssi: -75 },
-        { rssi: -85 },
-      ];
+      const metadata = [{ rssi: -90 }, { rssi: -75 }, { rssi: -85 }];
       expect(extractBestSignalStrength(metadata)).toBe(-75);
     });
 
     it('should handle mixed RSSI types', () => {
-      const metadata = [
-        { channel_rssi: -80 },
-        { rssi: -70 },
-        { channel_rssi: -65 },
-      ];
+      const metadata = [{ channel_rssi: -80 }, { rssi: -70 }, { channel_rssi: -65 }];
       expect(extractBestSignalStrength(metadata)).toBe(-65);
     });
 
     it('should skip entries without RSSI', () => {
-      const metadata = [
-        {},
-        { rssi: -80 },
-        { snr: 10 },
-      ];
+      const metadata = [{}, { rssi: -80 }, { snr: 10 }];
       expect(extractBestSignalStrength(metadata)).toBe(-80);
     });
   });
@@ -244,9 +234,7 @@ describe('TTN Webhook Service', () => {
       f_port: 1,
       received_at: '2024-01-15T12:00:00Z',
       frm_payload: 'dGVzdA==',
-      rx_metadata: [
-        { gateway_ids: { gateway_id: 'gw1' }, rssi: -75, snr: 8.5 },
-      ],
+      rx_metadata: [{ gateway_ids: { gateway_id: 'gw1' }, rssi: -75, snr: 8.5 }],
     };
 
     it('should extract all sensor fields', () => {
@@ -289,9 +277,7 @@ describe('TTN Webhook Service', () => {
         decoded_payload: undefined,
       };
 
-      expect(() => extractSensorData(message)).toThrow(
-        'No decoded_payload in uplink message'
-      );
+      expect(() => extractSensorData(message)).toThrow('No decoded_payload in uplink message');
     });
 
     it('should throw error when temperature is missing', () => {
@@ -303,7 +289,7 @@ describe('TTN Webhook Service', () => {
       };
 
       expect(() => extractSensorData(message)).toThrow(
-        'Could not extract temperature from decoded_payload'
+        'Could not extract temperature from decoded_payload',
       );
     });
 
@@ -343,9 +329,7 @@ describe('TTN Webhook Service', () => {
           humidity: 60,
           battery: 85,
         },
-        rx_metadata: [
-          { gateway_ids: { gateway_id: 'gw1' }, rssi: -75 },
-        ],
+        rx_metadata: [{ gateway_ids: { gateway_id: 'gw1' }, rssi: -75 }],
         frm_payload: 'dGVzdA==',
       },
     };

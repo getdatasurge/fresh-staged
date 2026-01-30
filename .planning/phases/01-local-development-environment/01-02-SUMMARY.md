@@ -20,10 +20,10 @@ affects: [01-03-monitoring-schemas, 01-04-alerting-schemas, api, backend]
 tech-stack:
   added: []
   patterns:
-    - "Reusable timestamps pattern with $onUpdateFn for updatedAt"
-    - "Cascade delete chain for tenant data isolation"
-    - "Composite indexes for multi-column queries"
-    - "Type exports with $inferSelect and $inferInsert"
+    - 'Reusable timestamps pattern with $onUpdateFn for updatedAt'
+    - 'Cascade delete chain for tenant data isolation'
+    - 'Composite indexes for multi-column queries'
+    - 'Type exports with $inferSelect and $inferInsert'
 
 key-files:
   created:
@@ -34,16 +34,16 @@ key-files:
   modified: []
 
 key-decisions:
-  - "14 enum types defined (13 planned + 1 additional from comprehensive review)"
-  - "userId in profiles references external Stack Auth, not internal FK"
-  - "Cascade deletes enforce data isolation at organization boundary"
-  - "Temperature stored as integers (degrees * 10 for precision)"
+  - '14 enum types defined (13 planned + 1 additional from comprehensive review)'
+  - 'userId in profiles references external Stack Auth, not internal FK'
+  - 'Cascade deletes enforce data isolation at organization boundary'
+  - 'Temperature stored as integers (degrees * 10 for precision)'
 
 patterns-established:
-  - "Enum-first: define all pgEnum types before tables that use them"
-  - "Timestamps mixin: reusable createdAt/updatedAt with auto-update"
-  - "Index strategy: FK indexes + composite indexes for common query patterns"
-  - "Type safety: export both Select and Insert types for all tables"
+  - 'Enum-first: define all pgEnum types before tables that use them'
+  - 'Timestamps mixin: reusable createdAt/updatedAt with auto-update'
+  - 'Index strategy: FK indexes + composite indexes for common query patterns'
+  - 'Type safety: export both Select and Insert types for all tables'
 
 # Metrics
 duration: 2min
@@ -63,6 +63,7 @@ completed: 2026-01-23
 - **Files modified:** 4
 
 ## Accomplishments
+
 - All domain enums defined in single file for reusability
 - Multi-tenant foundation with organizations and subscriptions
 - User management with RBAC and escalation contact support
@@ -80,6 +81,7 @@ Each task was committed atomically:
 ## Files Created/Modified
 
 ### Created
+
 - `backend/src/db/schema/enums.ts` - 14 PostgreSQL enum types for all domain entities
 - `backend/src/db/schema/tenancy.ts` - organizations and subscriptions tables with Stripe fields
 - `backend/src/db/schema/users.ts` - profiles, userRoles, escalationContacts for user management
@@ -94,6 +96,7 @@ Each task was committed atomically:
 **Temperature precision:** Storing temperatures as integers (degrees × 10) for precise threshold comparisons without floating-point issues.
 
 **Cascade delete strategy:**
+
 - Organization deletion cascades to all tenant data (sites, subscriptions, users)
 - Site deletion cascades to areas and hubs
 - Area deletion cascades to units
@@ -116,21 +119,25 @@ None - no external service configuration required for schema definitions.
 ## Next Phase Readiness
 
 **Ready for:**
+
 - Monitoring schemas (readings, sensors, devices) can reference units and hubs
 - Alerting schemas (alerts, alert_history) can reference units and users
 - API implementation can use type-safe schema exports
 
 **Foundation established:**
+
 - Tenant isolation via organizations
 - User authentication reference via profiles.userId
 - Physical hierarchy for monitoring entities
 - Enum types for all status fields
 
 **Next steps:**
+
 - Run migrations to create tables in PostgreSQL
 - Populate initial seed data for testing
 - Build monitoring and alerting schemas on this foundation
 
 ---
-*Phase: 01-local-development-environment*
-*Completed: 2026-01-23*
+
+_Phase: 01-local-development-environment_
+_Completed: 2026-01-23_

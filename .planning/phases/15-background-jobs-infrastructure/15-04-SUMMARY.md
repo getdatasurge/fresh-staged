@@ -34,12 +34,12 @@ key-files:
     - backend/pnpm-lock.yaml
 
 key-decisions:
-  - "TEST-01: Test file path adapted to project convention (tests/services/ not src/__tests__/)"
-  - "TEST-02: Integration tests require running Redis (skip with docker compose down)"
+  - 'TEST-01: Test file path adapted to project convention (tests/services/ not src/__tests__/)'
+  - 'TEST-02: Integration tests require running Redis (skip with docker compose down)'
 
 patterns-established:
-  - "Service integration tests in backend/tests/services/"
-  - "E2E scripts in scripts/ directory with PASS/FAIL tracking"
+  - 'Service integration tests in backend/tests/services/'
+  - 'E2E scripts in scripts/ directory with PASS/FAIL tracking'
 
 # Metrics
 duration: 7min
@@ -90,6 +90,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Fixed test file path**
+
 - **Found during:** Task 1 (Create queue service integration tests)
 - **Issue:** Plan specified `backend/src/__tests__/queue.test.ts` but project uses `backend/tests/` directory
 - **Fix:** Created test at `backend/tests/services/queue.service.test.ts` following existing pattern
@@ -98,6 +99,7 @@ Each task was committed atomically:
 - **Committed in:** dfe7093
 
 **2. [Rule 3 - Blocking] Fixed worker Dockerfile output paths**
+
 - **Found during:** Task 3 (Run verification)
 - **Issue:** Dockerfile.worker referenced `/app/dist/src/workers` but tsc outputs to `/app/dist/workers`
 - **Fix:** Updated COPY paths and CMD to use correct dist/ paths
@@ -106,6 +108,7 @@ Each task was committed atomically:
 - **Committed in:** bfcc73f
 
 **3. [Rule 1 - Bug] Fixed E2E script bash arithmetic**
+
 - **Found during:** Task 3 (Run verification)
 - **Issue:** `((TESTS_PASSED++))` syntax with `set -e` causes script to exit when counter is 0
 - **Fix:** Changed to `TESTS_PASSED=$((TESTS_PASSED + 1))` pattern
@@ -114,6 +117,7 @@ Each task was committed atomically:
 - **Committed in:** bfcc73f
 
 **4. [Rule 3 - Blocking] Updated pnpm-lock.yaml**
+
 - **Found during:** Task 3 (Run verification)
 - **Issue:** Worker container build failed with "frozen-lockfile" error due to outdated lockfile
 - **Fix:** Ran `pnpm install` to update lockfile with new dependencies
@@ -149,5 +153,6 @@ None - no external service configuration required.
 - E2E verification script available for CI/CD integration
 
 ---
-*Phase: 15-background-jobs-infrastructure*
-*Completed: 2026-01-24*
+
+_Phase: 15-background-jobs-infrastructure_
+_Completed: 2026-01-24_

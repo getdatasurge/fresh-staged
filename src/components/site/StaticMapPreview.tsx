@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { MapPin, AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState } from 'react';
+import { MapPin, AlertCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface StaticMapPreviewProps {
   latitude: number;
@@ -16,27 +16,18 @@ function latLonToTile(lat: number, lon: number, zoom: number) {
   const n = Math.pow(2, zoom);
   const x = Math.floor(((lon + 180) / 360) * n);
   const latRad = (lat * Math.PI) / 180;
-  const y = Math.floor(
-    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n
-  );
+  const y = Math.floor(((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n);
   return { x, y };
 }
 
 /**
  * Calculate pixel offset within the tile for the exact coordinate
  */
-function getPixelOffset(
-  lat: number,
-  lon: number,
-  zoom: number,
-  tileX: number,
-  tileY: number
-) {
+function getPixelOffset(lat: number, lon: number, zoom: number, tileX: number, tileY: number) {
   const n = Math.pow(2, zoom);
   const xTile = ((lon + 180) / 360) * n;
   const latRad = (lat * Math.PI) / 180;
-  const yTile =
-    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n;
+  const yTile = ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n;
 
   // Offset within tile (tiles are 256px)
   const offsetX = (xTile - tileX) * 256;
@@ -60,12 +51,7 @@ export function StaticMapPreview({
 
   if (!isValidLat || !isValidLon) {
     return (
-      <div
-        className={cn(
-          "flex items-center justify-center bg-muted rounded-md border",
-          className
-        )}
-      >
+      <div className={cn('flex items-center justify-center bg-muted rounded-md border', className)}>
         <div className="flex flex-col items-center gap-1 text-muted-foreground">
           <AlertCircle className="h-5 w-5" />
           <span className="text-xs">Invalid coordinates</span>
@@ -82,12 +68,7 @@ export function StaticMapPreview({
 
   if (imageError) {
     return (
-      <div
-        className={cn(
-          "flex items-center justify-center bg-muted rounded-md border",
-          className
-        )}
-      >
+      <div className={cn('flex items-center justify-center bg-muted rounded-md border', className)}>
         <div className="flex flex-col items-center gap-1 text-muted-foreground">
           <MapPin className="h-5 w-5" />
           <span className="text-xs">
@@ -99,12 +80,7 @@ export function StaticMapPreview({
   }
 
   return (
-    <div
-      className={cn(
-        "relative overflow-hidden rounded-md border bg-muted",
-        className
-      )}
-    >
+    <div className={cn('relative overflow-hidden rounded-md border bg-muted', className)}>
       {/* Loading state */}
       {!imageLoaded && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted">
@@ -122,8 +98,8 @@ export function StaticMapPreview({
           alt=""
           className="absolute w-[256px] h-[256px] object-cover"
           style={{
-            left: "50%",
-            top: "50%",
+            left: '50%',
+            top: '50%',
             transform: `translate(calc(-50% - ${offsetX - 128}px), calc(-50% - ${offsetY - 128}px))`,
           }}
           onLoad={() => setImageLoaded(true)}
@@ -136,9 +112,9 @@ export function StaticMapPreview({
       <div
         className="absolute pointer-events-none"
         style={{
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -100%)",
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -100%)',
         }}
       >
         <div className="relative">

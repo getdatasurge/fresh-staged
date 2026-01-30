@@ -17,7 +17,7 @@ const ERROR_MAP: Record<string, TTNErrorGuidance> = {
   // Authentication & Permission Errors
   TTN_FORBIDDEN: {
     message: 'TTN rejected the request due to insufficient permissions',
-    howToFix: 'Your API key doesn\'t have the required permissions',
+    howToFix: "Your API key doesn't have the required permissions",
     consoleSteps: [
       '1. Go to TTN Console → your username → Personal API keys',
       '2. Create a new key or edit existing',
@@ -31,7 +31,7 @@ const ERROR_MAP: Record<string, TTNErrorGuidance> = {
     howToFix: 'Your API key is invalid or expired',
     consoleSteps: [
       '1. Go to TTN Console → your username → Personal API keys',
-      '2. Verify the key exists and hasn\'t been revoked',
+      "2. Verify the key exists and hasn't been revoked",
       '3. Generate a new key if needed',
       '4. Update the key in FrostGuard settings',
     ],
@@ -39,7 +39,8 @@ const ERROR_MAP: Record<string, TTNErrorGuidance> = {
   },
   TTN_KEY_INVALID: {
     message: 'API key lacks permission to access this application',
-    howToFix: 'The key must be created inside the target application (not another app or user-level)',
+    howToFix:
+      'The key must be created inside the target application (not another app or user-level)',
     consoleSteps: [
       '1. Go to TTN Console → Applications → {application_id}',
       '2. Navigate to API Keys (left sidebar)',
@@ -53,11 +54,11 @@ const ERROR_MAP: Record<string, TTNErrorGuidance> = {
   },
   TTN_KEY_FORMAT_INVALID: {
     message: 'The API key format is invalid',
-    howToFix: 'The key doesn\'t appear to be a valid TTN API key',
+    howToFix: "The key doesn't appear to be a valid TTN API key",
     consoleSteps: [
       '1. TTN API keys start with "NNSXS."',
       '2. Go to TTN Console → Your App → API Keys',
-      '3. Copy the full key value (it\'s only shown once)',
+      "3. Copy the full key value (it's only shown once)",
       '4. Paste it carefully without extra spaces',
     ],
     severity: 'error',
@@ -66,11 +67,11 @@ const ERROR_MAP: Record<string, TTNErrorGuidance> = {
   // Application Errors
   APPLICATION_NOT_FOUND: {
     message: 'The TTN application was not found',
-    howToFix: 'The application ID doesn\'t exist in this TTN cluster',
+    howToFix: "The application ID doesn't exist in this TTN cluster",
     consoleSteps: [
       '1. Go to TTN Console → Applications',
       '2. Verify the application exists',
-      '3. Check you\'re using the correct cluster (EU1, NAM1, etc.)',
+      "3. Check you're using the correct cluster (EU1, NAM1, etc.)",
       '4. Copy the exact Application ID from the console',
     ],
     severity: 'error',
@@ -81,7 +82,7 @@ const ERROR_MAP: Record<string, TTNErrorGuidance> = {
     consoleSteps: [
       '1. Check the TTN Console URL (eu1, nam1, au1, etc.)',
       '2. Select the matching cluster in FrostGuard',
-      '3. Applications are region-specific and can\'t be accessed cross-region',
+      "3. Applications are region-specific and can't be accessed cross-region",
     ],
     severity: 'error',
   },
@@ -117,7 +118,7 @@ const ERROR_MAP: Record<string, TTNErrorGuidance> = {
     consoleSteps: [
       '1. Go to TTN Console → Your App → End devices',
       '2. Click "+ Register end device"',
-      '3. Enter the device\'s DevEUI, AppEUI, and AppKey',
+      "3. Enter the device's DevEUI, AppEUI, and AppKey",
       '4. Use the same DevEUI shown in FrostGuard',
     ],
     severity: 'error',
@@ -183,7 +184,7 @@ const ERROR_MAP: Record<string, TTNErrorGuidance> = {
 
   // Validation Errors
   ORG_FORBIDDEN: {
-    message: 'You don\'t have permission to configure TTN for this organization',
+    message: "You don't have permission to configure TTN for this organization",
     howToFix: 'Only organization owners and admins can configure TTN',
     consoleSteps: [
       '1. Contact your organization owner',
@@ -221,7 +222,7 @@ const ERROR_MAP: Record<string, TTNErrorGuidance> = {
 export function mapTTNErrorToGuidance(
   errorCode: string,
   statusCode?: number,
-  errorMessage?: string
+  errorMessage?: string,
 ): TTNErrorGuidance {
   // Try direct code match first
   if (ERROR_MAP[errorCode]) {

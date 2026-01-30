@@ -66,7 +66,7 @@ describe('Admin tRPC Router', () => {
           new Map([
             ['sms-notifications', mockQueue],
             ['email-digests', mockQueue],
-          ])
+          ]),
         ),
       };
       mockGetQueueService.mockReturnValue(mockQueueService);
@@ -131,9 +131,7 @@ describe('Admin tRPC Router', () => {
 
       const mockQueueService = {
         isRedisEnabled: vi.fn().mockReturnValue(true),
-        getAllQueues: vi.fn().mockReturnValue(
-          new Map([['failing-queue', mockQueue]])
-        ),
+        getAllQueues: vi.fn().mockReturnValue(new Map([['failing-queue', mockQueue]])),
       };
       mockGetQueueService.mockReturnValue(mockQueueService);
 
@@ -169,7 +167,7 @@ describe('Admin tRPC Router', () => {
             ['queue1', {}],
             ['queue2', {}],
             ['queue3', {}],
-          ])
+          ]),
         ),
       };
       mockGetQueueService.mockReturnValue(mockQueueService);

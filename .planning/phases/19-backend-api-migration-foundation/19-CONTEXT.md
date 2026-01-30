@@ -14,23 +14,28 @@ Set up tRPC infrastructure on Fastify backend and pilot migration with organizat
 ## Implementation Decisions
 
 ### Migration Strategy
+
 - Big bang cutover approach (not incremental with feature flags)
 - Comprehensive test suite required before switching
 - Delete old Supabase client code immediately — git history sufficient for rollback
 - Pilot domain: Claude's discretion (organizations specified in roadmap, may include settings if beneficial)
 
 ### tRPC Router Design
+
 - Domain-based router organization (organizationsRouter, sitesRouter, etc.) — matches existing REST structure
 - CRUD-style procedure naming: list, get, create, update, delete (e.g., organizations.list, organizations.get)
 
 ### Type Sharing
+
 - No specific requirements — Claude determines best approach based on project structure
 - May use direct imports (monorepo) or generated types package
 
 ### Rollout & Testing
+
 - No specific requirements — Claude determines appropriate coverage and approach
 
 ### Claude's Discretion
+
 - tRPC-Fastify integration approach (likely @trpc/server/adapters/fastify)
 - Auth context implementation (reuse existing middleware vs rebuild for tRPC)
 - Type sharing mechanism (direct import vs generated package)
@@ -63,5 +68,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 19-backend-api-migration-foundation*
-*Context gathered: 2026-01-24*
+_Phase: 19-backend-api-migration-foundation_
+_Context gathered: 2026-01-24_

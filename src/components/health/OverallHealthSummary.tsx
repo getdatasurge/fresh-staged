@@ -10,8 +10,8 @@ interface OverallHealthSummaryProps {
   activeCategory?: HealthCategory | 'all';
 }
 
-export function OverallHealthSummary({ 
-  health, 
+export function OverallHealthSummary({
+  health,
   onCategoryClick,
   activeCategory = 'all',
 }: OverallHealthSummaryProps) {
@@ -27,22 +27,22 @@ export function OverallHealthSummary({
       id: 'database' as HealthCategory,
       label: 'Database',
       icon: Database,
-      status: getCategoryStatus(health.checks.filter(c => c.category === 'database')),
-      count: health.checks.filter(c => c.category === 'database').length,
+      status: getCategoryStatus(health.checks.filter((c) => c.category === 'database')),
+      count: health.checks.filter((c) => c.category === 'database').length,
     },
     {
       id: 'edge_function' as HealthCategory,
       label: 'Edge Functions',
       icon: Server,
-      status: getCategoryStatus(health.checks.filter(c => c.category === 'edge_function')),
-      count: health.checks.filter(c => c.category === 'edge_function' && !c.skipped).length,
+      status: getCategoryStatus(health.checks.filter((c) => c.category === 'edge_function')),
+      count: health.checks.filter((c) => c.category === 'edge_function' && !c.skipped).length,
     },
     {
       id: 'ttn' as HealthCategory,
       label: 'TTN',
       icon: Cloud,
-      status: getCategoryStatus(health.checks.filter(c => c.category === 'ttn')),
-      count: health.checks.filter(c => c.category === 'ttn').length,
+      status: getCategoryStatus(health.checks.filter((c) => c.category === 'ttn')),
+      count: health.checks.filter((c) => c.category === 'ttn').length,
     },
   ];
 
@@ -53,11 +53,11 @@ export function OverallHealthSummary({
         const isActive = activeCategory === cat.id;
 
         return (
-          <Card 
+          <Card
             key={cat.id}
             className={cn(
               'cursor-pointer transition-all hover:border-primary/50',
-              isActive && 'border-primary ring-1 ring-primary/20'
+              isActive && 'border-primary ring-1 ring-primary/20',
             )}
             onClick={() => onCategoryClick?.(cat.id)}
           >
@@ -80,13 +80,13 @@ export function OverallHealthSummary({
 
 function getCategoryStatus(checks: SystemHealth['checks']): SystemHealth['overall'] {
   if (checks.length === 0) return 'unknown';
-  
-  const activeChecks = checks.filter(c => !c.skipped);
+
+  const activeChecks = checks.filter((c) => !c.skipped);
   if (activeChecks.length === 0) return 'healthy';
 
-  if (activeChecks.some(c => c.status === 'unhealthy')) return 'unhealthy';
-  if (activeChecks.some(c => c.status === 'degraded')) return 'degraded';
-  if (activeChecks.every(c => c.status === 'healthy')) return 'healthy';
-  
+  if (activeChecks.some((c) => c.status === 'unhealthy')) return 'unhealthy';
+  if (activeChecks.some((c) => c.status === 'degraded')) return 'degraded';
+  if (activeChecks.every((c) => c.status === 'healthy')) return 'healthy';
+
   return 'unknown';
 }

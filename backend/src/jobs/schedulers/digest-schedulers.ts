@@ -33,7 +33,7 @@ export async function syncUserDigestSchedulers(
     weeklyEnabled: boolean;
     timezone: string;
     dailyTime?: string; // "HH:MM" format, defaults to "09:00"
-  }
+  },
 ): Promise<void> {
   const queueService = getQueueService();
   if (!queueService || !queueService.isRedisEnabled()) {
@@ -73,9 +73,11 @@ export async function syncUserDigestSchedulers(
           removeOnComplete: 100,
           removeOnFail: 500,
         },
-      }
+      },
     );
-    console.log(`[DigestSchedulers] Upserted daily scheduler for user ${userId} at ${dailyTime} ${timezone}`);
+    console.log(
+      `[DigestSchedulers] Upserted daily scheduler for user ${userId} at ${dailyTime} ${timezone}`,
+    );
   } else {
     // Remove scheduler if disabled
     await queue.removeJobScheduler(`digest-daily-${userId}`);
@@ -103,9 +105,11 @@ export async function syncUserDigestSchedulers(
           removeOnComplete: 100,
           removeOnFail: 500,
         },
-      }
+      },
     );
-    console.log(`[DigestSchedulers] Upserted weekly scheduler for user ${userId} at Monday ${dailyTime} ${timezone}`);
+    console.log(
+      `[DigestSchedulers] Upserted weekly scheduler for user ${userId} at Monday ${dailyTime} ${timezone}`,
+    );
   } else {
     await queue.removeJobScheduler(`digest-weekly-${userId}`);
     console.log(`[DigestSchedulers] Removed weekly scheduler for user ${userId}`);

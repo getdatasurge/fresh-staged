@@ -48,7 +48,7 @@ describe('ORG_STATS_CACHE_CONFIG', () => {
 
   it('should have cleanup more frequent than cache TTL', () => {
     expect(ORG_STATS_CACHE_CONFIG.CLEANUP_INTERVAL_MS).toBeLessThan(
-      ORG_STATS_CACHE_CONFIG.CACHE_TTL_MS
+      ORG_STATS_CACHE_CONFIG.CACHE_TTL_MS,
     );
   });
 });
@@ -183,15 +183,45 @@ describe('OrganizationStatsService', () => {
     it('should aggregate unit states from UnitStateService', async () => {
       const mockStates = new Map<string, UnitStateInfo[]>();
       mockStates.set('site-1', [
-        { unitId: 'u1', state: 'normal', lastReadingAt: new Date(), lastTemperature: 35, isOnline: true, dbStatus: 'ok' },
-        { unitId: 'u2', state: 'warning', lastReadingAt: new Date(), lastTemperature: 42, isOnline: true, dbStatus: 'excursion' },
+        {
+          unitId: 'u1',
+          state: 'normal',
+          lastReadingAt: new Date(),
+          lastTemperature: 35,
+          isOnline: true,
+          dbStatus: 'ok',
+        },
+        {
+          unitId: 'u2',
+          state: 'warning',
+          lastReadingAt: new Date(),
+          lastTemperature: 42,
+          isOnline: true,
+          dbStatus: 'excursion',
+        },
       ]);
       mockStates.set('site-2', [
-        { unitId: 'u3', state: 'critical', lastReadingAt: new Date(), lastTemperature: 55, isOnline: true, dbStatus: 'alarm_active' },
-        { unitId: 'u4', state: 'offline', lastReadingAt: null, lastTemperature: null, isOnline: false, dbStatus: 'offline' },
+        {
+          unitId: 'u3',
+          state: 'critical',
+          lastReadingAt: new Date(),
+          lastTemperature: 55,
+          isOnline: true,
+          dbStatus: 'alarm_active',
+        },
+        {
+          unitId: 'u4',
+          state: 'offline',
+          lastReadingAt: null,
+          lastTemperature: null,
+          isOnline: false,
+          dbStatus: 'offline',
+        },
       ]);
 
-      (mockUnitStateService.getOrganizationUnitStates as ReturnType<typeof vi.fn>).mockResolvedValue(mockStates);
+      (
+        mockUnitStateService.getOrganizationUnitStates as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(mockStates);
 
       const counts = await service.calculateUnitCounts('org-123');
 
@@ -203,7 +233,9 @@ describe('OrganizationStatsService', () => {
     });
 
     it('should return zeros when no units exist', async () => {
-      (mockUnitStateService.getOrganizationUnitStates as ReturnType<typeof vi.fn>).mockResolvedValue(new Map());
+      (
+        mockUnitStateService.getOrganizationUnitStates as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(new Map());
 
       const counts = await service.calculateUnitCounts('org-123');
 
@@ -217,12 +249,35 @@ describe('OrganizationStatsService', () => {
     it('should handle multiple units in same state', async () => {
       const mockStates = new Map<string, UnitStateInfo[]>();
       mockStates.set('site-1', [
-        { unitId: 'u1', state: 'normal', lastReadingAt: new Date(), lastTemperature: 35, isOnline: true, dbStatus: 'ok' },
-        { unitId: 'u2', state: 'normal', lastReadingAt: new Date(), lastTemperature: 36, isOnline: true, dbStatus: 'ok' },
-        { unitId: 'u3', state: 'normal', lastReadingAt: new Date(), lastTemperature: 37, isOnline: true, dbStatus: 'ok' },
+        {
+          unitId: 'u1',
+          state: 'normal',
+          lastReadingAt: new Date(),
+          lastTemperature: 35,
+          isOnline: true,
+          dbStatus: 'ok',
+        },
+        {
+          unitId: 'u2',
+          state: 'normal',
+          lastReadingAt: new Date(),
+          lastTemperature: 36,
+          isOnline: true,
+          dbStatus: 'ok',
+        },
+        {
+          unitId: 'u3',
+          state: 'normal',
+          lastReadingAt: new Date(),
+          lastTemperature: 37,
+          isOnline: true,
+          dbStatus: 'ok',
+        },
       ]);
 
-      (mockUnitStateService.getOrganizationUnitStates as ReturnType<typeof vi.fn>).mockResolvedValue(mockStates);
+      (
+        mockUnitStateService.getOrganizationUnitStates as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(mockStates);
 
       const counts = await service.calculateUnitCounts('org-123');
 
@@ -282,21 +337,41 @@ describe('Worst State Priority', () => {
 
   it('should correctly prioritize states: offline > critical > warning > normal', () => {
     // Test each state transition
-    expect(service.determineWorstState({ total: 1, normal: 1, warning: 0, critical: 0, offline: 0 })).toBe('normal');
-    expect(service.determineWorstState({ total: 1, normal: 0, warning: 1, critical: 0, offline: 0 })).toBe('warning');
-    expect(service.determineWorstState({ total: 1, normal: 0, warning: 0, critical: 1, offline: 0 })).toBe('critical');
-    expect(service.determineWorstState({ total: 1, normal: 0, warning: 0, critical: 0, offline: 1 })).toBe('offline');
+    expect(
+      service.determineWorstState({ total: 1, normal: 1, warning: 0, critical: 0, offline: 0 }),
+    ).toBe('normal');
+    expect(
+      service.determineWorstState({ total: 1, normal: 0, warning: 1, critical: 0, offline: 0 }),
+    ).toBe('warning');
+    expect(
+      service.determineWorstState({ total: 1, normal: 0, warning: 0, critical: 1, offline: 0 }),
+    ).toBe('critical');
+    expect(
+      service.determineWorstState({ total: 1, normal: 0, warning: 0, critical: 0, offline: 1 }),
+    ).toBe('offline');
   });
 
   it('should identify worst state in mixed scenarios', () => {
     // Many normal, one warning
-    expect(service.determineWorstState({ total: 100, normal: 99, warning: 1, critical: 0, offline: 0 })).toBe('warning');
+    expect(
+      service.determineWorstState({ total: 100, normal: 99, warning: 1, critical: 0, offline: 0 }),
+    ).toBe('warning');
 
     // Many normal, one critical
-    expect(service.determineWorstState({ total: 100, normal: 99, warning: 0, critical: 1, offline: 0 })).toBe('critical');
+    expect(
+      service.determineWorstState({ total: 100, normal: 99, warning: 0, critical: 1, offline: 0 }),
+    ).toBe('critical');
 
     // Mix of all states
-    expect(service.determineWorstState({ total: 100, normal: 50, warning: 25, critical: 20, offline: 5 })).toBe('offline');
+    expect(
+      service.determineWorstState({
+        total: 100,
+        normal: 50,
+        warning: 25,
+        critical: 20,
+        offline: 5,
+      }),
+    ).toBe('offline');
   });
 });
 

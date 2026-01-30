@@ -39,14 +39,14 @@ CREATE POLICY "Service role only" ON synced_users
 **File**: `supabase/functions/user-sync/index.ts`
 
 ```typescript
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 Deno.serve(async (req) => {
   // Auth
-  const authHeader = req.headers.get("Authorization");
-  const expectedKey = Deno.env.get("SYNC_API_KEY");
+  const authHeader = req.headers.get('Authorization');
+  const expectedKey = Deno.env.get('SYNC_API_KEY');
   if (!authHeader || authHeader !== `Bearer ${expectedKey}`) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
   // Parse payload
@@ -54,31 +54,33 @@ Deno.serve(async (req) => {
 
   // Setup Supabase
   const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
 
   // Upsert users
   for (const user of payload.users) {
-    await supabase.from("synced_users").upsert({
-      user_id: user.user_id,
-      email: user.email,
-      full_name: user.full_name,
-      organization_id: user.organization_id,
-      site_id: user.site_id,
-      unit_id: user.unit_id,
-      default_site_id: user.default_site_id,
-      user_sites: user.user_sites,
-      ttn: user.ttn,  // {enabled, cluster, application_id, api_key, api_key_last4}
-      updated_at: user.updated_at,
-      synced_at: new Date().toISOString(),
-    }, { onConflict: "user_id" });
+    await supabase.from('synced_users').upsert(
+      {
+        user_id: user.user_id,
+        email: user.email,
+        full_name: user.full_name,
+        organization_id: user.organization_id,
+        site_id: user.site_id,
+        unit_id: user.unit_id,
+        default_site_id: user.default_site_id,
+        user_sites: user.user_sites,
+        ttn: user.ttn, // {enabled, cluster, application_id, api_key, api_key_last4}
+        updated_at: user.updated_at,
+        synced_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' },
+    );
   }
 
-  return new Response(
-    JSON.stringify({ success: true, synced: payload.users.length }),
-    { status: 200 }
-  );
+  return new Response(JSON.stringify({ success: true, synced: payload.users.length }), {
+    status: 200,
+  });
 });
 ```
 
@@ -87,12 +89,12 @@ Deno.serve(async (req) => {
 **File**: `supabase/functions/simulate-uplink/index.ts`
 
 ```typescript
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const REGIONAL_URLS: Record<string, string> = {
-  nam1: "https://nam1.cloud.thethings.network",
-  eu1: "https://eu1.cloud.thethings.network",
-  au1: "https://au1.cloud.thethings.network",
+  nam1: 'https://nam1.cloud.thethings.network',
+  eu1: 'https://eu1.cloud.thethings.network',
+  au1: 'https://au1.cloud.thethings.network',
 };
 
 Deno.serve(async (req) => {
@@ -100,21 +102,18 @@ Deno.serve(async (req) => {
 
   // Get user's TTN config
   const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
 
   const { data: user } = await supabase
-    .from("synced_users")
-    .select("ttn")
-    .eq("user_id", userId)
+    .from('synced_users')
+    .select('ttn')
+    .eq('user_id', userId)
     .single();
 
   if (!user?.ttn || !user.ttn.enabled || !user.ttn.api_key) {
-    return new Response(
-      JSON.stringify({ error: "TTN not configured" }),
-      { status: 400 }
-    );
+    return new Response(JSON.stringify({ error: 'TTN not configured' }), { status: 400 });
   }
 
   const ttn = user.ttn;
@@ -126,12 +125,12 @@ Deno.serve(async (req) => {
   // Encode payload (Cayenne LPP)
   const bytes: number[] = [];
   if (temperature !== undefined) {
-    bytes.push(0x01, 0x67);  // Temperature sensor
+    bytes.push(0x01, 0x67); // Temperature sensor
     const temp = Math.round(temperature * 10);
-    bytes.push((temp >> 8) & 0xFF, temp & 0xFF);
+    bytes.push((temp >> 8) & 0xff, temp & 0xff);
   }
   if (humidity !== undefined) {
-    bytes.push(0x02, 0x68);  // Humidity sensor
+    bytes.push(0x02, 0x68); // Humidity sensor
     bytes.push(Math.round(humidity * 2));
   }
 
@@ -142,10 +141,10 @@ Deno.serve(async (req) => {
   const response = await fetch(
     `${ttnUrl}/api/v3/as/applications/${ttn.application_id}/devices/${deviceId}/up`,
     {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Authorization": `Bearer ${ttn.api_key}`,
-        "Content-Type": "application/json",
+        Authorization: `Bearer ${ttn.api_key}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         end_device_ids: {
@@ -156,28 +155,28 @@ Deno.serve(async (req) => {
         uplink_message: {
           f_port: 1,
           frm_payload: encodedPayload,
-          rx_metadata: [{
-            gateway_ids: { gateway_id: "emulator-gateway" },
-            rssi: -50,
-            snr: 10,
-          }],
+          rx_metadata: [
+            {
+              gateway_ids: { gateway_id: 'emulator-gateway' },
+              rssi: -50,
+              snr: 10,
+            },
+          ],
         },
       }),
-    }
+    },
   );
 
   if (!response.ok) {
     const error = await response.text();
-    return new Response(
-      JSON.stringify({ error: `TTN API error: ${error}` }),
-      { status: response.status }
-    );
+    return new Response(JSON.stringify({ error: `TTN API error: ${error}` }), {
+      status: response.status,
+    });
   }
 
-  return new Response(
-    JSON.stringify({ success: true, deviceId, cluster: ttn.cluster }),
-    { status: 200 }
-  );
+  return new Response(JSON.stringify({ success: true, deviceId, cluster: ttn.cluster }), {
+    status: 200,
+  });
 });
 ```
 
@@ -261,26 +260,26 @@ WHERE (ttn->>'enabled')::boolean = true;
 
 ```json
 {
-  "users": [{
-    "user_id": "550e8400-e29b-41d4-a716-446655440000",
-    "email": "peter@sustainablefinishes.com",
-    "full_name": "Peter Smith",
-    "organization_id": "org-123",
-    "site_id": "site-456",
-    "unit_id": null,
-    "default_site_id": "site-456",
-    "user_sites": [
-      { "site_id": "site-456", "site_name": "Main Kitchen" }
-    ],
-    "updated_at": "2025-12-31T21:30:00.000Z",
-    "ttn": {
-      "enabled": true,
-      "cluster": "eu1",
-      "application_id": "ft-sustainablefinishes",
-      "api_key": "NNSXS.BMG4N2AJ43HN4YVPZ6DLQAPHVHUZBVPTOB37JFQ.FHBMPAB26Q2XM4QVBE4GBQ772NBIYP5MGOKCBBOM5NTCCMCJZRWQ",
-      "api_key_last4": "ZRWQ"
+  "users": [
+    {
+      "user_id": "550e8400-e29b-41d4-a716-446655440000",
+      "email": "peter@sustainablefinishes.com",
+      "full_name": "Peter Smith",
+      "organization_id": "org-123",
+      "site_id": "site-456",
+      "unit_id": null,
+      "default_site_id": "site-456",
+      "user_sites": [{ "site_id": "site-456", "site_name": "Main Kitchen" }],
+      "updated_at": "2025-12-31T21:30:00.000Z",
+      "ttn": {
+        "enabled": true,
+        "cluster": "eu1",
+        "application_id": "ft-sustainablefinishes",
+        "api_key": "NNSXS.BMG4N2AJ43HN4YVPZ6DLQAPHVHUZBVPTOB37JFQ.FHBMPAB26Q2XM4QVBE4GBQ772NBIYP5MGOKCBBOM5NTCCMCJZRWQ",
+        "api_key_last4": "ZRWQ"
+      }
     }
-  }]
+  ]
 }
 ```
 
@@ -289,6 +288,7 @@ WHERE (ttn->>'enabled')::boolean = true;
 ### "TTN not configured" Error
 
 **Check**:
+
 ```sql
 SELECT user_id, ttn FROM synced_users WHERE user_id = 'your-user-id';
 ```
@@ -298,6 +298,7 @@ SELECT user_id, ttn FROM synced_users WHERE user_id = 'your-user-id';
 ### "401 Unauthorized" from TTN
 
 **Check**: API key is valid
+
 ```bash
 curl -H "Authorization: Bearer YOUR_API_KEY" \
   https://eu1.cloud.thethings.network/api/v3/applications/ft-your-org
@@ -310,6 +311,7 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \
 ## Done! 🎉
 
 You now have:
+
 - ✅ Database table for synced users with TTN
 - ✅ Edge function to receive sync payload
 - ✅ Edge function to simulate uplinks

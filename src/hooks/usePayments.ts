@@ -38,21 +38,21 @@
  * ```
  */
 
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useTRPC, useTRPCClient } from "@/lib/trpc";
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useTRPC, useTRPCClient } from '@/lib/trpc';
 
 /**
  * Subscription status values
  */
 export type SubscriptionStatus =
-  | "active"
-  | "canceled"
-  | "incomplete"
-  | "incomplete_expired"
-  | "past_due"
-  | "paused"
-  | "trialing"
-  | "unpaid";
+  | 'active'
+  | 'canceled'
+  | 'incomplete'
+  | 'incomplete_expired'
+  | 'past_due'
+  | 'paused'
+  | 'trialing'
+  | 'unpaid';
 
 /**
  * Subscription response shape
@@ -112,7 +112,7 @@ export interface CreatePortalInput {
  */
 export function useSubscription(
   organizationId: string | undefined,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) {
   const trpc = useTRPC();
 
@@ -122,7 +122,7 @@ export function useSubscription(
 
   return useQuery({
     ...queryOptions,
-    enabled: !!organizationId && (options?.enabled !== false),
+    enabled: !!organizationId && options?.enabled !== false,
     staleTime: 60_000, // 1 minute
     gcTime: 5 * 60_000, // 5 minutes
   });
@@ -140,10 +140,7 @@ export function useCreateCheckoutSession() {
   const client = useTRPCClient();
 
   return useMutation({
-    mutationFn: async (variables: {
-      organizationId: string;
-      data: CreateCheckoutInput;
-    }) => {
+    mutationFn: async (variables: { organizationId: string; data: CreateCheckoutInput }) => {
       return client.payments.createCheckoutSession.mutate({
         organizationId: variables.organizationId,
         data: variables.data,
@@ -164,10 +161,7 @@ export function useCreatePortalSession() {
   const client = useTRPCClient();
 
   return useMutation({
-    mutationFn: async (variables: {
-      organizationId: string;
-      data: CreatePortalInput;
-    }) => {
+    mutationFn: async (variables: { organizationId: string; data: CreatePortalInput }) => {
       return client.payments.createPortalSession.mutate({
         organizationId: variables.organizationId,
         data: variables.data,
@@ -180,16 +174,16 @@ export function useCreatePortalSession() {
  * Helper to check if subscription is active
  */
 export function isSubscriptionActive(
-  subscription: SubscriptionResponse | null | undefined
+  subscription: SubscriptionResponse | null | undefined,
 ): boolean {
-  return subscription?.status === "active" || subscription?.status === "trialing";
+  return subscription?.status === 'active' || subscription?.status === 'trialing';
 }
 
 /**
  * Helper to check if subscription allows more sensors
  */
 export function hasAvailableSensorCapacity(
-  subscription: SubscriptionResponse | null | undefined
+  subscription: SubscriptionResponse | null | undefined,
 ): boolean {
   if (!subscription) return false;
   return subscription.deviceCount < subscription.sensorLimit;
@@ -199,7 +193,7 @@ export function hasAvailableSensorCapacity(
  * Helper to get remaining sensor capacity
  */
 export function getRemainingCapacity(
-  subscription: SubscriptionResponse | null | undefined
+  subscription: SubscriptionResponse | null | undefined,
 ): number {
   if (!subscription) return 0;
   return Math.max(0, subscription.sensorLimit - subscription.deviceCount);

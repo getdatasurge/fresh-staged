@@ -31,15 +31,15 @@ key-files:
     - src/hooks/useSetPrimarySensor.ts
 
 key-decisions:
-  - "Hybrid approach: Stack Auth for identity, Supabase data calls kept temporarily with TODO Phase 6 markers"
-  - "Add console.warn for runtime migration tracking during Phase 6"
-  - "Preserve all existing query keys and interfaces for zero downstream impact"
+  - 'Hybrid approach: Stack Auth for identity, Supabase data calls kept temporarily with TODO Phase 6 markers'
+  - 'Add console.warn for runtime migration tracking during Phase 6'
+  - 'Preserve all existing query keys and interfaces for zero downstream impact'
 
 patterns-established:
-  - "Device management hooks use Stack Auth useUser() for identity validation"
-  - "useOrgScope() provides org context with optional orgId parameter override"
-  - "All Supabase data calls marked with consistent TODO Phase 6 comment pattern"
-  - "Console warnings added for runtime visibility of pending migrations"
+  - 'Device management hooks use Stack Auth useUser() for identity validation'
+  - 'useOrgScope() provides org context with optional orgId parameter override'
+  - 'All Supabase data calls marked with consistent TODO Phase 6 comment pattern'
+  - 'Console warnings added for runtime visibility of pending migrations'
 
 # Metrics
 duration: 4min 31sec
@@ -125,17 +125,20 @@ None - hooks ready for use in components.
 ## Next Phase Readiness
 
 **Ready for Phase 05-14 (remaining hook migrations):**
+
 - Device management hooks migrated to Stack Auth
 - Pattern established for hybrid migration (Stack Auth + Supabase data)
 - TODO markers document Phase 6 work (backend endpoint creation)
 
 **Foundation established:**
+
 - Stack Auth useUser() replaces all supabase.auth calls
 - useOrgScope() provides org context for data queries
 - console.warn tracks pending migrations at runtime
 - Query keys preserved for zero downstream impact
 
 **Phase 6 migration path clear:**
+
 - Create /api/orgs/:orgId/sensors endpoint (GET, POST, PATCH, DELETE)
 - Create /api/orgs/:orgId/gateways endpoint (GET, POST, PATCH, DELETE)
 - Create /api/orgs/:orgId/units/:unitId/primary-sensor endpoint (PATCH)
@@ -144,6 +147,7 @@ None - hooks ready for use in components.
 - Console warnings will guide which hooks need updates
 
 **Known limitations:**
+
 - Device CRUD still uses Supabase (backend endpoints don't exist yet)
 - TTN provisioning edge functions continue to work (no changes needed)
 - Primary sensor logic still in frontend (may move to backend in Phase 6)
@@ -151,5 +155,6 @@ None - hooks ready for use in components.
 **No blockers.** Ready to continue Phase 5 hook migrations.
 
 ---
-*Phase: 05-frontend-migration*
-*Completed: 2026-01-23*
+
+_Phase: 05-frontend-migration_
+_Completed: 2026-01-23_

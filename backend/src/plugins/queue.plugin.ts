@@ -41,7 +41,7 @@ export interface QueuePluginOptions {
 
 const queuePlugin: FastifyPluginAsync<QueuePluginOptions> = async (
   fastify: FastifyInstance,
-  opts: QueuePluginOptions
+  opts: QueuePluginOptions,
 ) => {
   // Create QueueService instance
   const queueService = new QueueService();
@@ -109,7 +109,7 @@ const queuePlugin: FastifyPluginAsync<QueuePluginOptions> = async (
 function setupBullBoard(
   fastify: FastifyInstance,
   queueService: QueueService,
-  basePath = '/admin/queues'
+  basePath = '/admin/queues',
 ): void {
   // Get all registered queues from QueueService
   const queues = Array.from(queueService.getAllQueues().values());

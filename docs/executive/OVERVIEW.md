@@ -16,13 +16,13 @@ Think of it as a **24/7 watchdog for your cold chain** that never takes a break,
 
 Every year, businesses lose billions of dollars to:
 
-| Problem | Impact |
-|---------|--------|
-| **Spoiled inventory** | A single freezer failure can destroy $10,000+ in product overnight |
-| **Health code violations** | Fines, closures, and reputation damage from failed inspections |
-| **Manual logging burden** | Staff waste hours on paper temperature logs that are error-prone |
-| **Late discovery** | Problems found hours or days after they started, when it's too late |
-| **Compliance gaps** | Missing or incomplete records during health inspections |
+| Problem                    | Impact                                                              |
+| -------------------------- | ------------------------------------------------------------------- |
+| **Spoiled inventory**      | A single freezer failure can destroy $10,000+ in product overnight  |
+| **Health code violations** | Fines, closures, and reputation damage from failed inspections      |
+| **Manual logging burden**  | Staff waste hours on paper temperature logs that are error-prone    |
+| **Late discovery**         | Problems found hours or days after they started, when it's too late |
+| **Compliance gaps**        | Missing or incomplete records during health inspections             |
 
 **FreshTrack Pro eliminates these problems** by automating temperature monitoring, alerting, and compliance documentation.
 
@@ -32,24 +32,27 @@ Every year, businesses lose billions of dollars to:
 
 FreshTrack Pro is designed for organizations that need to maintain strict temperature control:
 
-| Industry | Use Cases |
-|----------|-----------|
-| **Restaurants & Food Service** | Walk-in coolers, freezers, prep stations |
-| **Grocery & Retail** | Display cases, storage, receiving areas |
-| **Healthcare** | Vaccine storage, blood banks, pharmaceutical storage |
-| **Food Manufacturing** | Production lines, raw material storage, shipping |
-| **Hospitality** | Hotel kitchens, event catering, banquet facilities |
-| **Education** | School cafeterias, university dining halls |
+| Industry                       | Use Cases                                            |
+| ------------------------------ | ---------------------------------------------------- |
+| **Restaurants & Food Service** | Walk-in coolers, freezers, prep stations             |
+| **Grocery & Retail**           | Display cases, storage, receiving areas              |
+| **Healthcare**                 | Vaccine storage, blood banks, pharmaceutical storage |
+| **Food Manufacturing**         | Production lines, raw material storage, shipping     |
+| **Hospitality**                | Hotel kitchens, event catering, banquet facilities   |
+| **Education**                  | School cafeterias, university dining halls           |
 
 ---
 
 ## Key Capabilities
 
 ### 1. Continuous Monitoring
+
 Wireless sensors check temperatures every 5 minutes (configurable) and transmit readings automatically. No manual checks required.
 
 ### 2. Instant Alerts
+
 When temperatures go out of range, the system immediately notifies the right people via:
+
 - Email
 - Text message (SMS)
 - Mobile push notifications
@@ -57,21 +60,26 @@ When temperatures go out of range, the system immediately notifies the right peo
 Alerts escalate to managers and supervisors if not acknowledged within configurable timeframes.
 
 ### 3. Compliance Ready
+
 - **Automatic audit trails** that record every reading, alert, and action
 - **HACCP-compliant** documentation for health inspections
 - **One-click reports** showing compliance history for any time period
 - **Corrective action tracking** to document how issues were resolved
 
 ### 4. Multi-Location Management
+
 Manage all your locations from a single dashboard:
+
 - Organization → Sites → Areas → Individual Units
 - Centralized monitoring across cities, states, or countries
 - Role-based access so staff only see what they need
 
 ### 5. Offline-Ready Manual Logging
+
 When sensors aren't available, staff can log temperatures manually from any mobile device—even without internet connection. Logs sync automatically when connectivity returns.
 
 ### 6. Equipment Health Insights
+
 - **Battery life forecasting** for wireless sensors
 - **Connectivity monitoring** to catch communication issues early
 - **Calibration reminders** to ensure sensor accuracy
@@ -80,14 +88,14 @@ When sensors aren't available, staff can log temperatures manually from any mobi
 
 ## At a Glance
 
-| Feature | Description |
-|---------|-------------|
-| **Monitoring** | 24/7 automated temperature tracking |
-| **Alerting** | Multi-channel, escalating notifications |
-| **Compliance** | HACCP/FDA-ready documentation and reports |
-| **Access** | Web and mobile apps, works on any device |
-| **Scale** | From 1 unit to thousands across multiple locations |
-| **Deployment** | Cloud-based, no servers to maintain |
+| Feature        | Description                                        |
+| -------------- | -------------------------------------------------- |
+| **Monitoring** | 24/7 automated temperature tracking                |
+| **Alerting**   | Multi-channel, escalating notifications            |
+| **Compliance** | HACCP/FDA-ready documentation and reports          |
+| **Access**     | Web and mobile apps, works on any device           |
+| **Scale**      | From 1 unit to thousands across multiple locations |
+| **Deployment** | Cloud-based, no servers to maintain                |
 
 ---
 

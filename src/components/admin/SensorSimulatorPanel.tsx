@@ -1,22 +1,28 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useTRPC } from "@/lib/trpc";
-import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
-import { 
-  Play, 
-  Square, 
-  Zap, 
-  Loader2, 
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTRPC } from '@/lib/trpc';
+import { useQuery } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from 'sonner';
+import {
+  Play,
+  Square,
+  Zap,
+  Loader2,
   Thermometer,
   Clock,
   Activity,
@@ -32,12 +38,12 @@ import {
   AlertTriangle,
   Radio,
   Route,
-} from "lucide-react";
-import { EmulatorTTNRoutingCard } from "./EmulatorTTNRoutingCard";
-import { useTTNConfig } from "@/contexts/TTNConfigContext";
-import { TTNConfigSourceBadge } from "@/components/ttn/TTNConfigSourceBadge";
-import { TTNGuardDisplay } from "@/components/ttn/TTNGuardDisplay";
-import { checkTTNOperationAllowed } from "@/lib/ttn/guards";
+} from 'lucide-react';
+import { EmulatorTTNRoutingCard } from './EmulatorTTNRoutingCard';
+import { useTTNConfig } from '@/contexts/TTNConfigContext';
+import { TTNConfigSourceBadge } from '@/components/ttn/TTNConfigSourceBadge';
+import { TTNGuardDisplay } from '@/components/ttn/TTNGuardDisplay';
+import { checkTTNOperationAllowed } from '@/lib/ttn/guards';
 
 interface Unit {
   id: string;
@@ -90,9 +96,9 @@ interface SensorSimulatorPanelProps {
 }
 
 export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelProps) {
-  const [selectedUnit, setSelectedUnit] = useState<string>("");
+  const [selectedUnit, setSelectedUnit] = useState<string>('');
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("readings");
+  const [activeTab, setActiveTab] = useState<string>('readings');
   const [routeViaTTN, setRouteViaTTN] = useState(false);
 
   // TTN Config Context for state awareness
@@ -102,15 +108,18 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
   // tRPC for units loading
   const trpc = useTRPC();
   const { data: unitsData, isLoading } = useQuery(
-    trpc.units.listByOrg.queryOptions({ organizationId: organizationId! }, {
-      enabled: !!organizationId
-    })
+    trpc.units.listByOrg.queryOptions(
+      { organizationId: organizationId! },
+      {
+        enabled: !!organizationId,
+      },
+    ),
   );
 
   // Transform tRPC response to match Unit interface
   const units = useMemo<Unit[]>(() => {
     if (!unitsData) return [];
-    return unitsData.map(u => ({
+    return unitsData.map((u) => ({
       id: u.id,
       name: u.name,
       unit_type: u.unitType,
@@ -121,8 +130,8 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
       door_state: u.doorState,
       area: {
         name: u.areaName || '',
-        site: { name: u.siteName || '' }
-      }
+        site: { name: u.siteName || '' },
+      },
     }));
   }, [unitsData]);
 
@@ -133,11 +142,11 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
   const recentEvents: SimulatorEvent[] = [];
 
   // Form state
-  const [customTemp, setCustomTemp] = useState<string>("38.0");
-  const [customHumidity, setCustomHumidity] = useState<string>("55");
+  const [customTemp, setCustomTemp] = useState<string>('38.0');
+  const [customHumidity, setCustomHumidity] = useState<string>('55');
   const [batteryLevel, setBatteryLevel] = useState<number>(100);
   const [signalStrength, setSignalStrength] = useState<number>(-50);
-  const [streamingInterval, setStreamingInterval] = useState<string>("60");
+  const [streamingInterval, setStreamingInterval] = useState<string>('60');
 
   // Clear config when unit changes
   useEffect(() => {
@@ -150,12 +159,12 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
   // Show unavailable message for all simulator actions
   const invokeSimulator = async (action: string, _extraParams: Record<string, unknown> = {}) => {
     if (!selectedUnit) {
-      toast.error("Please select a unit");
+      toast.error('Please select a unit');
       return;
     }
 
-    toast.error("Sensor simulator unavailable", {
-      description: "Edge function removed during migration. Use direct API for testing."
+    toast.error('Sensor simulator unavailable', {
+      description: 'Edge function removed during migration. Use direct API for testing.',
     });
   };
 
@@ -163,17 +172,17 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
     const temp = parseFloat(customTemp);
     const humidity = parseFloat(customHumidity);
     if (isNaN(temp)) {
-      toast.error("Please enter a valid temperature");
+      toast.error('Please enter a valid temperature');
       return;
     }
-    invokeSimulator("inject", { 
+    invokeSimulator('inject', {
       temperature: temp,
-      humidity: isNaN(humidity) ? undefined : humidity
+      humidity: isNaN(humidity) ? undefined : humidity,
     });
   };
 
   const handleUpdateTelemetry = () => {
-    invokeSimulator("update_telemetry", {
+    invokeSimulator('update_telemetry', {
       battery_level: batteryLevel,
       signal_strength: signalStrength,
     });
@@ -181,18 +190,18 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
 
   const handleToggleStreaming = () => {
     if (config?.streaming_enabled) {
-      invokeSimulator("stop_streaming");
+      invokeSimulator('stop_streaming');
     } else {
-      invokeSimulator("start_streaming", {
-        interval_seconds: parseInt(streamingInterval) || 60
+      invokeSimulator('start_streaming', {
+        interval_seconds: parseInt(streamingInterval) || 60,
       });
     }
   };
 
   const handleToggleDoorCycle = () => {
     // For now, just toggle door state - full cycle would need additional UI
-    const newDoorState = config?.door_state === "open" ? "closed" : "open";
-    
+    const newDoorState = config?.door_state === 'open' ? 'closed' : 'open';
+
     // STEP A: Log emulator door action for pipeline tracing
     if (import.meta.env.DEV) {
       console.log('[Emulator] Door action:', {
@@ -200,20 +209,20 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
         unitId: selectedUnit,
         currentState: config?.door_state,
         expectedNewState: newDoorState,
-        ts: new Date().toISOString()
+        ts: new Date().toISOString(),
       });
     }
-    
-    invokeSimulator("set_door_state", { door_state: newDoorState });
+
+    invokeSimulator('set_door_state', { door_state: newDoorState });
   };
 
-  const selectedUnitData = units.find(u => u.id === selectedUnit);
+  const selectedUnitData = units.find((u) => u.id === selectedUnit);
 
   const getSignalLabel = (strength: number) => {
-    if (strength >= -60) return "Excellent";
-    if (strength >= -70) return "Good";
-    if (strength >= -80) return "Fair";
-    return "Weak";
+    if (strength >= -60) return 'Excellent';
+    if (strength >= -70) return 'Good';
+    if (strength >= -80) return 'Fair';
+    return 'Weak';
   };
 
   return (
@@ -224,7 +233,8 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
         <div>
           <p className="font-medium text-amber-500">Developer Tool — Simulated Data Only</p>
           <p className="text-sm text-muted-foreground">
-            This simulator injects test data into the production pipeline. Alerts, emails, and compliance records will be real.
+            This simulator injects test data into the production pipeline. Alerts, emails, and
+            compliance records will be real.
           </p>
         </div>
       </div>
@@ -236,12 +246,11 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
               <Activity className="w-5 h-5 text-accent" />
               Sensor Simulator
             </CardTitle>
-            {routeViaTTN && (
-              <TTNConfigSourceBadge context={ttnContext} size="sm" />
-            )}
+            {routeViaTTN && <TTNConfigSourceBadge context={ttnContext} size="sm" />}
           </div>
           <CardDescription>
-            Fully simulate hardware installations. All data flows through production ingestion paths.
+            Fully simulate hardware installations. All data flows through production ingestion
+            paths.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -281,9 +290,7 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
               <div className="p-4 rounded-lg bg-muted/50 border space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">{selectedUnitData.name}</span>
-                  <Badge variant="outline">
-                    {selectedUnitData.unit_type.replace(/_/g, " ")}
-                  </Badge>
+                  <Badge variant="outline">{selectedUnitData.unit_type.replace(/_/g, ' ')}</Badge>
                 </div>
                 <div className="text-xs text-muted-foreground grid grid-cols-2 gap-2">
                   <p>High Limit: {selectedUnitData.temp_limit_high}°F</p>
@@ -292,13 +299,13 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
                   )}
                   <p className="flex items-center gap-1">
                     <Thermometer className="w-3 h-3" />
-                    Current: {selectedUnitData.last_temp_reading ?? "—"}°F
+                    Current: {selectedUnitData.last_temp_reading ?? '—'}°F
                   </p>
                   <p className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    {selectedUnitData.last_reading_at 
-                      ? new Date(selectedUnitData.last_reading_at).toLocaleString() 
-                      : "Never"}
+                    {selectedUnitData.last_reading_at
+                      ? new Date(selectedUnitData.last_reading_at).toLocaleString()
+                      : 'Never'}
                   </p>
                 </div>
               </div>
@@ -319,318 +326,321 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
                 </TabsList>
 
                 <TabsContent value="readings" className="mt-4 space-y-6">
-
-              {/* Device State Section */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <Radio className="w-4 h-4" />
-                  Device State
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Sensor Paired */}
-                  <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
-                    <div className="flex items-center gap-2">
-                      {config?.sensor_paired ? (
-                        <Link2 className="w-4 h-4 text-green-500" />
-                      ) : (
-                        <Link2Off className="w-4 h-4 text-muted-foreground" />
-                      )}
-                      <span className="text-sm">Sensor Paired</span>
-                    </div>
-                    <Switch
-                      checked={config?.sensor_paired ?? false}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          invokeSimulator("pair_sensor");
-                        } else {
-                          invokeSimulator("unpair_sensor");
-                        }
-                      }}
-                      disabled={loadingAction !== null}
-                    />
-                  </div>
-
-                  {/* Sensor Online */}
-                  <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
-                    <div className="flex items-center gap-2">
-                      {config?.sensor_online ? (
-                        <Wifi className="w-4 h-4 text-green-500" />
-                      ) : (
-                        <WifiOff className="w-4 h-4 text-muted-foreground" />
-                      )}
-                      <span className="text-sm">Sensor Online</span>
-                    </div>
-                    <Switch
-                      checked={config?.sensor_online ?? false}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          invokeSimulator("set_online");
-                        } else {
-                          invokeSimulator("set_offline");
-                        }
-                      }}
-                      disabled={loadingAction !== null || !config?.sensor_paired}
-                    />
-                  </div>
-
-                  {/* Door Sensor Present */}
-                  <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
-                    <div className="flex items-center gap-2">
-                      {config?.door_sensor_present ? (
-                        <DoorOpen className="w-4 h-4 text-blue-500" />
-                      ) : (
-                        <DoorClosed className="w-4 h-4 text-muted-foreground" />
-                      )}
-                      <span className="text-sm">Door Sensor</span>
-                    </div>
-                    <Switch
-                      checked={config?.door_sensor_present ?? false}
-                      onCheckedChange={(checked) => {
-                        invokeSimulator("update_telemetry", { door_sensor_present: checked });
-                      }}
-                      disabled={loadingAction !== null || !config?.sensor_paired}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Readings Section */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <Thermometer className="w-4 h-4" />
-                  Readings
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Temperature (°F)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={customTemp}
-                      onChange={(e) => setCustomTemp(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Humidity (%)</Label>
-                    <Input
-                      type="number"
-                      step="1"
-                      min="0"
-                      max="100"
-                      value={customHumidity}
-                      onChange={(e) => setCustomHumidity(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  onClick={handleInjectReading}
-                  disabled={loadingAction !== null}
-                  className="w-full"
-                >
-                  {loadingAction === "inject" ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  ) : (
-                    <Zap className="w-4 h-4 mr-2" />
-                  )}
-                  Inject Single Reading
-                </Button>
-
-                {/* Streaming */}
-                <div className="flex items-center gap-4 p-3 rounded-lg border bg-card">
-                  <div className="flex-1 flex items-center gap-2">
-                    <Play className="w-4 h-4" />
-                    <span className="text-sm">Continuous Streaming</span>
-                    {config?.streaming_enabled && (
-                      <Badge variant="default" className="text-xs">Active</Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      className="w-20"
-                      value={streamingInterval}
-                      onChange={(e) => setStreamingInterval(e.target.value)}
-                      disabled={config?.streaming_enabled}
-                    />
-                    <span className="text-xs text-muted-foreground">sec</span>
-                    <Button
-                      size="sm"
-                      variant={config?.streaming_enabled ? "destructive" : "secondary"}
-                      onClick={handleToggleStreaming}
-                      disabled={loadingAction !== null || !config?.sensor_paired}
-                    >
-                      {config?.streaming_enabled ? (
-                        <>
-                          <Square className="w-3 h-3 mr-1" />
-                          Stop
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-3 h-3 mr-1" />
-                          Start
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Telemetry Section */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <Signal className="w-4 h-4" />
-                  Telemetry
-                </h3>
-
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label className="flex items-center gap-2">
-                        <Battery className="w-4 h-4" />
-                        Battery Level
-                      </Label>
-                      <span className="text-sm font-medium">{batteryLevel}%</span>
-                    </div>
-                    <Slider
-                      value={[batteryLevel]}
-                      onValueChange={(v) => setBatteryLevel(v[0])}
-                      max={100}
-                      step={1}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label className="flex items-center gap-2">
-                        <Signal className="w-4 h-4" />
-                        Signal Strength
-                      </Label>
-                      <span className="text-sm font-medium">{signalStrength} dBm ({getSignalLabel(signalStrength)})</span>
-                    </div>
-                    <Slider
-                      value={[signalStrength]}
-                      onValueChange={(v) => setSignalStrength(v[0])}
-                      min={-100}
-                      max={-30}
-                      step={1}
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  variant="secondary"
-                  onClick={handleUpdateTelemetry}
-                  disabled={loadingAction !== null || !config?.sensor_paired}
-                  className="w-full"
-                >
-                  {loadingAction === "update_telemetry" ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  ) : null}
-                  Apply Telemetry
-                </Button>
-              </div>
-
-              {/* Door Sensor Section */}
-              {config?.door_sensor_present && (
-                <>
-                  <Separator />
+                  {/* Device State Section */}
                   <div className="space-y-4">
                     <h3 className="text-sm font-semibold flex items-center gap-2">
-                      <DoorOpen className="w-4 h-4" />
-                      Door Sensor
+                      <Radio className="w-4 h-4" />
+                      Device State
                     </h3>
 
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Sensor Paired */}
+                      <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                        <div className="flex items-center gap-2">
+                          {config?.sensor_paired ? (
+                            <Link2 className="w-4 h-4 text-green-500" />
+                          ) : (
+                            <Link2Off className="w-4 h-4 text-muted-foreground" />
+                          )}
+                          <span className="text-sm">Sensor Paired</span>
+                        </div>
+                        <Switch
+                          checked={config?.sensor_paired ?? false}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              invokeSimulator('pair_sensor');
+                            } else {
+                              invokeSimulator('unpair_sensor');
+                            }
+                          }}
+                          disabled={loadingAction !== null}
+                        />
+                      </div>
+
+                      {/* Sensor Online */}
+                      <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                        <div className="flex items-center gap-2">
+                          {config?.sensor_online ? (
+                            <Wifi className="w-4 h-4 text-green-500" />
+                          ) : (
+                            <WifiOff className="w-4 h-4 text-muted-foreground" />
+                          )}
+                          <span className="text-sm">Sensor Online</span>
+                        </div>
+                        <Switch
+                          checked={config?.sensor_online ?? false}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              invokeSimulator('set_online');
+                            } else {
+                              invokeSimulator('set_offline');
+                            }
+                          }}
+                          disabled={loadingAction !== null || !config?.sensor_paired}
+                        />
+                      </div>
+
+                      {/* Door Sensor Present */}
+                      <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                        <div className="flex items-center gap-2">
+                          {config?.door_sensor_present ? (
+                            <DoorOpen className="w-4 h-4 text-blue-500" />
+                          ) : (
+                            <DoorClosed className="w-4 h-4 text-muted-foreground" />
+                          )}
+                          <span className="text-sm">Door Sensor</span>
+                        </div>
+                        <Switch
+                          checked={config?.door_sensor_present ?? false}
+                          onCheckedChange={(checked) => {
+                            invokeSimulator('update_telemetry', { door_sensor_present: checked });
+                          }}
+                          disabled={loadingAction !== null || !config?.sensor_paired}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Readings Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold flex items-center gap-2">
+                      <Thermometer className="w-4 h-4" />
+                      Readings
+                    </h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Temperature (°F)</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          value={customTemp}
+                          onChange={(e) => setCustomTemp(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Humidity (%)</Label>
+                        <Input
+                          type="number"
+                          step="1"
+                          min="0"
+                          max="100"
+                          value={customHumidity}
+                          onChange={(e) => setCustomHumidity(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={handleInjectReading}
+                      disabled={loadingAction !== null}
+                      className="w-full"
+                    >
+                      {loadingAction === 'inject' ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        <Zap className="w-4 h-4 mr-2" />
+                      )}
+                      Inject Single Reading
+                    </Button>
+
+                    {/* Streaming */}
                     <div className="flex items-center gap-4 p-3 rounded-lg border bg-card">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">
-                          Door State: {config.door_state === "open" ? "Open" : "Closed"}
-                        </p>
-                        {config.door_state === "open" && config.door_open_since && (
-                          <p className="text-xs text-muted-foreground">
-                            Open since {new Date(config.door_open_since).toLocaleTimeString()}
-                          </p>
+                      <div className="flex-1 flex items-center gap-2">
+                        <Play className="w-4 h-4" />
+                        <span className="text-sm">Continuous Streaming</span>
+                        {config?.streaming_enabled && (
+                          <Badge variant="default" className="text-xs">
+                            Active
+                          </Badge>
                         )}
                       </div>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          className="w-20"
+                          value={streamingInterval}
+                          onChange={(e) => setStreamingInterval(e.target.value)}
+                          disabled={config?.streaming_enabled}
+                        />
+                        <span className="text-xs text-muted-foreground">sec</span>
+                        <Button
+                          size="sm"
+                          variant={config?.streaming_enabled ? 'destructive' : 'secondary'}
+                          onClick={handleToggleStreaming}
+                          disabled={loadingAction !== null || !config?.sensor_paired}
+                        >
+                          {config?.streaming_enabled ? (
+                            <>
+                              <Square className="w-3 h-3 mr-1" />
+                              Stop
+                            </>
+                          ) : (
+                            <>
+                              <Play className="w-3 h-3 mr-1" />
+                              Start
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Telemetry Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold flex items-center gap-2">
+                      <Signal className="w-4 h-4" />
+                      Telemetry
+                    </h3>
+
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="flex items-center gap-2">
+                            <Battery className="w-4 h-4" />
+                            Battery Level
+                          </Label>
+                          <span className="text-sm font-medium">{batteryLevel}%</span>
+                        </div>
+                        <Slider
+                          value={[batteryLevel]}
+                          onValueChange={(v) => setBatteryLevel(v[0])}
+                          max={100}
+                          step={1}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="flex items-center gap-2">
+                            <Signal className="w-4 h-4" />
+                            Signal Strength
+                          </Label>
+                          <span className="text-sm font-medium">
+                            {signalStrength} dBm ({getSignalLabel(signalStrength)})
+                          </span>
+                        </div>
+                        <Slider
+                          value={[signalStrength]}
+                          onValueChange={(v) => setSignalStrength(v[0])}
+                          min={-100}
+                          max={-30}
+                          step={1}
+                        />
+                      </div>
+                    </div>
+
+                    <Button
+                      variant="secondary"
+                      onClick={handleUpdateTelemetry}
+                      disabled={loadingAction !== null || !config?.sensor_paired}
+                      className="w-full"
+                    >
+                      {loadingAction === 'update_telemetry' ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : null}
+                      Apply Telemetry
+                    </Button>
+                  </div>
+
+                  {/* Door Sensor Section */}
+                  {config?.door_sensor_present && (
+                    <>
+                      <Separator />
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-semibold flex items-center gap-2">
+                          <DoorOpen className="w-4 h-4" />
+                          Door Sensor
+                        </h3>
+
+                        <div className="flex items-center gap-4 p-3 rounded-lg border bg-card">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">
+                              Door State: {config.door_state === 'open' ? 'Open' : 'Closed'}
+                            </p>
+                            {config.door_state === 'open' && config.door_open_since && (
+                              <p className="text-xs text-muted-foreground">
+                                Open since {new Date(config.door_open_since).toLocaleTimeString()}
+                              </p>
+                            )}
+                          </div>
+                          <Button
+                            variant="outline"
+                            onClick={handleToggleDoorCycle}
+                            disabled={loadingAction !== null}
+                          >
+                            {config.door_state === 'open' ? (
+                              <>
+                                <DoorClosed className="w-4 h-4 mr-2" />
+                                Close Door
+                              </>
+                            ) : (
+                              <>
+                                <DoorOpen className="w-4 h-4 mr-2" />
+                                Open Door
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <Separator />
+
+                  {/* Quick Actions */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold">Quick Actions</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <Button
                         variant="outline"
-                        onClick={handleToggleDoorCycle}
+                        size="sm"
+                        onClick={() => invokeSimulator('reset')}
                         disabled={loadingAction !== null}
                       >
-                        {config.door_state === "open" ? (
-                          <>
-                            <DoorClosed className="w-4 h-4 mr-2" />
-                            Close Door
-                          </>
-                        ) : (
-                          <>
-                            <DoorOpen className="w-4 h-4 mr-2" />
-                            Open Door
-                          </>
-                        )}
+                        <RotateCcw className="w-3 h-3 mr-1" />
+                        Reset
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const excursionTemp = selectedUnitData.temp_limit_high + 5;
+                          setCustomTemp(String(excursionTemp));
+                          invokeSimulator('inject', { temperature: excursionTemp });
+                        }}
+                        disabled={loadingAction !== null}
+                      >
+                        <AlertTriangle className="w-3 h-3 mr-1" />
+                        Excursion
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => invokeSimulator('set_offline')}
+                        disabled={loadingAction !== null || !config?.sensor_online}
+                      >
+                        <WifiOff className="w-3 h-3 mr-1" />
+                        Go Offline
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setBatteryLevel(15);
+                          invokeSimulator('update_telemetry', { battery_level: 15 });
+                        }}
+                        disabled={loadingAction !== null || !config?.sensor_paired}
+                      >
+                        <Battery className="w-3 h-3 mr-1" />
+                        Low Battery
                       </Button>
                     </div>
                   </div>
-                </>
-              )}
-
-              <Separator />
-
-              {/* Quick Actions */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold">Quick Actions</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => invokeSimulator("reset")}
-                    disabled={loadingAction !== null}
-                  >
-                    <RotateCcw className="w-3 h-3 mr-1" />
-                    Reset
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const excursionTemp = selectedUnitData.temp_limit_high + 5;
-                      setCustomTemp(String(excursionTemp));
-                      invokeSimulator("inject", { temperature: excursionTemp });
-                    }}
-                    disabled={loadingAction !== null}
-                  >
-                    <AlertTriangle className="w-3 h-3 mr-1" />
-                    Excursion
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => invokeSimulator("set_offline")}
-                    disabled={loadingAction !== null || !config?.sensor_online}
-                  >
-                    <WifiOff className="w-3 h-3 mr-1" />
-                    Go Offline
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setBatteryLevel(15);
-                      invokeSimulator("update_telemetry", { battery_level: 15 });
-                    }}
-                    disabled={loadingAction !== null || !config?.sensor_paired}
-                  >
-                    <Battery className="w-3 h-3 mr-1" />
-                    Low Battery
-                  </Button>
-                </div>
-              </div>
                 </TabsContent>
 
                 <TabsContent value="ttn" className="mt-4">
@@ -658,13 +668,13 @@ export function SensorSimulatorPanel({ organizationId }: SensorSimulatorPanelPro
               {recentEvents.map((event) => {
                 const eventData = event.event_data as Record<string, unknown>;
                 return (
-                  <div 
-                    key={event.id} 
+                  <div
+                    key={event.id}
                     className="flex items-center justify-between text-sm p-2 rounded bg-muted/30"
                   >
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="text-xs">
-                        {String(eventData.action || "unknown")}
+                        {String(eventData.action || 'unknown')}
                       </Badge>
                       {eventData.temperature !== undefined && (
                         <span className="text-muted-foreground">

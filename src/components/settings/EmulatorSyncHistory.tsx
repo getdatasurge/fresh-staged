@@ -1,23 +1,23 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useTRPC } from "@/lib/trpc";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { 
-  RefreshCw, 
-  CheckCircle, 
-  AlertTriangle, 
-  ChevronDown, 
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useTRPC } from '@/lib/trpc';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  RefreshCw,
+  CheckCircle,
+  AlertTriangle,
+  ChevronDown,
   ChevronRight,
   Radio,
   Cpu,
   Thermometer,
   Clock,
-  Database
-} from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
+  Database,
+} from 'lucide-react';
+import { formatDistanceToNow, format } from 'date-fns';
 
 interface EmulatorSyncHistoryProps {
   organizationId: string | null;
@@ -56,13 +56,18 @@ export function EmulatorSyncHistory({ organizationId }: EmulatorSyncHistoryProps
     limit: 25,
   });
 
-  const { data: trpcRuns, isLoading, refetch, isRefetching } = useQuery({
+  const {
+    data: trpcRuns,
+    isLoading,
+    refetch,
+    isRefetching,
+  } = useQuery({
     ...queryOptions,
     enabled: !!organizationId,
   });
 
   // Transform tRPC response to match component's expected snake_case format
-  const syncRuns: SyncRun[] | undefined = trpcRuns?.map(run => ({
+  const syncRuns: SyncRun[] | undefined = trpcRuns?.map((run) => ({
     id: run.id,
     organization_id: run.organizationId,
     sync_id: run.syncId,
@@ -72,16 +77,18 @@ export function EmulatorSyncHistory({ organizationId }: EmulatorSyncHistoryProps
     counts: run.counts,
     warnings: run.warnings,
     errors: run.errors,
-    payload_summary: run.payloadSummary ? {
-      gateways_count: run.payloadSummary.gatewaysCount,
-      devices_count: run.payloadSummary.devicesCount,
-      sensors_count: run.payloadSummary.sensorsCount,
-    } : null,
+    payload_summary: run.payloadSummary
+      ? {
+          gateways_count: run.payloadSummary.gatewaysCount,
+          devices_count: run.payloadSummary.devicesCount,
+          sensors_count: run.payloadSummary.sensorsCount,
+        }
+      : null,
     created_at: run.createdAt.toISOString(),
   }));
 
   const toggleExpanded = (id: string) => {
-    setExpandedIds(prev => {
+    setExpandedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -98,7 +105,7 @@ export function EmulatorSyncHistory({ organizationId }: EmulatorSyncHistoryProps
     const parts = [];
     if (data.created > 0) parts.push(`${data.created} created`);
     if (data.updated > 0) parts.push(`${data.updated} updated`);
-    return parts.length > 0 ? parts.join(", ") : "0";
+    return parts.length > 0 ? parts.join(', ') : '0';
   };
 
   if (!organizationId) return null;
@@ -111,17 +118,10 @@ export function EmulatorSyncHistory({ organizationId }: EmulatorSyncHistoryProps
             <Database className="h-5 w-5" />
             Emulator Sync History
           </CardTitle>
-          <CardDescription>
-            Recent sync runs from emulator ingestion (last 25)
-          </CardDescription>
+          <CardDescription>Recent sync runs from emulator ingestion (last 25)</CardDescription>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => refetch()}
-          disabled={isRefetching}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? "animate-spin" : ""}`} />
+        <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </CardHeader>
@@ -143,7 +143,7 @@ export function EmulatorSyncHistory({ organizationId }: EmulatorSyncHistoryProps
               const isExpanded = expandedIds.has(run.id);
               const hasWarnings = run.warnings && run.warnings.length > 0;
               const hasErrors = run.errors && run.errors.length > 0;
-              const isPartial = run.status === "partial";
+              const isPartial = run.status === 'partial';
 
               return (
                 <Collapsible
@@ -159,9 +159,12 @@ export function EmulatorSyncHistory({ organizationId }: EmulatorSyncHistoryProps
                         ) : (
                           <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         )}
-                        
+
                         {isPartial ? (
-                          <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
+                          <Badge
+                            variant="outline"
+                            className="bg-warning/10 text-warning border-warning/30"
+                          >
                             <AlertTriangle className="h-3 w-3 mr-1" />
                             Partial
                           </Badge>
@@ -176,19 +179,19 @@ export function EmulatorSyncHistory({ organizationId }: EmulatorSyncHistoryProps
                           {run.counts.gateways && (
                             <span className="flex items-center gap-1 text-muted-foreground">
                               <Radio className="h-3.5 w-3.5" />
-                              {formatEntityCounts(run.counts, "gateways")}
+                              {formatEntityCounts(run.counts, 'gateways')}
                             </span>
                           )}
                           {run.counts.devices && (
                             <span className="flex items-center gap-1 text-muted-foreground">
                               <Cpu className="h-3.5 w-3.5" />
-                              {formatEntityCounts(run.counts, "devices")}
+                              {formatEntityCounts(run.counts, 'devices')}
                             </span>
                           )}
                           {run.counts.sensors && (
                             <span className="flex items-center gap-1 text-muted-foreground">
                               <Thermometer className="h-3.5 w-3.5" />
-                              {formatEntityCounts(run.counts, "sensors")}
+                              {formatEntityCounts(run.counts, 'sensors')}
                             </span>
                           )}
                         </div>
@@ -196,13 +199,19 @@ export function EmulatorSyncHistory({ organizationId }: EmulatorSyncHistoryProps
                         {(hasWarnings || hasErrors) && (
                           <div className="flex items-center gap-2">
                             {hasWarnings && (
-                              <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30 text-xs">
-                                {run.warnings.length} warning{run.warnings.length !== 1 ? "s" : ""}
+                              <Badge
+                                variant="outline"
+                                className="bg-warning/10 text-warning border-warning/30 text-xs"
+                              >
+                                {run.warnings.length} warning{run.warnings.length !== 1 ? 's' : ''}
                               </Badge>
                             )}
                             {hasErrors && (
-                              <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 text-xs">
-                                {run.errors.length} error{run.errors.length !== 1 ? "s" : ""}
+                              <Badge
+                                variant="outline"
+                                className="bg-destructive/10 text-destructive border-destructive/30 text-xs"
+                              >
+                                {run.errors.length} error{run.errors.length !== 1 ? 's' : ''}
                               </Badge>
                             )}
                           </div>
@@ -211,7 +220,7 @@ export function EmulatorSyncHistory({ organizationId }: EmulatorSyncHistoryProps
 
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="h-3.5 w-3.5" />
-                        <span title={format(new Date(run.synced_at), "PPpp")}>
+                        <span title={format(new Date(run.synced_at), 'PPpp')}>
                           {formatDistanceToNow(new Date(run.synced_at), { addSuffix: true })}
                         </span>
                       </div>
@@ -223,18 +232,24 @@ export function EmulatorSyncHistory({ organizationId }: EmulatorSyncHistoryProps
                       {run.sync_id && (
                         <div>
                           <span className="text-muted-foreground">Sync ID: </span>
-                          <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{run.sync_id}</code>
+                          <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                            {run.sync_id}
+                          </code>
                         </div>
                       )}
 
                       <div className="grid grid-cols-2 gap-2 text-muted-foreground">
                         <div>
                           <span>Synced at: </span>
-                          <span className="text-foreground">{format(new Date(run.synced_at), "PPpp")}</span>
+                          <span className="text-foreground">
+                            {format(new Date(run.synced_at), 'PPpp')}
+                          </span>
                         </div>
                         <div>
                           <span>Processed at: </span>
-                          <span className="text-foreground">{format(new Date(run.processed_at), "PPpp")}</span>
+                          <span className="text-foreground">
+                            {format(new Date(run.processed_at), 'PPpp')}
+                          </span>
                         </div>
                       </div>
 
@@ -242,8 +257,8 @@ export function EmulatorSyncHistory({ organizationId }: EmulatorSyncHistoryProps
                         <div>
                           <span className="text-muted-foreground">Payload: </span>
                           <span>
-                            {run.payload_summary.gateways_count || 0} gateways, {" "}
-                            {run.payload_summary.devices_count || 0} devices, {" "}
+                            {run.payload_summary.gateways_count || 0} gateways,{' '}
+                            {run.payload_summary.devices_count || 0} devices,{' '}
                             {run.payload_summary.sensors_count || 0} sensors
                           </span>
                         </div>
@@ -251,7 +266,9 @@ export function EmulatorSyncHistory({ organizationId }: EmulatorSyncHistoryProps
 
                       {hasWarnings && (
                         <div>
-                          <p className="font-medium text-warning mb-1">Warnings ({run.warnings.length}):</p>
+                          <p className="font-medium text-warning mb-1">
+                            Warnings ({run.warnings.length}):
+                          </p>
                           <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
                             {run.warnings.map((warning, idx) => (
                               <li key={idx}>{warning}</li>
@@ -262,7 +279,9 @@ export function EmulatorSyncHistory({ organizationId }: EmulatorSyncHistoryProps
 
                       {hasErrors && (
                         <div>
-                          <p className="font-medium text-destructive mb-1">Errors ({run.errors.length}):</p>
+                          <p className="font-medium text-destructive mb-1">
+                            Errors ({run.errors.length}):
+                          </p>
                           <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
                             {run.errors.map((error, idx) => (
                               <li key={idx}>{error}</li>

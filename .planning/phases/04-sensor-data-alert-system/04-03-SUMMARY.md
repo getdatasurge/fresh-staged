@@ -60,6 +60,7 @@ Create REST endpoints for sensor data ingestion and querying, integrating the al
 Created `backend/src/routes/readings.ts` with two endpoint groups:
 
 **POST /api/ingest/readings** (API key authentication)
+
 - Accepts bulk sensor readings (1-1000 readings per request)
 - Validates all units belong to the organization via API key
 - Inserts readings via `readingsService.ingestBulkReadings()`
@@ -70,6 +71,7 @@ Created `backend/src/routes/readings.ts` with two endpoint groups:
   - 403: Units do not belong to organization
 
 **GET /api/orgs/:orgId/sites/:siteId/areas/:areaId/units/:unitId/readings** (JWT authentication)
+
 - Query readings for a specific unit with pagination
 - Supports time range filtering (start, end)
 - Pagination via limit/offset parameters
@@ -81,6 +83,7 @@ Created `backend/src/routes/readings.ts` with two endpoint groups:
 ### 2. Service Helper Function
 
 Added `getLatestReadingPerUnit()` to `readings.service.ts`:
+
 - Takes array of readings, returns Map<unitId, latestReading>
 - Compares recordedAt timestamps to find latest reading per unit
 - Used by route handler to optimize alert evaluation
@@ -89,6 +92,7 @@ Added `getLatestReadingPerUnit()` to `readings.service.ts`:
 ### 3. Alert Evaluation Integration
 
 Integrated alert evaluator into ingestion flow:
+
 - After successful bulk insert, route handler:
   1. Identifies unique unit IDs in batch
   2. Finds latest reading for each unit
@@ -101,6 +105,7 @@ Integrated alert evaluator into ingestion flow:
 ### 4. Route Registration
 
 Updated `backend/src/app.ts`:
+
 - Imported `readingsRoutes` from routes module
 - Registered with `/api` prefix
 - Both ingest and query endpoints now accessible
@@ -112,11 +117,13 @@ Updated `backend/src/app.ts`:
 **Decision:** Keep alert evaluation in route handler, not in service.
 
 **Rationale:**
+
 - Services should not depend on each other cyclically
 - `readingsService` inserting data, then calling `alertEvaluator` would create tight coupling
 - Routes can orchestrate cross-service workflows without introducing circular dependencies
 
 **Implementation:**
+
 - Route handler calls `readingsService.ingestBulkReadings()` to insert data
 - Route handler then calls `alertEvaluator.evaluateUnitAfterReading()` for alerts
 - Services remain independent and testable
@@ -126,11 +133,13 @@ Updated `backend/src/app.ts`:
 **Decision:** Use structured error response utilities (`forbidden()`, `notFound()`).
 
 **Rationale:**
+
 - Consistent error format across all endpoints
 - Type-safe error responses via Zod schemas
 - Cleaner route handler code
 
 **Implementation:**
+
 - `forbidden(reply, message)` for 403 responses
 - `notFound(reply, resource)` for 404 responses
 - ErrorResponseSchema defines structure for all error responses
@@ -140,10 +149,12 @@ Updated `backend/src/app.ts`:
 **Decision:** Return 403 for any invalid units without disclosing which specific units failed.
 
 **Rationale:**
+
 - Information disclosure vulnerability: error messages could reveal org structure
 - Don't tell attacker which units exist in which organizations
 
 **Implementation:**
+
 - `validateUnitsInOrg()` returns valid subset silently
 - If no valid units found, throw generic error
 - Route returns 403: "Units do not belong to organization"
@@ -153,6 +164,7 @@ Updated `backend/src/app.ts`:
 ### Temperature Precision Handling
 
 Readings ingestion maintains dual temperature storage:
+
 - **API accepts:** `number` (e.g., 35.5)
 - **Service stores:** `numeric(7,2)` in database via string conversion
 - **Alert evaluation:** Integer × 10 (e.g., 355) for comparison
@@ -188,6 +200,7 @@ Readings ingestion maintains dual temperature storage:
 **Root cause:** `requireOrgContext` middleware wasn't populating `profileId` field.
 
 **Fix:**
+
 1. Updated `requireOrgContext` to call `userService.getOrCreateProfile()`
 2. Populate `request.user.profileId` after validating org membership
 3. Updated `alerts.ts` to assert `profileId!` is defined after middleware
@@ -195,6 +208,7 @@ Readings ingestion maintains dual temperature storage:
 **Impact:** Alert acknowledgment and resolution routes now work correctly.
 
 **Files modified:**
+
 - `backend/src/middleware/org-context.ts` - Added profile lookup
 - `backend/src/routes/alerts.ts` - Added non-null assertion for profileId
 
@@ -222,6 +236,7 @@ Readings ingestion maintains dual temperature storage:
 **Phase 4 Status:** 50% complete (3/6 plans)
 
 **Ready for:**
+
 - ✅ Plan 04-04: Alert routes (can query readings if needed)
 - ✅ Plan 04-05: Notification delivery (alerts are being created/resolved)
 - ✅ Plan 04-06: Webhook handling (ingest endpoint ready for TTN webhooks)
@@ -229,27 +244,30 @@ Readings ingestion maintains dual temperature storage:
 **Blockers:** None
 
 **Integration points:**
+
 - TTN webhooks can POST to `/api/ingest/readings` with X-Webhook-Secret header
 - Frontend dashboard can GET from `/api/orgs/.../units/:unitId/readings` for charts
 - Alert system automatically evaluates thresholds on every reading ingestion
 
 ## Commits
 
-| Hash    | Message                                      | Files                                |
-|---------|----------------------------------------------|--------------------------------------|
-| 719a110 | feat(04-03): create readings REST endpoints  | backend/src/routes/readings.ts       |
-| c8b0e8c | feat(04-03): add helper for latest reading   | backend/src/services/readings.service.ts |
-| acb3c16 | feat(04-03): register readings routes        | backend/src/app.ts, middleware, alerts |
+| Hash    | Message                                     | Files                                    |
+| ------- | ------------------------------------------- | ---------------------------------------- |
+| 719a110 | feat(04-03): create readings REST endpoints | backend/src/routes/readings.ts           |
+| c8b0e8c | feat(04-03): add helper for latest reading  | backend/src/services/readings.service.ts |
+| acb3c16 | feat(04-03): register readings routes       | backend/src/app.ts, middleware, alerts   |
 
 ## Files Modified
 
 **Created:**
+
 - `backend/src/routes/readings.ts` (151 lines)
   - POST /api/ingest/readings endpoint
   - GET /api/orgs/.../units/:unitId/readings endpoint
   - Alert evaluation orchestration
 
 **Modified:**
+
 - `backend/src/services/readings.service.ts` (+25 lines)
   - Added `getLatestReadingPerUnit()` helper function
 - `backend/src/app.ts` (+3 lines)
@@ -264,11 +282,13 @@ Readings ingestion maintains dual temperature storage:
 ### Route Orchestration Pattern
 
 When multiple services need to be called in sequence:
+
 1. Keep orchestration logic in route handler
 2. Don't make services call each other (circular dependency risk)
 3. Services return data, routes decide what to do next
 
 Example:
+
 ```typescript
 // ✅ Good: Route orchestrates
 const result = await readingsService.ingestBulkReadings();
@@ -284,12 +304,14 @@ await alertEvaluator.evaluate(); // Creates tight coupling!
 Two authentication patterns for different use cases:
 
 **API Key (`requireApiKey` middleware):**
+
 - Machine-to-machine communication (TTN webhooks, external systems)
 - Long-lived credentials stored in database (ttnConnections.webhookSecret)
 - Populates `request.orgContext` with organizationId
 - Returns 401 for invalid/missing keys
 
 **JWT (`requireAuth` + `requireOrgContext` middlewares):**
+
 - User-facing API endpoints (frontend dashboard)
 - Short-lived tokens from Stack Auth
 - Populates `request.user` with user identity and role
@@ -300,6 +322,7 @@ Two authentication patterns for different use cases:
 ### Alert Evaluation Timing
 
 Alert evaluation happens synchronously during ingestion:
+
 - Pro: Real-time threshold violation detection
 - Pro: Transaction atomicity (reading + alert creation)
 - Con: Slower ingestion for high-volume sensors
@@ -308,6 +331,7 @@ Alert evaluation happens synchronously during ingestion:
 ### Temperature Integer Math
 
 Alert evaluator uses integer math to avoid floating-point precision issues:
+
 - Temperature stored as `numeric(7,2)` in database (precise)
 - Converted to integer × 10 for comparison (355 = 35.5°F)
 - Hysteresis is 5 integer units (0.5 degrees)

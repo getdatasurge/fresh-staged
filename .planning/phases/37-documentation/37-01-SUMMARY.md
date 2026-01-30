@@ -26,11 +26,11 @@ key-files:
     - docs/deployment/deploy-guide.md
 
 key-decisions:
-  - "Added notes column to server requirements table for preflight validation context"
-  - "Restructured deploy-guide.md as quick reference with links rather than duplicating content"
+  - 'Added notes column to server requirements table for preflight validation context'
+  - 'Restructured deploy-guide.md as quick reference with links rather than duplicating content'
 
 patterns-established:
-  - "Documentation cross-referencing: quick guides link to detailed docs for specifics"
+  - 'Documentation cross-referencing: quick guides link to detailed docs for specifics'
 
 # Metrics
 duration: 2min
@@ -50,6 +50,7 @@ completed: 2026-01-29
 - **Files modified:** 2
 
 ## Accomplishments
+
 - Updated SELFHOSTED_DEPLOYMENT.md prerequisites section with complete requirements tables
 - Added Firewall Requirements subsection for cloud provider configuration
 - Added Pre-Deployment Checklist for deployment readiness verification
@@ -64,12 +65,14 @@ Each task was committed atomically:
 2. **Task 2: Update deploy-guide.md Quick Reference** - `dc4df2c` (docs)
 
 ## Files Created/Modified
+
 - `docs/SELFHOSTED_DEPLOYMENT.md` - Updated prerequisites, DNS, firewall, and pre-deployment checklist sections
 - `docs/deployment/deploy-guide.md` - Restructured as quick reference with links to detailed guide
 
 ## Decisions Made
+
 - Added notes column to server requirements table linking to preflight validation
-- Expanded external services checklist with specific credential field names (Stack Auth pk_/sk_, Telnyx API Key, TTN Application ID)
+- Expanded external services checklist with specific credential field names (Stack Auth pk*/sk*, Telnyx API Key, TTN Application ID)
 - Added Required/Purpose columns to DNS records table for clarity
 - Restructured deploy-guide.md as quick reference rather than duplicating full documentation
 
@@ -86,10 +89,12 @@ None
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Prerequisites documentation complete and comprehensive
 - Users can now self-verify deployment readiness before running scripts
 - Ready for Phase 37 Plan 02 (Core Workflow Documentation)
 
 ---
-*Phase: 37-documentation*
-*Completed: 2026-01-29*
+
+_Phase: 37-documentation_
+_Completed: 2026-01-29_

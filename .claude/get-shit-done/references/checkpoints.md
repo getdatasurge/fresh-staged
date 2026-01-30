@@ -12,6 +12,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 **When:** Claude completed automated work, human confirms it works correctly.
 
 **Use for:**
+
 - Visual UI checks (layout, styling, responsiveness)
 - Interactive flows (click through wizard, test user flows)
 - Functional verification (feature works as expected)
@@ -20,6 +21,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 - Accessibility testing
 
 **Structure:**
+
 ```xml
 <task type="checkpoint:human-verify" gate="blocking">
   <what-built>[What Claude automated and deployed/built]</what-built>
@@ -31,11 +33,13 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 ```
 
 **Key elements:**
+
 - `<what-built>`: What Claude automated (deployed, built, configured)
 - `<how-to-verify>`: Exact steps to confirm it works (numbered, specific)
 - `<resume-signal>`: Clear indication of how to continue
 
 **Example: Vercel Deployment**
+
 ```xml
 <task type="auto">
   <name>Deploy to Vercel</name>
@@ -58,6 +62,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 ```
 
 **Example: UI Component**
+
 ```xml
 <task type="auto">
   <name>Build responsive dashboard layout</name>
@@ -82,6 +87,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 ```
 
 **Example: Xcode Build**
+
 ```xml
 <task type="auto">
   <name>Build macOS app with Xcode</name>
@@ -103,6 +109,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
   <resume-signal>Type "approved" or describe issues</resume-signal>
 </task>
 ```
+
 </type>
 
 <type name="decision">
@@ -111,6 +118,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 **When:** Human must make choice that affects implementation direction.
 
 **Use for:**
+
 - Technology selection (which auth provider, which database)
 - Architecture decisions (monorepo vs separate repos)
 - Design choices (color scheme, layout approach)
@@ -118,6 +126,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 - Data model decisions (schema structure)
 
 **Structure:**
+
 ```xml
 <task type="checkpoint:decision" gate="blocking">
   <decision>[What's being decided]</decision>
@@ -139,12 +148,14 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 ```
 
 **Key elements:**
+
 - `<decision>`: What's being decided
 - `<context>`: Why this matters
 - `<options>`: Each option with balanced pros/cons (not prescriptive)
 - `<resume-signal>`: How to indicate choice
 
 **Example: Auth Provider Selection**
+
 ```xml
 <task type="checkpoint:decision" gate="blocking">
   <decision>Select authentication provider</decision>
@@ -173,6 +184,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 ```
 
 **Example: Database Selection**
+
 ```xml
 <task type="checkpoint:decision" gate="blocking">
   <decision>Select database for user data</decision>
@@ -200,6 +212,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
   <resume-signal>Select: supabase, planetscale, or convex</resume-signal>
 </task>
 ```
+
 </type>
 
 <type name="human-action">
@@ -208,6 +221,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 **When:** Action has NO CLI/API and requires human-only interaction, OR Claude hit an authentication gate during automation.
 
 **Use ONLY for:**
+
 - **Authentication gates** - Claude tried to use CLI/API but needs credentials to continue (this is NOT a failure)
 - Email verification links (account creation requires clicking email)
 - SMS 2FA codes (phone verification)
@@ -216,6 +230,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 - OAuth app approvals (some platforms require web-based approval)
 
 **Do NOT use for pre-planned manual work:**
+
 - Manually deploying to Vercel (use `vercel` CLI - auth gate if needed)
 - Manually creating Stripe webhooks (use Stripe API - auth gate if needed)
 - Manually creating databases (use provider CLI - auth gate if needed)
@@ -223,6 +238,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 - Creating files manually (use Write tool)
 
 **Structure:**
+
 ```xml
 <task type="checkpoint:human-action" gate="blocking">
   <action>[What human must do - Claude already did everything automatable]</action>
@@ -238,6 +254,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 **Key principle:** Claude automates EVERYTHING possible first, only asks human for the truly unavoidable manual step.
 
 **Example: Email Verification**
+
 ```xml
 <task type="auto">
   <name>Create SendGrid account via API</name>
@@ -258,6 +275,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 ```
 
 **Example: Credit Card 3D Secure**
+
 ```xml
 <task type="auto">
   <name>Create Stripe payment intent</name>
@@ -278,6 +296,7 @@ Plans execute autonomously. Checkpoints formalize the interaction points where h
 ```
 
 **Example: Authentication Gate (Dynamic Checkpoint)**
+
 ```xml
 <task type="auto">
   <name>Deploy to Vercel</name>
@@ -323,6 +342,7 @@ When Claude encounters `type="checkpoint:*"`:
 5. **Resume execution** - continue to next task only after confirmation
 
 **For checkpoint:human-verify:**
+
 ```
 ╔═══════════════════════════════════════════════════════╗
 ║  CHECKPOINT: Verification Required                    ║
@@ -346,6 +366,7 @@ How to verify:
 ```
 
 **For checkpoint:decision:**
+
 ```
 ╔═══════════════════════════════════════════════════════╗
 ║  CHECKPOINT: Decision Required                        ║
@@ -377,6 +398,7 @@ Options:
 ```
 
 **For checkpoint:human-action:**
+
 ```
 ╔═══════════════════════════════════════════════════════╗
 ║  CHECKPOINT: Action Required                          ║
@@ -399,6 +421,7 @@ I'll verify: vercel whoami returns your account
 → YOUR ACTION: Type "done" when authenticated
 ────────────────────────────────────────────────────────
 ```
+
 </execution_protocol>
 
 <authentication_gates>
@@ -408,6 +431,7 @@ I'll verify: vercel whoami returns your account
 **Pattern:** Claude tries automation → auth error → creates checkpoint → you authenticate → Claude retries → continues
 
 **Gate protocol:**
+
 1. Recognize it's not a failure - missing auth is expected
 2. Stop current task - don't retry repeatedly
 3. Create checkpoint:human-action dynamically
@@ -457,6 +481,7 @@ Task 3 complete. Continuing to task 4...
 ```
 
 **Key distinction:**
+
 - Pre-planned checkpoint: "I need you to do X" (wrong - Claude should automate)
 - Auth gate: "I tried to automate X but need credentials" (correct - unblocks automation)
 
@@ -466,40 +491,41 @@ Task 3 complete. Continuing to task 4...
 
 **The rule:** If it has CLI/API, Claude does it. Never ask human to perform automatable work.
 
-| Service | CLI/API | Key Commands | Auth Gate |
-|---------|---------|--------------|-----------|
-| Vercel | `vercel` | `--yes`, `env add`, `--prod`, `ls` | `vercel login` |
-| Railway | `railway` | `init`, `up`, `variables set` | `railway login` |
-| Fly | `fly` | `launch`, `deploy`, `secrets set` | `fly auth login` |
-| Stripe | `stripe` + API | `listen`, `trigger`, API calls | API key in .env |
-| Supabase | `supabase` | `init`, `link`, `db push`, `gen types` | `supabase login` |
-| Upstash | `upstash` | `redis create`, `redis get` | `upstash auth login` |
-| PlanetScale | `pscale` | `database create`, `branch create` | `pscale auth login` |
-| GitHub | `gh` | `repo create`, `pr create`, `secret set` | `gh auth login` |
-| Node | `npm`/`pnpm` | `install`, `run build`, `test` | N/A |
-| Xcode | `xcodebuild` | `-project`, `-scheme`, `build`, `test` | N/A |
-| Convex | `npx convex` | `dev`, `deploy`, `import` | `npx convex login` |
+| Service     | CLI/API        | Key Commands                             | Auth Gate            |
+| ----------- | -------------- | ---------------------------------------- | -------------------- |
+| Vercel      | `vercel`       | `--yes`, `env add`, `--prod`, `ls`       | `vercel login`       |
+| Railway     | `railway`      | `init`, `up`, `variables set`            | `railway login`      |
+| Fly         | `fly`          | `launch`, `deploy`, `secrets set`        | `fly auth login`     |
+| Stripe      | `stripe` + API | `listen`, `trigger`, API calls           | API key in .env      |
+| Supabase    | `supabase`     | `init`, `link`, `db push`, `gen types`   | `supabase login`     |
+| Upstash     | `upstash`      | `redis create`, `redis get`              | `upstash auth login` |
+| PlanetScale | `pscale`       | `database create`, `branch create`       | `pscale auth login`  |
+| GitHub      | `gh`           | `repo create`, `pr create`, `secret set` | `gh auth login`      |
+| Node        | `npm`/`pnpm`   | `install`, `run build`, `test`           | N/A                  |
+| Xcode       | `xcodebuild`   | `-project`, `-scheme`, `build`, `test`   | N/A                  |
+| Convex      | `npx convex`   | `dev`, `deploy`, `import`                | `npx convex login`   |
 
 **Env files:** Use Write/Edit tools. Never ask human to create .env manually.
 
 **Quick reference:**
 
-| Action | Automatable? | Claude does it? |
-|--------|--------------|-----------------|
-| Deploy to Vercel | Yes (`vercel`) | YES |
-| Create Stripe webhook | Yes (API) | YES |
-| Write .env file | Yes (Write tool) | YES |
-| Create Upstash DB | Yes (`upstash`) | YES |
-| Run tests | Yes (`npm test`) | YES |
-| Click email verification link | No | NO |
-| Enter credit card with 3DS | No | NO |
-| Complete OAuth in browser | No | NO |
+| Action                        | Automatable?     | Claude does it? |
+| ----------------------------- | ---------------- | --------------- |
+| Deploy to Vercel              | Yes (`vercel`)   | YES             |
+| Create Stripe webhook         | Yes (API)        | YES             |
+| Write .env file               | Yes (Write tool) | YES             |
+| Create Upstash DB             | Yes (`upstash`)  | YES             |
+| Run tests                     | Yes (`npm test`) | YES             |
+| Click email verification link | No               | NO              |
+| Enter credit card with 3DS    | No               | NO              |
+| Complete OAuth in browser     | No               | NO              |
 
 </automation_reference>
 
 <writing_guidelines>
 
 **DO:**
+
 - Automate everything with CLI/API before checkpoint
 - Be specific: "Visit https://myapp.vercel.app" not "check deployment"
 - Number verification steps: easier to follow
@@ -508,6 +534,7 @@ Task 3 complete. Continuing to task 4...
 - Make verification executable: clear, testable steps
 
 **DON'T:**
+
 - Ask human to do work Claude can automate (deploy, create resources, run builds)
 - Assume knowledge: "Configure the usual settings" ❌
 - Skip steps: "Set up database" ❌ (too vague)
@@ -515,16 +542,18 @@ Task 3 complete. Continuing to task 4...
 - Make verification impossible (Claude can't check visual appearance without user confirmation)
 
 **Placement:**
+
 - **After automation completes** - not before Claude does the work
 - **After UI buildout** - before declaring phase complete
 - **Before dependent work** - decisions before implementation
 - **At integration points** - after configuring external services
 
 **Bad placement:**
+
 - Before Claude automates (asking human to do automatable work) ❌
 - Too frequent (every other task is a checkpoint) ❌
 - Too late (checkpoint is last task, but earlier tasks needed its result) ❌
-</writing_guidelines>
+  </writing_guidelines>
 
 <examples>
 
@@ -658,6 +687,7 @@ Task 3 complete. Continuing to task 4...
   <resume-signal>Type "approved" or describe issues</resume-signal>
 </task>
 ```
+
 </examples>
 
 <anti_patterns>
@@ -776,11 +806,13 @@ Checkpoints formalize human-in-the-loop points. Use them when Claude cannot comp
 **The golden rule:** If Claude CAN automate it, Claude MUST automate it.
 
 **Checkpoint priority:**
+
 1. **checkpoint:human-verify** (90% of checkpoints) - Claude automated everything, human confirms visual/functional correctness
 2. **checkpoint:decision** (9% of checkpoints) - Human makes architectural/technology choices
 3. **checkpoint:human-action** (1% of checkpoints) - Truly unavoidable manual steps with no API/CLI
 
 **When NOT to use checkpoints:**
+
 - Things Claude can verify programmatically (tests pass, build succeeds)
 - File operations (Claude can read files to verify)
 - Code correctness (use tests and static analysis)

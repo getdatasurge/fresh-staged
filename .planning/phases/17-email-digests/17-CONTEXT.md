@@ -14,30 +14,35 @@ Scheduled email digest generation via BullMQ job schedulers. Configure cron patt
 ## Implementation Decisions
 
 ### Digest Content & Structure
+
 - Primary purpose: Alert summary (not compliance reports or operational overview)
 - Grouping: By site, then by unit within each site
 - Detail level: Essential only — alert type, time, duration, resolution status (fits on mobile)
 - Empty digests: Skip if no alerts — don't send "all clear" emails
 
 ### Schedule Options
+
 - Frequencies: Daily and weekly available
 - Daily timing: User configurable (each user picks their preferred time)
 - Weekly timing: Monday (fixed day)
 - Timezone: User profile timezone — each user sets their timezone in profile settings
 
 ### Recipient Targeting
+
 - Eligibility: All users can opt-in via profile settings
 - Default state: Opt-out by default — users must explicitly enable digests
 - Site filtering: Users can select specific sites to include in their digest
 - Admin controls: None — user choice only, no admin enforcement
 
 ### Email Design
+
 - Format: HTML with plain text fallback
 - Template style: Clean minimal — simple header, content, footer
 - Links: Include direct links to relevant dashboard pages (sites/units with issues)
 - Unsubscribe: One-click unsubscribe link in footer (standard email best practice)
 
 ### Claude's Discretion
+
 - Exact HTML/CSS template implementation
 - Email sending service integration (likely existing email infrastructure)
 - Plain text generation approach
@@ -65,5 +70,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 17-email-digests*
-*Context gathered: 2026-01-24*
+_Phase: 17-email-digests_
+_Context gathered: 2026-01-24_

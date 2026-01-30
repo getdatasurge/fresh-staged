@@ -4,12 +4,12 @@
 
 ## Deliverables
 
-| Task | File | Status |
-|------|------|--------|
-| Migrate Dashboard | src/pages/Dashboard.tsx | ✓ Complete |
-| Migrate Units Page | src/pages/Units.tsx | ✓ Complete |
-| Migrate Sites Page | src/pages/Sites.tsx | ✓ Complete |
-| Migrate Alerts Page | src/pages/Alerts.tsx | ✓ Complete |
+| Task                | File                    | Status     |
+| ------------------- | ----------------------- | ---------- |
+| Migrate Dashboard   | src/pages/Dashboard.tsx | ✓ Complete |
+| Migrate Units Page  | src/pages/Units.tsx     | ✓ Complete |
+| Migrate Sites Page  | src/pages/Sites.tsx     | ✓ Complete |
+| Migrate Alerts Page | src/pages/Alerts.tsx    | ✓ Complete |
 
 ## Changes
 

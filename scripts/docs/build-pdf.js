@@ -20,7 +20,7 @@ import {
   logError,
   logWarning,
   logInfo,
-  logHeader
+  logHeader,
 } from './utils.js';
 
 const execAsync = promisify(exec);
@@ -41,8 +41,8 @@ async function loadManifest() {
       sections: [],
       output: {
         filename: 'FreshTrackPro-Documentation.pdf',
-        directory: '_build'
-      }
+        directory: '_build',
+      },
     };
 
     // Extract title
@@ -118,7 +118,7 @@ async function getDefaultFileOrder() {
     'security',
     'operations',
     'diagrams',
-    'charts'
+    'charts',
   ];
 
   const files = [];
@@ -129,9 +129,9 @@ async function getDefaultFileOrder() {
     try {
       const entries = await fs.readdir(dirPath);
       const mdFiles = entries
-        .filter(f => f.endsWith('.md') && !f.startsWith('_'))
+        .filter((f) => f.endsWith('.md') && !f.startsWith('_'))
         .sort()
-        .map(f => dir ? `${dir}/${f}` : f);
+        .map((f) => (dir ? `${dir}/${f}` : f));
 
       files.push(...mdFiles);
     } catch {
@@ -152,23 +152,17 @@ function processMarkdownForPdf(content, relativePath) {
   let processed = content;
 
   // Convert relative links to the combined doc
-  processed = processed.replace(
-    /\[([^\]]+)\]\(\.\/([^)]+)\)/g,
-    (match, text, link) => {
-      // Remove .md extension and convert to anchor
-      const anchor = link.replace('.md', '').replace(/\//g, '-').toLowerCase();
-      return `[${text}](#${anchor})`;
-    }
-  );
+  processed = processed.replace(/\[([^\]]+)\]\(\.\/([^)]+)\)/g, (match, text, link) => {
+    // Remove .md extension and convert to anchor
+    const anchor = link.replace('.md', '').replace(/\//g, '-').toLowerCase();
+    return `[${text}](#${anchor})`;
+  });
 
   // Convert links with ../ to anchors
-  processed = processed.replace(
-    /\[([^\]]+)\]\(\.\.\/([^)]+)\)/g,
-    (match, text, link) => {
-      const anchor = link.replace('.md', '').replace(/\//g, '-').toLowerCase();
-      return `[${text}](#${anchor})`;
-    }
-  );
+  processed = processed.replace(/\[([^\]]+)\]\(\.\.\/([^)]+)\)/g, (match, text, link) => {
+    const anchor = link.replace('.md', '').replace(/\//g, '-').toLowerCase();
+    return `[${text}](#${anchor})`;
+  });
 
   return processed;
 }
@@ -225,7 +219,7 @@ async function buildCombinedMarkdown(manifest) {
   // Get file order
   let fileOrder;
   if (manifest && manifest.sections.length > 0) {
-    fileOrder = manifest.sections.flatMap(s => s.files);
+    fileOrder = manifest.sections.flatMap((s) => s.files);
   } else {
     fileOrder = await getDefaultFileOrder();
   }
@@ -270,15 +264,21 @@ async function buildPdfWithPandoc(combinedMd, outputPath) {
     // Build PDF with pandoc
     const pandocArgs = [
       tempMdPath,
-      '-o', outputPath,
+      '-o',
+      outputPath,
       '--pdf-engine=xelatex',
-      '-V', 'geometry:margin=1in',
-      '-V', 'fontsize=11pt',
+      '-V',
+      'geometry:margin=1in',
+      '-V',
+      'fontsize=11pt',
       '--toc',
       '--toc-depth=3',
-      '-V', 'colorlinks=true',
-      '-V', 'linkcolor=blue',
-      '-V', 'toccolor=gray'
+      '-V',
+      'colorlinks=true',
+      '-V',
+      'linkcolor=blue',
+      '-V',
+      'toccolor=gray',
     ].join(' ');
 
     await execAsync(`pandoc ${pandocArgs}`);
@@ -303,14 +303,14 @@ async function buildPdf() {
   await fs.mkdir(BUILD_DIR, { recursive: true });
 
   // Load manifest
-  const manifest = await loadManifest() || {
+  const manifest = (await loadManifest()) || {
     title: 'FreshTrack Pro Documentation',
     subtitle: 'Complete System Documentation',
     sections: [],
     output: {
       filename: 'FreshTrackPro-Documentation.pdf',
-      directory: '_build'
-    }
+      directory: '_build',
+    },
   };
 
   // Build combined markdown

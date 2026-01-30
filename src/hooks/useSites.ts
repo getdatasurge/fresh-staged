@@ -28,10 +28,7 @@ import { useTRPC, useTRPCClient } from '@/lib/trpc';
  * @param options - Query options including enabled flag
  * @returns React Query result with sites array
  */
-export function useSites(
-  organizationId: string | undefined,
-  options?: { enabled?: boolean }
-) {
+export function useSites(organizationId: string | undefined, options?: { enabled?: boolean }) {
   const trpc = useTRPC();
 
   const queryOptions = trpc.sites.list.queryOptions({
@@ -40,7 +37,7 @@ export function useSites(
 
   return useQuery({
     ...queryOptions,
-    enabled: !!organizationId && (options?.enabled !== false),
+    enabled: !!organizationId && options?.enabled !== false,
     staleTime: 60_000, // 1 minute
     gcTime: 5 * 60_000, // 5 minutes
   });
@@ -57,7 +54,7 @@ export function useSites(
 export function useSite(
   organizationId: string | undefined,
   siteId: string | undefined,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) {
   const trpc = useTRPC();
 
@@ -68,7 +65,7 @@ export function useSite(
 
   return useQuery({
     ...queryOptions,
-    enabled: !!organizationId && !!siteId && (options?.enabled !== false),
+    enabled: !!organizationId && !!siteId && options?.enabled !== false,
     staleTime: 60_000, // 1 minute
     gcTime: 5 * 60_000, // 5 minutes
   });
@@ -194,10 +191,7 @@ export function useDeleteSite() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (variables: {
-      organizationId: string;
-      siteId: string;
-    }) => {
+    mutationFn: async (variables: { organizationId: string; siteId: string }) => {
       return client.sites.delete.mutate(variables);
     },
     onSuccess: (_data, variables) => {

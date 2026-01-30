@@ -14,22 +14,22 @@ FreshTrack Pro is a **safety-critical refrigeration monitoring platform**. A mis
 
 ### Core Principles
 
-| Principle | Description |
-|-----------|-------------|
-| **Safety First** | Test alert paths, escalations, and data integrity above all else |
-| **Follow the Data** | Trace data from sensor → webhook → database → UI → notification |
-| **SSOT Validation** | Verify single-source-of-truth components (process-unit-states, process-escalations) |
-| **Regression Prevention** | Every bug fix should include a test that would have caught it |
-| **Test at Boundaries** | Most bugs occur at integration points—focus testing there |
+| Principle                 | Description                                                                         |
+| ------------------------- | ----------------------------------------------------------------------------------- |
+| **Safety First**          | Test alert paths, escalations, and data integrity above all else                    |
+| **Follow the Data**       | Trace data from sensor → webhook → database → UI → notification                     |
+| **SSOT Validation**       | Verify single-source-of-truth components (process-unit-states, process-escalations) |
+| **Regression Prevention** | Every bug fix should include a test that would have caught it                       |
+| **Test at Boundaries**    | Most bugs occur at integration points—focus testing there                           |
 
 ### Risk-Based Prioritization
 
-| Risk Level | Feature Category | Testing Approach |
-|------------|------------------|------------------|
-| **Critical** | Alerts, notifications, data ingestion | Automated + Manual + E2E |
-| **High** | Device provisioning, TTN integration, auth | Automated + Manual |
-| **Medium** | Dashboard, reports, settings | Automated unit + Manual |
-| **Low** | UI polish, branding, theming | Manual only |
+| Risk Level   | Feature Category                           | Testing Approach         |
+| ------------ | ------------------------------------------ | ------------------------ |
+| **Critical** | Alerts, notifications, data ingestion      | Automated + Manual + E2E |
+| **High**     | Device provisioning, TTN integration, auth | Automated + Manual       |
+| **Medium**   | Dashboard, reports, settings               | Automated unit + Manual  |
+| **Low**      | UI polish, branding, theming               | Manual only              |
 
 ---
 
@@ -59,24 +59,28 @@ FreshTrack Pro is a **safety-critical refrigeration monitoring platform**. A mis
 **Scope:** Individual functions, hooks, and components in isolation.
 
 **Current Framework:**
+
 - Frontend: Vitest + React Testing Library
 - Edge Functions: Deno standard library testing
 
 **What to Test:**
+
 - Pure functions (eligibility checks, data transformations)
 - Validation logic
 - State computations (e.g., unit status)
 - Utility functions
 
 **What NOT to Test:**
+
 - UI styling
 - Third-party library internals
 - Generated types
 
 **Example:**
+
 ```typescript
-describe("canProvisionGateway", () => {
-  it("returns ALLOWED when all conditions are met", () => {
+describe('canProvisionGateway', () => {
+  it('returns ALLOWED when all conditions are met', () => {
     const result = canProvisionGateway(validGateway, validTtnConfig);
     expect(result.allowed).toBe(true);
   });
@@ -88,12 +92,14 @@ describe("canProvisionGateway", () => {
 **Scope:** Multiple components/services working together.
 
 **What to Test:**
+
 - API calls → Database → Response chain
 - Hook + Supabase client interactions
 - Edge function + Database operations
 - RLS policy enforcement
 
 **Approaches:**
+
 - Mock Supabase client for deterministic testing
 - Use local Supabase for realistic integration tests
 - Test RLS policies with different user roles
@@ -103,12 +109,14 @@ describe("canProvisionGateway", () => {
 **Scope:** Complete user journeys through the application.
 
 **What to Test:**
+
 - Onboarding flow (signup → org setup → device provisioning)
 - Alert lifecycle (trigger → acknowledge → resolve)
 - Escalation chain (primary → secondary → manager notification)
 - Report generation
 
 **Execution:**
+
 - Manual testing with documented checklists
 - Consider Playwright for critical paths in future
 
@@ -118,22 +126,22 @@ describe("canProvisionGateway", () => {
 
 ### What is Automated
 
-| Category | What's Tested | Framework |
-|----------|--------------|-----------|
-| **Eligibility Logic** | Gateway/sensor provisioning rules | Vitest |
-| **TTN Permissions** | API key permission validation | Deno |
-| **Data Transformations** | DevEUI normalization, temperature conversion | Vitest |
-| **Validation Schemas** | Input validation (Zod schemas) | Vitest |
+| Category                 | What's Tested                                | Framework |
+| ------------------------ | -------------------------------------------- | --------- |
+| **Eligibility Logic**    | Gateway/sensor provisioning rules            | Vitest    |
+| **TTN Permissions**      | API key permission validation                | Deno      |
+| **Data Transformations** | DevEUI normalization, temperature conversion | Vitest    |
+| **Validation Schemas**   | Input validation (Zod schemas)               | Vitest    |
 
 ### What is Manual
 
-| Category | Why Manual | Documentation |
-|----------|-----------|---------------|
-| **Device Provisioning** | Requires TTN account, real hardware | [MANUAL_TESTING.md](./MANUAL_TESTING.md) |
-| **Alert Flow** | Complex timing, escalation chains | [E2E_SCENARIOS.md](./E2E_SCENARIOS.md) |
-| **Onboarding Wizard** | Multi-step UI with external dependencies | [MANUAL_TESTING.md](./MANUAL_TESTING.md) |
-| **Mobile Responsiveness** | Visual verification required | [MANUAL_TESTING.md](./MANUAL_TESTING.md) |
-| **Stripe Integration** | Payment flows, webhooks | [MANUAL_TESTING.md](./MANUAL_TESTING.md) |
+| Category                  | Why Manual                               | Documentation                            |
+| ------------------------- | ---------------------------------------- | ---------------------------------------- |
+| **Device Provisioning**   | Requires TTN account, real hardware      | [MANUAL_TESTING.md](./MANUAL_TESTING.md) |
+| **Alert Flow**            | Complex timing, escalation chains        | [E2E_SCENARIOS.md](./E2E_SCENARIOS.md)   |
+| **Onboarding Wizard**     | Multi-step UI with external dependencies | [MANUAL_TESTING.md](./MANUAL_TESTING.md) |
+| **Mobile Responsiveness** | Visual verification required             | [MANUAL_TESTING.md](./MANUAL_TESTING.md) |
+| **Stripe Integration**    | Payment flows, webhooks                  | [MANUAL_TESTING.md](./MANUAL_TESTING.md) |
 
 ---
 
@@ -184,16 +192,16 @@ export function createTestTTNConfig(overrides = {}): TTNConfigState {
   return {
     isEnabled: true,
     hasApiKey: true,
-    applicationId: "test-app-id",
+    applicationId: 'test-app-id',
     ...overrides,
   };
 }
 
 export function createTestGateway(overrides = {}): GatewayForEligibility {
   return {
-    gateway_eui: "AABBCCDDEEFF0011",
+    gateway_eui: 'AABBCCDDEEFF0011',
     ttn_gateway_id: null,
-    status: "pending",
+    status: 'pending',
     ...overrides,
   };
 }
@@ -211,12 +219,12 @@ These paths MUST have both automated and manual testing:
 Sensor → TTN → ttn-webhook → sensor_readings table → process-unit-states
 ```
 
-| Step | Test Type | Coverage |
-|------|-----------|----------|
-| TTN webhook receives data | Integration | Manual |
-| DevEUI normalization | Unit | Automated |
-| Reading stored in database | Integration | Manual |
-| Unit status computed | Unit | Automated (planned) |
+| Step                       | Test Type   | Coverage            |
+| -------------------------- | ----------- | ------------------- |
+| TTN webhook receives data  | Integration | Manual              |
+| DevEUI normalization       | Unit        | Automated           |
+| Reading stored in database | Integration | Manual              |
+| Unit status computed       | Unit        | Automated (planned) |
 
 ### 2. Alert Lifecycle
 
@@ -224,12 +232,12 @@ Sensor → TTN → ttn-webhook → sensor_readings table → process-unit-states
 Excursion detected → Alert created → Notification sent → Acknowledged → Resolved
 ```
 
-| Step | Test Type | Coverage |
-|------|-----------|----------|
-| Temperature threshold breach | Unit | Automated (planned) |
-| Confirm time elapsed | Integration | Manual |
-| Alert record created | Integration | Manual |
-| Escalation triggered | E2E | Manual |
+| Step                         | Test Type   | Coverage            |
+| ---------------------------- | ----------- | ------------------- |
+| Temperature threshold breach | Unit        | Automated (planned) |
+| Confirm time elapsed         | Integration | Manual              |
+| Alert record created         | Integration | Manual              |
+| Escalation triggered         | E2E         | Manual              |
 
 ### 3. Device Provisioning
 
@@ -237,12 +245,12 @@ Excursion detected → Alert created → Notification sent → Acknowledged → 
 User enters DevEUI → Validate → Register with TTN → Save to database → Status: Active
 ```
 
-| Step | Test Type | Coverage |
-|------|-----------|----------|
-| DevEUI validation | Unit | Automated |
-| Permission check | Unit | Automated |
-| TTN API call | Integration | Manual |
-| Database update | Integration | Manual |
+| Step              | Test Type   | Coverage  |
+| ----------------- | ----------- | --------- |
+| DevEUI validation | Unit        | Automated |
+| Permission check  | Unit        | Automated |
+| TTN API call      | Integration | Manual    |
+| Database update   | Integration | Manual    |
 
 ---
 
@@ -270,24 +278,24 @@ User enters DevEUI → Validate → Register with TTN → Save to database → S
 
 ### Current State (Baseline)
 
-| Metric | Value |
-|--------|-------|
-| Test files | 3 |
-| Lines of test code | 476 |
-| Components with tests | 0/112 (0%) |
-| Hooks with tests | 0/26 (0%) |
-| Edge functions with tests | 1/32 (3%) |
-| Pages with tests | 0/23 (0%) |
+| Metric                    | Value      |
+| ------------------------- | ---------- |
+| Test files                | 3          |
+| Lines of test code        | 476        |
+| Components with tests     | 0/112 (0%) |
+| Hooks with tests          | 0/26 (0%)  |
+| Edge functions with tests | 1/32 (3%)  |
+| Pages with tests          | 0/23 (0%)  |
 
 ### Target State (6-Month Goal)
 
-| Metric | Target |
-|--------|--------|
-| Test files | 50+ |
-| Lines of test code | 5,000+ |
-| Critical path unit coverage | 80% |
-| Edge function coverage | 50% |
-| Manual test documentation | Complete |
+| Metric                      | Target   |
+| --------------------------- | -------- |
+| Test files                  | 50+      |
+| Lines of test code          | 5,000+   |
+| Critical path unit coverage | 80%      |
+| Edge function coverage      | 50%      |
+| Manual test documentation   | Complete |
 
 ---
 

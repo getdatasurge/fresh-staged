@@ -9,12 +9,13 @@ Safely pause work with complete state preservation for session handoff.
 </objective>
 
 <when_to_use>
+
 - Ending a work session
 - Context getting heavy (many failed attempts)
 - Switching to a different task
 - Before taking a break
 - After 3+ debugging failures (Context Hygiene rule)
-</when_to_use>
+  </when_to_use>
 
 <process>
 
@@ -24,40 +25,51 @@ Update `.gsd/STATE.md`:
 
 ```markdown
 ## Current Position
+
 - **Phase**: {current phase number and name}
 - **Task**: {specific task in progress, if any}
 - **Status**: Paused at {timestamp}
 
 ## Last Session Summary
+
 {What was accomplished this session}
 
 ## In-Progress Work
+
 {Any uncommitted changes or partial work}
+
 - Files modified: {list}
 - Tests status: {passing/failing/not run}
 
 ## Blockers
+
 {What was preventing progress, if anything}
 
 ## Context Dump
+
 {Critical context that would be lost}:
 
 ### Decisions Made
+
 - {Decision 1}: {rationale}
 - {Decision 2}: {rationale}
 
 ### Approaches Tried
+
 - {Approach 1}: {outcome}
 - {Approach 2}: {outcome}
 
 ### Current Hypothesis
+
 {Best guess at solution/issue}
 
 ### Files of Interest
+
 - `{file1}`: {what's relevant}
 - `{file2}`: {what's relevant}
 
 ## Next Steps
+
 1. {Specific first action for next session}
 2. {Second priority}
 3. {Third priority}
@@ -73,20 +85,25 @@ Create entry in `.gsd/JOURNAL.md`:
 ## Session: {YYYY-MM-DD HH:MM}
 
 ### Objective
+
 {What this session was trying to accomplish}
 
 ### Accomplished
+
 - {Item 1}
 - {Item 2}
 
 ### Verification
+
 - [x] {What was verified}
 - [ ] {What still needs verification}
 
 ### Paused Because
+
 {Reason for pausing}
 
 ### Handoff Notes
+
 {Critical info for resuming}
 ```
 

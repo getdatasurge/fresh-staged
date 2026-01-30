@@ -31,16 +31,16 @@ key-files:
 
 key-decisions:
   - "DNS check with 5 retries prevents Let's Encrypt 5 failures/hour limit"
-  - "Health check: 30 retries × 30s = 15 minute total timeout window"
-  - "Version retention: 3 deployments by default (VERSION_RETENTION)"
-  - "Code-only rollback: Docker images only, database untouched"
+  - 'Health check: 30 retries × 30s = 15 minute total timeout window'
+  - 'Version retention: 3 deployments by default (VERSION_RETENTION)'
+  - 'Code-only rollback: Docker images only, database untouched'
 
 patterns-established:
-  - "check_dns_resolution() verifies domain→IP before Caddy starts"
-  - "tag_deployment() creates git-version-timestamp tags"
-  - "validate_deployment_health() checks /health endpoint"
-  - "rollback_deployment() restores previous Docker images"
-  - "deploy_services() orchestrates: DNS→tag→deploy→health→rollback"
+  - 'check_dns_resolution() verifies domain→IP before Caddy starts'
+  - 'tag_deployment() creates git-version-timestamp tags'
+  - 'validate_deployment_health() checks /health endpoint'
+  - 'rollback_deployment() restores previous Docker images'
+  - 'deploy_services() orchestrates: DNS→tag→deploy→health→rollback'
 
 # Metrics
 duration: 2min
@@ -60,6 +60,7 @@ completed: 2026-01-24
 - **Files modified:** 1
 
 ## Accomplishments
+
 - DNS resolution check prevents SSL certificate requests when DNS not configured, avoiding Let's Encrypt rate limits
 - Version tagging with deployment history enables rollback to previous working versions
 - Health check validation with 15-minute window (30×30s) confirms deployment success
@@ -87,26 +88,31 @@ Each task was committed atomically:
    - Code-only rollback (database untouched)
 
 ## Files Created/Modified
+
 - `scripts/deploy-selfhosted.sh` - Enhanced with DNS check, version tagging, health validation, and automatic rollback (280 lines added)
 
 ## Decisions Made
 
 **1. DNS check with 5 retries before SSL request**
+
 - Rationale: Let's Encrypt has strict rate limits (5 failed authorizations/hour)
 - Failed SSL requests with unconfigured DNS exhaust rate limits quickly
 - 5×10s retries (50s total) handles DNS propagation delays
 
 **2. 15-minute health check window (30×30s)**
+
 - Rationale: Docker services need time to initialize (database migrations, container startup)
 - 30 retries at 30s intervals = 15 minute window
 - Balances patience with deployment feedback speed
 
 **3. Version retention default: 3 deployments**
+
 - Rationale: Keeps last 3 working versions for rollback
 - Configurable via VERSION_RETENTION in config
 - Prunes old Docker images to save disk space
 
 **4. Code-only rollback (database untouched)**
+
 - Rationale: Database rollback is complex and risky
 - Migrations are forward-only (per Phase 10 database practices)
 - Rolling back code to previous version is safe
@@ -127,11 +133,13 @@ None - no external service configuration required.
 ## Next Phase Readiness
 
 **Ready for monitoring integration (11-04):**
+
 - Deployment script can now be monitored for DNS check failures
 - Health check timeout can trigger alerts
 - Version history provides deployment audit trail
 
 **Ready for documentation (11-05):**
+
 - DNS configuration instructions needed for users
 - Rollback procedures documented for operators
 - Health check endpoint requirements documented
@@ -139,10 +147,12 @@ None - no external service configuration required.
 **Blockers:** None
 
 **Concerns:**
+
 - Health check endpoint must return {"status":"healthy"} JSON
 - Backend must implement /health route (should already exist from earlier phases)
 - DNS propagation time can vary (5-60 minutes typical, up to 24 hours worst case)
 
 ---
-*Phase: 11-self-hosted-deployment*
-*Completed: 2026-01-24*
+
+_Phase: 11-self-hosted-deployment_
+_Completed: 2026-01-24_

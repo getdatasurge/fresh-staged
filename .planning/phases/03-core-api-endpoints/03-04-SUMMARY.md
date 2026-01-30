@@ -37,12 +37,12 @@ decisions:
     what: verifySiteAccess helper enforces hierarchy validation
     why: Prevents BOLA attacks by ensuring site belongs to organization before any area operation
     alternatives: Direct join queries without validation (less secure)
-    phase: "03"
+    phase: '03'
   - slug: silent-filtering-on-hierarchy-failure
     what: Services return null/empty when hierarchy validation fails
     why: Prevents information disclosure about org structure to unauthorized users
     alternatives: Throw specific errors (would reveal existence of resources)
-    phase: "03"
+    phase: '03'
 
 metrics:
   duration: 3m 4s
@@ -59,6 +59,7 @@ metrics:
 ## What Was Built
 
 ### Area Service (backend/src/services/area.service.ts)
+
 - **verifySiteAccess(siteId, organizationId)**: Hierarchy validation helper that ensures site belongs to organization before any area operation - prevents BOLA attacks
 - **listAreas(siteId, organizationId)**: Returns active areas in a site with hierarchy validation
 - **getArea(areaId, siteId, organizationId)**: Fetches specific area with multi-level hierarchy verification
@@ -69,6 +70,7 @@ metrics:
 All operations enforce the hierarchy: organization → site → area, returning null on validation failure for silent filtering.
 
 ### Area Zod Schemas (backend/src/schemas/areas.ts)
+
 - **AreaSchema**: Complete area response with all fields (id, siteId, name, description, sortOrder, isActive, timestamps)
 - **AreaRequiredParamsSchema**: Route params requiring organizationId, siteId, and areaId
 - **CreateAreaSchema**: Request validation for creating areas (name required, description optional, sortOrder defaults to 0)
@@ -76,6 +78,7 @@ All operations enforce the hierarchy: organization → site → area, returning 
 - **AreasListSchema**: Array response for list endpoint
 
 ### Area REST Endpoints (backend/src/routes/areas.ts)
+
 Registered at `/api/orgs/:organizationId/sites/:siteId/areas`:
 
 1. **GET /** - List areas in site (auth + org-context required)
@@ -88,11 +91,11 @@ All routes enforce hierarchy validation via service layer's verifySiteAccess pat
 
 ## Task Breakdown
 
-| Task | Type | Status | Commit | Files Changed |
-|------|------|--------|--------|---------------|
+| Task                                             | Type | Status      | Commit  | Files Changed                            |
+| ------------------------------------------------ | ---- | ----------- | ------- | ---------------------------------------- |
 | 1. Create area service with hierarchy validation | auto | ✅ Complete | 8f1d5a9 | area.service.ts (new), services/index.ts |
-| 2. Create area Zod schemas | auto | ✅ Complete | 7d1a256 | areas.ts (new), schemas/index.ts |
-| 3. Create area routes and register in app | auto | ✅ Complete | 75d623c | areas.ts (new), app.ts |
+| 2. Create area Zod schemas                       | auto | ✅ Complete | 7d1a256 | areas.ts (new), schemas/index.ts         |
+| 3. Create area routes and register in app        | auto | ✅ Complete | 75d623c | areas.ts (new), app.ts                   |
 
 ## Deviations from Plan
 
@@ -101,27 +104,25 @@ None - plan executed exactly as written.
 ## Decisions Made
 
 ### 1. verifySiteAccess Pattern for Hierarchy Validation
+
 **Decision:** Implement dedicated helper function that validates site ownership before any area operation
 
 **Rationale:**
+
 - Prevents BOLA (Broken Object Level Authorization) attacks
 - Ensures no cross-organization access to areas
 - Centralizes hierarchy validation logic for consistency
 
 **Implementation:**
+
 ```typescript
-async function verifySiteAccess(
-  siteId: string,
-  organizationId: string
-): Promise<boolean> {
+async function verifySiteAccess(siteId: string, organizationId: string): Promise<boolean> {
   const [site] = await db
     .select()
     .from(sites)
-    .where(and(
-      eq(sites.id, siteId),
-      eq(sites.organizationId, organizationId),
-      eq(sites.isActive, true)
-    ))
+    .where(
+      and(eq(sites.id, siteId), eq(sites.organizationId, organizationId), eq(sites.isActive, true)),
+    )
     .limit(1);
   return !!site;
 }
@@ -130,6 +131,7 @@ async function verifySiteAccess(
 All service functions call verifySiteAccess first, returning null/empty on failure for silent filtering.
 
 ### 2. Silent Filtering on Hierarchy Validation Failure
+
 **Decision:** Services return null/empty arrays when hierarchy validation fails instead of throwing errors
 
 **Why:** Prevents information disclosure - attackers can't probe for existence of resources in other organizations
@@ -148,36 +150,43 @@ All service functions call verifySiteAccess first, returning null/empty on failu
 ## Next Phase Readiness
 
 ### Blockers
+
 None
 
 ### Concerns
+
 - Pre-existing TypeScript/Drizzle type issues exist in service layer (site.service.ts, organization.service.ts, unit.service.ts, user.service.ts)
 - These appear related to Drizzle ORM type definitions for update/insert operations
 - Should be addressed in future cleanup phase
 
 ### Dependencies Satisfied
+
 - ✅ 03-01: Zod validation infrastructure in place
 - ✅ 03-03: Sites CRUD provides parent hierarchy level
 
 ### Enables
+
 - **03-05**: Units CRUD can now use full hierarchy path including areas
 - **Future**: Alert rules can be scoped to areas (org > site > area > unit)
 
 ## Knowledge Transfer
 
 ### Key Patterns
+
 1. **Hierarchy Validation Pattern**: verifySiteAccess helper prevents BOLA attacks by verifying parent ownership
 2. **Silent Filtering**: Return null/empty instead of errors to prevent information disclosure
 3. **Service Layer Isolation**: Business logic in services, routes handle HTTP concerns only
 4. **Zod Type Inference**: Schemas provide both runtime validation and TypeScript types
 
 ### Security Considerations
+
 - **BOLA Prevention**: verifySiteAccess ensures areas can't be accessed across organizations
 - **Silent Failures**: Cross-org attempts return empty/404 without revealing resource existence
 - **RBAC Enforcement**: Admin role required for mutations (create/update/delete)
 - **Soft Deletes**: isActive flag preserves referential integrity and audit trail
 
 ### Code Locations
+
 - **Service pattern reference**: `backend/src/services/area.service.ts` (hierarchy validation example)
 - **Route pattern reference**: `backend/src/routes/areas.ts` (follows site.ts pattern exactly)
 - **Schema pattern reference**: `backend/src/schemas/areas.ts` (hierarchical param schemas)

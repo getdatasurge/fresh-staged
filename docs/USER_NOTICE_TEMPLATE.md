@@ -15,12 +15,14 @@ Hello FreshTrack Pro Users,
 We're writing to inform you of a scheduled system maintenance window for FreshTrack Pro.
 
 **When:**
+
 - **Date:** [YYYY-MM-DD]
 - **Time:** [HH:MM] to [HH:MM] [Timezone]
 - **Duration:** Approximately 2-4 hours
 
 **What's Happening:**
 We're upgrading our infrastructure to improve performance, reliability, and security. This includes:
+
 - Migrating to a new, faster database system
 - Upgrading authentication for enhanced security
 - Improving monitoring and alerting capabilities
@@ -40,10 +42,12 @@ We're upgrading our infrastructure to improve performance, reliability, and secu
 
 **Status Updates:**
 During the maintenance window, you can check our status page for real-time updates:
+
 - **Status Page:** https://status.freshtrackpro.com
 
 **Questions or Concerns?**
 If you have any questions, please reach out to our support team:
+
 - **Email:** support@freshtrackpro.com
 - **Response Time:** We'll respond within 24 hours
 
@@ -65,6 +69,7 @@ Hello FreshTrack Pro Users,
 This is a reminder that our scheduled system maintenance begins in 24 hours.
 
 **Maintenance Window:**
+
 - **Date:** [YYYY-MM-DD]
 - **Time:** [HH:MM] to [HH:MM] [Timezone]
 - **Duration:** Approximately 2-4 hours
@@ -77,6 +82,7 @@ This is a reminder that our scheduled system maintenance begins in 24 hours.
 4. **Check status page** for real-time updates: https://status.freshtrackpro.com
 
 **Preparation Tips:**
+
 - Download any critical reports you need during the maintenance window
 - Note any active alerts that need attention before maintenance begins
 - Ensure your email address is up to date for password reset
@@ -103,6 +109,7 @@ Our scheduled system maintenance is now underway.
 **Expected completion:** [HH:MM] [Timezone]
 
 **What's happening now:**
+
 - System is temporarily offline
 - Your sensors are continuing to collect data
 - All data will sync when maintenance completes
@@ -140,6 +147,7 @@ For security reasons, you must reset your password before logging in:
 5. **Create:** A new secure password
 
 **If you don't receive the reset email within 15 minutes:**
+
 - Check your spam/junk folder
 - Ensure you're using the email address associated with your account
 - Contact support@freshtrackpro.com if issues persist
@@ -147,6 +155,7 @@ For security reasons, you must reset your password before logging in:
 **What's New:**
 
 After logging in, you'll notice:
+
 - **Faster performance:** Pages load quicker, especially reports
 - **Enhanced security:** More robust authentication system
 - **Improved monitoring:** Better system health visibility
@@ -157,6 +166,7 @@ All your historical data, sites, alerts, and configurations have been preserved.
 **Need Help?**
 
 If you encounter any issues:
+
 1. **Check our FAQ:** [URL to FAQ if available]
 2. **Email support:** support@freshtrackpro.com
 3. **Status page:** https://status.freshtrackpro.com
@@ -192,6 +202,7 @@ During the upgrade process, we identified an issue that required us to restore t
 **Next Steps:**
 
 We're investigating the issue and will:
+
 - Identify and resolve the root cause
 - Schedule a new maintenance window once the fix is validated
 - Provide advance notice (minimum 48 hours) for the rescheduled upgrade
@@ -221,6 +232,7 @@ It's been 24 hours since we completed our system upgrade, and we'd love to hear 
 [Link to survey]
 
 **What we're asking:**
+
 1. Did you successfully reset your password?
 2. Have you noticed any performance improvements?
 3. Are you experiencing any issues?
@@ -241,14 +253,14 @@ The FreshTrack Pro Team
 
 ## Email Timing Summary
 
-| Email | Timing | Purpose |
-|-------|--------|---------|
-| Advance Notice | T-48h | Initial announcement, preparation time |
-| 24-Hour Reminder | T-24h | Final reminder, preparation tips |
-| Maintenance Starting | T-0 | Confirm maintenance begun |
-| Maintenance Complete | T+150min | Inform users system is live, password reset instructions |
-| Rollback Notice | As needed | If rollback required (rare) |
-| Post-Cutover Survey | T+24h | Gather feedback (optional) |
+| Email                | Timing    | Purpose                                                  |
+| -------------------- | --------- | -------------------------------------------------------- |
+| Advance Notice       | T-48h     | Initial announcement, preparation time                   |
+| 24-Hour Reminder     | T-24h     | Final reminder, preparation tips                         |
+| Maintenance Starting | T-0       | Confirm maintenance begun                                |
+| Maintenance Complete | T+150min  | Inform users system is live, password reset instructions |
+| Rollback Notice      | As needed | If rollback required (rare)                              |
+| Post-Cutover Survey  | T+24h     | Gather feedback (optional)                               |
 
 ---
 
@@ -257,6 +269,7 @@ The FreshTrack Pro Team
 **Primary:** Email (via bulk email service or manually)
 
 **Secondary:**
+
 - In-app banner (during T-48h to T-24h period)
 - Status page updates (https://status.freshtrackpro.com)
 - Company website notice (if applicable)
@@ -280,6 +293,7 @@ The FreshTrack Pro Team
 ## Customization Notes
 
 Replace placeholders before sending:
+
 - `[YYYY-MM-DD]` → Actual date
 - `[HH:MM]` → Actual times
 - `[Timezone]` → User's timezone or UTC

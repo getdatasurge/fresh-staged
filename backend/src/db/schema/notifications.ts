@@ -1,15 +1,5 @@
-import {
-  pgTable,
-  uuid,
-  varchar,
-  text,
-  timestamp,
-  index,
-} from 'drizzle-orm/pg-core';
-import {
-  notificationChannelEnum,
-  notificationStatusEnum,
-} from './enums.js';
+import { pgTable, uuid, varchar, text, timestamp, index } from 'drizzle-orm/pg-core';
+import { notificationChannelEnum, notificationStatusEnum } from './enums.js';
 import { alerts } from './alerts.js';
 import { profiles } from './users.js';
 
@@ -79,14 +69,10 @@ export const notificationDeliveries = pgTable(
     index('notification_deliveries_channel_idx').on(table.channel),
     index('notification_deliveries_scheduled_idx').on(table.scheduledAt),
     // For finding pending deliveries to retry
-    index('notification_deliveries_pending_idx').on(
-      table.status,
-      table.scheduledAt
-    ),
-  ]
+    index('notification_deliveries_pending_idx').on(table.status, table.scheduledAt),
+  ],
 );
 
 // Type exports
 export type NotificationDelivery = typeof notificationDeliveries.$inferSelect;
-export type InsertNotificationDelivery =
-  typeof notificationDeliveries.$inferInsert;
+export type InsertNotificationDelivery = typeof notificationDeliveries.$inferInsert;

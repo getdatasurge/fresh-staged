@@ -24,23 +24,23 @@
  * ```
  */
 
-import { vi } from 'vitest'
+import { vi } from 'vitest';
 
 /**
  * Return type for queryOptions() - matches TanStack Query's queryOptions return
  */
 export interface QueryOptionsReturn<TData> {
-	queryKey: unknown[]
-	queryFn: () => Promise<TData>
-	enabled?: boolean
-	staleTime?: number
+  queryKey: unknown[];
+  queryFn: () => Promise<TData>;
+  enabled?: boolean;
+  staleTime?: number;
 }
 
 /**
  * A procedure mock with queryOptions method
  */
 export interface ProcedureMock<TData> {
-	queryOptions: ReturnType<typeof vi.fn>
+  queryOptions: ReturnType<typeof vi.fn>;
 }
 
 /**
@@ -64,31 +64,34 @@ export interface ProcedureMock<TData> {
  * ```
  */
 export function createQueryOptionsMock<TData>(
-	data: TData,
-	options: {
-		enabled?: boolean
-		staleTime?: number
-		queryKey?: unknown[]
-		error?: Error
-	} = {},
+  data: TData,
+  options: {
+    enabled?: boolean;
+    staleTime?: number;
+    queryKey?: unknown[];
+    error?: Error;
+  } = {},
 ): ReturnType<typeof vi.fn> {
-	const { enabled = true, staleTime = 30000, queryKey, error } = options
+  const { enabled = true, staleTime = 30000, queryKey, error } = options;
 
-	return vi.fn().mockImplementation((input?: unknown) => {
-		const resolvedQueryKey = queryKey ?? ['mock', 'procedure', input]
-		return {
-			queryKey: resolvedQueryKey,
-			queryFn: error ? () => Promise.reject(error) : () => Promise.resolve(data),
-			enabled,
-			staleTime,
-		}
-	})
+  return vi.fn().mockImplementation((input?: unknown) => {
+    const resolvedQueryKey = queryKey ?? ['mock', 'procedure', input];
+    return {
+      queryKey: resolvedQueryKey,
+      queryFn: error ? () => Promise.reject(error) : () => Promise.resolve(data),
+      enabled,
+      staleTime,
+    };
+  });
 }
 
 /**
  * Router structure type for mock tRPC
  */
-export type MockRouterStructure = Record<string, Record<string, { queryOptions: ReturnType<typeof vi.fn> }>>
+export type MockRouterStructure = Record<
+  string,
+  Record<string, { queryOptions: ReturnType<typeof vi.fn> }>
+>;
 
 /**
  * Creates a mock tRPC object with the expected queryOptions structure.
@@ -120,7 +123,7 @@ export type MockRouterStructure = Record<string, Record<string, { queryOptions: 
  * ```
  */
 export function createMockTRPC<T extends MockRouterStructure>(routers: T): T {
-	return routers
+  return routers;
 }
 
 /**
@@ -142,17 +145,17 @@ export function createMockTRPC<T extends MockRouterStructure>(routers: T): T {
  * ```
  */
 export function createProcedureMock<TData>(
-	data: TData,
-	options: {
-		enabled?: boolean
-		staleTime?: number
-		queryKey?: unknown[]
-		error?: Error
-	} = {},
+  data: TData,
+  options: {
+    enabled?: boolean;
+    staleTime?: number;
+    queryKey?: unknown[];
+    error?: Error;
+  } = {},
 ): { queryOptions: ReturnType<typeof vi.fn> } {
-	return {
-		queryOptions: createQueryOptionsMock(data, options),
-	}
+  return {
+    queryOptions: createQueryOptionsMock(data, options),
+  };
 }
 
 /**
@@ -172,12 +175,12 @@ export function createProcedureMock<TData>(
  * ```
  */
 export function createErrorMock(
-	error: Error,
-	options: {
-		enabled?: boolean
-		staleTime?: number
-		queryKey?: unknown[]
-	} = {},
+  error: Error,
+  options: {
+    enabled?: boolean;
+    staleTime?: number;
+    queryKey?: unknown[];
+  } = {},
 ): { queryOptions: ReturnType<typeof vi.fn> } {
-	return createProcedureMock(null, { ...options, error })
+  return createProcedureMock(null, { ...options, error });
 }

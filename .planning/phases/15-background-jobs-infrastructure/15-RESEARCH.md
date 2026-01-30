@@ -19,30 +19,34 @@ Bull Board provides a production-ready monitoring dashboard with Fastify adapter
 The established libraries/tools for this domain:
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| bullmq | ^6.x | Job queue and worker processing | Industry standard for Redis-based queues in Node.js, written in TypeScript, excellent community support, actively maintained |
-| @bull-board/api | ^6.16.x | Queue monitoring UI core | Official dashboard solution, supports multiple queue adapters, production-proven |
-| @bull-board/fastify | ^6.16.x | Fastify adapter for Bull Board | Native Fastify integration, matches existing stack |
-| @bull-board/api/bullMQAdapter | ^6.16.x | BullMQ adapter for Bull Board | Connects Bull Board UI to BullMQ queues |
-| ioredis | ^5.x | Redis client | Required by BullMQ, high-performance, TypeScript support |
+
+| Library                       | Version | Purpose                         | Why Standard                                                                                                                 |
+| ----------------------------- | ------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| bullmq                        | ^6.x    | Job queue and worker processing | Industry standard for Redis-based queues in Node.js, written in TypeScript, excellent community support, actively maintained |
+| @bull-board/api               | ^6.16.x | Queue monitoring UI core        | Official dashboard solution, supports multiple queue adapters, production-proven                                             |
+| @bull-board/fastify           | ^6.16.x | Fastify adapter for Bull Board  | Native Fastify integration, matches existing stack                                                                           |
+| @bull-board/api/bullMQAdapter | ^6.16.x | BullMQ adapter for Bull Board   | Connects Bull Board UI to BullMQ queues                                                                                      |
+| ioredis                       | ^5.x    | Redis client                    | Required by BullMQ, high-performance, TypeScript support                                                                     |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| @types/ioredis | ^5.x | TypeScript definitions for ioredis | Development only |
-| redis-memory-server | ^7.x | In-memory Redis for testing | Integration tests without external Redis |
+
+| Library             | Version | Purpose                            | When to Use                              |
+| ------------------- | ------- | ---------------------------------- | ---------------------------------------- |
+| @types/ioredis      | ^5.x    | TypeScript definitions for ioredis | Development only                         |
+| redis-memory-server | ^7.x    | In-memory Redis for testing        | Integration tests without external Redis |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| BullMQ | Bull (v4) | Bull is in maintenance mode, BullMQ is the successor with better TypeScript support and modern features |
-| BullMQ | Agenda | MongoDB-based, less performant for high-volume jobs, lacks BullMQ's advanced features |
-| BullMQ | Bee-Queue | Simpler but lacks features like job priorities, delays, and comprehensive retry strategies |
-| Bull Board | QueueDash | Newer alternative with modern UI, but less mature and smaller community |
+
+| Instead of    | Could Use     | Tradeoff                                                                                                          |
+| ------------- | ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| BullMQ        | Bull (v4)     | Bull is in maintenance mode, BullMQ is the successor with better TypeScript support and modern features           |
+| BullMQ        | Agenda        | MongoDB-based, less performant for high-volume jobs, lacks BullMQ's advanced features                             |
+| BullMQ        | Bee-Queue     | Simpler but lacks features like job priorities, delays, and comprehensive retry strategies                        |
+| Bull Board    | QueueDash     | Newer alternative with modern UI, but less mature and smaller community                                           |
 | Custom Plugin | fastify-queue | File-based auto-discovery adds magic; custom plugin provides explicit control matching existing codebase patterns |
 
 **Installation:**
+
 ```bash
 npm install bullmq ioredis @bull-board/api @bull-board/fastify
 npm install --save-dev @types/ioredis
@@ -51,6 +55,7 @@ npm install --save-dev @types/ioredis
 ## Architecture Patterns
 
 ### Recommended Project Structure
+
 ```
 backend/src/
 ├── plugins/
@@ -73,9 +78,11 @@ backend/src/
 ```
 
 ### Pattern 1: Custom Fastify Plugin (Recommended)
+
 **What:** Register BullMQ queues and Bull Board dashboard as Fastify plugin
 **When to use:** Aligns with existing Socket.io plugin pattern, provides explicit control
 **Example:**
+
 ```typescript
 // Source: Context7 /taskforcesh/bullmq + Bull Board README
 // Adapted to match existing socket.plugin.ts pattern
@@ -94,7 +101,7 @@ export interface QueuePluginOptions {
 
 const queuePlugin: FastifyPluginAsync<QueuePluginOptions> = async (
   fastify: FastifyInstance,
-  opts: QueuePluginOptions
+  opts: QueuePluginOptions,
 ) => {
   const dashboardPath = opts.dashboardPath ?? '/admin/queues';
   const enableDashboard = opts.enableDashboard ?? true;
@@ -146,9 +153,11 @@ export default fastifyPlugin(queuePlugin, {
 ```
 
 ### Pattern 2: Queue Service with Organization Isolation
+
 **What:** Centralized service for managing multiple queues with organization-scoped job data
 **When to use:** Matches existing SocketService pattern, provides type-safe queue operations
 **Example:**
+
 ```typescript
 // Source: Context7 /taskforcesh/bullmq
 // Adapted to match existing socket.service.ts pattern
@@ -198,7 +207,7 @@ export class QueueService {
           delay: 1000,
         },
         removeOnComplete: 100, // Keep last 100 completed jobs
-        removeOnFail: 500,     // Keep last 500 failed jobs for debugging
+        removeOnFail: 500, // Keep last 500 failed jobs for debugging
       },
     });
 
@@ -223,7 +232,7 @@ export class QueueService {
     queueName: string,
     jobName: string,
     data: T & { organizationId: string }, // Enforce org isolation
-    options?: JobOptions
+    options?: JobOptions,
   ): Promise<Job<T>> {
     const queue = this.queues.get(queueName);
     if (!queue) {
@@ -238,23 +247,17 @@ export class QueueService {
   }
 
   getQueuesForDashboard(): BullMQAdapter[] {
-    return Array.from(this.queues.values()).map(
-      (queue) => new BullMQAdapter(queue)
-    );
+    return Array.from(this.queues.values()).map((queue) => new BullMQAdapter(queue));
   }
 
   async shutdown(): Promise<void> {
     console.log('[QueueService] Shutting down...');
 
     // Close all QueueEvents
-    await Promise.all(
-      Array.from(this.queueEvents.values()).map((qe) => qe.close())
-    );
+    await Promise.all(Array.from(this.queueEvents.values()).map((qe) => qe.close()));
 
     // Close all queues
-    await Promise.all(
-      Array.from(this.queues.values()).map((queue) => queue.close())
-    );
+    await Promise.all(Array.from(this.queues.values()).map((queue) => queue.close()));
 
     // Disconnect Redis
     await this.connection?.disconnect();
@@ -265,9 +268,11 @@ export class QueueService {
 ```
 
 ### Pattern 3: Worker Container (Separate Process)
+
 **What:** Independent worker process that can be deployed separately from API
 **When to use:** Production deployment, horizontal scaling of job processing
 **Example:**
+
 ```typescript
 // Source: Context7 /taskforcesh/bullmq + Docker deployment discussions
 // workers/index.ts - Separate entry point for worker container
@@ -294,7 +299,7 @@ const smsWorker = new Worker(
   {
     connection,
     concurrency: 5, // Process 5 jobs concurrently
-  }
+  },
 );
 
 // Email digest worker
@@ -307,7 +312,7 @@ const emailWorker = new Worker(
   {
     connection,
     concurrency: 2, // Emails are slower, limit concurrency
-  }
+  },
 );
 
 // Event handlers
@@ -328,10 +333,7 @@ const emailWorker = new Worker(
 // Graceful shutdown
 const shutdown = async () => {
   console.log('Shutting down workers...');
-  await Promise.all([
-    smsWorker.close(),
-    emailWorker.close(),
-  ]);
+  await Promise.all([smsWorker.close(), emailWorker.close()]);
   await connection.quit();
   process.exit(0);
 };
@@ -343,9 +345,11 @@ console.log('Workers started and ready to process jobs');
 ```
 
 ### Pattern 4: Job Type Definitions with Organization Scoping
+
 **What:** Type-safe job data interfaces enforcing organization isolation
 **When to use:** Always - ensures type safety and multi-tenant data isolation
 **Example:**
+
 ```typescript
 // jobs/index.ts - Job registry
 import type { Job } from 'bullmq';
@@ -386,9 +390,11 @@ export type EmailDigestJob = Job<EmailDigestJobData>;
 ```
 
 ### Pattern 5: Bull Board with Authentication Guard
+
 **What:** Secure dashboard access using existing Fastify authentication
 **When to use:** Production deployments - never expose queue management publicly
 **Example:**
+
 ```typescript
 // Source: Bull Board GitHub - visibility guards and authentication examples
 import { createBullBoard } from '@bull-board/api';
@@ -451,37 +457,41 @@ const setupDashboard = (fastify: FastifyInstance, queueService: QueueService) =>
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Job retry logic | Custom retry counters with setTimeout | BullMQ backoff strategies | Built-in support for exponential/fixed/custom backoff, handles Redis persistence, supports per-job configuration |
-| Job scheduling/delays | setTimeout or cron in application code | BullMQ delayed jobs and repeat options | Survives process restarts, distributed across workers, precise timing with Redis |
-| Queue monitoring dashboard | Custom admin UI for jobs | Bull Board | Production-ready, supports multiple queues, job inspection, retry actions, no maintenance burden |
-| Worker process management | Custom child process spawning | BullMQ Workers + Docker containers | Handles graceful shutdown, reconnection logic, concurrency control, error recovery |
-| Job deduplication | Application-level job ID checks | BullMQ jobId option | Atomic Redis-based deduplication, prevents duplicate jobs at queue level |
-| Rate limiting job processing | Custom rate limiting middleware | BullMQ limiter option in Worker | Built-in rate limiting per queue, configurable max jobs per time window |
-| Job priority queues | Multiple queues or manual sorting | BullMQ priority option | Native priority support, efficient Redis-based sorting |
-| Connection pooling for Redis | Custom connection manager | ioredis with shared connection | BullMQ reuses single ioredis instance across Queue instances, minimal overhead |
+| Problem                      | Don't Build                            | Use Instead                            | Why                                                                                                              |
+| ---------------------------- | -------------------------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Job retry logic              | Custom retry counters with setTimeout  | BullMQ backoff strategies              | Built-in support for exponential/fixed/custom backoff, handles Redis persistence, supports per-job configuration |
+| Job scheduling/delays        | setTimeout or cron in application code | BullMQ delayed jobs and repeat options | Survives process restarts, distributed across workers, precise timing with Redis                                 |
+| Queue monitoring dashboard   | Custom admin UI for jobs               | Bull Board                             | Production-ready, supports multiple queues, job inspection, retry actions, no maintenance burden                 |
+| Worker process management    | Custom child process spawning          | BullMQ Workers + Docker containers     | Handles graceful shutdown, reconnection logic, concurrency control, error recovery                               |
+| Job deduplication            | Application-level job ID checks        | BullMQ jobId option                    | Atomic Redis-based deduplication, prevents duplicate jobs at queue level                                         |
+| Rate limiting job processing | Custom rate limiting middleware        | BullMQ limiter option in Worker        | Built-in rate limiting per queue, configurable max jobs per time window                                          |
+| Job priority queues          | Multiple queues or manual sorting      | BullMQ priority option                 | Native priority support, efficient Redis-based sorting                                                           |
+| Connection pooling for Redis | Custom connection manager              | ioredis with shared connection         | BullMQ reuses single ioredis instance across Queue instances, minimal overhead                                   |
 
 **Key insight:** BullMQ has been battle-tested at scale with millions of jobs. Custom solutions often miss edge cases like Redis disconnections, worker crashes during job processing, distributed locking for job atomicity, and efficient Redis memory management. The library handles these through years of production feedback.
 
 ## Common Pitfalls
 
 ### Pitfall 1: maxRetriesPerRequest Configuration Mismatch
+
 **What goes wrong:** Worker shows deprecation warnings, jobs fail unexpectedly, or workers stop processing after Redis disconnections.
 
 **Why it happens:** BullMQ Workers require `maxRetriesPerRequest: null` to handle blocking Redis operations, but ioredis defaults to 20. If overridden or an existing ioredis instance is passed without this setting, BullMQ can't guarantee correct behavior.
 
 **How to avoid:**
+
 - Always create separate ioredis connection for workers with `maxRetriesPerRequest: null`
 - For Queue instances (API), use default value or set to 1 for fast failure
 - Never share ioredis instance between Queue and Worker without checking this setting
 
 **Warning signs:**
+
 ```
 DEPRECATION WARNING! Your redis options maxRetriesPerRequest must be null.
 ```
 
 **Fix:**
+
 ```typescript
 // Worker connection (CORRECT)
 const workerConnection = new IORedis({ maxRetriesPerRequest: null });
@@ -493,22 +503,26 @@ const queueConnection = new IORedis({ maxRetriesPerRequest: 1 }); // Fast failur
 ```
 
 ### Pitfall 2: Missing Redis Persistence Configuration
+
 **What goes wrong:** Jobs disappear after Redis restart, queue state is lost, duplicate job processing occurs.
 
 **Why it happens:** Redis defaults to in-memory only storage. Without AOF (Append Only File) or RDB snapshots, data is lost on restart.
 
 **How to avoid:**
+
 - Configure Redis with `appendonly yes` in redis.conf
 - Set `appendfsync everysec` for balance of performance and durability
 - Set `maxmemory-policy noeviction` (CRITICAL - only policy that works with BullMQ)
 - Test by restarting Redis and verifying jobs persist
 
 **Warning signs:**
+
 - Jobs added before restart are gone after Redis restarts
 - Unexpected duplicate job processing
 - Queue counts reset to zero after restart
 
 **Docker Compose configuration:**
+
 ```yaml
 redis:
   image: redis:7-alpine
@@ -522,25 +536,29 @@ redis:
 ```
 
 ### Pitfall 3: Environment Variables in Job Data
+
 **What goes wrong:** Jobs fail with cryptic Lua script errors like "arguments must be strings or integers."
 
 **Why it happens:** Environment variables can be undefined, and BullMQ's Lua scripts don't handle non-string/number types gracefully.
 
 **How to avoid:**
+
 - Validate and provide defaults for all env vars before adding jobs
 - Use TypeScript `strictNullChecks` to catch undefined at compile time
 - Validate job data schemas before queuing (use Zod or similar)
 
 **Warning signs:**
+
 ```
 Error: ERR Error running script ... arguments must be strings or integers
 ```
 
 **Fix:**
+
 ```typescript
 // BAD
 await queue.add('job', {
-  apiKey: process.env.API_KEY // Could be undefined!
+  apiKey: process.env.API_KEY, // Could be undefined!
 });
 
 // GOOD
@@ -564,22 +582,26 @@ await queue.add('job', validated);
 ```
 
 ### Pitfall 4: No Graceful Shutdown for Workers
+
 **What goes wrong:** Jobs marked as stalled, duplicate processing, incomplete jobs on container restart.
 
 **Why it happens:** When workers are killed abruptly (SIGKILL or container stop without grace period), active jobs aren't marked as failed and will be retried after stalled timeout (~30 seconds default).
 
 **How to avoid:**
+
 - Always listen for SIGTERM and SIGINT signals
 - Call `worker.close()` before process.exit
 - Set Docker/Kubernetes terminationGracePeriodSeconds to at least 30s
 - Allow time for in-flight jobs to complete or be marked as failed
 
 **Warning signs:**
+
 - Jobs showing as "stalled" in Bull Board
 - Same job processed multiple times after deployments
 - Logs showing jobs interrupted mid-execution
 
 **Fix:**
+
 ```typescript
 const gracefulShutdown = async (signal: string) => {
   console.log(`${signal} received, closing workers...`);
@@ -603,22 +625,26 @@ services:
 ```
 
 ### Pitfall 5: Unencrypted Sensitive Data in Jobs
+
 **What goes wrong:** Sensitive data visible in Bull Board dashboard, Redis dumps, logs.
 
 **Why it happens:** Developers add passwords, tokens, PII to job data for convenience, forgetting jobs are stored as JSON in Redis.
 
 **How to avoid:**
+
 - Store only IDs in job data, fetch sensitive data in processor
 - If sensitive data required, encrypt before adding to job
 - Use Bull Board data formatters to redact sensitive fields from UI
 - Secure Bull Board with authentication (never expose publicly)
 
 **Warning signs:**
+
 - Password or API tokens visible in Bull Board
 - Security audit flags sensitive data in Redis
 - Job data includes user emails, phone numbers, credit cards
 
 **Fix:**
+
 ```typescript
 // BAD
 await queue.add('send-email', {
@@ -649,22 +675,26 @@ const phoneNumber = decrypt(job.data.phoneNumber);
 ```
 
 ### Pitfall 6: Tight Coupling Between API and Worker Code
+
 **What goes wrong:** Worker container includes unnecessary API dependencies, slow builds, large images, difficult independent deployment.
 
 **Why it happens:** Workers defined in same codebase as API without clear separation, importing API-specific modules.
 
 **How to avoid:**
+
 - Create separate entry point for workers (`workers/index.ts`)
 - Worker processors should import only job types and shared utilities
 - Build separate Docker images for API and workers
 - Use multi-stage builds to keep worker image minimal
 
 **Warning signs:**
+
 - Worker container is 500MB+ (similar to API container)
 - Worker imports Fastify, route handlers, or middleware
 - Can't deploy workers without rebuilding API
 
 **Fix:**
+
 ```typescript
 // BAD - Worker importing too much
 import app from '../app.js'; // Pulls in all API code!
@@ -697,6 +727,7 @@ CMD ["node", "workers/index.js"]
 Verified patterns from official sources:
 
 ### Basic Queue Creation and Job Addition
+
 ```typescript
 // Source: https://context7.com/taskforcesh/bullmq/llms.txt
 import { Queue } from 'bullmq';
@@ -731,6 +762,7 @@ await queue.add('urgent', { data: 'important' }, { priority: 1 });
 ```
 
 ### Worker with Event Listeners
+
 ```typescript
 // Source: https://context7.com/taskforcesh/bullmq/llms.txt
 import { Worker, Job } from 'bullmq';
@@ -756,7 +788,7 @@ const worker = new Worker(
       max: 100,
       duration: 60000, // 100 jobs per minute
     },
-  }
+  },
 );
 
 worker.on('completed', (job, result) => {
@@ -773,6 +805,7 @@ worker.on('progress', (job, progress) => {
 ```
 
 ### Custom Backoff Strategy
+
 ```typescript
 // Source: https://context7.com/taskforcesh/bullmq/llms.txt
 import { Worker } from 'bullmq';
@@ -804,17 +837,22 @@ const worker = new Worker(
         return Math.pow(2, attemptsMade - 1) * 1000;
       },
     },
-  }
+  },
 );
 
 // Add job with custom backoff
-await queue.add('task', { data: 'test' }, {
-  attempts: 5,
-  backoff: { type: 'custom' }, // Uses worker's backoffStrategy
-});
+await queue.add(
+  'task',
+  { data: 'test' },
+  {
+    attempts: 5,
+    backoff: { type: 'custom' }, // Uses worker's backoffStrategy
+  },
+);
 ```
 
 ### Bull Board Fastify Setup
+
 ```typescript
 // Source: https://github.com/felixmosh/bull-board
 import { createBullBoard } from '@bull-board/api';
@@ -852,6 +890,7 @@ app.listen(3000);
 ```
 
 ### QueueEvents for Monitoring
+
 ```typescript
 // Source: https://context7.com/taskforcesh/bullmq/llms.txt
 import { QueueEvents } from 'bullmq';
@@ -885,6 +924,7 @@ await queueEvents.close();
 ```
 
 ### Named Processor Pattern
+
 ```typescript
 // Source: https://docs.bullmq.io/patterns/named-processor
 import { Worker } from 'bullmq';
@@ -914,16 +954,17 @@ await queue.add('push-notification', { userId: '123' });
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Bull (v4) | BullMQ (v5+, currently v6) | 2020 | Complete rewrite with better TypeScript support, improved architecture, Python/Elixir clients, breaking API changes |
-| Manual Bull Board setup | `@bull-board/api` with framework adapters | 2021 | Simplified integration, support for multiple frameworks (Express, Fastify, Hapi, etc.) |
-| Separate processes with PM2 | Docker containers with health checks | 2022+ | Better orchestration with Kubernetes/Docker Compose, cleaner separation of concerns |
-| IORedis v4 | IORedis v5 | 2022 | Better TypeScript support, improved performance, breaking changes in options |
-| Monolithic worker files | Processor pattern with separation | 2023+ | Easier testing, better code organization, supports sandboxed processors |
-| `enableOfflineQueue: true` for all | Separate configs for Queue vs Worker | 2024 | Queue fails fast (good for API), Worker waits indefinitely (good for background processing) |
+| Old Approach                       | Current Approach                          | When Changed | Impact                                                                                                              |
+| ---------------------------------- | ----------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------- |
+| Bull (v4)                          | BullMQ (v5+, currently v6)                | 2020         | Complete rewrite with better TypeScript support, improved architecture, Python/Elixir clients, breaking API changes |
+| Manual Bull Board setup            | `@bull-board/api` with framework adapters | 2021         | Simplified integration, support for multiple frameworks (Express, Fastify, Hapi, etc.)                              |
+| Separate processes with PM2        | Docker containers with health checks      | 2022+        | Better orchestration with Kubernetes/Docker Compose, cleaner separation of concerns                                 |
+| IORedis v4                         | IORedis v5                                | 2022         | Better TypeScript support, improved performance, breaking changes in options                                        |
+| Monolithic worker files            | Processor pattern with separation         | 2023+        | Easier testing, better code organization, supports sandboxed processors                                             |
+| `enableOfflineQueue: true` for all | Separate configs for Queue vs Worker      | 2024         | Queue fails fast (good for API), Worker waits indefinitely (good for background processing)                         |
 
 **Deprecated/outdated:**
+
 - **Bull (v4)**: Still maintained but in feature freeze. Use BullMQ for new projects.
 - **@bull-board/express as default**: Now framework-agnostic with dedicated adapters per framework.
 - **Kue**: Abandoned, security issues. Do not use.
@@ -956,12 +997,14 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Context7 /taskforcesh/bullmq - BullMQ API documentation, code examples, patterns
 - https://docs.bullmq.io/guide/connections - Connection configuration, maxRetriesPerRequest requirements
 - https://docs.bullmq.io/guide/going-to-production - Production deployment checklist, Redis configuration
 - https://github.com/felixmosh/bull-board - Bull Board installation, Fastify adapter usage, authentication patterns
 
 ### Secondary (MEDIUM confidence)
+
 - [BullMQ common mistakes and pitfalls](https://docs.bullmq.io/guide/troubleshooting) - Verified troubleshooting guide
 - [BullMQ Docker worker deployment patterns](https://github.com/taskforcesh/bullmq/discussions/665) - Community discussion on Kubernetes/Docker deployment
 - [Fastify plugin decorators and dependency injection](https://fastify.dev/docs/latest/Reference/Decorators/) - Official Fastify decorator docs
@@ -969,6 +1012,7 @@ Things that couldn't be fully resolved:
 - [fastify-queue plugin](https://github.com/JonasHiltl/fastify-queue) - Alternative approach for file-based queue discovery
 
 ### Tertiary (LOW confidence)
+
 - [BullMQ testing patterns with Jest](https://medium.com/@vijaysinh.khot/testing-the-untestable-a-guide-to-integration-testing-bullmq-jobs-with-jest-736db303ca2e) - Integration testing approaches, community best practices
 - [BullMQ at scale article](https://medium.com/@kaushalsinh73/bullmq-at-scale-queueing-millions-of-jobs-without-breaking-ba4c24ddf104) - Scaling challenges and solutions
 - [BullMQ with Fastify template](https://github.com/railwayapp-templates/fastify-bullmq) - Reference implementation
@@ -976,6 +1020,7 @@ Things that couldn't be fully resolved:
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - BullMQ is industry standard, verified via Context7 and official docs, versions confirmed via npm
 - Architecture: HIGH - Patterns verified with Context7 code examples and official documentation, Docker deployment confirmed via community discussions
 - Pitfalls: HIGH - maxRetriesPerRequest, persistence, and graceful shutdown verified via official docs; sensitive data and env vars verified via troubleshooting guide

@@ -63,7 +63,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
         primaryOrganizationId,
         organizations,
       };
-    }
+    },
   );
 };
 

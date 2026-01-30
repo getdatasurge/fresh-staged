@@ -8,11 +8,11 @@ export function useRouteLogger() {
 
   useEffect(() => {
     const currentPath = location.pathname + location.search;
-    
+
     if (prevPathRef.current !== null && prevPathRef.current !== currentPath) {
       debugLog.routeChange(prevPathRef.current, currentPath);
     }
-    
+
     prevPathRef.current = currentPath;
   }, [location]);
 }

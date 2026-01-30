@@ -1,25 +1,20 @@
-import DashboardLayout from "@/components/DashboardLayout"
-import LogTempModal, { LogTempUnit } from "@/components/LogTempModal"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
-import { computeUnitAlerts } from "@/hooks/useUnitAlerts"
-import { UnitStatusInfo } from "@/hooks/useUnitStatus"
-import { getAlertTypeConfig, getSeverityConfig } from "@/lib/alertConfig"
-import { useTRPC } from "@/lib/trpc"
-import { useUser } from "@stackframe/react"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import DashboardLayout from '@/components/DashboardLayout';
+import LogTempModal, { LogTempUnit } from '@/components/LogTempModal';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { computeUnitAlerts } from '@/hooks/useUnitAlerts';
+import { UnitStatusInfo } from '@/hooks/useUnitStatus';
+import { getAlertTypeConfig, getSeverityConfig } from '@/lib/alertConfig';
+import { useTRPC } from '@/lib/trpc';
+import { useUser } from '@stackframe/react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   AlertTriangle,
   ArrowUpCircle,
@@ -31,10 +26,10 @@ import {
   Loader2,
   Mail,
   MailCheck,
-  MailX
-} from "lucide-react"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { useNavigate } from "react-router-dom"
+  MailX,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Unified alert type that works for both DB and computed alerts
 interface UnifiedAlert {
@@ -42,8 +37,8 @@ interface UnifiedAlert {
   title: string;
   message: string | null;
   alertType: string;
-  severity: "critical" | "warning" | "info";
-  status: "active" | "acknowledged" | "resolved";
+  severity: 'critical' | 'warning' | 'info';
+  status: 'active' | 'acknowledged' | 'resolved';
   unit_id: string;
   unit_name: string;
   site_name: string;
@@ -70,16 +65,16 @@ const Alerts = () => {
   // Queries
   const alertsQuery = useQuery(
     trpc.alerts.listByOrg.queryOptions(
-      { organizationId: effectiveOrgId || "", limit: 100 },
-      { enabled: !!effectiveOrgId }
-    )
+      { organizationId: effectiveOrgId || '', limit: 100 },
+      { enabled: !!effectiveOrgId },
+    ),
   );
 
   const unitsQuery = useQuery(
     trpc.units.listByOrg.queryOptions(
-      { organizationId: effectiveOrgId || "" },
-      { enabled: !!effectiveOrgId }
-    )
+      { organizationId: effectiveOrgId || '' },
+      { enabled: !!effectiveOrgId },
+    ),
   );
 
   // Mutations
@@ -90,11 +85,11 @@ const Alerts = () => {
   const [selectedAlert, setSelectedAlert] = useState<UnifiedAlert | null>(null);
   const [showResolveDialog, setShowResolveDialog] = useState(false);
   const [showAcknowledgeDialog, setShowAcknowledgeDialog] = useState(false);
-  const [acknowledgmentNotes, setAcknowledgmentNotes] = useState("");
-  const [correctiveAction, setCorrectiveAction] = useState("");
-  const [rootCause, setRootCause] = useState("");
+  const [acknowledgmentNotes, setAcknowledgmentNotes] = useState('');
+  const [correctiveAction, setCorrectiveAction] = useState('');
+  const [rootCause, setRootCause] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState("active");
+  const [activeTab, setActiveTab] = useState('active');
 
   // Log temp modal state
   const [selectedUnit, setSelectedUnit] = useState<LogTempUnit | null>(null);
@@ -102,7 +97,7 @@ const Alerts = () => {
 
   useEffect(() => {
     if (!user) {
-      navigate("/auth");
+      navigate('/auth');
     }
   }, [user, navigate]);
 
@@ -116,7 +111,7 @@ const Alerts = () => {
   const unifiedAlerts = useMemo(() => {
     if (!unitsQuery.data || !alertsQuery.data) return [];
 
-    const formattedUnits: UnitStatusInfo[] = unitsQuery.data.map(u => ({
+    const formattedUnits: UnitStatusInfo[] = unitsQuery.data.map((u) => ({
       id: u.id,
       name: u.name,
       unit_type: u.unitType,
@@ -144,7 +139,7 @@ const Alerts = () => {
         message: computed.message,
         alertType: computed.type,
         severity: computed.severity,
-        status: "active",
+        status: 'active',
         unit_id: computed.unit_id,
         unit_name: computed.unit_name,
         site_name: computed.site_name,
@@ -161,15 +156,15 @@ const Alerts = () => {
     // Add DB alerts
     for (const dbAlert of alertsQuery.data) {
       const computedKey = `${dbAlert.unitId}-${dbAlert.alertType.toUpperCase()}`;
-      if (seenAlerts.has(computedKey) && dbAlert.status === "active") continue;
+      if (seenAlerts.has(computedKey) && dbAlert.status === 'active') continue;
 
       unified.push({
         id: dbAlert.id,
-        title: dbAlert.message || "Alert", 
+        title: dbAlert.message || 'Alert',
         message: dbAlert.message,
         alertType: dbAlert.alertType,
         severity: dbAlert.severity,
-        status: dbAlert.status === "escalated" ? "active" : dbAlert.status,
+        status: dbAlert.status === 'escalated' ? 'active' : dbAlert.status,
         unit_id: dbAlert.unitId,
         unit_name: (dbAlert as any).unitName,
         site_name: (dbAlert as any).siteName,
@@ -208,74 +203,77 @@ const Alerts = () => {
 
   const handleAcknowledge = async () => {
     if (!selectedAlert || !acknowledgmentNotes.trim()) {
-      toast({ title: "Please provide acknowledgment notes", variant: "destructive" });
+      toast({ title: 'Please provide acknowledgment notes', variant: 'destructive' });
       return;
     }
 
     if (selectedAlert.isComputed) {
-      toast({ title: "Computed alerts cannot be acknowledged - resolve the underlying issue", variant: "destructive" });
+      toast({
+        title: 'Computed alerts cannot be acknowledged - resolve the underlying issue',
+        variant: 'destructive',
+      });
       return;
     }
 
     setIsSubmitting(true);
     try {
       await acknowledgeMutation.mutateAsync({
-        organizationId: effectiveOrgId || "",
+        organizationId: effectiveOrgId || '',
         alertId: selectedAlert.dbAlertId || selectedAlert.id,
         notes: acknowledgmentNotes.trim(),
       });
 
-      toast({ title: "Alert acknowledged" });
+      toast({ title: 'Alert acknowledged' });
       setShowAcknowledgeDialog(false);
       setSelectedAlert(null);
-      setAcknowledgmentNotes("");
+      setAcknowledgmentNotes('');
       handleRefetch();
     } catch (error) {
-      console.error("Error acknowledging alert:", error);
-      toast({ title: "Failed to acknowledge", variant: "destructive" });
+      console.error('Error acknowledging alert:', error);
+      toast({ title: 'Failed to acknowledge', variant: 'destructive' });
     }
     setIsSubmitting(false);
   };
 
   const openAcknowledgeDialog = (alert: UnifiedAlert) => {
     setSelectedAlert(alert);
-    setAcknowledgmentNotes("");
+    setAcknowledgmentNotes('');
     setShowAcknowledgeDialog(true);
   };
 
   const handleResolve = async () => {
     if (!selectedAlert || !correctiveAction.trim()) {
-      toast({ title: "Please describe the corrective action", variant: "destructive" });
+      toast({ title: 'Please describe the corrective action', variant: 'destructive' });
       return;
     }
 
     setIsSubmitting(true);
     try {
       await resolveMutation.mutateAsync({
-        organizationId: effectiveOrgId || "",
+        organizationId: effectiveOrgId || '',
         alertId: selectedAlert.dbAlertId || selectedAlert.id,
-        resolution: rootCause || "Issue resolved",
+        resolution: rootCause || 'Issue resolved',
         correctiveAction: correctiveAction.trim(),
       });
 
-      toast({ title: "Alert resolved with corrective action" });
+      toast({ title: 'Alert resolved with corrective action' });
       setShowResolveDialog(false);
       setSelectedAlert(null);
-      setCorrectiveAction("");
-      setRootCause("");
+      setCorrectiveAction('');
+      setRootCause('');
       handleRefetch();
     } catch (error) {
-      console.error("Error resolving alert:", error);
-      toast({ title: "Failed to resolve", variant: "destructive" });
+      console.error('Error resolving alert:', error);
+      toast({ title: 'Failed to resolve', variant: 'destructive' });
     }
     setIsSubmitting(false);
   };
 
   const handleLogTemp = (alert: UnifiedAlert) => {
     if (!unitsQuery.data) return;
-    const u = unitsQuery.data.find(u => u.id === alert.unit_id);
+    const u = unitsQuery.data.find((u) => u.id === alert.unit_id);
     if (!u) return;
-    
+
     setSelectedUnit({
       id: u.id,
       name: u.name,
@@ -295,7 +293,7 @@ const Alerts = () => {
 
   const getTimeAgo = (dateStr: string) => {
     const diffMins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
-    if (diffMins < 1) return "Just now";
+    if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `${diffHours}h ago`;
@@ -303,14 +301,14 @@ const Alerts = () => {
   };
 
   const filteredAlerts = unifiedAlerts.filter((a) => {
-    if (activeTab === "active") return a.status === "active";
-    if (activeTab === "acknowledged") return a.status === "acknowledged";
-    if (activeTab === "resolved") return a.status === "resolved";
+    if (activeTab === 'active') return a.status === 'active';
+    if (activeTab === 'acknowledged') return a.status === 'acknowledged';
+    if (activeTab === 'resolved') return a.status === 'resolved';
     return true;
   });
 
-  const activeCount = unifiedAlerts.filter((a) => a.status === "active").length;
-  const acknowledgedCount = unifiedAlerts.filter((a) => a.status === "acknowledged").length;
+  const activeCount = unifiedAlerts.filter((a) => a.status === 'active').length;
+  const acknowledgedCount = unifiedAlerts.filter((a) => a.status === 'acknowledged').length;
 
   if (isLoading) {
     return (
@@ -335,7 +333,9 @@ const Alerts = () => {
           <TabsTrigger value="acknowledged">
             Acknowledged
             {acknowledgedCount > 0 && (
-              <Badge variant="secondary" className="ml-2">{acknowledgedCount}</Badge>
+              <Badge variant="secondary" className="ml-2">
+                {acknowledgedCount}
+              </Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="resolved">Resolved</TabsTrigger>
@@ -347,17 +347,20 @@ const Alerts = () => {
               const typeConfig = getAlertTypeConfig(alert.alertType);
               const severity = getSeverityConfig(alert.severity);
               const Icon = typeConfig?.icon || AlertTriangle;
-              const showLogButton = alert.alertType === "MANUAL_REQUIRED" || alert.alertType === "missed_manual_entry";
+              const showLogButton =
+                alert.alertType === 'MANUAL_REQUIRED' || alert.alertType === 'missed_manual_entry';
 
               return (
                 <Card
                   key={alert.id}
-                  className={`${alert.status === "active" ? "border-alarm/30" : ""}`}
+                  className={`${alert.status === 'active' ? 'border-alarm/30' : ''}`}
                 >
                   <CardContent className="p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
                       {/* Icon */}
-                      <div className={`w-10 h-10 rounded-lg ${severity.bgColor} flex items-center justify-center flex-shrink-0`}>
+                      <div
+                        className={`w-10 h-10 rounded-lg ${severity.bgColor} flex items-center justify-center flex-shrink-0`}
+                      >
                         <Icon className={`w-5 h-5 ${severity.color}`} />
                       </div>
 
@@ -387,9 +390,11 @@ const Alerts = () => {
                               {alert.site_name} · {alert.area_name} · {alert.unit_name}
                             </p>
                           </div>
-                          
+
                           <div className="text-left sm:text-right flex-shrink-0">
-                            <p className="text-xs text-muted-foreground">{getTimeAgo(alert.triggered_at)}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {getTimeAgo(alert.triggered_at)}
+                            </p>
                             {alert.acknowledged_at && (
                               <p className="text-xs text-safe mt-1">
                                 <Check className="w-3 h-3 inline mr-1" />
@@ -401,7 +406,10 @@ const Alerts = () => {
 
                         {/* Message - fully wrapped, no truncation */}
                         {alert.message && (
-                          <p className="text-sm text-muted-foreground break-words leading-relaxed" style={{ overflowWrap: "anywhere" }}>
+                          <p
+                            className="text-sm text-muted-foreground break-words leading-relaxed"
+                            style={{ overflowWrap: 'anywhere' }}
+                          >
                             {alert.message}
                           </p>
                         )}
@@ -411,7 +419,10 @@ const Alerts = () => {
                           <p className="text-sm">
                             <span className="text-alarm font-semibold">{alert.temp_reading}°F</span>
                             {alert.temp_limit && (
-                              <span className="text-muted-foreground"> (limit: {alert.temp_limit}°F)</span>
+                              <span className="text-muted-foreground">
+                                {' '}
+                                (limit: {alert.temp_limit}°F)
+                              </span>
                             )}
                           </p>
                         )}
@@ -422,12 +433,16 @@ const Alerts = () => {
                             {alert.last_notified_at ? (
                               <>
                                 <MailCheck className="w-3.5 h-3.5 text-safe" />
-                                <span className="text-safe">Email sent {getTimeAgo(alert.last_notified_at)}</span>
+                                <span className="text-safe">
+                                  Email sent {getTimeAgo(alert.last_notified_at)}
+                                </span>
                               </>
                             ) : alert.last_notified_reason ? (
                               <>
                                 <MailX className="w-3.5 h-3.5 text-warning" />
-                                <span className="text-warning">Email: {alert.last_notified_reason}</span>
+                                <span className="text-warning">
+                                  Email: {alert.last_notified_reason}
+                                </span>
                               </>
                             ) : (
                               <>
@@ -439,7 +454,7 @@ const Alerts = () => {
                         )}
 
                         {/* Action Buttons */}
-                        {alert.status === "active" && (
+                        {alert.status === 'active' && (
                           <div className="flex flex-wrap gap-2 pt-1">
                             {showLogButton && (
                               <Button
@@ -478,10 +493,13 @@ const Alerts = () => {
                         )}
 
                         {/* Acknowledged state */}
-                        {alert.status === "acknowledged" && (
+                        {alert.status === 'acknowledged' && (
                           <div className="space-y-2 pt-1">
                             {alert.acknowledgment_notes && (
-                              <div className="p-2 rounded bg-muted/50 text-sm break-words" style={{ overflowWrap: "anywhere" }}>
+                              <div
+                                className="p-2 rounded bg-muted/50 text-sm break-words"
+                                style={{ overflowWrap: 'anywhere' }}
+                              >
                                 <span className="text-muted-foreground">Notes: </span>
                                 {alert.acknowledgment_notes}
                               </div>
@@ -509,27 +527,27 @@ const Alerts = () => {
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <div className="w-14 h-14 rounded-2xl bg-safe/10 flex items-center justify-center mb-4">
-                  {activeTab === "active" ? (
+                  {activeTab === 'active' ? (
                     <CheckCircle2 className="w-7 h-7 text-safe" />
-                  ) : activeTab === "acknowledged" ? (
+                  ) : activeTab === 'acknowledged' ? (
                     <Bell className="w-7 h-7 text-muted-foreground" />
                   ) : (
                     <BellOff className="w-7 h-7 text-muted-foreground" />
                   )}
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {activeTab === "active"
-                    ? "All Clear!"
-                    : activeTab === "acknowledged"
-                    ? "No Acknowledged Alerts"
-                    : "No Resolved Alerts"}
+                  {activeTab === 'active'
+                    ? 'All Clear!'
+                    : activeTab === 'acknowledged'
+                      ? 'No Acknowledged Alerts'
+                      : 'No Resolved Alerts'}
                 </h3>
                 <p className="text-muted-foreground text-center max-w-md">
-                  {activeTab === "active"
-                    ? "No active alerts at this time. All systems are operating normally."
-                    : activeTab === "acknowledged"
-                    ? "No alerts pending resolution."
-                    : "Resolved alerts will appear here."}
+                  {activeTab === 'active'
+                    ? 'No active alerts at this time. All systems are operating normally.'
+                    : activeTab === 'acknowledged'
+                      ? 'No alerts pending resolution.'
+                      : 'Resolved alerts will appear here.'}
                 </p>
               </CardContent>
             </Card>
@@ -625,7 +643,10 @@ const Alerts = () => {
                   <p className="text-sm mt-1">
                     <span className="text-alarm font-semibold">{selectedAlert.temp_reading}°F</span>
                     {selectedAlert.temp_limit && (
-                      <span className="text-muted-foreground"> (limit: {selectedAlert.temp_limit}°F)</span>
+                      <span className="text-muted-foreground">
+                        {' '}
+                        (limit: {selectedAlert.temp_limit}°F)
+                      </span>
                     )}
                   </p>
                 )}
@@ -652,7 +673,7 @@ const Alerts = () => {
                   onClick={() => {
                     setShowAcknowledgeDialog(false);
                     setSelectedAlert(null);
-                    setAcknowledgmentNotes("");
+                    setAcknowledgmentNotes('');
                   }}
                 >
                   Cancel

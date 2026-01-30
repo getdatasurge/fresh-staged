@@ -8,6 +8,7 @@ Before deploying, complete the full prerequisites checklist:
 **[See SELFHOSTED_DEPLOYMENT.md Prerequisites](../SELFHOSTED_DEPLOYMENT.md#prerequisites)**
 
 **Quick requirements:**
+
 - Ubuntu 22.04/24.04 LTS
 - 4+ vCPU, 8+ GB RAM, 100+ GB SSD
 - Domain with DNS pointing to server
@@ -16,12 +17,14 @@ Before deploying, complete the full prerequisites checklist:
 ## Quick Start
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/your-org/freshtrack-pro.git
    cd freshtrack-pro
    ```
 
 2. **Run the deployment script:**
+
    ```bash
    chmod +x scripts/deploy-automated.sh
    sudo ./scripts/deploy-automated.sh
@@ -39,11 +42,13 @@ Before deploying, complete the full prerequisites checklist:
 After deployment completes:
 
 1. **Verify installation:**
+
    ```bash
    ./scripts/verify-deployment.sh your-domain.com
    ```
 
 2. **Complete setup:**
+
    ```bash
    ./scripts/post-deploy.sh your-domain.com
    ```
@@ -51,6 +56,7 @@ After deployment completes:
 3. **Access dashboard:** `https://your-domain.com`
 
 **Optional - Seed Demo Data:**
+
 ```bash
 ./scripts/seed-demo-data.sh
 ```
@@ -62,12 +68,12 @@ For detailed troubleshooting, see:
 
 **Quick fixes:**
 
-| Issue | Solution |
-|-------|----------|
+| Issue                | Solution                                            |
+| -------------------- | --------------------------------------------------- |
 | Resume after failure | `sudo ./scripts/deploy-automated.sh` (auto-resumes) |
-| Start fresh | `sudo ./scripts/deploy-automated.sh --reset` |
-| Verify health | `./scripts/verify-deployment.sh your-domain.com` |
-| View logs | `docker compose logs -f` |
+| Start fresh          | `sudo ./scripts/deploy-automated.sh --reset`        |
+| Verify health        | `./scripts/verify-deployment.sh your-domain.com`    |
+| View logs            | `docker compose logs -f`                            |
 
 ## Related Documentation
 

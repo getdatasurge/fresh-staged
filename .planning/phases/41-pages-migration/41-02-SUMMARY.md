@@ -28,12 +28,14 @@ Migrated ManualLog and OrganizationDashboard pages from supabase-placeholder to 
 ## Accomplishments
 
 ### Task 1: ManualLog Page Migration
+
 - Replaced supabase unit queries with `trpc.units.listByOrg`
 - Added data transformation from camelCase tRPC to snake_case UnitStatusInfo
 - Used `useMemo` for sorted units with manual log status computation
 - Preserved manual logging functionality and unit status display
 
 ### Task 2: OrganizationDashboard Page Migration
+
 - Replaced supabase queries with three tRPC calls:
   - `trpc.organizations.get` for org name
   - `trpc.sites.list` for sites
@@ -43,16 +45,16 @@ Migrated ManualLog and OrganizationDashboard pages from supabase-placeholder to 
 
 ## Files Modified
 
-| File | Changes |
-|------|---------|
-| `src/pages/ManualLog.tsx` | Supabase to tRPC, useQuery pattern |
+| File                                  | Changes                              |
+| ------------------------------------- | ------------------------------------ |
+| `src/pages/ManualLog.tsx`             | Supabase to tRPC, useQuery pattern   |
 | `src/pages/OrganizationDashboard.tsx` | Supabase to tRPC, useMemo processing |
 
 ## Commits
 
-| Hash | Description |
-|------|-------------|
-| 4d67680 | feat(41-02): migrate ManualLog page to tRPC |
+| Hash    | Description                                        |
+| ------- | -------------------------------------------------- |
+| 4d67680 | feat(41-02): migrate ManualLog page to tRPC        |
 | 0f0d137 | feat(41-02): migrate OrganizationDashboard to tRPC |
 
 ## Verification

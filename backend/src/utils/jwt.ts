@@ -17,7 +17,7 @@ const STACK_AUTH_PROJECT_ID = process.env.STACK_AUTH_PROJECT_ID;
 if (!STACK_AUTH_PROJECT_ID) {
   throw new Error(
     'STACK_AUTH_PROJECT_ID environment variable is required. ' +
-    'Get this from Stack Auth Dashboard -> Project Settings -> Project ID'
+      'Get this from Stack Auth Dashboard -> Project Settings -> Project ID',
   );
 }
 
@@ -66,7 +66,7 @@ export const jwks = jose.createRemoteJWKSet(new URL(JWKS_URL), {
  * ```
  */
 export async function verifyAccessToken(
-  accessToken: string
+  accessToken: string,
 ): Promise<{ payload: StackAuthJWTPayload; userId: string }> {
   // Verify JWT with JWKS and validate claims
   const { payload } = await jose.jwtVerify(accessToken, jwks, {

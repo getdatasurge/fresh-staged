@@ -7,6 +7,7 @@ This directory contains sensitive credentials for production deployment. Never c
 Create the following files in this directory:
 
 ### 1. `postgres_password.txt`
+
 PostgreSQL database password for the `frostguard` user.
 
 ```bash
@@ -18,6 +19,7 @@ openssl rand -base64 32 > postgres_password.txt
 ```
 
 ### 2. `jwt_secret.txt`
+
 Secret key for signing JWT tokens (authentication).
 
 ```bash
@@ -25,6 +27,7 @@ openssl rand -base64 32 > jwt_secret.txt
 ```
 
 ### 3. `stack_auth_secret.txt`
+
 Stack Auth API secret key for authentication service integration.
 
 ```bash
@@ -33,6 +36,7 @@ echo "your-stack-auth-secret" > stack_auth_secret.txt
 ```
 
 ### 4. `minio_user.txt`
+
 MinIO root username for S3-compatible object storage.
 
 ```bash
@@ -41,6 +45,7 @@ echo "frostguard-minio-admin" > minio_user.txt
 ```
 
 ### 5. `minio_password.txt`
+
 MinIO root password for S3-compatible object storage.
 
 ```bash
@@ -48,6 +53,7 @@ openssl rand -base64 32 > minio_password.txt
 ```
 
 ### 6. `grafana_password.txt`
+
 Grafana admin password for monitoring dashboard.
 
 ```bash
@@ -87,6 +93,7 @@ echo "All secrets generated! Remember to save stack_auth_secret.txt value."
 ## Generating Secure Secrets
 
 ### Using OpenSSL (recommended)
+
 ```bash
 # Generate 32-byte random secrets (256-bit)
 openssl rand -base64 32 > jwt_secret.txt
@@ -95,6 +102,7 @@ openssl rand -base64 32 > postgres_password.txt
 ```
 
 ### Using pwgen
+
 ```bash
 # Generate 32-character alphanumeric passwords
 pwgen -s 32 1 > jwt_secret.txt
@@ -102,6 +110,7 @@ pwgen -s 32 1 > minio_password.txt
 ```
 
 ### Using /dev/urandom
+
 ```bash
 # Generate 32-byte random secrets
 head -c 32 /dev/urandom | base64 > jwt_secret.txt
@@ -120,6 +129,7 @@ ls -la secrets/
 ```
 
 Expected output:
+
 ```
 -rw------- 1 user user   45 Jan 23 10:00 grafana_password.txt
 -rw------- 1 user user   45 Jan 23 10:00 jwt_secret.txt
@@ -143,6 +153,7 @@ secrets:
 ```
 
 In containers, secrets are available at:
+
 - `/run/secrets/postgres_password`
 - `/run/secrets/jwt_secret`
 - `/run/secrets/stack_auth_secret`

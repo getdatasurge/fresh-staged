@@ -5,6 +5,7 @@ This guide explains how to configure FreshTrack Pro to provision TTN application
 ## Overview
 
 FreshTrack Pro uses a **per-organization TTN architecture** where:
+
 - Each organization gets its own dedicated TTN application
 - Applications are auto-provisioned with a single button click
 - All credentials are securely stored and encrypted
@@ -91,6 +92,7 @@ curl https://YOUR_PROJECT_REF.supabase.co/functions/v1/ttn-provision-org
 ```
 
 Look for the response:
+
 ```json
 {
   "status": "ok",
@@ -127,11 +129,13 @@ If `ready` is `false`, double-check your secrets.
 ### Error: "Failed to create application"
 
 **Causes**:
+
 - Invalid API key (expired or insufficient permissions)
 - TTN User ID is incorrect
 - Network connectivity issues with TTN servers
 
 **Solutions**:
+
 1. Verify your API key has all required rights
 2. Check that the TTN User ID matches your account
 3. Try again after a few moments
@@ -147,6 +151,7 @@ If `ready` is `false`, double-check your secrets.
 **Cause**: Edge function may have encountered an error mid-process.
 
 **Solution**:
+
 1. Click **Check Status** button to refresh
 2. If stuck, contact support to manually reset the provisioning status
 
@@ -155,6 +160,7 @@ If `ready` is `false`, double-check your secrets.
 ### Per-Organization Applications
 
 Each organization gets a TTN application with:
+
 - **Application ID**: `freshtracker-{org-slug}`
 - **Application Name**: `FreshTracker - {Org Name}`
 - **Dedicated API Key**: Application-scoped with minimal required permissions
@@ -170,6 +176,7 @@ Each organization gets a TTN application with:
 ### Webhook Configuration
 
 Automatically configured webhook:
+
 - **URL**: `https://YOUR_PROJECT.supabase.co/functions/v1/ttn-webhook`
 - **Format**: JSON
 - **Events**: Uplink messages, join accepts
@@ -179,11 +186,11 @@ Automatically configured webhook:
 
 FreshTrack Pro supports these TTN regions:
 
-| Region | Code | Server URL | Frequency Plan |
-|--------|------|------------|----------------|
+| Region                      | Code   | Server URL                     | Frequency Plan           |
+| --------------------------- | ------ | ------------------------------ | ------------------------ |
 | **North America** (default) | `nam1` | `nam1.cloud.thethings.network` | US915 (US_902_928_FSB_2) |
-| Europe | `eu1` | `eu1.cloud.thethings.network` | EU868 (EU_863_870_TTN) |
-| Australia | `au1` | `au1.cloud.thethings.network` | AU915 (AU_915_928_FSB_2) |
+| Europe                      | `eu1`  | `eu1.cloud.thethings.network`  | EU868 (EU_863_870_TTN)   |
+| Australia                   | `au1`  | `au1.cloud.thethings.network`  | AU915 (AU_915_928_FSB_2) |
 
 **Default Region**: New organizations are provisioned on **NAM1 (North America)** by default with the US915 frequency plan.
 
@@ -201,6 +208,7 @@ After provisioning:
 ## Support
 
 If you encounter issues:
+
 1. Check the Edge Function Diagnostics section in Settings
 2. Review Supabase Edge Function logs
 3. Verify TTN application exists in TTN Console

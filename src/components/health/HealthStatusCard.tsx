@@ -17,7 +17,7 @@ export function HealthStatusCard({ check, showDetails = false }: HealthStatusCar
   const hasDetails = check.details && Object.keys(check.details).length > 0;
 
   return (
-    <Card 
+    <Card
       className={cn(
         'transition-all',
         check.status === 'unhealthy' && 'border-red-500/50',
@@ -31,23 +31,21 @@ export function HealthStatusCard({ check, showDetails = false }: HealthStatusCar
             <div className="min-w-0 flex-1">
               <p className="font-mono text-sm truncate">{check.name}</p>
               {check.skipped && (
-                <p className="text-xs text-muted-foreground truncate">
-                  {check.skipReason}
-                </p>
+                <p className="text-xs text-muted-foreground truncate">{check.skipReason}</p>
               )}
               {check.error && !check.skipped && (
-                <p className="text-xs text-destructive truncate">
-                  {check.error}
-                </p>
+                <p className="text-xs text-destructive truncate">{check.error}</p>
               )}
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {check.latencyMs !== undefined && (
-              <span className={cn(
-                "text-xs tabular-nums",
-                check.latencyMs > 500 ? "text-yellow-500" : "text-muted-foreground"
-              )}>
+              <span
+                className={cn(
+                  'text-xs tabular-nums',
+                  check.latencyMs > 500 ? 'text-yellow-500' : 'text-muted-foreground',
+                )}
+              >
                 {check.latencyMs}ms
               </span>
             )}
@@ -55,15 +53,8 @@ export function HealthStatusCard({ check, showDetails = false }: HealthStatusCar
               {formatDistanceToNow(check.checkedAt, { addSuffix: true })}
             </span>
             {showDetails && hasDetails && (
-              <button 
-                onClick={() => setExpanded(!expanded)}
-                className="p-1 hover:bg-muted rounded"
-              >
-                {expanded ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
+              <button onClick={() => setExpanded(!expanded)} className="p-1 hover:bg-muted rounded">
+                {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </button>
             )}
           </div>

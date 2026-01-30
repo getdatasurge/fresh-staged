@@ -11,13 +11,13 @@ autonomous: true
 
 must_haves:
   truths:
-    - "Claude has access to Stripe integration patterns for Phase 18 billing work"
-    - "Claude has access to TypeScript/API design patterns for ongoing development"
+    - 'Claude has access to Stripe integration patterns for Phase 18 billing work'
+    - 'Claude has access to TypeScript/API design patterns for ongoing development'
   artifacts:
-    - path: ".skills/stripe/ai"
-      provides: "Stripe AI integration patterns and best practices"
-    - path: ".skills/wshobson/agents"
-      provides: "TypeScript patterns, API design, error handling"
+    - path: '.skills/stripe/ai'
+      provides: 'Stripe AI integration patterns and best practices'
+    - path: '.skills/wshobson/agents'
+      provides: 'TypeScript patterns, API design, error handling'
   key_links: []
 ---
 
@@ -54,14 +54,16 @@ npx skills add stripe/ai
 This skill provides Stripe integration patterns, payment processing best practices, webhook handling, and subscription management - directly relevant for Phase 18 Stripe Billing.
 
 If prompted about creating .skills directory, accept. The skill will be installed to .skills/stripe/ai/.
-  </action>
-  <verify>
+</action>
+<verify>
+
 ```bash
 ls -la .skills/stripe/ai/ 2>/dev/null || echo "Stripe skill not found"
 ```
+
 Directory exists with skill content.
-  </verify>
-  <done>Stripe AI skill installed and available in .skills/stripe/ai/</done>
+</verify>
+<done>Stripe AI skill installed and available in .skills/stripe/ai/</done>
 </task>
 
 <task type="auto">
@@ -77,14 +79,16 @@ npx skills add wshobson/agents
 This skill provides TypeScript patterns, API design best practices, and error handling patterns useful for ongoing Fastify API development.
 
 The skill will be installed to .skills/wshobson/agents/.
-  </action>
-  <verify>
+</action>
+<verify>
+
 ```bash
 ls -la .skills/wshobson/agents/ 2>/dev/null || echo "Agents skill not found"
 ```
+
 Directory exists with skill content.
-  </verify>
-  <done>wshobson/agents skill installed and available in .skills/wshobson/agents/</done>
+</verify>
+<done>wshobson/agents skill installed and available in .skills/wshobson/agents/</done>
 </task>
 
 <task type="auto">
@@ -96,10 +100,12 @@ Check if .skills/ is already in .gitignore. If not, add it to prevent committing
 Skills are developer-local context and should not be version controlled.
 
 Add to .gitignore:
+
 ```
 # Skills (developer-local context)
 .skills/
 ```
+
   </action>
   <verify>
 ```bash
@@ -118,10 +124,11 @@ grep -q "\.skills" .gitignore && echo ".skills in gitignore" || echo ".skills NO
 </verification>
 
 <success_criteria>
+
 - stripe/ai skill installed and available for Phase 18 billing work
 - wshobson/agents skill installed for TypeScript/API pattern reference
 - .skills/ directory properly gitignored
-</success_criteria>
+  </success_criteria>
 
 <output>
 After completion, create `.planning/quick/002-install-relevant-skills-from-skills-sh-f/002-SUMMARY.md`

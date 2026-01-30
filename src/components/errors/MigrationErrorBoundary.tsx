@@ -5,8 +5,8 @@
  * Simplified from migration-specific handling to generic error boundary.
  */
 
-import React, { Component, ReactNode } from "react";
-import { MigrationErrorFallback } from "./MigrationErrorFallback";
+import React, { Component, ReactNode } from 'react';
+import { MigrationErrorFallback } from './MigrationErrorFallback';
 
 interface MigrationErrorBoundaryProps {
   children: ReactNode;
@@ -35,7 +35,7 @@ export class MigrationErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("[ErrorBoundary]", {
+    console.error('[ErrorBoundary]', {
       error: error.message,
       componentStack: errorInfo.componentStack,
     });
@@ -49,10 +49,7 @@ export class MigrationErrorBoundary extends Component<
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <MigrationErrorFallback
-            error={this.state.error}
-            onRetry={this.handleRetry}
-          />
+          <MigrationErrorFallback error={this.state.error} onRetry={this.handleRetry} />
         )
       );
     }

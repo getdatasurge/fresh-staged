@@ -9,7 +9,8 @@ dependency-graph:
   affects: [phase-55-final-cleanup]
 tech-stack:
   added: []
-  patterns: [mockUseTRPC-dynamic-pattern, createQueryOptionsMock-for-queries, buildMockTRPC-factory-helpers]
+  patterns:
+    [mockUseTRPC-dynamic-pattern, createQueryOptionsMock-for-queries, buildMockTRPC-factory-helpers]
 key-files:
   created: []
   modified:
@@ -17,13 +18,13 @@ key-files:
 decisions:
   - id: mock-restructure
     choice: "Replace vi.mock('@tanstack/react-query') with mockUseTRPC + createQueryOptionsMock"
-    reason: "Static react-query mock prevented testing async flows (refetch was never-resolving promise)"
+    reason: 'Static react-query mock prevented testing async flows (refetch was never-resolving promise)'
   - id: secret-field-mock
-    choice: "Mock SecretField component to decouple from its internals"
-    reason: "Tests should verify TTNCredentialsPanel behavior, not SecretField rendering"
+    choice: 'Mock SecretField component to decouple from its internals'
+    reason: 'Tests should verify TTNCredentialsPanel behavior, not SecretField rendering'
   - id: mutation-arg-check
-    choice: "Check mock.calls[0][0] instead of toHaveBeenCalledWith for mutation fns"
-    reason: "TanStack Query passes mutation context as second arg to mutationFn"
+    choice: 'Check mock.calls[0][0] instead of toHaveBeenCalledWith for mutation fns'
+    reason: 'TanStack Query passes mutation context as second arg to mutationFn'
 metrics:
   duration: 9m
   completed: 2026-01-30
@@ -36,6 +37,7 @@ metrics:
 ## What Was Done
 
 ### Task 1: Mock Restructuring (b0080d8)
+
 Replaced the static `vi.mock('@tanstack/react-query')` block that prevented async testing with the established `mockUseTRPC` + `createQueryOptionsMock` pattern:
 
 - Removed the never-resolving `refetch` mock that blocked all async flow testing
@@ -45,14 +47,15 @@ Replaced the static `vi.mock('@tanstack/react-query')` block that prevented asyn
 - All 5 existing tests continued passing unchanged
 
 ### Task 2: New Test Implementation (c8e618c)
+
 Added 21 new tests across 4 describe groups:
 
-| Group | Tests | Coverage |
-|-------|-------|----------|
-| Data Loading States | 6 | Org name/ID display, skeleton loading, error banner, retry button, error toast |
-| Credential Display | 5 | Fully Provisioned/Partially Configured/Not Configured badges, secret fields, app ID |
-| Mutation Actions | 6 | Retry provisioning call + success toast, error toast on failure, Start Fresh/Deep Clean/Check Status buttons |
-| Error Handling | 4 | Error banner, structured error response, provisioning error details, Failed badge |
+| Group               | Tests | Coverage                                                                                                     |
+| ------------------- | ----- | ------------------------------------------------------------------------------------------------------------ |
+| Data Loading States | 6     | Org name/ID display, skeleton loading, error banner, retry button, error toast                               |
+| Credential Display  | 5     | Fully Provisioned/Partially Configured/Not Configured badges, secret fields, app ID                          |
+| Mutation Actions    | 6     | Retry provisioning call + success toast, error toast on failure, Start Fresh/Deep Clean/Check Status buttons |
+| Error Handling      | 4     | Error banner, structured error response, provisioning error details, Failed badge                            |
 
 **Total: 26 tests** (5 existing + 21 new) across 5 describe groups.
 
@@ -77,18 +80,21 @@ TTNCredentialsPanel.test.tsx
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] TanStack Query passes mutation context as second arg**
+
 - **Found during:** Task 2, mutation tests
 - **Issue:** `toHaveBeenCalledWith({ organizationId, action })` failed because TanStack Query's `mutateAsync` calls `mutationFn(variables, { client, mutationKey })` with two args
 - **Fix:** Changed to `expect(mockProvisionFn.mock.calls[0][0]).toEqual(...)` to check only the first argument
 - **Files modified:** TTNCredentialsPanel.test.tsx
 
 **2. [Rule 1 - Bug] waitFor timing with async mutation chains**
+
 - **Found during:** Task 2, provision success toast test
 - **Issue:** Checking `mockProvisionFn` before `toast.success` in `waitFor` timed out because the mock was called but `waitFor` only checked synchronously
 - **Fix:** Wait for `toast.success` first (fires last in the chain), then assert `mockProvisionFn` synchronously
 - **Files modified:** TTNCredentialsPanel.test.tsx
 
 **3. [Rule 2 - Missing Critical] Replaced fragile session-expired test with reliable error banner test**
+
 - **Found during:** Task 2, error handling tests
 - **Issue:** Dynamically overriding `useUser` mock with `mockReturnValueOnce(null)` was unreliable due to vitest mock module scoping
 - **Fix:** Replaced with a reliable error banner content assertion test; session expired behavior is covered implicitly by the error handling flow

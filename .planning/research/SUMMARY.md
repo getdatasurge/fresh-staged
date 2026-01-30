@@ -20,6 +20,7 @@ Key risks center on non-idempotent operations causing partial state corruption, 
 Pure Bash approach leveraging existing Ubuntu/Debian system tools. No npm, Node.js, Python, or configuration management overhead—deployment automation runs on pre-installed utilities.
 
 **Core technologies:**
+
 - **Bash 5.x**: Script execution runtime (Ubuntu 24.04 default) — pre-installed on all targets, existing scripts already use it, no dependencies to install
 - **Docker Engine 29.x**: Container runtime via get.docker.com — official convenience script handles Ubuntu/Debian, includes Compose v2 plugin automatically
 - **Docker Compose v2**: Multi-container orchestration (bundled with Docker) — `docker compose` syntax, no separate installation needed
@@ -27,10 +28,12 @@ Pure Bash approach leveraging existing Ubuntu/Debian system tools. No npm, Node.
 - **openssl**: Secure password/secret generation — pre-installed, already used for `openssl rand -base64 32` pattern
 
 **Development quality tools:**
+
 - **ShellCheck**: Static analysis for Bash — catches common errors, use in CI and pre-commit hooks
 - **trap ERR**: Error handling pattern — provides diagnostic context with `$BASH_LINENO` and `$BASH_COMMAND`
 
 **What NOT to use:**
+
 - Ansible/Puppet/Chef: Over-engineering for single-server deployment
 - whiptail/dialog: Adds dependency for marginal UX improvement over native `read`
 - Terraform: Wrong tool—provisions infrastructure, not applications
@@ -41,6 +44,7 @@ Pure Bash approach leveraging existing Ubuntu/Debian system tools. No npm, Node.
 The v1.1 deployment already implements most table stakes features. The v2.1 enhancement focuses on the "one-script" user experience and recovery capabilities.
 
 **Must have (table stakes - v1.1 already complete):**
+
 - DNS validation pre-SSL to prevent Let's Encrypt rate limits
 - Firewall configuration (UFW ports 22, 80, 443)
 - Secrets secure storage with 600 permissions
@@ -51,6 +55,7 @@ The v1.1 deployment already implements most table stakes features. The v2.1 enha
 - Idempotent operations (safe to rerun after failures)
 
 **Must have for v2.1 (one-script goal):**
+
 - Single script entry point (no manual git clone first)
 - Comprehensive pre-flight checks (RAM, CPU, OS version, network connectivity)
 - Interactive config file generation (eliminate manual .env editing)
@@ -59,17 +64,20 @@ The v1.1 deployment already implements most table stakes features. The v2.1 enha
 - Recovery guidance when failures occur
 
 **Should have (add after validation):**
+
 - Estimated time remaining during deployment
 - Integrated E2E validation (sensor pipeline test)
 - Checkpoint resume (continue from failure point)
 
 **Defer (v2+):**
+
 - Sample data population (demo use case)
 - Web-based installer dashboard
 - Multi-VM orchestration
 - First admin user creation (requires Stack Auth automation)
 
 **Anti-features (deliberately NOT building):**
+
 - Fully automatic with no user input: Hides critical decisions (domain, passwords, auth keys)
 - Database schema rollback: Data loss risk too high, forward-only migrations
 - Auto-generate Stack Auth project: Can't securely store API keys, auth too critical
@@ -81,6 +89,7 @@ The v1.1 deployment already implements most table stakes features. The v2.1 enha
 Modular phase architecture with checkpoint-based state management, integrating existing v1.1 scripts rather than duplicating logic. Each phase is self-contained and idempotent, enabling resume-on-failure without starting from scratch.
 
 **Major components:**
+
 1. **Entry script (deploy-one-click.sh)** — Single entry point under 100 lines, orchestrates phase execution with checkpoint tracking, handles argument parsing and main flow control
 2. **Phase modules (phases/01-05)** — Self-contained deployment phases (preflight, install, configure, deploy, verify) with clear entry/exit contracts
 3. **Function libraries (lib/)** — Reusable functions shared across phases: common.sh (colors, logging), system.sh (OS detection, packages), docker.sh (Docker install), config.sh (prompting), health.sh (verification), rollback.sh (recovery)
@@ -116,68 +125,78 @@ The research identified seven critical failure modes with prevention strategies:
 Based on research, the deployment automation milestone should be structured into 5 sequential phases that address pitfalls at appropriate points and build on existing v1.1 infrastructure.
 
 ### Phase 1: Foundation & Pre-Flight Validation
+
 **Rationale:** Fail fast before any system modifications. Prevents wasted time on systems that can't support deployment.
 **Delivers:**
+
 - lib/common.sh (colors, logging, output helpers)
 - lib/state.sh (checkpoint/state management)
 - lib/system.sh (OS detection, package installation)
 - phases/01-preflight.sh (comprehensive system requirements)
-**Addresses:**
+  **Addresses:**
 - Table stakes: System requirements check
 - Pitfall 7: Insufficient resource pre-checks (RAM, CPU, OS, disk, network)
-**Avoids:** Starting deployment on incompatible OS or under-resourced VM
+  **Avoids:** Starting deployment on incompatible OS or under-resourced VM
 
 ### Phase 2: Prerequisites Installation
+
 **Rationale:** Install dependencies idempotently with comprehensive error handling before deployment logic.
 **Delivers:**
+
 - lib/docker.sh (Docker/Compose installation with version verification)
 - phases/02-install.sh (Docker, firewall, fail2ban, jq)
-**Addresses:**
+  **Addresses:**
 - Table stakes: Firewall configuration, Docker installation
 - Pitfall 1: Non-idempotent operations (all installs check existing state)
 - Pitfall 2: Silent failures (trap ERR with diagnostic context)
-**Uses:** get.docker.com convenience script, UFW for firewall
-**Implements:** Idempotent helper pattern from existing ensure_package() function
+  **Uses:** get.docker.com convenience script, UFW for firewall
+  **Implements:** Idempotent helper pattern from existing ensure_package() function
 
 ### Phase 3: Interactive Configuration & DNS Validation
+
 **Rationale:** Gather all required inputs upfront, validate DNS before any SSL operations to prevent rate limits.
 **Delivers:**
+
 - lib/config.sh (interactive prompting with validation)
 - lib/secrets.sh (secure password generation, file creation)
 - lib/dns.sh (DNS resolution checking)
 - phases/03-configure.sh (full configuration flow)
-**Addresses:**
+  **Addresses:**
 - Differentiator: Configuration file auto-generation (eliminates manual .env editing)
 - Table stakes: Interactive configuration prompts, DNS validation pre-SSL
 - Pitfall 3: DNS/SSL certificate failures (validate DNS resolves to server IP first)
 - Pitfall 5: Credentials exposed (write secrets to files with 600 permissions)
-**Avoids:** Let's Encrypt rate limit exhaustion (5 failures/hour)
+  **Avoids:** Let's Encrypt rate limit exhaustion (5 failures/hour)
 
 ### Phase 4: Deployment Orchestration
+
 **Rationale:** Execute deployment via proven existing scripts, integrating rollback infrastructure.
 **Delivers:**
+
 - Integration with deploy.sh, Docker Compose orchestration
 - Enhanced rollback.sh with state awareness
 - phases/04-deploy.sh (deployment with existing scripts integration)
-**Addresses:**
+  **Addresses:**
 - Table stakes: Automatic rollback on failure, service restart policies
 - Pitfall 6: Partial deployment without rollback path (tag images before deployment)
-**Uses:** Existing docker-compose.yml + compose.production.yaml + compose.selfhosted.yaml overlays
-**Implements:** Version tagging for rollback, checkpoint tracking for resume
+  **Uses:** Existing docker-compose.yml + compose.production.yaml + compose.selfhosted.yaml overlays
+  **Implements:** Version tagging for rollback, checkpoint tracking for resume
 
 ### Phase 5: Progressive Verification & Documentation
+
 **Rationale:** Prove system works through multi-layer verification, not just process checks. Complete the user experience.
 **Delivers:**
+
 - lib/health.sh (health check functions with JSON validation)
 - lib/verification.sh (SSL, browser, E2E wrappers)
 - phases/05-verify.sh (progressive verification pipeline)
 - Complete URL/credential summary output
-**Addresses:**
+  **Addresses:**
 - Differentiator: Post-deployment E2E validation (optional sensor pipeline test)
 - Table stakes: Health check validation, SSL certificate automation verification
 - Pitfall 4: Health checks pass but system is broken (verify database, Redis, WebSocket connections)
-**Uses:** curl + jq for JSON parsing, existing e2e-sensor-pipeline.sh test
-**Implements:** Progressive verification stages (health → SSL → browser → E2E → monitoring)
+  **Uses:** curl + jq for JSON parsing, existing e2e-sensor-pipeline.sh test
+  **Implements:** Progressive verification stages (health → SSL → browser → E2E → monitoring)
 
 ### Phase Ordering Rationale
 
@@ -191,6 +210,7 @@ Based on research, the deployment automation milestone should be structured into
 ### Research Flags
 
 **Phases with well-documented patterns (skip research-phase):**
+
 - **Phase 1 (Pre-flight):** Standard OS detection and resource checking, existing patterns proven
 - **Phase 2 (Installation):** Docker installation via get.docker.com is official, UFW configuration standard
 - **Phase 3 (Configuration):** Native Bash `read` prompting well-documented, DNS validation existing pattern
@@ -201,12 +221,12 @@ Based on research, the deployment automation milestone should be structured into
 
 ## Confidence Assessment
 
-| Area | Confidence | Notes |
-|------|------------|-------|
-| Stack | HIGH | All recommendations use pre-installed system tools or official Docker installation. No experimental dependencies. |
-| Features | HIGH | Table stakes verified against existing v1.1 scripts which already implement them. Differentiators based on documented user pain points. |
-| Architecture | HIGH | Modular phase pattern analyzed from existing lib/ structure. Integration points verified against all existing scripts. |
-| Pitfalls | HIGH | All critical pitfalls documented with official sources (Docker docs, OWASP, AWS Builder Library, Red Hat). Existing script analysis confirmed gaps. |
+| Area         | Confidence | Notes                                                                                                                                               |
+| ------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stack        | HIGH       | All recommendations use pre-installed system tools or official Docker installation. No experimental dependencies.                                   |
+| Features     | HIGH       | Table stakes verified against existing v1.1 scripts which already implement them. Differentiators based on documented user pain points.             |
+| Architecture | HIGH       | Modular phase pattern analyzed from existing lib/ structure. Integration points verified against all existing scripts.                              |
+| Pitfalls     | HIGH       | All critical pitfalls documented with official sources (Docker docs, OWASP, AWS Builder Library, Red Hat). Existing script analysis confirmed gaps. |
 
 **Overall confidence:** HIGH
 
@@ -226,17 +246,20 @@ No major research gaps. Minor implementation details to resolve during planning:
 ### Primary (HIGH confidence - official documentation)
 
 **Docker & Infrastructure:**
+
 - [Docker Engine Install - Ubuntu](https://docs.docker.com/engine/install/ubuntu/) — Docker 29.x packages, Compose v2 bundled
 - [Docker Compose v2 Migration](https://docs.docker.com/compose/releases/migrate/) — V1 deprecated July 2023
 - [docker-install GitHub](https://github.com/docker/docker-install) — get.docker.com source code
 - [Use Compose in Production - Docker Docs](https://docs.docker.com/compose/production/) — Restart policies, logging, environment config
 
 **Bash & Scripting:**
+
 - [ShellCheck GitHub](https://github.com/koalaman/shellcheck) — Official static analysis tool
 - [Red Hat: Bash Error Handling](https://www.redhat.com/en/blog/bash-error-handling) — trap ERR patterns
 - [Red Hat: Error Handling in Bash Scripting](https://www.redhat.com/en/blog/error-handling-bash-scripting) — Best practices
 
 **Security & Operations:**
+
 - [OWASP Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html) — Credential security
 - [AWS Builders Library: Implementing Health Checks](https://aws.amazon.com/builders-library/implementing-health-checks/) — Multi-layer verification
 - [AWS Builders Library: Ensuring Rollback Safety](https://aws.amazon.com/builders-library/ensuring-rollback-safety-during-deployments/) — Backwards compatibility patterns
@@ -245,23 +268,27 @@ No major research gaps. Minor implementation details to resolve during planning:
 ### Secondary (MEDIUM confidence - verified community patterns)
 
 **Best Practices:**
+
 - [Building Production-Grade Deployment Scripts - DEV](https://dev.to/ursulaonyi/building-a-production-grade-automated-deployment-script-3fgj) — `set -euo pipefail`, trap functions
 - [Deployment Scripts Best Practices - MOSS](https://moss.sh/reviews/deployment-scripts-best-practices/) — Script structure and automation
 - [How to Write Idempotent Bash Scripts](https://arslan.io/2019/07/03/how-to-write-idempotent-bash-scripts/) — State checking patterns
 - [Bash Mastery: Production Challenges - DEV](https://dev.to/sameerimtiaz/bash-mastery-lessons-from-a-decade-of-production-challenges-3ko3) — Real-world pitfalls
 
 **Verification & Testing:**
+
 - [Smoke Testing in CI/CD - CircleCI](https://circleci.com/blog/smoke-tests-in-cicd-pipelines/) — Post-deployment validation
 - [Post Deployment Verification - Google Cloud](https://cloud.google.com/blog/topics/developers-practitioners/google-cloud-deploy-introduces-post-deployment-verification) — PDV patterns
 - [Docker Compose Health Checks - Last9](https://last9.io/blog/docker-compose-health-checks/) — Health check implementation
 
 **Rollback & Recovery:**
+
 - [Modern Rollback Strategies - Octopus](https://octopus.com/blog/modern-rollback-strategies) — Time-based recovery, database considerations
 - [Handling Rollback Strategies - Agile Seekers](https://agileseekers.com/blog/handling-rollback-strategies-for-failed-product-deployments) — Deployment failure recovery
 
 ### Tertiary (existing codebase analysis - HIGH confidence for current state)
 
 **FreshTrack Pro v1.1 Scripts:**
+
 - `/home/skynet/freshtrack-pro-local/fresh-staged/scripts/deploy-selfhosted.sh` — Idempotent helpers, DNS validation, rollback patterns
 - `/home/skynet/freshtrack-pro-local/fresh-staged/scripts/deploy.sh` — Production deployment orchestration
 - `/home/skynet/freshtrack-pro-local/fresh-staged/scripts/health-check.sh` — Pre-flight validation with counters
@@ -271,5 +298,6 @@ No major research gaps. Minor implementation details to resolve during planning:
 - `/home/skynet/freshtrack-pro-local/fresh-staged/docs/SELFHOSTED_DEPLOYMENT.md` — Current documentation baseline
 
 ---
-*Research completed: 2026-01-25*
-*Ready for roadmap: yes*
+
+_Research completed: 2026-01-25_
+_Ready for roadmap: yes_

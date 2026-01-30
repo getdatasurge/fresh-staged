@@ -1,31 +1,37 @@
-import DashboardLayout from "@/components/DashboardLayout";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { useTRPC, useTRPCClient } from "@/lib/trpc";
-import { useUser } from "@stackframe/react";
-import { useMutation } from "@tanstack/react-query";
-import { format, startOfWeek } from "date-fns";
+import DashboardLayout from '@/components/DashboardLayout';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import {
-    ArrowRight,
-    Building2,
-    CheckCircle2,
-    Circle,
-    Loader2,
-    MessageSquare,
-    Send,
-    Star,
-    Thermometer,
-    Users
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Textarea } from '@/components/ui/textarea';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { useTRPC, useTRPCClient } from '@/lib/trpc';
+import { useUser } from '@stackframe/react';
+import { useMutation } from '@tanstack/react-query';
+import { format, startOfWeek } from 'date-fns';
+import {
+  ArrowRight,
+  Building2,
+  CheckCircle2,
+  Circle,
+  Loader2,
+  MessageSquare,
+  Send,
+  Star,
+  Thermometer,
+  Users,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 interface ChecklistItem {
   id: string;
@@ -52,35 +58,64 @@ const PilotSetup = () => {
   const [sites, setSites] = useState<Site[]>([]);
   const [unitCount, setUnitCount] = useState(0);
   const [userCount, setUserCount] = useState(0);
-  
+
   // Checklist state
   const [checklist, setChecklist] = useState<ChecklistItem[]>([
-    { id: "sites", label: "Add Site(s)", description: "Create at least one site location", completed: false, link: "/sites" },
-    { id: "units", label: "Add Units (5-15)", description: "Add refrigeration units to monitor", completed: false },
-    { id: "roles", label: "Assign Roles", description: "Add staff, managers, and owners", completed: false, link: "/settings?tab=users" },
-    { id: "compliance", label: "Set Compliance Mode", description: "Configure manual logging intervals", completed: false, link: "/settings?tab=alerts" },
-    { id: "export", label: "Verify Exports", description: "Test the export functionality", completed: false, link: "/reports" },
+    {
+      id: 'sites',
+      label: 'Add Site(s)',
+      description: 'Create at least one site location',
+      completed: false,
+      link: '/sites',
+    },
+    {
+      id: 'units',
+      label: 'Add Units (5-15)',
+      description: 'Add refrigeration units to monitor',
+      completed: false,
+    },
+    {
+      id: 'roles',
+      label: 'Assign Roles',
+      description: 'Add staff, managers, and owners',
+      completed: false,
+      link: '/settings?tab=users',
+    },
+    {
+      id: 'compliance',
+      label: 'Set Compliance Mode',
+      description: 'Configure manual logging intervals',
+      completed: false,
+      link: '/settings?tab=alerts',
+    },
+    {
+      id: 'export',
+      label: 'Verify Exports',
+      description: 'Test the export functionality',
+      completed: false,
+      link: '/reports',
+    },
   ]);
 
   // Feedback form
-  const [feedbackSiteId, setFeedbackSiteId] = useState<string>("");
+  const [feedbackSiteId, setFeedbackSiteId] = useState<string>('');
   const [loggingSpeed, setLoggingSpeed] = useState([3]);
   const [alertFatigue, setAlertFatigue] = useState([3]);
   const [reportUsefulness, setReportUsefulness] = useState([3]);
-  const [feedbackNotes, setFeedbackNotes] = useState("");
+  const [feedbackNotes, setFeedbackNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (isInitialized && effectiveOrgId) {
       loadData();
     } else if (isInitialized && !effectiveOrgId) {
-      navigate("/onboarding");
+      navigate('/onboarding');
     }
   }, [isInitialized, effectiveOrgId]);
 
   const loadData = async () => {
     if (!effectiveOrgId) return;
-    
+
     try {
       setOrganizationId(effectiveOrgId);
 
@@ -90,20 +125,22 @@ const PilotSetup = () => {
 
       // Get org stats using tRPC
       const stats = await trpcClient.organizations.stats.query({ organizationId: effectiveOrgId });
-      
+
       setUnitCount(stats.unitCounts.total);
       setUserCount(stats.memberCount);
 
       // Update checklist based on data
-      setChecklist(prev => prev.map(item => {
-        if (item.id === "sites") return { ...item, completed: (sitesData?.length || 0) > 0 };
-        if (item.id === "units") return { ...item, completed: (stats.unitCounts.total || 0) >= 5 };
-        if (item.id === "roles") return { ...item, completed: (stats.memberCount || 0) >= 2 };
-        return item;
-      }));
-
+      setChecklist((prev) =>
+        prev.map((item) => {
+          if (item.id === 'sites') return { ...item, completed: (sitesData?.length || 0) > 0 };
+          if (item.id === 'units')
+            return { ...item, completed: (stats.unitCounts.total || 0) >= 5 };
+          if (item.id === 'roles') return { ...item, completed: (stats.memberCount || 0) >= 2 };
+          return item;
+        }),
+      );
     } catch (error) {
-      console.error("Error loading data:", error);
+      console.error('Error loading data:', error);
       // toast.error("Failed to load pilot setup data"); // Prevent flashing errors during navigation
     }
     setIsLoading(false);
@@ -119,23 +156,23 @@ const PilotSetup = () => {
       await upsertFeedbackMutation.mutateAsync({
         organizationId: effectiveOrgId,
         siteId: feedbackSiteId || null,
-        weekStart: format(weekStart, "yyyy-MM-dd"),
+        weekStart: format(weekStart, 'yyyy-MM-dd'),
         loggingSpeedRating: loggingSpeed[0],
         alertFatigueRating: alertFatigue[0],
         reportUsefulnessRating: reportUsefulness[0],
         notes: feedbackNotes || null,
       });
 
-      toast.success("Feedback submitted successfully!");
-      setFeedbackNotes("");
+      toast.success('Feedback submitted successfully!');
+      setFeedbackNotes('');
     } catch (error) {
-      console.error("Error submitting feedback:", error);
-      toast.error("Failed to submit feedback");
+      console.error('Error submitting feedback:', error);
+      toast.error('Failed to submit feedback');
     }
     setIsSubmitting(false);
   };
 
-  const completedCount = checklist.filter(c => c.completed).length;
+  const completedCount = checklist.filter((c) => c.completed).length;
   const progressPercent = (completedCount / checklist.length) * 100;
 
   if (isLoading) {
@@ -160,12 +197,14 @@ const PilotSetup = () => {
                 <p className="text-muted-foreground">Complete these steps to run your pilot</p>
               </div>
               <div className="text-right">
-                <div className="text-4xl font-bold text-primary">{completedCount}/{checklist.length}</div>
+                <div className="text-4xl font-bold text-primary">
+                  {completedCount}/{checklist.length}
+                </div>
                 <p className="text-sm text-muted-foreground">Steps Complete</p>
               </div>
             </div>
             <div className="w-full bg-muted rounded-full h-3">
-              <div 
+              <div
                 className="bg-primary h-3 rounded-full transition-all duration-500"
                 style={{ width: `${progressPercent}%` }}
               />
@@ -181,16 +220,14 @@ const PilotSetup = () => {
                 <CheckCircle2 className="w-5 h-5 text-primary" />
                 Setup Checklist
               </CardTitle>
-              <CardDescription>
-                Complete these items before starting your pilot
-              </CardDescription>
+              <CardDescription>Complete these items before starting your pilot</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {checklist.map(item => (
-                <div 
+              {checklist.map((item) => (
+                <div
                   key={item.id}
                   className={`flex items-start gap-4 p-4 rounded-lg border transition-colors ${
-                    item.completed ? "bg-safe/5 border-safe/30" : "bg-muted/50 border-border"
+                    item.completed ? 'bg-safe/5 border-safe/30' : 'bg-muted/50 border-border'
                   }`}
                 >
                   {item.completed ? (
@@ -251,9 +288,7 @@ const PilotSetup = () => {
                   <MessageSquare className="w-5 h-5 text-accent" />
                   Weekly Pilot Feedback
                 </CardTitle>
-                <CardDescription>
-                  Help us improve by sharing your experience
-                </CardDescription>
+                <CardDescription>Help us improve by sharing your experience</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Site Selection */}
@@ -265,8 +300,10 @@ const PilotSetup = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">All Sites</SelectItem>
-                      {sites.map(site => (
-                        <SelectItem key={site.id} value={site.id}>{site.name}</SelectItem>
+                      {sites.map((site) => (
+                        <SelectItem key={site.id} value={site.id}>
+                          {site.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -277,10 +314,10 @@ const PilotSetup = () => {
                   <div className="flex justify-between">
                     <Label>Logging Speed</Label>
                     <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map(n => (
-                        <Star 
-                          key={n} 
-                          className={`w-4 h-4 ${n <= loggingSpeed[0] ? "text-warning fill-warning" : "text-muted"}`}
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <Star
+                          key={n}
+                          className={`w-4 h-4 ${n <= loggingSpeed[0] ? 'text-warning fill-warning' : 'text-muted'}`}
                         />
                       ))}
                     </div>
@@ -300,10 +337,10 @@ const PilotSetup = () => {
                   <div className="flex justify-between">
                     <Label>Alert Fatigue</Label>
                     <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map(n => (
-                        <Star 
-                          key={n} 
-                          className={`w-4 h-4 ${n <= alertFatigue[0] ? "text-warning fill-warning" : "text-muted"}`}
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <Star
+                          key={n}
+                          className={`w-4 h-4 ${n <= alertFatigue[0] ? 'text-warning fill-warning' : 'text-muted'}`}
                         />
                       ))}
                     </div>
@@ -315,7 +352,9 @@ const PilotSetup = () => {
                     max={5}
                     step={1}
                   />
-                  <p className="text-xs text-muted-foreground">1 = Too many alerts, 5 = Just right</p>
+                  <p className="text-xs text-muted-foreground">
+                    1 = Too many alerts, 5 = Just right
+                  </p>
                 </div>
 
                 {/* Report Usefulness */}
@@ -323,10 +362,10 @@ const PilotSetup = () => {
                   <div className="flex justify-between">
                     <Label>Report Usefulness</Label>
                     <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map(n => (
-                        <Star 
-                          key={n} 
-                          className={`w-4 h-4 ${n <= reportUsefulness[0] ? "text-warning fill-warning" : "text-muted"}`}
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <Star
+                          key={n}
+                          className={`w-4 h-4 ${n <= reportUsefulness[0] ? 'text-warning fill-warning' : 'text-muted'}`}
                         />
                       ))}
                     </div>
@@ -352,11 +391,7 @@ const PilotSetup = () => {
                   />
                 </div>
 
-                <Button 
-                  className="w-full" 
-                  onClick={handleSubmitFeedback}
-                  disabled={isSubmitting}
-                >
+                <Button className="w-full" onClick={handleSubmitFeedback} disabled={isSubmitting}>
                   {isSubmitting ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : (

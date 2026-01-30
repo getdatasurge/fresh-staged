@@ -7,12 +7,13 @@
  * Type safety flows from backend AppRouter via monorepo import.
  */
 
-import { createTRPCClient, httpBatchLink } from '@trpc/client'
-import { createTRPCContext } from '@trpc/tanstack-react-query'
-import type { AppRouter } from '../../backend/src/trpc/router'
+import { createTRPCClient, httpBatchLink } from '@trpc/client';
+import { createTRPCContext } from '@trpc/tanstack-react-query';
+import type { AppRouter } from '../../backend/src/trpc/router';
 
 // Base API URL from environment
-const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : '')
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : '');
 
 /**
  * tRPC React context with queryOptions/mutationOptions pattern
@@ -20,9 +21,9 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'htt
  * Uses createTRPCContext which provides .queryOptions() and .mutationOptions()
  * for use with @tanstack/react-query's useQuery and useMutation.
  */
-const { TRPCProvider, useTRPC, useTRPCClient } = createTRPCContext<AppRouter>()
+const { TRPCProvider, useTRPC, useTRPCClient } = createTRPCContext<AppRouter>();
 
-export { TRPCProvider, useTRPC, useTRPCClient }
+export { TRPCProvider, useTRPC, useTRPCClient };
 
 /**
  * Create tRPC client instance with authentication
@@ -42,22 +43,20 @@ export { TRPCProvider, useTRPC, useTRPCClient }
  * );
  * ```
  */
-export function createTRPCClientInstance(
-	getAccessToken: () => Promise<string>,
-) {
-	return createTRPCClient<AppRouter>({
-		links: [
-			httpBatchLink({
-				url: `${API_BASE_URL}/trpc`,
-				async headers() {
-					const token = await getAccessToken()
-					return {
-						'x-stack-access-token': token,
-					}
-				},
-			}),
-		],
-	})
+export function createTRPCClientInstance(getAccessToken: () => Promise<string>) {
+  return createTRPCClient<AppRouter>({
+    links: [
+      httpBatchLink({
+        url: `${API_BASE_URL}/trpc`,
+        async headers() {
+          const token = await getAccessToken();
+          return {
+            'x-stack-access-token': token,
+          };
+        },
+      }),
+    ],
+  });
 }
 
 /**
@@ -69,4 +68,4 @@ export function createTRPCClientInstance(
  * type OrganizationOutput = RouterOutput['organizations']['get'];
  * ```
  */
-export type { AppRouter }
+export type { AppRouter };

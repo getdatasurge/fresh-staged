@@ -30,13 +30,13 @@ key-files:
     - backend/src/routes/preferences.ts
 
 key-decisions:
-  - "Store digestSiteIds as JSON text for simplicity (vs junction table)"
-  - "HH:MM format for digestDailyTime (5 chars, 24-hour)"
+  - 'Store digestSiteIds as JSON text for simplicity (vs junction table)'
+  - 'HH:MM format for digestDailyTime (5 chars, 24-hour)'
   - "Weekly digest uses same dailyTime as daily (Monday at user's time)"
 
 patterns-established:
-  - "Time preference as varchar(5) HH:MM format with regex validation"
-  - "JSON.stringify/parse for array columns in API layer"
+  - 'Time preference as varchar(5) HH:MM format with regex validation'
+  - 'JSON.stringify/parse for array columns in API layer'
 
 # Metrics
 duration: 4min
@@ -103,5 +103,6 @@ None - no external service configuration required.
 - Ready for Plan 02 (DigestBuilderService grouping) and Plan 03 (email template updates)
 
 ---
-*Phase: 17-email-digests*
-*Completed: 2026-01-24*
+
+_Phase: 17-email-digests_
+_Completed: 2026-01-24_

@@ -50,11 +50,13 @@ export const TTNUplinkMessageSchema = z.object({
   settings: TTNSettingsSchema.optional(),
   received_at: z.string(), // ISO 8601 timestamp
   consumed_airtime: z.string().optional(),
-  network_ids: z.object({
-    net_id: z.string().optional(),
-    tenant_id: z.string().optional(),
-    cluster_id: z.string().optional(),
-  }).optional(),
+  network_ids: z
+    .object({
+      net_id: z.string().optional(),
+      tenant_id: z.string().optional(),
+      cluster_id: z.string().optional(),
+    })
+    .optional(),
 });
 
 // Application IDs
@@ -84,29 +86,31 @@ export const TTNUplinkWebhookSchema = z.object({
 
 // Standard temperature sensor decoded payload
 // Supports common formats from different sensor manufacturers
-export const DecodedSensorPayloadSchema = z.object({
-  // Temperature - can be named various ways
-  temperature: z.number().optional(),
-  temp: z.number().optional(),
-  temperature_c: z.number().optional(),
-  temperature_f: z.number().optional(),
+export const DecodedSensorPayloadSchema = z
+  .object({
+    // Temperature - can be named various ways
+    temperature: z.number().optional(),
+    temp: z.number().optional(),
+    temperature_c: z.number().optional(),
+    temperature_f: z.number().optional(),
 
-  // Humidity - can be named various ways
-  humidity: z.number().optional(),
-  relative_humidity: z.number().optional(),
-  rh: z.number().optional(),
+    // Humidity - can be named various ways
+    humidity: z.number().optional(),
+    relative_humidity: z.number().optional(),
+    rh: z.number().optional(),
 
-  // Battery - can be percentage or voltage
-  battery: z.number().optional(),
-  battery_level: z.number().optional(),
-  battery_voltage: z.number().optional(),
-  batt: z.number().optional(),
+    // Battery - can be percentage or voltage
+    battery: z.number().optional(),
+    battery_level: z.number().optional(),
+    battery_voltage: z.number().optional(),
+    batt: z.number().optional(),
 
-  // Signal/SNR from device if reported
-  signal: z.number().optional(),
-  rssi: z.number().optional(),
-  snr: z.number().optional(),
-}).passthrough(); // Allow additional fields
+    // Signal/SNR from device if reported
+    signal: z.number().optional(),
+    rssi: z.number().optional(),
+    snr: z.number().optional(),
+  })
+  .passthrough(); // Allow additional fields
 
 // --- Response Schemas ---
 

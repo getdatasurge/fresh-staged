@@ -78,7 +78,7 @@ export class SensorCountScheduler {
           },
           removeOnComplete: 10,
           removeOnFail: 50,
-        }
+        },
       );
 
       this.isInitialized = true;
@@ -112,12 +112,10 @@ export class SensorCountScheduler {
     };
 
     try {
-      await queueService.addJob(
-        QueueNames.METER_REPORTING,
-        JobNames.METER_REPORT,
-        jobData
+      await queueService.addJob(QueueNames.METER_REPORTING, JobNames.METER_REPORT, jobData);
+      console.log(
+        `[SensorScheduler] Queued sensor count (${sensorCount}) for org ${organizationId}`,
       );
-      console.log(`[SensorScheduler] Queued sensor count (${sensorCount}) for org ${organizationId}`);
     } catch (err) {
       console.error(`[SensorScheduler] Failed to queue sensor count: ${err}`);
     }
@@ -136,8 +134,8 @@ export class SensorCountScheduler {
       .where(
         and(
           isNotNull(subscriptions.stripeCustomerId),
-          inArray(subscriptions.status, [...BILLABLE_STATUSES])
-        )
+          inArray(subscriptions.status, [...BILLABLE_STATUSES]),
+        ),
       );
 
     console.log(`[SensorScheduler] Processing ${billableOrgs.length} billable organizations`);

@@ -8,12 +8,12 @@
 
 Before we explore the journeys, let's introduce the people who use FreshTrack Pro:
 
-| Person | Role | What They Care About |
-|--------|------|---------------------|
-| **Alex** | Food Safety Manager | Compliance, inspections, protecting the business |
-| **Jordan** | Operations Manager | Equipment health, costs, staff efficiency |
-| **Sam** | Kitchen Lead | Getting work done, responding quickly to issues |
-| **Morgan** | Regional Director | Multi-site oversight, big-picture trends |
+| Person     | Role                | What They Care About                             |
+| ---------- | ------------------- | ------------------------------------------------ |
+| **Alex**   | Food Safety Manager | Compliance, inspections, protecting the business |
+| **Jordan** | Operations Manager  | Equipment health, costs, staff efficiency        |
+| **Sam**    | Kitchen Lead        | Getting work done, responding quickly to issues  |
+| **Morgan** | Regional Director   | Multi-site oversight, big-picture trends         |
 
 ---
 
@@ -24,15 +24,18 @@ Before we explore the journeys, let's introduce the people who use FreshTrack Pr
 **9:00 AM** — Alex receives an email that FreshTrack Pro is ready. She clicks the link and creates her account in under a minute.
 
 **9:05 AM** — The setup wizard walks her through adding her organization. She enters:
+
 - Company name: "Fresh Bites Restaurant Group"
 - First location: "Downtown Flagship"
 
 **9:10 AM** — Alex adds the areas within her location:
+
 - Main Kitchen
 - Walk-in Cooler
 - Freezer Storage
 
 **9:15 AM** — For each refrigeration unit, Alex sets:
+
 - A name everyone will recognize ("Prep Station Fridge")
 - Temperature limits (35°F to 40°F for coolers)
 - Who should be notified if there's a problem
@@ -54,6 +57,7 @@ Before we explore the journeys, let's introduce the people who use FreshTrack Pr
 **6:30 AM** — Jordan arrives and opens FreshTrack Pro on his phone before even entering the building.
 
 **The dashboard shows:**
+
 - ✅ All units green across 3 locations
 - 📊 Overnight temperature graphs look stable
 - 🔋 One sensor battery at 15% (reminder to replace this week)
@@ -65,6 +69,7 @@ Before we explore the journeys, let's introduce the people who use FreshTrack Pr
 **11:00 AM** — As part of HACCP requirements, Sam does a visual verification of the walk-in cooler using a handheld thermometer.
 
 **11:02 AM** — Sam pulls out his phone, opens FreshTrack Pro, and:
+
 1. Taps "Log Temperature"
 2. Selects "Walk-in Cooler"
 3. Enters "38°F"
@@ -78,6 +83,7 @@ Before we explore the journeys, let's introduce the people who use FreshTrack Pr
 **2:00 PM** — A food supplier asks for temperature records as part of their audit requirements.
 
 **2:05 PM** — Alex opens FreshTrack Pro, goes to Reports, and:
+
 1. Selects "Temperature Log Report"
 2. Chooses last 30 days
 3. Selects the receiving area cooler
@@ -98,6 +104,7 @@ Before we explore the journeys, let's introduce the people who use FreshTrack Pr
 **11:52 PM** — Temperature crosses the alert threshold (above 0°F). FreshTrack Pro confirms this isn't a brief fluctuation.
 
 **11:53 PM** — FreshTrack Pro sends:
+
 - 📱 Push notification to Sam's phone
 - 📧 Email to Sam
 - 📱 Text message to Sam
@@ -116,6 +123,7 @@ Before we explore the journeys, let's introduce the people who use FreshTrack Pr
 ### The Escalation That Didn't Happen
 
 **If Sam hadn't responded**, FreshTrack Pro would have:
+
 - **12:08 PM** (15 min later) — Escalated to Jordan (Operations Manager)
 - **12:23 PM** (30 min later) — Escalated to Alex (Food Safety Manager)
 
@@ -128,6 +136,7 @@ But because Sam acknowledged immediately, the right person was already handling 
 **1:00 AM** — Temperature returns to normal range. FreshTrack Pro automatically marks the alert as resolved.
 
 **1:01 AM** — Sam opens the app and documents the corrective action:
+
 - "Compressor failed, HVAC called immediately"
 - "Tech identified loose connection"
 - "No product affected - temp never exceeded 15°F"
@@ -145,12 +154,14 @@ But because Sam acknowledged immediately, the right person was already handling 
 **9:20 AM** — The inspector asks: "Can I see your temperature logs for the past 90 days?"
 
 **9:21 AM** — Alex opens FreshTrack Pro on her tablet and:
+
 1. Goes to Reports
 2. Selects "Compliance Report"
 3. Sets date range to past 90 days
 4. Clicks "Generate"
 
 **9:22 AM** — The report appears showing:
+
 - ✅ 12,960 automatic temperature readings
 - ✅ 180 manual verification logs
 - ✅ 3 alerts (all acknowledged within 5 minutes)
@@ -172,11 +183,13 @@ But because Sam acknowledged immediately, the right person was already handling 
 **Monday 8:00 AM** — Morgan, the Regional Director, opens FreshTrack Pro to review all 12 locations.
 
 **The Regional Dashboard shows:**
+
 - 🟢 10 locations all green
 - 🟡 1 location with a warning (sensor battery low)
 - 🔴 1 location had a critical alert over the weekend (since resolved)
 
 **8:05 AM** — Morgan drills into the location that had the critical alert:
+
 - **What happened**: Freezer door was propped open for cleaning
 - **How long**: 35 minutes
 - **Who responded**: Kitchen manager acknowledged within 8 minutes
@@ -185,6 +198,7 @@ But because Sam acknowledged immediately, the right person was already handling 
 **8:10 AM** — Morgan sends a quick message to that location's manager reminding them about the door-propping policy.
 
 **8:15 AM** — Morgan generates a weekly summary report for the executive team showing:
+
 - Total alerts across all locations: 7
 - Average response time: 6 minutes
 - Equipment issues requiring maintenance: 2
@@ -202,14 +216,15 @@ But because Sam acknowledged immediately, the right person was already handling 
 
 **Insights from the data:**
 
-| Finding | Action |
-|---------|--------|
-| Unit 3 shows slowly rising baseline temperature | Schedule compressor inspection before failure |
-| Friday evening has most door-open alerts | Adjust stocking schedule to reduce door time |
-| Location B has 40% more alerts than others | Investigate — older equipment? Training issue? |
-| Battery replacements needed Q2 | Order sensors now for proactive replacement |
+| Finding                                         | Action                                         |
+| ----------------------------------------------- | ---------------------------------------------- |
+| Unit 3 shows slowly rising baseline temperature | Schedule compressor inspection before failure  |
+| Friday evening has most door-open alerts        | Adjust stocking schedule to reduce door time   |
+| Location B has 40% more alerts than others      | Investigate — older equipment? Training issue? |
+| Battery replacements needed Q2                  | Order sensors now for proactive replacement    |
 
 **Alex's Report to Leadership:**
+
 - "We've prevented an estimated $45,000 in potential spoilage this quarter"
 - "Response time improved from 12 minutes to 6 minutes average"
 - "Zero compliance gaps identified"
@@ -221,14 +236,14 @@ But because Sam acknowledged immediately, the right person was already handling 
 
 ## Summary: The FreshTrack Pro Difference
 
-| Before FreshTrack Pro | With FreshTrack Pro |
-|----------------------|---------------------|
-| Paper logs, clipboards, filing cabinets | Digital, searchable, always accessible |
-| Problems discovered hours or days later | Alerts within minutes |
-| Scrambling for records during inspections | Reports generated in seconds |
-| No visibility across locations | Single dashboard for everything |
-| Reactive maintenance after failures | Proactive insights prevent failures |
-| Hope and luck | Confidence and control |
+| Before FreshTrack Pro                     | With FreshTrack Pro                    |
+| ----------------------------------------- | -------------------------------------- |
+| Paper logs, clipboards, filing cabinets   | Digital, searchable, always accessible |
+| Problems discovered hours or days later   | Alerts within minutes                  |
+| Scrambling for records during inspections | Reports generated in seconds           |
+| No visibility across locations            | Single dashboard for everything        |
+| Reactive maintenance after failures       | Proactive insights prevent failures    |
+| Hope and luck                             | Confidence and control                 |
 
 ---
 

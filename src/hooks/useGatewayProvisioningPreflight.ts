@@ -22,11 +22,11 @@
  * Estimated effort: Medium (requires TTN API integration)
  * Priority: Low (only used for gateway provisioning validation)
  */
-import { useState, useCallback, useEffect } from "react";
-import { useUser } from "@stackframe/react";
+import { useState, useCallback, useEffect } from 'react';
+import { useUser } from '@stackframe/react';
 
 export interface PreflightError {
-  code: "WRONG_KEY_TYPE" | "MISSING_GATEWAY_RIGHTS" | "API_KEY_INVALID" | "TTN_NOT_CONFIGURED";
+  code: 'WRONG_KEY_TYPE' | 'MISSING_GATEWAY_RIGHTS' | 'API_KEY_INVALID' | 'TTN_NOT_CONFIGURED';
   message: string;
   hint: string;
   fix_steps: string[];
@@ -36,8 +36,8 @@ export interface PreflightResult {
   ok: boolean;
   request_id: string;
   allowed: boolean;
-  key_type: "personal" | "organization" | "application" | "unknown";
-  owner_scope: "user" | "organization" | null;
+  key_type: 'personal' | 'organization' | 'application' | 'unknown';
+  owner_scope: 'user' | 'organization' | null;
   scope_id: string | null;
   has_gateway_rights: boolean;
   missing_rights: string[];
@@ -45,10 +45,10 @@ export interface PreflightResult {
 }
 
 export interface UseGatewayProvisioningPreflightReturn {
-  status: "idle" | "checking" | "ready" | "blocked" | "error";
+  status: 'idle' | 'checking' | 'ready' | 'blocked' | 'error';
   result: PreflightResult | null;
-  keyType: "personal" | "organization" | "application" | "unknown" | null;
-  ownerScope: "user" | "organization" | null;
+  keyType: 'personal' | 'organization' | 'application' | 'unknown' | null;
+  ownerScope: 'user' | 'organization' | null;
   hasGatewayRights: boolean;
   missingRights: string[];
   error: PreflightError | null;
@@ -61,44 +61,44 @@ export interface UseGatewayProvisioningPreflightReturn {
  */
 export function useGatewayProvisioningPreflight(
   organizationId: string | null,
-  options: { autoRun?: boolean } = {}
+  options: { autoRun?: boolean } = {},
 ): UseGatewayProvisioningPreflightReturn {
   const { autoRun = false } = options;
   const user = useUser();
 
-  const [status, setStatus] = useState<"idle" | "checking" | "ready" | "blocked" | "error">("idle");
+  const [status, setStatus] = useState<'idle' | 'checking' | 'ready' | 'blocked' | 'error'>('idle');
   const [result, setResult] = useState<PreflightResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const runPreflight = useCallback(async (): Promise<PreflightResult | null> => {
     if (!organizationId || !user) {
-      setStatus("idle");
+      setStatus('idle');
       return null;
     }
 
-    setStatus("checking");
+    setStatus('checking');
     setIsLoading(true);
 
     try {
       const preflightResult: PreflightResult = {
         ok: false,
-        request_id: "supabase-removed",
+        request_id: 'supabase-removed',
         allowed: false,
-        key_type: "unknown",
+        key_type: 'unknown',
         owner_scope: null,
         scope_id: null,
         has_gateway_rights: false,
         missing_rights: [],
         error: {
-          code: "TTN_NOT_CONFIGURED",
-          message: "Gateway preflight unavailable",
-          hint: "Supabase-based gateway checks have been removed.",
-          fix_steps: ["Retry after backend TTN preflight is implemented."],
+          code: 'TTN_NOT_CONFIGURED',
+          message: 'Gateway preflight unavailable',
+          hint: 'Supabase-based gateway checks have been removed.',
+          fix_steps: ['Retry after backend TTN preflight is implemented.'],
         },
       };
 
       setResult(preflightResult);
-      setStatus("blocked");
+      setStatus('blocked');
       return preflightResult;
     } finally {
       setIsLoading(false);
@@ -107,7 +107,7 @@ export function useGatewayProvisioningPreflight(
 
   // Auto-run preflight if enabled
   useEffect(() => {
-    if (autoRun && organizationId && user && status === "idle") {
+    if (autoRun && organizationId && user && status === 'idle') {
       runPreflight();
     }
   }, [autoRun, organizationId, user, status, runPreflight]);

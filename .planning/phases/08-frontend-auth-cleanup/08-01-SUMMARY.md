@@ -25,9 +25,9 @@ key-files:
     - src/pages/SiteDetail.tsx
     - src/pages/UnitDetail.tsx
 key-decisions:
-  - decision: "Use hook wrapper pattern for useSoftDelete functions"
-    rationale: "Exported functions used across multiple components needed auth context - hook wrapper provides clean API"
-    impact: "Consuming components import and call useSoftDelete() hook"
+  - decision: 'Use hook wrapper pattern for useSoftDelete functions'
+    rationale: 'Exported functions used across multiple components needed auth context - hook wrapper provides clean API'
+    impact: 'Consuming components import and call useSoftDelete() hook'
 metrics:
   duration: 5 min
   completed: 2026-01-24
@@ -58,6 +58,7 @@ metrics:
 ### Files Created/Modified
 
 **Modified (7 files):**
+
 - `src/hooks/useBranding.ts` - Stack Auth token retrieval
 - `src/hooks/useNavTree.ts` - Stack Auth token retrieval (2 queries)
 - `src/hooks/useSoftDelete.ts` - Hook wrapper + token parameter refactor
@@ -69,6 +70,7 @@ metrics:
 ### Technical Implementation
 
 **Pattern established:**
+
 ```typescript
 // Hook level
 const user = useUser();
@@ -82,6 +84,7 @@ await api.method(params, accessToken);
 ```
 
 **Hook wrapper pattern (useSoftDelete):**
+
 - Functions refactored to accept `accessToken` parameter
 - Hook wrapper provides auth context automatically
 - Clean API for consuming components
@@ -98,6 +101,7 @@ None - plan executed exactly as written.
 ## Decisions Made
 
 **1. Hook wrapper pattern for useSoftDelete**
+
 - **Context:** softDelete functions are exported and used across multiple components
 - **Decision:** Create useSoftDelete() hook that returns functions with auth context pre-bound
 - **Rationale:** Cleaner than passing user/token to every component, maintains encapsulation
@@ -114,6 +118,7 @@ None - all hooks migrated successfully, TypeScript compilation passes.
 **Ready for 08-02:** Yes - 4 hooks migrated, pattern established for remaining ~26 hooks
 
 **Dependencies resolved:**
+
 - Stack Auth useUser() pattern validated
 - Hook wrapper pattern established for exported functions
 - All consuming components updated

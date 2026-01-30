@@ -35,15 +35,15 @@ key-files:
     - scripts/migration/src/import.ts
 
 key-decisions:
-  - "BATCH_SIZE = 500 rows per transaction for memory/performance balance"
-  - "Fail-fast on any error - with 8+ hour window, restart from scratch is acceptable"
+  - 'BATCH_SIZE = 500 rows per transaction for memory/performance balance'
+  - 'Fail-fast on any error - with 8+ hour window, restart from scratch is acceptable'
   - "session_replication_role = 'replica' to disable FK checks during bulk import"
-  - "User ID columns keep original value if mapping not found (logged as warning)"
+  - 'User ID columns keep original value if mapping not found (logged as warning)'
 
 patterns-established:
-  - "Import pattern: load JSON, batch insert with parameterized queries"
-  - "User ID transformation: mapUserId lookup during row processing"
-  - "Truncate in REVERSE dependency order with CASCADE"
+  - 'Import pattern: load JSON, batch insert with parameterized queries'
+  - 'User ID transformation: mapUserId lookup during row processing'
+  - 'Truncate in REVERSE dependency order with CASCADE'
 
 # Metrics
 duration: 5min
@@ -90,27 +90,27 @@ Each task was committed atomically:
 
 ### import-helpers.ts
 
-| Function | Purpose |
-|----------|---------|
-| `importTable(pool, table, jsonPath)` | Batch import without user ID transformation |
-| `importTableWithMapping(pool, table, jsonPath, mapping, columns)` | Import with user ID column transformation |
-| `truncateAllTables(pool, tables)` | CASCADE truncate in reverse dependency order |
-| `disableForeignKeys(pool)` | Set session_replication_role = 'replica' |
-| `enableForeignKeys(pool)` | Set session_replication_role = 'origin' |
-| `jsonFileExists(path)` | Check if export file exists |
-| `getJsonRowCount(path)` | Count rows in JSON export file |
+| Function                                                          | Purpose                                      |
+| ----------------------------------------------------------------- | -------------------------------------------- |
+| `importTable(pool, table, jsonPath)`                              | Batch import without user ID transformation  |
+| `importTableWithMapping(pool, table, jsonPath, mapping, columns)` | Import with user ID column transformation    |
+| `truncateAllTables(pool, tables)`                                 | CASCADE truncate in reverse dependency order |
+| `disableForeignKeys(pool)`                                        | Set session_replication_role = 'replica'     |
+| `enableForeignKeys(pool)`                                         | Set session_replication_role = 'origin'      |
+| `jsonFileExists(path)`                                            | Check if export file exists                  |
+| `getJsonRowCount(path)`                                           | Count rows in JSON export file               |
 
 ### import.ts CLI Options
 
-| Option | Description |
-|--------|-------------|
-| `-i, --input-dir <path>` | Input directory (default: ./migration-data) |
-| `-m, --mapping <path>` | User mapping file (default: ./migration-data/user-mapping.json) |
-| `-t, --table <name>` | Import single table only |
-| `--truncate-first` | Truncate before import (requires --yes) |
-| `--disable-fk` | Disable FK checks during import |
-| `--yes` | Skip confirmation prompts |
-| `--dry-run` | Validate files without importing |
+| Option                   | Description                                                     |
+| ------------------------ | --------------------------------------------------------------- |
+| `-i, --input-dir <path>` | Input directory (default: ./migration-data)                     |
+| `-m, --mapping <path>`   | User mapping file (default: ./migration-data/user-mapping.json) |
+| `-t, --table <name>`     | Import single table only                                        |
+| `--truncate-first`       | Truncate before import (requires --yes)                         |
+| `--disable-fk`           | Disable FK checks during import                                 |
+| `--yes`                  | Skip confirmation prompts                                       |
+| `--dry-run`              | Validate files without importing                                |
 
 ## Decisions Made
 
@@ -139,11 +139,11 @@ None - plan executed exactly as written.
 
 ## Key Links Verified
 
-| From | To | Via | Pattern |
-|------|-----|-----|---------|
-| import.ts | new-db-client.ts | newDbPool | `import.*new-db-client` |
-| import.ts | user-mapping.ts | loadMapping | `loadMapping` |
-| import-helpers.ts | user-mapping.ts | mapUserId | `mapUserId` |
+| From              | To               | Via         | Pattern                 |
+| ----------------- | ---------------- | ----------- | ----------------------- |
+| import.ts         | new-db-client.ts | newDbPool   | `import.*new-db-client` |
+| import.ts         | user-mapping.ts  | loadMapping | `loadMapping`           |
+| import-helpers.ts | user-mapping.ts  | mapUserId   | `mapUserId`             |
 
 ## Next Phase Readiness
 
@@ -153,5 +153,6 @@ None - plan executed exactly as written.
 - Ready for 06-05: Verification Scripts implementation
 
 ---
-*Phase: 06-data-migration-scripts*
-*Completed: 2026-01-23*
+
+_Phase: 06-data-migration-scripts_
+_Completed: 2026-01-23_

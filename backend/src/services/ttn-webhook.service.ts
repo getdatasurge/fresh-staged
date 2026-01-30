@@ -57,12 +57,10 @@ export interface SignatureVerificationResult {
 export function verifyHmacSignature(
   signature: string,
   payload: string | Buffer,
-  secret: string
+  secret: string,
 ): boolean {
   try {
-    const expectedSignature = createHmac('sha256', secret)
-      .update(payload)
-      .digest('hex');
+    const expectedSignature = createHmac('sha256', secret).update(payload).digest('hex');
 
     // Use constant-time comparison to prevent timing attacks
     if (signature.length !== expectedSignature.length) {
@@ -87,9 +85,7 @@ export function verifyHmacSignature(
  * @param apiKey - The API key from the request header
  * @returns Verification result with organization context if valid
  */
-export async function verifyWebhookApiKey(
-  apiKey: string
-): Promise<SignatureVerificationResult> {
+export async function verifyWebhookApiKey(apiKey: string): Promise<SignatureVerificationResult> {
   if (!apiKey) {
     return { valid: false, error: 'Missing API key' };
   }
@@ -155,9 +151,7 @@ export function normalizeDeviceEui(eui: string): string {
  * @param devEui - The device EUI from TTN
  * @returns Device lookup result or null if not found
  */
-export async function lookupDeviceByEui(
-  devEui: string
-): Promise<DeviceLookupResult | null> {
+export async function lookupDeviceByEui(devEui: string): Promise<DeviceLookupResult | null> {
   const normalizedEui = normalizeDeviceEui(devEui);
 
   // Look up device through LoRa sensor table
@@ -179,8 +173,8 @@ export async function lookupDeviceByEui(
         eq(devices.isActive, true),
         eq(units.isActive, true),
         eq(areas.isActive, true),
-        eq(sites.isActive, true)
-      )
+        eq(sites.isActive, true),
+      ),
     )
     .limit(1);
 
@@ -203,8 +197,8 @@ export async function lookupDeviceByEui(
           eq(devices.isActive, true),
           eq(units.isActive, true),
           eq(areas.isActive, true),
-          eq(sites.isActive, true)
-        )
+          eq(sites.isActive, true),
+        ),
       )
       .limit(1);
 
@@ -237,7 +231,7 @@ export async function lookupDeviceByEui(
  * @returns Best RSSI value or undefined
  */
 export function extractBestSignalStrength(
-  rxMetadata?: Array<{ rssi?: number; channel_rssi?: number }>
+  rxMetadata?: Array<{ rssi?: number; channel_rssi?: number }>,
 ): number | undefined {
   if (!rxMetadata || rxMetadata.length === 0) {
     return undefined;
@@ -264,9 +258,7 @@ export function extractBestSignalStrength(
  * @param decoded - The decoded payload from TTN
  * @returns Temperature in Celsius or undefined
  */
-export function extractTemperature(
-  decoded: DecodedSensorPayload
-): number | undefined {
+export function extractTemperature(decoded: DecodedSensorPayload): number | undefined {
   // Try common temperature field names
   if (typeof decoded.temperature === 'number') {
     return decoded.temperature;
@@ -291,9 +283,7 @@ export function extractTemperature(
  * @param decoded - The decoded payload from TTN
  * @returns Relative humidity percentage or undefined
  */
-export function extractHumidity(
-  decoded: DecodedSensorPayload
-): number | undefined {
+export function extractHumidity(decoded: DecodedSensorPayload): number | undefined {
   if (typeof decoded.humidity === 'number') {
     return decoded.humidity;
   }
@@ -315,9 +305,7 @@ export function extractHumidity(
  * @param decoded - The decoded payload from TTN
  * @returns Battery percentage (0-100) or undefined
  */
-export function extractBattery(
-  decoded: DecodedSensorPayload
-): number | undefined {
+export function extractBattery(decoded: DecodedSensorPayload): number | undefined {
   // Direct percentage
   if (typeof decoded.battery === 'number') {
     // If it's already a percentage (0-100)
@@ -354,14 +342,12 @@ export function extractBattery(
  * @returns Extracted sensor data
  * @throws Error if temperature cannot be extracted
  */
-export function extractSensorData(
-  uplinkMessage: TTNUplinkMessage
-): ExtractedSensorData {
+export function extractSensorData(uplinkMessage: TTNUplinkMessage): ExtractedSensorData {
   const decoded = uplinkMessage.decoded_payload as DecodedSensorPayload | undefined;
 
   if (!decoded) {
     throw new Error(
-      'No decoded_payload in uplink message. Ensure a payload formatter is configured in TTN.'
+      'No decoded_payload in uplink message. Ensure a payload formatter is configured in TTN.',
     );
   }
 
@@ -370,7 +356,7 @@ export function extractSensorData(
   if (temperature === undefined) {
     throw new Error(
       'Could not extract temperature from decoded_payload. ' +
-        'Expected field: temperature, temp, temperature_c, or temperature_f'
+        'Expected field: temperature, temp, temperature_c, or temperature_f',
     );
   }
 
@@ -393,7 +379,7 @@ export function extractSensorData(
  */
 export async function updateDeviceMetadata(
   deviceId: string,
-  data: ExtractedSensorData
+  data: ExtractedSensorData,
 ): Promise<void> {
   await db
     .update(devices)
@@ -417,7 +403,7 @@ export async function updateDeviceMetadata(
 export function convertToReading(
   webhook: TTNUplinkWebhook,
   deviceLookup: DeviceLookupResult,
-  sensorData: ExtractedSensorData
+  sensorData: ExtractedSensorData,
 ): SingleReading {
   // Use the uplink_message.received_at timestamp as recordedAt
   // This is when TTN received the message from the gateway

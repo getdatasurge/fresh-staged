@@ -112,7 +112,7 @@ describe('Checkout Service', () => {
             userId: TEST_USER_ID,
             plan: 'starter',
           }),
-        })
+        }),
       );
     });
 
@@ -140,7 +140,7 @@ describe('Checkout Service', () => {
           metadata: expect.objectContaining({
             plan: 'pro',
           }),
-        })
+        }),
       );
     });
 
@@ -168,7 +168,7 @@ describe('Checkout Service', () => {
           metadata: expect.objectContaining({
             plan: 'haccp',
           }),
-        })
+        }),
       );
     });
 
@@ -194,7 +194,7 @@ describe('Checkout Service', () => {
         expect.objectContaining({
           success_url: customSuccessUrl,
           cancel_url: customCancelUrl,
-        })
+        }),
       );
     });
 
@@ -202,11 +202,11 @@ describe('Checkout Service', () => {
       mockOrgLookup(null);
 
       await expect(
-        createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' })
+        createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' }),
       ).rejects.toThrow(CheckoutError);
 
       await expect(
-        createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' })
+        createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' }),
       ).rejects.toThrow('Organization not found');
     });
 
@@ -221,11 +221,11 @@ describe('Checkout Service', () => {
       mockSessionCreate.mockResolvedValue(mockSession);
 
       await expect(
-        createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' })
+        createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' }),
       ).rejects.toThrow(CheckoutError);
 
       await expect(
-        createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' })
+        createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' }),
       ).rejects.toThrow('Failed to create checkout session URL');
     });
 
@@ -234,11 +234,11 @@ describe('Checkout Service', () => {
       mockOrgLookup(mockOrg);
 
       await expect(
-        createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' })
+        createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' }),
       ).rejects.toThrow(StripeConfigError);
 
       await expect(
-        createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' })
+        createCheckoutSession(TEST_ORG_ID, TEST_USER_ID, { plan: 'starter' }),
       ).rejects.toThrow('STRIPE_SECRET_KEY environment variable is not set');
     });
 
@@ -261,7 +261,7 @@ describe('Checkout Service', () => {
               plan: 'pro',
             },
           },
-        })
+        }),
       );
     });
   });

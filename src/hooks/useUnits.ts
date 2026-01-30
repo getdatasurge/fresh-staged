@@ -39,7 +39,7 @@ export function useUnits(
   organizationId: string | undefined,
   siteId: string | undefined,
   areaId: string | undefined,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) {
   const trpc = useTRPC();
 
@@ -51,11 +51,7 @@ export function useUnits(
 
   return useQuery({
     ...queryOptions,
-    enabled:
-      !!organizationId &&
-      !!siteId &&
-      !!areaId &&
-      (options?.enabled !== false),
+    enabled: !!organizationId && !!siteId && !!areaId && options?.enabled !== false,
     staleTime: 60_000, // 1 minute
     gcTime: 5 * 60_000, // 5 minutes
   });
@@ -76,7 +72,7 @@ export function useUnit(
   siteId: string | undefined,
   areaId: string | undefined,
   unitId: string | undefined,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) {
   const trpc = useTRPC();
 
@@ -89,12 +85,7 @@ export function useUnit(
 
   return useQuery({
     ...queryOptions,
-    enabled:
-      !!organizationId &&
-      !!siteId &&
-      !!areaId &&
-      !!unitId &&
-      (options?.enabled !== false),
+    enabled: !!organizationId && !!siteId && !!areaId && !!unitId && options?.enabled !== false,
     staleTime: 60_000, // 1 minute
     gcTime: 5 * 60_000, // 5 minutes
   });
@@ -130,7 +121,13 @@ export function useCreateUnit() {
       areaId: string;
       data: {
         name: string;
-        unitType: 'fridge' | 'freezer' | 'display_case' | 'walk_in_cooler' | 'walk_in_freezer' | 'blast_chiller';
+        unitType:
+          | 'fridge'
+          | 'freezer'
+          | 'display_case'
+          | 'walk_in_cooler'
+          | 'walk_in_freezer'
+          | 'blast_chiller';
         tempMin: number;
         tempMax: number;
         tempUnit?: 'F' | 'C';
@@ -187,7 +184,13 @@ export function useUpdateUnit() {
       unitId: string;
       data: {
         name?: string;
-        unitType?: 'fridge' | 'freezer' | 'display_case' | 'walk_in_cooler' | 'walk_in_freezer' | 'blast_chiller';
+        unitType?:
+          | 'fridge'
+          | 'freezer'
+          | 'display_case'
+          | 'walk_in_cooler'
+          | 'walk_in_freezer'
+          | 'blast_chiller';
         tempMin?: number;
         tempMax?: number;
         tempUnit?: 'F' | 'C';

@@ -44,7 +44,13 @@ export function getLoggerConfig(): PinoLoggerOptions {
     // Custom serializers for consistent log format
     serializers: {
       req(request: unknown) {
-        const req = request as { method?: string; url?: string; routerPath?: string; params?: unknown; headers?: unknown };
+        const req = request as {
+          method?: string;
+          url?: string;
+          routerPath?: string;
+          params?: unknown;
+          headers?: unknown;
+        };
         return {
           method: req.method,
           url: req.url,
@@ -60,7 +66,12 @@ export function getLoggerConfig(): PinoLoggerOptions {
         };
       },
       err(error: unknown) {
-        const err = error as { constructor?: { name?: string }; message?: string; stack?: string; code?: string };
+        const err = error as {
+          constructor?: { name?: string };
+          message?: string;
+          stack?: string;
+          code?: string;
+        };
         return {
           type: err.constructor?.name || 'Error',
           message: err.message,
@@ -105,8 +116,7 @@ export function getFastifyLoggerConfig(): NonNullable<FastifyServerOptions['logg
     // Generate unique request ID for correlation
     genReqId: (request: FastifyRequest) => {
       // Use existing request ID from load balancer/proxy if present
-      const existingId = request.headers['x-request-id'] ||
-                         request.headers['x-correlation-id'];
+      const existingId = request.headers['x-request-id'] || request.headers['x-correlation-id'];
       if (existingId && typeof existingId === 'string') {
         return existingId;
       }

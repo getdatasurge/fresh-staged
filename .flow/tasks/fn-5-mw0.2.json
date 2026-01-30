@@ -1,0 +1,11 @@
+{
+  "created_at": "2026-01-30T11:39:56.773148Z",
+  "depends_on": ["fn-5-mw0.1"],
+  "epic": "fn-5-mw0",
+  "id": "fn-5-mw0.2",
+  "priority": null,
+  "spec_path": ".flow/tasks/fn-5-mw0.2.md",
+  "status": "todo",
+  "title": "Install Husky v9 + lint-staged with pre-commit hook",
+  "updated_at": "2026-01-30T12:04:19.763831Z"
+}

@@ -27,11 +27,11 @@ key-files:
     - backend/src/routers/reports.router.ts
 
 key-decisions:
-  - "Filter exceptions in-memory after DB query to avoid complex SQL with CAST"
+  - 'Filter exceptions in-memory after DB query to avoid complex SQL with CAST'
 
 patterns-established:
-  - "Unit filtering: direct unitId OR site join OR full org hierarchy join"
-  - "Export formatting: separate formatCsv/formatHtml helper functions"
+  - 'Unit filtering: direct unitId OR site join OR full org hierarchy join'
+  - 'Export formatting: separate formatCsv/formatHtml helper functions'
 
 # Metrics
 duration: 2min
@@ -91,5 +91,6 @@ None - no external service configuration required.
 - Ready for Gap 2 closure (manual temperature logging)
 
 ---
-*Phase: 32-remaining-edge-function-migration*
-*Completed: 2026-01-29*
+
+_Phase: 32-remaining-edge-function-migration_
+_Completed: 2026-01-29_

@@ -30,16 +30,16 @@ key-files:
     - scripts/migration/src/export.ts
 
 key-decisions:
-  - "STREAMING_THRESHOLD = 10000 rows: tables above this use streaming"
-  - "LARGE_TABLES always stream: sensor_readings, event_logs, alerts"
-  - "Timestamps converted to ISO 8601 UTC at export time"
-  - "Numeric types preserved as strings for lossless precision"
-  - "auth.users exported separately with selected columns for user mapping"
+  - 'STREAMING_THRESHOLD = 10000 rows: tables above this use streaming'
+  - 'LARGE_TABLES always stream: sensor_readings, event_logs, alerts'
+  - 'Timestamps converted to ISO 8601 UTC at export time'
+  - 'Numeric types preserved as strings for lossless precision'
+  - 'auth.users exported separately with selected columns for user mapping'
 
 patterns-established:
-  - "Export method decision: rowCount > threshold OR in LARGE_TABLES array"
-  - "JSON streaming: Transform stream writes JSON array incrementally"
-  - "Progress logging: every 1000 rows during streaming export"
+  - 'Export method decision: rowCount > threshold OR in LARGE_TABLES array'
+  - 'JSON streaming: Transform stream writes JSON array incrementally'
+  - 'Progress logging: every 1000 rows during streaming export'
 
 # Metrics
 duration: 4min
@@ -86,23 +86,23 @@ Each task was committed atomically:
 
 ### stream-helpers.ts
 
-| Function | Purpose |
-|----------|---------|
+| Function                               | Purpose                                     |
+| -------------------------------------- | ------------------------------------------- |
 | `streamTableToJson(pool, table, path)` | Memory-efficient streaming for large tables |
-| `exportSmallTable(pool, table, path)` | Simple export for tables < 10,000 rows |
-| `exportAuthUsers(pool, path)` | Extract auth.users for user mapping |
-| `getTableRowCount(pool, table)` | Count rows for export method decision |
-| `shouldUseStreaming(table, count)` | Determine export method |
+| `exportSmallTable(pool, table, path)`  | Simple export for tables < 10,000 rows      |
+| `exportAuthUsers(pool, path)`          | Extract auth.users for user mapping         |
+| `getTableRowCount(pool, table)`        | Count rows for export method decision       |
+| `shouldUseStreaming(table, count)`     | Determine export method                     |
 
 ### export.ts CLI Options
 
-| Option | Description |
-|--------|-------------|
+| Option                | Description                                  |
+| --------------------- | -------------------------------------------- |
 | `--output-dir <path>` | Output directory (default: ./migration-data) |
-| `--table <name>` | Export single table only |
-| `--skip-large` | Skip sensor_readings, event_logs, alerts |
-| `--skip-auth` | Skip auth.users export |
-| `--dry-run` | List tables without exporting |
+| `--table <name>`      | Export single table only                     |
+| `--skip-large`        | Skip sensor_readings, event_logs, alerts     |
+| `--skip-auth`         | Skip auth.users export                       |
+| `--dry-run`           | List tables without exporting                |
 
 ## Decisions Made
 
@@ -132,5 +132,6 @@ None - plan executed exactly as written.
 - metadata.json enables 06-05 verification of export completeness
 
 ---
-*Phase: 06-data-migration-scripts*
-*Completed: 2026-01-23*
+
+_Phase: 06-data-migration-scripts_
+_Completed: 2026-01-23_

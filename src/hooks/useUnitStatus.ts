@@ -1,12 +1,12 @@
-import { useMemo } from "react";
+import { useMemo } from 'react';
 import {
   AlertRules,
   DEFAULT_ALERT_RULES,
   computeMissedCheckins,
   computeOfflineSeverity,
-} from "./useAlertRules";
-import { useNavTree } from "./useNavTree";
-import { useOrgScope } from "./useOrgScope";
+} from './useAlertRules';
+import { useNavTree } from './useNavTree';
+import { useOrgScope } from './useOrgScope';
 
 export interface UnitStatusInfo {
   id: string;
@@ -32,7 +32,7 @@ export interface UnitStatusInfo {
   checkin_interval_minutes?: number;
 }
 
-export type OfflineSeverity = "none" | "warning" | "critical";
+export type OfflineSeverity = 'none' | 'warning' | 'critical';
 
 export interface ComputedUnitStatus {
   // Core statuses
@@ -78,13 +78,14 @@ export function computeUnitStatus(unit: UnitStatusInfo, rules?: AlertRules): Com
 
   // Compute offline severity based on missed check-ins
   const offlineSeverity = computeOfflineSeverity(missedCheckins, effectiveRules);
-  const sensorOnline = offlineSeverity === "none";
+  const sensorOnline = offlineSeverity === 'none';
 
   // Legacy offline threshold calculation (kept for backward compatibility)
-  const offlineThresholdMs = (
-    effectiveRules.expected_reading_interval_seconds * effectiveRules.offline_trigger_multiplier * 1000 +
-    effectiveRules.offline_trigger_additional_minutes * 60 * 1000
-  );
+  const offlineThresholdMs =
+    effectiveRules.expected_reading_interval_seconds *
+      effectiveRules.offline_trigger_multiplier *
+      1000 +
+    effectiveRules.offline_trigger_additional_minutes * 60 * 1000;
 
   // Manual log interval from rules
   const manualIntervalMinutes = effectiveRules.manual_interval_minutes;
@@ -110,7 +111,7 @@ export function computeUnitStatus(unit: UnitStatusInfo, rules?: AlertRules): Com
 
   // Check if manual log is actually due (past due time + grace period)
   const isManualLogDue = manualLogDueAt
-    ? now > manualLogDueAt.getTime() + (manualGraceMinutes * 60000)
+    ? now > manualLogDueAt.getTime() + manualGraceMinutes * 60000
     : true; // If no last reading, consider it due
 
   // Check if sensor is reliable (paired + 2 consecutive check-ins)
@@ -127,12 +128,14 @@ export function computeUnitStatus(unit: UnitStatusInfo, rules?: AlertRules): Com
     isManualLogDue;
 
   // How many minutes overdue (beyond the required interval)
-  const manualOverdueMinutes = minutesSinceManualLog !== null
-    ? Math.max(0, minutesSinceManualLog - manualIntervalMinutes)
-    : manualIntervalMinutes; // If never logged, consider fully overdue
+  const manualOverdueMinutes =
+    minutesSinceManualLog !== null
+      ? Math.max(0, minutesSinceManualLog - manualIntervalMinutes)
+      : manualIntervalMinutes; // If never logged, consider fully overdue
 
   // Temperature in range
-  const tempInRange = unit.last_temp_reading !== null &&
+  const tempInRange =
+    unit.last_temp_reading !== null &&
     unit.last_temp_reading <= unit.temp_limit_high &&
     (unit.temp_limit_low === null || unit.last_temp_reading >= unit.temp_limit_low);
 
@@ -140,59 +143,63 @@ export function computeUnitStatus(unit: UnitStatusInfo, rules?: AlertRules): Com
   const actionRequired =
     !sensorOnline ||
     manualRequired ||
-    unit.status === "alarm_active" ||
-    unit.status === "excursion" ||
-    unit.status === "manual_required" ||
-    unit.status === "monitoring_interrupted" ||
-    unit.status === "offline";
+    unit.status === 'alarm_active' ||
+    unit.status === 'excursion' ||
+    unit.status === 'manual_required' ||
+    unit.status === 'monitoring_interrupted' ||
+    unit.status === 'offline';
 
   // Status display - computed offlineSeverity takes precedence over stale DB status
   // This ensures fresh sensor heartbeats are reflected immediately, even before DB updates
-  let statusLabel = "OK";
-  let statusColor = "text-safe";
-  let statusBgColor = "bg-safe/10";
+  let statusLabel = 'OK';
+  let statusColor = 'text-safe';
+  let statusBgColor = 'bg-safe/10';
 
   // 1. Check alarm/excursion FIRST (temperature-based alerts, not connectivity-based)
-  if (unit.status === "alarm_active") {
-    statusLabel = "ALARM";
-    statusColor = "text-alarm";
-    statusBgColor = "bg-alarm/10";
-  } else if (unit.status === "excursion") {
-    statusLabel = "Excursion";
-    statusColor = "text-excursion";
-    statusBgColor = "bg-excursion/10";
-  // 2. Check computed offlineSeverity (NOT unit.status for offline!)
-  // This is the key fix: use computed status, not stale DB value
-  } else if (offlineSeverity === "critical") {
-    statusLabel = "Offline";
-    statusColor = "text-alarm";
-    statusBgColor = "bg-alarm/10";
-  } else if (offlineSeverity === "warning") {
-    statusLabel = "Offline";
-    statusColor = "text-warning";
-    statusBgColor = "bg-warning/10";
-  // 3. Manual required (only when online but needs action)
+  if (unit.status === 'alarm_active') {
+    statusLabel = 'ALARM';
+    statusColor = 'text-alarm';
+    statusBgColor = 'bg-alarm/10';
+  } else if (unit.status === 'excursion') {
+    statusLabel = 'Excursion';
+    statusColor = 'text-excursion';
+    statusBgColor = 'bg-excursion/10';
+    // 2. Check computed offlineSeverity (NOT unit.status for offline!)
+    // This is the key fix: use computed status, not stale DB value
+  } else if (offlineSeverity === 'critical') {
+    statusLabel = 'Offline';
+    statusColor = 'text-alarm';
+    statusBgColor = 'bg-alarm/10';
+  } else if (offlineSeverity === 'warning') {
+    statusLabel = 'Offline';
+    statusColor = 'text-warning';
+    statusBgColor = 'bg-warning/10';
+    // 3. Manual required (only when online but needs action)
   } else if (manualRequired) {
-    statusLabel = "Log Required";
-    statusColor = "text-warning";
-    statusBgColor = "bg-warning/10";
-  // 4. Restoring state
-  } else if (unit.status === "restoring") {
-    statusLabel = "Restoring";
-    statusColor = "text-accent";
-    statusBgColor = "bg-accent/10";
-  // 5. Default: Online/OK (offlineSeverity is "none")
+    statusLabel = 'Log Required';
+    statusColor = 'text-warning';
+    statusBgColor = 'bg-warning/10';
+    // 4. Restoring state
+  } else if (unit.status === 'restoring') {
+    statusLabel = 'Restoring';
+    statusColor = 'text-accent';
+    statusBgColor = 'bg-accent/10';
+    // 5. Default: Online/OK (offlineSeverity is "none")
   } else {
-    statusLabel = "OK";
-    statusColor = "text-safe";
-    statusBgColor = "bg-safe/10";
+    statusLabel = 'OK';
+    statusColor = 'text-safe';
+    statusBgColor = 'bg-safe/10';
   }
 
   // Dev assertion: verify label matches computed status
   if (process.env.NODE_ENV === 'development') {
-    if (offlineSeverity === "none" && statusLabel === "Offline") {
+    if (offlineSeverity === 'none' && statusLabel === 'Offline') {
       console.error('[STATUS BUG] offlineSeverity is "none" but statusLabel is "Offline"', {
-        offlineSeverity, statusLabel, unitStatus: unit.status, missedCheckins, sensorOnline
+        offlineSeverity,
+        statusLabel,
+        unitStatus: unit.status,
+        missedCheckins,
+        sensorOnline,
       });
     }
   }
@@ -221,7 +228,10 @@ export function computeUnitStatus(unit: UnitStatusInfo, rules?: AlertRules): Com
  * Hook to compute status from unit data
  * Pure computation - does not fetch data
  */
-export function useUnitStatus(unit: UnitStatusInfo | null, rules?: AlertRules): ComputedUnitStatus | null {
+export function useUnitStatus(
+  unit: UnitStatusInfo | null,
+  rules?: AlertRules,
+): ComputedUnitStatus | null {
   return useMemo(() => {
     if (!unit) return null;
     return computeUnitStatus(unit, rules);
@@ -232,9 +242,12 @@ export function useUnitStatus(unit: UnitStatusInfo | null, rules?: AlertRules): 
  * Hook to compute status for multiple units
  * Pure computation - does not fetch data
  */
-export function useUnitsStatus(units: UnitStatusInfo[], rulesMap?: Map<string, AlertRules>): Array<UnitStatusInfo & { computed: ComputedUnitStatus }> {
+export function useUnitsStatus(
+  units: UnitStatusInfo[],
+  rulesMap?: Map<string, AlertRules>,
+): Array<UnitStatusInfo & { computed: ComputedUnitStatus }> {
   return useMemo(() => {
-    return units.map(unit => ({
+    return units.map((unit) => ({
       ...unit,
       computed: computeUnitStatus(unit, rulesMap?.get(unit.id)),
     }));
@@ -267,7 +280,7 @@ export function useFetchUnitStatus(unitId: string | null) {
     // Find unit in nav tree
     let foundUnit = null;
     for (const site of navTree.sites) {
-      const unit = site.units.find(u => u.unitId === unitId);
+      const unit = site.units.find((u) => u.unitId === unitId);
       if (unit) {
         foundUnit = {
           id: unit.unitId,
@@ -288,7 +301,7 @@ export function useFetchUnitStatus(unitId: string | null) {
     return {
       data: foundUnit,
       isLoading: false,
-      error: foundUnit ? null : new Error("Unit not found in nav tree"),
+      error: foundUnit ? null : new Error('Unit not found in nav tree'),
     };
   }, [isReady, unitId, navTree, orgId]);
 }

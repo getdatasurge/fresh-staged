@@ -18,18 +18,19 @@ The key challenge is **orchestration, not implementation**. All deployment logic
 
 The existing `deploy.sh` provides a complete 8-step deployment:
 
-| Step | Function | What It Does |
-|------|----------|--------------|
-| 1 | Pre-flight checks | Calls `health-check.sh` for system validation |
-| 2 | Pull images | `docker compose pull` for latest images |
-| 3 | Build backend | `docker compose build backend` |
-| 4 | Run migrations | Start DB, wait for ready, run `pnpm db:migrate:prod` |
-| 5 | Deploy services | `docker compose up -d` all services |
-| 6 | Wait for health | Loop until `curl localhost:3000/health` returns 200 |
-| 7 | Verify deployment | Check `/health` and `/health/ready` endpoints |
-| 8 | Cleanup | `docker image prune -f` |
+| Step | Function          | What It Does                                         |
+| ---- | ----------------- | ---------------------------------------------------- |
+| 1    | Pre-flight checks | Calls `health-check.sh` for system validation        |
+| 2    | Pull images       | `docker compose pull` for latest images              |
+| 3    | Build backend     | `docker compose build backend`                       |
+| 4    | Run migrations    | Start DB, wait for ready, run `pnpm db:migrate:prod` |
+| 5    | Deploy services   | `docker compose up -d` all services                  |
+| 6    | Wait for health   | Loop until `curl localhost:3000/health` returns 200  |
+| 7    | Verify deployment | Check `/health` and `/health/ready` endpoints        |
+| 8    | Cleanup           | `docker image prune -f`                              |
 
 **Key observation:** deploy.sh already handles:
+
 - Database service startup sequencing
 - PostgreSQL readiness waiting (30 retries)
 - Backend health check waiting (30 retries)
@@ -39,36 +40,36 @@ The existing `deploy.sh` provides a complete 8-step deployment:
 
 From `preflight-lib.sh` (Phase 22):
 
-| Function | Purpose | DEPLOY-0X |
-|----------|---------|-----------|
-| `run_step()` | Run function with checkpoint tracking | DEPLOY-02, DEPLOY-03 |
-| `checkpoint_done()` | Check if step completed | DEPLOY-03 |
-| `checkpoint_set()` | Mark step complete | DEPLOY-02 |
-| `checkpoint_clear()` | Reset a checkpoint | - |
-| `checkpoint_clear_all()` | Full reset | - |
-| `save_error_state()` | Persist failure info | DEPLOY-03 |
-| `load_error_state()` | Load previous failure | DEPLOY-03 |
-| `error_handler` | ERR trap with diagnostics | - |
-| `validate_*` | Pre-flight checks | - |
+| Function                 | Purpose                               | DEPLOY-0X            |
+| ------------------------ | ------------------------------------- | -------------------- |
+| `run_step()`             | Run function with checkpoint tracking | DEPLOY-02, DEPLOY-03 |
+| `checkpoint_done()`      | Check if step completed               | DEPLOY-03            |
+| `checkpoint_set()`       | Mark step complete                    | DEPLOY-02            |
+| `checkpoint_clear()`     | Reset a checkpoint                    | -                    |
+| `checkpoint_clear_all()` | Full reset                            | -                    |
+| `save_error_state()`     | Persist failure info                  | DEPLOY-03            |
+| `load_error_state()`     | Load previous failure                 | DEPLOY-03            |
+| `error_handler`          | ERR trap with diagnostics             | -                    |
+| `validate_*`             | Pre-flight checks                     | -                    |
 
 From `config-lib.sh` (Phase 24):
 
-| Function | Purpose |
-|----------|---------|
-| `collect_configuration()` | Interactive prompts |
-| `create_configuration()` | Generate secrets + .env |
-| `display_configuration_summary()` | User confirmation |
-| `validate_dns_before_deploy()` | DNS resolution check |
-| `run_interactive_configuration()` | Full wizard flow |
+| Function                          | Purpose                 |
+| --------------------------------- | ----------------------- |
+| `collect_configuration()`         | Interactive prompts     |
+| `create_configuration()`          | Generate secrets + .env |
+| `display_configuration_summary()` | User confirmation       |
+| `validate_dns_before_deploy()`    | DNS resolution check    |
+| `run_interactive_configuration()` | Full wizard flow        |
 
 From `prereq-lib.sh` (Phase 23):
 
-| Function | Purpose |
-|----------|---------|
-| `install_docker()` | Docker Engine installation |
-| `configure_firewall()` | UFW setup |
-| `install_fail2ban()` | SSH protection |
-| `install_all_prerequisites()` | Master installer |
+| Function                      | Purpose                    |
+| ----------------------------- | -------------------------- |
+| `install_docker()`            | Docker Engine installation |
+| `configure_firewall()`        | UFW setup                  |
+| `install_fail2ban()`          | SSH protection             |
+| `install_all_prerequisites()` | Master installer           |
 
 ### Docker Compose Configuration
 
@@ -79,6 +80,7 @@ docker compose -f docker-compose.yml -f compose.production.yaml up -d
 ```
 
 **Services defined:**
+
 - postgres (with health check)
 - redis (with health check)
 - minio (with health check)
@@ -91,6 +93,7 @@ docker compose -f docker-compose.yml -f compose.production.yaml up -d
 - uptime-kuma (status page)
 
 **Health checks already defined in compose.production.yaml:**
+
 - Backend: `curl -f http://localhost:3000/health`
 - Frontend: `curl -f http://localhost:8080/health`
 - Postgres: `pg_isready -U frostguard`
@@ -101,30 +104,30 @@ docker compose -f docker-compose.yml -f compose.production.yaml up -d
 
 ### Core
 
-| Component | Version | Purpose | Why Standard |
-|-----------|---------|---------|--------------|
-| `preflight-lib.sh` | v1.0.0 | Checkpoint/error infrastructure | Already implements DEPLOY-02, DEPLOY-03 |
-| `config-lib.sh` | v1.1.0 | Configuration wizard | Already implements CONFIG-* |
-| `deploy.sh` | Existing | Docker Compose deployment | Already implements DEPLOY-04, DEPLOY-05 |
-| Bash 4+ | System | Script execution | Target Ubuntu 20.04+ ships Bash 4+ |
+| Component          | Version  | Purpose                         | Why Standard                            |
+| ------------------ | -------- | ------------------------------- | --------------------------------------- |
+| `preflight-lib.sh` | v1.0.0   | Checkpoint/error infrastructure | Already implements DEPLOY-02, DEPLOY-03 |
+| `config-lib.sh`    | v1.1.0   | Configuration wizard            | Already implements CONFIG-\*            |
+| `deploy.sh`        | Existing | Docker Compose deployment       | Already implements DEPLOY-04, DEPLOY-05 |
+| Bash 4+            | System   | Script execution                | Target Ubuntu 20.04+ ships Bash 4+      |
 
 ### Supporting
 
-| Tool | Purpose | When to Use |
-|------|---------|-------------|
-| `jq` | JSON parsing | Health check response validation |
-| `curl` | HTTP requests | Service health endpoints |
-| `docker compose` | Container orchestration | All service management |
+| Tool             | Purpose                 | When to Use                      |
+| ---------------- | ----------------------- | -------------------------------- |
+| `jq`             | JSON parsing            | Health check response validation |
+| `curl`           | HTTP requests           | Service health endpoints         |
+| `docker compose` | Container orchestration | All service management           |
 
 ### Not Needed (Already Exists)
 
-| Feature | Where It Exists | Why Don't Rebuild |
-|---------|-----------------|-------------------|
-| Pre-flight checks | `health-check.sh`, `preflight-lib.sh` | PREFLIGHT-* already complete |
-| Docker installation | `prereq-lib.sh` | PREREQ-* already complete |
-| Configuration prompts | `config-lib.sh` | CONFIG-* already complete |
-| Health checks | `deploy.sh` lines 154-170 | Already waits for backend health |
-| Docker Compose layering | `deploy.sh` line 83-94 | Already uses correct file order |
+| Feature                 | Where It Exists                       | Why Don't Rebuild                |
+| ----------------------- | ------------------------------------- | -------------------------------- |
+| Pre-flight checks       | `health-check.sh`, `preflight-lib.sh` | PREFLIGHT-\* already complete    |
+| Docker installation     | `prereq-lib.sh`                       | PREREQ-\* already complete       |
+| Configuration prompts   | `config-lib.sh`                       | CONFIG-\* already complete       |
+| Health checks           | `deploy.sh` lines 154-170             | Already waits for backend health |
+| Docker Compose layering | `deploy.sh` line 83-94                | Already uses correct file order  |
 
 ## Architecture Patterns
 
@@ -149,6 +152,7 @@ scripts/
 **What:** Main script that sources libraries and delegates work
 **When to use:** When all implementation already exists
 **Example:**
+
 ```bash
 #!/usr/bin/env bash
 # deploy-automated.sh - Unified deployment orchestrator
@@ -176,6 +180,7 @@ run_deployment() {
 **What:** Execute existing script within checkpoint framework
 **When to use:** Integrating existing scripts (DEPLOY-01)
 **Example:**
+
 ```bash
 # Source: Adapted from preflight-lib.sh run_step pattern
 run_external_script() {
@@ -211,6 +216,7 @@ run_external_script "deploy" "${SCRIPT_DIR}/deploy.sh"
 **What:** Wait for ALL services to be healthy, not just backend
 **When to use:** DEPLOY-05 requires waiting for all services
 **Example:**
+
 ```bash
 # Source: Adapted from deploy.sh health check pattern
 wait_for_all_services_healthy() {
@@ -258,6 +264,7 @@ wait_for_all_services_healthy() {
 **What:** Consistent state storage location
 **When to use:** All checkpoint operations
 **Example:**
+
 ```bash
 # From preflight-lib.sh - already implemented
 STATE_DIR="${STATE_DIR:-/var/lib/freshtrack-deploy}"
@@ -283,14 +290,14 @@ ensure_state_dir() {
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Checkpoint tracking | Custom file system | `run_step()` from preflight-lib.sh | Already implements DEPLOY-02, DEPLOY-03 |
-| Configuration collection | New prompts | `run_interactive_configuration()` | Already implements CONFIG-* |
-| Prerequisites | New installers | `install_all_prerequisites()` | Already implements PREREQ-* |
-| Docker deployment | Copy deploy.sh | Call deploy.sh directly | Prevents code duplication (DEPLOY-01) |
-| Pre-flight checks | New validators | health-check.sh + preflight-lib.sh | Already complete |
-| Error handling | Custom traps | Source preflight-lib.sh | Has error_handler trap |
+| Problem                  | Don't Build        | Use Instead                        | Why                                     |
+| ------------------------ | ------------------ | ---------------------------------- | --------------------------------------- |
+| Checkpoint tracking      | Custom file system | `run_step()` from preflight-lib.sh | Already implements DEPLOY-02, DEPLOY-03 |
+| Configuration collection | New prompts        | `run_interactive_configuration()`  | Already implements CONFIG-\*            |
+| Prerequisites            | New installers     | `install_all_prerequisites()`      | Already implements PREREQ-\*            |
+| Docker deployment        | Copy deploy.sh     | Call deploy.sh directly            | Prevents code duplication (DEPLOY-01)   |
+| Pre-flight checks        | New validators     | health-check.sh + preflight-lib.sh | Already complete                        |
+| Error handling           | Custom traps       | Source preflight-lib.sh            | Has error_handler trap                  |
 
 **Key insight:** Phase 25 success = calling existing code, not writing new code. Every requirement can be satisfied by orchestrating existing functions.
 
@@ -363,6 +370,7 @@ run_step "deployment" run_deployment
 **Strategy:** Use `run_step()` from preflight-lib.sh
 
 The function already:
+
 1. Checks if checkpoint exists
 2. Runs the step function
 3. Creates checkpoint on success
@@ -587,6 +595,7 @@ Things that couldn't be fully resolved:
 ## Metadata
 
 **Confidence breakdown:**
+
 - Existing infrastructure: HIGH - All code reviewed in detail
 - Integration strategy: HIGH - Clear path using existing functions
 - Health check timing: MEDIUM - May need tuning during implementation

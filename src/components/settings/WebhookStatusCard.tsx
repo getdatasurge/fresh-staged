@@ -1,8 +1,8 @@
-import { useMutation } from "@tanstack/react-query";
-import { useTRPC } from "@/lib/trpc";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useMutation } from '@tanstack/react-query';
+import { useTRPC } from '@/lib/trpc';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Webhook,
   CheckCircle,
@@ -11,9 +11,9 @@ import {
   RefreshCw,
   Settings2,
   AlertTriangle,
-} from "lucide-react";
-import { toast } from "sonner";
-import { useState, useEffect } from "react";
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { useState, useEffect } from 'react';
 
 interface WebhookStatusCardProps {
   organizationId: string | null;
@@ -22,30 +22,30 @@ interface WebhookStatusCardProps {
 
 interface WebhookConfig {
   webhookUrl: string;
-  status: "pending" | "active" | "error";
+  status: 'pending' | 'active' | 'error';
   configuredAt: string;
 }
 
 const statusConfig = {
   active: {
     icon: CheckCircle,
-    label: "Active",
-    className: "bg-safe/15 text-safe border-safe/30"
+    label: 'Active',
+    className: 'bg-safe/15 text-safe border-safe/30',
   },
   pending: {
     icon: Clock,
-    label: "Pending",
-    className: "bg-warning/15 text-warning border-warning/30"
+    label: 'Pending',
+    className: 'bg-warning/15 text-warning border-warning/30',
   },
   error: {
     icon: XCircle,
-    label: "Error",
-    className: "bg-destructive/15 text-destructive border-destructive/30"
+    label: 'Error',
+    className: 'bg-destructive/15 text-destructive border-destructive/30',
   },
   not_configured: {
     icon: AlertTriangle,
-    label: "Not Configured",
-    className: "bg-muted text-muted-foreground border-border"
+    label: 'Not Configured',
+    className: 'bg-muted text-muted-foreground border-border',
   },
 };
 
@@ -75,7 +75,7 @@ export function WebhookStatusCard({ organizationId, canEdit }: WebhookStatusCard
         if (data.success && data.webhookUrl) {
           const newConfig: WebhookConfig = {
             webhookUrl: data.webhookUrl,
-            status: "active",
+            status: 'active',
             configuredAt: new Date().toISOString(),
           };
           setConfig(newConfig);
@@ -83,15 +83,15 @@ export function WebhookStatusCard({ organizationId, canEdit }: WebhookStatusCard
           if (organizationId) {
             localStorage.setItem(`webhook-config-${organizationId}`, JSON.stringify(newConfig));
           }
-          toast.success("Webhook configured successfully!");
+          toast.success('Webhook configured successfully!');
         } else {
-          toast.error(data.error || "Failed to configure webhook");
+          toast.error(data.error || 'Failed to configure webhook');
         }
       },
       onError: (error) => {
         toast.error(`Failed to configure webhook: ${error.message}`);
       },
-    })
+    }),
   );
 
   const handleConfigure = async () => {
@@ -118,8 +118,9 @@ export function WebhookStatusCard({ organizationId, canEdit }: WebhookStatusCard
     }
   };
 
-  const status = config?.status || "not_configured";
-  const statusInfo = statusConfig[status as keyof typeof statusConfig] || statusConfig.not_configured;
+  const status = config?.status || 'not_configured';
+  const statusInfo =
+    statusConfig[status as keyof typeof statusConfig] || statusConfig.not_configured;
   const StatusIcon = statusInfo.icon;
 
   return (
@@ -131,16 +132,9 @@ export function WebhookStatusCard({ organizationId, canEdit }: WebhookStatusCard
               <Webhook className="h-5 w-5" />
               Webhook Status
             </CardTitle>
-            <CardDescription>
-              Telnyx delivery status webhook for SMS tracking
-            </CardDescription>
+            <CardDescription>Telnyx delivery status webhook for SMS tracking</CardDescription>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleRefresh}
-            className="h-8 w-8"
-          >
+          <Button variant="ghost" size="icon" onClick={handleRefresh} className="h-8 w-8">
             <RefreshCw className="h-4 w-4" />
           </Button>
         </div>
@@ -160,7 +154,10 @@ export function WebhookStatusCard({ organizationId, canEdit }: WebhookStatusCard
           {config?.webhookUrl && (
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Webhook URL</span>
-              <span className="text-sm font-mono text-xs truncate max-w-[200px]" title={config.webhookUrl}>
+              <span
+                className="text-sm font-mono text-xs truncate max-w-[200px]"
+                title={config.webhookUrl}
+              >
                 {config.webhookUrl}
               </span>
             </div>
@@ -169,12 +166,12 @@ export function WebhookStatusCard({ organizationId, canEdit }: WebhookStatusCard
           {/* Configure Button */}
           {canEdit && (
             <div className="pt-2">
-              {!config || status === "not_configured" || status === "error" ? (
+              {!config || status === 'not_configured' || status === 'error' ? (
                 <Button
                   onClick={handleConfigure}
                   disabled={isConfiguring}
                   className="w-full"
-                  variant={status === "error" ? "destructive" : "default"}
+                  variant={status === 'error' ? 'destructive' : 'default'}
                 >
                   {isConfiguring ? (
                     <>
@@ -184,7 +181,7 @@ export function WebhookStatusCard({ organizationId, canEdit }: WebhookStatusCard
                   ) : (
                     <>
                       <Settings2 className="h-4 w-4 mr-2" />
-                      {status === "error" ? "Reconfigure Webhook" : "Configure Webhook"}
+                      {status === 'error' ? 'Reconfigure Webhook' : 'Configure Webhook'}
                     </>
                   )}
                 </Button>

@@ -107,18 +107,14 @@ describe('Availability tRPC Router', () => {
       const ctx = createPublicContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.checkEmail({ email: 'not-an-email' })
-      ).rejects.toThrow();
+      await expect(caller.checkEmail({ email: 'not-an-email' })).rejects.toThrow();
     });
 
     it('should handle empty email', async () => {
       const ctx = createPublicContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.checkEmail({ email: '' })
-      ).rejects.toThrow();
+      await expect(caller.checkEmail({ email: '' })).rejects.toThrow();
     });
   });
 
@@ -178,7 +174,7 @@ describe('Availability tRPC Router', () => {
       const caller = createCaller(ctx);
 
       await expect(
-        caller.checkPhone({ phone: '123' }) // Less than 10 chars
+        caller.checkPhone({ phone: '123' }), // Less than 10 chars
       ).rejects.toThrow();
     });
 
@@ -187,7 +183,7 @@ describe('Availability tRPC Router', () => {
       const caller = createCaller(ctx);
 
       await expect(
-        caller.checkPhone({ phone: '123456789012345678901' }) // More than 20 chars
+        caller.checkPhone({ phone: '123456789012345678901' }), // More than 20 chars
       ).rejects.toThrow();
     });
 

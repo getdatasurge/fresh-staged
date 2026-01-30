@@ -8,10 +8,10 @@
  * with --dry-run first and ensure you have a backup strategy.
  */
 
-import fs from "node:fs/promises";
-import type pg from "pg";
-import { logger, logMigrationProgress } from "./logger.js";
-import { mapUserId } from "./user-mapping.js";
+import fs from 'node:fs/promises';
+import type pg from 'pg';
+import { logger, logMigrationProgress } from './logger.js';
+import { mapUserId } from './user-mapping.js';
 
 /**
  * Batch size for bulk inserts
@@ -42,7 +42,7 @@ export interface ImportResult {
  * @returns Parsed array of row objects
  */
 async function loadJsonFile(jsonPath: string): Promise<Record<string, unknown>[]> {
-  const content = await fs.readFile(jsonPath, "utf-8");
+  const content = await fs.readFile(jsonPath, 'utf-8');
   const data = JSON.parse(content);
 
   if (!Array.isArray(data)) {
@@ -75,7 +75,7 @@ function toPgValue(value: unknown): unknown {
   }
 
   // Objects and arrays to JSON string for JSONB columns
-  if (typeof value === "object") {
+  if (typeof value === 'object') {
     return JSON.stringify(value);
   }
 
@@ -92,8 +92,8 @@ function toPgValue(value: unknown): unknown {
  * @returns Parameterized INSERT SQL
  */
 function buildInsertSql(tableName: string, columns: string[]): string {
-  const columnList = columns.map((c) => `"${c}"`).join(", ");
-  const placeholders = columns.map((_, i) => `$${i + 1}`).join(", ");
+  const columnList = columns.map((c) => `"${c}"`).join(', ');
+  const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
   return `INSERT INTO "${tableName}" (${columnList}) VALUES (${placeholders})`;
 }
 
@@ -111,7 +111,7 @@ function buildInsertSql(tableName: string, columns: string[]): string {
 export async function importTable(
   pool: pg.Pool,
   tableName: string,
-  jsonPath: string
+  jsonPath: string,
 ): Promise<ImportResult> {
   const startTime = Date.now();
 
@@ -119,7 +119,7 @@ export async function importTable(
   const rows = await loadJsonFile(jsonPath);
 
   if (rows.length === 0) {
-    logger.info({ table: tableName }, "No rows to import (empty JSON file)");
+    logger.info({ table: tableName }, 'No rows to import (empty JSON file)');
     return {
       table: tableName,
       rowCount: 0,
@@ -139,7 +139,7 @@ export async function importTable(
     const client = await pool.connect();
 
     try {
-      await client.query("BEGIN");
+      await client.query('BEGIN');
 
       for (const row of batch) {
         const values = columns.map((col) => toPgValue(row[col]));
@@ -147,14 +147,14 @@ export async function importTable(
         importedCount++;
       }
 
-      await client.query("COMMIT");
+      await client.query('COMMIT');
 
       // Log progress every PROGRESS_INTERVAL rows
       if (importedCount % PROGRESS_INTERVAL === 0 || importedCount === rows.length) {
-        logMigrationProgress("import", importedCount, rows.length, { table: tableName });
+        logMigrationProgress('import', importedCount, rows.length, { table: tableName });
       }
     } catch (error) {
-      await client.query("ROLLBACK");
+      await client.query('ROLLBACK');
       const errorMessage = error instanceof Error ? error.message : String(error);
       logger.error(
         {
@@ -163,11 +163,9 @@ export async function importTable(
           error: errorMessage,
           row: rows[importedCount],
         },
-        `Import failed at row ${importedCount}`
+        `Import failed at row ${importedCount}`,
       );
-      throw new Error(
-        `Import failed for ${tableName} at row ${importedCount}: ${errorMessage}`
-      );
+      throw new Error(`Import failed for ${tableName} at row ${importedCount}: ${errorMessage}`);
     } finally {
       client.release();
     }
@@ -199,7 +197,7 @@ export async function importTableWithMapping(
   tableName: string,
   jsonPath: string,
   userMapping: Map<string, string>,
-  userIdColumns: string[]
+  userIdColumns: string[],
 ): Promise<ImportResult> {
   const startTime = Date.now();
 
@@ -207,7 +205,7 @@ export async function importTableWithMapping(
   const rows = await loadJsonFile(jsonPath);
 
   if (rows.length === 0) {
-    logger.info({ table: tableName }, "No rows to import (empty JSON file)");
+    logger.info({ table: tableName }, 'No rows to import (empty JSON file)');
     return {
       table: tableName,
       rowCount: 0,
@@ -231,7 +229,7 @@ export async function importTableWithMapping(
     const client = await pool.connect();
 
     try {
-      await client.query("BEGIN");
+      await client.query('BEGIN');
 
       for (const row of batch) {
         // Transform user ID columns
@@ -260,7 +258,7 @@ export async function importTableWithMapping(
                 oldId,
                 rowIndex: importedCount,
               },
-              `User ID mapping not found for ${col}=${oldId}, keeping original`
+              `User ID mapping not found for ${col}=${oldId}, keeping original`,
             );
             mappingsNotFound++;
           }
@@ -271,18 +269,18 @@ export async function importTableWithMapping(
         importedCount++;
       }
 
-      await client.query("COMMIT");
+      await client.query('COMMIT');
 
       // Log progress every PROGRESS_INTERVAL rows
       if (importedCount % PROGRESS_INTERVAL === 0 || importedCount === rows.length) {
-        logMigrationProgress("import-with-mapping", importedCount, rows.length, {
+        logMigrationProgress('import-with-mapping', importedCount, rows.length, {
           table: tableName,
           mappingsApplied,
           mappingsNotFound,
         });
       }
     } catch (error) {
-      await client.query("ROLLBACK");
+      await client.query('ROLLBACK');
       const errorMessage = error instanceof Error ? error.message : String(error);
       logger.error(
         {
@@ -291,11 +289,9 @@ export async function importTableWithMapping(
           error: errorMessage,
           row: rows[importedCount],
         },
-        `Import failed at row ${importedCount}`
+        `Import failed at row ${importedCount}`,
       );
-      throw new Error(
-        `Import failed for ${tableName} at row ${importedCount}: ${errorMessage}`
-      );
+      throw new Error(`Import failed for ${tableName} at row ${importedCount}: ${errorMessage}`);
     } finally {
       client.release();
     }
@@ -320,28 +316,25 @@ export async function importTableWithMapping(
  * @param pool - PostgreSQL connection pool
  * @param tables - Array of table names in truncation order
  */
-export async function truncateAllTables(
-  pool: pg.Pool,
-  tables: readonly string[]
-): Promise<void> {
-  logger.info({ tableCount: tables.length }, "Truncating all tables...");
+export async function truncateAllTables(pool: pg.Pool, tables: readonly string[]): Promise<void> {
+  logger.info({ tableCount: tables.length }, 'Truncating all tables...');
 
   const client = await pool.connect();
   try {
     // Use a single transaction for all truncations
-    await client.query("BEGIN");
+    await client.query('BEGIN');
 
     for (const table of tables) {
       logger.info({ table }, `Truncating ${table}...`);
       await client.query(`TRUNCATE TABLE "${table}" CASCADE`);
     }
 
-    await client.query("COMMIT");
-    logger.info({ tableCount: tables.length }, "All tables truncated successfully");
+    await client.query('COMMIT');
+    logger.info({ tableCount: tables.length }, 'All tables truncated successfully');
   } catch (error) {
-    await client.query("ROLLBACK");
+    await client.query('ROLLBACK');
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error({ error: errorMessage }, "Truncate failed");
+    logger.error({ error: errorMessage }, 'Truncate failed');
     throw new Error(`Truncate failed: ${errorMessage}`);
   } finally {
     client.release();
@@ -363,7 +356,7 @@ export async function disableForeignKeys(pool: pg.Pool): Promise<void> {
   const client = await pool.connect();
   try {
     await client.query("SET session_replication_role = 'replica'");
-    logger.info("Foreign key checks disabled");
+    logger.info('Foreign key checks disabled');
   } finally {
     client.release();
   }
@@ -382,7 +375,7 @@ export async function enableForeignKeys(pool: pg.Pool): Promise<void> {
   const client = await pool.connect();
   try {
     await client.query("SET session_replication_role = 'origin'");
-    logger.info("Foreign key checks re-enabled");
+    logger.info('Foreign key checks re-enabled');
   } finally {
     client.release();
   }
@@ -413,7 +406,7 @@ export async function jsonFileExists(jsonPath: string): Promise<boolean> {
  * @returns Number of rows in the file
  */
 export async function getJsonRowCount(jsonPath: string): Promise<number> {
-  const content = await fs.readFile(jsonPath, "utf-8");
+  const content = await fs.readFile(jsonPath, 'utf-8');
   const data = JSON.parse(content);
   return Array.isArray(data) ? data.length : 0;
 }

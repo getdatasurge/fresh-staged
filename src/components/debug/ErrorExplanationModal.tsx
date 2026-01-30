@@ -1,30 +1,25 @@
 import React, { useMemo } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Copy, 
-  Download, 
-  ExternalLink, 
-  AlertTriangle, 
+import {
+  Copy,
+  Download,
+  ExternalLink,
+  AlertTriangle,
   AlertCircle,
   Clock,
   Tag,
-  CheckCircle2
+  CheckCircle2,
 } from 'lucide-react';
 import { DebugLogEntry } from '@/lib/debugLogger';
-import { 
-  explainError, 
-  getRelatedLogs, 
+import {
+  explainError,
+  getRelatedLogs,
   formatExplanationAsMarkdown,
-  ErrorExplanation 
+  ErrorExplanation,
 } from '@/lib/errorExplainer';
 import { buildSupportSnapshot, downloadSnapshot } from '@/lib/snapshotBuilder';
 import { useToast } from '@/hooks/use-toast';
@@ -128,8 +123,8 @@ export function ErrorExplanationModal({
                 <Badge variant="outline" className="text-xs">
                   {entry.category}
                 </Badge>
-                <Badge 
-                  variant={entry.level === 'error' ? 'destructive' : 'secondary'} 
+                <Badge
+                  variant={entry.level === 'error' ? 'destructive' : 'secondary'}
                   className="text-xs"
                 >
                   {entry.level}
@@ -207,8 +202,8 @@ export function ErrorExplanationModal({
                 </h4>
                 <div className="space-y-1 max-h-32 overflow-y-auto">
                   {relatedLogs.map((log) => (
-                    <div 
-                      key={log.id} 
+                    <div
+                      key={log.id}
                       className="flex items-center gap-2 text-xs bg-muted/30 rounded px-2 py-1"
                     >
                       <Badge variant="outline" className="text-[10px] px-1">
@@ -228,9 +223,9 @@ export function ErrorExplanationModal({
             {explanation.documentationUrl && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <ExternalLink className="h-4 w-4" />
-                <a 
-                  href={explanation.documentationUrl} 
-                  target="_blank" 
+                <a
+                  href={explanation.documentationUrl}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-primary underline"
                 >

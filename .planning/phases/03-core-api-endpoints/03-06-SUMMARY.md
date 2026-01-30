@@ -79,23 +79,26 @@ metrics:
 
 ## Test Coverage Summary
 
-| Endpoint Group | Tests | Auth Coverage | Validation | Hierarchy |
-|---------------|-------|---------------|------------|-----------|
-| Organizations | 12    | owner/viewer  | -          | N/A       |
-| Sites         | 25    | admin/manager/viewer | 400 errors | org-scoped |
-| Areas         | 18    | admin/manager/viewer | 400 errors | site-scoped |
-| Units         | 26    | manager+/viewer | tempMin<tempMax | full chain |
-| **Total New** | **81** | - | - | - |
+| Endpoint Group | Tests  | Auth Coverage        | Validation      | Hierarchy   |
+| -------------- | ------ | -------------------- | --------------- | ----------- |
+| Organizations  | 12     | owner/viewer         | -               | N/A         |
+| Sites          | 25     | admin/manager/viewer | 400 errors      | org-scoped  |
+| Areas          | 18     | admin/manager/viewer | 400 errors      | site-scoped |
+| Units          | 26     | manager+/viewer      | tempMin<tempMax | full chain  |
+| **Total New**  | **81** | -                    | -               | -           |
 
 ## Technical Notes
 
 ### Zod 4 UUID Validation
+
 Zod 4 requires RFC 4122 compliant UUIDs with proper version (position 13 = 1-5) and variant (position 17 = 8/9/a/b) bits. Invalid UUIDs like `00000000-0000-0000-0000-000000000001` fail validation.
 
 **Solution:** Generate test UUIDs using `crypto.randomUUID()` which produces v4 compliant UUIDs.
 
 ### Service Mocking Pattern
+
 Tests mock at the service layer rather than the database:
+
 ```typescript
 vi.mock('../../src/services/site.service.js', () => ({
   listSites: vi.fn(),
@@ -105,6 +108,7 @@ vi.mock('../../src/services/site.service.js', () => ({
 ```
 
 This provides:
+
 - Fast test execution (~500ms for 91 tests)
 - No database dependency
 - Isolated route handler testing
@@ -112,15 +116,16 @@ This provides:
 
 ## Commits
 
-| Hash | Message |
-|------|---------|
+| Hash    | Message                                                |
+| ------- | ------------------------------------------------------ |
 | 7134b50 | test(03-06): create test fixtures for database seeding |
-| 0feb0ff | test(03-06): create organization and site API tests |
-| c3437ad | test(03-06): create area and unit API tests |
+| 0feb0ff | test(03-06): create organization and site API tests    |
+| c3437ad | test(03-06): create area and unit API tests            |
 
 ## Deviations from Plan
 
 ### [Rule 3 - Blocking] Fixture file not used for integration tests
+
 - **Found during:** Task 2
 - **Issue:** Tests required database connection, but Docker wasn't running
 - **Resolution:** Switched to service-layer mocking pattern matching existing tests
@@ -138,6 +143,7 @@ This provides:
 ## Next Phase Readiness
 
 Phase 3 (Core API Endpoints) is now complete with:
+
 - All 6 plans executed
 - 91 total tests passing
 - Full CRUD for organizations, sites, areas, and units

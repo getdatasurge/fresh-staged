@@ -5,14 +5,14 @@
 
 // TTN Provisioning State - tracks whether device exists in TTN
 export type TtnProvisioningState =
-  | "not_configured"
-  | "unknown"
-  | "exists_in_ttn"
-  | "missing_in_ttn"
-  | "error";
+  | 'not_configured'
+  | 'unknown'
+  | 'exists_in_ttn'
+  | 'missing_in_ttn'
+  | 'error';
 
 // Where the device was provisioned from
-export type ProvisionedSource = "emulator" | "app" | "unknown" | "manual";
+export type ProvisionedSource = 'emulator' | 'app' | 'unknown' | 'manual';
 
 export type GatewayStatus = 'pending' | 'online' | 'offline' | 'maintenance';
 

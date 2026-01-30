@@ -31,13 +31,13 @@ key-files:
     - backend/src/trpc/router.ts
 
 key-decisions:
-  - "ESCALATION-01: Use raw SQL via drizzle-orm sql template (table not in Drizzle schema)"
-  - "ESCALATION-02: Manager+ role required for mutations (create/update/delete)"
-  - "ESCALATION-03: Soft delete via is_active = false"
+  - 'ESCALATION-01: Use raw SQL via drizzle-orm sql template (table not in Drizzle schema)'
+  - 'ESCALATION-02: Manager+ role required for mutations (create/update/delete)'
+  - 'ESCALATION-03: Soft delete via is_active = false'
 
 patterns-established:
-  - "Service layer for raw SQL: escalation-contacts.service.ts follows ttn-settings.service.ts pattern"
-  - "Manager role gating: checkManagerRole helper for escalation contact mutations"
+  - 'Service layer for raw SQL: escalation-contacts.service.ts follows ttn-settings.service.ts pattern'
+  - 'Manager role gating: checkManagerRole helper for escalation contact mutations'
 
 # Metrics
 duration: 4min
@@ -57,6 +57,7 @@ completed: 2026-01-25
 - **Files modified:** 5
 
 ## Accomplishments
+
 - Escalation contacts router with 4 procedures (list, create, update, delete)
 - Zod schemas for validation (EscalationContact, Create, Update)
 - Service layer with raw SQL for database operations
@@ -73,27 +74,30 @@ Each task was committed atomically:
 ## Files Created/Modified
 
 ### Created
+
 - `backend/src/schemas/escalation-contacts.ts` - Zod schemas for escalation contact validation
 - `backend/src/routers/escalation-contacts.router.ts` - tRPC router with CRUD procedures
 - `backend/src/services/escalation-contacts.service.ts` - Raw SQL data access layer
 - `backend/tests/trpc/escalation-contacts.router.test.ts` - 19 unit tests
 
 ### Modified
+
 - `backend/src/trpc/router.ts` - Registered escalationContactsRouter
 
 ## Decisions Made
 
-| ID | Decision | Rationale |
-|----|----------|-----------|
+| ID            | Decision                                 | Rationale                                                                                |
+| ------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------- |
 | ESCALATION-01 | Use raw SQL via drizzle-orm sql template | escalation_contacts table not in Drizzle schema, follows ttn-settings.service.ts pattern |
-| ESCALATION-02 | Manager+ role required for mutations | Consistent with other domain entities, managers can manage escalation contacts |
-| ESCALATION-03 | Soft delete via is_active = false | Preserves audit trail, matches existing hook behavior |
+| ESCALATION-02 | Manager+ role required for mutations     | Consistent with other domain entities, managers can manage escalation contacts           |
+| ESCALATION-03 | Soft delete via is_active = false        | Preserves audit trail, matches existing hook behavior                                    |
 
 ## Deviations from Plan
 
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Added service layer for database operations**
+
 - **Found during:** Task 1 (Router implementation)
 - **Issue:** Plan showed direct Kysely queries in router, but project uses drizzle-orm with raw SQL pattern
 - **Fix:** Created escalation-contacts.service.ts following ttn-settings.service.ts pattern
@@ -116,10 +120,12 @@ Each task was committed atomically:
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Escalation contacts router ready for frontend hook migration
 - useEscalationContacts hook can now migrate from Supabase to tRPC
 - All 4 CRUD operations available at `trpc.escalationContacts.*`
 
 ---
-*Phase: 21-backend-api-migration-completion*
-*Completed: 2026-01-25*
+
+_Phase: 21-backend-api-migration-completion_
+_Completed: 2026-01-25_

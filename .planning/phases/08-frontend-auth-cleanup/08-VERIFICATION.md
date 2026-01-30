@@ -18,6 +18,7 @@ All success criteria met. Phase goal achieved.
 ### 1. User can authenticate using only Stack Auth ✓
 
 **Evidence:**
+
 - `src/pages/Auth.tsx` uses `SignIn`, `SignUp` from `@stackframe/react`
 - Zero `supabase.auth.*` calls in codebase:
   ```bash
@@ -27,6 +28,7 @@ All success criteria met. Phase goal achieved.
 ### 2. All frontend hooks reference Stack Auth hooks ✓
 
 **Evidence:**
+
 - 174 Stack Auth pattern occurrences across 62 files:
   ```bash
   grep -rE "(useUser|useStackApp|getAuthJson)" src/ | wc -l → 174
@@ -39,6 +41,7 @@ All success criteria met. Phase goal achieved.
 ### 3. Authentication flows work without Supabase auth ✓
 
 **Evidence:**
+
 - Login: `SignIn`/`SignUp` from Stack Auth in `Auth.tsx`
 - Logout: `stackApp.signOut()` or `user.signOut()` (3 call sites verified)
 - Session: `useUser()` hook used throughout (166+ occurrences)
@@ -50,6 +53,7 @@ All success criteria met. Phase goal achieved.
 ### 4. instrumentedSupabase.ts deleted ✓
 
 **Evidence:**
+
 - File deleted in commit `1266fe4`
 - `ls src/lib/instrumentedSupabase.ts` → file not found
 - No imports reference it:
@@ -59,22 +63,22 @@ All success criteria met. Phase goal achieved.
 
 ## Key Files Verified
 
-| File | Status | Notes |
-|------|--------|-------|
-| `src/pages/Auth.tsx` | ✓ | Stack Auth components |
-| `src/lib/stack/client.ts` | ✓ | Stack client config |
-| `src/App.tsx` | ✓ | StackProvider wrapper |
+| File                              | Status    | Notes                  |
+| --------------------------------- | --------- | ---------------------- |
+| `src/pages/Auth.tsx`              | ✓         | Stack Auth components  |
+| `src/lib/stack/client.ts`         | ✓         | Stack client config    |
+| `src/App.tsx`                     | ✓         | StackProvider wrapper  |
 | `src/lib/instrumentedSupabase.ts` | ✓ DELETED | Unused wrapper removed |
 
 ## Metrics
 
-| Metric | Value |
-|--------|-------|
-| Files migrated | 30 |
-| Stack Auth hooks | 174 occurrences |
-| Supabase auth calls remaining | 0 |
-| Session type imports | 0 |
-| onAuthStateChange listeners | 0 |
+| Metric                        | Value           |
+| ----------------------------- | --------------- |
+| Files migrated                | 30              |
+| Stack Auth hooks              | 174 occurrences |
+| Supabase auth calls remaining | 0               |
+| Session type imports          | 0               |
+| onAuthStateChange listeners   | 0               |
 
 ## Conclusion
 

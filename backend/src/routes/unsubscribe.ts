@@ -62,8 +62,7 @@ export default async function unsubscribeRoutes(fastify: FastifyInstance) {
       const payload = await verifyUnsubscribeToken(token);
       if (!payload) {
         return reply.status(400).send({
-          error:
-            'Invalid or expired unsubscribe link. Please update your preferences in the app.',
+          error: 'Invalid or expired unsubscribe link. Please update your preferences in the app.',
         });
       }
 
@@ -81,8 +80,7 @@ export default async function unsubscribeRoutes(fastify: FastifyInstance) {
       }
 
       // Update preferences based on type
-      const updates: Partial<{ digestDaily: boolean; digestWeekly: boolean }> =
-        {};
+      const updates: Partial<{ digestDaily: boolean; digestWeekly: boolean }> = {};
 
       if (type === 'daily' || type === 'all') {
         updates.digestDaily = false;
@@ -112,16 +110,13 @@ export default async function unsubscribeRoutes(fastify: FastifyInstance) {
         all: 'You have been unsubscribed from all digest emails.',
       };
 
-      fastify.log.info(
-        { userId, type },
-        '[Unsubscribe] User unsubscribed from digest'
-      );
+      fastify.log.info({ userId, type }, '[Unsubscribe] User unsubscribed from digest');
 
       return reply.send({
         success: true,
         message: messages[type],
         type,
       });
-    }
+    },
   );
 }

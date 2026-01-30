@@ -1,21 +1,21 @@
 /**
  * SupportDiagnosticsPanel
- * 
+ *
  * A small diagnostic panel visible only to Super Admins in support mode.
  * Shows real vs effective identity to help debug impersonation issues.
  * Prevents "silent empty" scenarios where data appears missing but is actually a scoping issue.
  */
 
-import { useState, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { useSuperAdmin } from "@/contexts/SuperAdminContext";
-import { getOrgCacheStats, clearAllOrgScopedCaches } from "@/lib/orgScopedInvalidation";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  ChevronDown, 
-  ChevronUp, 
+import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { useSuperAdmin } from '@/contexts/SuperAdminContext';
+import { getOrgCacheStats, clearAllOrgScopedCaches } from '@/lib/orgScopedInvalidation';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  ChevronDown,
+  ChevronUp,
   Bug,
   User,
   Building2,
@@ -25,9 +25,9 @@ import {
   Database,
   Trash2,
   Copy,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 export function SupportDiagnosticsPanel() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -49,7 +49,10 @@ export function SupportDiagnosticsPanel() {
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [cacheStats, setCacheStats] = useState<{ totalCached: number; byKey: Record<string, number> }>({ totalCached: 0, byKey: {} });
+  const [cacheStats, setCacheStats] = useState<{
+    totalCached: number;
+    byKey: Record<string, number>;
+  }>({ totalCached: 0, byKey: {} });
 
   // Update cache stats periodically - hook must be called unconditionally
   useEffect(() => {
@@ -71,14 +74,14 @@ export function SupportDiagnosticsPanel() {
   }
 
   const truncateId = (id: string | null) => {
-    if (!id) return "null";
+    if (!id) return 'null';
     return `${id.slice(0, 8)}...`;
   };
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: "Copied",
+      title: 'Copied',
       description: `${label} copied to clipboard`,
     });
   };
@@ -87,18 +90,20 @@ export function SupportDiagnosticsPanel() {
     await clearAllOrgScopedCaches(queryClient);
     setCacheStats(getOrgCacheStats(queryClient));
     toast({
-      title: "Caches Cleared",
-      description: "All org-scoped caches have been cleared.",
+      title: 'Caches Cleared',
+      description: 'All org-scoped caches have been cleared.',
     });
   };
 
   return (
     <div className="fixed bottom-4 left-4 z-50">
-      <div className={cn(
-        "bg-background/95 backdrop-blur-sm border rounded-lg shadow-lg",
-        "transition-all duration-200 ease-in-out",
-        isExpanded ? "w-80" : "w-auto"
-      )}>
+      <div
+        className={cn(
+          'bg-background/95 backdrop-blur-sm border rounded-lg shadow-lg',
+          'transition-all duration-200 ease-in-out',
+          isExpanded ? 'w-80' : 'w-auto',
+        )}
+      >
         {/* Toggle Button */}
         <Button
           variant="ghost"
@@ -115,11 +120,7 @@ export function SupportDiagnosticsPanel() {
               </Badge>
             )}
           </div>
-          {isExpanded ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
-            <ChevronUp className="w-4 h-4" />
-          )}
+          {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
         </Button>
 
         {/* Expanded Panel */}
@@ -127,21 +128,19 @@ export function SupportDiagnosticsPanel() {
           <div className="p-3 pt-0 space-y-3 text-xs">
             {/* Status Badges */}
             <div className="flex flex-wrap gap-1">
-              <Badge 
-                variant={isImpersonating ? "default" : "outline"}
-                className="text-xs"
-              >
+              <Badge variant={isImpersonating ? 'default' : 'outline'} className="text-xs">
                 {isImpersonating ? (
-                  <><Eye className="w-3 h-3 mr-1" /> Impersonating</>
+                  <>
+                    <Eye className="w-3 h-3 mr-1" /> Impersonating
+                  </>
                 ) : (
-                  <><EyeOff className="w-3 h-3 mr-1" /> Not Impersonating</>
+                  <>
+                    <EyeOff className="w-3 h-3 mr-1" /> Not Impersonating
+                  </>
                 )}
               </Badge>
-              <Badge 
-                variant={isInitialized ? "outline" : "destructive"}
-                className="text-xs"
-              >
-                {isInitialized ? "Initialized" : "Loading..."}
+              <Badge variant={isInitialized ? 'outline' : 'destructive'} className="text-xs">
+                {isInitialized ? 'Initialized' : 'Loading...'}
               </Badge>
             </div>
 
@@ -156,18 +155,18 @@ export function SupportDiagnosticsPanel() {
                   <div className="flex items-center justify-between">
                     <span>User: {truncateId(realUserId)}</span>
                     {realUserId && (
-                      <Copy 
-                        className="w-3 h-3 cursor-pointer hover:text-primary" 
-                        onClick={() => copyToClipboard(realUserId, "User ID")}
+                      <Copy
+                        className="w-3 h-3 cursor-pointer hover:text-primary"
+                        onClick={() => copyToClipboard(realUserId, 'User ID')}
                       />
                     )}
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Org: {truncateId(realOrgId)}</span>
                     {realOrgId && (
-                      <Copy 
-                        className="w-3 h-3 cursor-pointer hover:text-primary" 
-                        onClick={() => copyToClipboard(realOrgId, "Org ID")}
+                      <Copy
+                        className="w-3 h-3 cursor-pointer hover:text-primary"
+                        onClick={() => copyToClipboard(realOrgId, 'Org ID')}
                       />
                     )}
                   </div>
@@ -175,10 +174,12 @@ export function SupportDiagnosticsPanel() {
               </div>
 
               {/* Effective Identity */}
-              <div className={cn(
-                "p-2 rounded",
-                isImpersonating ? "bg-primary/10 border border-primary/20" : "bg-muted/50"
-              )}>
+              <div
+                className={cn(
+                  'p-2 rounded',
+                  isImpersonating ? 'bg-primary/10 border border-primary/20' : 'bg-muted/50',
+                )}
+              >
                 <div className="font-semibold text-foreground mb-1 flex items-center gap-1">
                   <Building2 className="w-3 h-3" /> Effective Identity
                 </div>
@@ -186,25 +187,23 @@ export function SupportDiagnosticsPanel() {
                   <div className="flex items-center justify-between">
                     <span>User: {truncateId(effectiveUserId)}</span>
                     {effectiveUserId && (
-                      <Copy 
-                        className="w-3 h-3 cursor-pointer hover:text-primary" 
-                        onClick={() => copyToClipboard(effectiveUserId, "User ID")}
+                      <Copy
+                        className="w-3 h-3 cursor-pointer hover:text-primary"
+                        onClick={() => copyToClipboard(effectiveUserId, 'User ID')}
                       />
                     )}
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Org: {truncateId(effectiveOrgId)}</span>
                     {effectiveOrgId && (
-                      <Copy 
-                        className="w-3 h-3 cursor-pointer hover:text-primary" 
-                        onClick={() => copyToClipboard(effectiveOrgId, "Org ID")}
+                      <Copy
+                        className="w-3 h-3 cursor-pointer hover:text-primary"
+                        onClick={() => copyToClipboard(effectiveOrgId, 'Org ID')}
                       />
                     )}
                   </div>
                   {effectiveOrgName && (
-                    <div className="text-muted-foreground truncate">
-                      Name: {effectiveOrgName}
-                    </div>
+                    <div className="text-muted-foreground truncate">Name: {effectiveOrgName}</div>
                   )}
                   {effectiveUserEmail && (
                     <div className="text-muted-foreground truncate">
@@ -213,7 +212,7 @@ export function SupportDiagnosticsPanel() {
                   )}
                 </div>
               </div>
-              
+
               {/* Session Info */}
               {impersonationSessionId && (
                 <div className="p-2 rounded bg-muted/50">
@@ -222,9 +221,9 @@ export function SupportDiagnosticsPanel() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span>ID: {truncateId(impersonationSessionId)}</span>
-                    <Copy 
-                      className="w-3 h-3 cursor-pointer hover:text-primary" 
-                      onClick={() => copyToClipboard(impersonationSessionId, "Session ID")}
+                    <Copy
+                      className="w-3 h-3 cursor-pointer hover:text-primary"
+                      onClick={() => copyToClipboard(impersonationSessionId, 'Session ID')}
                     />
                   </div>
                 </div>
@@ -241,9 +240,13 @@ export function SupportDiagnosticsPanel() {
               </div>
               {Object.keys(cacheStats.byKey).length > 0 ? (
                 <div className="grid grid-cols-2 gap-1 text-muted-foreground font-mono text-[10px]">
-                  {Object.entries(cacheStats.byKey).slice(0, 6).map(([key, count]) => (
-                    <div key={key}>{key}: {count}</div>
-                  ))}
+                  {Object.entries(cacheStats.byKey)
+                    .slice(0, 6)
+                    .map(([key, count]) => (
+                      <div key={key}>
+                        {key}: {count}
+                      </div>
+                    ))}
                 </div>
               ) : (
                 <div className="text-muted-foreground text-[10px]">No cached queries</div>
@@ -252,9 +255,9 @@ export function SupportDiagnosticsPanel() {
 
             {/* State Flags */}
             <div className="grid grid-cols-2 gap-1 text-muted-foreground">
-              <div>isLoading: {isLoading ? "true" : "false"}</div>
-              <div>isInitialized: {isInitialized ? "true" : "false"}</div>
-              <div>impChecked: {impersonationChecked ? "true" : "false"}</div>
+              <div>isLoading: {isLoading ? 'true' : 'false'}</div>
+              <div>isInitialized: {isInitialized ? 'true' : 'false'}</div>
+              <div>impChecked: {impersonationChecked ? 'true' : 'false'}</div>
             </div>
 
             {/* Action Buttons */}
@@ -266,7 +269,7 @@ export function SupportDiagnosticsPanel() {
                 className="flex-1 text-xs"
                 disabled={isLoading}
               >
-                <RefreshCw className={cn("w-3 h-3 mr-1", isLoading && "animate-spin")} />
+                <RefreshCw className={cn('w-3 h-3 mr-1', isLoading && 'animate-spin')} />
                 Refresh
               </Button>
               <Button

@@ -18,7 +18,7 @@ tech-stack:
   added: []
   patterns:
     - "Socket plugin mock with Symbol.for('skip-override') for fastify-plugin decorator propagation"
-    - "createValidPayload() factory with spread overrides for test fixtures"
+    - 'createValidPayload() factory with spread overrides for test fixtures'
 
 key-files:
   created: []
@@ -26,8 +26,8 @@ key-files:
     - backend/tests/api/ttn-webhooks.test.ts
 
 key-decisions:
-  - "Consolidated by replacing api file content with routes file content (file move, not merge)"
-  - "Routes file was untracked in git -- only the api file was tracked and modified"
+  - 'Consolidated by replacing api file content with routes file content (file move, not merge)'
+  - 'Routes file was untracked in git -- only the api file was tracked and modified'
 
 patterns-established:
   - "Socket plugin mock: Object.assign(plugin, { [Symbol.for('skip-override')]: true }) for test isolation"
@@ -50,6 +50,7 @@ completed: 2026-01-30
 - **Files modified:** 1
 
 ## Accomplishments
+
 - Eliminated 14 skipped tests by replacing broken mock setup with working socket plugin mock using `Symbol.for('skip-override')`
 - Consolidated duplicate test files into single canonical location at `backend/tests/api/ttn-webhooks.test.ts`
 - Removed unused `backend/tests/routes/` directory (was untracked in git)
@@ -65,9 +66,11 @@ Each task was committed atomically:
 **Plan metadata:** (pending)
 
 ## Files Created/Modified
+
 - `backend/tests/api/ttn-webhooks.test.ts` - Complete 32-test TTN webhook suite covering auth, payload parsing, device lookup, alert evaluation, metadata updates, error handling, and end-to-end flow
 
 ## Decisions Made
+
 - Replaced api file content entirely with routes file content rather than merging, since research proved routes file is a strict superset
 - The routes test file was never committed to git (untracked), so the "deletion" was a local filesystem cleanup only
 
@@ -76,6 +79,7 @@ Each task was committed atomically:
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 None
 
 ## User Setup Required
@@ -83,10 +87,12 @@ None
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - TTN webhook tests fully consolidated and passing
 - Backend test baseline updated: 1246 passed, 24 skipped, 10 failed
 - The 10 pre-existing failures are in `reading-ingestion.service.test.ts` (unrelated to TTN webhooks)
 
 ---
-*Phase: 52-backend-ttn-webhook-tests*
-*Completed: 2026-01-30*
+
+_Phase: 52-backend-ttn-webhook-tests_
+_Completed: 2026-01-30_

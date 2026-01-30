@@ -43,10 +43,7 @@ export class SignatureVerificationError extends Error {
 /**
  * Verify Stripe webhook signature
  */
-export function verifyWebhookSignature(
-  payload: string | Buffer,
-  signature: string
-): Stripe.Event {
+export function verifyWebhookSignature(payload: string | Buffer, signature: string): Stripe.Event {
   const stripe = getStripeClient();
   const webhookSecret = getWebhookSecret();
 
@@ -64,9 +61,7 @@ export function verifyWebhookSignature(
  * Handle checkout.session.completed event
  * Activates the subscription after successful payment
  */
-export async function handleCheckoutCompleted(
-  session: Stripe.Checkout.Session
-): Promise<void> {
+export async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
   const organizationId = session.client_reference_id || session.metadata?.organizationId;
   const plan = session.metadata?.plan as PlanKey | undefined;
 
@@ -75,12 +70,9 @@ export async function handleCheckoutCompleted(
   }
 
   // Get customer and subscription IDs from the session
-  const customerId = typeof session.customer === 'string'
-    ? session.customer
-    : session.customer?.id;
-  const subscriptionId = typeof session.subscription === 'string'
-    ? session.subscription
-    : session.subscription?.id;
+  const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
+  const subscriptionId =
+    typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
 
   if (!customerId) {
     throw new WebhookError('Missing customer ID in checkout session');
@@ -154,14 +146,11 @@ export async function handleCheckoutCompleted(
  * Handle customer.subscription.updated event
  * Syncs subscription status changes from Stripe
  */
-export async function handleSubscriptionUpdated(
-  subscription: Stripe.Subscription
-): Promise<void> {
+export async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
   const organizationId = subscription.metadata?.organizationId;
   const stripeSubscriptionId = subscription.id;
-  const customerId = typeof subscription.customer === 'string'
-    ? subscription.customer
-    : subscription.customer?.id;
+  const customerId =
+    typeof subscription.customer === 'string' ? subscription.customer : subscription.customer?.id;
 
   // Find subscription by Stripe subscription ID or customer ID
   let dbSubscription: Subscription | undefined;
@@ -225,9 +214,7 @@ export async function handleSubscriptionUpdated(
   const currentPeriodStart = firstItem
     ? new Date(firstItem.current_period_start * 1000)
     : undefined;
-  const currentPeriodEnd = firstItem
-    ? new Date(firstItem.current_period_end * 1000)
-    : undefined;
+  const currentPeriodEnd = firstItem ? new Date(firstItem.current_period_end * 1000) : undefined;
 
   await db
     .update(subscriptions)
@@ -247,14 +234,11 @@ export async function handleSubscriptionUpdated(
  * Handle customer.subscription.deleted event
  * Deactivates the subscription when canceled
  */
-export async function handleSubscriptionDeleted(
-  subscription: Stripe.Subscription
-): Promise<void> {
+export async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
   const organizationId = subscription.metadata?.organizationId;
   const stripeSubscriptionId = subscription.id;
-  const customerId = typeof subscription.customer === 'string'
-    ? subscription.customer
-    : subscription.customer?.id;
+  const customerId =
+    typeof subscription.customer === 'string' ? subscription.customer : subscription.customer?.id;
 
   // Find subscription by Stripe subscription ID or customer ID
   let dbSubscription: Subscription | undefined;
@@ -320,12 +304,8 @@ const adminNotifications: AdminNotification[] = [];
  * Handle invoice.payment_failed event
  * Notifies admin about failed payment
  */
-export async function handleInvoicePaymentFailed(
-  invoice: Stripe.Invoice
-): Promise<void> {
-  const customerId = typeof invoice.customer === 'string'
-    ? invoice.customer
-    : invoice.customer?.id;
+export async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
+  const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id;
 
   if (!customerId) {
     throw new WebhookError('Missing customer ID in invoice');

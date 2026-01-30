@@ -3,12 +3,12 @@
  * Registry-driven telemetry display for device readings
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
-import { getDeviceDefinition } from "@/lib/devices";
-import type { TelemetryFieldDefinition } from "@/lib/devices";
-import { Activity } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { getDeviceDefinition } from '@/lib/devices';
+import type { TelemetryFieldDefinition } from '@/lib/devices';
+import { Activity } from 'lucide-react';
 
 interface TelemetryPanelProps {
   /** Device model identifier */
@@ -35,14 +35,14 @@ export function TelemetryPanel({
 }: TelemetryPanelProps) {
   const definition = getDeviceDefinition(model);
   const fields = definition.telemetryFields;
-  
+
   // Sort fields by priority
   const sortedFields = [...fields].sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99));
-  
+
   const content = (
     <>
       {isLoading ? (
-        <div className={cn("grid gap-3", compact ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3")}>
+        <div className={cn('grid gap-3', compact ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3')}>
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="space-y-1.5">
               <Skeleton className="h-3 w-16" />
@@ -63,23 +63,19 @@ export function TelemetryPanel({
           <p className="text-xs">Waiting for device data...</p>
         </div>
       ) : (
-        <div className={cn("grid gap-3", compact ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3")}>
+        <div className={cn('grid gap-3', compact ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3')}>
           {sortedFields.map((field) => (
-            <TelemetryField
-              key={field.key}
-              field={field}
-              value={telemetry[field.key]}
-            />
+            <TelemetryField key={field.key} field={field} value={telemetry[field.key]} />
           ))}
         </div>
       )}
     </>
   );
-  
+
   if (!showCard) {
     return <div className={className}>{content}</div>;
   }
-  
+
   return (
     <Card className={className}>
       <CardHeader className="pb-3">
@@ -99,19 +95,17 @@ interface TelemetryFieldProps {
 }
 
 function TelemetryField({ field, value }: TelemetryFieldProps) {
-  const displayValue = value !== undefined && value !== null
-    ? field.formatter?.(value) ?? `${value}${field.unit}`
-    : field.emptyValue;
-  
+  const displayValue =
+    value !== undefined && value !== null
+      ? (field.formatter?.(value) ?? `${value}${field.unit}`)
+      : field.emptyValue;
+
   const isEmpty = value === undefined || value === null;
-  
+
   return (
     <div className="flex flex-col">
       <span className="text-xs text-muted-foreground">{field.label}</span>
-      <span className={cn(
-        "font-mono text-sm",
-        isEmpty && "text-muted-foreground"
-      )}>
+      <span className={cn('font-mono text-sm', isEmpty && 'text-muted-foreground')}>
         {displayValue}
       </span>
     </div>
@@ -139,19 +133,19 @@ export function InlineTelemetry({
   const fields = definition.telemetryFields
     .sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))
     .slice(0, maxFields);
-  
+
   if (Object.keys(telemetry).length === 0) {
     return <span className="text-muted-foreground text-xs">No data</span>;
   }
-  
+
   return (
-    <div className={cn("flex items-center gap-2 text-xs", className)}>
+    <div className={cn('flex items-center gap-2 text-xs', className)}>
       {fields.map((field) => {
         const value = telemetry[field.key];
         if (value === undefined || value === null) return null;
-        
+
         const displayValue = field.formatter?.(value) ?? `${value}${field.unit}`;
-        
+
         return (
           <span key={field.key} className="font-mono">
             {displayValue}

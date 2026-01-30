@@ -41,6 +41,7 @@ Successfully migrated 6 components containing complex auth patterns (2-4 auth ca
 ## Tasks Completed
 
 ### Task 1: AlertRulesEditor and TTNCredentialsPanel
+
 - **AlertRulesEditor.tsx**: 3 auth calls → useUser
   - `supabase.auth.getSession()` in handleSave → `user.id`
   - `supabase.auth.getSession()` in handleClearField → `user.id`
@@ -55,6 +56,7 @@ Successfully migrated 6 components containing complex auth patterns (2-4 auth ca
 **Commit:** c8ba3b5
 
 ### Task 2: NotificationDropdown, RBACDebugPanel, SiteComplianceSettings
+
 - **NotificationDropdown.tsx**: 2 auth calls → useUser
   - `supabase.auth.getUser()` in loadOrgId → `user` check
   - `supabase.auth.getUser()` in loadNotifications → `user` check
@@ -67,6 +69,7 @@ Successfully migrated 6 components containing complex auth patterns (2-4 auth ca
 **Commit:** 4d77ac2
 
 ### Task 3: DashboardLayout
+
 - **DashboardLayout.tsx**: 3 auth calls → useUser, reactive pattern
   - Removed `onAuthStateChange` subscription entirely
   - Removed `Session` import (no longer needed)
@@ -86,12 +89,16 @@ None - plan executed exactly as written.
 ### Pattern: Supabase Auth → Stack Auth
 
 **Before:**
+
 ```typescript
-const { data: { session } } = await supabase.auth.getSession();
+const {
+  data: { session },
+} = await supabase.auth.getSession();
 const userId = session?.session?.user?.id;
 ```
 
 **After:**
+
 ```typescript
 const user = useUser();
 if (!user) throw new Error('Not authenticated');
@@ -101,9 +108,12 @@ const userId = user.id;
 ### Pattern: Auth Subscriptions Removed
 
 **Before:**
+
 ```typescript
 useEffect(() => {
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((event, session) => {
     setSession(session);
     // handle auth change
   });
@@ -112,12 +122,13 @@ useEffect(() => {
 ```
 
 **After:**
+
 ```typescript
 // Stack Auth useUser() is reactive - no subscription needed
 // The user object updates automatically on auth changes
 useEffect(() => {
   if (!user) {
-    navigate("/auth");
+    navigate('/auth');
   }
 }, [user, navigate]);
 ```
@@ -125,30 +136,35 @@ useEffect(() => {
 ### Pattern: Sign Out Migration
 
 **Before:**
+
 ```typescript
 const { error } = await supabase.auth.signOut();
 if (error) throw error;
 ```
 
 **After:**
+
 ```typescript
 if (user) {
   await user.signOut();
 }
-navigate("/");
+navigate('/');
 ```
 
 ## Files Modified
 
 ### Settings Components (2 files)
+
 - `src/components/settings/AlertRulesEditor.tsx` - 3 auth calls
 - `src/components/settings/TTNCredentialsPanel.tsx` - 4 auth calls
 
 ### UI Components (2 files)
+
 - `src/components/NotificationDropdown.tsx` - 2 auth calls
 - `src/components/debug/RBACDebugPanel.tsx` - 1 auth call
 
 ### Feature Components (2 files)
+
 - `src/components/site/SiteComplianceSettings.tsx` - 1 auth call
 - `src/components/DashboardLayout.tsx` - 3 auth calls + subscription removal
 
@@ -157,6 +173,7 @@ navigate("/");
 ## Verification
 
 All components compile without errors:
+
 - ✅ Zero `supabase.auth` calls remain
 - ✅ No auth state subscriptions (onAuthStateChange) remain
 - ✅ Database calls preserved where needed
@@ -166,12 +183,14 @@ All components compile without errors:
 ## Impact Analysis
 
 ### Immediate Benefits
+
 - **Simpler auth state**: No manual subscription management
 - **Automatic updates**: Auth state changes trigger re-renders automatically
 - **Consolidated imports**: Single useUser() hook replaces multiple auth calls
 - **Type safety**: Stack Auth provides better TypeScript types
 
 ### Migration Progress
+
 - **Before this plan**: ~30 components with Supabase auth
 - **After this plan**: 6 more components migrated
 - **Remaining**: Tracked in Phase 8 backlog
@@ -181,6 +200,7 @@ All components compile without errors:
 **Ready for 08-04** (final batch of complex components)
 
 **Dependencies satisfied:**
+
 - ✅ Reference pattern established (useEffectiveIdentity.ts)
 - ✅ Complex auth patterns validated
 - ✅ Subscription removal pattern proven

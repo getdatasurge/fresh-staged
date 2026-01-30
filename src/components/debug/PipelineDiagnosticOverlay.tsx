@@ -1,13 +1,13 @@
 /**
  * Pipeline Diagnostic Overlay
- * 
+ *
  * Shows detailed pipeline health information for Super Admin / Support users.
  * Displays layer-by-layer status with timestamps and technical details.
  * Includes payload binding comparison and schema validation results.
  */
 
-import { useState } from "react";
-import { format } from "date-fns";
+import { useState } from 'react';
+import { format } from 'date-fns';
 import {
   Activity,
   Radio,
@@ -25,13 +25,18 @@ import {
   AlertTriangle,
   XCircle,
   FileJson,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import type { PipelineHealthReport, PipelineCheckResult, PipelineLayer, LayerStatus } from "@/lib/pipeline/pipelineHealth";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import type {
+  PipelineHealthReport,
+  PipelineCheckResult,
+  PipelineLayer,
+  LayerStatus,
+} from '@/lib/pipeline/pipelineHealth';
+import { cn } from '@/lib/utils';
 
 // ============================================================================
 // Types
@@ -41,10 +46,10 @@ export interface PayloadBindingData {
   payloadType: string;
   schemaVersion: string;
   confidence: number;
-  status: "active" | "review_required" | "overridden" | "pending";
+  status: 'active' | 'review_required' | 'overridden' | 'pending';
   capabilities: string[];
   boundAt?: string;
-  source?: "auto" | "manual";
+  source?: 'auto' | 'manual';
 }
 
 export interface SchemaValidationResult {
@@ -164,15 +169,15 @@ function LayerRow({ check }: { check: PipelineCheckResult }) {
     <div className="border-b border-border/50 last:border-0">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
-          <button 
+          <button
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2 hover:bg-muted/50 transition-colors",
-              hasTechnicalDetails && "cursor-pointer"
+              'w-full flex items-center gap-3 px-3 py-2 hover:bg-muted/50 transition-colors',
+              hasTechnicalDetails && 'cursor-pointer',
             )}
             disabled={!hasTechnicalDetails}
           >
             <StatusIcon status={check.status} />
-            
+
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <Icon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               <span className="text-sm font-medium">{LAYER_NAMES[check.layer]}</span>
@@ -184,17 +189,16 @@ function LayerRow({ check }: { check: PipelineCheckResult }) {
                   {format(check.lastSuccess, 'HH:mm:ss')}
                 </span>
               )}
-              
-              <Badge 
-                variant="outline" 
-                className={cn("text-[10px] px-1.5 py-0 h-4", getStatusBadgeStyle(check.status))}
+
+              <Badge
+                variant="outline"
+                className={cn('text-[10px] px-1.5 py-0 h-4', getStatusBadgeStyle(check.status))}
               >
                 {check.status === 'not_applicable' ? 'N/A' : check.status}
               </Badge>
 
-              {hasTechnicalDetails && (
-                isOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
-              )}
+              {hasTechnicalDetails &&
+                (isOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)}
             </div>
           </button>
         </CollapsibleTrigger>
@@ -203,17 +207,13 @@ function LayerRow({ check }: { check: PipelineCheckResult }) {
           <CollapsibleContent>
             <div className="px-3 py-2 bg-muted/30 border-t border-border/50">
               <p className="text-xs text-muted-foreground mb-1">{check.message}</p>
-              
+
               {check.error && (
-                <p className="text-xs text-alarm font-mono mb-1">
-                  Error: {check.error}
-                </p>
+                <p className="text-xs text-alarm font-mono mb-1">Error: {check.error}</p>
               )}
-              
+
               {check.technicalDetails && (
-                <p className="text-xs text-muted-foreground font-mono">
-                  {check.technicalDetails}
-                </p>
+                <p className="text-xs text-muted-foreground font-mono">{check.technicalDetails}</p>
               )}
             </div>
           </CollapsibleContent>
@@ -236,7 +236,7 @@ function PayloadBindingSection({
   inferenceDetails?: InferenceDetails;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   if (!payloadBinding) return null;
 
   const typesMatch = lastReceivedPayloadType === payloadBinding.payloadType;
@@ -271,13 +271,13 @@ function PayloadBindingSection({
               <div>
                 <span className="text-muted-foreground block mb-0.5">Last Received</span>
                 <div className="flex items-center gap-1.5">
-                  <code className={cn(
-                    "font-mono px-1.5 py-0.5 rounded",
-                    typesMatch 
-                      ? "text-foreground bg-muted" 
-                      : "text-alarm bg-alarm/10"
-                  )}>
-                    {lastReceivedPayloadType ?? "—"}
+                  <code
+                    className={cn(
+                      'font-mono px-1.5 py-0.5 rounded',
+                      typesMatch ? 'text-foreground bg-muted' : 'text-alarm bg-alarm/10',
+                    )}
+                  >
+                    {lastReceivedPayloadType ?? '—'}
                   </code>
                   {typesMatch ? (
                     <CheckCircle2 className="w-3 h-3 text-safe" />
@@ -323,7 +323,10 @@ function PayloadBindingSection({
                       ({Math.round(inferenceDetails.confidence * 100)}%)
                     </span>
                     {inferenceDetails.isAmbiguous && (
-                      <Badge variant="outline" className="text-[10px] h-4 text-warning border-warning/30">
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] h-4 text-warning border-warning/30"
+                      >
                         Ambiguous
                       </Badge>
                     )}
@@ -358,10 +361,10 @@ function SchemaValidationSection({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showPayload, setShowPayload] = useState(false);
-  
+
   if (!schemaValidation) return null;
 
-  const hasIssues = 
+  const hasIssues =
     schemaValidation.missingRequired.length > 0 ||
     schemaValidation.missingOptional.length > 0 ||
     schemaValidation.unexpectedFields.length > 0;
@@ -439,11 +442,15 @@ function SchemaValidationSection({
             {/* Last Payload Sample (Collapsible) */}
             {schemaValidation.lastPayloadSample && (
               <div className="pt-2 border-t border-border/50">
-                <button 
+                <button
                   onClick={() => setShowPayload(!showPayload)}
                   className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
                 >
-                  {showPayload ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  {showPayload ? (
+                    <ChevronUp className="w-3 h-3" />
+                  ) : (
+                    <ChevronDown className="w-3 h-3" />
+                  )}
                   Last Payload Sample
                 </button>
                 {showPayload && (
@@ -484,11 +491,9 @@ export function PipelineDiagnosticOverlay({
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-muted-foreground" />
           <span className="text-sm font-medium">Pipeline Diagnostics</span>
-          {unitName && (
-            <span className="text-xs text-muted-foreground">— {unitName}</span>
-          )}
+          {unitName && <span className="text-xs text-muted-foreground">— {unitName}</span>}
         </div>
-        
+
         <div className="flex items-center gap-1">
           {onRefresh && (
             <Button
@@ -498,7 +503,7 @@ export function PipelineDiagnosticOverlay({
               onClick={onRefresh}
               disabled={isRefreshing}
             >
-              <RefreshCw className={cn("w-3 h-3", isRefreshing && "animate-spin")} />
+              <RefreshCw className={cn('w-3 h-3', isRefreshing && 'animate-spin')} />
             </Button>
           )}
           <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onClose}>
@@ -508,18 +513,17 @@ export function PipelineDiagnosticOverlay({
       </div>
 
       {/* Overall Status */}
-      <div className={cn(
-        "px-3 py-2 border-b border-border",
-        hasIssue ? "bg-alarm/10" : "bg-safe/10"
-      )}>
+      <div
+        className={cn('px-3 py-2 border-b border-border', hasIssue ? 'bg-alarm/10' : 'bg-safe/10')}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <StatusIcon status={report.overallStatus} />
             <span className="text-sm">{report.userMessage}</span>
           </div>
           {report.failingLayer && (
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className="text-[10px] px-1.5 py-0 h-4 bg-alarm/20 text-alarm border-alarm/30"
             >
               Issue: {LAYER_NAMES[report.failingLayer]}
@@ -553,7 +557,7 @@ export function PipelineDiagnosticOverlay({
         <span className="text-[10px] text-muted-foreground">
           Checked at {format(report.checkedAt, 'HH:mm:ss')}
         </span>
-        
+
         <Button variant="ghost" size="sm" className="h-6 text-xs gap-1" asChild>
           <a href="/admin/health" target="_blank" rel="noopener noreferrer">
             <span>Full Health Dashboard</span>

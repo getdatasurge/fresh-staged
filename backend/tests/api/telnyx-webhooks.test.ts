@@ -38,7 +38,7 @@ const TEST_MESSAGE_ID = 'msg_abc123xyz';
 // Helper to create valid Telnyx webhook events
 function createMockEvent(
   eventType: string,
-  payload: Record<string, unknown> = {}
+  payload: Record<string, unknown> = {},
 ): TelnyxWebhookEvent {
   return {
     data: {
@@ -144,9 +144,7 @@ describe('Telnyx Webhooks API', () => {
     describe('message.failed event', () => {
       it('should process message.failed event successfully', async () => {
         const event = createMockEvent('message.failed', {
-          errors: [
-            { code: '40300', title: 'Number opted out', detail: 'Recipient sent STOP' },
-          ],
+          errors: [{ code: '40300', title: 'Number opted out', detail: 'Recipient sent STOP' }],
         });
         mockHandleEvent.mockResolvedValue({
           messageId: TEST_MESSAGE_ID,
@@ -282,7 +280,7 @@ describe('Telnyx Webhooks API', () => {
       it('should return 400 when handler throws TelnyxWebhookError', async () => {
         const event = createMockEvent('message.sent');
         mockHandleEvent.mockRejectedValue(
-          new telnyxWebhookService.TelnyxWebhookError('Missing message ID')
+          new telnyxWebhookService.TelnyxWebhookError('Missing message ID'),
         );
 
         const response = await app.inject({

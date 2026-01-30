@@ -1,13 +1,25 @@
 /**
  * Layout Transform Utilities
- * 
+ *
  * Functions for validating, sanitizing, and migrating layout configurations.
  */
 
-import type { LayoutConfig, WidgetPosition, SavedLayout, ActiveLayout, WidgetPreferences, TimelineState, EntityType } from "../types";
-import { LAYOUT_CONFIG_VERSION, DEFAULT_LAYOUT_ID } from "../types";
-import { WIDGET_REGISTRY, getMandatoryWidgets } from "../registry/widgetRegistry";
-import { DEFAULT_TIMELINE_STATE, DEFAULT_WIDGET_PREFS, getDefaultLayout } from "../constants/defaultLayout";
+import type {
+  LayoutConfig,
+  WidgetPosition,
+  SavedLayout,
+  ActiveLayout,
+  WidgetPreferences,
+  TimelineState,
+  EntityType,
+} from '../types';
+import { LAYOUT_CONFIG_VERSION, DEFAULT_LAYOUT_ID } from '../types';
+import { WIDGET_REGISTRY, getMandatoryWidgets } from '../registry/widgetRegistry';
+import {
+  DEFAULT_TIMELINE_STATE,
+  DEFAULT_WIDGET_PREFS,
+  getDefaultLayout,
+} from '../constants/defaultLayout';
 
 // Re-export getDefaultLayout for convenience
 export { getDefaultLayout };
@@ -35,20 +47,20 @@ export function validateLayoutConfig(config: unknown, entityType?: EntityType): 
   const warnings: string[] = [];
 
   // Type check
-  if (!config || typeof config !== "object") {
-    return { valid: false, errors: ["Layout config must be an object"], warnings: [] };
+  if (!config || typeof config !== 'object') {
+    return { valid: false, errors: ['Layout config must be an object'], warnings: [] };
   }
 
   const cfg = config as Record<string, unknown>;
 
   // Version check
-  if (typeof cfg.version !== "number") {
-    warnings.push("Missing version field, assuming version 1");
+  if (typeof cfg.version !== 'number') {
+    warnings.push('Missing version field, assuming version 1');
   }
 
   // Widgets array check
   if (!Array.isArray(cfg.widgets)) {
-    errors.push("Layout config must have a widgets array");
+    errors.push('Layout config must have a widgets array');
     return { valid: false, errors, warnings };
   }
 
@@ -61,7 +73,7 @@ export function validateLayoutConfig(config: unknown, entityType?: EntityType): 
     }
 
     const w = widget as WidgetPosition;
-    
+
     // Check for duplicate IDs
     if (seenIds.has(w.i)) {
       errors.push(`Duplicate widget ID: ${w.i}`);
@@ -76,20 +88,20 @@ export function validateLayoutConfig(config: unknown, entityType?: EntityType): 
 
   // Check mandatory widgets are present (entity-type aware)
   const mandatory = getMandatoryWidgets(entityType);
-  const hiddenWidgets = Array.isArray(cfg.hiddenWidgets) ? cfg.hiddenWidgets as string[] : [];
-  
+  const hiddenWidgets = Array.isArray(cfg.hiddenWidgets) ? (cfg.hiddenWidgets as string[]) : [];
+
   if (process.env.NODE_ENV === 'development') {
     console.log('[Layout] validateLayoutConfig:', {
       entityType: entityType || 'unspecified',
       widgetCount: (cfg.widgets as unknown[]).length,
-      mandatoryRequired: mandatory.map(m => m.id),
+      mandatoryRequired: mandatory.map((m) => m.id),
     });
   }
-  
+
   for (const mw of mandatory) {
-    const inLayout = (cfg.widgets as WidgetPosition[]).some(w => w.i === mw.id);
+    const inLayout = (cfg.widgets as WidgetPosition[]).some((w) => w.i === mw.id);
     const isHidden = hiddenWidgets.includes(mw.id);
-    
+
     if (!inLayout) {
       errors.push(`Mandatory widget missing from layout: ${mw.id}`);
     }
@@ -105,18 +117,20 @@ export function validateLayoutConfig(config: unknown, entityType?: EntityType): 
  * Type guard for WidgetPosition.
  */
 function isValidWidgetPosition(obj: unknown): obj is WidgetPosition {
-  if (!obj || typeof obj !== "object") return false;
+  if (!obj || typeof obj !== 'object') return false;
   const w = obj as Record<string, unknown>;
-  
+
   return (
-    typeof w.i === "string" &&
-    typeof w.x === "number" &&
-    typeof w.y === "number" &&
-    typeof w.w === "number" &&
-    typeof w.h === "number" &&
-    w.x >= 0 && w.x <= 11 &&
+    typeof w.i === 'string' &&
+    typeof w.x === 'number' &&
+    typeof w.y === 'number' &&
+    typeof w.w === 'number' &&
+    typeof w.h === 'number' &&
+    w.x >= 0 &&
+    w.x <= 11 &&
     w.y >= 0 &&
-    w.w >= 1 && w.w <= 12 &&
+    w.w >= 1 &&
+    w.w <= 12 &&
     w.h >= 1
   );
 }
@@ -133,20 +147,20 @@ function isValidWidgetPosition(obj: unknown): obj is WidgetPosition {
  */
 export function sanitizeLayoutConfig(config: unknown, entityType?: EntityType): LayoutConfig {
   const validation = validateLayoutConfig(config, entityType);
-  
+
   // Get entity-specific default layout
-  const defaultConfig = entityType 
-    ? getDefaultLayout(entityType).config 
+  const defaultConfig = entityType
+    ? getDefaultLayout(entityType).config
     : getDefaultLayout('unit').config;
-  
+
   // If completely invalid, return entity-specific default
   if (!validation.valid && validation.errors.length > 0) {
-    console.warn("[Layout] Invalid layout, falling back to default:", validation.errors);
+    console.warn('[Layout] Invalid layout, falling back to default:', validation.errors);
     return { ...defaultConfig };
   }
 
   const cfg = config as Record<string, unknown>;
-  const widgets = (cfg.widgets as WidgetPosition[]).filter(w => {
+  const widgets = (cfg.widgets as WidgetPosition[]).filter((w) => {
     // Remove unknown widgets
     if (!WIDGET_REGISTRY[w.i]) {
       console.warn(`[Layout] Removing unknown widget: ${w.i}`);
@@ -158,9 +172,9 @@ export function sanitizeLayoutConfig(config: unknown, entityType?: EntityType): 
   // Ensure mandatory widgets are present (entity-type aware)
   const mandatory = getMandatoryWidgets(entityType);
   for (const mw of mandatory) {
-    if (!widgets.some(w => w.i === mw.id)) {
+    if (!widgets.some((w) => w.i === mw.id)) {
       // Add mandatory widget at default position from entity-specific defaults
-      const defaultPos = defaultConfig.widgets.find(w => w.i === mw.id);
+      const defaultPos = defaultConfig.widgets.find((w) => w.i === mw.id);
       if (defaultPos) {
         widgets.push({ ...defaultPos });
         console.warn(`[Layout] Auto-repaired: Added missing mandatory widget: ${mw.id}`);
@@ -170,7 +184,7 @@ export function sanitizeLayoutConfig(config: unknown, entityType?: EntityType): 
 
   // Sanitize hidden widgets (remove mandatory widgets from hidden list)
   const hiddenWidgets = Array.isArray(cfg.hiddenWidgets)
-    ? (cfg.hiddenWidgets as string[]).filter(id => {
+    ? (cfg.hiddenWidgets as string[]).filter((id) => {
         const widget = WIDGET_REGISTRY[id];
         if (!widget) return false;
         if (widget.mandatory) {
@@ -182,13 +196,13 @@ export function sanitizeLayoutConfig(config: unknown, entityType?: EntityType): 
     : [];
 
   // Apply size constraints from registry
-  const constrainedWidgets = widgets.map(w => constrainWidgetSize(w));
+  const constrainedWidgets = widgets.map((w) => constrainWidgetSize(w));
 
   // Fix overlapping widgets
   const fixedWidgets = fixOverlappingWidgets(constrainedWidgets);
 
   return {
-    version: typeof cfg.version === "number" ? cfg.version : LAYOUT_CONFIG_VERSION,
+    version: typeof cfg.version === 'number' ? cfg.version : LAYOUT_CONFIG_VERSION,
     widgets: fixedWidgets,
     hiddenWidgets,
   };
@@ -225,12 +239,12 @@ function fixOverlappingWidgets(widgets: WidgetPosition[]): WidgetPosition[] {
 
   // Track occupied cells
   const occupied = new Set<string>();
-  
+
   const result: WidgetPosition[] = [];
-  
+
   for (const widget of sorted) {
     let { x, y, w, h } = widget;
-    
+
     // Check if current position overlaps
     let hasOverlap = true;
     while (hasOverlap) {
@@ -247,14 +261,14 @@ function fixOverlappingWidgets(widgets: WidgetPosition[]): WidgetPosition[] {
         if (hasOverlap) break;
       }
     }
-    
+
     // Mark cells as occupied
     for (let dy = 0; dy < h; dy++) {
       for (let dx = 0; dx < w; dx++) {
         occupied.add(`${x + dx},${y + dy}`);
       }
     }
-    
+
     result.push({ ...widget, x, y });
   }
 
@@ -272,7 +286,7 @@ function fixOverlappingWidgets(widgets: WidgetPosition[]): WidgetPosition[] {
  */
 export function dbRowToActiveLayout(row: SavedLayout, entityType?: EntityType): ActiveLayout {
   const sanitizedConfig = sanitizeLayoutConfig(row.layoutJson, entityType);
-  
+
   return {
     id: row.id,
     name: row.name,
@@ -292,8 +306,8 @@ export function activeLayoutToDbRow(
   layout: ActiveLayout,
   organizationId: string,
   sensorId: string,
-  userId: string
-): Omit<SavedLayout, "id" | "createdAt" | "updatedAt"> {
+  userId: string,
+): Omit<SavedLayout, 'id' | 'createdAt' | 'updatedAt'> {
   return {
     organizationId,
     sensorId,
@@ -323,13 +337,7 @@ export function areLayoutConfigsEqual(a: LayoutConfig, b: LayoutConfig): boolean
   for (let i = 0; i < a.widgets.length; i++) {
     const wa = a.widgets[i];
     const wb = b.widgets[i];
-    if (
-      wa.i !== wb.i ||
-      wa.x !== wb.x ||
-      wa.y !== wb.y ||
-      wa.w !== wb.w ||
-      wa.h !== wb.h
-    ) {
+    if (wa.i !== wb.i || wa.x !== wb.x || wa.y !== wb.y || wa.w !== wb.w || wa.h !== wb.h) {
       return false;
     }
   }
@@ -351,7 +359,7 @@ export function areLayoutConfigsEqual(a: LayoutConfig, b: LayoutConfig): boolean
 export function cloneLayoutConfig(config: LayoutConfig): LayoutConfig {
   return {
     version: config.version,
-    widgets: config.widgets.map(w => ({ ...w })),
+    widgets: config.widgets.map((w) => ({ ...w })),
     hiddenWidgets: [...config.hiddenWidgets],
   };
 }
@@ -361,9 +369,9 @@ export function cloneLayoutConfig(config: LayoutConfig): LayoutConfig {
  */
 export function createNewLayoutFromDefault(name: string): ActiveLayout {
   const defaultLayout = getDefaultLayout();
-  
+
   return {
-    id: "", // Will be assigned by database
+    id: '', // Will be assigned by database
     name,
     isDefault: false,
     isImmutable: false,

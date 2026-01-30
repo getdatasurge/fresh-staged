@@ -1,10 +1,15 @@
-import { useState, useEffect } from "react";
-import { useGateways, useDeleteGateway, useUpdateGateway, useProvisionGateway } from "@/hooks/useGateways";
-import { useGatewayProvisioningPreflight } from "@/hooks/useGatewayProvisioningPreflight";
-import { Gateway, GatewayStatus } from "@/types/ttn";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from 'react';
+import {
+  useGateways,
+  useDeleteGateway,
+  useUpdateGateway,
+  useProvisionGateway,
+} from '@/hooks/useGateways';
+import { useGatewayProvisioningPreflight } from '@/hooks/useGatewayProvisioningPreflight';
+import { Gateway, GatewayStatus } from '@/types/ttn';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -12,7 +17,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,26 +27,36 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Radio, Plus, Pencil, Trash2, Loader2, Info, MapPin, CloudUpload, CheckCircle2 } from "lucide-react";
-import { AddGatewayDialog } from "./AddGatewayDialog";
-import { EditGatewayDialog } from "./EditGatewayDialog";
-import { TTNGatewayPreflightBanner } from "./TTNGatewayPreflightBanner";
-import { GATEWAY_STATUS_CONFIG, GATEWAY_COLUMN_TOOLTIPS } from "@/lib/entityStatusConfig";
-import { cn } from "@/lib/utils";
-import { debugLog } from "@/lib/debugLogger";
-import { canProvisionGateway } from "@/lib/actions";
-import { useTTNConfig } from "@/contexts/TTNConfigContext";
-import { TTNConfigSourceBadge } from "@/components/ttn/TTNConfigSourceBadge";
-import { checkTTNOperationAllowed } from "@/lib/ttn/guards";
+} from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Radio,
+  Plus,
+  Pencil,
+  Trash2,
+  Loader2,
+  Info,
+  MapPin,
+  CloudUpload,
+  CheckCircle2,
+} from 'lucide-react';
+import { AddGatewayDialog } from './AddGatewayDialog';
+import { EditGatewayDialog } from './EditGatewayDialog';
+import { TTNGatewayPreflightBanner } from './TTNGatewayPreflightBanner';
+import { GATEWAY_STATUS_CONFIG, GATEWAY_COLUMN_TOOLTIPS } from '@/lib/entityStatusConfig';
+import { cn } from '@/lib/utils';
+import { debugLog } from '@/lib/debugLogger';
+import { canProvisionGateway } from '@/lib/actions';
+import { useTTNConfig } from '@/contexts/TTNConfigContext';
+import { TTNConfigSourceBadge } from '@/components/ttn/TTNConfigSourceBadge';
+import { checkTTNOperationAllowed } from '@/lib/ttn/guards';
 
 interface Site {
   id: string;
@@ -82,17 +97,17 @@ const ColumnHeaderTooltip = ({ content }: { content: string }) => (
 );
 
 // Status badge with tooltip showing meaning, system state, and user action
-const GatewayStatusBadgeWithTooltip = ({ 
-  status, 
-  siteName 
-}: { 
-  status: GatewayStatus; 
+const GatewayStatusBadgeWithTooltip = ({
+  status,
+  siteName,
+}: {
+  status: GatewayStatus;
   siteName: string | null;
 }) => {
   const statusConfig = GATEWAY_STATUS_CONFIG[status] || GATEWAY_STATUS_CONFIG.pending;
-  
+
   // Special case for pending with linked site
-  if (status === "pending" && siteName) {
+  if (status === 'pending' && siteName) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>
@@ -102,9 +117,16 @@ const GatewayStatusBadgeWithTooltip = ({
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-xs p-3">
           <div className="space-y-1.5 text-sm">
-            <p><span className="font-medium">Status:</span> Gateway is registered and linked to a site</p>
-            <p><span className="font-medium">System:</span> Awaiting first connection to TTN network</p>
-            <p className="text-primary"><span className="font-medium">Action:</span> Power on gateway and connect to network</p>
+            <p>
+              <span className="font-medium">Status:</span> Gateway is registered and linked to a
+              site
+            </p>
+            <p>
+              <span className="font-medium">System:</span> Awaiting first connection to TTN network
+            </p>
+            <p className="text-primary">
+              <span className="font-medium">Action:</span> Power on gateway and connect to network
+            </p>
           </div>
         </TooltipContent>
       </Tooltip>
@@ -114,16 +136,20 @@ const GatewayStatusBadgeWithTooltip = ({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Badge className={cn("cursor-help", statusConfig.className)}>
-          {statusConfig.label}
-        </Badge>
+        <Badge className={cn('cursor-help', statusConfig.className)}>{statusConfig.label}</Badge>
       </TooltipTrigger>
       <TooltipContent side="top" className="max-w-xs p-3">
         <div className="space-y-1.5 text-sm">
-          <p><span className="font-medium">Status:</span> {statusConfig.tooltip.meaning}</p>
-          <p><span className="font-medium">System:</span> {statusConfig.tooltip.systemState}</p>
+          <p>
+            <span className="font-medium">Status:</span> {statusConfig.tooltip.meaning}
+          </p>
+          <p>
+            <span className="font-medium">System:</span> {statusConfig.tooltip.systemState}
+          </p>
           {statusConfig.tooltip.userAction && (
-            <p className="text-primary"><span className="font-medium">Action:</span> {statusConfig.tooltip.userAction}</p>
+            <p className="text-primary">
+              <span className="font-medium">Action:</span> {statusConfig.tooltip.userAction}
+            </p>
           )}
         </div>
       </TooltipContent>
@@ -197,17 +223,21 @@ const GatewayProvisionButton = ({
       ttn_gateway_id: gateway.ttn_gateway_id,
       status: gateway.status,
     },
-    ttnConfig ? {
-      isEnabled: ttnConfig.isEnabled,
-      hasApiKey: ttnConfig.hasApiKey,
-      applicationId: ttnConfig.applicationId,
-    } : null
+    ttnConfig
+      ? {
+          isEnabled: ttnConfig.isEnabled,
+          hasApiKey: ttnConfig.hasApiKey,
+          applicationId: ttnConfig.applicationId,
+        }
+      : null,
   );
 
   // TTN not configured - show disabled with reason
-  if (eligibility.code === "TTN_NOT_CONFIGURED" || 
-      eligibility.code === "TTN_MISSING_API_KEY" || 
-      eligibility.code === "TTN_MISSING_APPLICATION") {
+  if (
+    eligibility.code === 'TTN_NOT_CONFIGURED' ||
+    eligibility.code === 'TTN_MISSING_API_KEY' ||
+    eligibility.code === 'TTN_MISSING_APPLICATION'
+  ) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>
@@ -218,9 +248,7 @@ const GatewayProvisionButton = ({
         </TooltipTrigger>
         <TooltipContent className="max-w-xs">
           <p className="font-medium">TTN not configured</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {eligibility.reason}
-          </p>
+          <p className="text-xs text-muted-foreground mt-1">{eligibility.reason}</p>
         </TooltipContent>
       </Tooltip>
     );
@@ -263,19 +291,23 @@ const GatewayProvisionButton = ({
 };
 
 // Inline site selector for quick assignment
-const GatewaySiteSelector = ({ 
-  gateway, 
+const GatewaySiteSelector = ({
+  gateway,
   sites,
   onSiteChange,
-  isUpdating 
-}: { 
-  gateway: Gateway; 
+  isUpdating,
+}: {
+  gateway: Gateway;
   sites: Site[];
-  onSiteChange: (gateway: Gateway, newSiteId: string | null, currentSiteName: string | null) => void;
+  onSiteChange: (
+    gateway: Gateway,
+    newSiteId: string | null,
+    currentSiteName: string | null,
+  ) => void;
   isUpdating: boolean;
 }) => {
-  const currentSite = sites.find(s => s.id === gateway.site_id);
-  
+  const currentSite = sites.find((s) => s.id === gateway.site_id);
+
   if (isUpdating) {
     return (
       <div className="flex items-center gap-2 text-muted-foreground">
@@ -284,35 +316,33 @@ const GatewaySiteSelector = ({
       </div>
     );
   }
-  
+
   // No sites available
   if (sites.length === 0) {
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="text-muted-foreground text-sm cursor-help">
-            No sites available
-          </span>
+          <span className="text-muted-foreground text-sm cursor-help">No sites available</span>
         </TooltipTrigger>
-        <TooltipContent>
-          Create a site first to assign gateways
-        </TooltipContent>
+        <TooltipContent>Create a site first to assign gateways</TooltipContent>
       </Tooltip>
     );
   }
-  
+
   return (
     <Select
-      value={gateway.site_id || "unassigned"}
+      value={gateway.site_id || 'unassigned'}
       onValueChange={(value) => {
-        const newSiteId = value === "unassigned" ? null : value;
+        const newSiteId = value === 'unassigned' ? null : value;
         onSiteChange(gateway, newSiteId, currentSite?.name || null);
       }}
     >
-      <SelectTrigger className={cn(
-        "w-full min-w-[100px] max-w-[140px] h-8",
-        !gateway.site_id && "text-muted-foreground border-dashed"
-      )}>
+      <SelectTrigger
+        className={cn(
+          'w-full min-w-[100px] max-w-[140px] h-8',
+          !gateway.site_id && 'text-muted-foreground border-dashed',
+        )}
+      >
         <SelectValue>
           {currentSite ? (
             <span className="flex items-center gap-1.5">
@@ -348,21 +378,21 @@ export function GatewayManager({ organizationId, sites, canEdit, ttnConfig }: Ga
   const deleteGateway = useDeleteGateway();
   const updateGateway = useUpdateGateway();
   const provisionGateway = useProvisionGateway();
-  
+
   // TTN Config Context for state awareness
   const { context: ttnContext } = useTTNConfig();
   const guardResult = checkTTNOperationAllowed('provision_gateway', ttnContext);
-  
+
   // Gateway provisioning preflight check
   const preflight = useGatewayProvisioningPreflight(
     ttnConfig?.isEnabled && ttnConfig?.hasApiKey ? organizationId : null,
-    { autoRun: true }
+    { autoRun: true },
   );
-  
+
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editGateway, setEditGateway] = useState<Gateway | null>(null);
   const [deleteGateway_, setDeleteGateway] = useState<Gateway | null>(null);
-  
+
   // Site change confirmation state
   const [confirmSiteChange, setConfirmSiteChange] = useState<{
     gateway: Gateway;
@@ -384,58 +414,58 @@ export function GatewayManager({ organizationId, sites, canEdit, ttnConfig }: Ga
 
   const getSiteName = (siteId: string | null): string | null => {
     if (!siteId) return null;
-    const site = sites.find(s => s.id === siteId);
+    const site = sites.find((s) => s.id === siteId);
     return site?.name || null;
   };
 
   const handleDelete = async () => {
     if (!deleteGateway_) return;
-    await deleteGateway.mutateAsync({ 
-      id: deleteGateway_.id, 
-      orgId: organizationId 
+    await deleteGateway.mutateAsync({
+      id: deleteGateway_.id,
+      orgId: organizationId,
     });
     setDeleteGateway(null);
   };
 
   const handleSiteChange = async (
-    gateway: Gateway, 
-    newSiteId: string | null, 
-    currentSiteName: string | null
+    gateway: Gateway,
+    newSiteId: string | null,
+    currentSiteName: string | null,
   ) => {
     const newSiteName = newSiteId ? getSiteName(newSiteId) : null;
-    
+
     // If gateway already has a site and we're changing it, require confirmation
     if (gateway.site_id && newSiteId !== gateway.site_id) {
       setConfirmSiteChange({
         gateway,
         newSiteId,
         currentSiteName,
-        newSiteName
+        newSiteName,
       });
       return;
     }
-    
+
     // Direct assignment for unassigned gateways or same site
     await executeSiteUpdate(gateway, newSiteId);
   };
 
   const executeSiteUpdate = async (gateway: Gateway, newSiteId: string | null) => {
     setUpdatingGatewayId(gateway.id);
-    
+
     try {
-      debugLog.crud('update', 'gateway', gateway.id, { 
+      debugLog.crud('update', 'gateway', gateway.id, {
         action: 'site_assignment',
         previousSite: gateway.site_id,
-        newSite: newSiteId 
+        newSite: newSiteId,
       });
-      
+
       await updateGateway.mutateAsync({
         id: gateway.id,
-        updates: { 
+        updates: {
           site_id: newSiteId,
           // Reset to pending if site is being assigned/changed
-          ...(newSiteId !== gateway.site_id && { status: 'pending' as const })
-        }
+          ...(newSiteId !== gateway.site_id && { status: 'pending' as const }),
+        },
       });
     } finally {
       setUpdatingGatewayId(null);
@@ -450,7 +480,7 @@ export function GatewayManager({ organizationId, sites, canEdit, ttnConfig }: Ga
 
   const formatEUI = (eui: string): string => {
     // Format as XX:XX:XX:XX:XX:XX:XX:XX for readability
-    return eui.toUpperCase().match(/.{2}/g)?.join(":") || eui.toUpperCase();
+    return eui.toUpperCase().match(/.{2}/g)?.join(':') || eui.toUpperCase();
   };
 
   if (isLoading) {
@@ -487,7 +517,7 @@ export function GatewayManager({ organizationId, sites, canEdit, ttnConfig }: Ga
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Gateway Provisioning Preflight Banner */}
-          {ttnConfig?.isEnabled && ttnConfig?.hasApiKey && preflight.status !== "idle" && (
+          {ttnConfig?.isEnabled && ttnConfig?.hasApiKey && preflight.status !== 'idle' && (
             <TTNGatewayPreflightBanner
               status={preflight.status}
               keyType={preflight.keyType}
@@ -498,113 +528,120 @@ export function GatewayManager({ organizationId, sites, canEdit, ttnConfig }: Ga
               onRunPreflight={preflight.runPreflight}
               isLoading={preflight.isLoading}
               requestId={preflight.result?.request_id}
-              ttnRegion={ttnConfig.region || "nam1"}
+              ttnRegion={ttnConfig.region || 'nam1'}
             />
           )}
           {gateways && gateways.length > 0 ? (
             <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>
-                    <span className="inline-flex items-center">
-                      Name
-                      <ColumnHeaderTooltip content={GATEWAY_COLUMN_TOOLTIPS.name} />
-                    </span>
-                  </TableHead>
-                  <TableHead className="hidden sm:table-cell">
-                    <span className="inline-flex items-center">
-                      Gateway EUI
-                      <ColumnHeaderTooltip content={GATEWAY_COLUMN_TOOLTIPS.gatewayEui} />
-                    </span>
-                  </TableHead>
-                  <TableHead>
-                    <span className="inline-flex items-center">
-                      Site
-                      <ColumnHeaderTooltip content={GATEWAY_COLUMN_TOOLTIPS.site} />
-                    </span>
-                  </TableHead>
-                  <TableHead className="hidden lg:table-cell">
-                    <span className="inline-flex items-center">
-                      Status
-                      <ColumnHeaderTooltip content={GATEWAY_COLUMN_TOOLTIPS.status} />
-                    </span>
-                  </TableHead>
-                  <TableHead>
-                    <span className="inline-flex items-center">
-                      Actions
-                      <ColumnHeaderTooltip content="TTN registration status and edit actions" />
-                    </span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {gateways.map((gateway) => {
-                  const siteName = getSiteName(gateway.site_id);
-                  return (
-                    <TableRow key={gateway.id}>
-                      <TableCell className="font-medium py-3">{gateway.name}</TableCell>
-                      <TableCell className="hidden sm:table-cell font-mono text-sm">
-                        {formatEUI(gateway.gateway_eui)}
-                      </TableCell>
-                      <TableCell>
-                        {canEdit ? (
-                          <GatewaySiteSelector
-                            gateway={gateway}
-                            sites={sites}
-                            onSiteChange={handleSiteChange}
-                            isUpdating={updatingGatewayId === gateway.id}
-                          />
-                        ) : (
-                          siteName || <span className="text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        <GatewayStatusBadgeWithTooltip 
-                          status={gateway.status} 
-                          siteName={siteName} 
-                        />
-                      </TableCell>
-                      <TableCell className="py-3">
-                        <div className="flex flex-col gap-2">
-                          {/* TTN status */}
-                          <GatewayProvisionButton
-                            gateway={gateway as Gateway & { ttn_gateway_id?: string | null; ttn_last_error?: string | null }}
-                            ttnConfig={ttnConfig}
-                            isProvisioning={provisionGateway.isProvisioning(gateway.id)}
-                            onProvision={() => provisionGateway.mutate({ 
-                              gatewayId: gateway.id, 
-                              organizationId 
-                            })}
-                          />
-                          {/* Edit actions */}
-                          {canEdit && (
-                            <div className="flex items-center gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7"
-                                onClick={() => setEditGateway(gateway)}
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7"
-                                onClick={() => setDeleteGateway(gateway)}
-                              >
-                                <Trash2 className="w-4 h-4 text-destructive" />
-                              </Button>
-                            </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>
+                      <span className="inline-flex items-center">
+                        Name
+                        <ColumnHeaderTooltip content={GATEWAY_COLUMN_TOOLTIPS.name} />
+                      </span>
+                    </TableHead>
+                    <TableHead className="hidden sm:table-cell">
+                      <span className="inline-flex items-center">
+                        Gateway EUI
+                        <ColumnHeaderTooltip content={GATEWAY_COLUMN_TOOLTIPS.gatewayEui} />
+                      </span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="inline-flex items-center">
+                        Site
+                        <ColumnHeaderTooltip content={GATEWAY_COLUMN_TOOLTIPS.site} />
+                      </span>
+                    </TableHead>
+                    <TableHead className="hidden lg:table-cell">
+                      <span className="inline-flex items-center">
+                        Status
+                        <ColumnHeaderTooltip content={GATEWAY_COLUMN_TOOLTIPS.status} />
+                      </span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="inline-flex items-center">
+                        Actions
+                        <ColumnHeaderTooltip content="TTN registration status and edit actions" />
+                      </span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {gateways.map((gateway) => {
+                    const siteName = getSiteName(gateway.site_id);
+                    return (
+                      <TableRow key={gateway.id}>
+                        <TableCell className="font-medium py-3">{gateway.name}</TableCell>
+                        <TableCell className="hidden sm:table-cell font-mono text-sm">
+                          {formatEUI(gateway.gateway_eui)}
+                        </TableCell>
+                        <TableCell>
+                          {canEdit ? (
+                            <GatewaySiteSelector
+                              gateway={gateway}
+                              sites={sites}
+                              onSiteChange={handleSiteChange}
+                              isUpdating={updatingGatewayId === gateway.id}
+                            />
+                          ) : (
+                            siteName || <span className="text-muted-foreground">—</span>
                           )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          <GatewayStatusBadgeWithTooltip
+                            status={gateway.status}
+                            siteName={siteName}
+                          />
+                        </TableCell>
+                        <TableCell className="py-3">
+                          <div className="flex flex-col gap-2">
+                            {/* TTN status */}
+                            <GatewayProvisionButton
+                              gateway={
+                                gateway as Gateway & {
+                                  ttn_gateway_id?: string | null;
+                                  ttn_last_error?: string | null;
+                                }
+                              }
+                              ttnConfig={ttnConfig}
+                              isProvisioning={provisionGateway.isProvisioning(gateway.id)}
+                              onProvision={() =>
+                                provisionGateway.mutate({
+                                  gatewayId: gateway.id,
+                                  organizationId,
+                                })
+                              }
+                            />
+                            {/* Edit actions */}
+                            {canEdit && (
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => setEditGateway(gateway)}
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => setDeleteGateway(gateway)}
+                                >
+                                  <Trash2 className="w-4 h-4 text-destructive" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
@@ -614,10 +651,7 @@ export function GatewayManager({ organizationId, sites, canEdit, ttnConfig }: Ga
                 Add a LoRaWAN gateway to start receiving sensor data wirelessly
               </p>
               {canEdit && (
-                <Button 
-                  onClick={() => setAddDialogOpen(true)} 
-                  className="mt-4 gap-2"
-                >
+                <Button onClick={() => setAddDialogOpen(true)} className="mt-4 gap-2">
                   <Plus className="w-4 h-4" />
                   Add Your First Gateway
                 </Button>
@@ -648,7 +682,8 @@ export function GatewayManager({ organizationId, sites, canEdit, ttnConfig }: Ga
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Gateway</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deleteGateway_?.name}"? This action cannot be undone.
+              Are you sure you want to delete "{deleteGateway_?.name}"? This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -657,19 +692,15 @@ export function GatewayManager({ organizationId, sites, canEdit, ttnConfig }: Ga
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteGateway.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                "Delete"
-              )}
+              {deleteGateway.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       {/* Site Change Confirmation Dialog */}
-      <AlertDialog 
-        open={!!confirmSiteChange} 
+      <AlertDialog
+        open={!!confirmSiteChange}
         onOpenChange={(open) => !open && setConfirmSiteChange(null)}
       >
         <AlertDialogContent>
@@ -677,13 +708,18 @@ export function GatewayManager({ organizationId, sites, canEdit, ttnConfig }: Ga
             <AlertDialogTitle>Change Gateway Site?</AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
               <p>
-                This gateway is currently assigned to <strong>{confirmSiteChange?.currentSiteName}</strong>.
+                This gateway is currently assigned to{' '}
+                <strong>{confirmSiteChange?.currentSiteName}</strong>.
               </p>
               <p>
-                {confirmSiteChange?.newSiteId 
-                  ? <>Moving it to <strong>{confirmSiteChange?.newSiteName}</strong> may affect sensor connectivity at the current location.</>
-                  : <>Unassigning it will remove it from the current site.</>
-                }
+                {confirmSiteChange?.newSiteId ? (
+                  <>
+                    Moving it to <strong>{confirmSiteChange?.newSiteName}</strong> may affect sensor
+                    connectivity at the current location.
+                  </>
+                ) : (
+                  <>Unassigning it will remove it from the current site.</>
+                )}
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -693,10 +729,8 @@ export function GatewayManager({ organizationId, sites, canEdit, ttnConfig }: Ga
               onClick={handleConfirmSiteChange}
               disabled={updatingGatewayId !== null}
             >
-              {updatingGatewayId ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : null}
-              {confirmSiteChange?.newSiteId ? "Move Gateway" : "Unassign Gateway"}
+              {updatingGatewayId ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              {confirmSiteChange?.newSiteId ? 'Move Gateway' : 'Unassign Gateway'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

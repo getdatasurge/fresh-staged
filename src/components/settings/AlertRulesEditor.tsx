@@ -1,21 +1,31 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import {
-    AlertRulesRow,
-    DEFAULT_ALERT_RULES,
-    useClearRuleField,
-    useDeleteAlertRules,
-    useUpsertAlertRules
-} from "@/hooks/useAlertRules";
-import { useInsertAlertRulesHistory } from "@/hooks/useAlertRulesHistory";
-import { useUser } from "@stackframe/react";
-import { AlertTriangle, Clock, DoorOpen, Loader2, RotateCcw, Save, Thermometer, Wifi, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+  AlertRulesRow,
+  DEFAULT_ALERT_RULES,
+  useClearRuleField,
+  useDeleteAlertRules,
+  useUpsertAlertRules,
+} from '@/hooks/useAlertRules';
+import { useInsertAlertRulesHistory } from '@/hooks/useAlertRulesHistory';
+import { useUser } from '@stackframe/react';
+import {
+  AlertTriangle,
+  Clock,
+  DoorOpen,
+  Loader2,
+  RotateCcw,
+  Save,
+  Thermometer,
+  Wifi,
+  X,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface AlertRulesEditorProps {
   scope: { organization_id?: string; site_id?: string; unit_id?: string };
@@ -26,20 +36,20 @@ interface AlertRulesEditorProps {
   canEdit: boolean;
 }
 
-type RuleField = 
-  | "manual_interval_minutes"
-  | "manual_grace_minutes"
-  | "expected_reading_interval_seconds"
-  | "offline_trigger_multiplier"
-  | "offline_trigger_additional_minutes"
-  | "door_open_warning_minutes"
-  | "door_open_critical_minutes"
-  | "excursion_confirm_minutes_door_closed"
-  | "excursion_confirm_minutes_door_open"
-  | "max_excursion_minutes"
-  | "offline_warning_missed_checkins"
-  | "offline_critical_missed_checkins"
-  | "manual_log_missed_checkins_threshold";
+type RuleField =
+  | 'manual_interval_minutes'
+  | 'manual_grace_minutes'
+  | 'expected_reading_interval_seconds'
+  | 'offline_trigger_multiplier'
+  | 'offline_trigger_additional_minutes'
+  | 'door_open_warning_minutes'
+  | 'door_open_critical_minutes'
+  | 'excursion_confirm_minutes_door_closed'
+  | 'excursion_confirm_minutes_door_open'
+  | 'max_excursion_minutes'
+  | 'offline_warning_missed_checkins'
+  | 'offline_critical_missed_checkins'
+  | 'manual_log_missed_checkins_threshold';
 
 export function AlertRulesEditor({
   scope,
@@ -60,71 +70,89 @@ export function AlertRulesEditor({
   const historyMutation = useInsertAlertRulesHistory();
 
   // Form state
-  const [manualIntervalMinutes, setManualIntervalMinutes] = useState<string>("");
-  const [manualGraceMinutes, setManualGraceMinutes] = useState<string>("");
-  const [expectedReadingIntervalSeconds, setExpectedReadingIntervalSeconds] = useState<string>("");
-  const [offlineTriggerMultiplier, setOfflineTriggerMultiplier] = useState<string>("");
-  const [offlineTriggerAdditionalMinutes, setOfflineTriggerAdditionalMinutes] = useState<string>("");
-  const [doorOpenWarningMinutes, setDoorOpenWarningMinutes] = useState<string>("");
-  const [doorOpenCriticalMinutes, setDoorOpenCriticalMinutes] = useState<string>("");
-  const [excursionConfirmMinutesDoorClosed, setExcursionConfirmMinutesDoorClosed] = useState<string>("");
-  const [excursionConfirmMinutesDoorOpen, setExcursionConfirmMinutesDoorOpen] = useState<string>("");
-  const [maxExcursionMinutes, setMaxExcursionMinutes] = useState<string>("");
+  const [manualIntervalMinutes, setManualIntervalMinutes] = useState<string>('');
+  const [manualGraceMinutes, setManualGraceMinutes] = useState<string>('');
+  const [expectedReadingIntervalSeconds, setExpectedReadingIntervalSeconds] = useState<string>('');
+  const [offlineTriggerMultiplier, setOfflineTriggerMultiplier] = useState<string>('');
+  const [offlineTriggerAdditionalMinutes, setOfflineTriggerAdditionalMinutes] =
+    useState<string>('');
+  const [doorOpenWarningMinutes, setDoorOpenWarningMinutes] = useState<string>('');
+  const [doorOpenCriticalMinutes, setDoorOpenCriticalMinutes] = useState<string>('');
+  const [excursionConfirmMinutesDoorClosed, setExcursionConfirmMinutesDoorClosed] =
+    useState<string>('');
+  const [excursionConfirmMinutesDoorOpen, setExcursionConfirmMinutesDoorOpen] =
+    useState<string>('');
+  const [maxExcursionMinutes, setMaxExcursionMinutes] = useState<string>('');
   // New missed check-in threshold fields
-  const [offlineWarningMissedCheckins, setOfflineWarningMissedCheckins] = useState<string>("");
-  const [offlineCriticalMissedCheckins, setOfflineCriticalMissedCheckins] = useState<string>("");
-  const [manualLogMissedCheckinsThreshold, setManualLogMissedCheckinsThreshold] = useState<string>("");
+  const [offlineWarningMissedCheckins, setOfflineWarningMissedCheckins] = useState<string>('');
+  const [offlineCriticalMissedCheckins, setOfflineCriticalMissedCheckins] = useState<string>('');
+  const [manualLogMissedCheckinsThreshold, setManualLogMissedCheckinsThreshold] =
+    useState<string>('');
 
   const isOrgScope = !!scope.organization_id && !scope.site_id && !scope.unit_id;
 
   // Initialize form from existing rules
   useEffect(() => {
     if (existingRules) {
-      setManualIntervalMinutes(existingRules.manual_interval_minutes?.toString() || "");
-      setManualGraceMinutes(existingRules.manual_grace_minutes?.toString() || "");
-      setExpectedReadingIntervalSeconds(existingRules.expected_reading_interval_seconds?.toString() || "");
-      setOfflineTriggerMultiplier(existingRules.offline_trigger_multiplier?.toString() || "");
-      setOfflineTriggerAdditionalMinutes(existingRules.offline_trigger_additional_minutes?.toString() || "");
-      setDoorOpenWarningMinutes(existingRules.door_open_warning_minutes?.toString() || "");
-      setDoorOpenCriticalMinutes(existingRules.door_open_critical_minutes?.toString() || "");
-      setExcursionConfirmMinutesDoorClosed(existingRules.excursion_confirm_minutes_door_closed?.toString() || "");
-      setExcursionConfirmMinutesDoorOpen(existingRules.excursion_confirm_minutes_door_open?.toString() || "");
-      setMaxExcursionMinutes(existingRules.max_excursion_minutes?.toString() || "");
+      setManualIntervalMinutes(existingRules.manual_interval_minutes?.toString() || '');
+      setManualGraceMinutes(existingRules.manual_grace_minutes?.toString() || '');
+      setExpectedReadingIntervalSeconds(
+        existingRules.expected_reading_interval_seconds?.toString() || '',
+      );
+      setOfflineTriggerMultiplier(existingRules.offline_trigger_multiplier?.toString() || '');
+      setOfflineTriggerAdditionalMinutes(
+        existingRules.offline_trigger_additional_minutes?.toString() || '',
+      );
+      setDoorOpenWarningMinutes(existingRules.door_open_warning_minutes?.toString() || '');
+      setDoorOpenCriticalMinutes(existingRules.door_open_critical_minutes?.toString() || '');
+      setExcursionConfirmMinutesDoorClosed(
+        existingRules.excursion_confirm_minutes_door_closed?.toString() || '',
+      );
+      setExcursionConfirmMinutesDoorOpen(
+        existingRules.excursion_confirm_minutes_door_open?.toString() || '',
+      );
+      setMaxExcursionMinutes(existingRules.max_excursion_minutes?.toString() || '');
       // New fields
-      setOfflineWarningMissedCheckins(existingRules.offline_warning_missed_checkins?.toString() || "");
-      setOfflineCriticalMissedCheckins(existingRules.offline_critical_missed_checkins?.toString() || "");
-      setManualLogMissedCheckinsThreshold(existingRules.manual_log_missed_checkins_threshold?.toString() || "");
+      setOfflineWarningMissedCheckins(
+        existingRules.offline_warning_missed_checkins?.toString() || '',
+      );
+      setOfflineCriticalMissedCheckins(
+        existingRules.offline_critical_missed_checkins?.toString() || '',
+      );
+      setManualLogMissedCheckinsThreshold(
+        existingRules.manual_log_missed_checkins_threshold?.toString() || '',
+      );
     } else {
       // Clear form when no existing rules
-      setManualIntervalMinutes("");
-      setManualGraceMinutes("");
-      setExpectedReadingIntervalSeconds("");
-      setOfflineTriggerMultiplier("");
-      setOfflineTriggerAdditionalMinutes("");
-      setDoorOpenWarningMinutes("");
-      setDoorOpenCriticalMinutes("");
-      setExcursionConfirmMinutesDoorClosed("");
-      setExcursionConfirmMinutesDoorOpen("");
-      setMaxExcursionMinutes("");
+      setManualIntervalMinutes('');
+      setManualGraceMinutes('');
+      setExpectedReadingIntervalSeconds('');
+      setOfflineTriggerMultiplier('');
+      setOfflineTriggerAdditionalMinutes('');
+      setDoorOpenWarningMinutes('');
+      setDoorOpenCriticalMinutes('');
+      setExcursionConfirmMinutesDoorClosed('');
+      setExcursionConfirmMinutesDoorOpen('');
+      setMaxExcursionMinutes('');
       // New fields
-      setOfflineWarningMissedCheckins("");
-      setOfflineCriticalMissedCheckins("");
-      setManualLogMissedCheckinsThreshold("");
+      setOfflineWarningMissedCheckins('');
+      setOfflineCriticalMissedCheckins('');
+      setManualLogMissedCheckinsThreshold('');
     }
   }, [existingRules]);
 
   const getEffectiveValue = (
-    formValue: string, 
-    parentValue: number | null | undefined, 
-    defaultValue: number
-  ): { value: number; source: "local" | "inherited" | "default" } => {
-    if (formValue !== "") {
-      return { value: parseFloat(formValue) || 0, source: "local" };
+    formValue: string,
+    parentValue: number | null | undefined,
+    defaultValue: number,
+  ): { value: number; source: 'local' | 'inherited' | 'default' } => {
+    if (formValue !== '') {
+      return { value: parseFloat(formValue) || 0, source: 'local' };
     }
     if (parentValue !== null && parentValue !== undefined) {
-      return { value: parentValue, source: "inherited" };
+      return { value: parentValue, source: 'inherited' };
     }
-    return { value: defaultValue, source: "default" };
+    return { value: defaultValue, source: 'default' };
   };
 
   const getFieldValue = (field: RuleField): string => {
@@ -154,10 +182,10 @@ export function AlertRulesEditor({
 
       const rules: Partial<AlertRulesRow> = {};
       const changes: Record<string, { from: unknown; to: unknown }> = {};
-      
+
       const addIfChanged = (field: RuleField, value: string, parser: (v: string) => number) => {
         const oldValue = existingRules?.[field] ?? null;
-        if (value !== "") {
+        if (value !== '') {
           const newValue = parser(value);
           rules[field] = newValue as any;
           if (oldValue !== newValue) {
@@ -166,44 +194,56 @@ export function AlertRulesEditor({
         }
       };
 
-      addIfChanged("manual_interval_minutes", manualIntervalMinutes, parseInt);
-      addIfChanged("manual_grace_minutes", manualGraceMinutes, parseInt);
-      addIfChanged("expected_reading_interval_seconds", expectedReadingIntervalSeconds, parseInt);
-      addIfChanged("offline_trigger_multiplier", offlineTriggerMultiplier, parseFloat);
-      addIfChanged("offline_trigger_additional_minutes", offlineTriggerAdditionalMinutes, parseInt);
-      addIfChanged("door_open_warning_minutes", doorOpenWarningMinutes, parseInt);
-      addIfChanged("door_open_critical_minutes", doorOpenCriticalMinutes, parseInt);
-      addIfChanged("excursion_confirm_minutes_door_closed", excursionConfirmMinutesDoorClosed, parseInt);
-      addIfChanged("excursion_confirm_minutes_door_open", excursionConfirmMinutesDoorOpen, parseInt);
-      addIfChanged("max_excursion_minutes", maxExcursionMinutes, parseInt);
+      addIfChanged('manual_interval_minutes', manualIntervalMinutes, parseInt);
+      addIfChanged('manual_grace_minutes', manualGraceMinutes, parseInt);
+      addIfChanged('expected_reading_interval_seconds', expectedReadingIntervalSeconds, parseInt);
+      addIfChanged('offline_trigger_multiplier', offlineTriggerMultiplier, parseFloat);
+      addIfChanged('offline_trigger_additional_minutes', offlineTriggerAdditionalMinutes, parseInt);
+      addIfChanged('door_open_warning_minutes', doorOpenWarningMinutes, parseInt);
+      addIfChanged('door_open_critical_minutes', doorOpenCriticalMinutes, parseInt);
+      addIfChanged(
+        'excursion_confirm_minutes_door_closed',
+        excursionConfirmMinutesDoorClosed,
+        parseInt,
+      );
+      addIfChanged(
+        'excursion_confirm_minutes_door_open',
+        excursionConfirmMinutesDoorOpen,
+        parseInt,
+      );
+      addIfChanged('max_excursion_minutes', maxExcursionMinutes, parseInt);
       // New fields
-      addIfChanged("offline_warning_missed_checkins", offlineWarningMissedCheckins, parseInt);
-      addIfChanged("offline_critical_missed_checkins", offlineCriticalMissedCheckins, parseInt);
-      addIfChanged("manual_log_missed_checkins_threshold", manualLogMissedCheckinsThreshold, parseInt);
+      addIfChanged('offline_warning_missed_checkins', offlineWarningMissedCheckins, parseInt);
+      addIfChanged('offline_critical_missed_checkins', offlineCriticalMissedCheckins, parseInt);
+      addIfChanged(
+        'manual_log_missed_checkins_threshold',
+        manualLogMissedCheckinsThreshold,
+        parseInt,
+      );
 
       const result = await upsertMutation.mutateAsync({ scope, rules });
-      
+
       // Log audit history
       if (userId && Object.keys(changes).length > 0) {
         const scopeCamel = {
           organizationId: scope.organization_id,
           siteId: scope.site_id,
-          unitId: scope.unit_id
+          unitId: scope.unit_id,
         };
         await historyMutation.mutateAsync({
           scope: scopeCamel,
           alertRuleId: result.id,
-          action: existingRules ? "UPDATE" : "CREATE",
+          action: existingRules ? 'UPDATE' : 'CREATE',
           changes,
-          userId // kept for compatibility in args but unused
+          userId, // kept for compatibility in args but unused
         });
       }
 
-      toast.success("Alert rules saved");
+      toast.success('Alert rules saved');
       onSave?.();
     } catch (error) {
-      console.error("Error saving alert rules:", error);
-      toast.error("Failed to save alert rules");
+      console.error('Error saving alert rules:', error);
+      toast.error('Failed to save alert rules');
     }
     setIsSaving(false);
   };
@@ -224,14 +264,14 @@ export function AlertRulesEditor({
         const scopeCamel = {
           organizationId: scope.organization_id,
           siteId: scope.site_id,
-          unitId: scope.unit_id
+          unitId: scope.unit_id,
         };
         await historyMutation.mutateAsync({
           scope: scopeCamel,
           alertRuleId: existingRules.id,
-          action: "CLEAR_FIELD",
+          action: 'CLEAR_FIELD',
           changes: { [field]: { from: oldValue, to: null } },
-          userId // unused
+          userId, // unused
         });
       }
 
@@ -251,13 +291,13 @@ export function AlertRulesEditor({
         offline_critical_missed_checkins: setOfflineCriticalMissedCheckins,
         manual_log_missed_checkins_threshold: setManualLogMissedCheckinsThreshold,
       };
-      setterMap[field]("");
+      setterMap[field]('');
 
-      toast.success("Field cleared - now inherits from parent");
+      toast.success('Field cleared - now inherits from parent');
       onSave?.();
     } catch (error) {
-      console.error("Error clearing field:", error);
-      toast.error("Failed to clear field");
+      console.error('Error clearing field:', error);
+      toast.error('Failed to clear field');
     }
     setClearingField(null);
   };
@@ -265,19 +305,19 @@ export function AlertRulesEditor({
   const handleResetToDefault = async () => {
     if (!existingRules) {
       // Just clear form
-      setManualIntervalMinutes("");
-      setManualGraceMinutes("");
-      setExpectedReadingIntervalSeconds("");
-      setOfflineTriggerMultiplier("");
-      setOfflineTriggerAdditionalMinutes("");
-      setDoorOpenWarningMinutes("");
-      setDoorOpenCriticalMinutes("");
-      setExcursionConfirmMinutesDoorClosed("");
-      setExcursionConfirmMinutesDoorOpen("");
-      setMaxExcursionMinutes("");
-      setOfflineWarningMissedCheckins("");
-      setOfflineCriticalMissedCheckins("");
-      setManualLogMissedCheckinsThreshold("");
+      setManualIntervalMinutes('');
+      setManualGraceMinutes('');
+      setExpectedReadingIntervalSeconds('');
+      setOfflineTriggerMultiplier('');
+      setOfflineTriggerAdditionalMinutes('');
+      setDoorOpenWarningMinutes('');
+      setDoorOpenCriticalMinutes('');
+      setExcursionConfirmMinutesDoorClosed('');
+      setExcursionConfirmMinutesDoorOpen('');
+      setMaxExcursionMinutes('');
+      setOfflineWarningMissedCheckins('');
+      setOfflineCriticalMissedCheckins('');
+      setManualLogMissedCheckinsThreshold('');
       return;
     }
 
@@ -293,19 +333,19 @@ export function AlertRulesEditor({
       if (userId) {
         const changes: Record<string, { from: unknown; to: unknown }> = {};
         const fields: RuleField[] = [
-          "manual_interval_minutes",
-          "manual_grace_minutes",
-          "expected_reading_interval_seconds",
-          "offline_trigger_multiplier",
-          "offline_trigger_additional_minutes",
-          "door_open_warning_minutes",
-          "door_open_critical_minutes",
-          "excursion_confirm_minutes_door_closed",
-          "excursion_confirm_minutes_door_open",
-          "max_excursion_minutes",
-          "offline_warning_missed_checkins",
-          "offline_critical_missed_checkins",
-          "manual_log_missed_checkins_threshold",
+          'manual_interval_minutes',
+          'manual_grace_minutes',
+          'expected_reading_interval_seconds',
+          'offline_trigger_multiplier',
+          'offline_trigger_additional_minutes',
+          'door_open_warning_minutes',
+          'door_open_critical_minutes',
+          'excursion_confirm_minutes_door_closed',
+          'excursion_confirm_minutes_door_open',
+          'max_excursion_minutes',
+          'offline_warning_missed_checkins',
+          'offline_critical_missed_checkins',
+          'manual_log_missed_checkins_threshold',
         ];
         fields.forEach((f) => {
           if (oldRules[f] !== null && oldRules[f] !== undefined) {
@@ -316,81 +356,85 @@ export function AlertRulesEditor({
           const scopeCamel = {
             organizationId: scope.organization_id,
             siteId: scope.site_id,
-            unitId: scope.unit_id
+            unitId: scope.unit_id,
           };
           await historyMutation.mutateAsync({
             scope: scopeCamel,
             alertRuleId: oldRules.id,
-            action: "DELETE",
+            action: 'DELETE',
             changes,
-            userId
+            userId,
           });
         }
       }
-      
+
       // Clear form
-      setManualIntervalMinutes("");
-      setManualGraceMinutes("");
-      setExpectedReadingIntervalSeconds("");
-      setOfflineTriggerMultiplier("");
-      setOfflineTriggerAdditionalMinutes("");
-      setDoorOpenWarningMinutes("");
-      setDoorOpenCriticalMinutes("");
-      setExcursionConfirmMinutesDoorClosed("");
-      setExcursionConfirmMinutesDoorOpen("");
-      setMaxExcursionMinutes("");
-      setOfflineWarningMissedCheckins("");
-      setOfflineCriticalMissedCheckins("");
-      setManualLogMissedCheckinsThreshold("");
-      
-      toast.success("Reset to defaults");
+      setManualIntervalMinutes('');
+      setManualGraceMinutes('');
+      setExpectedReadingIntervalSeconds('');
+      setOfflineTriggerMultiplier('');
+      setOfflineTriggerAdditionalMinutes('');
+      setDoorOpenWarningMinutes('');
+      setDoorOpenCriticalMinutes('');
+      setExcursionConfirmMinutesDoorClosed('');
+      setExcursionConfirmMinutesDoorOpen('');
+      setMaxExcursionMinutes('');
+      setOfflineWarningMissedCheckins('');
+      setOfflineCriticalMissedCheckins('');
+      setManualLogMissedCheckinsThreshold('');
+
+      toast.success('Reset to defaults');
       onSave?.();
     } catch (error) {
-      console.error("Error resetting alert rules:", error);
-      toast.error("Failed to reset");
+      console.error('Error resetting alert rules:', error);
+      toast.error('Failed to reset');
     }
     setIsDeleting(false);
   };
 
-  const FieldWithSource = ({ 
-    label, 
+  const FieldWithSource = ({
+    label,
     field,
-    value, 
-    onChange, 
-    parentValue, 
-    defaultValue, 
-    unit = "",
-    step = "1",
-    min = "0",
-  }: { 
-    label: string; 
+    value,
+    onChange,
+    parentValue,
+    defaultValue,
+    unit = '',
+    step = '1',
+    min = '0',
+  }: {
+    label: string;
     field: RuleField;
-    value: string; 
-    onChange: (v: string) => void; 
-    parentValue?: number | null; 
+    value: string;
+    onChange: (v: string) => void;
+    parentValue?: number | null;
     defaultValue: number;
     unit?: string;
     step?: string;
     min?: string;
   }) => {
     const effective = getEffectiveValue(value, parentValue, defaultValue);
-    const canClear = !isOrgScope && value !== "" && existingRules;
-    
+    const canClear = !isOrgScope && value !== '' && existingRules;
+
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label className="text-sm">{label}</Label>
-          <Badge 
-            variant="outline" 
+          <Badge
+            variant="outline"
             className={
-              effective.source === "local" 
-                ? "bg-primary/10 text-primary border-primary/30" 
-                : effective.source === "inherited"
-                ? "bg-accent/10 text-accent border-accent/30"
-                : "bg-muted text-muted-foreground"
+              effective.source === 'local'
+                ? 'bg-primary/10 text-primary border-primary/30'
+                : effective.source === 'inherited'
+                  ? 'bg-accent/10 text-accent border-accent/30'
+                  : 'bg-muted text-muted-foreground'
             }
           >
-            {effective.source === "local" ? "Override" : effective.source === "inherited" ? "Inherited" : "Default"}
+            {effective.source === 'local'
+              ? 'Override'
+              : effective.source === 'inherited'
+                ? 'Inherited'
+                : 'Default'}
           </Badge>
         </div>
         <div className="flex gap-2 items-center">
@@ -422,7 +466,7 @@ export function AlertRulesEditor({
             </Button>
           )}
         </div>
-        {value === "" && (
+        {value === '' && (
           <p className="text-xs text-muted-foreground">
             Effective: {effective.value} {unit}
           </p>
@@ -439,7 +483,8 @@ export function AlertRulesEditor({
           Alert Rules - {scopeLabel}
         </CardTitle>
         <CardDescription>
-          Configure alert thresholds and timing. {!isOrgScope && "Leave blank to inherit from parent level."}
+          Configure alert thresholds and timing.{' '}
+          {!isOrgScope && 'Leave blank to inherit from parent level.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -509,7 +554,8 @@ export function AlertRulesEditor({
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            Number of missed check-ins before triggering offline alerts. Manual logging only required when check-in threshold is met AND 4 hours since last reading.
+            Number of missed check-ins before triggering offline alerts. Manual logging only
+            required when check-in threshold is met AND 4 hours since last reading.
           </p>
         </div>
 
@@ -585,8 +631,8 @@ export function AlertRulesEditor({
         {/* Actions */}
         {canEdit && (
           <div className="flex justify-between pt-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleResetToDefault}
               disabled={isDeleting || isSaving}
             >
@@ -595,7 +641,7 @@ export function AlertRulesEditor({
               ) : (
                 <RotateCcw className="w-4 h-4 mr-2" />
               )}
-              {isOrgScope ? "Reset to Default" : "Remove All Overrides"}
+              {isOrgScope ? 'Reset to Default' : 'Remove All Overrides'}
             </Button>
             <Button onClick={handleSave} disabled={isSaving || isDeleting}>
               {isSaving ? (

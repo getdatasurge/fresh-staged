@@ -90,9 +90,7 @@ export const escalationContactsRouter = router({
     .input(OrgInput)
     .output(z.array(EscalationContactSchema))
     .query(async ({ input }) => {
-      const contacts = await escalationContactsService.listEscalationContacts(
-        input.organizationId
-      );
+      const contacts = await escalationContactsService.listEscalationContacts(input.organizationId);
       return contacts;
     }),
 
@@ -110,7 +108,7 @@ export const escalationContactsRouter = router({
 
       const contact = await escalationContactsService.createEscalationContact(
         input.organizationId,
-        input.data
+        input.data,
       );
 
       return contact;
@@ -132,7 +130,7 @@ export const escalationContactsRouter = router({
       // Verify contact exists and belongs to org
       const exists = await escalationContactsService.escalationContactExists(
         input.contactId,
-        input.organizationId
+        input.organizationId,
       );
 
       if (!exists) {
@@ -145,7 +143,7 @@ export const escalationContactsRouter = router({
       await escalationContactsService.updateEscalationContact(
         input.contactId,
         input.organizationId,
-        input.data
+        input.data,
       );
 
       return { success: true };
@@ -167,7 +165,7 @@ export const escalationContactsRouter = router({
       // Verify contact exists and belongs to org
       const exists = await escalationContactsService.escalationContactExists(
         input.contactId,
-        input.organizationId
+        input.organizationId,
       );
 
       if (!exists) {
@@ -179,7 +177,7 @@ export const escalationContactsRouter = router({
 
       await escalationContactsService.softDeleteEscalationContact(
         input.contactId,
-        input.organizationId
+        input.organizationId,
       );
 
       return { success: true };

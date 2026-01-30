@@ -1,10 +1,10 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import { TtnProvisioningState } from "@/types/ttn";
-import { TTN_PROVISIONING_STATE_CONFIG } from "@/lib/entityStatusConfig";
-import { Search, CloudUpload, CloudOff, Loader2, AlertCircle, Stethoscope } from "lucide-react";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
+import { TtnProvisioningState } from '@/types/ttn';
+import { TTN_PROVISIONING_STATE_CONFIG } from '@/lib/entityStatusConfig';
+import { Search, CloudUpload, CloudOff, Loader2, AlertCircle, Stethoscope } from 'lucide-react';
 
 interface TtnProvisioningStatusBadgeProps {
   state: TtnProvisioningState;
@@ -12,29 +12,32 @@ interface TtnProvisioningStatusBadgeProps {
   lastError?: string | null;
 }
 
-export function TtnProvisioningStatusBadge({ 
-  state, 
-  lastCheckAt, 
-  lastError 
+export function TtnProvisioningStatusBadge({
+  state,
+  lastCheckAt,
+  lastError,
 }: TtnProvisioningStatusBadgeProps) {
   const config = TTN_PROVISIONING_STATE_CONFIG[state] || TTN_PROVISIONING_STATE_CONFIG.unknown;
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Badge
-          variant={config.variant}
-          className={cn("cursor-help", config.className)}
-        >
+        <Badge variant={config.variant} className={cn('cursor-help', config.className)}>
           {config.label}
         </Badge>
       </TooltipTrigger>
       <TooltipContent side="top" className="max-w-xs p-3">
         <div className="space-y-1.5 text-sm">
-          <p><span className="font-medium">Status:</span> {config.tooltip.meaning}</p>
-          <p><span className="font-medium">System:</span> {config.tooltip.systemState}</p>
+          <p>
+            <span className="font-medium">Status:</span> {config.tooltip.meaning}
+          </p>
+          <p>
+            <span className="font-medium">System:</span> {config.tooltip.systemState}
+          </p>
           {config.tooltip.userAction && (
-            <p className="text-primary"><span className="font-medium">Action:</span> {config.tooltip.userAction}</p>
+            <p className="text-primary">
+              <span className="font-medium">Action:</span> {config.tooltip.userAction}
+            </p>
           )}
           {lastError && state === 'error' && (
             <p className="text-destructive text-xs mt-2 border-t pt-2">
@@ -85,7 +88,7 @@ export function TtnActions({
   if (!canEdit) return null;
 
   // Not configured - show check button if TTN is now configured, otherwise show info icon
-  if (state === "not_configured") {
+  if (state === 'not_configured') {
     // If TTN is configured NOW and sensor has DevEUI, allow checking
     if (canCheckNow) {
       return (
@@ -114,7 +117,7 @@ export function TtnActions({
         </div>
       );
     }
-    
+
     // TTN not configured or missing DevEUI - show info icon with reason
     return (
       <Tooltip>
@@ -122,7 +125,7 @@ export function TtnActions({
           <AlertCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
         </TooltipTrigger>
         <TooltipContent>
-          {checkUnavailableReason || "Configure TTN and add DevEUI to enable provisioning"}
+          {checkUnavailableReason || 'Configure TTN and add DevEUI to enable provisioning'}
         </TooltipContent>
       </Tooltip>
     );
@@ -173,7 +176,7 @@ export function TtnActions({
       )}
 
       {/* Provision button - only if missing_in_ttn */}
-      {state === "missing_in_ttn" && (
+      {state === 'missing_in_ttn' && (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -196,7 +199,7 @@ export function TtnActions({
       )}
 
       {/* Unprovision button - only if exists_in_ttn */}
-      {state === "exists_in_ttn" && (
+      {state === 'exists_in_ttn' && (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -213,7 +216,7 @@ export function TtnActions({
       )}
 
       {/* Unknown or error state - show check button prominently */}
-      {(state === "unknown" || state === "error") && (
+      {(state === 'unknown' || state === 'error') && (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -232,7 +235,7 @@ export function TtnActions({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {state === "error" ? "Retry TTN check" : "Check if device exists in TTN"}
+            {state === 'error' ? 'Retry TTN check' : 'Check if device exists in TTN'}
           </TooltipContent>
         </Tooltip>
       )}

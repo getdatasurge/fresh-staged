@@ -5,11 +5,13 @@ import { alertRules, type AlertRule, type InsertAlertRule } from '../db/schema/a
 /**
  * Get alert rules for a specific scope
  */
-export async function getAlertRules(
-  scope: { organizationId: string; siteId?: string; unitId?: string }
-): Promise<AlertRule | null> {
+export async function getAlertRules(scope: {
+  organizationId: string;
+  siteId?: string;
+  unitId?: string;
+}): Promise<AlertRule | null> {
   const conditions = [eq(alertRules.organizationId, scope.organizationId)];
-  
+
   if (scope.unitId) {
     conditions.push(eq(alertRules.unitId, scope.unitId));
   } else if (scope.siteId) {
@@ -34,7 +36,9 @@ export async function getAlertRules(
  */
 export async function upsertAlertRules(
   scope: { organizationId: string; siteId?: string; unitId?: string },
-  data: Partial<Omit<InsertAlertRule, 'id' | 'organizationId' | 'siteId' | 'unitId' | 'createdAt' | 'updatedAt'>>
+  data: Partial<
+    Omit<InsertAlertRule, 'id' | 'organizationId' | 'siteId' | 'unitId' | 'createdAt' | 'updatedAt'>
+  >,
 ): Promise<AlertRule> {
   const existing = await getAlertRules(scope);
 
@@ -63,11 +67,13 @@ export async function upsertAlertRules(
 /**
  * Delete alert rules (reset to defaults/inherit)
  */
-export async function deleteAlertRules(
-  scope: { organizationId: string; siteId?: string; unitId?: string }
-): Promise<void> {
+export async function deleteAlertRules(scope: {
+  organizationId: string;
+  siteId?: string;
+  unitId?: string;
+}): Promise<void> {
   const conditions = [eq(alertRules.organizationId, scope.organizationId)];
-  
+
   if (scope.unitId) {
     conditions.push(eq(alertRules.unitId, scope.unitId));
   } else if (scope.siteId) {
@@ -84,26 +90,23 @@ export async function deleteAlertRules(
 /**
  * Clear a specific field (set to null)
  */
-export async function clearRuleField(
-  ruleId: string,
-  field: string
-): Promise<void> {
+export async function clearRuleField(ruleId: string, field: string): Promise<void> {
   // Validate field against allowed fields to prevent injection
   const allowedFields = [
-    "manual_interval_minutes",
-    "manual_grace_minutes",
-    "expected_reading_interval_seconds",
-    "offline_trigger_multiplier",
-    "offline_trigger_additional_minutes",
-    "door_open_warning_minutes",
-    "door_open_critical_minutes",
-    "door_open_max_mask_minutes_per_day",
-    "excursion_confirm_minutes_door_closed",
-    "excursion_confirm_minutes_door_open",
-    "max_excursion_minutes",
-    "offline_warning_missed_checkins",
-    "offline_critical_missed_checkins",
-    "manual_log_missed_checkins_threshold"
+    'manual_interval_minutes',
+    'manual_grace_minutes',
+    'expected_reading_interval_seconds',
+    'offline_trigger_multiplier',
+    'offline_trigger_additional_minutes',
+    'door_open_warning_minutes',
+    'door_open_critical_minutes',
+    'door_open_max_mask_minutes_per_day',
+    'excursion_confirm_minutes_door_closed',
+    'excursion_confirm_minutes_door_open',
+    'max_excursion_minutes',
+    'offline_warning_missed_checkins',
+    'offline_critical_missed_checkins',
+    'manual_log_missed_checkins_threshold',
   ];
 
   if (!allowedFields.includes(field)) {
@@ -118,7 +121,7 @@ export async function clearRuleField(
   // We need to map or ensure DB uses expected names.
   // In `alerts.ts` schema:
   // manually defined columns?
-  
+
   /*
     manualMonitoringInterval: integer('manual_monitoring_interval'), // minutes
     ...
@@ -128,12 +131,14 @@ export async function clearRuleField(
     tempMin, tempMax, delayMinutes, alertType, severity, isEnabled, schedule
   */
   // It DOES NOT HAVE `manual_interval_minutes` etc.!!!
-  
+
   // The `alertRules` table definition in schema `alerts.ts` (Step 288) is MISSING many columns used by frontend!
   // The frontend expects: manual_interval_minutes, door_open_warning_minutes etc.
-  
+
   // I created `alert-rules.service.ts` assuming schema matches frontend.
   // But Drizzle schema `backend/src/db/schema/alerts.ts` is missing these columns.
-  
-  await db.execute(sql`UPDATE alert_rules SET ${sql.identifier(field)} = NULL WHERE id = ${ruleId}`);
+
+  await db.execute(
+    sql`UPDATE alert_rules SET ${sql.identifier(field)} = NULL WHERE id = ${ruleId}`,
+  );
 }

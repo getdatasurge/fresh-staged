@@ -7,6 +7,7 @@
 ## Summary
 
 Phase 53 concerns 21 `it.skip()` tests across three files:
+
 - `backend/tests/api/alerts.test.ts` (14 skipped, 5 passing)
 - `backend/tests/api/readings.test.ts` (8 skipped, 6 passing)
 - `backend/tests/trpc/sites.router.test.ts` (2 skipped, 14 passing)
@@ -21,24 +22,25 @@ All three files share the same pattern discovered in Phase 52: **the skipped tes
 
 The `tests/api/alerts.test.ts` file tests the REST alert routes using `buildApp()` + `app.inject()`. The `tests/trpc/alerts.router.test.ts` file tests the tRPC alert router using `createCallerFactory()`. Both files mock the same `alert.service.js` functions. The tRPC file has **19 passing tests with 0 skipped**, covering every scenario in the REST file plus more.
 
-| # | Skipped test in `api/alerts.test.ts` | Covered by in `trpc/alerts.router.test.ts` | Status |
-|---|--------------------------------------|---------------------------------------------|--------|
-| 1 | should return alerts for organization | should list alerts for organization (line 101) | EXACT match |
-| 2 | should return alert details | should get alert by ID (line 207) | EXACT match |
-| 3 | should return 404 for non-existent alert | should throw NOT_FOUND when alert does not exist (line 219) | EXACT match |
-| 4 | should return 404 for alert in different org | Covered by NOT_FOUND + org context middleware | EQUIVALENT |
-| 5 | should return 403 for viewer role (acknowledge) | should throw FORBIDDEN when viewer tries to acknowledge (line 315) | EXACT match |
-| 6 | should return 200 for staff role (acknowledge) | should acknowledge alert when user is staff (line 239) | EXACT match |
-| 7 | should change status to acknowledged | should acknowledge alert when user is staff (checks result.status) | EXACT match |
-| 8 | should return 409 if already acknowledged | should throw CONFLICT when alert already acknowledged (line 347) | EXACT match |
-| 9 | should return 403 for viewer role (resolve) | should throw FORBIDDEN when viewer tries to resolve (line 415) | EXACT match |
-| 10 | should return 200 for staff role (resolve) | should resolve alert when user is staff (line 368) | EXACT match |
-| 11 | should change status to resolved | should resolve alert when user is staff (checks result.status) | EXACT match |
-| 12 | should create corrective action when provided | should resolve alert when user is staff (passes correctiveAction) | EXACT match |
-| 13 | should handle full lifecycle | Covered by acknowledge + resolve tests in sequence | EQUIVALENT |
-| 14 | should prevent duplicate acknowledgment | should throw CONFLICT when alert already acknowledged | EXACT match |
+| #   | Skipped test in `api/alerts.test.ts`            | Covered by in `trpc/alerts.router.test.ts`                         | Status      |
+| --- | ----------------------------------------------- | ------------------------------------------------------------------ | ----------- |
+| 1   | should return alerts for organization           | should list alerts for organization (line 101)                     | EXACT match |
+| 2   | should return alert details                     | should get alert by ID (line 207)                                  | EXACT match |
+| 3   | should return 404 for non-existent alert        | should throw NOT_FOUND when alert does not exist (line 219)        | EXACT match |
+| 4   | should return 404 for alert in different org    | Covered by NOT_FOUND + org context middleware                      | EQUIVALENT  |
+| 5   | should return 403 for viewer role (acknowledge) | should throw FORBIDDEN when viewer tries to acknowledge (line 315) | EXACT match |
+| 6   | should return 200 for staff role (acknowledge)  | should acknowledge alert when user is staff (line 239)             | EXACT match |
+| 7   | should change status to acknowledged            | should acknowledge alert when user is staff (checks result.status) | EXACT match |
+| 8   | should return 409 if already acknowledged       | should throw CONFLICT when alert already acknowledged (line 347)   | EXACT match |
+| 9   | should return 403 for viewer role (resolve)     | should throw FORBIDDEN when viewer tries to resolve (line 415)     | EXACT match |
+| 10  | should return 200 for staff role (resolve)      | should resolve alert when user is staff (line 368)                 | EXACT match |
+| 11  | should change status to resolved                | should resolve alert when user is staff (checks result.status)     | EXACT match |
+| 12  | should create corrective action when provided   | should resolve alert when user is staff (passes correctiveAction)  | EXACT match |
+| 13  | should handle full lifecycle                    | Covered by acknowledge + resolve tests in sequence                 | EQUIVALENT  |
+| 14  | should prevent duplicate acknowledgment         | should throw CONFLICT when alert already acknowledged              | EXACT match |
 
 **Additional coverage in tRPC file not in api file:**
+
 - should acknowledge alert when user is manager (line 267)
 - should acknowledge alert when user is admin (line 283)
 - should acknowledge alert when user is owner (line 299)
@@ -51,13 +53,13 @@ The `tests/api/alerts.test.ts` file tests the REST alert routes using `buildApp(
 
 **The 5 passing tests in api/alerts.test.ts are also covered:**
 
-| Passing test in `api/` | Also passing in `trpc/` |
-|-------------------------|--------------------------|
+| Passing test in `api/`        | Also passing in `trpc/`                                   |
+| ----------------------------- | --------------------------------------------------------- |
 | should return 401 without JWT | N/A (tRPC uses different auth -- orgProcedure middleware) |
-| should filter by status | should list alerts with status filter |
-| should filter by severity | should list alerts with severity filter |
-| should filter by unitId | should list alerts with unitId filter |
-| should support pagination | should calculate offset from page correctly |
+| should filter by status       | should list alerts with status filter                     |
+| should filter by severity     | should list alerts with severity filter                   |
+| should filter by unitId       | should list alerts with unitId filter                     |
+| should support pagination     | should calculate offset from page correctly               |
 
 The only test unique to the api file is "should return 401 without JWT" -- but this is an auth middleware test, not an alerts-specific test. Auth middleware is tested separately.
 
@@ -65,16 +67,16 @@ The only test unique to the api file is "should return 401 without JWT" -- but t
 
 The same pattern. The `tests/api/readings.test.ts` file tests REST reading routes. The `tests/trpc/readings.router.test.ts` tests the tRPC readings router. Both mock `readings.service.js`.
 
-| # | Skipped test in `api/readings.test.ts` | Covered by in `trpc/readings.router.test.ts` | Status |
-|---|----------------------------------------|-----------------------------------------------|--------|
-| 1 | should return 200 with valid API key (ingest) | N/A -- tRPC router only covers query, not ingest | **NOT COVERED** |
-| 2 | should insert single reading successfully | N/A -- ingest is REST-only | **NOT COVERED** |
-| 3 | should insert multiple readings successfully | N/A -- ingest is REST-only | **NOT COVERED** |
-| 4 | should return correct insertedCount and readingIds | N/A -- ingest is REST-only | **NOT COVERED** |
-| 5 | should trigger alert when temperature above threshold | N/A -- ingest is REST-only | **NOT COVERED** |
-| 6 | should return 200 with valid JWT (query) | should list readings for unit with pagination (line 80) | EXACT match |
-| 7 | should support pagination with limit and offset | should calculate offset from page correctly (line 133) | EXACT match |
-| 8 | should filter by start and end time | should list readings with date range filters (line 105) | EXACT match |
+| #   | Skipped test in `api/readings.test.ts`                | Covered by in `trpc/readings.router.test.ts`            | Status          |
+| --- | ----------------------------------------------------- | ------------------------------------------------------- | --------------- |
+| 1   | should return 200 with valid API key (ingest)         | N/A -- tRPC router only covers query, not ingest        | **NOT COVERED** |
+| 2   | should insert single reading successfully             | N/A -- ingest is REST-only                              | **NOT COVERED** |
+| 3   | should insert multiple readings successfully          | N/A -- ingest is REST-only                              | **NOT COVERED** |
+| 4   | should return correct insertedCount and readingIds    | N/A -- ingest is REST-only                              | **NOT COVERED** |
+| 5   | should trigger alert when temperature above threshold | N/A -- ingest is REST-only                              | **NOT COVERED** |
+| 6   | should return 200 with valid JWT (query)              | should list readings for unit with pagination (line 80) | EXACT match     |
+| 7   | should support pagination with limit and offset       | should calculate offset from page correctly (line 133)  | EXACT match     |
+| 8   | should filter by start and end time                   | should list readings with date range filters (line 105) | EXACT match     |
 
 **IMPORTANT:** 5 of the 8 skipped readings tests are for the **ingest** endpoint (`POST /api/ingest/readings`). This is a REST-only route with no tRPC equivalent. These tests are NOT duplicated. They need to be actually fixed.
 
@@ -84,14 +86,15 @@ The ingest route has a specific challenge: it calls `request.server.sensorStream
 
 The tRPC file has 2 skipped tests for the `update` procedure (admin update, owner update). The `tests/api/sites.test.ts` file has 25 passing tests that cover the full sites REST API, including:
 
-| Skipped test in `trpc/sites.router.test.ts` | Covered by in `api/sites.test.ts` | Status |
-|---------------------------------------------|-------------------------------------|--------|
-| should update site when user is admin | should update site for admin (line 318) | EXACT match |
-| should update site when user is owner | should update site for owner (line 340) | EXACT match |
+| Skipped test in `trpc/sites.router.test.ts` | Covered by in `api/sites.test.ts`       | Status      |
+| ------------------------------------------- | --------------------------------------- | ----------- |
+| should update site when user is admin       | should update site for admin (line 318) | EXACT match |
+| should update site when user is owner       | should update site for owner (line 340) | EXACT match |
 
 **Root cause of skip:** The `sites.router.ts` update procedure calls `AuditService.logEvent()` (line 159-168). The test file does NOT mock `AuditService`, so the update tests would fail when they try to write to the database via the real AuditService.
 
 **Two options to fix:**
+
 - **Option A (RECOMMENDED):** Remove the 2 skipped tests since they are covered by `tests/api/sites.test.ts`
 - **Option B:** Add `vi.mock('../../src/services/AuditService.ts', ...)` to the test file and unskip them
 
@@ -139,6 +142,7 @@ The 3 query-related skipped tests (lines 284, 288, 292) are duplicates of passin
 The 5 ingest-related skipped tests (lines 167, 237, 241, 245, 249) test a REST-only endpoint with NO tRPC equivalent. These need to be actually fixed by adding the socket plugin mock (same `Symbol.for('skip-override')` pattern from Phase 52).
 
 **Fix approach for ingest tests:**
+
 1. Add socket plugin mock (identical to Phase 52's TTN webhook test pattern)
 2. Implement the 5 test bodies (mock service responses, verify HTTP 200 + response body)
 3. Keep the 6 existing passing tests as-is
@@ -153,43 +157,47 @@ Both skipped tests are exact duplicates of passing tests in `tests/api/sites.tes
 
 ### Summary of Changes
 
-| File | Action | Skips Removed | Tests Added | Coverage Change |
-|------|--------|---------------|-------------|-----------------|
-| `tests/api/alerts.test.ts` | DELETE file | -14 | 0 | None (tRPC covers all) |
-| `tests/api/readings.test.ts` | Fix ingest, remove query dupes | -8 | +5 passing | Ingest tests now covered |
-| `tests/trpc/sites.router.test.ts` | Remove 2 skipped tests | -2 | 0 | None (REST API covers all) |
-| **TOTAL** | | **-24 skipped** | **+5 passing** | **Net gain** |
+| File                              | Action                         | Skips Removed   | Tests Added    | Coverage Change            |
+| --------------------------------- | ------------------------------ | --------------- | -------------- | -------------------------- |
+| `tests/api/alerts.test.ts`        | DELETE file                    | -14             | 0              | None (tRPC covers all)     |
+| `tests/api/readings.test.ts`      | Fix ingest, remove query dupes | -8              | +5 passing     | Ingest tests now covered   |
+| `tests/trpc/sites.router.test.ts` | Remove 2 skipped tests         | -2              | 0              | None (REST API covers all) |
+| **TOTAL**                         |                                | **-24 skipped** | **+5 passing** | **Net gain**               |
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Fixing REST alert tests | Add socket mock + implement 14 test bodies | Delete file, keep tRPC tests | 100% duplicate coverage already exists in tRPC file |
-| Fixing REST query-reading tests | Debug Fastify serialization | Delete 3 tests, keep tRPC versions | Duplicate coverage in tRPC file |
-| Fixing sites tRPC update tests | Mock AuditService + implement tests | Delete 2 skipped tests | REST API file covers same scenarios |
-| Socket plugin mock | Custom mock per file | Reuse Phase 52's `Symbol.for('skip-override')` pattern | Already proven working |
+| Problem                         | Don't Build                                | Use Instead                                            | Why                                                 |
+| ------------------------------- | ------------------------------------------ | ------------------------------------------------------ | --------------------------------------------------- |
+| Fixing REST alert tests         | Add socket mock + implement 14 test bodies | Delete file, keep tRPC tests                           | 100% duplicate coverage already exists in tRPC file |
+| Fixing REST query-reading tests | Debug Fastify serialization                | Delete 3 tests, keep tRPC versions                     | Duplicate coverage in tRPC file                     |
+| Fixing sites tRPC update tests  | Mock AuditService + implement tests        | Delete 2 skipped tests                                 | REST API file covers same scenarios                 |
+| Socket plugin mock              | Custom mock per file                       | Reuse Phase 52's `Symbol.for('skip-override')` pattern | Already proven working                              |
 
 ## Common Pitfalls
 
 ### Pitfall 1: Implementing All 21 Skipped Tests
+
 **What goes wrong:** Developer implements all 21 test bodies, creating massive duplication between REST and tRPC test suites
 **Why it happens:** Phase description says "fix all skipped tests" which implies writing test bodies
 **How to avoid:** Recognize that 16 of 21 skipped tests are already passing in duplicate files
 **Warning signs:** Same service mocks, same assertions, different transport layer
 
 ### Pitfall 2: Ignoring the Ingest Tests
+
 **What goes wrong:** Developer deletes all skipped tests as duplicates, but the 5 ingest tests have NO tRPC equivalent
 **Why it happens:** It's tempting to treat all three files the same way
 **How to avoid:** Check `readings.router.test.ts` carefully -- it only tests `list` and `latest`, not ingest
 **Warning signs:** No tRPC router for `POST /api/ingest/readings`
 
 ### Pitfall 3: Missing Socket Plugin Mock for Ingest Tests
+
 **What goes wrong:** Un-skipping ingest tests without adding the socket plugin mock causes `sensorStreamService is undefined` errors
 **Why it happens:** The readings route calls `request.server.sensorStreamService.addReading()` and `request.server.socketService`
 **How to avoid:** Add the `Symbol.for('skip-override')` socket plugin mock from Phase 52
 **Warning signs:** `TypeError: Cannot read properties of undefined (reading 'addReading')`
 
 ### Pitfall 4: Forgetting AuditService Mock (if fixing sites tRPC)
+
 **What goes wrong:** Unskipping sites update tests without mocking AuditService causes database connection errors
 **Why it happens:** The `update` procedure calls `AuditService.logEvent()` which writes to the real database
 **How to avoid:** Either delete the skipped tests (recommended) or add `vi.mock('../../src/services/AuditService.ts', ...)`
@@ -197,6 +205,7 @@ Both skipped tests are exact duplicates of passing tests in `tests/api/sites.tes
 ## Code Examples
 
 ### Socket Plugin Mock (for ingest tests)
+
 ```typescript
 // Source: backend/tests/routes/ttn-webhook.test.ts (Phase 52 pattern)
 const mockAddReading = vi.fn();
@@ -226,13 +235,14 @@ vi.mock('../../src/plugins/socket.plugin.js', () => {
           stop: mockStop,
         });
       },
-      { [Symbol.for('skip-override')]: true }
+      { [Symbol.for('skip-override')]: true },
     ),
   };
 });
 ```
 
 ### tRPC Test Pattern (reference for what already passes)
+
 ```typescript
 // Source: backend/tests/trpc/alerts.router.test.ts
 const createCaller = createCallerFactory(alertsRouter);
@@ -255,6 +265,7 @@ expect(result).toEqual(mockAlerts);
 ```
 
 ### AuditService Mock (if needed)
+
 ```typescript
 // Source: backend/tests/trpc/e2e.test.ts
 vi.mock('../../src/services/AuditService.ts', () => ({
@@ -268,11 +279,11 @@ vi.mock('../../src/services/AuditService.ts', () => ({
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| REST-only API testing | Dual REST + tRPC testing | When tRPC migration started | Created duplicate test suites |
-| Skip tests that fail with Fastify serialization | Test via tRPC (bypasses Fastify serialization) | When tRPC routers were added | tRPC tests pass where REST tests fail |
-| No socket plugin mock | `Symbol.for('skip-override')` pattern | Phase 52 | Enables testing routes that use socket decorators |
+| Old Approach                                    | Current Approach                               | When Changed                 | Impact                                            |
+| ----------------------------------------------- | ---------------------------------------------- | ---------------------------- | ------------------------------------------------- |
+| REST-only API testing                           | Dual REST + tRPC testing                       | When tRPC migration started  | Created duplicate test suites                     |
+| Skip tests that fail with Fastify serialization | Test via tRPC (bypasses Fastify serialization) | When tRPC routers were added | tRPC tests pass where REST tests fail             |
+| No socket plugin mock                           | `Symbol.for('skip-override')` pattern          | Phase 52                     | Enables testing routes that use socket decorators |
 
 ## Open Questions
 
@@ -289,6 +300,7 @@ vi.mock('../../src/services/AuditService.ts', () => ({
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - `backend/tests/api/alerts.test.ts` - Read in full, all 283 lines (5 passing, 14 skipped)
 - `backend/tests/api/readings.test.ts` - Read in full, all 317 lines (6 passing, 8 skipped)
 - `backend/tests/trpc/sites.router.test.ts` - Read in full, all 410 lines (14 passing, 2 skipped)
@@ -305,6 +317,7 @@ vi.mock('../../src/services/AuditService.ts', () => ({
 - Vitest test runs - All 6 test files executed, results verified
 
 ### Verification
+
 - api/alerts.test.ts: 5 passed, 14 skipped (confirmed via `vitest run`)
 - api/readings.test.ts: 6 passed, 8 skipped (confirmed via `vitest run`)
 - trpc/sites.router.test.ts: 14 passed, 2 skipped (confirmed via `vitest run`)
@@ -315,6 +328,7 @@ vi.mock('../../src/services/AuditService.ts', () => ({
 ## Metadata
 
 **Confidence breakdown:**
+
 - Test duplication analysis: HIGH - All 6 files read line-by-line, test-by-test mapping created
 - Skip root cause analysis: HIGH - Three distinct causes identified and verified
 - Socket plugin mock pattern: HIGH - Proven working in Phase 52

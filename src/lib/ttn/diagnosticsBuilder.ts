@@ -6,13 +6,13 @@
 import type { TTNConfigContext, TTNValidationResult, TTNConfigState } from '@/types/ttnState';
 
 // Single cluster base URL - must match backend
-const CLUSTER_BASE_URL = "https://nam1.cloud.thethings.network";
-const CLUSTER_HOST = "nam1.cloud.thethings.network";
+const CLUSTER_BASE_URL = 'https://nam1.cloud.thethings.network';
+const CLUSTER_HOST = 'nam1.cloud.thethings.network';
 
 export interface TTNDiagnostics {
   generated_at: string;
   app_version: string;
-  
+
   // TTN Config (single cluster)
   config: {
     state: TTNConfigState;
@@ -24,27 +24,27 @@ export interface TTNDiagnostics {
     webhook_configured: boolean;
     webhook_url_redacted: string | null;
   };
-  
+
   // Cluster verification
   cluster_verification: {
     host_locked: boolean;
     expected_host: string;
     planes_use_same_host: boolean;
   };
-  
+
   // Validation
   last_validation: TTNValidationResult | null;
-  
+
   // Recent request_ids for correlation
   recent_request_ids: string[];
-  
+
   // Edge function versions
   edge_function_versions: {
     ttn_bootstrap: string | null;
     manage_ttn_settings: string | null;
     ttn_gateway_preflight: string | null;
   };
-  
+
   // Environment info
   environment: {
     user_agent: string;
@@ -53,7 +53,7 @@ export interface TTNDiagnostics {
     screen_resolution: string;
     online: boolean;
   };
-  
+
   // Organization context
   organization: {
     id: string | null;
@@ -99,7 +99,7 @@ export async function buildTTNDiagnostics(
     api_key_last4?: string;
     webhook_url?: string;
     is_enabled?: boolean;
-  }
+  },
 ): Promise<TTNDiagnostics> {
   // Collect request IDs from context
   const requestIds: string[] = [];
@@ -120,7 +120,7 @@ export async function buildTTNDiagnostics(
   return {
     generated_at: new Date().toISOString(),
     app_version: import.meta.env.VITE_APP_VERSION || 'unknown',
-    
+
     config: {
       state: context?.state || 'local_draft',
       source: context?.source || 'LOCAL',
@@ -131,17 +131,17 @@ export async function buildTTNDiagnostics(
       webhook_configured: settings?.is_enabled || false,
       webhook_url_redacted: redactUrl(settings?.webhook_url || null),
     },
-    
+
     cluster_verification: {
       host_locked: true, // Always true - single cluster mode
       expected_host: CLUSTER_HOST,
       planes_use_same_host: true, // All planes use CLUSTER_BASE_URL
     },
-    
+
     last_validation: context?.last_validation_result || null,
     recent_request_ids: requestIds,
     edge_function_versions: edgeVersions,
-    
+
     environment: {
       user_agent: navigator.userAgent,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -149,7 +149,7 @@ export async function buildTTNDiagnostics(
       screen_resolution: `${window.screen.width}x${window.screen.height}`,
       online: navigator.onLine,
     },
-    
+
     organization: {
       id: organizationId,
       has_sensors: hasSensors,
@@ -164,12 +164,9 @@ export async function buildTTNDiagnostics(
 export function downloadDiagnostics(diagnostics: TTNDiagnostics): void {
   const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
   const filename = `frostguard-ttn-diagnostics-${timestamp}.json`;
-  
-  const blob = new Blob(
-    [JSON.stringify(diagnostics, null, 2)], 
-    { type: 'application/json' }
-  );
-  
+
+  const blob = new Blob([JSON.stringify(diagnostics, null, 2)], { type: 'application/json' });
+
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

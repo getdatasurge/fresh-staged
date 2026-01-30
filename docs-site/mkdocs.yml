@@ -42,7 +42,7 @@ theme:
     - content.action.edit
   palette:
     # Light mode
-    - media: "(prefers-color-scheme: light)"
+    - media: '(prefers-color-scheme: light)'
       scheme: default
       primary: blue
       accent: light blue
@@ -50,7 +50,7 @@ theme:
         icon: material/brightness-7
         name: Switch to dark mode
     # Dark mode
-    - media: "(prefers-color-scheme: dark)"
+    - media: '(prefers-color-scheme: dark)'
       scheme: slate
       primary: blue
       accent: light blue
@@ -158,76 +158,76 @@ nav:
   - Glossary: GLOSSARY.md
 
   - Executive:
-    - Overview: executive/OVERVIEW.md
-    - Value Proposition: executive/VALUE_PROPOSITION.md
-    - System at a Glance: executive/SYSTEM_AT_A_GLANCE.md
-    - User Journeys: executive/USER_JOURNEYS.md
-    - FAQ: executive/FAQ.md
+      - Overview: executive/OVERVIEW.md
+      - Value Proposition: executive/VALUE_PROPOSITION.md
+      - System at a Glance: executive/SYSTEM_AT_A_GLANCE.md
+      - User Journeys: executive/USER_JOURNEYS.md
+      - FAQ: executive/FAQ.md
 
   - Architecture:
-    - System Architecture: architecture/ARCHITECTURE.md
+      - System Architecture: architecture/ARCHITECTURE.md
 
   - Product:
-    - Pages: product/PAGES.md
-    - User Flows: product/USER_FLOWS.md
+      - Pages: product/PAGES.md
+      - User Flows: product/USER_FLOWS.md
 
   - Engineering:
-    - API: engineering/API.md
-    - Data Model: engineering/DATA_MODEL.md
-    - Integrations: engineering/INTEGRATIONS.md
-    - Observability: engineering/OBSERVABILITY.md
+      - API: engineering/API.md
+      - Data Model: engineering/DATA_MODEL.md
+      - Integrations: engineering/INTEGRATIONS.md
+      - Observability: engineering/OBSERVABILITY.md
 
   - Onboarding:
-    - Getting Started: onboarding/GETTING_STARTED.md
-    - Local Development: onboarding/LOCAL_DEV.md
-    - Repository Tour: onboarding/REPO_TOUR.md
-    - Common Tasks: onboarding/COMMON_TASKS.md
-    - Debugging Guide: onboarding/DEBUGGING_GUIDE.md
+      - Getting Started: onboarding/GETTING_STARTED.md
+      - Local Development: onboarding/LOCAL_DEV.md
+      - Repository Tour: onboarding/REPO_TOUR.md
+      - Common Tasks: onboarding/COMMON_TASKS.md
+      - Debugging Guide: onboarding/DEBUGGING_GUIDE.md
 
   - Quality Assurance:
-    - Test Strategy: qa/TEST_STRATEGY.md
-    - Coverage Map: qa/COVERAGE_MAP.md
-    - E2E Scenarios: qa/E2E_SCENARIOS.md
-    - Manual Testing: qa/MANUAL_TESTING.md
-    - Known Gaps: qa/KNOWN_GAPS.md
+      - Test Strategy: qa/TEST_STRATEGY.md
+      - Coverage Map: qa/COVERAGE_MAP.md
+      - E2E Scenarios: qa/E2E_SCENARIOS.md
+      - Manual Testing: qa/MANUAL_TESTING.md
+      - Known Gaps: qa/KNOWN_GAPS.md
 
   - Security:
-    - Security Overview: security/SECURITY_OVERVIEW.md
-    - Auth Model: security/AUTH_MODEL.md
-    - Data Protection: security/DATA_PROTECTION.md
-    - Threat Model: security/THREAT_MODEL.md
-    - Incident Response: security/INCIDENT_RESPONSE.md
+      - Security Overview: security/SECURITY_OVERVIEW.md
+      - Auth Model: security/AUTH_MODEL.md
+      - Data Protection: security/DATA_PROTECTION.md
+      - Threat Model: security/THREAT_MODEL.md
+      - Incident Response: security/INCIDENT_RESPONSE.md
 
   - Operations:
-    - Metrics Overview: operations/METRICS_OVERVIEW.md
-    - Dashboards: operations/DASHBOARDS.md
-    - Alerting: operations/ALERTING.md
-    - Logging: operations/LOGGING.md
-    - Runbooks: operations/RUNBOOKS.md
+      - Metrics Overview: operations/METRICS_OVERVIEW.md
+      - Dashboards: operations/DASHBOARDS.md
+      - Alerting: operations/ALERTING.md
+      - Logging: operations/LOGGING.md
+      - Runbooks: operations/RUNBOOKS.md
 
   - Diagrams:
-    - System Context: diagrams/SYSTEM_CONTEXT.md
-    - Container Diagram: diagrams/CONTAINER_DIAGRAM.md
-    - Page Diagrams: diagrams/PAGE_DIAGRAMS.md
-    - Sequences: diagrams/SEQUENCES.md
-    - State Machines: diagrams/STATE_MACHINES.md
+      - System Context: diagrams/SYSTEM_CONTEXT.md
+      - Container Diagram: diagrams/CONTAINER_DIAGRAM.md
+      - Page Diagrams: diagrams/PAGE_DIAGRAMS.md
+      - Sequences: diagrams/SEQUENCES.md
+      - State Machines: diagrams/STATE_MACHINES.md
 
   - Charts:
-    - ER Diagram: charts/ER_DIAGRAM.md
-    - Flowcharts: charts/FLOWCHARTS.md
+      - ER Diagram: charts/ER_DIAGRAM.md
+      - Flowcharts: charts/FLOWCHARTS.md
 
   - ADR:
-    - Overview: adr/README.md
-    - Template: adr/template.md
+      - Overview: adr/README.md
+      - Template: adr/template.md
 
   - General:
-    - TTN Setup: TTN_SETUP.md
-    - TTN Production: TTN_PRODUCTION_SETUP.md
-    - Emulator Quick Start: EMULATOR_QUICK_START.md
-    - Emulator Integration: EMULATOR_TTN_INTEGRATION.md
-    - System Map: system-map.md
-    - Deprecations: deprecations.md
-    - CI Checklist: CI_CHECKLIST.md
+      - TTN Setup: TTN_SETUP.md
+      - TTN Production: TTN_PRODUCTION_SETUP.md
+      - Emulator Quick Start: EMULATOR_QUICK_START.md
+      - Emulator Integration: EMULATOR_TTN_INTEGRATION.md
+      - System Map: system-map.md
+      - Deprecations: deprecations.md
+      - CI Checklist: CI_CHECKLIST.md
 
 # Extra configuration
 extra:

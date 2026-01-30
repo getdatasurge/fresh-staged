@@ -7,9 +7,7 @@ import type { AppRole } from '../types/auth.js';
 /**
  * Get organization by ID
  */
-export async function getOrganization(
-  organizationId: string
-): Promise<Organization | null> {
+export async function getOrganization(organizationId: string): Promise<Organization | null> {
   const [org] = await db
     .select()
     .from(organizations)
@@ -25,7 +23,7 @@ export async function getOrganization(
  */
 export async function updateOrganization(
   organizationId: string,
-  data: Partial<Pick<InsertOrganization, 'name' | 'timezone' | 'complianceMode' | 'logoUrl'>>
+  data: Partial<Pick<InsertOrganization, 'name' | 'timezone' | 'complianceMode' | 'logoUrl'>>,
 ): Promise<Organization | null> {
   const [org] = await db
     .update(organizations)
@@ -42,15 +40,15 @@ export async function updateOrganization(
 /**
  * List organization members with their roles
  */
-export async function listMembers(
-  organizationId: string
-): Promise<Array<{
-  userId: string;
-  email: string;
-  fullName: string | null;
-  role: AppRole;
-  joinedAt: Date;
-}>> {
+export async function listMembers(organizationId: string): Promise<
+  Array<{
+    userId: string;
+    email: string;
+    fullName: string | null;
+    role: AppRole;
+    joinedAt: Date;
+  }>
+> {
   // Join userRoles with profiles to get member info
   const members = await db
     .select({
@@ -61,14 +59,17 @@ export async function listMembers(
       joinedAt: userRoles.createdAt,
     })
     .from(userRoles)
-    .leftJoin(profiles, and(
-      eq(profiles.userId, userRoles.userId),
-      eq(profiles.organizationId, userRoles.organizationId)
-    ))
+    .leftJoin(
+      profiles,
+      and(
+        eq(profiles.userId, userRoles.userId),
+        eq(profiles.organizationId, userRoles.organizationId),
+      ),
+    )
     .where(eq(userRoles.organizationId, organizationId))
     .orderBy(userRoles.createdAt);
 
-  return members.map(m => ({
+  return members.map((m) => ({
     userId: m.userId,
     email: m.email ?? '',
     fullName: m.fullName,

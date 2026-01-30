@@ -28,11 +28,11 @@ affects: [06-backend-crud, future-testing]
 tech-stack:
   added: []
   patterns:
-    - "Vitest unit testing with @testing-library/react"
-    - "Mock Stack Auth getAuthJson for token injection"
-    - "Mock Supabase session for legacy integrations"
-    - "QueryClient wrapper pattern for hook testing"
-    - "Testing hook query keys for cache management"
+    - 'Vitest unit testing with @testing-library/react'
+    - 'Mock Stack Auth getAuthJson for token injection'
+    - 'Mock Supabase session for legacy integrations'
+    - 'QueryClient wrapper pattern for hook testing'
+    - 'Testing hook query keys for cache management'
 
 key-files:
   created:
@@ -43,17 +43,17 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Structure-focused API client tests (not deep Ky mocking)"
-  - "Test query key structure for cache invalidation patterns"
-  - "Verify access token injection rather than HTTP details"
-  - "Test both query hooks and mutation hooks with cache invalidation"
+  - 'Structure-focused API client tests (not deep Ky mocking)'
+  - 'Test query key structure for cache invalidation patterns'
+  - 'Verify access token injection rather than HTTP details'
+  - 'Test both query hooks and mutation hooks with cache invalidation'
 
 patterns-established:
-  - "Test setup: QueryClient with retry: false for fast tests"
-  - "Wrapper pattern: QueryClientProvider for hook tests"
-  - "Mock Stack Auth useUser with getAuthJson returning token"
-  - "Mock Supabase session for legacy auth calls"
-  - "Test cache keys for org-scoped invalidation on impersonation"
+  - 'Test setup: QueryClient with retry: false for fast tests'
+  - 'Wrapper pattern: QueryClientProvider for hook tests'
+  - 'Mock Stack Auth useUser with getAuthJson returning token'
+  - 'Mock Supabase session for legacy auth calls'
+  - 'Test cache keys for org-scoped invalidation on impersonation'
 
 # Metrics
 duration: 6min
@@ -73,6 +73,7 @@ completed: 2026-01-23
 - **Files modified:** 4 (all new test files)
 
 ## Accomplishments
+
 - API client tests verify structure, authentication, retry, and error handling configuration
 - Organization hooks tests verify useBranding integration with organizationsApi
 - Site hooks tests verify useNavTree integration with sitesApi, areasApi, unitsApi
@@ -132,5 +133,6 @@ None - no external service configuration required.
 **Testing coverage:** Core infrastructure (API client, organization hooks, site hooks, alert hooks) all have comprehensive tests. Future hook migrations should follow these patterns.
 
 ---
-*Phase: 05-frontend-migration*
-*Completed: 2026-01-23*
+
+_Phase: 05-frontend-migration_
+_Completed: 2026-01-23_

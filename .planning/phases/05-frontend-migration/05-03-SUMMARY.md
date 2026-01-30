@@ -33,15 +33,15 @@ key-files:
     - src/lib/api/index.ts
 
 key-decisions:
-  - "Full hierarchy params for readings API (orgId, siteId, areaId, unitId) matching backend routes"
-  - "Alert acknowledge/resolve accept separate params (notes, resolution, correctiveAction) vs single object"
-  - "List functions return arrays directly (not wrapped in {data, pagination} yet)"
-  - "Convenience method listUnitAlerts delegates to listAlerts with unitId filter"
+  - 'Full hierarchy params for readings API (orgId, siteId, areaId, unitId) matching backend routes'
+  - 'Alert acknowledge/resolve accept separate params (notes, resolution, correctiveAction) vs single object'
+  - 'List functions return arrays directly (not wrapped in {data, pagination} yet)'
+  - 'Convenience method listUnitAlerts delegates to listAlerts with unitId filter'
 
 patterns-established:
-  - "Readings API uses full resource hierarchy for queries"
-  - "Alert mutations (acknowledge, resolve) require staff+ role per backend RBAC"
-  - "Alert status can be single value or array for multi-status filtering"
+  - 'Readings API uses full resource hierarchy for queries'
+  - 'Alert mutations (acknowledge, resolve) require staff+ role per backend RBAC'
+  - 'Alert status can be single value or array for multi-status filtering'
 
 # Metrics
 duration: 4min 46sec
@@ -120,12 +120,14 @@ None - API functions ready for use in hooks once Stack Auth token is available.
 ## Next Phase Readiness
 
 **Ready for Phase 05-04 (Hook migration):**
+
 - Readings API ready for useReadings, useLatestReading hooks
 - Alerts API ready for useAlerts, useAlert, useAcknowledgeAlert, useResolveAlert hooks
 - All functions accept accessToken for Stack Auth integration
 - Filtering and pagination supported
 
 **Foundation established:**
+
 - Type-safe API functions matching backend routes
 - Full hierarchy validation via backend enforcement
 - Alert lifecycle operations (acknowledge, resolve) mapped to backend
@@ -134,5 +136,6 @@ None - API functions ready for use in hooks once Stack Auth token is available.
 **No blockers.** Ready to migrate hooks from Supabase to new API client.
 
 ---
-*Phase: 05-frontend-migration*
-*Completed: 2026-01-23*
+
+_Phase: 05-frontend-migration_
+_Completed: 2026-01-23_

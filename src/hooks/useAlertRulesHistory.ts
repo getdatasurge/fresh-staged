@@ -1,5 +1,5 @@
-import { useTRPC, useTRPCClient } from "@/lib/trpc";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTRPC, useTRPCClient } from '@/lib/trpc';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export interface AlertRulesHistoryEntry {
   id: string;
@@ -19,17 +19,17 @@ export interface AlertRulesHistoryEntry {
 
 export function useAlertRulesHistory(
   scope: { organizationId?: string; siteId?: string; unitId?: string },
-  limit: number = 20
+  limit: number = 20,
 ) {
   const trpc = useTRPC();
 
   return useQuery({
     ...trpc.alertHistory.get.queryOptions(
       { ...scope, limit },
-      { enabled: !!(scope.organizationId || scope.siteId || scope.unitId) }
+      { enabled: !!(scope.organizationId || scope.siteId || scope.unitId) },
     ),
     select: (data) => {
-      return data.map(entry => ({
+      return data.map((entry) => ({
         ...entry,
         // Map backend response to frontend interface if needed
         action: entry.changeType,
@@ -42,7 +42,7 @@ export function useAlertRulesHistory(
         // Backend `createHistory` stores `newValues`.
         // We need to robustly parse.
       }));
-    }
+    },
   });
 }
 
@@ -53,12 +53,12 @@ export function useInsertAlertRulesHistory() {
 
   return useMutation({
     mutationFn: async (args: {
-      scope: { organizationId?: string; siteId?: string; unitId?: string },
-      alertRuleId: string,
-      action: string,
-      changes: Record<string, unknown>,
-      note?: string,
-      userId?: string // Unused, strictly context
+      scope: { organizationId?: string; siteId?: string; unitId?: string };
+      alertRuleId: string;
+      action: string;
+      changes: Record<string, unknown>;
+      note?: string;
+      userId?: string; // Unused, strictly context
     }) => {
       return trpcClient.alertHistory.create.mutate({
         alertRuleId: args.alertRuleId,
@@ -74,7 +74,7 @@ export function useInsertAlertRulesHistory() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [['alertHistory']] });
-    }
+    },
   });
 }
 

@@ -8,10 +8,10 @@ Added mock for `requireSensorCapacity` and `requireActiveSubscription` middlewar
 
 ## Deliverables
 
-| Task | Status | Commit |
-|------|--------|--------|
-| Add subscription middleware mock | ✓ | 1383a15 |
-| Verify all 45 tests pass | ✓ | — |
+| Task                             | Status | Commit  |
+| -------------------------------- | ------ | ------- |
+| Add subscription middleware mock | ✓      | 1383a15 |
+| Verify all 45 tests pass         | ✓      | —       |
 
 ## Verification
 

@@ -3,6 +3,7 @@
 **Analysis Date:** 2026-01-29
 
 **Scope:**
+
 - Source files: 742 files
 - Primary language: TypeScript (100% of codebase)
 - LOC: 169,190 lines
@@ -12,6 +13,7 @@
 **Overall:** Full-Stack Monorepo with Client-Server Architecture
 
 **Key Characteristics:**
+
 - **Monorepo structure** with frontend (Vite/React) and backend (Fastify/Node.js) in single repository
 - **Type-safe API layer** via tRPC with shared types between frontend and backend
 - **Multi-tenant SaaS** architecture with organization-based data isolation
@@ -22,6 +24,7 @@
 ## Layers
 
 **Frontend Layer:**
+
 - Purpose: React SPA providing user interface for IoT monitoring platform
 - Location: `/src`
 - Contains: React components, pages, hooks, contexts, UI library (shadcn/ui)
@@ -29,6 +32,7 @@
 - Used by: End users via web browser
 
 **Backend API Layer:**
+
 - Purpose: REST and tRPC API server handling authentication, authorization, and business logic
 - Location: `/backend/src`
 - Contains: Fastify server, tRPC routers, middleware, routes, plugins
@@ -36,6 +40,7 @@
 - Used by: Frontend, webhooks, background workers
 
 **Service Layer:**
+
 - Purpose: Domain business logic and external service integrations
 - Location: `/backend/src/services`
 - Contains: 40+ service modules (alert.service, ttn.service, stripe-webhook.service, etc.)
@@ -43,6 +48,7 @@
 - Used by: tRPC routers, REST routes, background workers
 
 **Data Access Layer:**
+
 - Purpose: Database schema and query abstraction
 - Location: `/backend/src/db`
 - Contains: Drizzle ORM schema definitions, migrations, database client
@@ -50,6 +56,7 @@
 - Used by: Services, routers, workers
 
 **Worker Layer:**
+
 - Purpose: Background job processing for async operations
 - Location: `/backend/src/workers`
 - Contains: BullMQ workers and processors for SMS, email digests, Stripe meter reporting
@@ -57,6 +64,7 @@
 - Used by: Scheduled jobs, API-triggered async tasks
 
 **Edge Function Layer (Legacy):**
+
 - Purpose: Serverless functions for specific operations (being migrated to backend)
 - Location: `/supabase/functions`
 - Contains: 50+ Deno edge functions for TTN provisioning, webhooks, exports
@@ -96,6 +104,7 @@
 6. Job completion/failure logged to Redis and Bull Board dashboard
 
 **State Management:**
+
 - **Server state:** React Query manages all server data with tRPC integration
 - **Real-time state:** Socket.io pushes updates, React Query cache invalidated on receive
 - **Client state:** React Context API for cross-cutting concerns (auth, debug, TTN config)
@@ -105,31 +114,37 @@
 ## Key Abstractions
 
 **tRPC Router:**
+
 - Purpose: Type-safe API procedures with input validation and authorization
 - Examples: `/backend/src/routers/sites.router.ts`, `/backend/src/routers/alerts.router.ts`
 - Pattern: Input schemas (Zod) → middleware chain → service call → typed output
 
 **Service Modules:**
+
 - Purpose: Encapsulate business logic and external integrations
 - Examples: `/backend/src/services/alert-evaluator.service.ts`, `/backend/src/services/ttn-device.service.ts`
 - Pattern: Export functions that accept dependencies, return results, throw domain errors
 
 **React Custom Hooks:**
+
 - Purpose: Reusable data fetching and state management logic
 - Examples: `/src/hooks/useSites.ts`, `/src/hooks/useAlerts.ts`, `/src/hooks/useRealtimeSensorData.ts`
 - Pattern: Wrap tRPC queries/mutations, handle loading/error states, expose typed data
 
 **Drizzle Schema Tables:**
+
 - Purpose: Type-safe database schema definitions
 - Examples: `/backend/src/db/schema/hierarchy.ts`, `/backend/src/db/schema/alerts.ts`
 - Pattern: Export table definitions with relations, types inferred for queries
 
 **Dashboard Widgets:**
+
 - Purpose: Composable dashboard components with standardized interface
 - Examples: `/src/features/dashboard-layout/widgets/BatteryHealthWidget.tsx`
 - Pattern: Accept `WidgetProps` (entityId, entityType), render card with data
 
 **Fastify Plugins:**
+
 - Purpose: Modular Fastify extensions for cross-cutting functionality
 - Examples: `/backend/src/plugins/auth.plugin.ts`, `/backend/src/plugins/queue.plugin.ts`
 - Pattern: Register with Fastify, decorate instance with services (socket, queue, email)
@@ -137,31 +152,37 @@
 ## Entry Points
 
 **Frontend Entry:**
+
 - Location: `/src/main.tsx`
 - Triggers: Browser loads index.html
 - Responsibilities: Mount React root, initialize app with providers
 
 **Frontend App Root:**
+
 - Location: `/src/App.tsx`
 - Triggers: React render
 - Responsibilities: Set up provider tree (Stack Auth, tRPC, Query Client, Socket.io, Contexts), define routes
 
 **Backend Server:**
+
 - Location: `/backend/src/index.ts`
 - Triggers: `npm run dev` or container start
 - Responsibilities: Load environment, call `buildApp()`, start Fastify server, handle graceful shutdown
 
 **Backend App Builder:**
+
 - Location: `/backend/src/app.ts`
 - Triggers: Called by index.ts or test setup
 - Responsibilities: Configure Fastify (CORS, helmet, rate limiting), register plugins, register routes, return app instance
 
 **Background Workers:**
+
 - Location: `/backend/src/workers/index.ts`
 - Triggers: Separate process/container start
 - Responsibilities: Connect to Redis, register BullMQ workers for SMS/email/billing queues
 
 **Edge Functions:**
+
 - Location: `/supabase/functions/*/index.ts`
 - Triggers: HTTP request to Supabase function URL
 - Responsibilities: Serverless handlers for webhooks, scheduled tasks (legacy, being migrated)
@@ -171,6 +192,7 @@
 **Strategy:** Layered error handling with domain errors, error boundaries, and global handlers
 
 **Backend Patterns:**
+
 - Service layer throws domain errors (e.g., `new Error('Site not found')`)
 - tRPC procedures catch errors and convert to tRPC errors with codes (`UNAUTHORIZED`, `NOT_FOUND`, `BAD_REQUEST`)
 - Fastify error handler plugin (`/backend/src/plugins/error-handler.plugin.ts`) catches all unhandled errors
@@ -178,6 +200,7 @@
 - Structured logging via Pino logger includes error context and stack traces
 
 **Frontend Patterns:**
+
 - React Query error handling in hooks: `onError` callbacks for user feedback
 - tRPC mutations include error toasts via Sonner
 - Error boundaries for component-level failures (planned)
@@ -185,6 +208,7 @@
 - Auth guard redirects for unauthenticated access
 
 **Validation:**
+
 - Input validation via Zod schemas at API boundary
 - Fastify type provider enforces schema validation before route handlers
 - tRPC input validation in router definitions
@@ -193,40 +217,47 @@
 ## Cross-Cutting Concerns
 
 **Logging:**
+
 - Backend: Pino structured JSON logging with Fastify integration, log levels via environment
 - Frontend: Debug context for development mode logging (`/src/contexts/DebugContext.tsx`)
 - Workers: Console logging with job metadata, visible in Bull Board
 
 **Validation:**
+
 - Shared Zod schemas between frontend and backend where possible
 - Backend: `/backend/src/schemas` for reusable validation schemas
 - Frontend: Inline schemas in components or `/src/lib/validation` for shared validators
 
 **Authentication:**
+
 - Stack Auth provider for identity management (JWT tokens)
 - Backend middleware: `requireAuth` verifies JWT and decorates request with user object
 - Frontend: `useUser()` hook provides authenticated user context
 - Socket.io: Auth middleware verifies JWT before allowing connection
 
 **Authorization:**
+
 - Role-based access control (RBAC) via `requireRole` middleware
 - Roles: viewer, staff, manager, admin, owner (hierarchical)
 - Organization context middleware: `requireOrgContext` ensures user belongs to org in URL
 - Multi-tenancy: All queries scoped by `organizationId` with RLS-style filtering
 
 **Real-time Updates:**
+
 - Socket.io rooms for organization-scoped broadcasts
 - Event types: `sensor:reading`, `alert:new`, `unit:state-change`
 - Frontend hooks subscribe to events and invalidate React Query cache
 - Connection state managed by `RealtimeProvider` context
 
 **Multi-tenancy:**
+
 - Every entity has `organizationId` foreign key
 - Middleware enforces organization context on all routes
 - Database queries always include organization filter
 - Socket.io rooms scoped by org: `org:${orgId}`
 
 **Monitoring:**
+
 - Bull Board dashboard for queue monitoring (`/api/admin/queues`)
 - Health check endpoints: `/health`, `/health/db`, `/health/redis`
 - Widget health metrics tracking render performance
@@ -234,4 +265,4 @@
 
 ---
 
-*Architecture analysis: 2026-01-29*
+_Architecture analysis: 2026-01-29_

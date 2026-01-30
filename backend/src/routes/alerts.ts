@@ -1,10 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
-import {
-  requireAuth,
-  requireOrgContext,
-  requireRole,
-} from '../middleware/index.js';
+import { requireAuth, requireOrgContext, requireRole } from '../middleware/index.js';
 import * as alertService from '../services/alert.service.js';
 import { notFound, conflict } from '../utils/errors.js';
 import {
@@ -34,13 +30,10 @@ export default async function alertRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const alerts = await alertService.listAlerts(
-        request.user!.organizationId!,
-        request.query
-      );
+      const alerts = await alertService.listAlerts(request.user!.organizationId!, request.query);
 
       return alerts;
-    }
+    },
   );
 
   // GET /api/orgs/:organizationId/alerts/:alertId - Get single alert
@@ -59,7 +52,7 @@ export default async function alertRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const alert = await alertService.getAlert(
         request.params.alertId,
-        request.user!.organizationId!
+        request.user!.organizationId!,
       );
 
       if (!alert) {
@@ -67,7 +60,7 @@ export default async function alertRoutes(fastify: FastifyInstance) {
       }
 
       return alert;
-    }
+    },
   );
 
   // POST /api/orgs/:organizationId/alerts/:alertId/acknowledge - Acknowledge alert
@@ -90,7 +83,7 @@ export default async function alertRoutes(fastify: FastifyInstance) {
         request.params.alertId,
         request.user!.organizationId!,
         request.user!.profileId!,
-        request.body.notes
+        request.body.notes,
       );
 
       if (result === null) {
@@ -102,7 +95,7 @@ export default async function alertRoutes(fastify: FastifyInstance) {
       }
 
       return result;
-    }
+    },
   );
 
   // POST /api/orgs/:organizationId/alerts/:alertId/resolve - Resolve alert
@@ -125,7 +118,7 @@ export default async function alertRoutes(fastify: FastifyInstance) {
         request.user!.organizationId!,
         request.user!.profileId!,
         request.body.resolution,
-        request.body.correctiveAction
+        request.body.correctiveAction,
       );
 
       if (!alert) {
@@ -133,6 +126,6 @@ export default async function alertRoutes(fastify: FastifyInstance) {
       }
 
       return alert;
-    }
+    },
   );
 }

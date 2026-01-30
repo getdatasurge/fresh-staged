@@ -13,16 +13,16 @@ provides:
 affects: [05-07, 05-08, 05-11]
 decisions:
   - "Alert rules CRUD endpoints don't exist - return defaults and no-ops"
-  - "Alert data fetched via alertsApi from Phase 4 backend"
-  - "Unit status derived from nav tree - no unit-by-id endpoint needed"
-  - "useFetchUnitStatus, useFetchUnitAlerts, useFetchAlerts for data fetching"
-  - "Keep existing computation hooks (computeUnitAlerts, computeUnitStatus) unchanged"
+  - 'Alert data fetched via alertsApi from Phase 4 backend'
+  - 'Unit status derived from nav tree - no unit-by-id endpoint needed'
+  - 'useFetchUnitStatus, useFetchUnitAlerts, useFetchAlerts for data fetching'
+  - 'Keep existing computation hooks (computeUnitAlerts, computeUnitStatus) unchanged'
 tech-stack:
   added: []
   patterns:
-    - "Data-fetching vs computation hooks separation"
-    - "Nav tree as source for hierarchical entity status"
-    - "Query key factories with parameters for filters"
+    - 'Data-fetching vs computation hooks separation'
+    - 'Nav tree as source for hierarchical entity status'
+    - 'Query key factories with parameters for filters'
 key-files:
   created: []
   modified:
@@ -44,6 +44,7 @@ metrics:
 ### 1. Alert Rules Hooks (useAlertRules.ts)
 
 **Migrated to Stack Auth with default-only returns:**
+
 - Replaced Supabase imports with Stack Auth `useUser`
 - All query hooks return DEFAULT_ALERT_RULES or null (no backend endpoints)
 - Mutation hooks are no-ops with console warnings
@@ -52,12 +53,14 @@ metrics:
 - Pure helper functions unchanged (computeMissedCheckins, computeOfflineSeverity, etc.)
 
 **Rationale:**
+
 - Backend Phase 4 built alert evaluation using DEFAULT_ALERT_RULES
 - Alert rules CRUD endpoints don't exist (admin-level functionality)
 - Configuration is deferred to Phase 6+
 - Hooks need to compile but don't need real data for Phase 5
 
 **Exports:**
+
 - `useUnitAlertRules(unitId)` - Returns DEFAULT_ALERT_RULES
 - `useOrgAlertRules(orgId)` - Returns null
 - `useSiteAlertRules(siteId)` - Returns null
@@ -73,6 +76,7 @@ metrics:
 ### 2. Alert Data-Fetching Hooks (useUnitAlerts.ts)
 
 **Added backend alert queries using alertsApi:**
+
 - `useFetchUnitAlerts(unitId, params)` - Fetch alerts for specific unit
 - `useFetchAlerts(params)` - Fetch org-wide alerts with filters
 - `useAcknowledgeAlert()` - Mutation hook for staff+ acknowledge operation
@@ -83,6 +87,7 @@ metrics:
 - All hooks use alertsApi from Phase 4 backend
 
 **Kept existing computation hooks unchanged:**
+
 - `computeUnitAlerts(units, rulesMap)` - Pure function for client-side alert computation
 - `useUnitAlerts(units, rulesMap)` - React hook wrapping computation with useMemo
 
@@ -91,6 +96,7 @@ metrics:
 ### 3. Unit Status Hook (useUnitStatus.ts)
 
 **Added nav tree derivation:**
+
 - `useFetchUnitStatus(unitId)` - Fetch unit status from nav tree by ID
 - No dedicated `/api/orgs/:orgId/units/:unitId` endpoint needed
 - Nav tree already loads all units with status field
@@ -98,11 +104,13 @@ metrics:
 - Returns status data without additional API call
 
 **Kept existing computation hooks unchanged:**
+
 - `computeUnitStatus(unit, rules)` - Pure function for status computation
 - `useUnitStatus(unit, rules)` - React hook wrapping computation with useMemo
 - `useUnitsStatus(units, rulesMap)` - Batch status computation
 
 **Rationale:**
+
 - Units are hierarchical (site > area > unit) - no flat unit-by-id pattern
 - Creating a dedicated endpoint just for status lookup is unnecessary overhead
 - Nav tree is already cached and loaded for navigation
@@ -110,22 +118,24 @@ metrics:
 ### 4. Query Key Extensions (queryKeys.ts)
 
 **Extended alert query keys with parameters:**
+
 ```typescript
 // Before
-alerts: () => ['org', orgId, 'alerts'] as const
+alerts: () => ['org', orgId, 'alerts'] as const;
 
 // After
 alerts: (status, unitId, siteId, page, limit) =>
-  ['org', orgId, 'alerts', status, unitId, siteId, page, limit] as const
+  ['org', orgId, 'alerts', status, unitId, siteId, page, limit] as const;
 ```
 
 **Added unit-scoped alert keys:**
+
 ```typescript
-alerts: (status, page, limit) =>
-  ['unit', unitId, 'alerts', status, page, limit] as const
+alerts: (status, page, limit) => ['unit', unitId, 'alerts', status, page, limit] as const;
 ```
 
 **Benefits:**
+
 - Granular cache invalidation by filter parameters
 - TypeScript type safety for query key usage
 - Consistent hierarchical key structure
@@ -137,6 +147,7 @@ alerts: (status, page, limit) =>
 **Context:** Backend Phase 4 built alert evaluation but NOT alert rules CRUD endpoints.
 
 **Options Considered:**
+
 1. Build alert rules CRUD endpoints now (scope creep)
 2. Return defaults and defer CRUD to Phase 6+
 3. Leave hooks broken until Phase 6+
@@ -144,6 +155,7 @@ alerts: (status, page, limit) =>
 **Decision:** Return DEFAULT_ALERT_RULES with clear Phase 6 TODO markers
 
 **Rationale:**
+
 - Alert rules configuration is admin-level functionality
 - Alert evaluation already works server-side using defaults
 - Deferring admin features allows focus on core user functionality
@@ -157,6 +169,7 @@ alerts: (status, page, limit) =>
 **Context:** Existing hooks (useUnitAlerts, useUnitStatus) are pure computation functions that take data as input.
 
 **Options Considered:**
+
 1. Replace computation hooks with data-fetching hooks (breaking change)
 2. Keep computation hooks, add separate data-fetching hooks
 3. Overload existing hooks with optional fetch behavior
@@ -164,6 +177,7 @@ alerts: (status, page, limit) =>
 **Decision:** Keep computation hooks unchanged, add new data-fetching hooks
 
 **Rationale:**
+
 - Existing components may rely on computation-only behavior
 - Separation of concerns - computation vs I/O
 - Flexibility - components can choose to compute from local state or fetch from API
@@ -176,6 +190,7 @@ alerts: (status, page, limit) =>
 **Context:** Need unit status data but no dedicated unit-by-id endpoint exists.
 
 **Options Considered:**
+
 1. Create GET /api/orgs/:orgId/units/:unitId endpoint
 2. Derive from nav tree (which already loads all units)
 3. Create a separate status-only endpoint
@@ -183,6 +198,7 @@ alerts: (status, page, limit) =>
 **Decision:** Derive from nav tree using useFetchUnitStatus
 
 **Rationale:**
+
 - Units are hierarchical (site > area > unit) - not flat entities
 - Nav tree already fetches all units with status for navigation
 - Creating a dedicated endpoint duplicates data already in cache
@@ -194,20 +210,24 @@ alerts: (status, page, limit) =>
 ## Testing Notes
 
 **TypeScript Compilation:**
+
 - ✅ `pnpm tsc --noEmit` passes with zero errors
 - ✅ All hooks properly typed with Stack Auth integration
 - ✅ Query keys extended correctly with parameter support
 
 **Supabase Migration:**
+
 - ✅ No Supabase imports in migrated hooks
 - ✅ All hooks use Stack Auth `useUser` for authentication
 - ✅ `useOrgScope` used consistently for organization context
 
 **Query Key Preservation:**
+
 - ✅ All query keys preserved exactly for cache continuity
 - ✅ Extensions backward-compatible (parameters optional)
 
 **Helper Functions:**
+
 - ✅ `computeMissedCheckins` unchanged
 - ✅ `computeOfflineSeverity` unchanged
 - ✅ `computeOfflineTriggerMs` unchanged
@@ -216,6 +236,7 @@ alerts: (status, page, limit) =>
 ## Next Phase Readiness
 
 **Phase 6+ Requirements for Alert Rules CRUD:**
+
 1. Backend endpoints: POST/PUT/DELETE /api/orgs/:orgId/alert-rules
 2. Update useOrgAlertRules to fetch from endpoint (remove null return)
 3. Update useSiteAlertRules to fetch from endpoint
@@ -225,10 +246,12 @@ alerts: (status, page, limit) =>
 7. Remove console.warn statements and Phase 6 TODO markers
 
 **Alert Rules History Migration:**
+
 - Note: useAlertRulesHistory.ts still uses Supabase (not in plan scope)
 - Will need migration when Phase 6+ adds alert rules history API
 
 **Integration Points:**
+
 - Alert fetching hooks ready for components (useFetchAlerts, useFetchUnitAlerts)
 - Acknowledge/resolve mutations ready for staff+ users
 - Unit status derivation ready for dashboard components
@@ -238,6 +261,7 @@ alerts: (status, page, limit) =>
 **None** - Plan executed exactly as written.
 
 All three hooks migrated successfully:
+
 - useAlertRules: Stack Auth with defaults
 - useUnitAlerts: Added alertsApi data-fetching hooks
 - useUnitStatus: Added nav tree derivation hook
@@ -266,6 +290,7 @@ All three hooks migrated successfully:
 ## Phase 5 Progress
 
 **Wave 2 Status:** 1/4 plans complete (25%)
+
 - ✅ 05-06: Alert & Unit Status Hooks (this plan)
 - ⏳ 05-07: Dashboard Data Hooks
 - ⏳ 05-08: TTN & Provisioning Hooks

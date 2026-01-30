@@ -1,22 +1,22 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Radio, 
-  Battery, 
-  Signal, 
-  Clock, 
-  CheckCircle, 
-  AlertTriangle, 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Radio,
+  Battery,
+  Signal,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
   XCircle,
   DoorOpen,
   DoorClosed,
   Link as LinkIcon,
   Loader2,
-} from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+} from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 // Only import types - status is computed from parent's offlineSeverity
-import { DeviceInfo } from "@/hooks/useSensorInstallationStatus";
-import { LoraSensor } from "@/types/ttn";
+import { DeviceInfo } from '@/hooks/useSensorInstallationStatus';
+import { LoraSensor } from '@/types/ttn';
 
 interface DeviceReadinessProps {
   unitStatus: string;
@@ -28,14 +28,14 @@ interface DeviceReadinessProps {
   lastHeartbeat?: string | null;
   deviceSerial?: string | null;
   // Door state
-  doorState?: "open" | "closed" | "unknown" | null;
+  doorState?: 'open' | 'closed' | 'unknown' | null;
   doorLastChangedAt?: string | null;
   // Battery forecast
   batteryEstimatedDays?: number | null;
   // Missed check-ins tracking
   missedCheckins?: number;
   lastCheckinAt?: string | null;
-  offlineSeverity?: "none" | "warning" | "critical";
+  offlineSeverity?: 'none' | 'warning' | 'critical';
   // LoRa sensor data (if available)
   loraSensor?: LoraSensor | null;
 }
@@ -53,18 +53,23 @@ const DeviceReadinessCard = ({
   batteryEstimatedDays,
   missedCheckins = 0,
   lastCheckinAt,
-  offlineSeverity = "none",
+  offlineSeverity = 'none',
   loraSensor,
 }: DeviceReadinessProps) => {
   // Determine if we have a LoRa sensor in pending/joining state
-  const isLoraPending = loraSensor?.status === "pending";
-  const isLoraJoining = loraSensor?.status === "joining";
-  const hasLoraData = loraSensor && (loraSensor.status === "active" || loraSensor.status === "offline");
+  const isLoraPending = loraSensor?.status === 'pending';
+  const isLoraJoining = loraSensor?.status === 'joining';
+  const hasLoraData =
+    loraSensor && (loraSensor.status === 'active' || loraSensor.status === 'offline');
 
   // Use LoRa sensor data if available and active, otherwise fall back to device data
-  const effectiveBatteryLevel = hasLoraData ? loraSensor.battery_level : (batteryLevel ?? device?.battery_level);
+  const effectiveBatteryLevel = hasLoraData
+    ? loraSensor.battery_level
+    : (batteryLevel ?? device?.battery_level);
   const effectiveSignalStrength = hasLoraData ? loraSensor.signal_strength : signalStrength;
-  const effectiveLastSeen = hasLoraData ? loraSensor.last_seen_at : (lastHeartbeat || device?.last_seen_at);
+  const effectiveLastSeen = hasLoraData
+    ? loraSensor.last_seen_at
+    : lastHeartbeat || device?.last_seen_at;
 
   // Compute installation status based on offline severity from alert rules (not hardcoded threshold)
   // This respects user-configured "Sensor Offline Thresholds"
@@ -78,42 +83,43 @@ const DeviceReadinessCard = ({
     // Handle LoRa pending/joining states first
     if (isLoraPending) {
       return {
-        status: "pending_registration",
-        label: "Pending Registration",
-        description: "Sensor created but not yet provisioned to TTN. Configure TTN connection in Settings → Developer.",
-        color: "text-muted-foreground",
-        bgColor: "bg-muted",
+        status: 'pending_registration',
+        label: 'Pending Registration',
+        description:
+          'Sensor created but not yet provisioned to TTN. Configure TTN connection in Settings → Developer.',
+        color: 'text-muted-foreground',
+        bgColor: 'bg-muted',
       };
     }
     if (isLoraJoining) {
       return {
-        status: "joining_network",
-        label: "Joining Network",
-        description: loraSensor?.ttn_device_id 
-          ? "Sensor is provisioned and attempting to join the LoRaWAN network. Ensure a gateway is online nearby."
-          : "Sensor is awaiting TTN device registration. Check TTN configuration.",
-        color: "text-warning",
-        bgColor: "bg-warning/10",
+        status: 'joining_network',
+        label: 'Joining Network',
+        description: loraSensor?.ttn_device_id
+          ? 'Sensor is provisioned and attempting to join the LoRaWAN network. Ensure a gateway is online nearby.'
+          : 'Sensor is awaiting TTN device registration. Check TTN configuration.',
+        color: 'text-warning',
+        bgColor: 'bg-warning/10',
       };
     }
 
     // Use offlineSeverity from computed status (respects alert rules thresholds)
-    if (offlineSeverity === "critical") {
+    if (offlineSeverity === 'critical') {
       return {
-        status: "offline_critical",
-        label: "Offline (Critical)",
+        status: 'offline_critical',
+        label: 'Offline (Critical)',
         description: `Sensor has missed ${missedCheckins} check-ins. Immediate attention required.`,
-        color: "text-alarm",
-        bgColor: "bg-alarm/10",
+        color: 'text-alarm',
+        bgColor: 'bg-alarm/10',
       };
     }
-    if (offlineSeverity === "warning") {
+    if (offlineSeverity === 'warning') {
       return {
-        status: "offline_warning",
-        label: "Offline (Warning)",
+        status: 'offline_warning',
+        label: 'Offline (Warning)',
         description: `Sensor has missed ${missedCheckins} check-ins. Check device connectivity.`,
-        color: "text-warning",
-        bgColor: "bg-warning/10",
+        color: 'text-warning',
+        bgColor: 'bg-warning/10',
       };
     }
 
@@ -121,37 +127,36 @@ const DeviceReadinessCard = ({
     const hasSensorPaired = Boolean(loraSensor || device);
     if (!hasSensorPaired) {
       return {
-        status: "not_paired",
-        label: "Not Paired",
-        description: "No sensor is paired to this unit. Go to Settings to add a sensor.",
-        color: "text-muted-foreground",
-        bgColor: "bg-muted",
+        status: 'not_paired',
+        label: 'Not Paired',
+        description: 'No sensor is paired to this unit. Go to Settings to add a sensor.',
+        color: 'text-muted-foreground',
+        bgColor: 'bg-muted',
       };
     }
 
     // Check if paired but never seen
     const hasEverBeenSeen = Boolean(
-      loraSensor?.last_seen_at || 
-      device?.last_seen_at || 
-      lastReadingAt
+      loraSensor?.last_seen_at || device?.last_seen_at || lastReadingAt,
     );
     if (!hasEverBeenSeen) {
       return {
-        status: "paired_never_seen",
-        label: "Paired – Never Seen",
-        description: "Sensor is paired but has never reported data. Check device power and connectivity.",
-        color: "text-warning",
-        bgColor: "bg-warning/10",
+        status: 'paired_never_seen',
+        label: 'Paired – Never Seen',
+        description:
+          'Sensor is paired but has never reported data. Check device power and connectivity.',
+        color: 'text-warning',
+        bgColor: 'bg-warning/10',
       };
     }
 
     // Online - sensor is reporting within configured thresholds (offlineSeverity === "none")
     return {
-      status: "online",
-      label: "Online",
-      description: "Sensor is reporting normally within configured thresholds.",
-      color: "text-safe",
-      bgColor: "bg-safe/10",
+      status: 'online',
+      label: 'Online',
+      description: 'Sensor is reporting normally within configured thresholds.',
+      color: 'text-safe',
+      bgColor: 'bg-safe/10',
     };
   };
 
@@ -161,15 +166,15 @@ const DeviceReadinessCard = ({
     if (isLoraPending) return Radio;
     if (isLoraJoining) return Loader2;
     switch (installationStatus.status) {
-      case "not_paired":
+      case 'not_paired':
         return LinkIcon;
-      case "paired_never_seen":
+      case 'paired_never_seen':
         return AlertTriangle;
-      case "previously_seen_offline":
-      case "offline_warning":
-      case "offline_critical":
+      case 'previously_seen_offline':
+      case 'offline_warning':
+      case 'offline_critical':
         return XCircle;
-      case "online":
+      case 'online':
         return CheckCircle;
       default:
         return XCircle;
@@ -180,50 +185,53 @@ const DeviceReadinessCard = ({
 
   const getBatteryStatus = (level: number | null | undefined) => {
     if (level === null || level === undefined) {
-      return { label: "N/A", color: "text-muted-foreground", bg: "bg-muted" };
+      return { label: 'N/A', color: 'text-muted-foreground', bg: 'bg-muted' };
     }
     if (level > 50) {
-      return { label: `${level}%`, color: "text-safe", bg: "bg-safe/10" };
+      return { label: `${level}%`, color: 'text-safe', bg: 'bg-safe/10' };
     }
     if (level > 20) {
-      return { label: `${level}%`, color: "text-warning", bg: "bg-warning/10" };
+      return { label: `${level}%`, color: 'text-warning', bg: 'bg-warning/10' };
     }
-    return { label: `${level}%`, color: "text-alarm", bg: "bg-alarm/10" };
+    return { label: `${level}%`, color: 'text-alarm', bg: 'bg-alarm/10' };
   };
 
   const getSignalStatus = (strength: number | null | undefined) => {
     if (strength === null || strength === undefined) {
-      return { label: "N/A", color: "text-muted-foreground" };
+      return { label: 'N/A', color: 'text-muted-foreground' };
     }
     if (strength > -60) {
-      return { label: "Excellent", color: "text-safe" };
+      return { label: 'Excellent', color: 'text-safe' };
     }
     if (strength > -80) {
-      return { label: "Good", color: "text-safe" };
+      return { label: 'Good', color: 'text-safe' };
     }
     if (strength > -90) {
-      return { label: "Fair", color: "text-warning" };
+      return { label: 'Fair', color: 'text-warning' };
     }
-    return { label: "Weak", color: "text-alarm" };
+    return { label: 'Weak', color: 'text-alarm' };
   };
 
-  const getDoorStatus = (state: string | null | undefined, changedAt: string | null | undefined) => {
-    if (!state || state === "unknown") {
-      return { label: "Unknown", color: "text-muted-foreground", icon: DoorClosed, since: null };
+  const getDoorStatus = (
+    state: string | null | undefined,
+    changedAt: string | null | undefined,
+  ) => {
+    if (!state || state === 'unknown') {
+      return { label: 'Unknown', color: 'text-muted-foreground', icon: DoorClosed, since: null };
     }
-    if (state === "open") {
-      return { 
-        label: "Open", 
-        color: "text-warning", 
+    if (state === 'open') {
+      return {
+        label: 'Open',
+        color: 'text-warning',
         icon: DoorOpen,
-        since: changedAt ? formatDistanceToNow(new Date(changedAt), { addSuffix: false }) : null
+        since: changedAt ? formatDistanceToNow(new Date(changedAt), { addSuffix: false }) : null,
       };
     }
-    return { 
-      label: "Closed", 
-      color: "text-safe", 
+    return {
+      label: 'Closed',
+      color: 'text-safe',
       icon: DoorClosed,
-      since: changedAt ? formatDistanceToNow(new Date(changedAt), { addSuffix: false }) : null
+      since: changedAt ? formatDistanceToNow(new Date(changedAt), { addSuffix: false }) : null,
     };
   };
 
@@ -234,19 +242,19 @@ const DeviceReadinessCard = ({
 
   const formatHeartbeat = (heartbeat: string | null | undefined, fallback: string | null) => {
     const timestamp = effectiveLastSeen || heartbeat || device?.last_seen_at || fallback;
-    if (!timestamp) return "Never";
+    if (!timestamp) return 'Never';
     try {
       return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
     } catch {
-      return "Unknown";
+      return 'Unknown';
     }
   };
 
   const formatEstimatedDays = (days: number | null | undefined) => {
     if (days === null || days === undefined) return null;
-    if (days <= 7) return { text: `~${days}d remaining`, color: "text-alarm" };
-    if (days <= 30) return { text: `~${days}d remaining`, color: "text-warning" };
-    return { text: `~${days}d remaining`, color: "text-muted-foreground" };
+    if (days <= 7) return { text: `~${days}d remaining`, color: 'text-alarm' };
+    if (days <= 30) return { text: `~${days}d remaining`, color: 'text-warning' };
+    return { text: `~${days}d remaining`, color: 'text-muted-foreground' };
   };
 
   const estimatedDaysDisplay = formatEstimatedDays(batteryEstimatedDays);
@@ -264,7 +272,7 @@ const DeviceReadinessCard = ({
           {/* Sensor Installation Status */}
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <StatusIcon className={`w-3 h-3 ${isLoraJoining ? "animate-spin" : ""}`} />
+              <StatusIcon className={`w-3 h-3 ${isLoraJoining ? 'animate-spin' : ''}`} />
               Sensor Status
             </p>
             <Badge className={`${installationStatus.bgColor} ${installationStatus.color} border-0`}>
@@ -289,7 +297,7 @@ const DeviceReadinessCard = ({
                   </p>
                 )}
               </div>
-            ) : (isLoraPending || isLoraJoining) ? (
+            ) : isLoraPending || isLoraJoining ? (
               <span className="text-sm text-muted-foreground italic">Awaiting data</span>
             ) : (
               <span className="text-sm text-muted-foreground italic">No sensor paired</span>
@@ -306,7 +314,7 @@ const DeviceReadinessCard = ({
               <span className={`text-sm font-medium ${signalStatus.color}`}>
                 {signalStatus.label} ({effectiveSignalStrength} dBm)
               </span>
-            ) : (isLoraPending || isLoraJoining) ? (
+            ) : isLoraPending || isLoraJoining ? (
               <span className="text-sm text-muted-foreground italic">Awaiting data</span>
             ) : (
               <span className="text-sm text-muted-foreground italic">No sensor paired</span>
@@ -320,13 +328,9 @@ const DeviceReadinessCard = ({
               Door State
             </p>
             <div>
-              <span className={`text-sm font-medium ${doorStatus.color}`}>
-                {doorStatus.label}
-              </span>
-              {doorStatus.since && doorState !== "unknown" && (
-                <p className="text-xs text-muted-foreground">
-                  for {doorStatus.since}
-                </p>
+              <span className={`text-sm font-medium ${doorStatus.color}`}>{doorStatus.label}</span>
+              {doorStatus.since && doorState !== 'unknown' && (
+                <p className="text-xs text-muted-foreground">for {doorStatus.since}</p>
               )}
             </div>
           </div>
@@ -353,22 +357,24 @@ const DeviceReadinessCard = ({
         )}
 
         {/* Installation status message */}
-        {installationStatus.status !== "online" && (
-          <div className={`mt-4 p-3 rounded-lg border border-dashed ${
-            isLoraPending || isLoraJoining
-              ? "bg-muted/50 border-accent/30"
-              : installationStatus.status === "not_paired" 
-                ? "bg-muted/50 border-border" 
-                : "bg-warning/5 border-warning/30"
-          }`}>
+        {installationStatus.status !== 'online' && (
+          <div
+            className={`mt-4 p-3 rounded-lg border border-dashed ${
+              isLoraPending || isLoraJoining
+                ? 'bg-muted/50 border-accent/30'
+                : installationStatus.status === 'not_paired'
+                  ? 'bg-muted/50 border-border'
+                  : 'bg-warning/5 border-warning/30'
+            }`}
+          >
             <div className="flex items-center gap-2 text-muted-foreground">
               {isLoraPending ? (
                 <Radio className="w-4 h-4 text-accent" />
               ) : isLoraJoining ? (
                 <Loader2 className="w-4 h-4 text-warning animate-spin" />
-              ) : installationStatus.status === "not_paired" ? (
+              ) : installationStatus.status === 'not_paired' ? (
                 <LinkIcon className="w-4 h-4" />
-              ) : installationStatus.status === "paired_never_seen" ? (
+              ) : installationStatus.status === 'paired_never_seen' ? (
                 <AlertTriangle className="w-4 h-4 text-warning" />
               ) : (
                 <XCircle className="w-4 h-4 text-warning" />

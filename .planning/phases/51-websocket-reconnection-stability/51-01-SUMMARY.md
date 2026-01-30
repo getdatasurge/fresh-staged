@@ -56,8 +56,8 @@ npx tsc --noEmit → 0 errors (backend)
 
 ## Files Modified
 
-| File | Action |
-|------|--------|
-| `src/lib/socket.ts` | Added auth callback, setTokenGetter export, removed token param from connectSocket |
-| `src/providers/RealtimeProvider.tsx` | Use setTokenGetter + connectSocket(), removed onReconnectAttempt handler |
-| `src/components/common/ConnectionStatus.tsx` | Added 500ms debounce for connecting state |
+| File                                         | Action                                                                             |
+| -------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `src/lib/socket.ts`                          | Added auth callback, setTokenGetter export, removed token param from connectSocket |
+| `src/providers/RealtimeProvider.tsx`         | Use setTokenGetter + connectSocket(), removed onReconnectAttempt handler           |
+| `src/components/common/ConnectionStatus.tsx` | Added 500ms debounce for connecting state                                          |

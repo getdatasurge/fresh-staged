@@ -22,6 +22,7 @@ Complete guide for deploying FreshTrack Pro to production infrastructure.
 ### Infrastructure Requirements
 
 **Server Specifications (Minimum):**
+
 - **CPU:** 4 cores (2.4 GHz+)
 - **RAM:** 8 GB
 - **Storage:** 100 GB SSD (database growth + logs)
@@ -29,6 +30,7 @@ Complete guide for deploying FreshTrack Pro to production infrastructure.
 - **OS:** Ubuntu 22.04 LTS (recommended) or Debian 11+
 
 **Recommended Providers:**
+
 - DigitalOcean Droplet (4 vCPU, 8GB RAM, $48/month)
 - Linode Dedicated CPU (4 Core, 8GB RAM, $36/month)
 - AWS EC2 (t3.large or c5.xlarge)
@@ -39,6 +41,7 @@ Complete guide for deploying FreshTrack Pro to production infrastructure.
 Before deployment, set up accounts and obtain credentials for:
 
 **Required:**
+
 - [x] **Stack Auth** - Authentication service
   - Sign up: https://stack-auth.com
   - Create project, obtain: Project ID, Publishable Key, Secret Key
@@ -48,6 +51,7 @@ Before deployment, set up accounts and obtain credentials for:
   - DNS provider with API support (Cloudflare recommended)
 
 **Optional but Recommended:**
+
 - [ ] **Stripe** - Payment processing (for subscriptions)
   - Sign up: https://stripe.com
   - Obtain: Secret Key, Webhook Secret
@@ -73,6 +77,7 @@ Before deployment, set up accounts and obtain credentials for:
 ### Local Tools
 
 Install on your local machine (for deployment):
+
 - [x] **Git** - Version control
 - [x] **SSH** - Server access
 - [x] **Docker** - For testing builds locally (optional)
@@ -84,6 +89,7 @@ Install on your local machine (for deployment):
 ### 1. Provision Server
 
 **DigitalOcean Example:**
+
 ```bash
 # Via DigitalOcean CLI (optional)
 doctl compute droplet create freshtrack-prod \
@@ -101,17 +107,20 @@ export PROD_SERVER_IP="159.89.123.456"
 ### 2. Initial Server Configuration
 
 SSH into your server:
+
 ```bash
 ssh root@$PROD_SERVER_IP
 ```
 
 #### Update System
+
 ```bash
 apt update && apt upgrade -y
 apt install -y curl wget git vim ufw fail2ban
 ```
 
 #### Create Application User
+
 ```bash
 # Create non-root user for application
 useradd -m -s /bin/bash freshtrack
@@ -129,6 +138,7 @@ chmod 600 /home/freshtrack/.ssh/authorized_keys
 ```
 
 #### Configure Firewall
+
 ```bash
 # Allow SSH, HTTP, HTTPS
 ufw allow 22/tcp
@@ -141,6 +151,7 @@ ufw status
 ```
 
 #### Configure Fail2Ban (brute-force protection)
+
 ```bash
 # Enable SSH protection
 systemctl enable fail2ban
@@ -222,6 +233,7 @@ ls -la secrets/
 ```
 
 **Expected output:**
+
 ```
 -rw------- 1 freshtrack freshtrack   45 Jan 23 10:00 grafana_password.txt
 -rw------- 1 freshtrack freshtrack   45 Jan 23 10:00 jwt_secret.txt
@@ -301,12 +313,14 @@ cat docker/caddy/Caddyfile
 ```
 
 **Key features of the Caddyfile:**
+
 - Uses `{$DOMAIN:localhost}` pattern for environment-based domain configuration
 - Automatic HTTPS via Let's Encrypt
 - WebSocket support for real-time features
 - Security headers (HSTS, CSP, X-Frame-Options, etc.)
 
 **To set your production domain:**
+
 ```bash
 # Set in .env.production
 echo "DOMAIN=freshtrackpro.com" >> .env.production
@@ -314,6 +328,7 @@ echo "ADMIN_EMAIL=admin@freshtrackpro.com" >> .env.production
 ```
 
 **If you need to generate basicauth hash for Grafana:**
+
 ```bash
 docker run --rm caddy caddy hash-password --plaintext "your-password"
 ```
@@ -326,16 +341,17 @@ Point your domains to the server IP:
 
 **In your DNS provider (e.g., Cloudflare):**
 
-| Type | Name       | Value            | TTL  |
-|------|------------|------------------|------|
-| A    | @          | 159.89.123.456   | 300  |
-| A    | api        | 159.89.123.456   | 300  |
-| A    | monitoring | 159.89.123.456   | 300  |
-| A    | status     | 159.89.123.456   | 300  |
+| Type | Name       | Value          | TTL |
+| ---- | ---------- | -------------- | --- |
+| A    | @          | 159.89.123.456 | 300 |
+| A    | api        | 159.89.123.456 | 300 |
+| A    | monitoring | 159.89.123.456 | 300 |
+| A    | status     | 159.89.123.456 | 300 |
 
 **TTL set to 300s (5 minutes) for initial deployment** - allows quick changes if needed. Increase to 86400s (24h) after stability confirmed.
 
 **Verify DNS propagation:**
+
 ```bash
 # Test from your local machine
 dig freshtrackpro.com +short
@@ -485,12 +501,14 @@ docker compose exec backend npm run user:create-admin
 **Default credentials:** admin / admin (change on first login)
 
 **Available Dashboards:**
+
 1. **Application Metrics**: Request rates, error rates, response times
 2. **Database Performance**: Connection pool, query times, table sizes
 3. **System Resources**: CPU, memory, disk usage
 4. **Logs**: Aggregated logs from all services (via Loki)
 
 **Key Metrics to Watch:**
+
 - Backend API error rate (should be < 1%)
 - Database connection pool usage (should be < 80%)
 - Disk usage (alert at 80% full)
@@ -501,12 +519,14 @@ docker compose exec backend npm run user:create-admin
 **Access:** https://status.freshtrackpro.com
 
 **Monitors:**
+
 - Backend API health endpoint
 - Frontend availability
 - Database uptime
 - TTN webhook endpoint (if applicable)
 
 **Notifications:** Configure in Uptime Kuma settings:
+
 - Email (SMTP)
 - Slack webhook
 - Discord webhook
@@ -552,11 +572,13 @@ docker compose logs postgres
 ### Daily Operations
 
 **Automated (via cron or systemd timers):**
+
 - Database backups (daily at 2 AM)
 - Log rotation (daily)
 - Disk usage alerts (hourly)
 
 **Manual checks:**
+
 - Review error logs in Grafana
 - Check Uptime Kuma for any downtime
 - Monitor disk space: `df -h`
@@ -564,6 +586,7 @@ docker compose logs postgres
 ### Weekly Operations
 
 **Every Monday morning:**
+
 - Review weekly metrics in Grafana
 - Check for security updates: `sudo apt update && sudo apt list --upgradable`
 - Test backup restoration (once a week)
@@ -572,6 +595,7 @@ docker compose logs postgres
 ### Monthly Operations
 
 **First of each month:**
+
 - Review and optimize database performance
 - Update dependencies (npm, Docker images)
 - Review and update SSL certificates (if manual renewal)
@@ -589,6 +613,7 @@ sudo nano /opt/freshtrack-pro/scripts/backup-db.sh
 ```
 
 **Script content:**
+
 ```bash
 #!/bin/bash
 set -e
@@ -611,16 +636,19 @@ echo "Backup completed: $BACKUP_FILE"
 ```
 
 **Make executable:**
+
 ```bash
 chmod +x /opt/freshtrack-pro/scripts/backup-db.sh
 ```
 
 **Add to crontab:**
+
 ```bash
 crontab -e
 ```
 
 **Add line:**
+
 ```
 0 2 * * * /opt/freshtrack-pro/scripts/backup-db.sh >> /var/log/freshtrack-backup.log 2>&1
 ```
@@ -664,6 +692,7 @@ cat /etc/docker/daemon.json
 ```
 
 **Should contain:**
+
 ```json
 {
   "log-driver": "json-file",
@@ -675,6 +704,7 @@ cat /etc/docker/daemon.json
 ```
 
 **If not present, add and restart Docker:**
+
 ```bash
 sudo systemctl restart docker
 ```
@@ -721,6 +751,7 @@ For true zero-downtime, use Docker Swarm or Kubernetes orchestration.
 **Symptom:** Container exits immediately after starting
 
 **Debug steps:**
+
 ```bash
 # Check container status
 docker compose ps
@@ -739,6 +770,7 @@ docker compose -f docker-compose.yml -f compose.production.yaml config
 ```
 
 **Common causes:**
+
 - Missing secrets files
 - Invalid environment variables
 - Database not ready (increase `start_period` in healthcheck)
@@ -749,6 +781,7 @@ docker compose -f docker-compose.yml -f compose.production.yaml config
 **Symptom:** Backend logs show "connection refused" or "ECONNREFUSED"
 
 **Debug steps:**
+
 ```bash
 # Check if PostgreSQL is running
 docker compose ps postgres
@@ -764,6 +797,7 @@ docker compose exec backend env | grep DATABASE_URL
 ```
 
 **Common causes:**
+
 - Incorrect DATABASE_URL in .env.production
 - Wrong password in secrets/postgres_password.txt
 - PostgreSQL hasn't finished initializing (wait 30-60 seconds)
@@ -773,6 +807,7 @@ docker compose exec backend env | grep DATABASE_URL
 **Symptom:** "Certificate error" or "ERR_CERT_AUTHORITY_INVALID"
 
 **Debug steps:**
+
 ```bash
 # Check Caddy logs
 docker compose logs caddy
@@ -785,6 +820,7 @@ curl http://api.freshtrackpro.com/.well-known/acme-challenge/test
 ```
 
 **Common causes:**
+
 - DNS not propagated yet (wait 15 minutes)
 - Firewall blocking port 80 or 443
 - Caddy unable to reach Let's Encrypt (check outbound firewall)
@@ -795,6 +831,7 @@ curl http://api.freshtrackpro.com/.well-known/acme-challenge/test
 **Symptom:** Server becomes slow, OOM killer terminates processes
 
 **Debug steps:**
+
 ```bash
 # Check memory usage by container
 docker stats
@@ -807,6 +844,7 @@ docker compose exec backend ps aux --sort=-%mem | head
 ```
 
 **Solutions:**
+
 - Reduce resource limits in compose.production.yaml
 - Increase server RAM
 - Optimize database queries (add indexes)
@@ -817,6 +855,7 @@ docker compose exec backend ps aux --sort=-%mem | head
 **Symptom:** Requests take > 1 second
 
 **Debug steps:**
+
 ```bash
 # Check response time
 curl -w "@curl-format.txt" -o /dev/null -s https://api.freshtrackpro.com/api/readings
@@ -837,6 +876,7 @@ docker compose logs backend | grep "slow query"
 ```
 
 **Solutions:**
+
 - Add database indexes
 - Implement caching (Redis)
 - Optimize frontend to reduce API calls
@@ -847,6 +887,7 @@ docker compose logs backend | grep "slow query"
 **Symptom:** Loki/Grafana shows no logs
 
 **Debug steps:**
+
 ```bash
 # Check Promtail is running
 docker compose -f docker-compose.yml -f compose.production.yaml ps promtail
@@ -862,6 +903,7 @@ curl http://localhost:3100/ready
 ```
 
 **Common causes:**
+
 - Promtail can't read Docker logs (permissions issue)
 - Loki not configured as Grafana data source
 - Log paths misconfigured in promtail config
@@ -871,11 +913,13 @@ curl http://localhost:3100/ready
 **Symptom:** Docker Compose fails with "variable is required" error
 
 **Example error:**
+
 ```
 ERROR: Missing required variable: STACK_AUTH_PROJECT_ID is required
 ```
 
 **Solution:**
+
 ```bash
 # Ensure .env.production is loaded
 set -a
@@ -893,6 +937,7 @@ docker compose -f docker-compose.yml -f compose.production.yaml up -d
 ```
 
 **Required variables (compose will fail without these):**
+
 - `STACK_AUTH_PROJECT_ID` - Stack Auth project ID
 - `STACK_AUTH_PUBLISHABLE_KEY` - Stack Auth publishable key
 - `POSTGRES_PASSWORD` - PostgreSQL password
@@ -903,6 +948,7 @@ docker compose -f docker-compose.yml -f compose.production.yaml up -d
 **Symptom:** Caddy fails to obtain Let's Encrypt certificate
 
 **Debug steps:**
+
 ```bash
 # Check Caddy logs
 docker compose -f docker-compose.yml -f compose.production.yaml logs caddy
@@ -915,6 +961,7 @@ dig api.freshtrackpro.com +short
 ```
 
 **Common causes:**
+
 - DNS not pointing to server IP
 - Firewall blocking port 80 (Let's Encrypt HTTP-01 challenge)
 - Rate limited (too many certificate requests)
@@ -927,12 +974,14 @@ dig api.freshtrackpro.com +short
 ### When to Rollback
 
 **Immediate rollback if:**
+
 - Application completely non-functional (> 50% error rate)
 - Critical data loss detected
 - Security breach discovered
 - Database corruption confirmed
 
 **Fix forward if:**
+
 - Minor bugs affecting < 10% of users
 - Performance degradation < 50%
 - Non-critical feature broken
@@ -945,6 +994,7 @@ dig api.freshtrackpro.com +short
 **Steps:**
 
 1. **Stop current deployment:**
+
    ```bash
    cd /opt/freshtrack-pro
    # Stop services but preserve volumes (database data)
@@ -954,6 +1004,7 @@ dig api.freshtrackpro.com +short
    ```
 
 2. **Revert code to previous version:**
+
    ```bash
    # Check current version
    git log --oneline -5
@@ -963,11 +1014,13 @@ dig api.freshtrackpro.com +short
    ```
 
 3. **Rebuild images:**
+
    ```bash
    docker build -t freshtrack-backend:latest --target production ./backend
    ```
 
 4. **Restore database (if schema changed):**
+
    ```bash
    # Restore from backup taken before deployment
    gunzip -c backups/frostguard_20260123_020000.sql.gz | \
@@ -975,11 +1028,13 @@ dig api.freshtrackpro.com +short
    ```
 
 5. **Restart services:**
+
    ```bash
    docker compose -f docker-compose.yml -f compose.production.yaml up -d
    ```
 
 6. **Verify rollback:**
+
    ```bash
    curl https://api.freshtrackpro.com/health
    docker compose logs -f backend
@@ -997,6 +1052,7 @@ dig api.freshtrackpro.com +short
 See `CUTOVER_CHECKLIST.md` for detailed rollback procedure.
 
 **Quick steps:**
+
 1. Revert DNS to point to old Supabase backend
 2. Stop new Docker services
 3. Re-enable old frontend (if needed)
@@ -1012,6 +1068,7 @@ See `CUTOVER_CHECKLIST.md` for detailed rollback procedure.
 ### Additional Recommendations
 
 **Server-level:**
+
 - [ ] Enable automatic security updates: `sudo dpkg-reconfigure -plow unattended-upgrades`
 - [ ] Disable root SSH: Edit `/etc/ssh/sshd_config`, set `PermitRootLogin no`
 - [ ] Use SSH keys only (disable password auth)
@@ -1019,6 +1076,7 @@ See `CUTOVER_CHECKLIST.md` for detailed rollback procedure.
 - [ ] Regular security audits: `sudo lynis audit system`
 
 **Application-level:**
+
 - [ ] Rotate secrets quarterly
 - [ ] Implement rate limiting (already in backend)
 - [ ] Enable CORS restrictions (already configured)
@@ -1026,12 +1084,14 @@ See `CUTOVER_CHECKLIST.md` for detailed rollback procedure.
 - [ ] Monitor for CVEs: GitHub Dependabot
 
 **Database-level:**
+
 - [ ] Restrict PostgreSQL to localhost (already done)
 - [ ] Use separate database user per service
 - [ ] Enable query logging for audit
 - [ ] Implement backup encryption
 
 **Network-level:**
+
 - [ ] Use Cloudflare for DDoS protection (optional)
 - [ ] Implement VPN for admin access (optional)
 - [ ] Restrict monitoring dashboards to VPN or IP whitelist
@@ -1065,14 +1125,15 @@ EXPLAIN ANALYZE SELECT * FROM temperature_readings
 4. **Caching:** Implement Redis caching for frequent queries
 
 **Example horizontal scaling:**
+
 ```yaml
 # docker-compose.scale.yaml
 services:
   backend:
     deploy:
-      replicas: 3  # Run 3 backend instances
+      replicas: 3 # Run 3 backend instances
 
-  nginx:  # Add load balancer
+  nginx: # Add load balancer
     image: nginx:alpine
     volumes:
       - ./nginx-lb.conf:/etc/nginx/nginx.conf
@@ -1083,12 +1144,14 @@ services:
 ## Additional Resources
 
 **Documentation:**
+
 - [Caddy Documentation](https://caddyserver.com/docs/)
 - [Docker Compose Documentation](https://docs.docker.com/compose/)
 - [PostgreSQL Performance Tuning](https://wiki.postgresql.org/wiki/Performance_Optimization)
 - [Grafana Getting Started](https://grafana.com/docs/grafana/latest/getting-started/)
 
 **Support:**
+
 - FreshTrack Pro GitHub Issues: https://github.com/your-org/freshtrack-pro/issues
 - Stack Auth Support: support@stack-auth.com
 - Community Forum: (if available)

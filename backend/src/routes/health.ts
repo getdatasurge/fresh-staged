@@ -42,7 +42,12 @@ const checkDatabase = async (): Promise<HealthCheck> => {
  * Check Redis connectivity via QueueService
  * Returns 'skip' if Redis is not configured (development mode)
  */
-const checkRedis = async (fastify: { queueService?: { isEnabled(): boolean; healthCheck(): Promise<{ ok: boolean; latencyMs: number }> } }): Promise<HealthCheck> => {
+const checkRedis = async (fastify: {
+  queueService?: {
+    isEnabled(): boolean;
+    healthCheck(): Promise<{ ok: boolean; latencyMs: number }>;
+  };
+}): Promise<HealthCheck> => {
   // QueueService may not be registered yet during startup
   if (!fastify.queueService) {
     return { status: 'skip', message: 'Queue service not initialized' };
@@ -72,10 +77,7 @@ const checkRedis = async (fastify: { queueService?: { isEnabled(): boolean; heal
 export const healthRoutes: FastifyPluginAsync = async (fastify) => {
   // Comprehensive health check (for monitoring dashboards)
   fastify.get('/health', async (request, reply) => {
-    const [dbCheck, redisCheck] = await Promise.all([
-      checkDatabase(),
-      checkRedis(fastify),
-    ]);
+    const [dbCheck, redisCheck] = await Promise.all([checkDatabase(), checkRedis(fastify)]);
 
     const checks: HealthStatus['checks'] = {
       database: dbCheck,
@@ -89,12 +91,12 @@ export const healthRoutes: FastifyPluginAsync = async (fastify) => {
     // Determine overall status
     // Skip checks don't affect overall health (optional dependencies)
     const requiredChecks = [dbCheck];
-    const optionalChecks = [redisCheck].filter(c => c.status !== 'skip');
+    const optionalChecks = [redisCheck].filter((c) => c.status !== 'skip');
     const allChecks = [...requiredChecks, ...optionalChecks];
 
-    const allPassing = requiredChecks.every(c => c.status === 'pass');
-    const anyFailing = allChecks.some(c => c.status === 'fail');
-    const optionalFailing = optionalChecks.some(c => c.status === 'fail');
+    const allPassing = requiredChecks.every((c) => c.status === 'pass');
+    const anyFailing = allChecks.some((c) => c.status === 'fail');
+    const optionalFailing = optionalChecks.some((c) => c.status === 'fail');
 
     let status: HealthStatus['status'];
     if (!allPassing) {

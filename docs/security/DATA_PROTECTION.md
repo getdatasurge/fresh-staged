@@ -8,24 +8,24 @@
 
 ### Classification Scheme
 
-| Level | Description | Examples | Controls |
-|-------|-------------|----------|----------|
-| **Secret** | Credentials, keys | API keys, passwords | Encrypted, never logged |
+| Level            | Description             | Examples               | Controls                     |
+| ---------------- | ----------------------- | ---------------------- | ---------------------------- |
+| **Secret**       | Credentials, keys       | API keys, passwords    | Encrypted, never logged      |
 | **Confidential** | Sensitive business data | Customer data, configs | Encrypted, access controlled |
-| **Internal** | Operational data | Temperature readings | RLS protected |
-| **Public** | Non-sensitive | Marketing content | Standard controls |
+| **Internal**     | Operational data        | Temperature readings   | RLS protected                |
+| **Public**       | Non-sensitive           | Marketing content      | Standard controls            |
 
 ### Data Inventory
 
-| Data Type | Classification | Storage | Encryption |
-|-----------|---------------|---------|------------|
-| User passwords | Secret | Supabase Auth | bcrypt hashed |
-| TTN API keys | Secret | `ttn_connections` | Application-level |
-| Webhook secrets | Secret | `ttn_connections` | Application-level |
-| Stripe keys | Secret | Environment only | Not stored in DB |
-| Temperature readings | Internal | `sensor_readings` | At rest (platform) |
-| Organization info | Confidential | `organizations` | At rest (platform) |
-| User profiles | Confidential | `profiles` | At rest (platform) |
+| Data Type            | Classification | Storage           | Encryption         |
+| -------------------- | -------------- | ----------------- | ------------------ |
+| User passwords       | Secret         | Supabase Auth     | bcrypt hashed      |
+| TTN API keys         | Secret         | `ttn_connections` | Application-level  |
+| Webhook secrets      | Secret         | `ttn_connections` | Application-level  |
+| Stripe keys          | Secret         | Environment only  | Not stored in DB   |
+| Temperature readings | Internal       | `sensor_readings` | At rest (platform) |
+| Organization info    | Confidential   | `organizations`   | At rest (platform) |
+| User profiles        | Confidential   | `profiles`        | At rest (platform) |
 
 ---
 
@@ -35,12 +35,12 @@
 
 Supabase provides transparent encryption for all database storage:
 
-| Component | Encryption | Key Management |
-|-----------|------------|----------------|
-| PostgreSQL data files | AES-256 | Supabase managed |
-| PostgreSQL WAL | AES-256 | Supabase managed |
-| Backups | AES-256 | Supabase managed |
-| Blob storage | AES-256 | Supabase managed |
+| Component             | Encryption | Key Management   |
+| --------------------- | ---------- | ---------------- |
+| PostgreSQL data files | AES-256    | Supabase managed |
+| PostgreSQL WAL        | AES-256    | Supabase managed |
+| Backups               | AES-256    | Supabase managed |
+| Blob storage          | AES-256    | Supabase managed |
 
 ### Application-Level Encryption
 
@@ -48,12 +48,12 @@ Sensitive fields receive additional application-level encryption:
 
 #### Encrypted Fields
 
-| Table | Field | Encryption Method |
-|-------|-------|-------------------|
-| `ttn_connections` | `ttn_api_key_encrypted` | XOR v2 |
-| `ttn_connections` | `ttn_webhook_secret_encrypted` | XOR v2 |
-| `ttn_connections` | `ttn_gateway_api_key_encrypted` | XOR v2 |
-| `ttn_connections` | `ttn_org_api_key_encrypted` | XOR v2 |
+| Table             | Field                           | Encryption Method |
+| ----------------- | ------------------------------- | ----------------- |
+| `ttn_connections` | `ttn_api_key_encrypted`         | XOR v2            |
+| `ttn_connections` | `ttn_webhook_secret_encrypted`  | XOR v2            |
+| `ttn_connections` | `ttn_gateway_api_key_encrypted` | XOR v2            |
+| `ttn_connections` | `ttn_org_api_key_encrypted`     | XOR v2            |
 
 #### Encryption Algorithm (v2 Format)
 
@@ -61,20 +61,21 @@ Sensitive fields receive additional application-level encryption:
 // Location: supabase/functions/_shared/ttnConfig.ts
 
 function obfuscateKey(key: string, salt: string): string {
-    const encoder = new TextEncoder();
-    const keyBytes = encoder.encode(key);
-    const saltBytes = encoder.encode(salt);
+  const encoder = new TextEncoder();
+  const keyBytes = encoder.encode(key);
+  const saltBytes = encoder.encode(salt);
 
-    const obfuscated = new Uint8Array(keyBytes.length);
-    for (let i = 0; i < keyBytes.length; i++) {
-        obfuscated[i] = keyBytes[i] ^ saltBytes[i % saltBytes.length];
-    }
+  const obfuscated = new Uint8Array(keyBytes.length);
+  for (let i = 0; i < keyBytes.length; i++) {
+    obfuscated[i] = keyBytes[i] ^ saltBytes[i % saltBytes.length];
+  }
 
-    return "v2:" + btoa(String.fromCharCode(...obfuscated));
+  return 'v2:' + btoa(String.fromCharCode(...obfuscated));
 }
 ```
 
 **Key Derivation:**
+
 - Salt source: `TTN_ENCRYPTION_SALT` environment variable
 - Fallback: First 32 characters of `SUPABASE_SERVICE_ROLE_KEY`
 - Format prefix: `v2:` for version identification
@@ -83,14 +84,14 @@ function obfuscateKey(key: string, salt: string): string {
 
 ```typescript
 function deobfuscateKey(encoded: string, salt: string): string {
-    // Handle v2 format
-    if (encoded.startsWith("v2:")) {
-        const decoded = atob(encoded.slice(3));
-        // XOR with salt to recover original
-        // ...
-    }
-    // Legacy format fallback
+  // Handle v2 format
+  if (encoded.startsWith('v2:')) {
+    const decoded = atob(encoded.slice(3));
+    // XOR with salt to recover original
     // ...
+  }
+  // Legacy format fallback
+  // ...
 }
 ```
 
@@ -98,10 +99,10 @@ function deobfuscateKey(encoded: string, salt: string): string {
 
 For user interface display, only the last 4 characters are shown:
 
-| Stored Field | Display Field | Example |
-|--------------|--------------|---------|
-| `ttn_api_key_encrypted` | `ttn_api_key_last4` | `•••••A1B2` |
-| `ttn_webhook_secret_encrypted` | (computed) | `•••••X9Y8` |
+| Stored Field                   | Display Field       | Example     |
+| ------------------------------ | ------------------- | ----------- |
+| `ttn_api_key_encrypted`        | `ttn_api_key_last4` | `•••••A1B2` |
+| `ttn_webhook_secret_encrypted` | (computed)          | `•••••X9Y8` |
 
 ---
 
@@ -111,13 +112,13 @@ For user interface display, only the last 4 characters are shown:
 
 All communications use TLS 1.3:
 
-| Connection | TLS Version | Certificate |
-|------------|-------------|-------------|
-| Browser → CDN | TLS 1.3 | Supabase managed |
-| CDN → Edge Functions | TLS 1.3 | Internal |
-| Edge Functions → Database | TLS 1.3 | Internal |
-| Application → TTN | TLS 1.3 | TTN certificate |
-| Application → Stripe | TLS 1.3 | Stripe certificate |
+| Connection                | TLS Version | Certificate        |
+| ------------------------- | ----------- | ------------------ |
+| Browser → CDN             | TLS 1.3     | Supabase managed   |
+| CDN → Edge Functions      | TLS 1.3     | Internal           |
+| Edge Functions → Database | TLS 1.3     | Internal           |
+| Application → TTN         | TLS 1.3     | TTN certificate    |
+| Application → Stripe      | TLS 1.3     | Stripe certificate |
 
 ### API Security Headers
 
@@ -136,12 +137,12 @@ All communications use TLS 1.3:
 
 ### Secret Categories
 
-| Category | Examples | Storage Location |
-|----------|----------|------------------|
-| **Platform secrets** | Database password, JWT secret | Supabase Vault |
-| **Integration secrets** | TTN admin key, Stripe secret | Environment variables |
-| **Per-org secrets** | TTN app keys, webhook secrets | Database (encrypted) |
-| **User secrets** | Passwords | Supabase Auth |
+| Category                | Examples                      | Storage Location      |
+| ----------------------- | ----------------------------- | --------------------- |
+| **Platform secrets**    | Database password, JWT secret | Supabase Vault        |
+| **Integration secrets** | TTN admin key, Stripe secret  | Environment variables |
+| **Per-org secrets**     | TTN app keys, webhook secrets | Database (encrypted)  |
+| **User secrets**        | Passwords                     | Supabase Auth         |
 
 ### Environment Variables
 
@@ -171,25 +172,25 @@ DEVICE_INGEST_API_KEY=xxxxx               # Device data ingestion
 
 ### Secret Rotation
 
-| Secret Type | Rotation Method | Frequency |
-|-------------|-----------------|-----------|
-| Database password | Supabase dashboard | On compromise |
-| JWT secret | Supabase dashboard | On compromise |
-| TTN API keys | Manual re-provisioning | On compromise |
-| Stripe keys | Stripe dashboard | On compromise |
-| Webhook secrets | Regenerate + update DB | On compromise |
+| Secret Type       | Rotation Method        | Frequency     |
+| ----------------- | ---------------------- | ------------- |
+| Database password | Supabase dashboard     | On compromise |
+| JWT secret        | Supabase dashboard     | On compromise |
+| TTN API keys      | Manual re-provisioning | On compromise |
+| Stripe keys       | Stripe dashboard       | On compromise |
+| Webhook secrets   | Regenerate + update DB | On compromise |
 
 ### Secret Access Patterns
 
 ```typescript
 // Correct: Server-side secret access
-const apiKey = Deno.env.get("TTN_ADMIN_API_KEY");
+const apiKey = Deno.env.get('TTN_ADMIN_API_KEY');
 
 // Incorrect: Never log secrets
-console.log("API Key:", apiKey);  // NEVER DO THIS
+console.log('API Key:', apiKey); // NEVER DO THIS
 
 // Acceptable: Log last 4 for debugging
-console.log("Using key ending in:", apiKey.slice(-4));
+console.log('Using key ending in:', apiKey.slice(-4));
 ```
 
 ---
@@ -198,20 +199,20 @@ console.log("Using key ending in:", apiKey.slice(-4));
 
 ### Build-Time Security
 
-| Check | Tool | Stage |
-|-------|------|-------|
-| Secret scanning | **TBD** | Pre-commit |
-| Dependency audit | `npm audit` | Build |
-| Type checking | TypeScript | Build |
-| Linting | ESLint | Build |
+| Check            | Tool        | Stage      |
+| ---------------- | ----------- | ---------- |
+| Secret scanning  | **TBD**     | Pre-commit |
+| Dependency audit | `npm audit` | Build      |
+| Type checking    | TypeScript  | Build      |
+| Linting          | ESLint      | Build      |
 
 ### Deployment Security
 
-| Environment | Secret Injection | Method |
-|-------------|-----------------|--------|
-| Development | `.env` file | Local only, gitignored |
-| Staging | Supabase Secrets | Dashboard/CLI |
-| Production | Supabase Secrets | Dashboard/CLI |
+| Environment | Secret Injection | Method                 |
+| ----------- | ---------------- | ---------------------- |
+| Development | `.env` file      | Local only, gitignored |
+| Staging     | Supabase Secrets | Dashboard/CLI          |
+| Production  | Supabase Secrets | Dashboard/CLI          |
 
 ### Gitignore Rules
 
@@ -231,12 +232,12 @@ supabase/.temp
 
 ### Secret Exposure Prevention
 
-| Control | Implementation |
-|---------|----------------|
-| Pre-commit hooks | **TBD** - Recommend git-secrets |
+| Control           | Implementation                    |
+| ----------------- | --------------------------------- |
+| Pre-commit hooks  | **TBD** - Recommend git-secrets   |
 | Branch protection | **TBD** - Configure in repository |
-| Secret scanning | **TBD** - GitHub secret scanning |
-| Audit logging | Supabase audit logs |
+| Secret scanning   | **TBD** - GitHub secret scanning  |
+| Audit logging     | Supabase audit logs               |
 
 ---
 
@@ -244,12 +245,12 @@ supabase/.temp
 
 ### PII (Personally Identifiable Information)
 
-| Data Type | Collected | Storage | Retention |
-|-----------|-----------|---------|-----------|
-| Email | Yes | `auth.users` | Account lifetime |
-| Name | Optional | `profiles` | Account lifetime |
-| Phone | Optional | `escalation_contacts` | Account lifetime |
-| IP Address | Logged | `event_logs` | Configurable |
+| Data Type  | Collected | Storage               | Retention        |
+| ---------- | --------- | --------------------- | ---------------- |
+| Email      | Yes       | `auth.users`          | Account lifetime |
+| Name       | Optional  | `profiles`            | Account lifetime |
+| Phone      | Optional  | `escalation_contacts` | Account lifetime |
+| IP Address | Logged    | `event_logs`          | Configurable     |
 
 ### Data Minimization
 
@@ -259,13 +260,13 @@ supabase/.temp
 
 ### Data Retention
 
-| Data Type | Retention Period | Deletion Method |
-|-----------|------------------|-----------------|
-| Temperature readings | Permanent | N/A (compliance) |
-| Alert history | Permanent | N/A (compliance) |
-| Audit logs | Permanent | N/A (compliance) |
-| Session data | 7 days | Automatic |
-| Deleted user data | Immediate cascade | Referential delete |
+| Data Type            | Retention Period  | Deletion Method    |
+| -------------------- | ----------------- | ------------------ |
+| Temperature readings | Permanent         | N/A (compliance)   |
+| Alert history        | Permanent         | N/A (compliance)   |
+| Audit logs           | Permanent         | N/A (compliance)   |
+| Session data         | 7 days            | Automatic          |
+| Deleted user data    | Immediate cascade | Referential delete |
 
 ### Right to Deletion
 
@@ -286,12 +287,12 @@ DELETE FROM organizations WHERE id = ?;
 
 ### Connection Security
 
-| Aspect | Configuration |
-|--------|---------------|
-| Connection encryption | TLS required |
-| Connection pooling | Supabase managed |
-| Prepared statements | Yes (SQL injection prevention) |
-| Query timeouts | Configured |
+| Aspect                | Configuration                  |
+| --------------------- | ------------------------------ |
+| Connection encryption | TLS required                   |
+| Connection pooling    | Supabase managed               |
+| Prepared statements   | Yes (SQL injection prevention) |
+| Query timeouts        | Configured                     |
 
 ### RLS as Data Protection
 
@@ -311,13 +312,14 @@ CREATE POLICY "org_isolation" ON sensor_readings
 
 ### Privileged Access
 
-| Role | Access Level | Use Case |
-|------|-------------|----------|
-| `anon` | RLS enforced, limited | Public/unauthenticated |
-| `authenticated` | RLS enforced, user context | Normal users |
-| `service_role` | Bypasses RLS | Backend services |
+| Role            | Access Level               | Use Case               |
+| --------------- | -------------------------- | ---------------------- |
+| `anon`          | RLS enforced, limited      | Public/unauthenticated |
+| `authenticated` | RLS enforced, user context | Normal users           |
+| `service_role`  | Bypasses RLS               | Backend services       |
 
 **Service Role Protection:**
+
 - Never expose service role key to frontend
 - Use only in edge functions for internal operations
 - Audit all service role usage
@@ -328,20 +330,20 @@ CREATE POLICY "org_isolation" ON sensor_readings
 
 ### Backup Configuration
 
-| Aspect | Configuration |
-|--------|---------------|
-| Frequency | Daily (Supabase managed) |
-| Retention | 7 days (configurable) |
-| Encryption | AES-256 |
-| Location | Same region as database |
+| Aspect     | Configuration            |
+| ---------- | ------------------------ |
+| Frequency  | Daily (Supabase managed) |
+| Retention  | 7 days (configurable)    |
+| Encryption | AES-256                  |
+| Location   | Same region as database  |
 
 ### Recovery Procedures
 
-| Scenario | Recovery Method | RTO |
-|----------|-----------------|-----|
+| Scenario            | Recovery Method        | RTO   |
+| ------------------- | ---------------------- | ----- |
 | Accidental deletion | Point-in-time recovery | Hours |
-| Database corruption | Restore from backup | Hours |
-| Region failure | Cross-region restore | Hours |
+| Database corruption | Restore from backup    | Hours |
+| Region failure      | Cross-region restore   | Hours |
 
 ---
 
@@ -370,14 +372,14 @@ CREATE TABLE event_logs (
 
 ### Logged Events
 
-| Event Type | Logged Details |
-|------------|----------------|
-| `user.login` | IP, user agent, success/failure |
-| `user.logout` | Session ID |
-| `role.change` | Old role, new role, actor |
-| `data.export` | Export type, date range |
-| `settings.change` | Field changed, old/new values |
-| `alert.acknowledge` | Alert ID, actor, note |
+| Event Type          | Logged Details                  |
+| ------------------- | ------------------------------- |
+| `user.login`        | IP, user agent, success/failure |
+| `user.logout`       | Session ID                      |
+| `role.change`       | Old role, new role, actor       |
+| `data.export`       | Export type, date range         |
+| `settings.change`   | Field changed, old/new values   |
+| `alert.acknowledge` | Alert ID, actor, note           |
 
 ### Tamper Detection
 
@@ -394,20 +396,20 @@ const eventHash = hash(event.id + event.data + previousHash);
 
 ### Log Analysis
 
-| Log Source | Contains | Access |
-|------------|----------|--------|
-| Supabase logs | Database queries, auth events | Supabase dashboard |
-| Edge function logs | Application events | Supabase dashboard |
-| Event logs table | Business events | Application |
+| Log Source         | Contains                      | Access             |
+| ------------------ | ----------------------------- | ------------------ |
+| Supabase logs      | Database queries, auth events | Supabase dashboard |
+| Edge function logs | Application events            | Supabase dashboard |
+| Event logs table   | Business events               | Application        |
 
 ### Alerting (TBD)
 
-| Condition | Alert | Priority |
-|-----------|-------|----------|
-| Failed login spike | **TBD** | High |
-| Service role access anomaly | **TBD** | High |
-| RLS policy bypass attempt | **TBD** | Critical |
-| Secret access from new IP | **TBD** | Medium |
+| Condition                   | Alert   | Priority |
+| --------------------------- | ------- | -------- |
+| Failed login spike          | **TBD** | High     |
+| Service role access anomaly | **TBD** | High     |
+| RLS policy bypass attempt   | **TBD** | Critical |
+| Secret access from new IP   | **TBD** | Medium   |
 
 ---
 
@@ -425,13 +427,13 @@ const eventHash = hash(event.id + event.data + previousHash);
 
 ### Recommended Enhancements
 
-| Enhancement | Priority | Status |
-|-------------|----------|--------|
-| Secret scanning in CI | High | TBD |
-| Automated key rotation | Medium | TBD |
-| Enhanced audit alerting | Medium | TBD |
-| Field-level encryption expansion | Low | TBD |
-| Hardware security module (HSM) | Low | TBD |
+| Enhancement                      | Priority | Status |
+| -------------------------------- | -------- | ------ |
+| Secret scanning in CI            | High     | TBD    |
+| Automated key rotation           | Medium   | TBD    |
+| Enhanced audit alerting          | Medium   | TBD    |
+| Field-level encryption expansion | Low      | TBD    |
+| Hardware security module (HSM)   | Low      | TBD    |
 
 ---
 

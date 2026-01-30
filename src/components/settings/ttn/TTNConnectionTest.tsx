@@ -1,9 +1,9 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { RefreshCw, CheckCircle, XCircle, Copy, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import type { TTNSettings } from "@/hooks/useTTNSettings";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { RefreshCw, CheckCircle, XCircle, Copy, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import type { TTNSettings } from '@/hooks/useTTNSettings';
 
 interface TTNConnectionTestProps {
   settings: TTNSettings;
@@ -20,16 +20,20 @@ export function TTNConnectionTest({ settings, isTesting, onTest }: TTNConnection
   const copyDiagnostics = () => {
     if (!testResult?.request_id) return;
 
-    const diagnostics = JSON.stringify({
-      request_id: testResult.request_id,
-      error: testResult.error,
-      hint: testResult.hint,
-      statusCode: testResult.statusCode,
-      cluster: testResult.clusterTested,
-      testedAt: testResult.testedAt,
-    }, null, 2);
+    const diagnostics = JSON.stringify(
+      {
+        request_id: testResult.request_id,
+        error: testResult.error,
+        hint: testResult.hint,
+        statusCode: testResult.statusCode,
+        cluster: testResult.clusterTested,
+        testedAt: testResult.testedAt,
+      },
+      null,
+      2,
+    );
     navigator.clipboard.writeText(diagnostics);
-    toast.success("Diagnostics copied to clipboard");
+    toast.success('Diagnostics copied to clipboard');
   };
 
   return (
@@ -40,11 +44,13 @@ export function TTNConnectionTest({ settings, isTesting, onTest }: TTNConnection
       </div>
 
       {testResult && (
-        <div className={`p-3 rounded-lg text-sm ${
-          testResult.success
-            ? "bg-safe/10 border border-safe/30"
-            : "bg-destructive/10 border border-destructive/30"
-        }`}>
+        <div
+          className={`p-3 rounded-lg text-sm ${
+            testResult.success
+              ? 'bg-safe/10 border border-safe/30'
+              : 'bg-destructive/10 border border-destructive/30'
+          }`}
+        >
           <div className="flex items-start gap-2">
             {testResult.success ? (
               <CheckCircle className="h-4 w-4 text-safe mt-0.5 flex-shrink-0" />
@@ -54,22 +60,18 @@ export function TTNConnectionTest({ settings, isTesting, onTest }: TTNConnection
             <div className="flex-1 space-y-1">
               <span className="font-medium">
                 {testResult.success
-                  ? (testResult.applicationName
-                      ? `Connected to ${testResult.applicationName}`
-                      : "Connection successful")
-                  : (testResult.error || testResult.message || "Connection failed")}
+                  ? testResult.applicationName
+                    ? `Connected to ${testResult.applicationName}`
+                    : 'Connection successful'
+                  : testResult.error || testResult.message || 'Connection failed'}
               </span>
 
               {!testResult.success && testResult.hint && (
-                <p className="text-xs text-muted-foreground">
-                  {testResult.hint}
-                </p>
+                <p className="text-xs text-muted-foreground">{testResult.hint}</p>
               )}
 
               {testResult.clusterTested && (
-                <p className="text-xs text-muted-foreground">
-                  Cluster: {testResult.clusterTested}
-                </p>
+                <p className="text-xs text-muted-foreground">Cluster: {testResult.clusterTested}</p>
               )}
             </div>
           </div>
@@ -81,12 +83,7 @@ export function TTNConnectionTest({ settings, isTesting, onTest }: TTNConnection
               </p>
             )}
             {!testResult.success && testResult.request_id && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 text-xs"
-                onClick={copyDiagnostics}
-              >
+              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={copyDiagnostics}>
                 <Copy className="h-3 w-3 mr-1" />
                 Copy Diagnostics
               </Button>
@@ -95,11 +92,7 @@ export function TTNConnectionTest({ settings, isTesting, onTest }: TTNConnection
         </div>
       )}
 
-      <Button
-        variant="outline"
-        onClick={onTest}
-        disabled={isTesting}
-      >
+      <Button variant="outline" onClick={onTest} disabled={isTesting}>
         {isTesting ? (
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
         ) : (

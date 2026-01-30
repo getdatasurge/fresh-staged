@@ -1,13 +1,13 @@
 /**
  * Temperature Excursion Widget
- * 
+ *
  * Shows count and duration of out-of-range events.
  */
 
-import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingDown, ArrowUp, ArrowDown } from "lucide-react";
-import type { WidgetProps } from "../types";
+import { useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TrendingDown, ArrowUp, ArrowDown } from 'lucide-react';
+import type { WidgetProps } from '../types';
 
 export function TemperatureExcursionWidget({ readings = [], unit }: WidgetProps) {
   const excursions = useMemo(() => {
@@ -26,7 +26,7 @@ export function TemperatureExcursionWidget({ readings = [], unit }: WidgetProps)
 
     // Sort readings by time
     const sorted = [...readings].sort(
-      (a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()
+      (a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime(),
     );
 
     sorted.forEach((reading, index) => {
@@ -41,7 +41,8 @@ export function TemperatureExcursionWidget({ readings = [], unit }: WidgetProps)
         excursionStart = new Date(reading.recorded_at);
       } else if (!isExcursion && wasInExcursion && excursionStart) {
         // Ending an excursion
-        const duration = (new Date(reading.recorded_at).getTime() - excursionStart.getTime()) / 60000;
+        const duration =
+          (new Date(reading.recorded_at).getTime() - excursionStart.getTime()) / 60000;
         totalMinutes += duration;
         excursionStart = null;
       }
@@ -50,7 +51,8 @@ export function TemperatureExcursionWidget({ readings = [], unit }: WidgetProps)
 
       // Handle ongoing excursion at end of data
       if (index === sorted.length - 1 && wasInExcursion && excursionStart) {
-        const duration = (new Date(reading.recorded_at).getTime() - excursionStart.getTime()) / 60000;
+        const duration =
+          (new Date(reading.recorded_at).getTime() - excursionStart.getTime()) / 60000;
         totalMinutes += duration;
       }
     });

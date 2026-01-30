@@ -1,17 +1,13 @@
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Loader2 } from "lucide-react";
-import type { ActionEligibility } from "@/lib/actions/types";
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Loader2 } from 'lucide-react';
+import type { ActionEligibility } from '@/lib/actions/types';
 
-type ButtonVariant = "default" | "outline" | "ghost" | "destructive" | "secondary" | "link";
-type ButtonSize = "default" | "sm" | "lg" | "icon";
-type DisabledVariant = "button" | "text" | "badge";
+type ButtonVariant = 'default' | 'outline' | 'ghost' | 'destructive' | 'secondary' | 'link';
+type ButtonSize = 'default' | 'sm' | 'lg' | 'icon';
+type DisabledVariant = 'button' | 'text' | 'badge';
 
 interface ActionButtonProps {
   /** Eligibility result from a canXxx helper */
@@ -47,15 +43,15 @@ export function ActionButton({
   onClick,
   label,
   icon,
-  variant = "outline",
-  size = "sm",
+  variant = 'outline',
+  size = 'sm',
   isLoading = false,
   loadingLabel,
-  disabledVariant = "button",
-  className = "",
+  disabledVariant = 'button',
+  className = '',
   disabledHint,
 }: ActionButtonProps) {
-  const displayReason = disabledHint || eligibility.reason || "Action not available";
+  const displayReason = disabledHint || eligibility.reason || 'Action not available';
 
   // Loading state (always shows as button)
   if (isLoading) {
@@ -70,7 +66,7 @@ export function ActionButton({
   // Disabled state
   if (!eligibility.allowed) {
     switch (disabledVariant) {
-      case "text":
+      case 'text':
         return (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -85,7 +81,7 @@ export function ActionButton({
           </Tooltip>
         );
 
-      case "badge":
+      case 'badge':
         return (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -102,7 +98,7 @@ export function ActionButton({
           </Tooltip>
         );
 
-      case "button":
+      case 'button':
       default:
         return (
           <Tooltip>
@@ -129,14 +125,9 @@ export function ActionButton({
 
   // Enabled state
   return (
-    <Button
-      variant={variant}
-      size={size}
-      onClick={onClick}
-      className={className}
-    >
+    <Button variant={variant} size={size} onClick={onClick} className={className}>
       {icon}
-      {label && <span className={icon ? "ml-1.5" : ""}>{label}</span>}
+      {label && <span className={icon ? 'ml-1.5' : ''}>{label}</span>}
     </Button>
   );
 }

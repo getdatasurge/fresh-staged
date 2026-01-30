@@ -1,12 +1,19 @@
-import { useToast } from "@/hooks/use-toast";
-import { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from "@/components/ui/toast";
-import { CheckCircle2, AlertCircle, Info } from "lucide-react";
+import { useToast } from '@/hooks/use-toast';
+import {
+  Toast,
+  ToastClose,
+  ToastDescription,
+  ToastProvider,
+  ToastTitle,
+  ToastViewport,
+} from '@/components/ui/toast';
+import { CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
 const getToastIcon = (variant?: string) => {
   switch (variant) {
-    case "destructive":
+    case 'destructive':
       return <AlertCircle className="h-5 w-5 text-destructive shrink-0" />;
-    case "success":
+    case 'success':
       return <CheckCircle2 className="h-5 w-5 text-safe shrink-0" />;
     default:
       return <Info className="h-5 w-5 text-accent shrink-0" />;

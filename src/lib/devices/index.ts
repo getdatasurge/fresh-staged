@@ -12,9 +12,9 @@ export type {
   DeviceDefinition,
   CategoryDefinition,
   NormalizedDevice,
-} from "./types";
+} from './types';
 
-export { SENSOR_TYPE_TO_CATEGORY } from "./types";
+export { SENSOR_TYPE_TO_CATEGORY } from './types';
 
 // Device Registry
 export {
@@ -25,7 +25,7 @@ export {
   getAllDevices,
   getDevicesByCategory,
   searchDevices,
-} from "./deviceRegistry";
+} from './deviceRegistry';
 
 // Category Registry
 export {
@@ -33,7 +33,7 @@ export {
   getCategoryDefinition,
   getAllCategories,
   getSelectableCategories,
-} from "./categoryRegistry";
+} from './categoryRegistry';
 
 // Telemetry Fields
 export {
@@ -71,7 +71,7 @@ export {
   PULSE_COUNT_FIELD,
   FLOW_RATE_FIELD,
   LAST_PULSE_FIELD,
-} from "./telemetryFields";
+} from './telemetryFields';
 
 // Normalization
 export {
@@ -80,4 +80,4 @@ export {
   getDeviceStatusLabel,
   getDeviceStatusColor,
   hasTelemetry,
-} from "./normalizeDevice";
+} from './normalizeDevice';

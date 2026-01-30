@@ -19,16 +19,16 @@ description: |
 
 ## Service Selection Matrix
 
-| Workload Type | Primary Service | Alternative | Decision Factor |
-|---------------|-----------------|-------------|-----------------|
-| Stateless API | Lambda + API Gateway | ECS Fargate | Request duration >15min -> ECS |
-| Stateful web app | ECS/EKS | EC2 Auto Scaling | Container expertise -> ECS/EKS |
-| Batch processing | Step Functions + Lambda | AWS Batch | GPU/long-running -> Batch |
-| Real-time streaming | Kinesis Data Streams | MSK (Kafka) | Existing Kafka -> MSK |
-| Static website | S3 + CloudFront | Amplify | Full-stack -> Amplify |
-| Relational DB | Aurora | RDS | High availability -> Aurora |
-| Key-value store | DynamoDB | ElastiCache | Sub-ms latency -> ElastiCache |
-| Data warehouse | Redshift | Athena | Ad-hoc queries -> Athena |
+| Workload Type       | Primary Service         | Alternative      | Decision Factor                |
+| ------------------- | ----------------------- | ---------------- | ------------------------------ |
+| Stateless API       | Lambda + API Gateway    | ECS Fargate      | Request duration >15min -> ECS |
+| Stateful web app    | ECS/EKS                 | EC2 Auto Scaling | Container expertise -> ECS/EKS |
+| Batch processing    | Step Functions + Lambda | AWS Batch        | GPU/long-running -> Batch      |
+| Real-time streaming | Kinesis Data Streams    | MSK (Kafka)      | Existing Kafka -> MSK          |
+| Static website      | S3 + CloudFront         | Amplify          | Full-stack -> Amplify          |
+| Relational DB       | Aurora                  | RDS              | High availability -> Aurora    |
+| Key-value store     | DynamoDB                | ElastiCache      | Sub-ms latency -> ElastiCache  |
+| Data warehouse      | Redshift                | Athena           | Ad-hoc queries -> Athena       |
 
 ## Compute Decision Tree
 
@@ -71,15 +71,16 @@ ${environment:production} VPC (${vpc_cidr:10.0.0.0/16})
 
 ### Security Group Rules
 
-| Tier | Inbound From | Ports |
-|------|--------------|-------|
-| ALB | 0.0.0.0/0 | 443 |
-| App | ALB SG | ${app_port:8080} |
-| Data | App SG | ${db_port:5432} |
+| Tier | Inbound From | Ports            |
+| ---- | ------------ | ---------------- |
+| ALB  | 0.0.0.0/0    | 443              |
+| App  | ALB SG       | ${app_port:8080} |
+| Data | App SG       | ${db_port:5432}  |
 
 ### VPC Endpoints (Cost Optimization)
 
 Always create for high-traffic services:
+
 - S3 Gateway Endpoint (free)
 - DynamoDB Gateway Endpoint (free)
 - Interface Endpoints: ECR, Secrets Manager, SSM, CloudWatch Logs
@@ -87,6 +88,7 @@ Always create for high-traffic services:
 ## Cost Optimization Checklist
 
 ### Immediate Actions (Week 1)
+
 - [ ] Enable Cost Explorer and set up budgets with alerts
 - [ ] Review and terminate unused resources (Cost Explorer idle resources report)
 - [ ] Right-size EC2 instances (AWS Compute Optimizer recommendations)
@@ -95,16 +97,16 @@ Always create for high-traffic services:
 
 ### Cost Estimation Quick Reference
 
-| Resource | Monthly Cost Estimate |
-|----------|----------------------|
-| ${instance_type:t3.medium} (on-demand) | ~$30 |
-| ${instance_type:t3.medium} (1yr RI) | ~$18 |
-| Lambda (1M invocations, 1s, ${lambda_memory:512}MB) | ~$8 |
-| RDS db.${instance_type:t3.medium} (Multi-AZ) | ~$100 |
-| Aurora Serverless v2 (${aurora_acu:8} ACU avg) | ~$350 |
-| NAT Gateway + 100GB data | ~$50 |
-| S3 (1TB Standard) | ~$23 |
-| CloudFront (1TB transfer) | ~$85 |
+| Resource                                            | Monthly Cost Estimate |
+| --------------------------------------------------- | --------------------- |
+| ${instance_type:t3.medium} (on-demand)              | ~$30                  |
+| ${instance_type:t3.medium} (1yr RI)                 | ~$18                  |
+| Lambda (1M invocations, 1s, ${lambda_memory:512}MB) | ~$8                   |
+| RDS db.${instance_type:t3.medium} (Multi-AZ)        | ~$100                 |
+| Aurora Serverless v2 (${aurora_acu:8} ACU avg)      | ~$350                 |
+| NAT Gateway + 100GB data                            | ~$50                  |
+| S3 (1TB Standard)                                   | ~$23                  |
+| CloudFront (1TB transfer)                           | ~$85                  |
 
 ## Security Implementation
 
@@ -132,7 +134,7 @@ Principle: Least privilege with explicit deny
       "Action": ["s3:GetObject", "s3:PutObject"],
       "Resource": "arn:aws:s3:::${bucket_name:my-bucket}/*",
       "Condition": {
-        "StringEquals": {"aws:PrincipalTag/Environment": "${environment:production}"}
+        "StringEquals": { "aws:PrincipalTag/Environment": "${environment:production}" }
       }
     }
   ]
@@ -183,34 +185,34 @@ Aurora Global Database -------> Aurora Read Replica
 
 ### RTO/RPO Decision Matrix
 
-| Tier | RTO Target | RPO Target | Strategy |
-|------|------------|------------|----------|
-| Tier 1 (Critical) | <${rto:15 min} | <${rpo:1 min} | Multi-region active-active |
-| Tier 2 (Important) | <1 hour | <15 min | Multi-region active-passive |
-| Tier 3 (Standard) | <4 hours | <1 hour | Multi-AZ with cross-region backup |
-| Tier 4 (Non-critical) | <24 hours | <24 hours | Single region, backup/restore |
+| Tier                  | RTO Target     | RPO Target    | Strategy                          |
+| --------------------- | -------------- | ------------- | --------------------------------- |
+| Tier 1 (Critical)     | <${rto:15 min} | <${rpo:1 min} | Multi-region active-active        |
+| Tier 2 (Important)    | <1 hour        | <15 min       | Multi-region active-passive       |
+| Tier 3 (Standard)     | <4 hours       | <1 hour       | Multi-AZ with cross-region backup |
+| Tier 4 (Non-critical) | <24 hours      | <24 hours     | Single region, backup/restore     |
 
 ## Monitoring and Observability
 
 ### CloudWatch Implementation
 
-| Metric Type | Service | Key Metrics |
-|-------------|---------|-------------|
-| Compute | EC2/ECS | CPUUtilization, MemoryUtilization, NetworkIn/Out |
-| Database | RDS/Aurora | DatabaseConnections, ReadLatency, WriteLatency |
-| Serverless | Lambda | Duration, Errors, Throttles, ConcurrentExecutions |
-| API | API Gateway | 4XXError, 5XXError, Latency, Count |
-| Storage | S3 | BucketSizeBytes, NumberOfObjects, 4xxErrors |
+| Metric Type | Service     | Key Metrics                                       |
+| ----------- | ----------- | ------------------------------------------------- |
+| Compute     | EC2/ECS     | CPUUtilization, MemoryUtilization, NetworkIn/Out  |
+| Database    | RDS/Aurora  | DatabaseConnections, ReadLatency, WriteLatency    |
+| Serverless  | Lambda      | Duration, Errors, Throttles, ConcurrentExecutions |
+| API         | API Gateway | 4XXError, 5XXError, Latency, Count                |
+| Storage     | S3          | BucketSizeBytes, NumberOfObjects, 4xxErrors       |
 
 ### Alerting Thresholds
 
-| Resource | Warning | Critical | Action |
-|----------|---------|----------|--------|
-| EC2 CPU | >${cpu_warning:70%} 5min | >${cpu_critical:90%} 5min | Scale out, investigate |
-| RDS CPU | >${rds_cpu_warning:80%} 5min | >${rds_cpu_critical:95%} 5min | Scale up, query optimization |
-| Lambda errors | >1% | >5% | Investigate, rollback |
-| ALB 5xx | >0.1% | >1% | Investigate backend |
-| DynamoDB throttle | Any | Sustained | Increase capacity |
+| Resource          | Warning                      | Critical                      | Action                       |
+| ----------------- | ---------------------------- | ----------------------------- | ---------------------------- |
+| EC2 CPU           | >${cpu_warning:70%} 5min     | >${cpu_critical:90%} 5min     | Scale out, investigate       |
+| RDS CPU           | >${rds_cpu_warning:80%} 5min | >${rds_cpu_critical:95%} 5min | Scale up, query optimization |
+| Lambda errors     | >1%                          | >5%                           | Investigate, rollback        |
+| ALB 5xx           | >0.1%                        | >1%                           | Investigate backend          |
+| DynamoDB throttle | Any                          | Sustained                     | Increase capacity            |
 
 ## Verification Checklist
 

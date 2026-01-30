@@ -67,7 +67,7 @@ export interface AlertFilters {
 export function useAlerts(
   organizationId: string | undefined,
   filters?: AlertFilters,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) {
   const trpc = useTRPC();
 
@@ -85,7 +85,7 @@ export function useAlerts(
 
   return useQuery({
     ...queryOptions,
-    enabled: !!organizationId && (options?.enabled !== false),
+    enabled: !!organizationId && options?.enabled !== false,
     // Alerts are time-sensitive - use shorter stale time
     staleTime: 30_000, // 30 seconds
     gcTime: 2 * 60_000, // 2 minutes
@@ -105,7 +105,7 @@ export function useAlerts(
 export function useAlert(
   organizationId: string | undefined,
   alertId: string | undefined,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) {
   const trpc = useTRPC();
 
@@ -116,7 +116,7 @@ export function useAlert(
 
   return useQuery({
     ...queryOptions,
-    enabled: !!organizationId && !!alertId && (options?.enabled !== false),
+    enabled: !!organizationId && !!alertId && options?.enabled !== false,
     staleTime: 30_000, // 30 seconds
     gcTime: 2 * 60_000, // 2 minutes
   });
@@ -145,11 +145,7 @@ export function useAcknowledgeAlert() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (variables: {
-      organizationId: string;
-      alertId: string;
-      notes?: string;
-    }) => {
+    mutationFn: async (variables: { organizationId: string; alertId: string; notes?: string }) => {
       return client.alerts.acknowledge.mutate(variables);
     },
     onSuccess: (_data, variables) => {
@@ -239,11 +235,11 @@ export function useUnitAlerts(
   organizationId: string | undefined,
   unitId: string | undefined,
   filters?: Omit<AlertFilters, 'unitId'>,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) {
   return useAlerts(
     organizationId,
     { ...filters, unitId: unitId },
-    { enabled: !!organizationId && !!unitId && (options?.enabled !== false) }
+    { enabled: !!organizationId && !!unitId && options?.enabled !== false },
   );
 }

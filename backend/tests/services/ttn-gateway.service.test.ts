@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import {
-  TTNClient,
-  TTNApiError,
-  type TTNGateway,
-} from '../../src/services/ttn.service.js';
+import { TTNClient, TTNApiError, type TTNGateway } from '../../src/services/ttn.service.js';
 
 describe('TTNClient Gateway Methods', () => {
   let client: TTNClient;
@@ -62,9 +58,9 @@ describe('TTNClient Gateway Methods', () => {
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
-            'Authorization': 'Bearer NNSXS.TEST-API-KEY',
+            Authorization: 'Bearer NNSXS.TEST-API-KEY',
           }),
-        })
+        }),
       );
     });
 
@@ -106,7 +102,7 @@ describe('TTNClient Gateway Methods', () => {
         'https://nam1.cloud.thethings.network/api/v3/gateways/my-gateway-001',
         expect.objectContaining({
           method: 'GET',
-        })
+        }),
       );
     });
 
@@ -138,7 +134,7 @@ describe('TTNClient Gateway Methods', () => {
       });
       expect(fetch).toHaveBeenCalledWith(
         'https://nam1.cloud.thethings.network/api/v3/gs/gateways/my-gateway-001/connection/stats',
-        expect.objectContaining({ method: 'GET' })
+        expect.objectContaining({ method: 'GET' }),
       );
     });
 
@@ -184,7 +180,7 @@ describe('TTNClient Gateway Methods', () => {
         expect.objectContaining({
           method: 'POST',
           body: expect.stringContaining('"gateway_id":"my-gateway-001"'),
-        })
+        }),
       );
     });
 
@@ -203,7 +199,7 @@ describe('TTNClient Gateway Methods', () => {
         expect.any(String),
         expect.objectContaining({
           body: expect.stringContaining('"eui":"AABBCCDDEEFF0011"'),
-        })
+        }),
       );
     });
 
@@ -225,13 +221,13 @@ describe('TTNClient Gateway Methods', () => {
         expect.any(String),
         expect.objectContaining({
           body: expect.stringContaining('"latitude":37.7749'),
-        })
+        }),
       );
       expect(fetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
           body: expect.stringContaining('"antennas"'),
-        })
+        }),
       );
     });
 
@@ -250,7 +246,7 @@ describe('TTNClient Gateway Methods', () => {
         expect.any(String),
         expect.objectContaining({
           body: expect.stringContaining('"frequency_plan_id":"US_902_928_FSB_2"'),
-        })
+        }),
       );
     });
 
@@ -265,7 +261,7 @@ describe('TTNClient Gateway Methods', () => {
         client.registerGateway({
           gatewayId: 'my-gateway-001',
           gatewayEui: '0011223344556677',
-        })
+        }),
       ).rejects.toThrow(TTNApiError);
     });
   });
@@ -287,7 +283,7 @@ describe('TTNClient Gateway Methods', () => {
         expect.objectContaining({
           method: 'PUT',
           body: expect.stringContaining('"name":"New Name"'),
-        })
+        }),
       );
     });
 
@@ -353,15 +349,13 @@ describe('TTNClient Gateway Methods', () => {
         ok: true,
       } as Response);
 
-      await expect(
-        client.deregisterGateway('my-gateway-001')
-      ).resolves.toBeUndefined();
+      await expect(client.deregisterGateway('my-gateway-001')).resolves.toBeUndefined();
 
       expect(fetch).toHaveBeenCalledWith(
         'https://nam1.cloud.thethings.network/api/v3/gateways/my-gateway-001',
         expect.objectContaining({
           method: 'DELETE',
-        })
+        }),
       );
     });
 
@@ -371,9 +365,7 @@ describe('TTNClient Gateway Methods', () => {
         status: 404,
       } as Response);
 
-      await expect(
-        client.deregisterGateway('non-existent')
-      ).resolves.toBeUndefined();
+      await expect(client.deregisterGateway('non-existent')).resolves.toBeUndefined();
     });
 
     it('should throw on other error responses', async () => {
@@ -383,9 +375,7 @@ describe('TTNClient Gateway Methods', () => {
         text: async () => JSON.stringify({ message: 'Permission denied' }),
       } as Response);
 
-      await expect(
-        client.deregisterGateway('my-gateway-001')
-      ).rejects.toThrow(TTNApiError);
+      await expect(client.deregisterGateway('my-gateway-001')).rejects.toThrow(TTNApiError);
     });
   });
 });

@@ -1,22 +1,18 @@
-import DashboardLayout from "@/components/DashboardLayout"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import DashboardLayout from '@/components/DashboardLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
-import { useUserRole } from "@/hooks/useUserRole"
+} from '@/components/ui/select';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { useUserRole } from '@/hooks/useUserRole';
 import {
   categoryConfig,
   getEventIcon,
@@ -26,10 +22,10 @@ import {
   severityConfig,
   type EventCategory,
   type EventSeverity,
-} from "@/lib/eventTypeMapper"
-import { useTRPC } from "@/lib/trpc"
-import { useQuery } from "@tanstack/react-query"
-import { format, formatDistanceToNow } from "date-fns"
+} from '@/lib/eventTypeMapper';
+import { useTRPC } from '@/lib/trpc';
+import { useQuery } from '@tanstack/react-query';
+import { format, formatDistanceToNow } from 'date-fns';
 import {
   ChevronDown,
   ChevronRight,
@@ -39,10 +35,9 @@ import {
   Loader2,
   RefreshCw,
   Search,
-} from "lucide-react"
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-
+} from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface EventLog {
   id: string;
@@ -76,39 +71,39 @@ const EventHistory = () => {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   // Filters
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [severityFilter, setSeverityFilter] = useState<string>("all");
-  const [siteFilter, setSiteFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [severityFilter, setSeverityFilter] = useState<string>('all');
+  const [siteFilter, setSiteFilter] = useState<string>('all');
 
   // Pagination
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 50;
 
-  const isAdmin = role === "owner" || role === "admin";
+  const isAdmin = role === 'owner' || role === 'admin';
 
   const sitesQuery = useQuery(
     trpc.sites.list.queryOptions(
       { organizationId: effectiveOrgId! },
-      { enabled: !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   const eventsQuery = useQuery(
     trpc.audit.list.queryOptions(
       {
         organizationId: effectiveOrgId!,
-        siteId: siteFilter !== "all" ? siteFilter : undefined,
-        category: categoryFilter !== "all" ? (categoryFilter as any) : undefined,
-        severity: severityFilter !== "all" ? (severityFilter as any) : undefined,
+        siteId: siteFilter !== 'all' ? siteFilter : undefined,
+        category: categoryFilter !== 'all' ? (categoryFilter as any) : undefined,
+        severity: severityFilter !== 'all' ? (severityFilter as any) : undefined,
         page: page,
         limit: PAGE_SIZE,
       },
       {
         enabled: !!effectiveOrgId && identityInitialized,
-        placeholderData: (previousData) => previousData
-      }
-    )
+        placeholderData: (previousData) => previousData,
+      },
+    ),
   );
 
   const isLoading = eventsQuery.isLoading || !identityInitialized;
@@ -119,10 +114,6 @@ const EventHistory = () => {
     eventsQuery.refetch();
     setLastUpdated(new Date());
   };
-
-
-
-
 
   const toggleExpanded = (eventId: string) => {
     setExpandedEvents((prev) => {
@@ -141,18 +132,16 @@ const EventHistory = () => {
     if (event.siteName) parts.push(event.siteName);
     if (event.areaName) parts.push(event.areaName);
     if (event.unitName) parts.push(event.unitName);
-    return parts.join(" · ") || "—";
+    return parts.join(' · ') || '—';
   };
 
-
   const getActorDisplay = (event: any): string => {
-    if (event.actorType === "system") return "System";
+    if (event.actorType === 'system') return 'System';
     if (event.actorName) {
       return event.actorName;
     }
-    return event.actorEmail || "System";
+    return event.actorEmail || 'System';
   };
-
 
   if (roleLoading) {
     return (
@@ -185,7 +174,7 @@ const EventHistory = () => {
               onClick={() => handleRefetch()}
               disabled={isLoading}
             >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             </Button>
           </div>
         </div>
@@ -241,7 +230,6 @@ const EventHistory = () => {
                       {site.name}
                     </SelectItem>
                   ))}
-
                 </SelectContent>
               </Select>
             </div>
@@ -271,8 +259,10 @@ const EventHistory = () => {
                 <div className="divide-y divide-border">
                   {events.map((event) => {
                     const isExpanded = expandedEvents.has(event.id);
-                    const category = (event.category as EventCategory) || inferCategory(event.event_type);
-                    const severity = (event.severity as EventSeverity) || inferSeverity(event.event_type);
+                    const category =
+                      (event.category as EventCategory) || inferCategory(event.event_type);
+                    const severity =
+                      (event.severity as EventSeverity) || inferSeverity(event.event_type);
                     const catConfig = categoryConfig[category] || categoryConfig.system;
                     const sevConfig = severityConfig[severity] || severityConfig.info;
                     const Icon = getEventIcon(event.event_type);
@@ -297,23 +287,22 @@ const EventHistory = () => {
                               {/* Content */}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="font-medium text-foreground">
-                                    {label}
-                                  </span>
+                                  <span className="font-medium text-foreground">{label}</span>
                                   <span className="inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-semibold bg-secondary/10 text-secondary-foreground">
                                     {catConfig.label}
                                   </span>
-                                  <span className={`inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-semibold ${sevConfig.color} ${sevConfig.borderColor}`}>
+                                  <span
+                                    className={`inline-flex items-center rounded-full border px-1.5 py-0 text-[10px] font-semibold ${sevConfig.color} ${sevConfig.borderColor}`}
+                                  >
                                     {sevConfig.label}
                                   </span>
-
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-0.5 truncate">
                                   {buildContext(event)}
                                 </p>
                                 <div className="flex items-center gap-3 text-[11px] text-muted-foreground/70 mt-1">
                                   <span>
-                                    {format(new Date(event.recorded_at), "MMM d, yyyy h:mm:ss a")}
+                                    {format(new Date(event.recorded_at), 'MMM d, yyyy h:mm:ss a')}
                                   </span>
                                   <span>•</span>
                                   <span>{getActorDisplay(event)}</span>
@@ -391,18 +380,18 @@ const EventHistory = () => {
                                 {Object.entries(event.event_data)
                                   .filter(
                                     ([key]) =>
-                                      !key.includes("password") &&
-                                      !key.includes("token") &&
-                                      !key.includes("secret")
+                                      !key.includes('password') &&
+                                      !key.includes('token') &&
+                                      !key.includes('secret'),
                                   )
                                   .slice(0, 6)
                                   .map(([key, value]) => (
                                     <div key={key}>
                                       <span className="text-muted-foreground capitalize">
-                                        {key.replace(/_/g, " ")}:
+                                        {key.replace(/_/g, ' ')}:
                                       </span>
                                       <span className="ml-2 text-foreground">
-                                        {typeof value === "object"
+                                        {typeof value === 'object'
                                           ? JSON.stringify(value)
                                           : String(value)}
                                       </span>
@@ -427,9 +416,7 @@ const EventHistory = () => {
                         }}
                         disabled={isLoading}
                       >
-                        {isLoading ? (
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        ) : null}
+                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                         Load More
                       </Button>
                     </div>

@@ -113,13 +113,13 @@ describe('Unit State Configuration', () => {
 
     it('should have stale check more frequent than offline timeout', () => {
       expect(OFFLINE_CONFIG.STALE_CHECK_INTERVAL_MS).toBeLessThan(
-        OFFLINE_CONFIG.OFFLINE_TIMEOUT_MS
+        OFFLINE_CONFIG.OFFLINE_TIMEOUT_MS,
       );
     });
 
     it('should have grace period longer than offline timeout', () => {
       expect(OFFLINE_CONFIG.NEW_UNIT_GRACE_PERIOD_MS).toBeGreaterThan(
-        OFFLINE_CONFIG.OFFLINE_TIMEOUT_MS
+        OFFLINE_CONFIG.OFFLINE_TIMEOUT_MS,
       );
     });
   });
@@ -139,7 +139,7 @@ describe('Unit State Configuration', () => {
 
     it('should have cleanup more frequent than cache TTL', () => {
       expect(STATE_CACHE_CONFIG.CLEANUP_INTERVAL_MS).toBeLessThanOrEqual(
-        STATE_CACHE_CONFIG.CACHE_TTL_MS
+        STATE_CACHE_CONFIG.CACHE_TTL_MS,
       );
     });
   });
@@ -219,9 +219,7 @@ describe('UnitStateService', () => {
 
     it('should return offline for ok status with stale reading', () => {
       const now = new Date();
-      const staleReading = new Date(
-        now.getTime() - OFFLINE_CONFIG.OFFLINE_TIMEOUT_MS - 60 * 1000
-      ); // Over timeout
+      const staleReading = new Date(now.getTime() - OFFLINE_CONFIG.OFFLINE_TIMEOUT_MS - 60 * 1000); // Over timeout
 
       const state = service.calculateState('ok', staleReading);
 
@@ -230,9 +228,7 @@ describe('UnitStateService', () => {
 
     it('should return offline for alarm_active status with stale reading', () => {
       const now = new Date();
-      const staleReading = new Date(
-        now.getTime() - OFFLINE_CONFIG.OFFLINE_TIMEOUT_MS - 60 * 1000
-      );
+      const staleReading = new Date(now.getTime() - OFFLINE_CONFIG.OFFLINE_TIMEOUT_MS - 60 * 1000);
 
       const state = service.calculateState('alarm_active', staleReading);
 
@@ -241,7 +237,7 @@ describe('UnitStateService', () => {
 
     it('should return offline for null lastReadingAt with old creation date', () => {
       const oldCreationDate = new Date(
-        Date.now() - OFFLINE_CONFIG.NEW_UNIT_GRACE_PERIOD_MS - 60 * 1000
+        Date.now() - OFFLINE_CONFIG.NEW_UNIT_GRACE_PERIOD_MS - 60 * 1000,
       );
 
       const state = service.calculateState('ok', null, oldCreationDate);
@@ -250,9 +246,7 @@ describe('UnitStateService', () => {
     });
 
     it('should return normal for null lastReadingAt within grace period', () => {
-      const recentCreationDate = new Date(
-        Date.now() - OFFLINE_CONFIG.NEW_UNIT_GRACE_PERIOD_MS / 2
-      );
+      const recentCreationDate = new Date(Date.now() - OFFLINE_CONFIG.NEW_UNIT_GRACE_PERIOD_MS / 2);
 
       const state = service.calculateState('ok', null, recentCreationDate);
 
@@ -355,9 +349,7 @@ describe('State Calculation Edge Cases', () => {
 
   it('should prioritize offline over critical when readings are stale', () => {
     const now = new Date();
-    const staleReading = new Date(
-      now.getTime() - OFFLINE_CONFIG.OFFLINE_TIMEOUT_MS - 1
-    );
+    const staleReading = new Date(now.getTime() - OFFLINE_CONFIG.OFFLINE_TIMEOUT_MS - 1);
 
     // Even if the database says alarm_active, if readings are stale, it's offline
     const state = service.calculateState('alarm_active', staleReading);
@@ -368,9 +360,7 @@ describe('State Calculation Edge Cases', () => {
 
   it('should handle readings exactly at 1ms over timeout', () => {
     const now = new Date();
-    const justOverTimeout = new Date(
-      now.getTime() - OFFLINE_CONFIG.OFFLINE_TIMEOUT_MS - 1
-    );
+    const justOverTimeout = new Date(now.getTime() - OFFLINE_CONFIG.OFFLINE_TIMEOUT_MS - 1);
 
     const state = service.calculateState('ok', justOverTimeout);
 

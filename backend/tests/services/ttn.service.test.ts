@@ -70,7 +70,7 @@ describe('TTN Service', () => {
           headers: expect.objectContaining({
             Authorization: 'Bearer NNSXS.TEST-API-KEY.SECRET',
           }),
-        })
+        }),
       );
       expect(devices).toHaveLength(1);
       expect(devices[0].ids.device_id).toBe('my-sensor-001');
@@ -131,7 +131,7 @@ describe('TTN Service', () => {
         'https://nam1.cloud.thethings.network/api/v3/applications/test-app/devices/my-sensor-001',
         expect.objectContaining({
           method: 'GET',
-        })
+        }),
       );
       expect(device?.ids.device_id).toBe('my-sensor-001');
     });
@@ -196,7 +196,10 @@ describe('TTN Service', () => {
 
     it('should use default frequency plan if not specified', async () => {
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ ids: { device_id: 'test' } }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ ids: { device_id: 'test' } }),
+        })
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) })
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) })
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) });
@@ -211,7 +214,10 @@ describe('TTN Service', () => {
 
     it('should normalize EUI values to uppercase', async () => {
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ ids: { device_id: 'test' } }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ ids: { device_id: 'test' } }),
+        })
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) })
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) })
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) });
@@ -258,7 +264,7 @@ describe('TTN Service', () => {
         'https://nam1.cloud.thethings.network/api/v3/applications/test-app/devices/my-sensor-001',
         expect.objectContaining({
           method: 'PUT',
-        })
+        }),
       );
       expect(device.name).toBe('Updated Name');
     });
@@ -337,6 +343,232 @@ describe('TTN Service', () => {
         });
 
       await expect(client.deprovisionDevice('my-sensor-001')).rejects.toThrow();
+    });
+  });
+
+  describe('validateApiKey', () => {
+    it('should identify personal API key with gateway rights', async () => {
+      const authInfoResponse = {
+        api_key: {
+          api_key: {
+            rights: ['RIGHT_GATEWAY_ALL', 'RIGHT_APPLICATION_ALL'],
+          },
+          entity_ids: {
+            user_ids: { user_id: 'test-user' },
+          },
+        },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(authInfoResponse),
+      });
+
+      const result = await client.validateApiKey();
+
+      expect(result.key_type).toBe('personal');
+      expect(result.owner_scope).toBe('user');
+      expect(result.scope_id).toBe('test-user');
+      expect(result.has_gateway_rights).toBe(true);
+      expect(result.allowed).toBe(true);
+      expect(result.missing_rights).toEqual([]);
+    });
+
+    it('should identify organization API key', async () => {
+      const authInfoResponse = {
+        api_key: {
+          api_key: {
+            rights: ['RIGHT_GATEWAY_INFO', 'RIGHT_GATEWAY_SETTINGS_BASIC'],
+          },
+          entity_ids: {
+            organization_ids: { organization_id: 'test-org' },
+          },
+        },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(authInfoResponse),
+      });
+
+      const result = await client.validateApiKey();
+
+      expect(result.key_type).toBe('organization');
+      expect(result.owner_scope).toBe('organization');
+      expect(result.scope_id).toBe('test-org');
+      expect(result.has_gateway_rights).toBe(true);
+      expect(result.allowed).toBe(true);
+    });
+
+    it('should reject application API keys for gateway provisioning', async () => {
+      const authInfoResponse = {
+        api_key: {
+          api_key: {
+            rights: ['RIGHT_APPLICATION_ALL'],
+          },
+          entity_ids: {
+            application_ids: { application_id: 'test-app' },
+          },
+        },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(authInfoResponse),
+      });
+
+      const result = await client.validateApiKey();
+
+      expect(result.key_type).toBe('application');
+      expect(result.allowed).toBe(false);
+      expect(result.has_gateway_rights).toBe(false);
+    });
+
+    it('should detect missing gateway write rights', async () => {
+      const authInfoResponse = {
+        api_key: {
+          api_key: {
+            rights: ['RIGHT_GATEWAY_INFO'], // read only, no write
+          },
+          entity_ids: {
+            user_ids: { user_id: 'test-user' },
+          },
+        },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(authInfoResponse),
+      });
+
+      const result = await client.validateApiKey();
+
+      expect(result.key_type).toBe('personal');
+      expect(result.has_gateway_rights).toBe(false);
+      expect(result.allowed).toBe(false);
+      expect(result.missing_rights).toContain('gateways:write');
+    });
+
+    it('should handle invalid/expired API key (401)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        text: () => Promise.resolve('Unauthorized'),
+      });
+
+      const result = await client.validateApiKey();
+
+      expect(result.allowed).toBe(false);
+      expect(result.key_type).toBe('unknown');
+      expect(result.has_gateway_rights).toBe(false);
+    });
+
+    it('should allow validating a different API key', async () => {
+      const authInfoResponse = {
+        api_key: {
+          api_key: { rights: ['RIGHT_GATEWAY_ALL'] },
+          entity_ids: { user_ids: { user_id: 'other-user' } },
+        },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(authInfoResponse),
+      });
+
+      const result = await client.validateApiKey('NNSXS.OTHER-KEY.SECRET');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://nam1.cloud.thethings.network/api/v3/auth_info',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer NNSXS.OTHER-KEY.SECRET',
+          }),
+        }),
+      );
+      expect(result.allowed).toBe(true);
+    });
+
+    it('should use universal_rights as fallback when inner rights missing', async () => {
+      const authInfoResponse = {
+        universal_rights: ['RIGHT_GATEWAY_ALL'],
+        api_key: {
+          entity_ids: {
+            user_ids: { user_id: 'admin-user' },
+          },
+        },
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(authInfoResponse),
+      });
+
+      const result = await client.validateApiKey();
+
+      expect(result.has_gateway_rights).toBe(true);
+      expect(result.allowed).toBe(true);
+    });
+
+    it('should throw TTNApiError for server errors', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: () => Promise.resolve('Internal server error'),
+      });
+
+      await expect(client.validateApiKey()).rejects.toThrow(TTNApiError);
+    });
+  });
+
+  describe('getApplicationInfo', () => {
+    it('should get application info', async () => {
+      const mockApp = {
+        ids: { application_id: 'test-app' },
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+        name: 'Test Application',
+        description: 'A test TTN application',
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockApp),
+      });
+
+      const appInfo = await client.getApplicationInfo();
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://nam1.cloud.thethings.network/api/v3/applications/test-app',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer NNSXS.TEST-API-KEY.SECRET',
+          }),
+        }),
+      );
+      expect(appInfo.ids.application_id).toBe('test-app');
+      expect(appInfo.name).toBe('Test Application');
+    });
+
+    it('should throw TTNApiError for 404 (app not found)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        text: () => Promise.resolve(JSON.stringify({ message: 'Application not found' })),
+      });
+
+      await expect(client.getApplicationInfo()).rejects.toThrow(TTNApiError);
+    });
+
+    it('should throw TTNApiError for 401 (invalid credentials)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        text: () => Promise.resolve(JSON.stringify({ message: 'Unauthorized' })),
+      });
+
+      await expect(client.getApplicationInfo()).rejects.toThrow(TTNApiError);
     });
   });
 

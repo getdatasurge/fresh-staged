@@ -62,20 +62,24 @@ await notificationQueue.add('send-sms', {
 // Worker (runs in separate process/container)
 import { Worker } from 'bullmq';
 
-const worker = new Worker('notifications', async (job) => {
-  console.log(`Processing: ${job.name}`);
+const worker = new Worker(
+  'notifications',
+  async (job) => {
+    console.log(`Processing: ${job.name}`);
 
-  if (job.name === 'send-sms') {
-    await sendSmsViaTelnyx(job.data);
-  }
+    if (job.name === 'send-sms') {
+      await sendSmsViaTelnyx(job.data);
+    }
 
-  return { success: true };
-}, {
-  connection: {
-    host: 'localhost',
-    port: 6379,
+    return { success: true };
   },
-});
+  {
+    connection: {
+      host: 'localhost',
+      port: 6379,
+    },
+  },
+);
 ```
 
 **Source:** [BullMQ Documentation](https://docs.bullmq.io) (HIGH confidence)
@@ -188,6 +192,7 @@ declare module 'fastify' {
 ```
 
 **Sources:**
+
 - [fastify-queue on GitHub](https://github.com/JonasHiltl/fastify-queue)
 - [fastify-queue on npm](https://www.npmjs.com/package/fastify-queue)
 - [Railway BullMQ Template](https://github.com/railwayapp-templates/fastify-bullmq)
@@ -209,7 +214,7 @@ export const queues = {
 
 // Cleanup on process exit
 process.on('SIGTERM', async () => {
-  await Promise.all(Object.values(queues).map(q => q.close()));
+  await Promise.all(Object.values(queues).map((q) => q.close()));
 });
 ```
 
@@ -238,8 +243,8 @@ await fastify.queues.notifications.add(
       delay: 1000,
     },
     removeOnComplete: 100, // Keep last 100 for audit
-    removeOnFail: 500,     // Keep last 500 failures for debugging
-  }
+    removeOnFail: 500, // Keep last 500 failures for debugging
+  },
 );
 ```
 
@@ -258,7 +263,7 @@ await fastify.queues.notifications.add(
   {
     delay: 15 * 60 * 1000, // 15 minutes in milliseconds
     attempts: 3,
-  }
+  },
 );
 ```
 
@@ -283,7 +288,7 @@ await fastify.queues.emails.upsertJobScheduler(
       attempts: 2,
       backoff: { type: 'fixed', delay: 5000 },
     },
-  }
+  },
 );
 
 // Weekly compliance report every Monday at 9 AM
@@ -297,11 +302,12 @@ await fastify.queues.emails.upsertJobScheduler(
     data: {
       reportType: 'weekly-compliance',
     },
-  }
+  },
 );
 ```
 
 **Cron Pattern Reference:**
+
 - `0 0 7 * * *` - Daily at 7:00 AM
 - `0 0 9 * * 1-5` - Weekdays at 9:00 AM
 - `0 0 18 * * 5` - Fridays at 6:00 PM
@@ -357,8 +363,8 @@ await queue.add('send-email', data, {
   attempts: 8,
   backoff: {
     type: 'exponential',
-    delay: 1000,  // Base delay: 1 second
-    jitter: 0.5,  // Add 0-50% random variance to prevent thundering herd
+    delay: 1000, // Base delay: 1 second
+    jitter: 0.5, // Add 0-50% random variance to prevent thundering herd
   },
 });
 ```
@@ -396,8 +402,7 @@ const worker = new Worker(
         }
 
         // Fatal errors - stop retrying
-        if (err?.message.includes('invalid phone number') ||
-            err?.message.includes('40310')) {
+        if (err?.message.includes('invalid phone number') || err?.message.includes('40310')) {
           return -1; // -1 = don't retry
         }
 
@@ -405,7 +410,7 @@ const worker = new Worker(
         return Math.pow(2, attemptsMade - 1) * 1000;
       },
     },
-  }
+  },
 );
 ```
 
@@ -518,6 +523,7 @@ await job.retry('completed');
 FreshTrack currently uses Telnyx for SMS via Supabase Edge Functions. The existing implementation provides excellent patterns to migrate:
 
 **Key configurations (from `send-sms-alert/index.ts`):**
+
 - **Messaging Profile:** `frost guard` (ID: `40019baa-aa62-463c-b254-463c66f4b2d3`)
 - **Phone Number:** `+18889890560` (Toll-Free)
 - **Verification ID:** `99ac127c-6dae-57ee-afc4-32949ac9124e`
@@ -562,7 +568,7 @@ export async function processSendSms(job: Job<SendSmsData>) {
   const response = await fetch('https://api.telnyx.com/v2/messages', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.TELNYX_API_KEY}`,
+      Authorization: `Bearer ${process.env.TELNYX_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
@@ -644,16 +650,16 @@ async function logSmsFailure(data: any, error: any, severity: string) {
 
 ### Telnyx Error Codes (from existing implementation)
 
-| Code | Meaning | Action |
-|------|---------|--------|
-| `10009` | Authentication failed | Fatal - check API key |
-| `40001` | Landline destination | Fatal - invalid number type |
-| `40300` | Number opted out | Fatal - user replied STOP |
-| `40310` | Invalid phone number | Fatal - validation error |
-| `40311` | Not SMS-capable | Fatal - landline or VoIP |
-| `40400` | Temporarily unreachable | Retry with backoff |
-| `50000` | Internal Telnyx error | Retry with backoff |
-| `50001` | Service unavailable | Retry with backoff |
+| Code    | Meaning                 | Action                      |
+| ------- | ----------------------- | --------------------------- |
+| `10009` | Authentication failed   | Fatal - check API key       |
+| `40001` | Landline destination    | Fatal - invalid number type |
+| `40300` | Number opted out        | Fatal - user replied STOP   |
+| `40310` | Invalid phone number    | Fatal - validation error    |
+| `40311` | Not SMS-capable         | Fatal - landline or VoIP    |
+| `40400` | Temporarily unreachable | Retry with backoff          |
+| `50000` | Internal Telnyx error   | Retry with backoff          |
+| `50001` | Service unavailable     | Retry with backoff          |
 
 **Source:** Existing FreshTrack implementation (`supabase/functions/send-sms-alert/index.ts`)
 
@@ -669,12 +675,14 @@ async function checkRateLimit(userId: string, alertType: string): Promise<boolea
   const recentSms = await db
     .select()
     .from(smsAlertLog)
-    .where(and(
-      eq(smsAlertLog.userId, userId),
-      eq(smsAlertLog.alertType, alertType),
-      eq(smsAlertLog.status, 'sent'),
-      gte(smsAlertLog.sentAt, fifteenMinutesAgo)
-    ))
+    .where(
+      and(
+        eq(smsAlertLog.userId, userId),
+        eq(smsAlertLog.alertType, alertType),
+        eq(smsAlertLog.status, 'sent'),
+        gte(smsAlertLog.sentAt, fifteenMinutesAgo),
+      ),
+    )
     .limit(1);
 
   return recentSms.length > 0;
@@ -689,6 +697,7 @@ if (await checkRateLimit(job.data.userId, job.data.alertType)) {
 ```
 
 **Sources:**
+
 - [Telnyx Messaging Error Codes](https://support.telnyx.com/en/articles/6505121-telnyx-messaging-error-codes)
 - [Telnyx SMS Compliance 2026](https://telnyx.com/resources/sms-compliance)
 
@@ -733,7 +742,7 @@ export async function setupEmailDigests(emailQueue: Queue) {
           attempts: 2,
           backoff: { type: 'fixed', delay: 5000 },
         },
-      }
+      },
     );
   }
 
@@ -749,7 +758,7 @@ export async function setupEmailDigests(emailQueue: Queue) {
         reportType: 'weekly-compliance',
         timezone: 'America/New_York',
       },
-    }
+    },
   );
 
   // Monthly analytics (1st of month at 8 AM)
@@ -763,7 +772,7 @@ export async function setupEmailDigests(emailQueue: Queue) {
       data: {
         reportType: 'monthly-analytics',
       },
-    }
+    },
   );
 }
 ```
@@ -795,16 +804,20 @@ export async function processEmailDigest(job: Job<DigestData>) {
     const recipients = await getDigestRecipients(org.id, reportType);
 
     for (const recipient of recipients) {
-      await emailQueue.add('send-digest-email', {
-        to: recipient.email,
-        organizationId: org.id,
-        digestType: reportType,
-        content: digestData,
-        timezone,
-      }, {
-        attempts: 3,
-        backoff: { type: 'exponential', delay: 2000 },
-      });
+      await emailQueue.add(
+        'send-digest-email',
+        {
+          to: recipient.email,
+          organizationId: org.id,
+          digestType: reportType,
+          content: digestData,
+          timezone,
+        },
+        {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 2000 },
+        },
+      );
     }
 
     // Update progress
@@ -844,13 +857,14 @@ async function generateDailySummary(org: any) {
     totalReadings: readings.length,
     totalAlerts: alerts.length,
     unitsMonitored: units.length,
-    criticalAlerts: alerts.filter(a => a.severity === 'critical').length,
+    criticalAlerts: alerts.filter((a) => a.severity === 'critical').length,
     // ... more summary data
   };
 }
 ```
 
 **Sources:**
+
 - [BullMQ Job Schedulers](https://docs.bullmq.io/guide/job-schedulers)
 - [Implementing Job Scheduler into Newsletter Application](https://blog.taskforce.sh/implementing-a-job-scheduler-into-a-newsletter-application/)
 - [Better Stack: Job Scheduling in Node.js with BullMQ](https://betterstack.com/community/guides/scaling-nodejs/bullmq-scheduled-tasks/)
@@ -860,7 +874,10 @@ async function generateDailySummary(org: any) {
 ```typescript
 // List all active schedulers
 const schedulers = await emailQueue.getJobSchedulers();
-console.log('Active schedulers:', schedulers.map(s => s.id));
+console.log(
+  'Active schedulers:',
+  schedulers.map((s) => s.id),
+);
 
 // Get specific scheduler
 const scheduler = await emailQueue.getJobScheduler('daily-digest-EST');
@@ -873,7 +890,7 @@ await emailQueue.removeJobScheduler('old-scheduler-id');
 await emailQueue.upsertJobScheduler(
   'daily-digest-EST',
   { pattern: '0 0 8 * * *' }, // Changed to 8 AM
-  { name: 'generate-daily-digest', data: { timezone: 'America/New_York' } }
+  { name: 'generate-daily-digest', data: { timezone: 'America/New_York' } },
 );
 ```
 
@@ -918,7 +935,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes
@@ -928,7 +945,7 @@ services:
       context: ../backend
       dockerfile: ../docker/Dockerfile.api
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -1004,10 +1021,10 @@ const worker = new Worker(
     connection: redisConnection,
     concurrency: CONCURRENCY,
     limiter: {
-      max: 100,      // Max 100 jobs
+      max: 100, // Max 100 jobs
       duration: 1000, // Per second
     },
-  }
+  },
 );
 
 // Event handlers
@@ -1064,6 +1081,7 @@ const worker = new Worker('queue', processor, {
 ```
 
 **Recommendation for FreshTrack:**
+
 - **SMS notifications:** Concurrency 5-10 (Telnyx can handle high throughput)
 - **Email digests:** Concurrency 2-5 (slower generation, DB-intensive)
 
@@ -1084,7 +1102,7 @@ await queue.setGlobalConcurrency(20);
 ```typescript
 const worker = new Worker('api-requests', processor, {
   limiter: {
-    max: 100,       // Maximum 100 jobs
+    max: 100, // Maximum 100 jobs
     duration: 60000, // Per 60 seconds (1 minute)
   },
 });
@@ -1114,7 +1132,7 @@ kind: Deployment
 metadata:
   name: bullmq-notifications-workers
 spec:
-  replicas: 5  # 5 worker pods
+  replicas: 5 # 5 worker pods
   selector:
     matchLabels:
       app: worker-notifications
@@ -1128,23 +1146,24 @@ spec:
           image: freshtrack-worker:latest
           env:
             - name: WORKER_QUEUE
-              value: "notifications"
+              value: 'notifications'
             - name: WORKER_CONCURRENCY
-              value: "5"
+              value: '5'
             - name: REDIS_HOST
-              value: "redis-service"
+              value: 'redis-service'
           resources:
             requests:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: '500m'
+              memory: '512Mi'
             limits:
-              cpu: "1000m"
-              memory: "1Gi"
+              cpu: '1000m'
+              memory: '1Gi'
 ```
 
 **Result:** 5 pods × 5 concurrency = 25 jobs processed simultaneously.
 
 **Sources:**
+
 - [BullMQ Production Guide](https://docs.bullmq.io/guide/going-to-production)
 - [BullMQ Docker/Kubernetes Discussion](https://github.com/taskforcesh/bullmq/discussions/665)
 - [How to Set Up Scalable Queue Workers on AWS](https://dev.to/bhaskar_sawant/how-to-set-up-scalable-queue-workers-on-aws-using-elasticache-ecs-and-bullmq-3g2j)
@@ -1192,7 +1211,7 @@ process.on('SIGINT', gracefulShutdown);
 
 ```yaml
 spec:
-  terminationGracePeriodSeconds: 60  # Wait up to 60s for jobs to complete
+  terminationGracePeriodSeconds: 60 # Wait up to 60s for jobs to complete
 ```
 
 ### 3. Job Cleanup
@@ -1202,8 +1221,8 @@ Prevent Redis from filling up with old completed/failed jobs:
 ```typescript
 const queue = new Queue('notifications', {
   defaultJobOptions: {
-    removeOnComplete: 100,  // Keep last 100 completed jobs
-    removeOnFail: 500,      // Keep last 500 failed jobs for debugging
+    removeOnComplete: 100, // Keep last 100 completed jobs
+    removeOnFail: 500, // Keep last 500 failed jobs for debugging
   },
 });
 ```
@@ -1243,6 +1262,7 @@ setInterval(async () => {
 ```
 
 **Recommended tools:**
+
 - **Bull Board** - Web UI for monitoring queues (Dashboard: https://railway.com/deploy/0s3-xR)
 - **Prometheus + Grafana** - Metrics and alerting
 - **Datadog/New Relic** - APM with BullMQ integration
@@ -1272,6 +1292,7 @@ export async function processSendSms(job: Job) {
 ```
 
 **Don't store in job data:**
+
 - API keys
 - Database passwords
 - User credentials
@@ -1307,20 +1328,25 @@ For jobs that fail permanently:
 worker.on('failed', async (job, error) => {
   if (job && job.attemptsMade >= job.opts.attempts!) {
     // Move to dead letter queue for manual review
-    await deadLetterQueue.add('failed-job', {
-      originalQueue: job.queueName,
-      originalJob: job.name,
-      data: job.data,
-      error: error.message,
-      failedAt: new Date(),
-    }, {
-      removeOnComplete: false, // Keep forever
-    });
+    await deadLetterQueue.add(
+      'failed-job',
+      {
+        originalQueue: job.queueName,
+        originalJob: job.name,
+        data: job.data,
+        error: error.message,
+        failedAt: new Date(),
+      },
+      {
+        removeOnComplete: false, // Keep forever
+      },
+    );
   }
 });
 ```
 
 **Sources:**
+
 - [BullMQ Production Guide](https://docs.bullmq.io/guide/going-to-production)
 - [BullMQ for Beginners (Medium)](https://hadoan.medium.com/bullmq-for-beginners-a-friendly-practical-guide-with-typescript-examples-eb8064bef1c4)
 
@@ -1331,12 +1357,14 @@ worker.on('failed', async (job, error) => {
 ### Phase 1: Core Setup (Week 1)
 
 **Goals:**
+
 - Install dependencies
 - Set up Redis connection
 - Create queue plugin for Fastify
 - Implement basic worker structure
 
 **Tasks:**
+
 1. Install packages: `npm install bullmq ioredis @types/ioredis`
 2. Create `src/config/redis.ts` - shared Redis connection
 3. Create `src/plugins/queues.ts` - Fastify plugin for queues
@@ -1349,11 +1377,13 @@ worker.on('failed', async (job, error) => {
 ### Phase 2: SMS Notifications (Week 2)
 
 **Goals:**
+
 - Migrate SMS sending from Edge Functions to BullMQ workers
 - Implement retry logic with Telnyx error handling
 - Add rate limiting
 
 **Tasks:**
+
 1. Create `src/jobs/processors/send-sms.ts` processor
 2. Port Telnyx logic from `send-sms-alert/index.ts`
 3. Implement error mapping and retry strategy
@@ -1367,11 +1397,13 @@ worker.on('failed', async (job, error) => {
 ### Phase 3: Email Digests (Week 3)
 
 **Goals:**
+
 - Implement scheduled email digests
 - Create digest generation logic
 - Set up cron-based schedulers
 
 **Tasks:**
+
 1. Create `src/jobs/processors/generate-digest.ts`
 2. Implement daily/weekly/monthly digest generation
 3. Set up job schedulers in `src/jobs/schedulers/email-digests.ts`
@@ -1385,11 +1417,13 @@ worker.on('failed', async (job, error) => {
 ### Phase 4: Monitoring & Production (Week 4)
 
 **Goals:**
+
 - Add monitoring dashboard
 - Implement metrics
 - Production deployment
 
 **Tasks:**
+
 1. Set up Bull Board for queue monitoring
 2. Add Prometheus metrics for job processing
 3. Implement graceful shutdown
@@ -1403,6 +1437,7 @@ worker.on('failed', async (job, error) => {
 ### Optional Enhancements
 
 **Priority 2 (Future):**
+
 - Job prioritization for critical alerts
 - Advanced rate limiting per organization
 - Job metrics dashboard for customers
@@ -1439,7 +1474,7 @@ async function processSmsJob(job: Job<SmsJob>) {
   const response = await fetch('https://api.telnyx.com/v2/messages', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.TELNYX_API_KEY}`,
+      Authorization: `Bearer ${process.env.TELNYX_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -1491,7 +1526,7 @@ const worker = new Worker(
         return Math.pow(2, attemptsMade) * 1000;
       },
     },
-  }
+  },
 );
 
 worker.on('completed', (job) => {
@@ -1578,6 +1613,7 @@ console.log(`Worker started: ${QUEUE_NAME} (concurrency: ${CONCURRENCY})`);
 **Document Version:** 1.0
 **Last Updated:** 2026-01-24
 **Confidence Assessment:** HIGH (90%+)
+
 - BullMQ patterns verified via official docs and Context7
 - Telnyx integration derived from production code
 - Docker deployment validated via community templates

@@ -58,7 +58,7 @@ export const devices = pgTable(
     index('devices_unit_idx').on(table.unitId),
     index('devices_hub_idx').on(table.hubId),
     index('devices_status_idx').on(table.status),
-  ]
+  ],
 );
 
 // LoRa Sensors - LoRaWAN-specific configuration
@@ -86,7 +86,7 @@ export const loraSensors = pgTable(
     uniqueIndex('lora_sensors_device_idx').on(table.deviceId),
     uniqueIndex('lora_sensors_dev_eui_idx').on(table.devEui),
     index('lora_sensors_app_eui_idx').on(table.appEui),
-  ]
+  ],
 );
 
 // Calibration Records - calibration history for compliance
@@ -119,7 +119,7 @@ export const calibrationRecords = pgTable(
     index('calibration_records_device_idx').on(table.deviceId),
     index('calibration_records_date_idx').on(table.deviceId, table.calibratedAt),
     index('calibration_records_expires_idx').on(table.expiresAt),
-  ]
+  ],
 );
 
 // Pairing Sessions - temporary device pairing state
@@ -156,7 +156,7 @@ export const pairingSessions = pgTable(
     index('pairing_sessions_device_idx').on(table.deviceId),
     index('pairing_sessions_status_idx').on(table.status),
     index('pairing_sessions_code_idx').on(table.pairingCode),
-  ]
+  ],
 );
 
 // Type exports

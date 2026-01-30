@@ -17,15 +17,13 @@ export interface TestOrgData {
 
 // Test user data
 export interface TestUserData {
-  userId: string;  // Stack Auth user ID
+  userId: string; // Stack Auth user ID
   profileId: string;
   role: AppRole;
 }
 
 // Create a test organization with subscription
-export async function createTestOrg(
-  data: Partial<TestOrgData> = {}
-): Promise<TestOrgData> {
+export async function createTestOrg(data: Partial<TestOrgData> = {}): Promise<TestOrgData> {
   const orgId = data.id || crypto.randomUUID();
   const name = data.name || `Test Org ${Date.now()}`;
   const slug = data.slug || `test-org-${Date.now()}`;
@@ -53,7 +51,7 @@ export async function createTestOrg(
 export async function createTestUser(
   organizationId: string,
   role: AppRole = 'viewer',
-  userId?: string
+  userId?: string,
 ): Promise<TestUserData> {
   const stackAuthUserId = userId || crypto.randomUUID();
   const profileId = crypto.randomUUID();
@@ -80,15 +78,18 @@ export async function createTestUser(
 // Create a test site
 export async function createTestSite(
   organizationId: string,
-  data: Partial<{ name: string; timezone: string }> = {}
+  data: Partial<{ name: string; timezone: string }> = {},
 ): Promise<{ id: string; name: string }> {
   const name = data.name || `Test Site ${Date.now()}`;
 
-  const [site] = await db.insert(sites).values({
-    organizationId,
-    name,
-    timezone: data.timezone || 'UTC',
-  }).returning();
+  const [site] = await db
+    .insert(sites)
+    .values({
+      organizationId,
+      name,
+      timezone: data.timezone || 'UTC',
+    })
+    .returning();
 
   return { id: site.id, name: site.name };
 }
@@ -96,15 +97,18 @@ export async function createTestSite(
 // Create a test area
 export async function createTestArea(
   siteId: string,
-  data: Partial<{ name: string; sortOrder: number }> = {}
+  data: Partial<{ name: string; sortOrder: number }> = {},
 ): Promise<{ id: string; name: string }> {
   const name = data.name || `Test Area ${Date.now()}`;
 
-  const [area] = await db.insert(areas).values({
-    siteId,
-    name,
-    sortOrder: data.sortOrder || 0,
-  }).returning();
+  const [area] = await db
+    .insert(areas)
+    .values({
+      siteId,
+      name,
+      sortOrder: data.sortOrder || 0,
+    })
+    .returning();
 
   return { id: area.id, name: area.name };
 }
@@ -112,18 +116,21 @@ export async function createTestArea(
 // Create a test unit
 export async function createTestUnit(
   areaId: string,
-  data: Partial<{ name: string; unitType: string; tempMin: number; tempMax: number }> = {}
+  data: Partial<{ name: string; unitType: string; tempMin: number; tempMax: number }> = {},
 ): Promise<{ id: string; name: string }> {
   const name = data.name || `Test Unit ${Date.now()}`;
 
-  const [unit] = await db.insert(units).values({
-    areaId,
-    name,
-    unitType: (data.unitType as any) || 'fridge',
-    tempMin: data.tempMin ?? 320,  // 32.0 F
-    tempMax: data.tempMax ?? 400,  // 40.0 F
-    tempUnit: 'F',
-  }).returning();
+  const [unit] = await db
+    .insert(units)
+    .values({
+      areaId,
+      name,
+      unitType: (data.unitType as any) || 'fridge',
+      tempMin: data.tempMin ?? 320, // 32.0 F
+      tempMax: data.tempMax ?? 400, // 40.0 F
+      tempUnit: 'F',
+    })
+    .returning();
 
   return { id: unit.id, name: unit.name };
 }
@@ -153,18 +160,21 @@ export async function createTestAlertRule(options: {
 }): Promise<AlertRule> {
   const name = options.name || `Test Alert Rule ${Date.now()}`;
 
-  const [rule] = await db.insert(alertRules).values({
-    organizationId: options.organizationId,
-    siteId: options.siteId,
-    unitId: options.unitId,
-    name,
-    tempMin: options.tempMin ?? 320, // 32.0 F
-    tempMax: options.tempMax ?? 400, // 40.0 F
-    delayMinutes: 5,
-    alertType: 'alarm_active',
-    severity: 'warning',
-    isEnabled: true,
-  }).returning();
+  const [rule] = await db
+    .insert(alertRules)
+    .values({
+      organizationId: options.organizationId,
+      siteId: options.siteId,
+      unitId: options.unitId,
+      name,
+      tempMin: options.tempMin ?? 320, // 32.0 F
+      tempMax: options.tempMax ?? 400, // 40.0 F
+      delayMinutes: 5,
+      alertType: 'alarm_active',
+      severity: 'warning',
+      isEnabled: true,
+    })
+    .returning();
 
   return rule;
 }
@@ -172,7 +182,7 @@ export async function createTestAlertRule(options: {
 // Factory for creating test reading objects
 export function createTestReading(
   unitId: string,
-  overrides?: Partial<InsertSensorReading>
+  overrides?: Partial<InsertSensorReading>,
 ): InsertSensorReading {
   return {
     unitId,
@@ -193,18 +203,21 @@ export async function createTestAlert(options: {
   status?: 'active' | 'acknowledged' | 'resolved' | 'escalated';
   triggerTemperature?: number;
 }): Promise<InsertAlert & { id: string }> {
-  const [alert] = await db.insert(alerts).values({
-    unitId: options.unitId,
-    alertRuleId: options.alertRuleId,
-    alertType: 'alarm_active',
-    severity: 'warning',
-    status: options.status || 'active',
-    message: 'Test alert message',
-    triggerTemperature: options.triggerTemperature ?? 450, // 45.0°F
-    thresholdViolated: 'max',
-    triggeredAt: new Date(),
-    escalationLevel: 0,
-  }).returning();
+  const [alert] = await db
+    .insert(alerts)
+    .values({
+      unitId: options.unitId,
+      alertRuleId: options.alertRuleId,
+      alertType: 'alarm_active',
+      severity: 'warning',
+      status: options.status || 'active',
+      message: 'Test alert message',
+      triggerTemperature: options.triggerTemperature ?? 450, // 45.0°F
+      thresholdViolated: 'max',
+      triggeredAt: new Date(),
+      escalationLevel: 0,
+    })
+    .returning();
 
   return alert;
 }

@@ -18,7 +18,11 @@ if (!fs.existsSync(cacheDir)) {
 }
 
 // Run check in background (spawn detached process)
-const child = spawn(process.execPath, ['-e', `
+const child = spawn(
+  process.execPath,
+  [
+    '-e',
+    `
   const fs = require('fs');
   const { execSync } = require('child_process');
 
@@ -43,9 +47,12 @@ const child = spawn(process.execPath, ['-e', `
   };
 
   fs.writeFileSync(cacheFile, JSON.stringify(result));
-`], {
-  detached: true,
-  stdio: 'ignore'
-});
+`,
+  ],
+  {
+    detached: true,
+    stdio: 'ignore',
+  },
+);
 
 child.unref();

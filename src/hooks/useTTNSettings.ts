@@ -4,12 +4,12 @@
  * Migrated to tRPC in Phase 21
  * Uses ttnSettings router for settings management
  */
-import { useState, useCallback, useEffect } from "react";
-import { useUser } from "@stackframe/react";
-import { useTRPCClient } from "@/lib/trpc";
-import { toast } from "sonner";
-import { hashConfigValues } from "@/types/ttnState";
-import { useTTNConfig } from "@/contexts/TTNConfigContext";
+import { useState, useCallback, useEffect } from 'react';
+import { useUser } from '@stackframe/react';
+import { useTRPCClient } from '@/lib/trpc';
+import { toast } from 'sonner';
+import { hashConfigValues } from '@/types/ttnState';
+import { useTTNConfig } from '@/contexts/TTNConfigContext';
 
 /**
  * TTN Connection Test Result from the API
@@ -61,14 +61,15 @@ export interface TTNSettings {
   last_test_source: string | null;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : '');
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : '');
 
 export const WEBHOOK_URL = `${API_BASE_URL}/api/webhooks/ttn`;
 
 export const TTN_REGIONS = [
-  { value: "nam1", label: "North America (nam1)" },
-  { value: "eu1", label: "Europe (eu1)" },
-  { value: "au1", label: "Australia (au1)" },
+  { value: 'nam1', label: 'North America (nam1)' },
+  { value: 'eu1', label: 'Europe (eu1)' },
+  { value: 'au1', label: 'Australia (au1)' },
 ] as const;
 
 interface UseTTNSettingsOptions {
@@ -102,7 +103,7 @@ export function useTTNSettings({ organizationId }: UseTTNSettingsOptions): UseTT
   const user = useUser();
 
   // NAM1 ONLY - hardcoded cluster, no region selection
-  const region = "nam1";
+  const region = 'nam1';
 
   const { setCanonical, setInvalid, resetToDraft } = useTTNConfig();
 
@@ -163,7 +164,7 @@ export function useTTNSettings({ organizationId }: UseTTNSettingsOptions): UseTT
             org_id: organizationId,
             app_id: data.ttn_application_id,
             has_api_key: data.has_api_key,
-            hash
+            hash,
           });
           setCanonical(hash);
         } else {
@@ -176,9 +177,9 @@ export function useTTNSettings({ organizationId }: UseTTNSettingsOptions): UseTT
         resetToDraft();
       }
     } catch (err) {
-      console.error("Error loading TTN settings:", err);
-      toast.error("Failed to load TTN settings");
-      setInvalid("Failed to load TTN settings");
+      console.error('Error loading TTN settings:', err);
+      toast.error('Failed to load TTN settings');
+      setInvalid('Failed to load TTN settings');
     } finally {
       setIsLoading(false);
     }
@@ -195,10 +196,7 @@ export function useTTNSettings({ organizationId }: UseTTNSettingsOptions): UseTT
   }, [loadSettings, checkBootstrapHealth]);
 
   // Computed states
-  const isProvisioned = Boolean(
-    settings?.ttn_application_id &&
-    settings?.has_api_key
-  );
+  const isProvisioned = Boolean(settings?.ttn_application_id && settings?.has_api_key);
   const isFailed = settings?.provisioning_status === 'failed';
   const isProvisioningStatus = settings?.provisioning_status === 'provisioning';
 

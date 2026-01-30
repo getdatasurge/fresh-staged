@@ -1,6 +1,6 @@
-import React from "react";
-import { CheckCircle } from "lucide-react";
-import type { TTNSettings } from "@/hooks/useTTNSettings";
+import React from 'react';
+import { CheckCircle } from 'lucide-react';
+import type { TTNSettings } from '@/hooks/useTTNSettings';
 
 interface TTNStatusBannerProps {
   settings: TTNSettings;
@@ -19,7 +19,9 @@ export function TTNStatusBanner({ settings }: TTNStatusBannerProps) {
           <div className="grid gap-1.5 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Application ID:</span>
-              <code className="bg-muted px-2 py-0.5 rounded text-xs">{settings.ttn_application_id}</code>
+              <code className="bg-muted px-2 py-0.5 rounded text-xs">
+                {settings.ttn_application_id}
+              </code>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Region:</span>

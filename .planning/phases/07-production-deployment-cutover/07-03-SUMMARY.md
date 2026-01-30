@@ -13,9 +13,9 @@ tech-stack:
     - Metrics scraping with Prometheus
     - Log aggregation with Loki
     - Auto-provisioned Grafana datasources
-requires: ["07-01"]
-provides: ["observability-stack", "metrics-collection", "log-aggregation", "monitoring-dashboards"]
-affects: ["07-04", "07-05", "07-06"]
+requires: ['07-01']
+provides: ['observability-stack', 'metrics-collection', 'log-aggregation', 'monitoring-dashboards']
+affects: ['07-04', '07-05', '07-06']
 key-files:
   created:
     - docker/prometheus/prometheus.yml
@@ -79,21 +79,25 @@ Implemented a complete observability stack for production monitoring:
 ## Architecture Decisions
 
 ### Metrics Collection Strategy
+
 - **Decision:** Use Prometheus pull model with static targets
 - **Rationale:** Simple configuration, reliable scraping, built-in service discovery not needed for small stack
 - **Alternative considered:** Service discovery via Docker labels - added complexity without clear benefit
 
 ### Log Retention
+
 - **Decision:** 30-day retention for both metrics and logs
 - **Rationale:** Balances operational visibility with storage costs
 - **Configuration:** Loki `retention_period: 720h`, Prometheus `--storage.tsdb.retention.time=30d`
 
 ### Grafana Provisioning
+
 - **Decision:** Auto-provision datasources and dashboards via config files
 - **Rationale:** Infrastructure-as-code approach, consistent deployments, no manual setup
 - **Implementation:** YAML provisioning configs and JSON dashboard definitions
 
 ### Resource Limits
+
 - **Decision:** Memory limits on all observability services
 - **Rationale:** Prevent observability stack from consuming resources needed by application
 - **Limits:**
@@ -106,33 +110,37 @@ Implemented a complete observability stack for production monitoring:
 ## Configuration Highlights
 
 ### Prometheus Scrape Targets
+
 ```yaml
 scrape_configs:
-  - job_name: 'prometheus'      # Self-monitoring
-  - job_name: 'node-exporter'   # Host metrics
-  - job_name: 'backend'         # Application metrics (/metrics endpoint)
-  - job_name: 'caddy'           # Reverse proxy metrics
+  - job_name: 'prometheus' # Self-monitoring
+  - job_name: 'node-exporter' # Host metrics
+  - job_name: 'backend' # Application metrics (/metrics endpoint)
+  - job_name: 'caddy' # Reverse proxy metrics
 ```
 
 ### Loki Schema
+
 - Schema version: v11
 - Store: boltdb-shipper with filesystem object storage
 - Index period: 24h
 - Compaction enabled for efficient storage
 
 ### Promtail Pipeline
+
 ```yaml
 pipeline_stages:
-  - json:                        # Parse JSON logs
+  - json: # Parse JSON logs
       expressions:
-        level: level             # Extract log level
-        msg: msg                 # Extract message
-        time: time               # Extract timestamp
+        level: level # Extract log level
+        msg: msg # Extract message
+        time: time # Extract timestamp
   - labels:
-      level:                     # Add log level as label for filtering
+      level: # Add log level as label for filtering
 ```
 
 ### Grafana Dashboard Panels
+
 1. **CPU Usage** - Calculated from node_cpu_seconds_total idle time
 2. **Memory Usage** - Based on MemAvailable/MemTotal ratio
 3. **Service Health** - Prometheus `up` metric for all scrape targets
@@ -148,14 +156,17 @@ pipeline_stages:
 ## Integration Points
 
 ### Upstream Dependencies
+
 - **07-01 (Production Infrastructure):** Base compose.production.yaml file to extend
 
 ### Downstream Impact
+
 - **07-04 (Pre-flight Checks):** Health checks will verify observability services are running
 - **07-05 (Cutover Checklist):** Checklist includes verifying Grafana dashboard shows healthy metrics
 - **07-06 (Rollback Plan):** Observability stack helps detect issues requiring rollback
 
 ### Data Flow
+
 ```
 Docker Containers → Promtail → Loki → Grafana (Logs)
 Backend/Node/Caddy → Prometheus → Grafana (Metrics)
@@ -164,6 +175,7 @@ Backend/Node/Caddy → Prometheus → Grafana (Metrics)
 ## Files Created
 
 ### Configuration Files
+
 - `docker/prometheus/prometheus.yml` - Prometheus scrape configuration (614 bytes)
 - `docker/loki/loki.yml` - Loki log aggregation config (1,056 bytes)
 - `docker/promtail/promtail.yml` - Promtail log collection config (1,064 bytes)
@@ -172,18 +184,20 @@ Backend/Node/Caddy → Prometheus → Grafana (Metrics)
 - `docker/grafana/dashboards/freshtrack-overview.json` - Overview dashboard (4,693 bytes)
 
 ### Docker Compose
+
 - `compose.production.yaml` - Added 5 observability services, 3 volumes, 1 secret
 
 ## Commits
 
-| Commit | Task | Description |
-|--------|------|-------------|
-| 5c51fb2 | 1 | Create Prometheus, Loki, and Promtail configurations |
-| b5f8f2a | 3 | Add observability services to compose.production.yaml |
+| Commit  | Task | Description                                           |
+| ------- | ---- | ----------------------------------------------------- |
+| 5c51fb2 | 1    | Create Prometheus, Loki, and Promtail configurations  |
+| b5f8f2a | 3    | Add observability services to compose.production.yaml |
 
 ## Deviations from Plan
 
 ### Task 2 Already Completed
+
 **Found during:** Task 2 execution
 **Issue:** Grafana provisioning files and dashboard were already created in a previous run (commit e24d915)
 **Resolution:** Verified files exist and are correct, skipped redundant commit
@@ -194,6 +208,7 @@ This is a normal occurrence when plan execution is partially completed in a prev
 ## Testing & Verification
 
 ### Pre-deployment Verification
+
 - Verified all config files created in correct locations
 - Confirmed Prometheus config contains scrape_configs section
 - Confirmed Loki config contains schema_config section
@@ -201,6 +216,7 @@ This is a normal occurrence when plan execution is partially completed in a prev
 - Verified volumes and secrets properly configured
 
 ### Post-deployment Verification (for cutover checklist)
+
 1. Start stack: `docker compose -f docker-compose.yml -f compose.production.yaml up -d`
 2. Check all observability services running: `docker ps | grep frostguard`
 3. Access Grafana: http://localhost:3001 (login with grafana_password secret)
@@ -211,6 +227,7 @@ This is a normal occurrence when plan execution is partially completed in a prev
 8. Confirm Recent Logs panel shows container logs
 
 ### Expected Metrics
+
 - CPU usage gauge updates every 15s
 - Memory usage gauge updates every 15s
 - Service health shows `up=1` for prometheus, node-exporter, backend, caddy
@@ -219,26 +236,32 @@ This is a normal occurrence when plan execution is partially completed in a prev
 ## Next Phase Readiness
 
 ### Ready for 07-04 (Pre-flight Checks)
+
 - Observability stack can be health-checked before cutover
 - Metrics baseline can be captured before migration
 
 ### Ready for 07-05 (Cutover Checklist)
+
 - Dashboard provides visual confirmation of system health
 - Logs available for troubleshooting during cutover
 
 ### Ready for 07-06 (Rollback Plan)
+
 - Metrics show if rollback is needed (service health drops)
 - Logs help diagnose rollback triggers
 
 ### Blockers
+
 None - observability stack is self-contained and ready to deploy.
 
 ### Outstanding Items
+
 1. **Secrets generation:** `secrets/grafana_password.txt` must be created before deployment
 2. **Backend metrics endpoint:** Backend application should implement `/metrics` endpoint (current config assumes it exists)
 3. **Caddy metrics:** Caddy admin port 2019 must be exposed (current config assumes it's available)
 
 ### Future Enhancements (out of scope for this phase)
+
 - Alert rules in Prometheus for critical conditions
 - Additional dashboards for application-specific metrics
 - Distributed tracing with Tempo
@@ -247,4 +270,5 @@ None - observability stack is self-contained and ready to deploy.
 - PostgreSQL metrics via postgres_exporter
 
 ## Duration
+
 3 minutes (2026-01-23 23:26:55 - 23:29:56 UTC)

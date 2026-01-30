@@ -28,7 +28,7 @@ export function notFound(reply: FastifyReply, message: string): FastifyReply {
 export function validationError(
   reply: FastifyReply,
   message: string,
-  details?: ErrorDetail[]
+  details?: ErrorDetail[],
 ): FastifyReply {
   return reply.code(400).send({
     error: {

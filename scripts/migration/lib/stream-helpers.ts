@@ -5,19 +5,19 @@
  * export for small tables. Handles data type conversion for JSON.
  */
 
-import pg from "pg";
-import QueryStream from "pg-query-stream";
-import fs from "node:fs";
-import path from "node:path";
-import { pipeline } from "node:stream/promises";
-import { Transform } from "node:stream";
-import { logger, logMigrationProgress } from "./logger.js";
+import pg from 'pg';
+import QueryStream from 'pg-query-stream';
+import fs from 'node:fs';
+import path from 'node:path';
+import { pipeline } from 'node:stream/promises';
+import { Transform } from 'node:stream';
+import { logger, logMigrationProgress } from './logger.js';
 
 const { Pool } = pg;
 
 // Constants for export behavior
 export const STREAMING_THRESHOLD = 10000; // Rows above this use streaming
-export const LARGE_TABLES = ["sensor_readings", "event_logs", "alerts"] as const;
+export const LARGE_TABLES = ['sensor_readings', 'event_logs', 'alerts'] as const;
 const PROGRESS_INTERVAL = 1000; // Log progress every N rows
 
 /**
@@ -31,14 +31,12 @@ const PROGRESS_INTERVAL = 1000; // Log progress every N rows
 export async function getTableRowCount(
   pool: pg.Pool,
   tableName: string,
-  schema: string = "public"
+  schema: string = 'public',
 ): Promise<number> {
   const client = await pool.connect();
   try {
     // Use identifier quoting to prevent SQL injection
-    const result = await client.query(
-      `SELECT COUNT(*) as count FROM "${schema}"."${tableName}"`
-    );
+    const result = await client.query(`SELECT COUNT(*) as count FROM "${schema}"."${tableName}"`);
     return parseInt(result.rows[0].count, 10);
   } finally {
     client.release();
@@ -56,7 +54,7 @@ export async function getTableRowCount(
 async function getPrimaryKeyColumns(
   pool: pg.Pool,
   tableName: string,
-  schema: string = "public"
+  schema: string = 'public',
 ): Promise<string[]> {
   const client = await pool.connect();
   try {
@@ -69,16 +67,16 @@ async function getPrimaryKeyColumns(
         AND i.indisprimary
       ORDER BY array_position(i.indkey, a.attnum)
       `,
-      [`"${schema}"."${tableName}"`]
+      [`"${schema}"."${tableName}"`],
     );
     if (result.rows.length > 0) {
       return result.rows.map((r) => r.column_name);
     }
     // Fallback to 'id' if no primary key found
-    return ["id"];
+    return ['id'];
   } catch {
     // If table lookup fails, default to id
-    return ["id"];
+    return ['id'];
   } finally {
     client.release();
   }
@@ -105,15 +103,15 @@ function convertToJsonSafe(value: unknown, columnType?: string): unknown {
   // Handle numeric types as strings to preserve precision
   // PostgreSQL numeric/decimal types are returned as strings by pg
   // but we want to ensure BigInt and precise decimals are preserved
-  if (typeof value === "bigint") {
+  if (typeof value === 'bigint') {
     return value.toString();
   }
 
   // JSONB columns come through as parsed objects - preserve as-is
-  if (typeof value === "object" && value !== null) {
+  if (typeof value === 'object' && value !== null) {
     // Check if it's a Buffer (bytea type)
     if (Buffer.isBuffer(value)) {
-      return value.toString("base64");
+      return value.toString('base64');
     }
     return value;
   }
@@ -148,7 +146,7 @@ export async function streamTableToJson(
   pool: pg.Pool,
   tableName: string,
   outputPath: string,
-  schema: string = "public"
+  schema: string = 'public',
 ): Promise<number> {
   const client = await pool.connect();
   let rowCount = 0;
@@ -156,13 +154,13 @@ export async function streamTableToJson(
   try {
     // Get primary key for ordering
     const pkColumns = await getPrimaryKeyColumns(pool, tableName, schema);
-    const orderBy = pkColumns.map((col) => `"${col}"`).join(", ");
+    const orderBy = pkColumns.map((col) => `"${col}"`).join(', ');
 
     // Use to_json for timestamp conversion at database level
     const query = new QueryStream(
       `SELECT * FROM "${schema}"."${tableName}" ORDER BY ${orderBy}`,
       [],
-      { batchSize: 1000 }
+      { batchSize: 1000 },
     );
 
     const stream = client.query(query);
@@ -177,7 +175,7 @@ export async function streamTableToJson(
     const writeStream = fs.createWriteStream(outputPath);
 
     // Write opening bracket
-    writeStream.write("[\n");
+    writeStream.write('[\n');
 
     let isFirst = true;
 
@@ -188,7 +186,7 @@ export async function streamTableToJson(
         try {
           rowCount++;
           const jsonSafeRow = convertRowToJsonSafe(row);
-          const prefix = isFirst ? "  " : ",\n  ";
+          const prefix = isFirst ? '  ' : ',\n  ';
           isFirst = false;
           this.push(prefix + JSON.stringify(jsonSafeRow));
 
@@ -204,7 +202,7 @@ export async function streamTableToJson(
       },
       flush(callback) {
         // Write closing bracket
-        this.push("\n]");
+        this.push('\n]');
         callback();
       },
     });
@@ -214,7 +212,7 @@ export async function streamTableToJson(
 
     logger.info(
       { table: tableName, rowCount, outputPath },
-      `Streamed ${rowCount} rows to ${outputPath}`
+      `Streamed ${rowCount} rows to ${outputPath}`,
     );
 
     return rowCount;
@@ -239,17 +237,17 @@ export async function exportSmallTable(
   pool: pg.Pool,
   tableName: string,
   outputPath: string,
-  schema: string = "public"
+  schema: string = 'public',
 ): Promise<number> {
   const client = await pool.connect();
 
   try {
     // Get primary key for ordering
     const pkColumns = await getPrimaryKeyColumns(pool, tableName, schema);
-    const orderBy = pkColumns.map((col) => `"${col}"`).join(", ");
+    const orderBy = pkColumns.map((col) => `"${col}"`).join(', ');
 
     const result = await client.query(
-      `SELECT * FROM "${schema}"."${tableName}" ORDER BY ${orderBy}`
+      `SELECT * FROM "${schema}"."${tableName}" ORDER BY ${orderBy}`,
     );
 
     // Ensure output directory exists
@@ -262,15 +260,11 @@ export async function exportSmallTable(
     const jsonSafeRows = result.rows.map(convertRowToJsonSafe);
 
     // Write with pretty formatting for human readability
-    await fs.promises.writeFile(
-      outputPath,
-      JSON.stringify(jsonSafeRows, null, 2),
-      "utf-8"
-    );
+    await fs.promises.writeFile(outputPath, JSON.stringify(jsonSafeRows, null, 2), 'utf-8');
 
     logger.info(
       { table: tableName, rowCount: result.rows.length, outputPath },
-      `Exported ${result.rows.length} rows to ${outputPath}`
+      `Exported ${result.rows.length} rows to ${outputPath}`,
     );
 
     return result.rows.length;
@@ -289,10 +283,7 @@ export async function exportSmallTable(
  * @param outputPath - Path to write the JSON file
  * @returns Number of users exported
  */
-export async function exportAuthUsers(
-  pool: pg.Pool,
-  outputPath: string
-): Promise<number> {
+export async function exportAuthUsers(pool: pg.Pool, outputPath: string): Promise<number> {
   const client = await pool.connect();
 
   try {
@@ -326,15 +317,11 @@ export async function exportAuthUsers(
     const jsonSafeRows = result.rows.map(convertRowToJsonSafe);
 
     // Write with pretty formatting
-    await fs.promises.writeFile(
-      outputPath,
-      JSON.stringify(jsonSafeRows, null, 2),
-      "utf-8"
-    );
+    await fs.promises.writeFile(outputPath, JSON.stringify(jsonSafeRows, null, 2), 'utf-8');
 
     logger.info(
       { rowCount: result.rows.length, outputPath },
-      `Exported ${result.rows.length} auth.users to ${outputPath}`
+      `Exported ${result.rows.length} auth.users to ${outputPath}`,
     );
 
     return result.rows.length;
@@ -347,8 +334,5 @@ export async function exportAuthUsers(
  * Determine whether a table should use streaming based on row count and table name
  */
 export function shouldUseStreaming(tableName: string, rowCount: number): boolean {
-  return (
-    rowCount > STREAMING_THRESHOLD ||
-    (LARGE_TABLES as readonly string[]).includes(tableName)
-  );
+  return rowCount > STREAMING_THRESHOLD || (LARGE_TABLES as readonly string[]).includes(tableName);
 }

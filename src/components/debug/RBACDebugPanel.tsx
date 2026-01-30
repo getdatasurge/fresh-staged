@@ -4,12 +4,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@stackframe/react';
 import { useSuperAdmin, RoleLoadStatus } from '@/contexts/SuperAdminContext';
-import { Shield, Database, Clock, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import {
+  Shield,
+  Database,
+  Clock,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
  * RBAC Debug Panel - Only visible when URL includes ?debug_rbac=1
- * 
+ *
  * Shows role resolution state for debugging Super Admin visibility issues.
  * NEVER logs tokens, headers, or sensitive data.
  */
@@ -20,7 +28,9 @@ export function RBACDebugPanel() {
   const [directRpcError, setDirectRpcError] = useState<string | null>(null);
   const [platformRolesCount, setPlatformRolesCount] = useState<number | null>(null);
   const [fetchTimestamp, setFetchTimestamp] = useState<string | null>(null);
-  const [statusHistory, setStatusHistory] = useState<Array<{ status: RoleLoadStatus; time: string }>>([]);
+  const [statusHistory, setStatusHistory] = useState<
+    Array<{ status: RoleLoadStatus; time: string }>
+  >([]);
 
   const {
     isSuperAdmin,
@@ -28,18 +38,18 @@ export function RBACDebugPanel() {
     rolesLoaded,
     roleLoadStatus,
     roleLoadError,
-    refreshSuperAdminStatus
+    refreshSuperAdminStatus,
   } = useSuperAdmin();
 
   // Check if debug mode is enabled
-  const isDebugEnabled = typeof window !== 'undefined' && 
-    window.location.search.includes('debug_rbac=1');
+  const isDebugEnabled =
+    typeof window !== 'undefined' && window.location.search.includes('debug_rbac=1');
 
   // Track status transitions
   useEffect(() => {
     if (!isDebugEnabled) return;
-    
-    setStatusHistory(prev => {
+
+    setStatusHistory((prev) => {
       const lastEntry = prev[prev.length - 1];
       if (lastEntry?.status === roleLoadStatus) return prev;
       return [...prev.slice(-4), { status: roleLoadStatus, time: new Date().toISOString() }];
@@ -85,7 +95,11 @@ export function RBACDebugPanel() {
       case 'idle':
         return <Badge variant="secondary">idle</Badge>;
       case 'loading':
-        return <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900/30">loading</Badge>;
+        return (
+          <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900/30">
+            loading
+          </Badge>
+        );
       case 'loaded':
         return <Badge className="bg-green-600">loaded</Badge>;
       case 'error':
@@ -211,10 +225,14 @@ export function RBACDebugPanel() {
               <span className="text-muted-foreground">platform_roles rows visible:</span>
               <code className="bg-muted px-1 rounded">{platformRolesCount}</code>
               {platformRolesCount === 0 && (
-                <Badge variant="outline" className="text-[10px]">RLS blocking</Badge>
+                <Badge variant="outline" className="text-[10px]">
+                  RLS blocking
+                </Badge>
               )}
               {platformRolesCount > 0 && (
-                <Badge variant="outline" className="text-[10px] bg-green-100 dark:bg-green-900/30">RLS passed</Badge>
+                <Badge variant="outline" className="text-[10px] bg-green-100 dark:bg-green-900/30">
+                  RLS passed
+                </Badge>
               )}
             </div>
           )}
@@ -237,14 +255,14 @@ export function RBACDebugPanel() {
 
         {/* Recheck Button */}
         <div className="border-t pt-2">
-          <Button 
-            size="sm" 
-            variant="outline" 
+          <Button
+            size="sm"
+            variant="outline"
             onClick={handleRecheckRoles}
             disabled={isLoadingSuperAdmin}
             className="w-full"
           >
-            <RefreshCw className={cn("h-3 w-3 mr-1", isLoadingSuperAdmin && "animate-spin")} />
+            <RefreshCw className={cn('h-3 w-3 mr-1', isLoadingSuperAdmin && 'animate-spin')} />
             Recheck Roles
           </Button>
         </div>

@@ -8,19 +8,15 @@
  * Follows the same pattern as rbac.ts middleware.
  */
 
-import { and, eq, sql } from 'drizzle-orm'
-import type {
-	FastifyReply,
-	FastifyRequest,
-	preHandlerHookHandler,
-} from 'fastify'
-import { db } from '../db/client.js'
-import { devices } from '../db/schema/devices.js'
-import { areas, sites, units } from '../db/schema/hierarchy.js'
-import { organizations, subscriptions } from '../db/schema/tenancy.js'
+import { and, eq, sql } from 'drizzle-orm';
+import type { FastifyReply, FastifyRequest, preHandlerHookHandler } from 'fastify';
+import { db } from '../db/client.js';
+import { devices } from '../db/schema/devices.js';
+import { areas, sites, units } from '../db/schema/hierarchy.js';
+import { organizations, subscriptions } from '../db/schema/tenancy.js';
 
 // Valid subscription statuses that allow access
-const ACTIVE_STATUSES = ['active', 'trial'] as const
+const ACTIVE_STATUSES = ['active', 'trial'] as const;
 
 /**
  * Require an active or trial subscription to access route
@@ -36,56 +32,53 @@ const ACTIVE_STATUSES = ['active', 'trial'] as const
  * )
  */
 export const requireActiveSubscription: preHandlerHookHandler = async function (
-	request: FastifyRequest,
-	reply: FastifyReply,
+  request: FastifyRequest,
+  reply: FastifyReply,
 ): Promise<void> {
-	// Check authentication
-	const req = request as any
-	if (!req.user) {
-		return reply.status(401).send({
-			error: {
-				code: 'UNAUTHORIZED',
-				message: 'Authentication required',
-			},
-		})
-	}
+  // Check authentication
+  const req = request as any;
+  if (!req.user) {
+    return reply.status(401).send({
+      error: {
+        code: 'UNAUTHORIZED',
+        message: 'Authentication required',
+      },
+    });
+  }
 
-	const organizationId = req.user.organizationId
-	if (!organizationId) {
-		return reply.status(403).send({
-			error: {
-				code: 'NO_ORGANIZATION',
-				message: 'Organization context required',
-			},
-		})
-	}
+  const organizationId = req.user.organizationId;
+  if (!organizationId) {
+    return reply.status(403).send({
+      error: {
+        code: 'NO_ORGANIZATION',
+        message: 'Organization context required',
+      },
+    });
+  }
 
-	// Fetch subscription status
-	const [sub] = await db
-		.select({
-			status: subscriptions.status,
-			plan: subscriptions.plan,
-		})
-		.from(subscriptions)
-		.where(eq(subscriptions.organizationId, organizationId))
-		.limit(1)
+  // Fetch subscription status
+  const [sub] = await db
+    .select({
+      status: subscriptions.status,
+      plan: subscriptions.plan,
+    })
+    .from(subscriptions)
+    .where(eq(subscriptions.organizationId, organizationId))
+    .limit(1);
 
-	// Check subscription exists and is active
-	if (
-		!sub ||
-		!ACTIVE_STATUSES.includes(sub.status as (typeof ACTIVE_STATUSES)[number])
-	) {
-		return reply.status(403).send({
-			error: {
-				code: 'SUBSCRIPTION_REQUIRED',
-				message: 'Active subscription required to access this feature',
-				status: sub?.status || 'none',
-			},
-		})
-	}
+  // Check subscription exists and is active
+  if (!sub || !ACTIVE_STATUSES.includes(sub.status as (typeof ACTIVE_STATUSES)[number])) {
+    return reply.status(403).send({
+      error: {
+        code: 'SUBSCRIPTION_REQUIRED',
+        message: 'Active subscription required to access this feature',
+        status: sub?.status || 'none',
+      },
+    });
+  }
 
-	// Subscription check passed - continue to route handler
-}
+  // Subscription check passed - continue to route handler
+};
 
 /**
  * Require capacity to add more sensors
@@ -102,91 +95,85 @@ export const requireActiveSubscription: preHandlerHookHandler = async function (
  * )
  */
 export const requireSensorCapacity: preHandlerHookHandler = async function (
-	request: FastifyRequest,
-	reply: FastifyReply,
+  request: FastifyRequest,
+  reply: FastifyReply,
 ): Promise<void> {
-	// Check authentication
-	const req = request as any
-	if (!req.user) {
-		return reply.status(401).send({
-			error: {
-				code: 'UNAUTHORIZED',
-				message: 'Authentication required',
-			},
-		})
-	}
+  // Check authentication
+  const req = request as any;
+  if (!req.user) {
+    return reply.status(401).send({
+      error: {
+        code: 'UNAUTHORIZED',
+        message: 'Authentication required',
+      },
+    });
+  }
 
-	const organizationId = req.user.organizationId
-	if (!organizationId) {
-		return reply.status(403).send({
-			error: {
-				code: 'NO_ORGANIZATION',
-				message: 'Organization context required',
-			},
-		})
-	}
+  const organizationId = req.user.organizationId;
+  if (!organizationId) {
+    return reply.status(403).send({
+      error: {
+        code: 'NO_ORGANIZATION',
+        message: 'Organization context required',
+      },
+    });
+  }
 
-	// Get organization's sensor limit
-	const [org] = await db
-		.select({ sensorLimit: organizations.sensorLimit })
-		.from(organizations)
-		.where(eq(organizations.id, organizationId))
-		.limit(1)
+  // Get organization's sensor limit
+  const [org] = await db
+    .select({ sensorLimit: organizations.sensorLimit })
+    .from(organizations)
+    .where(eq(organizations.id, organizationId))
+    .limit(1);
 
-	if (!org) {
-		return reply.status(404).send({
-			error: {
-				code: 'NOT_FOUND',
-				message: 'Organization not found',
-			},
-		})
-	}
+  if (!org) {
+    return reply.status(404).send({
+      error: {
+        code: 'NOT_FOUND',
+        message: 'Organization not found',
+      },
+    });
+  }
 
-	// Count active devices through hierarchy:
-	// devices -> units -> areas -> sites -> organizations
-	const countResult = await db
-		.select({ count: sql<number>`count(*)` })
-		.from(devices)
-		.innerJoin(units, eq(devices.unitId, units.id))
-		.innerJoin(areas, eq(units.areaId, areas.id))
-		.innerJoin(sites, eq(areas.siteId, sites.id))
-		.where(
-			and(eq(sites.organizationId, organizationId), eq(devices.isActive, true)),
-		)
+  // Count active devices through hierarchy:
+  // devices -> units -> areas -> sites -> organizations
+  const countResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(devices)
+    .innerJoin(units, eq(devices.unitId, units.id))
+    .innerJoin(areas, eq(units.areaId, areas.id))
+    .innerJoin(sites, eq(areas.siteId, sites.id))
+    .where(and(eq(sites.organizationId, organizationId), eq(devices.isActive, true)));
 
-	const currentCount = Number(countResult[0]?.count ?? 0)
-	const limit = org.sensorLimit
+  const currentCount = Number(countResult[0]?.count ?? 0);
+  const limit = org.sensorLimit;
 
-	if (currentCount >= limit) {
-		return reply.status(403).send({
-			error: {
-				code: 'SENSOR_LIMIT_REACHED',
-				message: `Sensor limit (${limit}) reached. Upgrade your plan to add more sensors.`,
-				currentCount,
-				limit,
-			},
-		})
-	}
+  if (currentCount >= limit) {
+    return reply.status(403).send({
+      error: {
+        code: 'SENSOR_LIMIT_REACHED',
+        message: `Sensor limit (${limit}) reached. Upgrade your plan to add more sensors.`,
+        currentCount,
+        limit,
+      },
+    });
+  }
 
-	// Capacity check passed - continue to route handler
-}
+  // Capacity check passed - continue to route handler
+};
 
 /**
  * Get current sensor count for an organization
  * Utility function for use in other services
  */
-export async function getActiveSensorCount(
-	organizationId: string,
-): Promise<number> {
-	const countResult = await db
-		.select({ count: sql<number>`count(*)` })
-		.from(devices)
-		.innerJoin(units, eq(devices.unitId, units.id))
-		.innerJoin(areas, eq(units.areaId, areas.id))
-		.innerJoin(sites, eq(areas.siteId, sites.id))
-		.where(
-			and(eq(sites.organizationId, organizationId), eq(devices.isActive, true)),
-		)
+export async function getActiveSensorCount(organizationId: string): Promise<number> {
+  const countResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(devices)
+    .innerJoin(units, eq(devices.unitId, units.id))
+    .innerJoin(areas, eq(units.areaId, areas.id))
+    .innerJoin(sites, eq(areas.siteId, sites.id))
+    .where(and(eq(sites.organizationId, organizationId), eq(devices.isActive, true)));
 
-	return Number(countResult[0]?.count ?? 0)
+  return Number(countResult[0]?.count ?? 0);
 }

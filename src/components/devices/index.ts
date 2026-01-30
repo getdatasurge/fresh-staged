@@ -2,9 +2,9 @@
  * Device Components - Public API
  */
 
-export { DeviceIcon, CategoryIcon } from "./DeviceIcon";
-export { DeviceTypeBadge, CategoryBadge } from "./DeviceTypeBadge";
-export { TelemetryPanel, InlineTelemetry } from "./TelemetryPanel";
+export { DeviceIcon, CategoryIcon } from './DeviceIcon';
+export { DeviceTypeBadge, CategoryBadge } from './DeviceTypeBadge';
+export { TelemetryPanel, InlineTelemetry } from './TelemetryPanel';
 export {
   StatusBadge,
   TTNStatusBadge,
@@ -13,4 +13,4 @@ export {
   SignalBadge,
   MismatchBadge,
   DeviceStatusRow,
-} from "./DeviceStatusBadges";
+} from './DeviceStatusBadges';

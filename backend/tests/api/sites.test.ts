@@ -243,7 +243,7 @@ describe('Sites API', () => {
         method: 'POST',
         url: `/api/orgs/${TEST_ORG_ID}/sites`,
         headers: { authorization: 'Bearer test-token' },
-        payload: {},  // Missing name
+        payload: {}, // Missing name
       });
 
       expect(response.statusCode).toBe(400);

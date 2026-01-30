@@ -44,6 +44,7 @@ Created the foundation for one-command FreshTrack Pro deployment on bare Ubuntu 
 ### Configuration Template (scripts/deploy.config.example)
 
 Comprehensive configuration template with 110 lines covering:
+
 - **Domain configuration:** DOMAIN, ADMIN_EMAIL for Let's Encrypt
 - **Database credentials:** POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_USER
 - **Stack Auth integration:** PROJECT_ID, PUBLISHABLE_KEY, SECRET_KEY
@@ -58,11 +59,13 @@ Comprehensive configuration template with 110 lines covering:
 444-line idempotent deployment script with 7 installation functions:
 
 **Core functions:**
+
 1. `load_config()`: Source config file with interactive prompts for missing required values
 2. `ensure_package()`: Idempotent apt package installation with state checking
 3. `ensure_line_in_file()`: Append to file only if line doesn't exist
 
 **Installation functions (all idempotent):**
+
 1. `install_docker()`: Official Docker installation script, user group management
 2. `install_docker_compose()`: Verify Docker Compose v2 built into Docker CLI
 3. `configure_firewall()`: ufw with ports 22 (SSH), 80 (HTTP), 443 (HTTPS)
@@ -72,6 +75,7 @@ Comprehensive configuration template with 110 lines covering:
 7. `create_secrets()`: File-based secrets with 600 permissions in secrets/ directory
 
 **Idempotent patterns used (11 instances):**
+
 - `mkdir -p` instead of `mkdir`
 - `command -v` to check before installing
 - `grep -qF` to check before appending to files
@@ -79,6 +83,7 @@ Comprehensive configuration template with 110 lines covering:
 - `docker ps -a --filter` to check container existence
 
 **Features:**
+
 - Color-coded output (blue steps, green success, red errors, yellow warnings)
 - Configuration summary display before execution
 - Auto-generated passwords for optional services
@@ -88,10 +93,12 @@ Comprehensive configuration template with 110 lines covering:
 ## Files Created/Modified
 
 ### Created
+
 - `scripts/deploy.config.example` (110 lines) - Configuration template
 - `scripts/deploy-selfhosted.sh` (444 lines, executable) - Main deployment script
 
 ### Modified
+
 None - new files only
 
 ## Decisions Made
@@ -151,6 +158,7 @@ None - straightforward implementation following RESEARCH.md patterns.
 ## Testing Notes
 
 **Verification completed:**
+
 - ✓ deploy.config.example exists with all required variables
 - ✓ deploy-selfhosted.sh is executable
 - ✓ Script uses 11 idempotent patterns (requirement: 10+)
@@ -158,6 +166,7 @@ None - straightforward implementation following RESEARCH.md patterns.
 - ✓ All install functions present
 
 **Not yet tested:**
+
 - Actual execution on Ubuntu 24.04 VM (requires VM environment)
 - Docker installation flow (requires clean system)
 - Config loading and prompting logic (requires interactive session)
@@ -170,6 +179,7 @@ Testing will occur in Plan 11-03 during full deployment validation.
 **Ready for Plan 11-02** - Docker Compose integration and Caddy configuration.
 
 **Provides:**
+
 - Configuration template for all required variables
 - Base VM setup script ready to integrate with Docker Compose deployment
 - Secrets infrastructure for secure credential management
@@ -181,10 +191,12 @@ Testing will occur in Plan 11-03 during full deployment validation.
 ## Documentation
 
 **Configuration:**
+
 - `scripts/deploy.config.example` - Comprehensive template with usage instructions
 - Script includes inline comments explaining each function
 
 **Usage:**
+
 ```bash
 # Copy and configure
 cp scripts/deploy.config.example scripts/deploy.config
@@ -198,6 +210,7 @@ sudo ./scripts/deploy-selfhosted.sh --config /path/to/config
 ```
 
 **Next steps noted in script output:**
+
 1. Configure DNS to point domain to server IP
 2. Wait for DNS propagation (5-60 minutes)
 3. Run deployment with --deploy flag (to be implemented in Plan 11-03)

@@ -33,11 +33,7 @@ export const alertTypeEnum = pgEnum('alert_type', [
   'calibration_due',
 ]);
 
-export const alertSeverityEnum = pgEnum('alert_severity', [
-  'info',
-  'warning',
-  'critical',
-]);
+export const alertSeverityEnum = pgEnum('alert_severity', ['info', 'warning', 'critical']);
 
 export const alertStatusEnum = pgEnum('alert_status', [
   'active',
@@ -47,13 +43,7 @@ export const alertStatusEnum = pgEnum('alert_status', [
 ]);
 
 // User Management
-export const appRoleEnum = pgEnum('app_role', [
-  'owner',
-  'admin',
-  'manager',
-  'staff',
-  'viewer',
-]);
+export const appRoleEnum = pgEnum('app_role', ['owner', 'admin', 'manager', 'staff', 'viewer']);
 
 // Subscription/Billing
 export const subscriptionPlanEnum = pgEnum('subscription_plan', [
@@ -72,11 +62,7 @@ export const subscriptionStatusEnum = pgEnum('subscription_status', [
 ]);
 
 // Notifications
-export const notificationChannelEnum = pgEnum('notification_channel', [
-  'push',
-  'email',
-  'sms',
-]);
+export const notificationChannelEnum = pgEnum('notification_channel', ['push', 'email', 'sms']);
 
 export const notificationStatusEnum = pgEnum('notification_status', [
   'pending',
@@ -86,18 +72,10 @@ export const notificationStatusEnum = pgEnum('notification_status', [
 ]);
 
 // Device Management
-export const deviceStatusEnum = pgEnum('device_status', [
-  'active',
-  'inactive',
-  'pairing',
-  'error',
-]);
+export const deviceStatusEnum = pgEnum('device_status', ['active', 'inactive', 'pairing', 'error']);
 
 // Organization
-export const complianceModeEnum = pgEnum('compliance_mode', [
-  'standard',
-  'haccp',
-]);
+export const complianceModeEnum = pgEnum('compliance_mode', ['standard', 'haccp']);
 
 // Pairing
 export const pairingStatusEnum = pgEnum('pairing_status', [

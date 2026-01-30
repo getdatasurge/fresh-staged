@@ -9,13 +9,12 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { gateways, type Gateway } from '../db/schema/hierarchy.js';
 import { ttnConnections, type TtnConnection } from '../db/schema/tenancy.js';
-import {
-  createTTNClient,
-  TTNApiError,
-  type TTNGateway,
-  type TTNConfig,
-} from './ttn.service.js';
-import type { RegisterTTNGatewayRequest, UpdateTTNGatewayRequest, GatewayStatus } from '../schemas/ttn-gateways.js';
+import { createTTNClient, TTNApiError, type TTNGateway, type TTNConfig } from './ttn.service.js';
+import type {
+  RegisterTTNGatewayRequest,
+  UpdateTTNGatewayRequest,
+  GatewayStatus,
+} from '../schemas/ttn-gateways.js';
 
 // Combined gateway response for API
 export interface TTNGatewayWithLocation {
@@ -44,10 +43,7 @@ export async function getTTNConnection(organizationId: string): Promise<TtnConne
     .select()
     .from(ttnConnections)
     .where(
-      and(
-        eq(ttnConnections.organizationId, organizationId),
-        eq(ttnConnections.isActive, true)
-      )
+      and(eq(ttnConnections.organizationId, organizationId), eq(ttnConnections.isActive, true)),
     )
     .limit(1);
 
@@ -110,12 +106,7 @@ export async function listTTNGateways(organizationId: string): Promise<TTNGatewa
   const results = await db
     .select()
     .from(gateways)
-    .where(
-      and(
-        eq(gateways.ttnConnectionId, connection.id),
-        eq(gateways.isActive, true)
-      )
-    );
+    .where(and(eq(gateways.ttnConnectionId, connection.id), eq(gateways.isActive, true)));
 
   return results.map(gatewayToResponse);
 }
@@ -125,7 +116,7 @@ export async function listTTNGateways(organizationId: string): Promise<TTNGatewa
  */
 export async function getTTNGateway(
   gatewayId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<TTNGatewayWithLocation | null> {
   const connection = await getTTNConnection(organizationId);
   if (!connection) {
@@ -140,8 +131,8 @@ export async function getTTNGateway(
       and(
         eq(gateways.id, gatewayId),
         eq(gateways.ttnConnectionId, connection.id),
-        eq(gateways.isActive, true)
-      )
+        eq(gateways.isActive, true),
+      ),
     )
     .limit(1);
 
@@ -154,8 +145,8 @@ export async function getTTNGateway(
         and(
           eq(gateways.gatewayId, gatewayId),
           eq(gateways.ttnConnectionId, connection.id),
-          eq(gateways.isActive, true)
-        )
+          eq(gateways.isActive, true),
+        ),
       )
       .limit(1);
   }
@@ -169,8 +160,8 @@ export async function getTTNGateway(
         and(
           eq(gateways.gatewayEui, gatewayId.toUpperCase()),
           eq(gateways.ttnConnectionId, connection.id),
-          eq(gateways.isActive, true)
-        )
+          eq(gateways.isActive, true),
+        ),
       )
       .limit(1);
   }
@@ -187,7 +178,7 @@ export async function getTTNGateway(
  */
 export async function registerTTNGateway(
   organizationId: string,
-  data: RegisterTTNGatewayRequest
+  data: RegisterTTNGatewayRequest,
 ): Promise<TTNGatewayWithLocation> {
   const connection = await getTTNConnection(organizationId);
   if (!connection) {
@@ -248,7 +239,7 @@ export async function registerTTNGateway(
 export async function updateTTNGateway(
   gatewayId: string,
   organizationId: string,
-  data: UpdateTTNGatewayRequest
+  data: UpdateTTNGatewayRequest,
 ): Promise<TTNGatewayWithLocation | null> {
   const connection = await getTTNConnection(organizationId);
   if (!connection) {
@@ -263,8 +254,8 @@ export async function updateTTNGateway(
       and(
         eq(gateways.id, gatewayId),
         eq(gateways.ttnConnectionId, connection.id),
-        eq(gateways.isActive, true)
-      )
+        eq(gateways.isActive, true),
+      ),
     )
     .limit(1);
 
@@ -277,8 +268,8 @@ export async function updateTTNGateway(
         and(
           eq(gateways.gatewayId, gatewayId),
           eq(gateways.ttnConnectionId, connection.id),
-          eq(gateways.isActive, true)
-        )
+          eq(gateways.isActive, true),
+        ),
       )
       .limit(1);
   }
@@ -356,7 +347,7 @@ export async function updateTTNGateway(
  */
 export async function deregisterTTNGateway(
   gatewayId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<boolean> {
   const connection = await getTTNConnection(organizationId);
   if (!connection) {
@@ -371,8 +362,8 @@ export async function deregisterTTNGateway(
       and(
         eq(gateways.id, gatewayId),
         eq(gateways.ttnConnectionId, connection.id),
-        eq(gateways.isActive, true)
-      )
+        eq(gateways.isActive, true),
+      ),
     )
     .limit(1);
 
@@ -385,8 +376,8 @@ export async function deregisterTTNGateway(
         and(
           eq(gateways.gatewayId, gatewayId),
           eq(gateways.ttnConnectionId, connection.id),
-          eq(gateways.isActive, true)
-        )
+          eq(gateways.isActive, true),
+        ),
       )
       .limit(1);
   }
@@ -426,7 +417,7 @@ export async function deregisterTTNGateway(
  */
 export async function updateGatewayStatus(
   gatewayId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<TTNGatewayWithLocation | null> {
   const connection = await getTTNConnection(organizationId);
   if (!connection) {
@@ -441,8 +432,8 @@ export async function updateGatewayStatus(
       and(
         eq(gateways.gatewayId, gatewayId),
         eq(gateways.ttnConnectionId, connection.id),
-        eq(gateways.isActive, true)
-      )
+        eq(gateways.isActive, true),
+      ),
     )
     .limit(1);
 

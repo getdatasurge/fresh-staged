@@ -26,16 +26,16 @@ key-files:
 
 decisions:
   - id: SMS-04
-    decision: "Mask phone numbers in logs (show first 5 and last 2 chars)"
-    rationale: "Privacy protection while maintaining debuggability"
+    decision: 'Mask phone numbers in logs (show first 5 and last 2 chars)'
+    rationale: 'Privacy protection while maintaining debuggability'
   - id: SMS-05
     decision: "Delivery record updates don't throw on failure"
     rationale: "Database update failure shouldn't fail an otherwise successful SMS send"
 
 patterns-established:
-  - "UnrecoverableError for permanent SMS failures (invalid format, opted-out)"
-  - "Retryable Error for transient failures (triggers BullMQ backoff)"
-  - "Helper methods on QueueService for job-type-specific options"
+  - 'UnrecoverableError for permanent SMS failures (invalid format, opted-out)'
+  - 'Retryable Error for transient failures (triggers BullMQ backoff)'
+  - 'Helper methods on QueueService for job-type-specific options'
 
 metrics:
   duration: 1m 48s
@@ -115,10 +115,10 @@ Automatically applies smsJobOptions (5 attempts, exponential backoff).
 
 ## Decisions Made
 
-| ID | Decision | Rationale |
-|----|----------|-----------|
-| SMS-04 | Mask phone numbers in logs (first 5, last 2 chars) | Privacy protection while maintaining debuggability |
-| SMS-05 | Delivery record updates don't throw on failure | Database update failure shouldn't fail successful SMS send |
+| ID     | Decision                                           | Rationale                                                  |
+| ------ | -------------------------------------------------- | ---------------------------------------------------------- |
+| SMS-04 | Mask phone numbers in logs (first 5, last 2 chars) | Privacy protection while maintaining debuggability         |
+| SMS-05 | Delivery record updates don't throw on failure     | Database update failure shouldn't fail successful SMS send |
 
 ## Deviations from Plan
 
@@ -147,13 +147,16 @@ TELNYX_MESSAGING_PROFILE_ID=...
 ## Next Phase Readiness
 
 ### Blockers
+
 None
 
 ### Ready for 16-03 (Alert Integration)
+
 - [x] SMS processor ready to handle jobs from alert system
 - [x] QueueService.addSmsJob available for alert triggers
 - [x] Delivery tracking in place for monitoring
 
 ---
-*Phase: 16-sms-notifications*
-*Completed: 2026-01-24*
+
+_Phase: 16-sms-notifications_
+_Completed: 2026-01-24_

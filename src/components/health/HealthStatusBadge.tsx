@@ -9,11 +9,14 @@ interface HealthStatusBadgeProps {
   isChecking?: boolean;
 }
 
-const statusConfig: Record<HealthStatus, {
-  icon: typeof CheckCircle;
-  label: string;
-  className: string;
-}> = {
+const statusConfig: Record<
+  HealthStatus,
+  {
+    icon: typeof CheckCircle;
+    label: string;
+    className: string;
+  }
+> = {
   healthy: {
     icon: CheckCircle,
     label: 'Healthy',
@@ -47,9 +50,9 @@ const sizeConfig = {
   lg: { icon: 'h-5 w-5', badge: 'px-3 py-1.5 text-base gap-2' },
 };
 
-export function HealthStatusBadge({ 
-  status, 
-  size = 'md', 
+export function HealthStatusBadge({
+  status,
+  size = 'md',
   showLabel = true,
   isChecking = false,
 }: HealthStatusBadgeProps) {
@@ -63,15 +66,10 @@ export function HealthStatusBadge({
       className={cn(
         'inline-flex items-center rounded-full font-medium',
         sizeStyles.badge,
-        config.className
+        config.className,
       )}
     >
-      <Icon 
-        className={cn(
-          sizeStyles.icon,
-          isChecking && 'animate-spin'
-        )} 
-      />
+      <Icon className={cn(sizeStyles.icon, isChecking && 'animate-spin')} />
       {showLabel && <span>{config.label}</span>}
     </span>
   );

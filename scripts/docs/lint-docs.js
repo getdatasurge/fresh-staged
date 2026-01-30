@@ -16,7 +16,7 @@ import {
   logError,
   logWarning,
   logInfo,
-  logHeader
+  logHeader,
 } from './utils.js';
 
 const errors = [];
@@ -87,7 +87,7 @@ async function validateLinks(filePath, content) {
       errors.push({
         file: relativePath,
         type: 'broken-link',
-        message: `Broken link: ${link} -> ${path.relative(DOCS_ROOT, resolvedPath)}`
+        message: `Broken link: ${link} -> ${path.relative(DOCS_ROOT, resolvedPath)}`,
       });
     }
   }
@@ -106,7 +106,7 @@ async function validateStructure(filePath, content) {
     errors.push({
       file: relativePath,
       type: 'missing-title',
-      message: 'Document missing H1 title'
+      message: 'Document missing H1 title',
     });
   }
 
@@ -116,7 +116,7 @@ async function validateStructure(filePath, content) {
     warnings.push({
       file: relativePath,
       type: 'missing-description',
-      message: 'Consider adding a description (> blockquote after title)'
+      message: 'Consider adding a description (> blockquote after title)',
     });
   }
 
@@ -132,7 +132,7 @@ async function validateStructure(filePath, content) {
         warnings.push({
           file: relativePath,
           type: 'heading-skip',
-          message: `Line ${lineNumber}: Heading level jumps from H${lastLevel} to H${level}`
+          message: `Line ${lineNumber}: Heading level jumps from H${lastLevel} to H${level}`,
         });
       }
       lastLevel = level;
@@ -145,7 +145,7 @@ async function validateStructure(filePath, content) {
     warnings.push({
       file: relativePath,
       type: 'missing-related',
-      message: 'Consider adding a "Related Documents" section'
+      message: 'Consider adding a "Related Documents" section',
     });
   }
 }
@@ -166,7 +166,7 @@ async function validateDiagrams(filePath, content) {
       errors.push({
         file: relativePath,
         type: 'invalid-mermaid',
-        message: `Mermaid diagram ${i + 1}: ${validation.error}`
+        message: `Mermaid diagram ${i + 1}: ${validation.error}`,
       });
     }
   }
@@ -187,7 +187,7 @@ async function validateContent(filePath, content) {
     warnings.push({
       file: relativePath,
       type: 'todo-marker',
-      message: `Contains ${todoMatches.length} TODO/FIXME marker(s)`
+      message: `Contains ${todoMatches.length} TODO/FIXME marker(s)`,
     });
   }
 
@@ -198,7 +198,7 @@ async function validateContent(filePath, content) {
     errors.push({
       file: relativePath,
       type: 'placeholder-text',
-      message: `Contains placeholder text: ${placeholders.join(', ')}`
+      message: `Contains placeholder text: ${placeholders.join(', ')}`,
     });
   }
 
@@ -208,7 +208,7 @@ async function validateContent(filePath, content) {
     warnings.push({
       file: relativePath,
       type: 'short-document',
-      message: 'Document is very short (< 100 characters)'
+      message: 'Document is very short (< 100 characters)',
     });
   }
 
@@ -218,7 +218,7 @@ async function validateContent(filePath, content) {
     warnings.push({
       file: relativePath,
       type: 'empty-code-block',
-      message: `Contains ${emptyCodeBlocks.length} empty code block(s)`
+      message: `Contains ${emptyCodeBlocks.length} empty code block(s)`,
     });
   }
 
@@ -235,7 +235,7 @@ async function validateContent(filePath, content) {
           warnings.push({
             file: relativePath,
             type: 'table-format',
-            message: `Table row has inconsistent column count`
+            message: `Table row has inconsistent column count`,
           });
           break;
         }
@@ -254,7 +254,7 @@ async function validateRequiredFiles() {
     'GLOSSARY.md',
     'architecture/ARCHITECTURE.md',
     'engineering/API.md',
-    'engineering/DATA_MODEL.md'
+    'engineering/DATA_MODEL.md',
   ];
 
   for (const file of requiredFiles) {
@@ -264,7 +264,7 @@ async function validateRequiredFiles() {
       errors.push({
         file: file,
         type: 'missing-required',
-        message: `Required file missing: ${file}`
+        message: `Required file missing: ${file}`,
       });
     }
   }
@@ -293,7 +293,7 @@ async function validateOrphanedDocs() {
     if (relativePath === 'CI_CHECKLIST.md') continue;
 
     // Check if linked from index
-    const isLinked = indexLinks.some(linkObj => {
+    const isLinked = indexLinks.some((linkObj) => {
       const normalizedLink = linkObj.url.replace(/^\.\//, '');
       return normalizedLink === relativePath || normalizedLink === `./${relativePath}`;
     });
@@ -302,7 +302,7 @@ async function validateOrphanedDocs() {
       warnings.push({
         file: relativePath,
         type: 'orphaned',
-        message: 'Document not linked from INDEX.md'
+        message: 'Document not linked from INDEX.md',
       });
     }
   }
@@ -365,17 +365,17 @@ async function lintDocs() {
   return {
     errors: errors.length,
     warnings: warnings.length,
-    success: errors.length === 0
+    success: errors.length === 0,
   };
 }
 
 // Run if called directly
 if (process.argv[1].endsWith('lint-docs.js')) {
   lintDocs()
-    .then(result => {
+    .then((result) => {
       process.exit(result.success ? 0 : 1);
     })
-    .catch(error => {
+    .catch((error) => {
       console.error(error);
       process.exit(1);
     });

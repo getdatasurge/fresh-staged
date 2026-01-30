@@ -1,13 +1,13 @@
 /**
  * Temperature Statistics Widget
- * 
+ *
  * Shows min, max, and average temperature for the selected period.
  */
 
-import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowDown, ArrowUp, Minus, BarChart3 } from "lucide-react";
-import type { WidgetProps } from "../types";
+import { useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowDown, ArrowUp, Minus, BarChart3 } from 'lucide-react';
+import type { WidgetProps } from '../types';
 
 export function TemperatureStatisticsWidget({ readings = [] }: WidgetProps) {
   const stats = useMemo(() => {
@@ -15,7 +15,7 @@ export function TemperatureStatisticsWidget({ readings = [] }: WidgetProps) {
       return { min: null, max: null, avg: null, count: 0 };
     }
 
-    const temps = readings.map(r => r.temperature).filter(t => t !== null) as number[];
+    const temps = readings.map((r) => r.temperature).filter((t) => t !== null) as number[];
     if (temps.length === 0) {
       return { min: null, max: null, avg: null, count: 0 };
     }

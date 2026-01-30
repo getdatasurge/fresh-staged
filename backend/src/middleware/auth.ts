@@ -35,10 +35,7 @@ import { verifyAccessToken } from '../utils/jwt.js';
  * });
  * ```
  */
-export async function requireAuth(
-  request: FastifyRequest,
-  reply: FastifyReply
-): Promise<void> {
+export async function requireAuth(request: FastifyRequest, reply: FastifyReply): Promise<void> {
   // Extract token from Authorization header OR x-stack-access-token header
   // Stack Auth React SDK sends tokens via x-stack-access-token
   const authHeader = request.headers.authorization;

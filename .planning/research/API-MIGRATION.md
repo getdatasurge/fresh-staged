@@ -12,6 +12,7 @@ This research addresses AUTH-02: migrating 100+ frontend files from direct Supab
 **Recommendation:** Use **Strangler Fig Pattern** with **tRPC** for incremental migration, leveraging TanStack Query's existing patterns and achieving end-to-end type safety without code generation.
 
 **Key Findings:**
+
 - Incremental migration via Strangler Fig pattern reduces risk and enables continuous delivery
 - tRPC provides automatic type sharing between frontend/backend, eliminating manual type sync
 - TanStack Query patterns remain unchanged, only `queryFn` implementations need updates
@@ -39,10 +40,12 @@ This research addresses AUTH-02: migrating 100+ frontend files from direct Supab
 **Description:** Migrate all queries in one release.
 
 **Pros:**
+
 - Clean cutover, no dual systems
 - Shorter migration calendar time
 
 **Cons:**
+
 - High risk, all-or-nothing deployment
 - Long freeze period for migration work
 - Difficult to test comprehensively
@@ -58,6 +61,7 @@ This research addresses AUTH-02: migrating 100+ frontend files from direct Supab
 **Description:** Incrementally replace Supabase queries with backend API calls, running both systems in parallel during transition.
 
 **How It Works:**
+
 ```
 ┌────────────────────────────────────────┐
 │         Frontend Component             │
@@ -77,6 +81,7 @@ This research addresses AUTH-02: migrating 100+ frontend files from direct Supab
 ```
 
 **Pros:**
+
 - Low risk — migrate one domain/feature at a time
 - Immediate rollback via feature flag
 - Learn from early migrations, adjust strategy
@@ -85,16 +90,19 @@ This research addresses AUTH-02: migrating 100+ frontend files from direct Supab
 - Real-world testing with production traffic
 
 **Cons:**
+
 - Longer calendar time (weeks vs. days)
 - Temporary code duplication in hooks
 - Requires feature flag infrastructure
 
 **Sources:**
+
 - [AWS Strangler Fig Pattern](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/strangler-fig.html)
 - [Azure Strangler Fig Pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/strangler-fig)
 - [Microservices.io Strangler Fig](https://microservices.io/post/refactoring/2023/06/21/strangler-fig-application-pattern-incremental-modernization-to-services.md.html)
 
 **Migration Order (Example):**
+
 1. **Phase 1:** Read-only queries (organizations, sites, areas, units)
 2. **Phase 2:** Sensor readings (time-series data)
 3. **Phase 3:** Alerts (read + acknowledge/resolve)
@@ -118,20 +126,21 @@ This research addresses AUTH-02: migrating 100+ frontend files from direct Supab
 
 ### Comparison: REST vs GraphQL vs tRPC
 
-| Criterion | REST | GraphQL | tRPC |
-|-----------|------|---------|------|
-| **Type Safety** | Manual (OpenAPI + codegen) | Manual (schema + codegen) | **Automatic** |
-| **Learning Curve** | Low | Medium-High | Low (if TypeScript familiar) |
-| **Bundle Size** | Varies | ~150KB (client) | **~10KB** |
-| **Boilerplate** | Medium | High | **Minimal** |
-| **Overfetching** | Common | Solved | N/A (RPC model) |
-| **Public API** | ✅ Excellent | ✅ Good | ❌ Internal only |
-| **Existing Stack Fit** | Good (Fastify + Ky) | Medium (new paradigm) | **Perfect (TS+Fastify)** |
-| **Type Drift Risk** | High | Medium | **None** |
-| **IDE Autocomplete** | Partial | Partial | **Full** |
-| **Migration Effort** | Medium | High | **Low** |
+| Criterion              | REST                       | GraphQL                   | tRPC                         |
+| ---------------------- | -------------------------- | ------------------------- | ---------------------------- |
+| **Type Safety**        | Manual (OpenAPI + codegen) | Manual (schema + codegen) | **Automatic**                |
+| **Learning Curve**     | Low                        | Medium-High               | Low (if TypeScript familiar) |
+| **Bundle Size**        | Varies                     | ~150KB (client)           | **~10KB**                    |
+| **Boilerplate**        | Medium                     | High                      | **Minimal**                  |
+| **Overfetching**       | Common                     | Solved                    | N/A (RPC model)              |
+| **Public API**         | ✅ Excellent               | ✅ Good                   | ❌ Internal only             |
+| **Existing Stack Fit** | Good (Fastify + Ky)        | Medium (new paradigm)     | **Perfect (TS+Fastify)**     |
+| **Type Drift Risk**    | High                       | Medium                    | **None**                     |
+| **IDE Autocomplete**   | Partial                    | Partial                   | **Full**                     |
+| **Migration Effort**   | Medium                     | High                      | **Low**                      |
 
 **Sources:**
+
 - [REST vs GraphQL vs tRPC Guide 2026](https://dev.to/dataformathub/rest-vs-graphql-vs-trpc-the-ultimate-api-design-guide-for-2026-8n3)
 - [tRPC vs REST Analysis](https://www.wisp.blog/blog/when-to-choose-rest-over-trpc-a-comparative-analysis)
 
@@ -148,14 +157,12 @@ This research addresses AUTH-02: migrating 100+ frontend files from direct Supab
    // Backend: src/trpc/router.ts
    export const appRouter = router({
      sites: {
-       list: publicProcedure
-         .input(z.object({ orgId: z.string() }))
-         .query(async ({ input }) => {
-           return await db.query.sites.findMany({
-             where: eq(sites.organizationId, input.orgId)
-           });
-         })
-     }
+       list: publicProcedure.input(z.object({ orgId: z.string() })).query(async ({ input }) => {
+         return await db.query.sites.findMany({
+           where: eq(sites.organizationId, input.orgId),
+         });
+       }),
+     },
    });
    export type AppRouter = typeof appRouter;
    ```
@@ -174,10 +181,7 @@ This research addresses AUTH-02: migrating 100+ frontend files from direct Supab
    const { data: sites } = useQuery({
      queryKey: qk.org(orgId).sites(),
      queryFn: async () => {
-       const { data } = await supabase
-         .from('sites')
-         .select('*')
-         .eq('organization_id', orgId);
+       const { data } = await supabase.from('sites').select('*').eq('organization_id', orgId);
        return data;
      },
    });
@@ -199,7 +203,7 @@ This research addresses AUTH-02: migrating 100+ frontend files from direct Supab
    ```
 
 4. **Incremental Adoption**
-   Per tRPC docs: *"A common strategy is to initially use tRPC only for new endpoints and migrate existing ones later."*
+   Per tRPC docs: _"A common strategy is to initially use tRPC only for new endpoints and migrate existing ones later."_
 
    Source: [tRPC: Adding to Existing Project](https://trpc.io/docs/getting-started)
 
@@ -211,6 +215,7 @@ This research addresses AUTH-02: migrating 100+ frontend files from direct Supab
    Source: [Building Type-Safe APIs with tRPC](https://dev.to/eva_clari_289d85ecc68da48/building-type-safe-apis-with-trpc-a-practical-migration-guide-from-rest-3l4j)
 
 **Cons:**
+
 - Internal APIs only (not suitable for public API)
 - Requires TypeScript on both frontend and backend (already met ✅)
 - Adds dependency on tRPC ecosystem
@@ -229,11 +234,13 @@ This research addresses AUTH-02: migrating 100+ frontend files from direct Supab
 4. Manually maintain type sync or use OpenAPI generator
 
 **Pros:**
+
 - More conventional
 - Works with existing Fastify routes
 - Public API ready
 
 **Cons:**
+
 - Manual type sync (risk of drift)
 - More boilerplate
 - No autocomplete for API calls
@@ -272,12 +279,12 @@ export const sites = pgTable('sites', {
 // Backend: tRPC procedure infers types from Drizzle
 export const appRouter = router({
   sites: {
-    list: publicProcedure
-      .input(z.object({ orgId: z.string() }))
-      .query(async ({ input }) => {
-        return await db.query.sites.findMany({ /* ... */ });
-      })
-  }
+    list: publicProcedure.input(z.object({ orgId: z.string() })).query(async ({ input }) => {
+      return await db.query.sites.findMany({
+        /* ... */
+      });
+    }),
+  },
 });
 
 // Frontend: Import AppRouter type
@@ -290,6 +297,7 @@ const { data } = trpc.sites.list.useQuery({ orgId: 'abc' });
 ```
 
 **Benefits:**
+
 - ✅ Zero manual type definitions on frontend
 - ✅ Compile errors if backend API changes
 - ✅ IDE autocomplete for all procedures
@@ -319,6 +327,7 @@ import type { Site, Unit, Alert } from '@freshtrack/types';
 ```
 
 **Cons:**
+
 - Requires build step
 - Version sync between packages
 - No runtime validation
@@ -347,20 +356,14 @@ export function useSites(orgId: string) {
   const supabaseQuery = useQuery({
     queryKey: qk.org(orgId).sites(),
     queryFn: async () => {
-      const { data } = await supabase
-        .from('sites')
-        .select('*')
-        .eq('organization_id', orgId);
+      const { data } = await supabase.from('sites').select('*').eq('organization_id', orgId);
       return data;
     },
     enabled: !FEATURES.USE_API_FOR_SITES,
   });
 
   // NEW: tRPC query
-  const apiQuery = trpc.sites.list.useQuery(
-    { orgId },
-    { enabled: FEATURES.USE_API_FOR_SITES }
-  );
+  const apiQuery = trpc.sites.list.useQuery({ orgId }, { enabled: FEATURES.USE_API_FOR_SITES });
 
   // Return active query
   return FEATURES.USE_API_FOR_SITES ? apiQuery : supabaseQuery;
@@ -368,6 +371,7 @@ export function useSites(orgId: string) {
 ```
 
 **Migration Steps:**
+
 1. Deploy backend endpoint
 2. Add feature flag (default: false)
 3. Test with flag enabled in dev/staging
@@ -414,27 +418,32 @@ const { data, isLoading, error } = trpc.sites.list.useQuery({ orgId });
 ### Migration by Domain (Example)
 
 **Phase 1: Sites (Read-Only)**
+
 - Files: `src/hooks/useSites.ts`, `src/pages/Sites.tsx`
 - API: `GET /trpc/sites.list`, `GET /trpc/sites.byId`
 - Risk: Low (read-only)
 - Rollback: Feature flag
 
 **Phase 2: Units (Read-Only)**
+
 - Files: `src/hooks/useUnits.ts`, `src/pages/UnitDetail.tsx`
 - API: `GET /trpc/units.list`, `GET /trpc/units.byId`
 - Risk: Low (read-only)
 
 **Phase 3: Sensor Readings (Read-Only)**
+
 - Files: `src/hooks/useReadings.ts`, chart widgets
 - API: `GET /trpc/readings.byUnit`, `GET /trpc/readings.timeSeries`
 - Risk: Medium (high volume, performance-sensitive)
 
 **Phase 4: Alerts (Read + Write)**
+
 - Files: `src/hooks/useAlerts.ts`, alert components
 - API: `GET /trpc/alerts.list`, `POST /trpc/alerts.acknowledge`
 - Risk: Medium (critical path)
 
 **Phase 5: Settings & Config**
+
 - Files: `src/hooks/useAlertRules.ts`, settings pages
 - API: `POST /trpc/alertRules.upsert`
 - Risk: Low (admin features)
@@ -486,16 +495,19 @@ export async function testParallelRun<T>(
 ```
 
 **Sources:**
+
 - [Zalando Parallel Run Pattern](https://engineering.zalando.com/posts/2021/11/parallel-run.html)
 - [Parallel Run Strategy](https://medium.com/@sahayneeta72/parallel-run-strategy-7ff64078d864)
 
 **Benefits:**
+
 - Real-world traffic testing
 - Detect data inconsistencies early
 - Validate performance parity
 - Builds confidence before full rollout
 
 **Considerations:**
+
 - Only for idempotent read operations
 - Adds latency (parallel requests)
 - Remove after validation
@@ -505,18 +517,17 @@ export async function testParallelRun<T>(
 ### E2E Test Updates
 
 **Before:**
+
 ```typescript
 // tests/sites.spec.ts
 test('should list sites', async () => {
-  const sites = await supabase
-    .from('sites')
-    .select('*')
-    .eq('organization_id', testOrgId);
+  const sites = await supabase.from('sites').select('*').eq('organization_id', testOrgId);
   expect(sites.data).toHaveLength(2);
 });
 ```
 
 **After:**
+
 ```typescript
 test('should list sites via API', async () => {
   const response = await fetch(`${API_URL}/trpc/sites.list`, {
@@ -530,6 +541,7 @@ test('should list sites via API', async () => {
 ```
 
 **Or with tRPC client:**
+
 ```typescript
 import { createTRPCClient } from '@trpc/client';
 
@@ -547,15 +559,16 @@ test('should list sites via tRPC client', async () => {
 
 **Metrics to track:**
 
-| Metric | Target | Monitoring |
-|--------|--------|------------|
-| API latency (p50) | < 100ms | Prometheus |
-| API latency (p95) | < 300ms | Prometheus |
-| Error rate | < 0.1% | Sentry |
-| Cache hit rate | > 80% | Redis metrics |
+| Metric                 | Target         | Monitoring              |
+| ---------------------- | -------------- | ----------------------- |
+| API latency (p50)      | < 100ms        | Prometheus              |
+| API latency (p95)      | < 300ms        | Prometheus              |
+| Error rate             | < 0.1%         | Sentry                  |
+| Cache hit rate         | > 80%          | Redis metrics           |
 | Query key invalidation | No regressions | TanStack Query Devtools |
 
 **Comparison Testing:**
+
 ```bash
 # Before migration (Supabase)
 ab -n 1000 -c 10 https://supabase.example.com/rest/v1/sites
@@ -572,7 +585,7 @@ ab -n 1000 -c 10 https://api.freshtrack.com/trpc/sites.list
 
 ```typescript
 // Emergency rollback: flip environment variable
-VITE_USE_API_FOR_SITES=false
+VITE_USE_API_FOR_SITES = false;
 ```
 
 **No code deployment needed** — restart frontend service or clear CDN cache.
@@ -586,7 +599,7 @@ VITE_USE_API_FOR_SITES=false
 export function shouldUseAPI(feature: string, userId: string): boolean {
   const rolloutPercent = parseFloat(import.meta.env[`VITE_${feature}_ROLLOUT`] || '0');
   const userHash = hashCode(userId);
-  return (userHash % 100) < rolloutPercent;
+  return userHash % 100 < rolloutPercent;
 }
 
 // Usage
@@ -594,6 +607,7 @@ const useAPI = shouldUseAPI('SITES', user.id);
 ```
 
 **Rollout stages:**
+
 - 0% → Deploy backend, no traffic
 - 10% → Canary (monitor closely)
 - 50% → Majority traffic
@@ -617,12 +631,15 @@ const useAPI = shouldUseAPI('SITES', user.id);
 ### Phase 1: Foundation (Week 1-2)
 
 **Tasks:**
+
 1. Install tRPC dependencies
+
    ```bash
    npm install @trpc/server @trpc/client @trpc/react-query
    ```
 
 2. Create tRPC router in backend
+
    ```typescript
    // backend/src/trpc/router.ts
    import { initTRPC } from '@trpc/server';
@@ -634,6 +651,7 @@ const useAPI = shouldUseAPI('SITES', user.id);
    ```
 
 3. Set up Fastify plugin
+
    ```typescript
    import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
    await fastify.register(fastifyTRPCPlugin, {
@@ -643,6 +661,7 @@ const useAPI = shouldUseAPI('SITES', user.id);
    ```
 
 4. Configure frontend tRPC client
+
    ```typescript
    // src/lib/trpc.ts
    import { createTRPCReact } from '@trpc/react-query';
@@ -653,7 +672,9 @@ const useAPI = shouldUseAPI('SITES', user.id);
 5. Add feature flag system
    ```typescript
    // src/lib/featureFlags.ts
-   export const FEATURES = { /* ... */ };
+   export const FEATURES = {
+     /* ... */
+   };
    ```
 
 **Deliverable:** tRPC infrastructure ready, zero frontend usage
@@ -665,6 +686,7 @@ const useAPI = shouldUseAPI('SITES', user.id);
 **Domain:** Organizations (read-only, low risk)
 
 **Tasks:**
+
 1. Create `organizations.list` tRPC procedure
 2. Migrate `useOrganizations` hook with feature flag
 3. Deploy to staging
@@ -674,6 +696,7 @@ const useAPI = shouldUseAPI('SITES', user.id);
 7. Roll out to 100%
 
 **Success Criteria:**
+
 - Zero errors in logs
 - Latency p95 < 300ms
 - Cache invalidation working
@@ -683,6 +706,7 @@ const useAPI = shouldUseAPI('SITES', user.id);
 ### Phase 3: Scale Migration (Week 4-8)
 
 **Migrate domains in order:**
+
 1. Sites (week 4)
 2. Areas (week 5)
 3. Units (week 5)
@@ -691,6 +715,7 @@ const useAPI = shouldUseAPI('SITES', user.id);
 6. Settings (week 8)
 
 **Per domain:**
+
 - Backend procedures (1-2 days)
 - Frontend hook migration (1 day)
 - Testing + parallel run (1-2 days)
@@ -701,6 +726,7 @@ const useAPI = shouldUseAPI('SITES', user.id);
 ### Phase 4: Cleanup (Week 9)
 
 **Tasks:**
+
 1. Remove all feature flags
 2. Delete Supabase query paths
 3. Remove `@supabase/supabase-js` dependency
@@ -713,13 +739,13 @@ const useAPI = shouldUseAPI('SITES', user.id);
 
 ## Risks & Mitigations
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Type mismatch between DB and API | Medium | High | Use Drizzle types for tRPC outputs |
-| Performance regression | Low | Medium | Parallel run benchmarks before rollout |
-| Breaking existing TanStack Query patterns | Low | High | Use tRPC's `@trpc/react-query` wrapper |
-| Feature flag complexity | Medium | Low | Keep flags simple, remove aggressively |
-| Long migration calendar time | High | Low | Accept trade-off for reduced risk |
+| Risk                                      | Likelihood | Impact | Mitigation                             |
+| ----------------------------------------- | ---------- | ------ | -------------------------------------- |
+| Type mismatch between DB and API          | Medium     | High   | Use Drizzle types for tRPC outputs     |
+| Performance regression                    | Low        | Medium | Parallel run benchmarks before rollout |
+| Breaking existing TanStack Query patterns | Low        | High   | Use tRPC's `@trpc/react-query` wrapper |
+| Feature flag complexity                   | Medium     | Low    | Keep flags simple, remove aggressively |
+| Long migration calendar time              | High       | Low    | Accept trade-off for reduced risk      |
 
 ---
 
@@ -757,12 +783,14 @@ const useAPI = shouldUseAPI('SITES', user.id);
 ## Sources
 
 ### tRPC Documentation
+
 - [tRPC Official Docs](https://trpc.io/docs)
 - [Adding tRPC to Existing Project](https://trpc.io/docs/getting-started)
 - [tRPC React Query Integration](https://trpc.io/docs/client/react/infer-types)
 - [tRPC Fastify Adapter](https://trpc.io/docs/server/adapters/fastify)
 
 ### Migration Patterns
+
 - [AWS Strangler Fig Pattern](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/strangler-fig.html)
 - [Azure Strangler Fig Pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/strangler-fig)
 - [Microservices.io Strangler Application](https://microservices.io/patterns/refactoring/strangler-application.html)
@@ -771,6 +799,7 @@ const useAPI = shouldUseAPI('SITES', user.id);
 - [Legacy Modernization: Parallel Run](https://legacy-modernization.io/patterns/migration/parallel-run/)
 
 ### API Design Comparisons
+
 - [REST vs GraphQL vs tRPC Guide 2026](https://dev.to/dataformathub/rest-vs-graphql-vs-trpc-the-ultimate-api-design-guide-for-2026-8n3)
 - [Building Type-Safe APIs with tRPC (2026)](https://dev.to/eva_clari_289d85ecc68da48/building-type-safe-apis-with-trpc-a-practical-migration-guide-from-rest-3l4j)
 - [tRPC vs REST Analysis](https://www.wisp.blog/blog/when-to-choose-rest-over-trpc-a-comparative-analysis)
@@ -778,11 +807,13 @@ const useAPI = shouldUseAPI('SITES', user.id);
 - [SD Times: tRPC vs GraphQL vs REST](https://sdtimes.com/graphql/trpc-vs-graphql-vs-rest-choosing-the-right-api-design-for-modern-web-applications/)
 
 ### TanStack Query
+
 - [TanStack Query v5 Official Docs](https://tanstack.com/query/v5/docs)
 - [TanStack Query Migration Guide](https://tanstack.com/query/v5/docs/framework/react/guides/migrating-to-v5)
 - [TanStack Query Default Query Function](https://tanstack.com/query/v5/docs/framework/react/guides/default-query-function)
 
 ### Testing Strategies
+
 - [Parallel Run Strategy (Medium)](https://medium.com/@sahayneeta72/parallel-run-strategy-7ff64078d864)
 - [Zero-Downtime Migration Strategies](https://umatechnology.org/zero-downtime-migration-strategies-for-global-api-endpoints-trusted-by-devops-teams/)
 - [Resilient REST APIs: Parallel Change](https://artificial.io/company/blog/resilient-rest-apis-the-case-for-parallel-change/)

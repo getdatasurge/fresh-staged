@@ -1,5 +1,5 @@
-import { z } from 'zod'
-import { OrgParamsSchema, TimestampSchema, UuidSchema } from './common.js'
+import { z } from 'zod';
+import { OrgParamsSchema, TimestampSchema, UuidSchema } from './common.js';
 
 // --- Enum Schemas (match database enums) ---
 
@@ -15,12 +15,7 @@ export const AlertTypeSchema = z.enum([
 
 export const AlertSeveritySchema = z.enum(['info', 'warning', 'critical']);
 
-export const AlertStatusSchema = z.enum([
-  'active',
-  'acknowledged',
-  'resolved',
-  'escalated',
-]);
+export const AlertStatusSchema = z.enum(['active', 'acknowledged', 'resolved', 'escalated']);
 
 // --- Alert Response Schema ---
 

@@ -89,11 +89,7 @@ function shouldReportError(error: Error | FastifyError): boolean {
 /**
  * Report error to Sentry (if configured)
  */
-function reportToSentry(
-  error: Error,
-  request: FastifyRequest,
-  context: Record<string, unknown>
-) {
+function reportToSentry(error: Error, request: FastifyRequest, context: Record<string, unknown>) {
   if (!Sentry || !shouldReportError(error)) {
     return;
   }
@@ -176,9 +172,7 @@ const errorHandlerPlugin: FastifyPluginAsync = async (fastify) => {
       const response: ErrorResponse = {
         error: {
           code: error.code || (isServerError ? ErrorCodes.INTERNAL_ERROR : 'REQUEST_ERROR'),
-          message: isServerError && IS_PRODUCTION
-            ? 'An internal error occurred'
-            : error.message,
+          message: isServerError && IS_PRODUCTION ? 'An internal error occurred' : error.message,
           requestId,
         },
       };
@@ -208,22 +202,28 @@ const errorHandlerPlugin: FastifyPluginAsync = async (fastify) => {
 
     // Log slow requests as warnings
     if (responseTime > 3000) {
-      request.log.warn({
-        responseTime,
-        statusCode,
-        method: request.method,
-        url: request.url,
-      }, 'Slow request');
+      request.log.warn(
+        {
+          responseTime,
+          statusCode,
+          method: request.method,
+          url: request.url,
+        },
+        'Slow request',
+      );
     }
 
     // Log 5xx errors
     if (statusCode >= 500) {
-      request.log.error({
-        responseTime,
-        statusCode,
-        method: request.method,
-        url: request.url,
-      }, 'Request completed with server error');
+      request.log.error(
+        {
+          responseTime,
+          statusCode,
+          method: request.method,
+          url: request.url,
+        },
+        'Request completed with server error',
+      );
     }
 
     done();
@@ -243,10 +243,7 @@ const errorHandlerPlugin: FastifyPluginAsync = async (fastify) => {
     });
 
     process.on('unhandledRejection', (reason, promise) => {
-      fastify.log.error(
-        { reason, promise: promise.toString() },
-        'Unhandled promise rejection'
-      );
+      fastify.log.error({ reason, promise: promise.toString() }, 'Unhandled promise rejection');
       if (Sentry && reason instanceof Error) {
         Sentry.captureException(reason);
       }

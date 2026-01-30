@@ -1,16 +1,12 @@
-import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTRPC } from "@/lib/trpc";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTRPC } from '@/lib/trpc';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Bell,
   Thermometer,
@@ -23,14 +19,14 @@ import {
   Wrench,
   Loader2,
   CheckCircle2,
-} from "lucide-react";
-import { useState } from "react";
+} from 'lucide-react';
+import { useState } from 'react';
 import {
   mapAlertToNotification,
   severityConfig,
   type AlertNotification,
   type AlertWithContext,
-} from "@/lib/alertNotificationMapper";
+} from '@/lib/alertNotificationMapper';
 
 interface NotificationDropdownProps {
   alertCount: number;
@@ -57,11 +53,15 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
   const queryClient = useQueryClient();
 
   // Fetch alerts via tRPC
-  const { data: alertsData, isLoading, refetch: loadNotifications } = useQuery(
+  const {
+    data: alertsData,
+    isLoading,
+    refetch: loadNotifications,
+  } = useQuery(
     trpc.alerts.listByOrg.queryOptions(
-      { organizationId: orgId || "", status: ["active", "acknowledged"], limit: 20 },
-      { enabled: isOpen && !!orgId }
-    )
+      { organizationId: orgId || '', status: ['active', 'acknowledged'], limit: 20 },
+      { enabled: isOpen && !!orgId },
+    ),
   );
 
   // Transform alerts to notifications using useMemo
@@ -73,36 +73,47 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
         title: alert.title,
         message: alert.message,
         alert_type: alert.alertType,
-        severity: alert.severity as "critical" | "warning" | "info",
+        severity: alert.severity as 'critical' | 'warning' | 'info',
         status: alert.status,
         temp_reading: alert.tempReading,
         temp_limit: alert.tempLimit,
         triggered_at: alert.triggeredAt,
-        metadata: (typeof alert.metadata === 'object' && alert.metadata !== null && !Array.isArray(alert.metadata))
-          ? alert.metadata as Record<string, unknown>
-          : null,
+        metadata:
+          typeof alert.metadata === 'object' &&
+          alert.metadata !== null &&
+          !Array.isArray(alert.metadata)
+            ? (alert.metadata as Record<string, unknown>)
+            : null,
         unit_id: alert.unitId,
-        unit: alert.unit ? {
-          id: alert.unit.id,
-          name: alert.unit.name,
-          area: alert.unit.area ? {
-            id: alert.unit.area.id,
-            name: alert.unit.area.name,
-            site: alert.unit.area.site ? {
-              id: alert.unit.area.site.id,
-              name: alert.unit.area.site.name,
-            } : undefined,
-          } : undefined,
-        } : undefined,
+        unit: alert.unit
+          ? {
+              id: alert.unit.id,
+              name: alert.unit.name,
+              area: alert.unit.area
+                ? {
+                    id: alert.unit.area.id,
+                    name: alert.unit.area.name,
+                    site: alert.unit.area.site
+                      ? {
+                          id: alert.unit.area.site.id,
+                          name: alert.unit.area.site.name,
+                        }
+                      : undefined,
+                  }
+                : undefined,
+            }
+          : undefined,
       };
       return mapAlertToNotification(alertWithContext);
     });
   }, [alertsData]);
 
   // Check if toast should be shown based on notification policy
-  const shouldShowToast = async (
-    alert: { unit_id: string; alert_type: string; severity: string }
-  ): Promise<boolean> => {
+  const shouldShowToast = async (alert: {
+    unit_id: string;
+    alert_type: string;
+    severity: string;
+  }): Promise<boolean> => {
     if (!orgId) return false;
     try {
       const policy = await queryClient.fetchQuery(
@@ -110,18 +121,18 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
           organizationId: orgId,
           unitId: alert.unit_id,
           alertType: alert.alert_type,
-        })
+        }),
       );
 
       if (!policy) return false;
 
       // Check if WEB_TOAST is in initial_channels
       const initialChannels = policy.initial_channels || [];
-      if (!initialChannels.includes("WEB_TOAST")) return false;
+      if (!initialChannels.includes('WEB_TOAST')) return false;
 
       // Check severity threshold
-      if (alert.severity === "critical") return true;
-      if (alert.severity === "warning" && policy.allow_warning_notifications) return true;
+      if (alert.severity === 'critical') return true;
+      if (alert.severity === 'warning' && policy.allow_warning_notifications) return true;
 
       return false;
     } catch {
@@ -135,7 +146,7 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
 
   const handleViewAll = () => {
     setIsOpen(false);
-    navigate("/alerts");
+    navigate('/alerts');
   };
 
   const handleNotificationClick = (notification: AlertNotification) => {
@@ -150,7 +161,7 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
           <Bell className="w-5 h-5" />
           {alertCount > 0 && (
             <span className="absolute -top-1 -right-1 w-4 h-4 bg-alarm text-alarm-foreground text-xs rounded-full flex items-center justify-center">
-              {alertCount > 9 ? "9+" : alertCount}
+              {alertCount > 9 ? '9+' : alertCount}
             </span>
           )}
         </Button>
@@ -170,7 +181,7 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
             )}
           </div>
           <p className="text-[10px] text-muted-foreground mt-1">
-            {notifications.length > 0 ? `Last updated just now` : "No recent updates"}
+            {notifications.length > 0 ? `Last updated just now` : 'No recent updates'}
           </p>
         </div>
 
@@ -184,18 +195,20 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
               {notifications.map((notif) => {
                 const Icon = alertTypeIcons[notif.alertType] || AlertTriangle;
                 const severity = severityConfig[notif.severity] || severityConfig.warning;
-                const isAcknowledged = notif.status === "acknowledged";
+                const isAcknowledged = notif.status === 'acknowledged';
 
                 return (
                   <button
                     key={notif.id}
                     onClick={() => handleNotificationClick(notif)}
                     className={`w-full p-3 text-left hover:bg-muted/50 transition-colors ${
-                      isAcknowledged ? "opacity-70" : ""
+                      isAcknowledged ? 'opacity-70' : ''
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`w-9 h-9 rounded-lg ${severity.iconBg} flex items-center justify-center flex-shrink-0`}>
+                      <div
+                        className={`w-9 h-9 rounded-lg ${severity.iconBg} flex items-center justify-center flex-shrink-0`}
+                      >
                         <Icon className={`w-4.5 h-4.5 ${severity.textColor}`} />
                       </div>
                       <div className="flex-1 min-w-0 space-y-0.5">
@@ -213,15 +226,9 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
                             {notif.severity}
                           </Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {notif.context}
-                        </p>
-                        <p className="text-xs text-foreground/80">
-                          {notif.detail}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground/70">
-                          {notif.relativeTime}
-                        </p>
+                        <p className="text-xs text-muted-foreground truncate">{notif.context}</p>
+                        <p className="text-xs text-foreground/80">{notif.detail}</p>
+                        <p className="text-[11px] text-muted-foreground/70">{notif.relativeTime}</p>
                       </div>
                     </div>
                   </button>
@@ -254,7 +261,7 @@ const NotificationDropdown = ({ alertCount }: NotificationDropdownProps) => {
             className="w-full text-muted-foreground hover:text-foreground"
             onClick={() => {
               setIsOpen(false);
-              navigate("/events");
+              navigate('/events');
             }}
           >
             Event history

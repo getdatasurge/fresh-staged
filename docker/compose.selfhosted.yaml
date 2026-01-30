@@ -12,7 +12,7 @@ services:
   # ===========================================
   postgres:
     ports:
-      - "127.0.0.1:5432:5432"
+      - '127.0.0.1:5432:5432'
     environment:
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
     secrets:
@@ -23,7 +23,7 @@ services:
   # ===========================================
   pgbouncer:
     ports:
-      - "127.0.0.1:6432:6432"
+      - '127.0.0.1:6432:6432'
     environment:
       POSTGRESQL_PASSWORD_FILE: /run/secrets/postgres_password
     secrets:
@@ -34,15 +34,15 @@ services:
   # ===========================================
   redis:
     ports:
-      - "127.0.0.1:6379:6379"
+      - '127.0.0.1:6379:6379'
 
   # ===========================================
   # MinIO (S3-Compatible Object Storage)
   # ===========================================
   minio:
     ports:
-      - "127.0.0.1:9000:9000"   # S3 API
-      - "127.0.0.1:9001:9001"   # MinIO Console
+      - '127.0.0.1:9000:9000' # S3 API
+      - '127.0.0.1:9001:9001' # MinIO Console
 
   # ===========================================
   # Caddy (Reverse Proxy)

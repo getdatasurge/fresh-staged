@@ -33,12 +33,12 @@ https://<project-id>.supabase.co/functions/v1/<function-name>
 
 ### Common Headers
 
-| Header | Required | Description |
-|--------|----------|-------------|
-| `Authorization` | Varies | `Bearer <JWT>` for user-authenticated requests |
-| `Content-Type` | Yes | `application/json` |
-| `X-Internal-API-Key` | Some | Internal API key for scheduled/internal calls |
-| `X-Webhook-Secret` | Some | Per-org webhook secret for TTN/Stripe |
+| Header               | Required | Description                                    |
+| -------------------- | -------- | ---------------------------------------------- |
+| `Authorization`      | Varies   | `Bearer <JWT>` for user-authenticated requests |
+| `Content-Type`       | Yes      | `application/json`                             |
+| `X-Internal-API-Key` | Some     | Internal API key for scheduled/internal calls  |
+| `X-Webhook-Secret`   | Some     | Per-org webhook secret for TTN/Stripe          |
 
 ---
 
@@ -46,19 +46,21 @@ https://<project-id>.supabase.co/functions/v1/<function-name>
 
 ### Authentication Methods
 
-| Method | Used By | How |
-|--------|---------|-----|
+| Method              | Used By               | How                             |
+| ------------------- | --------------------- | ------------------------------- |
 | JWT (Supabase Auth) | User-facing endpoints | `Authorization: Bearer <token>` |
-| Internal API Key | Scheduled functions | `X-Internal-API-Key: <key>` |
-| Webhook Secret | External webhooks | `X-Webhook-Secret: <secret>` |
-| Service Role | Internal calls | Auto-injected by Supabase |
+| Internal API Key    | Scheduled functions   | `X-Internal-API-Key: <key>`     |
+| Webhook Secret      | External webhooks     | `X-Webhook-Secret: <secret>`    |
+| Service Role        | Internal calls        | Auto-injected by Supabase       |
 
 ### JWT Authentication
 
 ```typescript
 // Frontend: Token added automatically by Supabase client
 const { data } = await supabase.functions.invoke('function-name', {
-  body: { /* payload */ }
+  body: {
+    /* payload */
+  },
 });
 ```
 
@@ -66,7 +68,7 @@ const { data } = await supabase.functions.invoke('function-name', {
 
 ```typescript
 // Edge function validation
-import { validateInternalApiKey, unauthorizedResponse } from "../_shared/validation.ts";
+import { validateInternalApiKey, unauthorizedResponse } from '../_shared/validation.ts';
 
 const apiKeyResult = validateInternalApiKey(req);
 if (!apiKeyResult.valid) {
@@ -89,6 +91,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: Per-organization webhook secret (`X-Webhook-Secret`)
 
 **Request Body** (TTN Uplink Format):
+
 ```json
 {
   "end_device_ids": {
@@ -103,17 +106,20 @@ if (!apiKeyResult.valid) {
       "battery": 98,
       "door_open": false
     },
-    "rx_metadata": [{
-      "gateway_ids": { "gateway_id": "gw-001" },
-      "rssi": -75,
-      "snr": 8.5
-    }],
+    "rx_metadata": [
+      {
+        "gateway_ids": { "gateway_id": "gw-001" },
+        "rssi": -75,
+        "snr": 8.5
+      }
+    ],
     "received_at": "2026-01-12T10:30:00Z"
   }
 }
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -132,6 +138,7 @@ if (!apiKeyResult.valid) {
 | 401 | Invalid webhook secret |
 
 **Notes**:
+
 - Returns 202 for unknown devices to prevent TTN retries
 - Validates webhook secret via `lookupOrgByWebhookSecret()`
 - Triggers `process-unit-states` after successful ingestion
@@ -149,6 +156,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: Internal API Key
 
 **Request Body**:
+
 ```json
 {
   "unit_id": "uuid",
@@ -160,6 +168,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -180,6 +189,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: Internal API Key
 
 **Request Body**:
+
 ```json
 {
   "organization_id": "uuid",
@@ -206,6 +216,7 @@ if (!apiKeyResult.valid) {
 **Request Body**: None (processes all active units)
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -223,6 +234,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Processing Logic**:
+
 1. Fetches all active units
 2. Computes missed check-ins
 3. Evaluates temperature thresholds
@@ -232,6 +244,7 @@ if (!apiKeyResult.valid) {
 7. Triggers `process-escalations` for new alerts
 
 **Alert Types Created**:
+
 - `temp_excursion` - Temperature out of range
 - `monitoring_interrupted` - Sensor offline
 - `suspected_cooling_failure` - Door closed but temp not recovering
@@ -249,6 +262,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: Internal API Key
 
 **Request Body**:
+
 ```json
 {
   "alert_ids": ["uuid1", "uuid2"]
@@ -256,6 +270,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -264,6 +279,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Processing Logic**:
+
 1. Looks up effective notification policy
 2. Determines notification channels (email, SMS, push)
 3. Sends notifications via appropriate service
@@ -285,6 +301,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT (user authenticated)
 
 **Request Body**:
+
 ```json
 {
   "organization_id": "uuid"
@@ -292,6 +309,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -312,6 +330,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Request Body**:
+
 ```json
 {
   "sensor_id": "uuid",
@@ -322,6 +341,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -342,6 +362,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Request Body**:
+
 ```json
 {
   "gateway_id": "uuid",
@@ -364,6 +385,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Request Body**:
+
 ```json
 {
   "organization_id": "uuid",
@@ -372,6 +394,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "valid": true,
@@ -395,9 +418,11 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Query Parameters**:
+
 - `organization_id` (required)
 
 **Response**:
+
 ```json
 {
   "devices": [
@@ -559,6 +584,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Request Body**:
+
 ```json
 {
   "sensor_id": "uuid",
@@ -592,6 +618,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Request Body**:
+
 ```json
 {
   "organization_id": "uuid",
@@ -617,6 +644,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: None (public)
 
 **Request Body**:
+
 ```json
 {
   "password": "user_password"
@@ -624,6 +652,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "breached": false
@@ -643,6 +672,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Request Body**:
+
 ```json
 {
   "slug": "my-restaurant"
@@ -650,6 +680,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "available": true
@@ -671,6 +702,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Request Body**:
+
 ```json
 {
   "plan_id": "pro",
@@ -679,6 +711,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "checkout_url": "https://checkout.stripe.com/..."
@@ -698,6 +731,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Response**:
+
 ```json
 {
   "portal_url": "https://billing.stripe.com/..."
@@ -717,6 +751,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: Stripe webhook signature
 
 **Events Handled**:
+
 - `checkout.session.completed`
 - `customer.subscription.created`
 - `customer.subscription.updated`
@@ -739,6 +774,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: None (public)
 
 **Response**:
+
 ```json
 {
   "status": "healthy",
@@ -763,6 +799,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: Internal API Key
 
 **Request Body**:
+
 ```json
 {
   "to": "+15551234567",
@@ -803,14 +840,16 @@ if (!apiKeyResult.valid) {
 **Purpose**: Resolve cascaded alert rules for a unit
 
 **Signature**:
+
 ```sql
 get_effective_alert_rules(p_unit_id UUID) RETURNS JSON
 ```
 
 **Usage**:
+
 ```typescript
 const { data } = await supabase.rpc('get_effective_alert_rules', {
-  p_unit_id: unitId
+  p_unit_id: unitId,
 });
 ```
 
@@ -823,6 +862,7 @@ const { data } = await supabase.rpc('get_effective_alert_rules', {
 **Purpose**: Resolve cascaded notification policy
 
 **Signature**:
+
 ```sql
 get_effective_notification_policy(
   p_unit_id UUID,
@@ -837,6 +877,7 @@ get_effective_notification_policy(
 **Purpose**: Create organization and assign owner role atomically
 
 **Signature**:
+
 ```sql
 create_organization_with_owner(
   p_name TEXT,
@@ -852,6 +893,7 @@ create_organization_with_owner(
 **Purpose**: Check if user belongs to organization
 
 **Signature**:
+
 ```sql
 user_belongs_to_org(p_user_id UUID, p_org_id UUID) RETURNS BOOLEAN
 ```
@@ -863,6 +905,7 @@ user_belongs_to_org(p_user_id UUID, p_org_id UUID) RETURNS BOOLEAN
 **Purpose**: Check if user has specific role in organization
 
 **Signature**:
+
 ```sql
 has_role(p_user_id UUID, p_role TEXT, p_org_id UUID) RETURNS BOOLEAN
 ```
@@ -874,6 +917,7 @@ has_role(p_user_id UUID, p_role TEXT, p_org_id UUID) RETURNS BOOLEAN
 **Purpose**: Create site with proper hierarchy
 
 **Signature**:
+
 ```sql
 create_site_for_org(
   p_org_id UUID,
@@ -889,6 +933,7 @@ create_site_for_org(
 **Purpose**: Create area within site
 
 **Signature**:
+
 ```sql
 create_area_for_site(
   p_site_id UUID,
@@ -903,6 +948,7 @@ create_area_for_site(
 **Purpose**: Create unit within area
 
 **Signature**:
+
 ```sql
 create_unit_for_area(
   p_area_id UUID,
@@ -919,6 +965,7 @@ create_unit_for_area(
 **Purpose**: Queue TTN deprovisioning when unit is deleted
 
 **Signature**:
+
 ```sql
 enqueue_deprovision_jobs_for_unit(p_unit_id UUID) RETURNS VOID
 ```
@@ -930,6 +977,7 @@ enqueue_deprovision_jobs_for_unit(p_unit_id UUID) RETURNS VOID
 **Purpose**: Soft delete organization and cascade
 
 **Signature**:
+
 ```sql
 soft_delete_organization(p_org_id UUID) RETURNS VOID
 ```
@@ -941,6 +989,7 @@ soft_delete_organization(p_org_id UUID) RETURNS VOID
 **Purpose**: Find organizations without owners
 
 **Signature**:
+
 ```sql
 find_orphan_organizations() RETURNS TABLE(id UUID, name TEXT)
 ```
@@ -961,23 +1010,23 @@ find_orphan_organizations() RETURNS TABLE(id UUID, name TEXT)
 
 ### Common Error Codes
 
-| Code | HTTP Status | Meaning |
-|------|-------------|---------|
-| `UNAUTHORIZED` | 401 | Missing or invalid authentication |
-| `FORBIDDEN` | 403 | Insufficient permissions |
-| `NOT_FOUND` | 404 | Resource not found |
-| `VALIDATION_ERROR` | 400 | Invalid request body |
-| `RATE_LIMITED` | 429 | Too many requests |
-| `INTERNAL_ERROR` | 500 | Server error |
+| Code               | HTTP Status | Meaning                           |
+| ------------------ | ----------- | --------------------------------- |
+| `UNAUTHORIZED`     | 401         | Missing or invalid authentication |
+| `FORBIDDEN`        | 403         | Insufficient permissions          |
+| `NOT_FOUND`        | 404         | Resource not found                |
+| `VALIDATION_ERROR` | 400         | Invalid request body              |
+| `RATE_LIMITED`     | 429         | Too many requests                 |
+| `INTERNAL_ERROR`   | 500         | Server error                      |
 
 ### Retry Behavior
 
-| Scenario | Retry |
-|----------|-------|
+| Scenario      | Retry                         |
+| ------------- | ----------------------------- |
 | Network error | Yes, with exponential backoff |
-| 5xx error | Yes, up to 3 times |
-| 4xx error | No (fix request) |
-| Timeout | Yes, once |
+| 5xx error     | Yes, up to 3 times            |
+| 4xx error     | No (fix request)              |
+| Timeout       | Yes, once                     |
 
 ---
 

@@ -7,3 +7,8 @@ drizzle/
 supabase/
 pnpm-lock.yaml
 package-lock.json
+docs/_build/
+.aider-desk/
+current-version.tsx
+git-version.tsx
+original.tsx

@@ -17,16 +17,16 @@ FrostGuard is a comprehensive IoT-based refrigeration monitoring platform that p
 
 ## Tech Stack
 
-| Category | Technologies |
-|----------|--------------|
-| Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui |
-| State Management | TanStack Query, React Context |
-| Backend | Fastify 5, PostgreSQL, Drizzle ORM |
-| Auth | Stack Auth |
-| Database | PostgreSQL (self-hosted or Supabase) |
-| IoT | The Things Network (TTN), LoRaWAN |
-| Notifications | Email, Telnyx SMS, Push Notifications |
-| Payments | Stripe |
+| Category         | Technologies                                        |
+| ---------------- | --------------------------------------------------- |
+| Frontend         | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui |
+| State Management | TanStack Query, React Context                       |
+| Backend          | Fastify 5, PostgreSQL, Drizzle ORM                  |
+| Auth             | Stack Auth                                          |
+| Database         | PostgreSQL (self-hosted or Supabase)                |
+| IoT              | The Things Network (TTN), LoRaWAN                   |
+| Notifications    | Email, Telnyx SMS, Push Notifications               |
+| Payments         | Stripe                                              |
 
 ## Quick Start
 
@@ -70,29 +70,34 @@ freshtrack-pro/
 ## Key Features
 
 ### Temperature Monitoring Dashboard
+
 - Real-time temperature readings with status indicators
 - Visual unit cards showing current temps, thresholds, and alerts
 - Configurable refresh intervals
 - Mobile-responsive design
 
 ### Alert System
+
 - Automatic alert creation for temperature excursions
 - Multi-tier escalation (immediate, 15min, 30min, etc.)
 - Alert acknowledgment and resolution workflow
 - Configurable notification channels per severity
 
 ### Organization Hierarchy
+
 - Multi-tenant architecture with complete data isolation
 - Site management for physical locations
 - Area grouping within sites (walk-in coolers, display cases, etc.)
 - Individual unit configuration and monitoring
 
 ### Offline Support
+
 - Manual temperature logging works without internet
 - Automatic sync when connectivity is restored
 - Visual indicators for pending sync items
 
 ### HACCP Compliance
+
 - Immutable audit trails for all temperature readings
 - Corrective action documentation
 - Exportable reports for health inspections
@@ -121,11 +126,11 @@ Full documentation is available in the `/docs` directory:
 
 ## Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `VITE_API_URL` | Backend API URL (default: http://localhost:3000) |
-| `VITE_STACK_AUTH_PROJECT_ID` | Stack Auth project ID |
-| `VITE_STACK_AUTH_PUBLISHABLE_CLIENT_KEY` | Stack Auth client key |
+| Variable                                 | Description                                      |
+| ---------------------------------------- | ------------------------------------------------ |
+| `VITE_API_URL`                           | Backend API URL (default: http://localhost:3000) |
+| `VITE_STACK_AUTH_PROJECT_ID`             | Stack Auth project ID                            |
+| `VITE_STACK_AUTH_PUBLISHABLE_CLIENT_KEY` | Stack Auth client key                            |
 
 > **Note:** Legacy Supabase variables are documented in `.env.example` for the ongoing database migration.
 

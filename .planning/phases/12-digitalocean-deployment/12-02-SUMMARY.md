@@ -17,35 +17,35 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "Bash orchestration script with cloud provider API integration"
-    - "Cloud-init user-data for infrastructure bootstrapping"
-    - "Idempotent resource provisioning pattern"
-    - "SSH-based remote deployment execution"
+    - 'Bash orchestration script with cloud provider API integration'
+    - 'Cloud-init user-data for infrastructure bootstrapping'
+    - 'Idempotent resource provisioning pattern'
+    - 'SSH-based remote deployment execution'
 key-files:
   created:
-    - scripts/deploy-digitalocean.sh: "398-line Droplet provisioning and deployment orchestration"
-    - scripts/lib/doctl-helpers.sh: "264-line doctl CLI wrapper library (blocking dependency)"
+    - scripts/deploy-digitalocean.sh: '398-line Droplet provisioning and deployment orchestration'
+    - scripts/lib/doctl-helpers.sh: '264-line doctl CLI wrapper library (blocking dependency)'
   modified: []
 decisions:
   - id: DEPLOY-DO-01
-    choice: "doctl create with --wait flag for synchronous provisioning"
-    rationale: "Simplifies error handling and ensures Droplet is ready before proceeding"
-    alternatives: "Async creation with polling loop"
+    choice: 'doctl create with --wait flag for synchronous provisioning'
+    rationale: 'Simplifies error handling and ensures Droplet is ready before proceeding'
+    alternatives: 'Async creation with polling loop'
   - id: DEPLOY-DO-02
-    choice: "Cloud-init boot-finished signal for readiness check"
-    rationale: "Standard cloud-init completion marker, more reliable than time-based wait"
-    alternatives: "Fixed sleep duration or Docker socket check only"
+    choice: 'Cloud-init boot-finished signal for readiness check'
+    rationale: 'Standard cloud-init completion marker, more reliable than time-based wait'
+    alternatives: 'Fixed sleep duration or Docker socket check only'
   - id: DEPLOY-DO-03
-    choice: "Save Droplet IP to .droplet-ip file"
-    rationale: "Provides DNS configuration reference without requiring doctl for subsequent scripts"
-    alternatives: "Require doctl lookup each time or environment variable"
+    choice: 'Save Droplet IP to .droplet-ip file'
+    rationale: 'Provides DNS configuration reference without requiring doctl for subsequent scripts'
+    alternatives: 'Require doctl lookup each time or environment variable'
   - id: DEPLOY-DO-04
-    choice: "SCP config and secrets before remote deployment"
-    rationale: "Allows local configuration to drive remote deployment without manual copy"
-    alternatives: "Require manual config setup on Droplet before deployment"
+    choice: 'SCP config and secrets before remote deployment'
+    rationale: 'Allows local configuration to drive remote deployment without manual copy'
+    alternatives: 'Require manual config setup on Droplet before deployment'
 metrics:
-  duration: "4.8 minutes"
-  completed: "2026-01-24"
+  duration: '4.8 minutes'
+  completed: '2026-01-24'
 ---
 
 # Phase 12 Plan 02: DigitalOcean Deployment Script Summary
@@ -59,6 +59,7 @@ Created the main DigitalOcean deployment orchestration script that transforms a 
 ### Core Components
 
 **1. deploy-digitalocean.sh (398 lines)**
+
 - Complete argument parsing: `--config`, `--provision-only`, `--name`, `--help`
 - Configuration loading with DigitalOcean-specific defaults
 - Idempotent Droplet provisioning (checks existing, reuses if found)
@@ -67,6 +68,7 @@ Created the main DigitalOcean deployment orchestration script that transforms a 
 - DNS configuration next steps display
 
 **2. scripts/lib/doctl-helpers.sh (264 lines) - Blocking Dependency**
+
 - Created as Rule 3 deviation to unblock current plan
 - 6 helper functions: validate_doctl_auth, get_ssh_key_fingerprint, validate_region, create_cloud_init, ensure_vpc, ensure_cloud_firewall
 - Idempotent VPC and Cloud Firewall creation
@@ -74,13 +76,13 @@ Created the main DigitalOcean deployment orchestration script that transforms a 
 
 ### Key Functions
 
-| Function | Purpose | Idempotent |
-|----------|---------|------------|
-| check_existing_droplet() | Lookup Droplet by name, populate DROPLET_ID/DROPLET_IP | Yes |
-| provision_droplet() | Create Droplet with cloud-init, VPC, firewall | Yes |
-| wait_for_cloud_init() | Poll for /var/lib/cloud/instance/boot-finished | N/A |
-| deploy_to_droplet() | SCP config/secrets, SSH to run deploy-selfhosted.sh | No |
-| show_next_steps() | Display DNS, SSH, monitoring instructions | N/A |
+| Function                 | Purpose                                                | Idempotent |
+| ------------------------ | ------------------------------------------------------ | ---------- |
+| check_existing_droplet() | Lookup Droplet by name, populate DROPLET_ID/DROPLET_IP | Yes        |
+| provision_droplet()      | Create Droplet with cloud-init, VPC, firewall          | Yes        |
+| wait_for_cloud_init()    | Poll for /var/lib/cloud/instance/boot-finished         | N/A        |
+| deploy_to_droplet()      | SCP config/secrets, SSH to run deploy-selfhosted.sh    | No         |
+| show_next_steps()        | Display DNS, SSH, monitoring instructions              | N/A        |
 
 ### Execution Flow
 
@@ -105,6 +107,7 @@ Created the main DigitalOcean deployment orchestration script that transforms a 
 ## Verification Results
 
 ### Script Validation
+
 ```bash
 # Syntax check
 $ bash -n scripts/deploy-digitalocean.sh
@@ -130,11 +133,13 @@ $ wc -l scripts/deploy-digitalocean.sh
 ```
 
 ### Key Links Verified
+
 - ✓ Sources `scripts/lib/doctl-helpers.sh` (line 112)
 - ✓ Delegates to `deploy-selfhosted.sh` via SSH (line 295)
 - ✓ References in comments and next steps output
 
 ### Must-Have Truths Validation
+
 - ✓ Droplet provisioned with single command (main function orchestrates all steps)
 - ✓ Script waits for cloud-init completion (wait_for_cloud_init with boot-finished check)
 - ✓ Existing Droplets detected and reused (check_existing_droplet returns early)
@@ -145,6 +150,7 @@ $ wc -l scripts/deploy-digitalocean.sh
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Created missing doctl-helpers.sh dependency**
+
 - **Found during:** Task 1 (sourcing helper library)
 - **Issue:** Plan 12-02 depends on Plan 12-01, but doctl-helpers.sh didn't exist
 - **Fix:** Created scripts/lib/doctl-helpers.sh with all 6 required functions
@@ -156,18 +162,21 @@ $ wc -l scripts/deploy-digitalocean.sh
 ## Integration Points
 
 ### With Self-Hosted Deployment (Phase 11)
+
 - **Uses:** deploy-selfhosted.sh as deployment engine
 - **Provides:** Droplet infrastructure before running deployment
 - **Configuration:** Copies deploy.config to Droplet for consistent setup
 - **Secrets:** Copies secrets/ directory if exists locally
 
 ### With DigitalOcean API
+
 - **Via:** doctl CLI commands (wrapped in doctl-helpers.sh)
 - **Creates:** Droplet, VPC, Cloud Firewall
 - **Cloud-init:** Installs Docker, configures UFW, clones Git repo
 - **Tags:** freshtrack, production (for resource organization)
 
 ### User Experience
+
 ```bash
 # Full deployment (one command)
 $ ./scripts/deploy-digitalocean.sh --config scripts/deploy.config
@@ -183,6 +192,7 @@ $ ./scripts/deploy-digitalocean.sh --name freshtrack-staging
 ## Technical Deep Dive
 
 ### Cloud-Init Configuration
+
 ```yaml
 #cloud-config
 package_update: true
@@ -205,12 +215,14 @@ runcmd:
 ```
 
 ### Idempotency Strategy
+
 1. **Droplet:** Query by name before creating
 2. **VPC:** Query by name, create if missing
 3. **Cloud Firewall:** Query by name, attach Droplet if missing
 4. **SSH operations:** SCP/SSH commands are not idempotent (deploy-selfhosted.sh handles that)
 
 ### Error Handling
+
 - doctl authentication failure → Exits with clear instructions
 - SSH key not found → Lists available keys
 - Cloud-init timeout → Shows console URL for debugging
@@ -219,40 +231,47 @@ runcmd:
 ## Next Phase Readiness
 
 ### For Plan 12-03 (Documentation)
+
 - ✓ Script usage patterns documented via --help
 - ✓ Configuration requirements clear (DO_API_TOKEN, DO_SSH_KEY_NAME)
 - ✓ Next steps output provides DNS/access guidance
 - ⚠ Need to document managed database setup (USE_MANAGED_DB=true flow)
 
 ### For Plan 12-04 (Testing)
+
 - ✓ --provision-only flag enables infrastructure testing without deployment
 - ✓ Idempotent operations allow re-running safely
 - ✓ Droplet name configurable for test environments
 - ✓ Clear success/failure indicators for automated testing
 
 ### Known Limitations
+
 1. **SSH host key verification:** Uses StrictHostKeyChecking=no (acceptable for automated setup)
 2. **Cloud-init wait:** 10-minute timeout may be insufficient on slow networks
 3. **No managed database integration:** USE_MANAGED_DB flag recognized but not implemented
 4. **No DigitalOcean Spaces integration:** USE_DO_SPACES flag recognized but not implemented
 
 ### Blockers/Concerns
+
 None. Script is complete and functional for Droplet-based deployments with self-hosted PostgreSQL and MinIO.
 
 ## Lessons Learned
 
 ### What Went Well
+
 1. **Deviation handling:** Correctly identified Plan 12-01 dependency as Rule 3 blocker
 2. **Idempotency:** All infrastructure operations check-before-create pattern
 3. **User experience:** Single command from nothing to deployed application
 4. **Error messages:** Clear next steps when authentication or configuration fails
 
 ### What Could Improve
+
 1. **Managed services:** Flags for managed DB/Spaces exist but aren't implemented (future plan)
 2. **Progress indicators:** Cloud-init wait shows elapsed time but could stream logs
 3. **Rollback:** No automatic Droplet cleanup on deployment failure
 
 ### Technical Insights
+
 - **Cloud-init signaling:** boot-finished file is more reliable than time-based waits
 - **doctl --wait flag:** Simplifies Droplet creation (synchronous vs polling loop)
 - **SSH BatchMode:** Prevents password prompts, essential for automation
@@ -268,10 +287,12 @@ None. Script is complete and functional for Droplet-based deployments with self-
 ## Files Modified
 
 ### Created
+
 - `scripts/deploy-digitalocean.sh` (398 lines)
 - `scripts/lib/doctl-helpers.sh` (264 lines)
 
 ### Git Log
+
 ```
 4ccbe19 feat(12-02): create DigitalOcean deployment orchestration script
 5be8b30 fix(12-02): add missing doctl-helpers.sh dependency

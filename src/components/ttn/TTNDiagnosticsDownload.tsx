@@ -3,22 +3,22 @@
  * One-click download of support-ready TTN diagnostics
  */
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { 
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Download, Copy, Loader2, FileJson, Check } from "lucide-react";
-import { toast } from "sonner";
-import type { TTNConfigContext } from "@/types/ttnState";
-import { 
-  buildTTNDiagnostics, 
-  downloadDiagnostics, 
+} from '@/components/ui/dropdown-menu';
+import { Download, Copy, Loader2, FileJson, Check } from 'lucide-react';
+import { toast } from 'sonner';
+import type { TTNConfigContext } from '@/types/ttnState';
+import {
+  buildTTNDiagnostics,
+  downloadDiagnostics,
   copyDiagnosticsToClipboard,
-} from "@/lib/ttn/diagnosticsBuilder";
+} from '@/lib/ttn/diagnosticsBuilder';
 
 interface TTNDiagnosticsDownloadProps {
   context: TTNConfigContext | null;
@@ -49,10 +49,10 @@ export function TTNDiagnosticsDownload({
     try {
       const diagnostics = await buildTTNDiagnostics(context, organizationId, settings);
       downloadDiagnostics(diagnostics);
-      toast.success("Diagnostics downloaded");
+      toast.success('Diagnostics downloaded');
     } catch (error) {
-      console.error("[TTNDiagnosticsDownload] Error:", error);
-      toast.error("Failed to generate diagnostics");
+      console.error('[TTNDiagnosticsDownload] Error:', error);
+      toast.error('Failed to generate diagnostics');
     } finally {
       setIsLoading(false);
     }
@@ -63,17 +63,17 @@ export function TTNDiagnosticsDownload({
     try {
       const diagnostics = await buildTTNDiagnostics(context, organizationId, settings);
       const success = await copyDiagnosticsToClipboard(diagnostics);
-      
+
       if (success) {
         setCopied(true);
-        toast.success("Diagnostics copied to clipboard");
+        toast.success('Diagnostics copied to clipboard');
         setTimeout(() => setCopied(false), 2000);
       } else {
-        toast.error("Failed to copy to clipboard");
+        toast.error('Failed to copy to clipboard');
       }
     } catch (error) {
-      console.error("[TTNDiagnosticsDownload] Error:", error);
-      toast.error("Failed to generate diagnostics");
+      console.error('[TTNDiagnosticsDownload] Error:', error);
+      toast.error('Failed to generate diagnostics');
     } finally {
       setIsLoading(false);
     }

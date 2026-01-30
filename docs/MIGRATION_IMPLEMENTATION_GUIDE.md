@@ -112,38 +112,58 @@ Create `backend/src/db/schema/enums.ts`:
 import { pgEnum } from 'drizzle-orm/pg-core';
 
 export const unitTypeEnum = pgEnum('unit_type', [
-  'fridge', 'freezer', 'display_case',
-  'walk_in_cooler', 'walk_in_freezer', 'blast_chiller'
+  'fridge',
+  'freezer',
+  'display_case',
+  'walk_in_cooler',
+  'walk_in_freezer',
+  'blast_chiller',
 ]);
 
 export const unitStatusEnum = pgEnum('unit_status', [
-  'ok', 'excursion', 'alarm_active',
-  'monitoring_interrupted', 'manual_required', 'restoring', 'offline'
+  'ok',
+  'excursion',
+  'alarm_active',
+  'monitoring_interrupted',
+  'manual_required',
+  'restoring',
+  'offline',
 ]);
 
 export const alertTypeEnum = pgEnum('alert_type', [
-  'alarm_active', 'monitoring_interrupted', 'missed_manual_entry',
-  'low_battery', 'sensor_fault', 'door_open', 'calibration_due'
+  'alarm_active',
+  'monitoring_interrupted',
+  'missed_manual_entry',
+  'low_battery',
+  'sensor_fault',
+  'door_open',
+  'calibration_due',
 ]);
 
-export const alertSeverityEnum = pgEnum('alert_severity', [
-  'info', 'warning', 'critical'
-]);
+export const alertSeverityEnum = pgEnum('alert_severity', ['info', 'warning', 'critical']);
 
 export const alertStatusEnum = pgEnum('alert_status', [
-  'active', 'acknowledged', 'resolved', 'escalated'
+  'active',
+  'acknowledged',
+  'resolved',
+  'escalated',
 ]);
 
-export const appRoleEnum = pgEnum('app_role', [
-  'owner', 'admin', 'manager', 'staff', 'viewer'
-]);
+export const appRoleEnum = pgEnum('app_role', ['owner', 'admin', 'manager', 'staff', 'viewer']);
 
 export const subscriptionPlanEnum = pgEnum('subscription_plan', [
-  'starter', 'pro', 'haccp', 'enterprise'
+  'starter',
+  'pro',
+  'haccp',
+  'enterprise',
 ]);
 
 export const subscriptionStatusEnum = pgEnum('subscription_status', [
-  'trial', 'active', 'past_due', 'canceled', 'paused'
+  'trial',
+  'active',
+  'past_due',
+  'canceled',
+  'paused',
 ]);
 ```
 
@@ -196,16 +216,24 @@ import { profiles } from './profiles';
 import { organizations } from './organizations';
 import { appRoleEnum } from './enums';
 
-export const userRoles = pgTable('user_roles', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull().references(() => profiles.userId),
-  organizationId: uuid('organization_id').notNull().references(() => organizations.id),
-  role: appRoleEnum('role').notNull().default('viewer'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-}, (table) => ({
-  uniqueUserOrg: unique().on(table.userId, table.organizationId),
-}));
+export const userRoles = pgTable(
+  'user_roles',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => profiles.userId),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organizations.id),
+    role: appRoleEnum('role').notNull().default('viewer'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    uniqueUserOrg: unique().on(table.userId, table.organizationId),
+  }),
+);
 ```
 
 ### Step 4: Auth Middleware
@@ -231,10 +259,7 @@ declare module 'fastify' {
   }
 }
 
-export async function authMiddleware(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
+export async function authMiddleware(request: FastifyRequest, reply: FastifyReply) {
   try {
     await request.jwtVerify();
 
@@ -259,8 +284,8 @@ export async function authMiddleware(
         .where(
           and(
             eq(userRoles.userId, payload.sub),
-            eq(userRoles.organizationId, profile.organizationId)
-          )
+            eq(userRoles.organizationId, profile.organizationId),
+          ),
         )
         .limit(1);
       role = userRole?.role || null;
@@ -304,7 +329,7 @@ export function requireRole(...allowedRoles: Role[]) {
     }
 
     const hasPermission = allowedRoles.some(
-      (role) => roleHierarchy[userRole] >= roleHierarchy[role]
+      (role) => roleHierarchy[userRole] >= roleHierarchy[role],
     );
 
     if (!hasPermission) {
@@ -339,7 +364,14 @@ import { requireRole, requireOrgAccess } from '../middleware/rbac';
 
 const createUnitSchema = z.object({
   name: z.string().min(1).max(100),
-  unitType: z.enum(['fridge', 'freezer', 'display_case', 'walk_in_cooler', 'walk_in_freezer', 'blast_chiller']),
+  unitType: z.enum([
+    'fridge',
+    'freezer',
+    'display_case',
+    'walk_in_cooler',
+    'walk_in_freezer',
+    'blast_chiller',
+  ]),
   tempMin: z.number().optional(),
   tempMax: z.number().optional(),
 });
@@ -364,44 +396,41 @@ export async function unitRoutes(app: FastifyInstance) {
       return reply.status(403).send({ error: 'Access denied' });
     }
 
-    const result = await db
-      .select()
-      .from(units)
-      .where(eq(units.areaId, areaId));
+    const result = await db.select().from(units).where(eq(units.areaId, areaId));
 
     return result;
   });
 
   // POST /areas/:areaId/units
-  app.post('/areas/:areaId/units', {
-    preHandler: [requireRole('admin', 'owner')],
-  }, async (request, reply) => {
-    const { areaId } = request.params as { areaId: string };
-    const body = createUnitSchema.parse(request.body);
+  app.post(
+    '/areas/:areaId/units',
+    {
+      preHandler: [requireRole('admin', 'owner')],
+    },
+    async (request, reply) => {
+      const { areaId } = request.params as { areaId: string };
+      const body = createUnitSchema.parse(request.body);
 
-    const [newUnit] = await db
-      .insert(units)
-      .values({
-        areaId,
-        name: body.name,
-        unitType: body.unitType,
-        tempMin: body.tempMin,
-        tempMax: body.tempMax,
-      })
-      .returning();
+      const [newUnit] = await db
+        .insert(units)
+        .values({
+          areaId,
+          name: body.name,
+          unitType: body.unitType,
+          tempMin: body.tempMin,
+          tempMax: body.tempMax,
+        })
+        .returning();
 
-    return reply.status(201).send(newUnit);
-  });
+      return reply.status(201).send(newUnit);
+    },
+  );
 
   // GET /units/:id
   app.get('/units/:id', async (request, reply) => {
     const { id } = request.params as { id: string };
 
-    const [unit] = await db
-      .select()
-      .from(units)
-      .where(eq(units.id, id))
-      .limit(1);
+    const [unit] = await db.select().from(units).where(eq(units.id, id)).limit(1);
 
     if (!unit) {
       return reply.status(404).send({ error: 'Unit not found' });
@@ -411,24 +440,28 @@ export async function unitRoutes(app: FastifyInstance) {
   });
 
   // PUT /units/:id
-  app.put('/units/:id', {
-    preHandler: [requireRole('admin', 'owner')],
-  }, async (request, reply) => {
-    const { id } = request.params as { id: string };
-    const body = createUnitSchema.partial().parse(request.body);
+  app.put(
+    '/units/:id',
+    {
+      preHandler: [requireRole('admin', 'owner')],
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string };
+      const body = createUnitSchema.partial().parse(request.body);
 
-    const [updated] = await db
-      .update(units)
-      .set({ ...body, updatedAt: new Date() })
-      .where(eq(units.id, id))
-      .returning();
+      const [updated] = await db
+        .update(units)
+        .set({ ...body, updatedAt: new Date() })
+        .where(eq(units.id, id))
+        .returning();
 
-    if (!updated) {
-      return reply.status(404).send({ error: 'Unit not found' });
-    }
+      if (!updated) {
+        return reply.status(404).send({ error: 'Unit not found' });
+      }
 
-    return updated;
-  });
+      return updated;
+    },
+  );
 }
 ```
 
@@ -515,10 +548,7 @@ class ApiClient {
     }
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestOptions = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
     const { params, ...fetchOptions } = options;
 
     let url = `${this.baseUrl}${endpoint}`;
@@ -557,7 +587,7 @@ class ApiClient {
   async login(email: string, password: string) {
     const result = await this.request<{ access_token: string; refresh_token: string }>(
       '/auth/login',
-      { method: 'POST', body: JSON.stringify({ email, password }) }
+      { method: 'POST', body: JSON.stringify({ email, password }) },
     );
     this.setToken(result.access_token);
     localStorage.setItem('refresh_token', result.refresh_token);
@@ -637,16 +667,14 @@ export const api = new ApiClient(API_BASE);
 ### Hook Migration Example
 
 Before (Supabase):
+
 ```typescript
 // Old: src/hooks/useUnits.ts
 export function useUnits(areaId: string) {
   return useQuery({
     queryKey: qk.area(areaId).units(),
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('units')
-        .select('*')
-        .eq('area_id', areaId);
+      const { data, error } = await supabase.from('units').select('*').eq('area_id', areaId);
       if (error) throw error;
       return data;
     },
@@ -655,6 +683,7 @@ export function useUnits(areaId: string) {
 ```
 
 After (Custom API):
+
 ```typescript
 // New: src/hooks/useUnits.ts
 import { api } from '@/lib/api-client';
@@ -686,9 +715,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - '5432:5432'
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U frostguard"]
+      test: ['CMD-SHELL', 'pg_isready -U frostguard']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -696,7 +725,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
 
@@ -709,8 +738,8 @@ services:
     volumes:
       - minio_data:/data
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - '9000:9000'
+      - '9001:9001'
 
   backend:
     build: ./backend
@@ -722,7 +751,7 @@ services:
       S3_ACCESS_KEY: minioadmin
       S3_SECRET_KEY: minioadmin
     ports:
-      - "4000:4000"
+      - '4000:4000'
     depends_on:
       postgres:
         condition: service_healthy
@@ -734,7 +763,7 @@ services:
     environment:
       VITE_API_URL: http://localhost:4000
     ports:
-      - "3000:3000"
+      - '3000:3000'
     depends_on:
       - backend
 
@@ -749,41 +778,48 @@ volumes:
 ## Migration Checklist
 
 ### Epic 1: Infrastructure
+
 - [ ] PostgreSQL server provisioned
 - [ ] Redis server provisioned
 - [ ] MinIO storage provisioned
 - [ ] Docker Compose working locally
 
 ### Epic 2: Schema
+
 - [ ] All enums created
 - [ ] All tables created
 - [ ] All indexes created
 - [ ] Migrations tested
 
 ### Epic 3: Auth
+
 - [ ] JWT auth implemented
 - [ ] Login/register working
 - [ ] Password reset working
 - [ ] Token refresh working
 
 ### Epic 4: API
+
 - [ ] All CRUD endpoints
 - [ ] RBAC middleware
 - [ ] Validation middleware
 - [ ] Error handling
 
 ### Epic 5: Real-Time
+
 - [ ] WebSocket server
 - [ ] Sensor readings stream
 - [ ] Alert notifications
 
 ### Epic 6: Frontend
+
 - [ ] API client created
 - [ ] All hooks migrated
 - [ ] Auth flow working
 - [ ] Real-time working
 
 ### Epic 7: Data Migration
+
 - [ ] Export scripts ready
 - [ ] Import scripts ready
 - [ ] Data validated
@@ -791,4 +827,4 @@ volumes:
 
 ---
 
-*Implementation Guide Version: 1.0*
+_Implementation Guide Version: 1.0_

@@ -19,10 +19,10 @@ affects: [20-backend-api-migration-core, 21-frontend-api-migration]
 tech-stack:
   added: []
   patterns:
-    - "E2E testing via app.inject() for HTTP simulation"
-    - "Service mocking with vi.mock() for isolated tests"
-    - "Mock JWT verification for authenticated requests"
-    - "Router registration smoke test pattern"
+    - 'E2E testing via app.inject() for HTTP simulation'
+    - 'Service mocking with vi.mock() for isolated tests'
+    - 'Mock JWT verification for authenticated requests'
+    - 'Router registration smoke test pattern'
 
 key-files:
   created: []
@@ -30,16 +30,16 @@ key-files:
     - backend/tests/trpc/e2e.test.ts (1266 lines, 45 tests)
 
 key-decisions:
-  - "Mock JWT verification returns {payload, userId} matching verifyAccessToken signature"
-  - "Valid UUID v4 format required: xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx (M=1-5, N=8-b)"
-  - "Mock services must return schema-compliant data (sortOrder, unitType, etc.)"
-  - "Smoke test verifies all 6 routers registered by checking for non-404 responses"
+  - 'Mock JWT verification returns {payload, userId} matching verifyAccessToken signature'
+  - 'Valid UUID v4 format required: xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx (M=1-5, N=8-b)'
+  - 'Mock services must return schema-compliant data (sortOrder, unitType, etc.)'
+  - 'Smoke test verifies all 6 routers registered by checking for non-404 responses'
 
 patterns-established:
-  - "E2E mock pattern: vi.mock() for jwt + user service + domain services"
-  - "Mock data pattern: Full schema-compliant objects matching Zod schemas"
+  - 'E2E mock pattern: vi.mock() for jwt + user service + domain services'
+  - 'Mock data pattern: Full schema-compliant objects matching Zod schemas'
   - "Auth token pattern: 'valid-admin-token', 'valid-staff-token', 'valid-viewer-token'"
-  - "Role-based test pattern: Set mockGetUserRoleInOrg per test for role verification"
+  - 'Role-based test pattern: Set mockGetUserRoleInOrg per test for role verification'
 
 # Metrics
 duration: 8min
@@ -69,17 +69,17 @@ completed: 2026-01-25
 
 ## Test Coverage
 
-| Router | Tests | Coverage |
-|--------|-------|----------|
-| Health/Infrastructure | 10 | Auth, batching, errors, types, HTTP methods |
-| Organizations | 2 | (from existing tests) |
-| Sites | 7 | CRUD + FORBIDDEN + NOT_FOUND |
-| Areas | 8 | CRUD + FORBIDDEN + NOT_FOUND x2 |
-| Units | 7 | CRUD + FORBIDDEN + NOT_FOUND |
-| Readings | 4 | list, latest, null, NOT_FOUND |
-| Alerts | 7 | list, get, acknowledge, resolve, FORBIDDEN, NOT_FOUND, CONFLICT |
-| Smoke Test | 2 | Router registration + health |
-| **Total** | **45** | All routers verified |
+| Router                | Tests  | Coverage                                                        |
+| --------------------- | ------ | --------------------------------------------------------------- |
+| Health/Infrastructure | 10     | Auth, batching, errors, types, HTTP methods                     |
+| Organizations         | 2      | (from existing tests)                                           |
+| Sites                 | 7      | CRUD + FORBIDDEN + NOT_FOUND                                    |
+| Areas                 | 8      | CRUD + FORBIDDEN + NOT_FOUND x2                                 |
+| Units                 | 7      | CRUD + FORBIDDEN + NOT_FOUND                                    |
+| Readings              | 4      | list, latest, null, NOT_FOUND                                   |
+| Alerts                | 7      | list, get, acknowledge, resolve, FORBIDDEN, NOT_FOUND, CONFLICT |
+| Smoke Test            | 2      | Router registration + health                                    |
+| **Total**             | **45** | All routers verified                                            |
 
 ## Error Codes Verified
 
@@ -111,6 +111,7 @@ File size: 1266 lines (well above 150 minimum)
 ## Next Phase Readiness
 
 Plan 20-04 completes the E2E testing for all tRPC domain routers. The backend API migration core phase can proceed to:
+
 - Plan 20-05: Devices & Profiles tRPC Routers (if planned)
 - Frontend API migration integration
 

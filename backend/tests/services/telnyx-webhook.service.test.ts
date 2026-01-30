@@ -20,7 +20,7 @@ const TEST_DELIVERY_ID = 'del_uuid_12345';
 // Helper to create mock Telnyx webhook events
 function createMockEvent(
   eventType: string,
-  payload: Record<string, unknown> = {}
+  payload: Record<string, unknown> = {},
 ): TelnyxWebhookEvent {
   return {
     data: {
@@ -56,7 +56,7 @@ describe('Telnyx Webhook Service', () => {
 
       const result = await telnyxWebhookService.handleMessageSent(
         TEST_MESSAGE_ID,
-        '2024-01-15T10:30:00Z'
+        '2024-01-15T10:30:00Z',
       );
 
       expect(result.updated).toBe(true);
@@ -67,7 +67,7 @@ describe('Telnyx Webhook Service', () => {
         expect.objectContaining({
           status: 'sent',
           sentAt: expect.any(Date),
-        })
+        }),
       );
     });
 
@@ -86,7 +86,7 @@ describe('Telnyx Webhook Service', () => {
       expect(mockUpdateChain.set).toHaveBeenCalledWith(
         expect.objectContaining({
           sentAt: expect.any(Date),
-        })
+        }),
       );
 
       const setCall = mockUpdateChain.set.mock.calls[0][0];
@@ -120,7 +120,7 @@ describe('Telnyx Webhook Service', () => {
 
       const result = await telnyxWebhookService.handleMessageDelivered(
         TEST_MESSAGE_ID,
-        '2024-01-15T10:31:00Z'
+        '2024-01-15T10:31:00Z',
       );
 
       expect(result.updated).toBe(true);
@@ -129,7 +129,7 @@ describe('Telnyx Webhook Service', () => {
         expect.objectContaining({
           status: 'delivered',
           deliveredAt: expect.any(Date),
-        })
+        }),
       );
     });
 
@@ -157,14 +157,9 @@ describe('Telnyx Webhook Service', () => {
       };
       mockDb.update.mockReturnValue(mockUpdateChain as any);
 
-      const errors = [
-        { code: '40300', title: 'Number opted out', detail: 'Recipient sent STOP' },
-      ];
+      const errors = [{ code: '40300', title: 'Number opted out', detail: 'Recipient sent STOP' }];
 
-      const result = await telnyxWebhookService.handleMessageFailed(
-        TEST_MESSAGE_ID,
-        errors
-      );
+      const result = await telnyxWebhookService.handleMessageFailed(TEST_MESSAGE_ID, errors);
 
       expect(result.updated).toBe(true);
       expect(result.eventType).toBe('message.failed');
@@ -173,7 +168,7 @@ describe('Telnyx Webhook Service', () => {
           status: 'failed',
           failedAt: expect.any(Date),
           errorMessage: '[40300] Number opted out: Recipient sent STOP',
-        })
+        }),
       );
     });
 
@@ -192,7 +187,7 @@ describe('Telnyx Webhook Service', () => {
       expect(mockUpdateChain.set).toHaveBeenCalledWith(
         expect.objectContaining({
           errorMessage: '[40008] Undeliverable',
-        })
+        }),
       );
     });
 
@@ -209,7 +204,7 @@ describe('Telnyx Webhook Service', () => {
       expect(mockUpdateChain.set).toHaveBeenCalledWith(
         expect.objectContaining({
           errorMessage: 'Message delivery failed',
-        })
+        }),
       );
     });
 
@@ -245,9 +240,7 @@ describe('Telnyx Webhook Service', () => {
 
       expect(result.eventType).toBe('message.sent');
       expect(result.updated).toBe(true);
-      expect(mockUpdateChain.set).toHaveBeenCalledWith(
-        expect.objectContaining({ status: 'sent' })
-      );
+      expect(mockUpdateChain.set).toHaveBeenCalledWith(expect.objectContaining({ status: 'sent' }));
     });
 
     it('should route message.delivered event correctly', async () => {
@@ -267,7 +260,7 @@ describe('Telnyx Webhook Service', () => {
       expect(result.eventType).toBe('message.delivered');
       expect(result.updated).toBe(true);
       expect(mockUpdateChain.set).toHaveBeenCalledWith(
-        expect.objectContaining({ status: 'delivered' })
+        expect.objectContaining({ status: 'delivered' }),
       );
     });
 
@@ -288,7 +281,7 @@ describe('Telnyx Webhook Service', () => {
       expect(result.eventType).toBe('message.failed');
       expect(result.updated).toBe(true);
       expect(mockUpdateChain.set).toHaveBeenCalledWith(
-        expect.objectContaining({ status: 'failed' })
+        expect.objectContaining({ status: 'failed' }),
       );
     });
 
@@ -314,9 +307,9 @@ describe('Telnyx Webhook Service', () => {
         },
       } as TelnyxWebhookEvent;
 
-      await expect(
-        telnyxWebhookService.handleTelnyxWebhookEvent(event)
-      ).rejects.toThrow(telnyxWebhookService.TelnyxWebhookError);
+      await expect(telnyxWebhookService.handleTelnyxWebhookEvent(event)).rejects.toThrow(
+        telnyxWebhookService.TelnyxWebhookError,
+      );
     });
 
     it('should use occurred_at as fallback for sent timestamp', async () => {
@@ -337,7 +330,7 @@ describe('Telnyx Webhook Service', () => {
       expect(mockUpdateChain.set).toHaveBeenCalledWith(
         expect.objectContaining({
           sentAt: new Date(occurredAt),
-        })
+        }),
       );
     });
 
@@ -359,7 +352,7 @@ describe('Telnyx Webhook Service', () => {
       expect(mockUpdateChain.set).toHaveBeenCalledWith(
         expect.objectContaining({
           deliveredAt: new Date(receivedAt),
-        })
+        }),
       );
     });
   });

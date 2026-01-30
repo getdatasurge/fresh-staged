@@ -40,25 +40,25 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function buildShortName(address?: NominatimResult["address"]): string {
-  if (!address) return "";
-  
-  const city = address.city || address.town || address.village || "";
-  const state = address.state || "";
-  const country = address.country || "";
-  
+function buildShortName(address?: NominatimResult['address']): string {
+  if (!address) return '';
+
+  const city = address.city || address.town || address.village || '';
+  const state = address.state || '';
+  const country = address.country || '';
+
   const parts = [city, state, country].filter(Boolean);
-  return parts.slice(0, 2).join(", ");
+  return parts.slice(0, 2).join(', ');
 }
 
 export async function searchAddress(query: string): Promise<GeocodingResult[]> {
   const trimmedQuery = query.trim();
-  
+
   // Minimum query length
   if (trimmedQuery.length < 3) {
     return [];
   }
-  
+
   // Check cache
   const cacheKey = trimmedQuery.toLowerCase();
   const cachedTimestamp = cacheTimestamps.get(cacheKey);
@@ -66,7 +66,7 @@ export async function searchAddress(query: string): Promise<GeocodingResult[]> {
     const cached = cache.get(cacheKey);
     if (cached) return cached;
   }
-  
+
   // Rate limiting
   const now = Date.now();
   const timeSinceLastRequest = now - lastRequestTime;
@@ -74,49 +74,46 @@ export async function searchAddress(query: string): Promise<GeocodingResult[]> {
     await sleep(MIN_REQUEST_INTERVAL - timeSinceLastRequest);
   }
   lastRequestTime = Date.now();
-  
+
   try {
     const params = new URLSearchParams({
       q: trimmedQuery,
-      format: "json",
-      addressdetails: "1",
-      limit: "5",
+      format: 'json',
+      addressdetails: '1',
+      limit: '5',
     });
-    
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?${params}`,
-      {
-        headers: {
-          "User-Agent": "FreshTrackPro/1.0 (site-location-config)",
-          "Accept-Language": "en",
-        },
-      }
-    );
-    
+
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+      headers: {
+        'User-Agent': 'FreshTrackPro/1.0 (site-location-config)',
+        'Accept-Language': 'en',
+      },
+    });
+
     if (!response.ok) {
       if (response.status === 429) {
-        throw new Error("Too many requests. Please wait a moment and try again.");
+        throw new Error('Too many requests. Please wait a moment and try again.');
       }
       throw new Error(`Geocoding request failed: ${response.status}`);
     }
-    
+
     const data: NominatimResult[] = await response.json();
-    
+
     const results: GeocodingResult[] = data.map((item) => ({
       displayName: item.display_name,
-      shortName: buildShortName(item.address) || item.display_name.split(",")[0],
+      shortName: buildShortName(item.address) || item.display_name.split(',')[0],
       latitude: parseFloat(item.lat),
       longitude: parseFloat(item.lon),
       type: item.type,
     }));
-    
+
     // Cache results
     cache.set(cacheKey, results);
     cacheTimestamps.set(cacheKey, Date.now());
-    
+
     return results;
   } catch (error) {
-    console.error("Geocoding error:", error);
+    console.error('Geocoding error:', error);
     throw error;
   }
 }

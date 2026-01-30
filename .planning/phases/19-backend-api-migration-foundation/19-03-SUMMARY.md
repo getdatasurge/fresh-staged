@@ -13,12 +13,12 @@ affects: [19-04, 19-05, 19-06, frontend-api-migration]
 
 # Tech tracking
 tech-stack:
-  added: ["@trpc/client@11.8.1", "@trpc/tanstack-react-query@11.8.1"]
+  added: ['@trpc/client@11.8.1', '@trpc/tanstack-react-query@11.8.1']
   patterns:
-    - "TRPCProvider wraps application for context"
-    - "createTRPCClientInstance factory for auth integration"
-    - "httpBatchLink with x-stack-access-token header"
-    - "TRPCWrapper component pattern for auth dependency"
+    - 'TRPCProvider wraps application for context'
+    - 'createTRPCClientInstance factory for auth integration'
+    - 'httpBatchLink with x-stack-access-token header'
+    - 'TRPCWrapper component pattern for auth dependency'
 
 key-files:
   created:
@@ -28,16 +28,16 @@ key-files:
     - package.json
 
 key-decisions:
-  - "Use createTRPCContext from @trpc/tanstack-react-query for React hooks"
-  - "TRPCWrapper component inside StackProvider and QueryClientProvider"
-  - "useMemo for client recreation on user changes"
-  - "Auth token retrieved via user.getAuthJson() from Stack Auth"
+  - 'Use createTRPCContext from @trpc/tanstack-react-query for React hooks'
+  - 'TRPCWrapper component inside StackProvider and QueryClientProvider'
+  - 'useMemo for client recreation on user changes'
+  - 'Auth token retrieved via user.getAuthJson() from Stack Auth'
 
 patterns-established:
-  - "Pattern 1: TRPCProvider requires both queryClient and trpcClient props"
-  - "Pattern 2: Client created with httpBatchLink for batched requests"
-  - "Pattern 3: TRPCWrapper pattern for components needing hooks (useUser, useQueryClient)"
-  - "Pattern 4: Type safety flows from backend AppRouter via monorepo import"
+  - 'Pattern 1: TRPCProvider requires both queryClient and trpcClient props'
+  - 'Pattern 2: Client created with httpBatchLink for batched requests'
+  - 'Pattern 3: TRPCWrapper pattern for components needing hooks (useUser, useQueryClient)'
+  - 'Pattern 4: Type safety flows from backend AppRouter via monorepo import'
 
 # Metrics
 duration: 5min
@@ -90,27 +90,33 @@ Each task was committed atomically:
 ## Files Created/Modified
 
 ### Created
+
 - `src/lib/trpc.ts` - tRPC client setup with provider, hooks, and client factory
 
 ### Modified
+
 - `src/App.tsx` - Added TRPCWrapper component in provider chain
 - `package.json` - Added tRPC client dependencies
 
 ## Decisions Made
 
 **TRPC-06: Use createTRPCContext for React hooks**
+
 - Rationale: Official tRPC v11 pattern for TanStack React Query integration
 - Impact: Provides TRPCProvider, useTRPC, useTRPCClient hooks for components
 
 **TRPC-07: TRPCWrapper component pattern**
+
 - Rationale: Needs access to useUser (StackProvider) and useQueryClient (QueryClientProvider)
 - Impact: Clean component composition, clear dependency requirements
 
 **TRPC-08: useMemo for client recreation**
+
 - Rationale: Recreate client when user changes (login/logout)
 - Impact: Ensures fresh auth token, prevents stale client state
 
 **TRPC-09: Auth token from Stack Auth user.getAuthJson()**
+
 - Rationale: Consistent with existing API client pattern
 - Impact: All tRPC calls authenticated via x-stack-access-token header
 
@@ -119,6 +125,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Fixed tRPC import path**
+
 - **Found during:** Task 2 (TypeScript compilation)
 - **Issue:** Initially used `@trpc/react-query` which doesn't exist in v11
 - **Fix:** Changed to `@trpc/tanstack-react-query` (correct package name)
@@ -127,6 +134,7 @@ Each task was committed atomically:
 - **Committed in:** 97ae157 (Task 2 commit)
 
 **2. [Rule 1 - Bug] Fixed client creation function**
+
 - **Found during:** Task 2 (TypeScript compilation)
 - **Issue:** Initially tried `createTRPCReact` which doesn't exist
 - **Fix:** Used `createTRPCContext` from @trpc/tanstack-react-query
@@ -135,6 +143,7 @@ Each task was committed atomically:
 - **Committed in:** 97ae157 (Task 2 commit)
 
 **3. [Rule 1 - Bug] Fixed client instantiation**
+
 - **Found during:** Task 2 (TypeScript compilation)
 - **Issue:** Initially tried `useTRPCClient.createClient` which doesn't exist
 - **Fix:** Used `createTRPCClient` from @trpc/client package
@@ -158,6 +167,7 @@ None - tRPC client uses existing Stack Auth JWT authentication.
 ## Next Phase Readiness
 
 **Ready for Plan 04 (Organizations API Migration):**
+
 - TRPCProvider wraps application
 - useTRPC hook available in components
 - Type inference works from backend AppRouter
@@ -165,19 +175,23 @@ None - tRPC client uses existing Stack Auth JWT authentication.
 - Application builds and loads without errors
 
 **Test Coverage:**
+
 - Build verification: npm run build successful
 - TypeScript compilation: No frontend errors
 - Runtime: Application structure intact (verified via build)
 
 **Known Limitations:**
+
 - No tRPC procedures called yet (organizations API migration in Plan 04)
 - Backend has pre-existing TypeScript errors (not related to tRPC)
 
 **Next Steps:**
+
 - Plan 04: Migrate organizations API to use tRPC
 - Plan 05: Migrate sites, areas, units APIs to use tRPC
 - Plan 06: Migrate readings and alerts APIs to use tRPC
 
 ---
-*Phase: 19-backend-api-migration-foundation*
-*Completed: 2026-01-24*
+
+_Phase: 19-backend-api-migration-foundation_
+_Completed: 2026-01-24_

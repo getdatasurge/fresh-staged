@@ -25,6 +25,7 @@ You are invoking the **{agent}** agent with the following prompt:
 ## Agent Invocation
 
 The agent invoker will:
+
 1. Detect the current CLI (Claude, Copilot, or Codex)
 2. Load the agent registry to validate agent existence
 3. Use the CLI-specific adapter to invoke the agent
@@ -35,6 +36,7 @@ The agent invoker will:
 Execute the agent invocation and return the result to the user.
 
 **Technical implementation:**
+
 ```javascript
 const { invokeAgent } = require('./bin/lib/orchestration/agent-invoker.js');
 const AgentRegistry = require('./bin/lib/orchestration/agent-registry.js');

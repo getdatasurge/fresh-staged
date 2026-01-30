@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { ChevronDown, MapPin, Search, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useNavTree } from "@/hooks/useNavTree";
-import { useSidebarExpandState } from "@/hooks/useSidebarExpandState";
-import { useQuickCreateEntityLayout } from "@/hooks/useQuickCreateEntityLayout";
-import { LayoutLinksGroup } from "./LayoutLinksGroup";
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ChevronDown, MapPin, Search, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useNavTree } from '@/hooks/useNavTree';
+import { useSidebarExpandState } from '@/hooks/useSidebarExpandState';
+import { useQuickCreateEntityLayout } from '@/hooks/useQuickCreateEntityLayout';
+import { LayoutLinksGroup } from './LayoutLinksGroup';
 
 interface SidebarSitesAccordionProps {
   organizationId: string | null;
@@ -23,7 +23,7 @@ interface SidebarSitesAccordionProps {
 export function SidebarSitesAccordion({ organizationId, className }: SidebarSitesAccordionProps) {
   const params = useParams<{ siteId?: string; layoutKey?: string }>();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { sites, isLoading, error } = useNavTree(organizationId);
   const expandState = useSidebarExpandState();
@@ -52,7 +52,7 @@ export function SidebarSitesAccordion({ organizationId, className }: SidebarSite
   };
 
   // Filter sites based on search
-  const filteredSites = sites.filter(site => {
+  const filteredSites = sites.filter((site) => {
     if (!searchQuery.trim()) return true;
     return site.siteName.toLowerCase().includes(searchQuery.toLowerCase());
   });
@@ -64,19 +64,23 @@ export function SidebarSitesAccordion({ organizationId, className }: SidebarSite
     <Collapsible
       open={!expandState.isSitesSectionCollapsed}
       onOpenChange={expandState.toggleSitesSection}
-      className={cn("w-full", className)}
+      className={cn('w-full', className)}
     >
       <CollapsibleTrigger className="w-full">
-        <div className={cn(
-          "flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-muted/50 transition-colors w-full text-left",
-          isOnSitesSection && "bg-accent/10 text-accent"
-        )}>
+        <div
+          className={cn(
+            'flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-muted/50 transition-colors w-full text-left',
+            isOnSitesSection && 'bg-accent/10 text-accent',
+          )}
+        >
           <MapPin className="h-5 w-5 shrink-0" />
           <span className="font-medium flex-1">Sites</span>
-          <ChevronDown className={cn(
-            "h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0",
-            expandState.isSitesSectionCollapsed && "-rotate-90"
-          )} />
+          <ChevronDown
+            className={cn(
+              'h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0',
+              expandState.isSitesSectionCollapsed && '-rotate-90',
+            )}
+          />
         </div>
       </CollapsibleTrigger>
 
@@ -119,16 +123,22 @@ export function SidebarSitesAccordion({ organizationId, className }: SidebarSite
                     onOpenChange={() => expandState.toggleSite(site.siteId)}
                   >
                     <CollapsibleTrigger className="w-full">
-                      <div className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm hover:bg-muted/50 transition-colors w-full text-left",
-                        params.siteId === site.siteId && "bg-accent/10 text-accent"
-                      )}>
+                      <div
+                        className={cn(
+                          'flex items-center gap-2 px-3 py-1.5 rounded-md text-sm hover:bg-muted/50 transition-colors w-full text-left',
+                          params.siteId === site.siteId && 'bg-accent/10 text-accent',
+                        )}
+                      >
                         <MapPin className="h-4 w-4 shrink-0" />
-                        <span className="truncate flex-1" title={site.siteName}>{site.siteName}</span>
-                        <ChevronDown className={cn(
-                          "h-3 w-3 text-muted-foreground transition-transform duration-200 shrink-0",
-                          !expandState.isSiteExpanded(site.siteId) && "-rotate-90"
-                        )} />
+                        <span className="truncate flex-1" title={site.siteName}>
+                          {site.siteName}
+                        </span>
+                        <ChevronDown
+                          className={cn(
+                            'h-3 w-3 text-muted-foreground transition-transform duration-200 shrink-0',
+                            !expandState.isSiteExpanded(site.siteId) && '-rotate-90',
+                          )}
+                        />
                       </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">

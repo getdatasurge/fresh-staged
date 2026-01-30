@@ -18,7 +18,7 @@ affects: [new-users, deployment-planning]
 # Tech tracking
 tech-stack:
   added: []
-  patterns: ["Scenario-based decision guides for non-technical users"]
+  patterns: ['Scenario-based decision guides for non-technical users']
 
 key-files:
   created:
@@ -28,15 +28,15 @@ key-files:
     - docs/DIGITALOCEAN_DEPLOYMENT.md
 
 key-decisions:
-  - "Scenario-based approach over feature comparison matrix"
-  - "Included 5 scenarios covering small business to enterprise use cases"
-  - "Cost estimates with monthly breakdowns for transparency"
-  - "Minimal cross-references in deployment docs to avoid redundancy"
+  - 'Scenario-based approach over feature comparison matrix'
+  - 'Included 5 scenarios covering small business to enterprise use cases'
+  - 'Cost estimates with monthly breakdowns for transparency'
+  - 'Minimal cross-references in deployment docs to avoid redundancy'
 
 patterns-established:
-  - "Deployment decision guides start with quick decision matrix"
-  - "Each scenario includes profile, scale, budget, recommendation, and cost breakdown"
-  - "FAQ section addresses common concerns (migration, reliability, cloud providers)"
+  - 'Deployment decision guides start with quick decision matrix'
+  - 'Each scenario includes profile, scale, budget, recommendation, and cost breakdown'
+  - 'FAQ section addresses common concerns (migration, reliability, cloud providers)'
 
 # Metrics
 duration: 3min
@@ -95,10 +95,12 @@ Each task was committed atomically:
 ## Decisions Made
 
 **Scenario-based approach over feature comparison:**
+
 - Users respond better to "which scenario matches my situation" than abstract feature lists
 - Each scenario provides explicit recommendation, not just options
 
 **Five scenarios chosen:**
+
 1. Small restaurant/cafe (1-10 sensors) - Simplest path for non-technical users
 2. Multi-location food service (10-50 sensors) - Growth-oriented businesses
 3. Healthcare/compliance-heavy - Data sovereignty and audit requirements
@@ -106,11 +108,13 @@ Each task was committed atomically:
 5. Development/testing - Zero-cost evaluation
 
 **Cost transparency:**
+
 - Monthly costs provided for each scenario
 - Breakdown by component (compute, database, storage, backups)
 - Self-hosted marked as $0 (infrastructure only) to clarify no marginal cost
 
 **Minimal cross-references:**
+
 - Single callout box at top of each deployment guide
 - Avoids cluttering existing docs while providing discovery path
 
@@ -129,6 +133,7 @@ None - documentation-only plan.
 ## Next Phase Readiness
 
 **Ready for:**
+
 - New users can now make informed deployment decisions
 - Clear path from decision guide to detailed deployment guides
 - Cost transparency enables budget planning
@@ -138,5 +143,6 @@ None - documentation-only plan.
 **Concerns:** None - guide addresses success criterion #5 (deployment decision guide exists)
 
 ---
-*Phase: 13-e2e-validation-cutover*
-*Completed: 2026-01-24*
+
+_Phase: 13-e2e-validation-cutover_
+_Completed: 2026-01-24_

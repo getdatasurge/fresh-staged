@@ -17,19 +17,22 @@ The fix is straightforward: change `useSuperAdmin()` from a **required context**
 No new libraries are needed. This fix uses only existing React primitives.
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| React | existing | `createContext`, `useContext` | Already in use |
+
+| Library    | Version  | Purpose                        | Why Standard   |
+| ---------- | -------- | ------------------------------ | -------------- |
+| React      | existing | `createContext`, `useContext`  | Already in use |
 | TypeScript | existing | Type safety for default object | Already in use |
 
 ### Supporting
+
 None required.
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Safe default return | Error boundary wrapping | Error boundaries catch but still cause re-render and flash; doesn't prevent the error from occurring |
-| Safe default return | Move provider higher in tree | Provider is already at the right level (inside BrowserRouter); timing issue is the root cause |
+
+| Instead of                          | Could Use                               | Tradeoff                                                                                                                                         |
+| ----------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Safe default return                 | Error boundary wrapping                 | Error boundaries catch but still cause re-render and flash; doesn't prevent the error from occurring                                             |
+| Safe default return                 | Move provider higher in tree            | Provider is already at the right level (inside BrowserRouter); timing issue is the root cause                                                    |
 | Single `useSuperAdmin` with default | Separate `useSuperAdminOptional()` hook | Adds API surface; every consumer would need to decide which to use; unnecessary since ALL 20 call sites should gracefully handle missing context |
 
 ## Architecture Patterns
@@ -87,37 +90,38 @@ const SUPER_ADMIN_DEFAULT: SuperAdminContextType = {
 
   // Refresh - no-op
   refreshSuperAdminStatus: async () => {},
-}
+};
 ```
 
 Then modify `useSuperAdmin`:
 
 ```typescript
 export function useSuperAdmin(): SuperAdminContextType {
-  const context = useContext(SuperAdminContext)
+  const context = useContext(SuperAdminContext);
   if (context === undefined) {
-    return SUPER_ADMIN_DEFAULT
+    return SUPER_ADMIN_DEFAULT;
   }
-  return context
+  return context;
 }
 ```
 
 ### Critical Default Value Choices
 
-| Field | Default Value | Rationale |
-|-------|---------------|-----------|
-| `isSuperAdmin` | `false` | Non-admin is the safe assumption; prevents elevated access |
-| `isLoadingSuperAdmin` | `true` | Signals "still loading" so consumers show loading states rather than making decisions based on incomplete data |
-| `rolesLoaded` | `false` | Consistent with "still loading" |
-| `roleLoadStatus` | `'idle'` | Matches initial state in provider |
-| `isSupportModeActive` | `false` | Support mode off = safest default |
-| `impersonation.isImpersonating` | `false` | No impersonation = normal user flow |
-| All async functions | `async () => {}` or `async () => false` | No-ops that don't throw; `startImpersonation` returns `false` (failure) |
-| `registerImpersonationCallback` | `() => () => {}` | Returns a no-op unregister function |
+| Field                           | Default Value                           | Rationale                                                                                                      |
+| ------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `isSuperAdmin`                  | `false`                                 | Non-admin is the safe assumption; prevents elevated access                                                     |
+| `isLoadingSuperAdmin`           | `true`                                  | Signals "still loading" so consumers show loading states rather than making decisions based on incomplete data |
+| `rolesLoaded`                   | `false`                                 | Consistent with "still loading"                                                                                |
+| `roleLoadStatus`                | `'idle'`                                | Matches initial state in provider                                                                              |
+| `isSupportModeActive`           | `false`                                 | Support mode off = safest default                                                                              |
+| `impersonation.isImpersonating` | `false`                                 | No impersonation = normal user flow                                                                            |
+| All async functions             | `async () => {}` or `async () => false` | No-ops that don't throw; `startImpersonation` returns `false` (failure)                                        |
+| `registerImpersonationCallback` | `() => () => {}`                        | Returns a no-op unregister function                                                                            |
 
 ### Why `isLoadingSuperAdmin: true` Matters
 
 Several consumers check `isLoadingSuperAdmin` or `rolesLoaded` before rendering:
+
 - `PlatformGuard` (line 22): waits for `rolesLoaded` before redirect decisions
 - `RequireImpersonationGuard` (line 25): checks `isInitialized` which depends on `rolesLoaded`
 - `DashboardLayout` (line 63): reads `isLoadingSuperAdmin` and `rolesLoaded`
@@ -136,41 +140,46 @@ Setting `isLoadingSuperAdmin: true` and `rolesLoaded: false` ensures these consu
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Context availability check | Error boundary around each consumer | Safe default return from hook | Simpler, no component wrapping needed, no error flash |
-| No-op function defaults | Inline arrow functions in each consumer | Single shared default object at module scope | Avoids creating new function references on every render |
-| Loading state coordination | Custom loading tracker | `isLoadingSuperAdmin: true` default | Already built into consumer logic |
+| Problem                    | Don't Build                             | Use Instead                                  | Why                                                     |
+| -------------------------- | --------------------------------------- | -------------------------------------------- | ------------------------------------------------------- |
+| Context availability check | Error boundary around each consumer     | Safe default return from hook                | Simpler, no component wrapping needed, no error flash   |
+| No-op function defaults    | Inline arrow functions in each consumer | Single shared default object at module scope | Avoids creating new function references on every render |
+| Loading state coordination | Custom loading tracker                  | `isLoadingSuperAdmin: true` default          | Already built into consumer logic                       |
 
 **Key insight:** The consumers already handle the "not yet loaded" state properly (they check `rolesLoaded`, `isLoadingSuperAdmin`, `isInitialized`). The only problem is the `throw` prevents them from ever reaching that logic. Removing the throw and returning "still loading" defaults lets existing consumer logic work correctly.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Setting `isSuperAdmin: true` in defaults
+
 **What goes wrong:** Any component rendering before the provider would temporarily grant super admin privileges.
 **Why it happens:** Wanting to be "safe" by showing admin features as a fallback.
 **How to avoid:** Always default to `false` for privilege flags. `false` = no elevated access = safe.
 **Warning signs:** Tests passing in isolation where they shouldn't.
 
 ### Pitfall 2: Setting `isLoadingSuperAdmin: false` and `rolesLoaded: true` in defaults
+
 **What goes wrong:** `PlatformGuard` and `RequireImpersonationGuard` would make access-control decisions based on the default `isSuperAdmin: false`, potentially redirecting users incorrectly during the brief window before the provider mounts.
 **Why it happens:** Wanting defaults to look "complete" rather than "loading".
 **How to avoid:** Default to the loading state. Let consumers show spinners until the real provider value arrives.
 **Warning signs:** Brief flash of "access denied" or redirect on page load.
 
 ### Pitfall 3: Breaking the convenience hooks
+
 **What goes wrong:** `useIsSuperAdmin()`, `useSupportMode()`, and `useImpersonation()` all call `useSuperAdmin()` internally. If the return type changes, they break.
 **Why it happens:** Changing the return type of `useSuperAdmin`.
 **How to avoid:** The default object must match `SuperAdminContextType` exactly. The return type annotation `SuperAdminContextType` should be explicit on the function.
 **Warning signs:** TypeScript errors in convenience hooks after the change.
 
 ### Pitfall 4: Creating new objects on every call
+
 **What goes wrong:** Performance degradation -- every render creates new default objects and functions, triggering unnecessary re-renders in consumers that use reference equality.
 **Why it happens:** Defining the default inline in the hook function body.
 **How to avoid:** Define `SUPER_ADMIN_DEFAULT` as a module-level constant, outside any component or function. Object is created once and reused.
 **Warning signs:** React DevTools showing unnecessary re-renders in components using `useSuperAdmin`.
 
 ### Pitfall 5: Forgetting to match the `startImpersonation` return type
+
 **What goes wrong:** TypeScript error because `startImpersonation` returns `Promise<boolean>`, not `Promise<void>`.
 **Why it happens:** All other async functions return `Promise<void>`.
 **How to avoid:** Default: `startImpersonation: async () => false` (returns `false` = impersonation failed).
@@ -185,9 +194,7 @@ Setting `isLoadingSuperAdmin: true` and `rolesLoaded: false` ensures these consu
 Step 1: Add the default constant after the context creation (after line 89):
 
 ```typescript
-const SuperAdminContext = createContext<SuperAdminContextType | undefined>(
-  undefined,
-)
+const SuperAdminContext = createContext<SuperAdminContextType | undefined>(undefined);
 
 // Safe default for when hook is called before provider mounts
 const SUPER_ADMIN_DEFAULT: SuperAdminContextType = {
@@ -218,18 +225,18 @@ const SUPER_ADMIN_DEFAULT: SuperAdminContextType = {
   exitToplatform: () => {},
   logSuperAdminAction: async () => {},
   refreshSuperAdminStatus: async () => {},
-}
+};
 ```
 
 Step 2: Replace the `useSuperAdmin` function (lines 653-659):
 
 ```typescript
 export function useSuperAdmin(): SuperAdminContextType {
-  const context = useContext(SuperAdminContext)
+  const context = useContext(SuperAdminContext);
   if (context === undefined) {
-    return SUPER_ADMIN_DEFAULT
+    return SUPER_ADMIN_DEFAULT;
   }
-  return context
+  return context;
 }
 ```
 
@@ -238,6 +245,7 @@ That is the entire change. No other files need modification.
 ### What Consumers See
 
 **Before fix (broken):**
+
 ```
 Component renders -> calls useSuperAdmin() -> context undefined -> THROW
 -> Error: "useSuperAdmin must be used within a SuperAdminProvider"
@@ -245,6 +253,7 @@ Component renders -> calls useSuperAdmin() -> context undefined -> THROW
 ```
 
 **After fix (working):**
+
 ```
 Component renders -> calls useSuperAdmin() -> context undefined -> returns SUPER_ADMIN_DEFAULT
 -> isSuperAdmin=false, isLoadingSuperAdmin=true, rolesLoaded=false
@@ -256,33 +265,38 @@ Component renders -> calls useSuperAdmin() -> context undefined -> returns SUPER
 ### Impact on Key Consumers
 
 **`useEffectiveIdentity` (35 files depend on this):**
+
 - Gets `isSuperAdmin: false`, `rolesLoaded: false`, `impersonation.isImpersonating: false`
 - `isInitialized` will be `false` (because `rolesLoaded` is false)
 - Components see `isInitialized: false` and show loading states -- correct behavior
 
 **`RequireImpersonationGuard` (wraps most routes):**
+
 - Gets `isSuperAdmin: false`, `isSupportModeActive: false`
 - `isInitialized` is `false` from `useEffectiveIdentity`
 - Shows loading spinner until provider mounts -- correct behavior
 
 **`DashboardLayout`:**
+
 - Gets `isLoadingSuperAdmin: true`, `rolesLoaded: false`
 - Uses loading states appropriately -- correct behavior
 
 **`ImpersonationCacheSync`:**
+
 - Gets `registerImpersonationCallback: () => () => {}`
 - Registers a no-op, which returns a no-op unregister
 - `useEffect` cleanup calls the no-op unregister -- correct behavior
 
 **Platform pages (PlatformOrganizations, PlatformUsers, etc.):**
+
 - Get `logSuperAdminAction: async () => {}` (no-op)
 - These are behind `PlatformGuard` which checks `rolesLoaded`, so they won't render until provider is ready anyway
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| `throw new Error()` on missing context | Return safe defaults for optional contexts | Established React pattern | Prevents render errors during provider mount timing |
+| Old Approach                                    | Current Approach                                | When Changed                          | Impact                                                |
+| ----------------------------------------------- | ----------------------------------------------- | ------------------------------------- | ----------------------------------------------------- |
+| `throw new Error()` on missing context          | Return safe defaults for optional contexts      | Established React pattern             | Prevents render errors during provider mount timing   |
 | `createContext(defaultValue)` with full default | `createContext(undefined)` + hook-level default | Kent C. Dodds pattern, widely adopted | Keeps sentinel detection while allowing safe fallback |
 
 **Note:** The "throw" pattern is still considered best practice for contexts that MUST have a provider. The safe-default pattern is specifically for cases where render timing causes the throw to fire even though the provider IS in the tree -- which is exactly this case.
@@ -306,6 +320,7 @@ Component renders -> calls useSuperAdmin() -> context undefined -> returns SUPER
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Direct code reading: `src/contexts/SuperAdminContext.tsx` (full file, 699 lines)
 - Direct code reading: `src/hooks/useEffectiveIdentity.ts` (130 lines)
 - Direct code reading: `src/App.tsx` (provider tree structure)
@@ -314,17 +329,20 @@ Component renders -> calls useSuperAdmin() -> context undefined -> returns SUPER
 - Grep results: 20 files import `useSuperAdmin`, 35 files import `useEffectiveIdentity`
 
 ### Secondary (MEDIUM confidence)
+
 - [React official docs - useContext](https://react.dev/reference/react/useContext)
 - [React official docs - createContext](https://react.dev/reference/react/createContext)
 - [Kent C. Dodds - How to use React Context effectively](https://kentcdodds.com/blog/how-to-use-react-context-effectively)
 
 ### Tertiary (LOW confidence)
+
 - [How to Safely Check Context Existence in React with Hooks](https://decodefix.com/how-to-safely-check-context-existence-in-react-with-hooks/)
 - [How to Handle Errors When Accessing Context Outside the Provider in React](https://dev.to/surjoyday_kt/how-to-handle-errors-when-accessing-context-outside-the-provider-in-react-41ce)
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - No new dependencies; pure React pattern
 - Architecture: HIGH - Verified against actual source code; all consumer behaviors traced
 - Pitfalls: HIGH - Derived from actual code analysis of all 20 direct consumers and 35 indirect consumers
@@ -334,6 +352,7 @@ Component renders -> calls useSuperAdmin() -> context undefined -> returns SUPER
 **Valid until:** Indefinite (React context patterns are stable; code-specific details valid until SuperAdminContext.tsx changes)
 
 **Scope of change:**
+
 - Files modified: 1 (`src/contexts/SuperAdminContext.tsx`)
 - Lines added: ~30 (default constant)
 - Lines modified: ~3 (hook function body)

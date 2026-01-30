@@ -26,6 +26,7 @@ All tests must pass before production cutover.
 ### Validation Steps
 
 - [ ] **Run E2E sensor pipeline test**
+
   ```bash
   export BASE_URL="http://localhost:3000"  # Or production URL
   export TTN_WEBHOOK_SECRET="your-api-key"
@@ -68,6 +69,7 @@ If tests fail, see `scripts/test/README.md` section "Troubleshooting → e2e-sen
 ### Validation Steps
 
 - [ ] **Run E2E alert notification test**
+
   ```bash
   export BASE_URL="http://localhost:3000"
   export TEST_API_KEY="your-api-key"
@@ -83,11 +85,13 @@ If tests fail, see `scripts/test/README.md` section "Troubleshooting → e2e-sen
   - Check: Script output shows "✓ Alert resolved"
 
 - [ ] **Verify: Webhook notifications are delivered (if configured)**
+
   ```bash
   export WEBHOOK_TEST=true
   export WEBHOOK_PORT=8888
   ./scripts/test/e2e-alert-notifications.sh
   ```
+
   - Script automatically starts webhook receiver
   - Check: Script output shows "✓ Webhook notification received"
   - Webhook payload saved to `/tmp/webhook-test-*.json`
@@ -119,18 +123,22 @@ If tests fail, see `scripts/test/README.md` section "Troubleshooting → General
 ### Validation Steps
 
 - [ ] **Generate 100K test records for migration timing**
+
   ```bash
   npx tsx scripts/test/generate-test-data.ts --yes
   ```
+
   - Check: Script generates 100,000 sensor readings
   - Check: Data distribution is realistic (30 devices, 30 days)
   - Check: 7.5% temperature excursions for alert data
   - See: `scripts/test/README.md` → "Synthetic Data Generation"
 
 - [ ] **Run migration timing validation**
+
   ```bash
   ./scripts/test/validate-migration-timing.sh
   ```
+
   - Check: Script measures pg_dump export duration
   - Check: Script measures pg_restore import duration
   - Check: Script verifies data integrity (row count comparison)
@@ -170,10 +178,12 @@ If tests fail, see `scripts/test/README.md` section "Troubleshooting → General
 ### Validation Steps
 
 - [ ] **Run zero-downtime deployment validation**
+
   ```bash
   export BASE_URL="http://localhost:3000"
   ./scripts/test/validate-zero-downtime.sh
   ```
+
   - Script validates 5 steps (see below)
   - Script simulates container recreation during deployment
   - Script polls health endpoint during transition
@@ -236,6 +246,7 @@ If tests fail, see `scripts/test/README.md` section "Troubleshooting → General
 ### Note on Backend Containerization
 
 If backend is not yet containerized:
+
 - Script will detect this gracefully
 - Output will show: "No backend container found - validation requires backend service"
 - Script provides docker-compose.yml example for adding backend service
@@ -247,13 +258,13 @@ If backend is not yet containerized:
 
 Use this table to verify all Phase 13 success criteria are met:
 
-| Criterion | How to Verify | Status |
-|-----------|--------------|--------|
-| Sensor data flows ingestion → storage → alert | Run `e2e-sensor-pipeline.sh` | [ ] |
-| Alert notifications delivered | Run `e2e-alert-notifications.sh` with WEBHOOK_TEST=true | [ ] |
-| Migration timing documented | Run `validate-migration-timing.sh`, record estimates | [ ] |
-| Zero-downtime validated | Run `validate-zero-downtime.sh`, verify ≥95% success | [ ] |
-| Deployment guide exists | Check `docs/DEPLOYMENT_DECISION_GUIDE.md` exists | [ ] |
+| Criterion                                     | How to Verify                                           | Status |
+| --------------------------------------------- | ------------------------------------------------------- | ------ |
+| Sensor data flows ingestion → storage → alert | Run `e2e-sensor-pipeline.sh`                            | [ ]    |
+| Alert notifications delivered                 | Run `e2e-alert-notifications.sh` with WEBHOOK_TEST=true | [ ]    |
+| Migration timing documented                   | Run `validate-migration-timing.sh`, record estimates    | [ ]    |
+| Zero-downtime validated                       | Run `validate-zero-downtime.sh`, verify ≥95% success    | [ ]    |
+| Deployment guide exists                       | Check `docs/DEPLOYMENT_DECISION_GUIDE.md` exists        | [ ]    |
 
 **All criteria must be checked before proceeding to production cutover.**
 
@@ -350,17 +361,21 @@ After production cutover, verify system is operating correctly:
 ### Immediate Checks (within 5 minutes)
 
 - [ ] **All services healthy**
+
   ```bash
   docker compose ps
   ```
+
   - All containers show "(healthy)" status
   - No containers in "restarting" or "exited" state
 
 - [ ] **Health endpoints responding**
+
   ```bash
   curl https://freshtrack.example.com/health
   curl https://freshtrack.example.com/health/ready
   ```
+
   - Both return HTTP 200
   - /health returns `{"status": "healthy"}`
   - /health/ready returns `{"ready": true}`
@@ -415,6 +430,7 @@ If critical issues are detected after cutover, follow this rollback procedure:
 ### When to Rollback
 
 Rollback immediately if:
+
 - Health checks fail for >5 minutes
 - Database is unreachable or corrupted
 - Critical functionality broken (sensor ingestion, alert evaluation)
@@ -424,6 +440,7 @@ Rollback immediately if:
 ### Rollback Steps
 
 1. **Restore from latest backup**
+
    ```bash
    # Stop application services
    docker compose down backend frontend
@@ -435,10 +452,12 @@ Rollback immediately if:
    # Verify restore
    psql -h localhost -U postgres -d freshtrack -c "SELECT COUNT(*) FROM sensor_readings;"
    ```
+
    - See: `docs/DATABASE.md` → "Disaster Recovery Procedures"
    - See: `.planning/phases/10-database-production-readiness/10-05-SUMMARY.md`
 
 2. **Revert to previous Docker images**
+
    ```bash
    # deploy-selfhosted.sh supports rollback via version tags
    cd /opt/freshtrack-pro
@@ -449,6 +468,7 @@ Rollback immediately if:
    docker compose pull  # Pull previous tagged versions
    docker compose up -d
    ```
+
    - Deployment script maintains 3 versions by default (VERSION_RETENTION)
    - Rollback only affects application code, not database
 
@@ -514,11 +534,11 @@ See: `scripts/test/README.md` for complete test suite documentation
 
 ## Checklist Completion
 
-**Date:** _________________
+**Date:** **\*\*\*\***\_**\*\*\*\***
 
-**Validated by:** _________________
+**Validated by:** **\*\*\*\***\_**\*\*\*\***
 
-**Production URL:** _________________
+**Production URL:** **\*\*\*\***\_**\*\*\*\***
 
 **All tests passed:** [ ] Yes / [ ] No
 

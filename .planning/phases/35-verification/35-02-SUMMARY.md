@@ -25,13 +25,13 @@ key-files:
     - scripts/verify-deployment.sh
 
 key-decisions:
-  - "E2E test inline logic (not wrapper function) - matches e2e-sensor-pipeline.sh pattern"
-  - "3-consecutive-pass only for dashboard - most critical user-facing endpoint"
-  - "Monitoring failures are warnings not blockers - may require auth in some setups"
+  - 'E2E test inline logic (not wrapper function) - matches e2e-sensor-pipeline.sh pattern'
+  - '3-consecutive-pass only for dashboard - most critical user-facing endpoint'
+  - 'Monitoring failures are warnings not blockers - may require auth in some setups'
 
 patterns-established:
-  - "E2E test auto-detection: RUN_E2E_TEST=auto with TTN_WEBHOOK_SECRET triggers test"
-  - "Verification section numbering: each VERIFY-XX explicitly labeled in comments"
+  - 'E2E test auto-detection: RUN_E2E_TEST=auto with TTN_WEBHOOK_SECRET triggers test'
+  - 'Verification section numbering: each VERIFY-XX explicitly labeled in comments'
 
 # Metrics
 duration: 2min
@@ -93,5 +93,6 @@ None - no external service configuration required.
 - Phase 36 (Post-Deployment Setup) can now be unblocked
 
 ---
-*Phase: 35-verification*
-*Completed: 2026-01-29*
+
+_Phase: 35-verification_
+_Completed: 2026-01-29_

@@ -1,7 +1,7 @@
 /**
  * TTN Validation Result Panel
  * Displays rich validation results with actionable guidance for fixing issues
- * 
+ *
  * Features:
  * - Clear success/failure state display
  * - Explicit permission probe with critical/optional distinction
@@ -9,13 +9,21 @@
  * - Mismatch detection warnings
  */
 
-import React, { useState } from "react";
-import { CheckCircle, XCircle, AlertTriangle, Copy, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import React, { useState } from 'react';
+import {
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Copy,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 export interface ValidationError {
   code: string;
@@ -48,64 +56,66 @@ interface TTNValidationResultPanelProps {
 
 // Required scopes for full TTN integration with critical/optional distinction
 export const REQUIRED_SCOPES = [
-  { 
-    id: "info", 
-    label: "Application: Read", 
-    right: "RIGHT_APPLICATION_INFO",
+  {
+    id: 'info',
+    label: 'Application: Read',
+    right: 'RIGHT_APPLICATION_INFO',
     critical: true,
-    description: "Required to access application information"
+    description: 'Required to access application information',
   },
-  { 
-    id: "devices_read", 
-    label: "Devices: Read", 
-    right: "RIGHT_APPLICATION_DEVICES_READ",
+  {
+    id: 'devices_read',
+    label: 'Devices: Read',
+    right: 'RIGHT_APPLICATION_DEVICES_READ',
     critical: true,
-    description: "Required to list and view sensors"
+    description: 'Required to list and view sensors',
   },
-  { 
-    id: "devices_write", 
-    label: "Devices: Write", 
-    right: "RIGHT_APPLICATION_DEVICES_WRITE",
+  {
+    id: 'devices_write',
+    label: 'Devices: Write',
+    right: 'RIGHT_APPLICATION_DEVICES_WRITE',
     critical: false,
-    description: "Required to provision new sensors"
+    description: 'Required to provision new sensors',
   },
-  { 
-    id: "traffic_read", 
-    label: "Traffic: Read (uplinks)", 
-    right: "RIGHT_APPLICATION_TRAFFIC_READ",
+  {
+    id: 'traffic_read',
+    label: 'Traffic: Read (uplinks)',
+    right: 'RIGHT_APPLICATION_TRAFFIC_READ',
     critical: true,
-    description: "Required to receive sensor readings"
+    description: 'Required to receive sensor readings',
   },
-  { 
-    id: "traffic_down", 
-    label: "Traffic: Write (downlinks)", 
-    right: "RIGHT_APPLICATION_TRAFFIC_DOWN_WRITE",
+  {
+    id: 'traffic_down',
+    label: 'Traffic: Write (downlinks)',
+    right: 'RIGHT_APPLICATION_TRAFFIC_DOWN_WRITE',
     critical: false,
-    description: "Required to send commands to sensors"
+    description: 'Required to send commands to sensors',
   },
-  { 
-    id: "settings", 
-    label: "Settings: Write (webhooks)", 
-    right: "RIGHT_APPLICATION_SETTINGS_BASIC",
+  {
+    id: 'settings',
+    label: 'Settings: Write (webhooks)',
+    right: 'RIGHT_APPLICATION_SETTINGS_BASIC',
     critical: true,
-    description: "Required to configure data webhook"
+    description: 'Required to configure data webhook',
   },
 ];
 
-const TTN_CONSOLE_URL = "https://console.cloud.thethings.network";
+const TTN_CONSOLE_URL = 'https://console.cloud.thethings.network';
 
 // Permission row helper component
-const PermissionRow = ({ 
-  scope, 
-  granted 
-}: { 
-  scope: typeof REQUIRED_SCOPES[0]; 
+const PermissionRow = ({
+  scope,
+  granted,
+}: {
+  scope: (typeof REQUIRED_SCOPES)[0];
   granted?: boolean;
 }) => (
-  <div className={cn(
-    "flex items-center gap-2 p-1.5 rounded text-xs",
-    granted ? "bg-safe/5" : scope.critical ? "bg-destructive/5" : "bg-muted/50"
-  )}>
+  <div
+    className={cn(
+      'flex items-center gap-2 p-1.5 rounded text-xs',
+      granted ? 'bg-safe/5' : scope.critical ? 'bg-destructive/5' : 'bg-muted/50',
+    )}
+  >
     {granted ? (
       <CheckCircle className="h-3 w-3 text-safe shrink-0" />
     ) : scope.critical ? (
@@ -114,14 +124,18 @@ const PermissionRow = ({
       <AlertTriangle className="h-3 w-3 text-muted-foreground shrink-0" />
     )}
     <div className="flex-1">
-      <span className={cn(
-        granted ? "text-safe" : scope.critical ? "text-destructive" : "text-muted-foreground"
-      )}>
+      <span
+        className={cn(
+          granted ? 'text-safe' : scope.critical ? 'text-destructive' : 'text-muted-foreground',
+        )}
+      >
         {scope.label}
       </span>
     </div>
     {!granted && scope.critical && (
-      <Badge variant="destructive" className="text-[10px] h-4 px-1">Required</Badge>
+      <Badge variant="destructive" className="text-[10px] h-4 px-1">
+        Required
+      </Badge>
     )}
   </div>
 );
@@ -132,7 +146,7 @@ export function TTNValidationResultPanel({ result, applicationId }: TTNValidatio
   const copyRequestId = () => {
     if (result.request_id) {
       navigator.clipboard.writeText(result.request_id);
-      toast.success("Request ID copied");
+      toast.success('Request ID copied');
     }
   };
 
@@ -151,16 +165,20 @@ export function TTNValidationResultPanel({ result, applicationId }: TTNValidatio
                 </Badge>
               )}
             </div>
-            
+
             {/* Permission Matrix (success) */}
             {result.permissions && (
               <div className="mt-2 space-y-1">
                 <p className="text-xs text-muted-foreground">Granted permissions:</p>
                 <div className="flex flex-wrap gap-1">
-                  {REQUIRED_SCOPES.filter(scope => 
-                    result.permissions?.rights.includes(scope.right)
-                  ).map(scope => (
-                    <Badge key={scope.id} variant="outline" className="text-xs bg-safe/5 text-safe border-safe/20">
+                  {REQUIRED_SCOPES.filter((scope) =>
+                    result.permissions?.rights.includes(scope.right),
+                  ).map((scope) => (
+                    <Badge
+                      key={scope.id}
+                      variant="outline"
+                      className="text-xs bg-safe/5 text-safe border-safe/20"
+                    >
                       <CheckCircle className="h-3 w-3 mr-1" />
                       {scope.label}
                     </Badge>
@@ -200,7 +218,10 @@ export function TTNValidationResultPanel({ result, applicationId }: TTNValidatio
               <span className="text-sm font-medium text-destructive">Configuration Invalid</span>
               <div className="flex items-center gap-2">
                 {result.error?.code && (
-                  <Badge variant="outline" className="text-xs font-mono text-destructive border-destructive/30">
+                  <Badge
+                    variant="outline"
+                    className="text-xs font-mono text-destructive border-destructive/30"
+                  >
                     {result.error.code}
                   </Badge>
                 )}
@@ -217,17 +238,15 @@ export function TTNValidationResultPanel({ result, applicationId }: TTNValidatio
                 )}
               </div>
             </div>
-            
+
             {/* Error Message */}
             <p className="text-sm text-destructive mt-1">
-              {result.error?.message || "Validation failed"}
+              {result.error?.message || 'Validation failed'}
             </p>
-            
+
             {/* Error Hint */}
             {result.error?.hint && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {result.error.hint}
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">{result.error.hint}</p>
             )}
           </div>
         </div>
@@ -256,10 +275,10 @@ export function TTNValidationResultPanel({ result, applicationId }: TTNValidatio
             {/* Step-by-step Instructions */}
             <ol className="text-xs text-muted-foreground space-y-1.5 list-decimal list-inside">
               <li>
-                Go to{" "}
-                <a 
-                  href={TTN_CONSOLE_URL} 
-                  target="_blank" 
+                Go to{' '}
+                <a
+                  href={TTN_CONSOLE_URL}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline inline-flex items-center gap-1"
                 >
@@ -267,13 +286,28 @@ export function TTNValidationResultPanel({ result, applicationId }: TTNValidatio
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </li>
-              <li>Navigate to <strong>Applications → {applicationId || "<your-app>"}</strong></li>
-              <li>Click <strong>API Keys</strong> in the left sidebar</li>
-              <li>Click <strong>"+ Add API Key"</strong></li>
-              <li>Name it <strong>"FrostGuard Integration"</strong></li>
-              <li>Select <strong>"Grant all current and future rights"</strong> OR add specific rights below</li>
-              <li>Click <strong>"Create API Key"</strong> and copy it immediately</li>
-              <li>Paste the key here and click <strong>Validate</strong></li>
+              <li>
+                Navigate to <strong>Applications → {applicationId || '<your-app>'}</strong>
+              </li>
+              <li>
+                Click <strong>API Keys</strong> in the left sidebar
+              </li>
+              <li>
+                Click <strong>"+ Add API Key"</strong>
+              </li>
+              <li>
+                Name it <strong>"FrostGuard Integration"</strong>
+              </li>
+              <li>
+                Select <strong>"Grant all current and future rights"</strong> OR add specific rights
+                below
+              </li>
+              <li>
+                Click <strong>"Create API Key"</strong> and copy it immediately
+              </li>
+              <li>
+                Paste the key here and click <strong>Validate</strong>
+              </li>
             </ol>
 
             {/* Required Scopes Checklist with Critical/Optional Distinction */}
@@ -281,21 +315,21 @@ export function TTNValidationResultPanel({ result, applicationId }: TTNValidatio
               <div className="flex items-center justify-between">
                 <p className="text-xs font-medium text-muted-foreground">Permission Status</p>
                 {result.permissions && (
-                  <Badge 
-                    variant={result.permissions.rights.length >= 4 ? "outline" : "destructive"}
+                  <Badge
+                    variant={result.permissions.rights.length >= 4 ? 'outline' : 'destructive'}
                     className="text-xs"
                   >
                     {result.permissions.rights.length}/{REQUIRED_SCOPES.length} granted
                   </Badge>
                 )}
               </div>
-              
+
               {/* Critical Permissions */}
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground font-medium">Critical (required):</p>
                 <div className="grid gap-1">
-                  {REQUIRED_SCOPES.filter(s => s.critical).map(scope => (
-                    <PermissionRow 
+                  {REQUIRED_SCOPES.filter((s) => s.critical).map((scope) => (
+                    <PermissionRow
                       key={scope.id}
                       scope={scope}
                       granted={result.permissions?.rights.includes(scope.right)}
@@ -303,13 +337,13 @@ export function TTNValidationResultPanel({ result, applicationId }: TTNValidatio
                   ))}
                 </div>
               </div>
-              
+
               {/* Optional Permissions */}
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground font-medium">Optional (recommended):</p>
                 <div className="grid gap-1">
-                  {REQUIRED_SCOPES.filter(s => !s.critical).map(scope => (
-                    <PermissionRow 
+                  {REQUIRED_SCOPES.filter((s) => !s.critical).map((scope) => (
+                    <PermissionRow
                       key={scope.id}
                       scope={scope}
                       granted={result.permissions?.rights.includes(scope.right)}
@@ -324,8 +358,8 @@ export function TTNValidationResultPanel({ result, applicationId }: TTNValidatio
               <div className="flex items-start gap-2">
                 <AlertTriangle className="h-3 w-3 text-warning mt-0.5 shrink-0" />
                 <p className="text-xs text-warning">
-                  The API key must be created <strong>inside</strong> the application "{applicationId || "<your-app>"}", 
-                  not as a personal/user-level key.
+                  The API key must be created <strong>inside</strong> the application "
+                  {applicationId || '<your-app>'}", not as a personal/user-level key.
                 </p>
               </div>
             </div>

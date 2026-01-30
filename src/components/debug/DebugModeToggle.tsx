@@ -15,32 +15,22 @@ export function DebugModeToggle() {
           <Bug className="h-5 w-5" />
           Debug Mode
         </CardTitle>
-        <CardDescription>
-          Enable in-app debug terminal for real-time logging
-        </CardDescription>
+        <CardDescription>Enable in-app debug terminal for real-time logging</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <Label htmlFor="debug-mode">Enable Debug Mode</Label>
-            <p className="text-xs text-muted-foreground">
-              Show debug terminal with system events
-            </p>
+            <p className="text-xs text-muted-foreground">Show debug terminal with system events</p>
           </div>
-          <Switch
-            id="debug-mode"
-            checked={isDebugEnabled}
-            onCheckedChange={setDebugEnabled}
-          />
+          <Switch id="debug-mode" checked={isDebugEnabled} onCheckedChange={setDebugEnabled} />
         </div>
 
         {isDebugEnabled && (
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="terminal-visible">Show Terminal</Label>
-              <p className="text-xs text-muted-foreground">
-                Toggle terminal visibility
-              </p>
+              <p className="text-xs text-muted-foreground">Toggle terminal visibility</p>
             </div>
             <Switch
               id="terminal-visible"

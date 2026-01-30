@@ -20,7 +20,7 @@ export async function getOrCreateProfile(
   stackAuthUserId: string,
   organizationId: string,
   email?: string,
-  name?: string
+  name?: string,
 ): Promise<{ id: string; isNew: boolean }> {
   // Check for existing profile by Stack Auth user ID
   const [existing] = await db
@@ -58,17 +58,12 @@ export async function getOrCreateProfile(
  */
 export async function getUserRoleInOrg(
   stackAuthUserId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<AppRole | null> {
   const [role] = await db
     .select({ role: userRoles.role })
     .from(userRoles)
-    .where(
-      and(
-        eq(userRoles.userId, stackAuthUserId),
-        eq(userRoles.organizationId, organizationId)
-      )
-    )
+    .where(and(eq(userRoles.userId, stackAuthUserId), eq(userRoles.organizationId, organizationId)))
     .limit(1);
 
   return role?.role || null;
@@ -84,7 +79,7 @@ export async function getUserRoleInOrg(
  * @returns Organization ID and role, or null if user has no organizations
  */
 export async function getUserPrimaryOrganization(
-  stackAuthUserId: string
+  stackAuthUserId: string,
 ): Promise<{ organizationId: string; role: AppRole } | null> {
   const [roleRecord] = await db
     .select({
@@ -106,7 +101,7 @@ export async function getUserPrimaryOrganization(
  * @returns Profile ID and organization ID, or null if not found
  */
 export async function getProfileByUserId(
-  stackAuthUserId: string
+  stackAuthUserId: string,
 ): Promise<{ id: string; organizationId: string } | null> {
   const [profile] = await db
     .select({

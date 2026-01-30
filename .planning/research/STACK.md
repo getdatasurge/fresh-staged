@@ -16,30 +16,30 @@ The existing v1.1 deployment scripts (`deploy-selfhosted.sh`, `deploy-digitaloce
 
 ### Core Technologies
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| **Bash** | 5.x (Ubuntu 24.04 default) | Script execution runtime | Pre-installed on all target systems. Existing scripts already use Bash. No additional runtime dependencies. |
-| **curl** | System default | HTTP requests for health checks, Docker install | Pre-installed on Ubuntu/Debian. More feature-rich than wget for health check responses. Already used in existing scripts. |
-| **Docker Engine** | 5:29.x via get.docker.com | Container runtime | Official convenience script handles Ubuntu 24.04/22.04 and Debian. Includes Docker Compose v2 plugin automatically. |
-| **Docker Compose v2** | 2.x plugin (bundled) | Multi-container orchestration | Bundled with Docker Engine install. No separate installation needed. `docker compose` syntax (not `docker-compose`). |
+| Technology            | Version                    | Purpose                                         | Why Recommended                                                                                                           |
+| --------------------- | -------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Bash**              | 5.x (Ubuntu 24.04 default) | Script execution runtime                        | Pre-installed on all target systems. Existing scripts already use Bash. No additional runtime dependencies.               |
+| **curl**              | System default             | HTTP requests for health checks, Docker install | Pre-installed on Ubuntu/Debian. More feature-rich than wget for health check responses. Already used in existing scripts. |
+| **Docker Engine**     | 5:29.x via get.docker.com  | Container runtime                               | Official convenience script handles Ubuntu 24.04/22.04 and Debian. Includes Docker Compose v2 plugin automatically.       |
+| **Docker Compose v2** | 2.x plugin (bundled)       | Multi-container orchestration                   | Bundled with Docker Engine install. No separate installation needed. `docker compose` syntax (not `docker-compose`).      |
 
 ### Supporting Tools (Already Available on Target)
 
-| Tool | Purpose | Installation | Notes |
-|------|---------|--------------|-------|
-| **openssl** | Password/secret generation | Pre-installed | `openssl rand -base64 32` for secure random strings. Already used in existing scripts. |
-| **dig** | DNS resolution verification | `apt install dnsutils` | Existing scripts already install this. |
-| **ufw** | Firewall configuration | Pre-installed on Ubuntu | Existing scripts already configure this. |
-| **jq** | JSON parsing for health checks | `apt install jq` | Optional but useful. ~1MB. Enables reliable JSON parsing in health checks. |
-| **lsof** | Port availability checking | Pre-installed | Used in existing health-check.sh for port validation. |
+| Tool        | Purpose                        | Installation            | Notes                                                                                  |
+| ----------- | ------------------------------ | ----------------------- | -------------------------------------------------------------------------------------- |
+| **openssl** | Password/secret generation     | Pre-installed           | `openssl rand -base64 32` for secure random strings. Already used in existing scripts. |
+| **dig**     | DNS resolution verification    | `apt install dnsutils`  | Existing scripts already install this.                                                 |
+| **ufw**     | Firewall configuration         | Pre-installed on Ubuntu | Existing scripts already configure this.                                               |
+| **jq**      | JSON parsing for health checks | `apt install jq`        | Optional but useful. ~1MB. Enables reliable JSON parsing in health checks.             |
+| **lsof**    | Port availability checking     | Pre-installed           | Used in existing health-check.sh for port validation.                                  |
 
 ### Development/Quality Tools (For Script Authors)
 
-| Tool | Purpose | Installation | Notes |
-|------|---------|--------------|-------|
-| **ShellCheck** | Static analysis/linting | `apt install shellcheck` | Catches common Bash errors. Use in CI and pre-commit. |
-| **shfmt** | Script formatting | Go binary or `snap install shfmt` | Optional. Consistent code style. |
-| **bats-core** | Test framework | `apt install bats` | Optional. For testing script functions. TAP-compliant. |
+| Tool           | Purpose                 | Installation                      | Notes                                                  |
+| -------------- | ----------------------- | --------------------------------- | ------------------------------------------------------ |
+| **ShellCheck** | Static analysis/linting | `apt install shellcheck`          | Catches common Bash errors. Use in CI and pre-commit.  |
+| **shfmt**      | Script formatting       | Go binary or `snap install shfmt` | Optional. Consistent code style.                       |
+| **bats-core**  | Test framework          | `apt install bats`                | Optional. For testing script functions. TAP-compliant. |
 
 ## Installation Commands
 
@@ -60,6 +60,7 @@ sudo apt install shellcheck  # Static analysis
 ### Current State (Existing Scripts)
 
 Your `deploy-selfhosted.sh` uses:
+
 ```bash
 set -e  # Exit on error
 ```
@@ -119,6 +120,7 @@ trap cleanup EXIT
 ```
 
 **Why this pattern:**
+
 - Works with existing `set -e` approach
 - `$BASH_LINENO` and `$BASH_COMMAND` provide diagnostic context
 - State tracking allows intelligent rollback decisions
@@ -217,13 +219,13 @@ confirm() {
 
 ### Why NOT whiptail/dialog
 
-| Factor | whiptail/dialog | Native read |
-|--------|-----------------|-------------|
-| Dependencies | Must install | Pre-installed |
-| UX | Prettier dialogs | Simple text prompts |
-| Scriptability | Complex fd redirection | Straightforward |
-| Automation | Harder with `--yes` flags | Simple skipping |
-| Error handling | Exit codes need care | Direct |
+| Factor         | whiptail/dialog           | Native read         |
+| -------------- | ------------------------- | ------------------- |
+| Dependencies   | Must install              | Pre-installed       |
+| UX             | Prettier dialogs          | Simple text prompts |
+| Scriptability  | Complex fd redirection    | Straightforward     |
+| Automation     | Harder with `--yes` flags | Simple skipping     |
+| Error handling | Exit codes need care      | Direct              |
 
 **Verdict:** For a one-time deployment script, native `read` is simpler and sufficient. whiptail adds complexity without proportional value.
 
@@ -287,15 +289,15 @@ check_backend_ready() {
 
 ### Comprehensive Verification Checklist
 
-| Verification | Command | What It Checks |
-|--------------|---------|----------------|
-| Docker running | `docker info > /dev/null 2>&1` | Docker daemon accessible |
-| Compose v2 | `docker compose version > /dev/null 2>&1` | Plugin installed |
-| Backend health | `curl -sf localhost:3000/health \| jq -r '.status'` | API responding |
-| Database connected | `curl -sf localhost:3000/health/ready \| jq -r '.database'` | PostgreSQL accessible |
-| DNS resolution | `dig +short $DOMAIN \| tail -1` | DNS points to server |
-| SSL certificate | `curl -sI https://$DOMAIN \| grep "HTTP.*200"` | HTTPS working |
-| All containers | `docker compose ps --format json \| jq -r '.[].State'` | No exited containers |
+| Verification       | Command                                                     | What It Checks           |
+| ------------------ | ----------------------------------------------------------- | ------------------------ |
+| Docker running     | `docker info > /dev/null 2>&1`                              | Docker daemon accessible |
+| Compose v2         | `docker compose version > /dev/null 2>&1`                   | Plugin installed         |
+| Backend health     | `curl -sf localhost:3000/health \| jq -r '.status'`         | API responding           |
+| Database connected | `curl -sf localhost:3000/health/ready \| jq -r '.database'` | PostgreSQL accessible    |
+| DNS resolution     | `dig +short $DOMAIN \| tail -1`                             | DNS points to server     |
+| SSL certificate    | `curl -sI https://$DOMAIN \| grep "HTTP.*200"`              | HTTPS working            |
+| All containers     | `docker compose ps --format json \| jq -r '.[].State'`      | No exited containers     |
 
 ### E2E Smoke Test Pattern
 
@@ -445,37 +447,37 @@ install_docker() {
 
 ## Alternatives Considered
 
-| Recommended | Alternative | When to Use Alternative |
-|-------------|-------------|-------------------------|
-| Bash native `read` | whiptail/dialog | Only if UX polish is critical and team accepts dependency |
-| `set -e` + `trap ERR` | Manual `\|\| exit 1` on each command | Never -- trap is more maintainable |
-| curl for health checks | wget | Only if curl unavailable (rare on Ubuntu) |
-| get.docker.com script | Manual apt repo setup | Only if reproducibility concerns outweigh convenience |
-| Pure Bash | Ansible/Terraform | Only if managing multiple servers at scale |
-| ShellCheck | No linting | Never -- ShellCheck catches real bugs |
+| Recommended            | Alternative                          | When to Use Alternative                                   |
+| ---------------------- | ------------------------------------ | --------------------------------------------------------- |
+| Bash native `read`     | whiptail/dialog                      | Only if UX polish is critical and team accepts dependency |
+| `set -e` + `trap ERR`  | Manual `\|\| exit 1` on each command | Never -- trap is more maintainable                        |
+| curl for health checks | wget                                 | Only if curl unavailable (rare on Ubuntu)                 |
+| get.docker.com script  | Manual apt repo setup                | Only if reproducibility concerns outweigh convenience     |
+| Pure Bash              | Ansible/Terraform                    | Only if managing multiple servers at scale                |
+| ShellCheck             | No linting                           | Never -- ShellCheck catches real bugs                     |
 
 ## What NOT to Use
 
-| Avoid | Why | Use Instead |
-|-------|-----|-------------|
-| **Ansible** | Over-engineering for single-server deployment. Adds Python dependency. Existing Bash scripts work well. | Bash scripts |
-| **Terraform for deployment** | Wrong tool -- Terraform provisions infrastructure, not applications. Already have doctl for DO provisioning. | Bash + Docker Compose |
-| **Configuration management (Puppet/Chef/Salt)** | Massive overhead for Docker Compose deployment. Learning curve not justified. | Bash scripts |
-| **docker-compose (v1)** | Deprecated since July 2023. Uses `docker-compose` binary instead of `docker compose` plugin. | `docker compose` (v2) |
-| **Node.js/Python deployment scripts** | Adds runtime dependency. Bash is simpler, portable, and what the existing scripts use. | Bash |
-| **whiptail/dialog** | Adds dependency for marginal UX improvement. Deployment runs once, not daily. | Native `read` |
+| Avoid                                           | Why                                                                                                          | Use Instead           |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------- |
+| **Ansible**                                     | Over-engineering for single-server deployment. Adds Python dependency. Existing Bash scripts work well.      | Bash scripts          |
+| **Terraform for deployment**                    | Wrong tool -- Terraform provisions infrastructure, not applications. Already have doctl for DO provisioning. | Bash + Docker Compose |
+| **Configuration management (Puppet/Chef/Salt)** | Massive overhead for Docker Compose deployment. Learning curve not justified.                                | Bash scripts          |
+| **docker-compose (v1)**                         | Deprecated since July 2023. Uses `docker-compose` binary instead of `docker compose` plugin.                 | `docker compose` (v2) |
+| **Node.js/Python deployment scripts**           | Adds runtime dependency. Bash is simpler, portable, and what the existing scripts use.                       | Bash                  |
+| **whiptail/dialog**                             | Adds dependency for marginal UX improvement. Deployment runs once, not daily.                                | Native `read`         |
 
 ---
 
 ## Version Compatibility
 
-| Component | Minimum Version | Recommended | Notes |
-|-----------|-----------------|-------------|-------|
-| Ubuntu | 22.04 LTS | 24.04 LTS | Both fully supported by get.docker.com |
-| Debian | 11 (bullseye) | 12 (bookworm) | Same Docker installation script works |
-| Docker Engine | 24.x | 29.x (latest) | get.docker.com installs latest stable |
-| Docker Compose | v2.20+ | v2.29+ | Bundled with Docker Engine |
-| Bash | 5.0+ | 5.2 (Ubuntu 24.04) | Standard on Ubuntu 22.04+ |
+| Component      | Minimum Version | Recommended        | Notes                                  |
+| -------------- | --------------- | ------------------ | -------------------------------------- |
+| Ubuntu         | 22.04 LTS       | 24.04 LTS          | Both fully supported by get.docker.com |
+| Debian         | 11 (bullseye)   | 12 (bookworm)      | Same Docker installation script works  |
+| Docker Engine  | 24.x            | 29.x (latest)      | get.docker.com installs latest stable  |
+| Docker Compose | v2.20+          | v2.29+             | Bundled with Docker Engine             |
+| Bash           | 5.0+            | 5.2 (Ubuntu 24.04) | Standard on Ubuntu 22.04+              |
 
 ---
 
@@ -483,22 +485,22 @@ install_docker() {
 
 ### Files to Enhance (Not Replace)
 
-| File | Current State | Enhancement Needed |
-|------|---------------|-------------------|
-| `deploy-selfhosted.sh` | Good foundation | Add trap ERR handler, enhance verification |
-| `deploy-digitalocean.sh` | Delegates to selfhosted | Integrate one-script flow |
-| `health-check.sh` | Pre-flight checks | Add post-deployment verification |
-| `rollback.sh` | Manual rollback | Integrate with auto-rollback |
-| `lib/doctl-helpers.sh` | DO provisioning | No changes needed |
+| File                     | Current State           | Enhancement Needed                         |
+| ------------------------ | ----------------------- | ------------------------------------------ |
+| `deploy-selfhosted.sh`   | Good foundation         | Add trap ERR handler, enhance verification |
+| `deploy-digitalocean.sh` | Delegates to selfhosted | Integrate one-script flow                  |
+| `health-check.sh`        | Pre-flight checks       | Add post-deployment verification           |
+| `rollback.sh`            | Manual rollback         | Integrate with auto-rollback               |
+| `lib/doctl-helpers.sh`   | DO provisioning         | No changes needed                          |
 
 ### New Files to Create
 
-| File | Purpose |
-|------|---------|
-| `install.sh` | One-script entry point (sources others, orchestrates flow) |
-| `lib/error-handlers.sh` | Shared error handling functions |
-| `lib/verification.sh` | Health check and verification functions |
-| `lib/config-prompts.sh` | Interactive configuration prompts |
+| File                    | Purpose                                                    |
+| ----------------------- | ---------------------------------------------------------- |
+| `install.sh`            | One-script entry point (sources others, orchestrates flow) |
+| `lib/error-handlers.sh` | Shared error handling functions                            |
+| `lib/verification.sh`   | Health check and verification functions                    |
+| `lib/config-prompts.sh` | Interactive configuration prompts                          |
 
 ---
 
@@ -527,21 +529,22 @@ install_docker() {
 
 ## Confidence Assessment
 
-| Area | Confidence | Rationale |
-|------|------------|-----------|
-| Bash error handling | HIGH | trap ERR is standard POSIX pattern, verified with official docs |
-| Docker installation | HIGH | get.docker.com is official, verified against Docker docs |
-| OS detection | HIGH | /etc/os-release is standardized across Ubuntu/Debian |
-| Health checks | HIGH | curl + jq pattern is production-standard |
-| Interactive prompts | HIGH | Native read is POSIX, no dependencies |
-| ShellCheck | HIGH | Official tool, actively maintained |
-| Verification patterns | MEDIUM | Based on existing working scripts + enhancements |
+| Area                  | Confidence | Rationale                                                       |
+| --------------------- | ---------- | --------------------------------------------------------------- |
+| Bash error handling   | HIGH       | trap ERR is standard POSIX pattern, verified with official docs |
+| Docker installation   | HIGH       | get.docker.com is official, verified against Docker docs        |
+| OS detection          | HIGH       | /etc/os-release is standardized across Ubuntu/Debian            |
+| Health checks         | HIGH       | curl + jq pattern is production-standard                        |
+| Interactive prompts   | HIGH       | Native read is POSIX, no dependencies                           |
+| ShellCheck            | HIGH       | Official tool, actively maintained                              |
+| Verification patterns | MEDIUM     | Based on existing working scripts + enhancements                |
 
 **Overall Research Confidence:** HIGH
 
 All recommendations build on existing working scripts with targeted enhancements. No unverified technologies or experimental patterns.
 
 ---
-*Stack research for: FreshTrack Pro v2.1 One-Script Deployment Automation*
-*Researched: 2026-01-25*
-*Builds on: v1.1 Multi-Target Deployment infrastructure*
+
+_Stack research for: FreshTrack Pro v2.1 One-Script Deployment Automation_
+_Researched: 2026-01-25_
+_Builds on: v1.1 Multi-Target Deployment infrastructure_

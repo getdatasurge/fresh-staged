@@ -8,18 +8,18 @@ This document describes the concrete target architecture for FrostGuard after mi
 
 ## Technology Stack
 
-| Component | Technology | Version | Purpose |
-|-----------|------------|---------|---------|
-| Backend Framework | Fastify | 4.x | High-performance Node.js server |
-| ORM | Drizzle ORM | Latest | Type-safe database access |
-| Database | PostgreSQL | 15+ | Primary data store |
-| Connection Pooling | PgBouncer | 1.x | Connection management |
-| Authentication | Stack Auth | Hosted | User auth & multi-tenancy |
-| Real-time | Socket.io | 4.x | WebSocket communications |
-| Object Storage | MinIO | Latest | S3-compatible file storage |
-| Job Queue | BullMQ | 4.x | Background job processing |
-| Cache/PubSub | Redis | 7.x | Caching and job queue backend |
-| Container Orchestration | Docker Compose | 2.x | Local dev & initial deployment |
+| Component               | Technology     | Version | Purpose                         |
+| ----------------------- | -------------- | ------- | ------------------------------- |
+| Backend Framework       | Fastify        | 4.x     | High-performance Node.js server |
+| ORM                     | Drizzle ORM    | Latest  | Type-safe database access       |
+| Database                | PostgreSQL     | 15+     | Primary data store              |
+| Connection Pooling      | PgBouncer      | 1.x     | Connection management           |
+| Authentication          | Stack Auth     | Hosted  | User auth & multi-tenancy       |
+| Real-time               | Socket.io      | 4.x     | WebSocket communications        |
+| Object Storage          | MinIO          | Latest  | S3-compatible file storage      |
+| Job Queue               | BullMQ         | 4.x     | Background job processing       |
+| Cache/PubSub            | Redis          | 7.x     | Caching and job queue backend   |
+| Container Orchestration | Docker Compose | 2.x     | Local dev & initial deployment  |
 
 ---
 
@@ -133,18 +133,25 @@ Each table has its own file for maintainability:
 import { pgEnum } from 'drizzle-orm/pg-core';
 
 export const unitTypeEnum = pgEnum('unit_type', [
-  'fridge', 'freezer', 'display_case',
-  'walk_in_cooler', 'walk_in_freezer', 'blast_chiller'
+  'fridge',
+  'freezer',
+  'display_case',
+  'walk_in_cooler',
+  'walk_in_freezer',
+  'blast_chiller',
 ]);
 
 export const unitStatusEnum = pgEnum('unit_status', [
-  'ok', 'excursion', 'alarm_active',
-  'monitoring_interrupted', 'manual_required', 'restoring', 'offline'
+  'ok',
+  'excursion',
+  'alarm_active',
+  'monitoring_interrupted',
+  'manual_required',
+  'restoring',
+  'offline',
 ]);
 
-export const appRoleEnum = pgEnum('app_role', [
-  'owner', 'admin', 'manager', 'staff', 'viewer'
-]);
+export const appRoleEnum = pgEnum('app_role', ['owner', 'admin', 'manager', 'staff', 'viewer']);
 
 // ... additional enums
 ```
@@ -170,6 +177,7 @@ export const organizations = pgTable('organizations', {
 ### Migration Strategy
 
 1. **Development:**
+
    ```bash
    # Generate migration from schema changes
    npx drizzle-kit generate:pg
@@ -179,6 +187,7 @@ export const organizations = pgTable('organizations', {
    ```
 
 2. **Production:**
+
    ```bash
    # Apply migrations in order
    npx drizzle-kit migrate
@@ -196,9 +205,9 @@ export const organizations = pgTable('organizations', {
 
 ```typescript
 // Environment variables
-STACK_AUTH_PROJECT_ID=proj_xxxxx
-STACK_AUTH_SECRET_KEY=sk_xxxxx
-STACK_AUTH_PUBLIC_KEY=pk_xxxxx
+STACK_AUTH_PROJECT_ID = proj_xxxxx;
+STACK_AUTH_SECRET_KEY = sk_xxxxx;
+STACK_AUTH_PUBLIC_KEY = pk_xxxxx;
 ```
 
 ### JWT Validation Flow
@@ -233,16 +242,13 @@ interface StackAuthUser {
   role?: string;
 }
 
-export async function authMiddleware(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
+export async function authMiddleware(request: FastifyRequest, reply: FastifyReply) {
   const token = request.headers.authorization?.replace('Bearer ', '');
 
   if (!token) {
     return reply.status(401).send({
       ok: false,
-      error: { code: 'AUTH_MISSING_TOKEN', message: 'No token provided' }
+      error: { code: 'AUTH_MISSING_TOKEN', message: 'No token provided' },
     });
   }
 
@@ -252,7 +258,7 @@ export async function authMiddleware(
   if (!user) {
     return reply.status(401).send({
       ok: false,
-      error: { code: 'AUTH_INVALID_TOKEN', message: 'Invalid or expired token' }
+      error: { code: 'AUTH_INVALID_TOKEN', message: 'Invalid or expired token' },
     });
   }
 
@@ -287,12 +293,12 @@ function requireRole(...allowedRoles: AppRole[]) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     const userRole = request.user?.role;
     const userLevel = ROLE_HIERARCHY[userRole] || 0;
-    const minRequired = Math.min(...allowedRoles.map(r => ROLE_HIERARCHY[r]));
+    const minRequired = Math.min(...allowedRoles.map((r) => ROLE_HIERARCHY[r]));
 
     if (userLevel < minRequired) {
       return reply.status(403).send({
         ok: false,
-        error: { code: 'FORBIDDEN_INSUFFICIENT_ROLE', message: 'Insufficient permissions' }
+        error: { code: 'FORBIDDEN_INSUFFICIENT_ROLE', message: 'Insufficient permissions' },
       });
     }
   };
@@ -459,7 +465,7 @@ export async function getUploadUrl(
   category: string,
   orgId: string,
   entityId: string,
-  filename: string
+  filename: string,
 ): Promise<string> {
   const key = `${category}/${orgId}/${entityId}/${filename}`;
 
@@ -490,7 +496,7 @@ export async function getDownloadUrl(key: string): Promise<string> {
   "Statement": [
     {
       "Effect": "Allow",
-      "Principal": {"AWS": ["arn:aws:iam:::user/frostguard-backend"]},
+      "Principal": { "AWS": ["arn:aws:iam:::user/frostguard-backend"] },
       "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
       "Resource": ["arn:aws:s3:::frostguard/*"]
     }
@@ -504,12 +510,12 @@ export async function getDownloadUrl(key: string): Promise<string> {
 
 ### Queue Overview
 
-| Queue Name | Purpose | Concurrency |
-|------------|---------|-------------|
-| `alerts` | Alert processing & escalation | 5 |
-| `notifications` | SMS, email, push delivery | 10 |
-| `reports` | Report generation | 2 |
-| `maintenance` | Cleanup, archival | 1 |
+| Queue Name      | Purpose                       | Concurrency |
+| --------------- | ----------------------------- | ----------- |
+| `alerts`        | Alert processing & escalation | 5           |
+| `notifications` | SMS, email, push delivery     | 10          |
+| `reports`       | Report generation             | 2           |
+| `maintenance`   | Cleanup, archival             | 1           |
 
 ### Job Types
 
@@ -543,70 +549,78 @@ interface GenerateReportJob {
 
 ```typescript
 // Check for stale sensors (no readings in 15 minutes)
-await alertQueue.add('check-stale-sensors', {}, {
-  repeat: { every: 60000 } // Every minute
-});
+await alertQueue.add(
+  'check-stale-sensors',
+  {},
+  {
+    repeat: { every: 60000 }, // Every minute
+  },
+);
 
 // Daily cleanup of old readings (90 days)
-await maintenanceQueue.add('cleanup-old-readings', {}, {
-  repeat: { cron: '0 2 * * *' } // 2 AM daily
-});
+await maintenanceQueue.add(
+  'cleanup-old-readings',
+  {},
+  {
+    repeat: { cron: '0 2 * * *' }, // 2 AM daily
+  },
+);
 ```
 
 ---
 
 ## API Endpoint Summary
 
-| Method | Endpoint | Description | Auth | Roles |
-|--------|----------|-------------|------|-------|
-| **Auth** |
-| POST | /auth/callback | Stack Auth callback handler | No | - |
-| POST | /auth/logout | Logout user | Yes | All |
-| GET | /auth/me | Get current user | Yes | All |
+| Method            | Endpoint                          | Description                 | Auth      | Roles        |
+| ----------------- | --------------------------------- | --------------------------- | --------- | ------------ |
+| **Auth**          |
+| POST              | /auth/callback                    | Stack Auth callback handler | No        | -            |
+| POST              | /auth/logout                      | Logout user                 | Yes       | All          |
+| GET               | /auth/me                          | Get current user            | Yes       | All          |
 | **Organizations** |
-| GET | /organizations/:id | Get organization | Yes | All |
-| PUT | /organizations/:id | Update organization | Yes | owner, admin |
-| GET | /organizations/:id/users | List org users | Yes | admin+ |
-| POST | /organizations/:id/invite | Invite user | Yes | admin+ |
-| **Sites** |
-| GET | /organizations/:orgId/sites | List sites | Yes | All |
-| POST | /organizations/:orgId/sites | Create site | Yes | admin+ |
-| GET | /sites/:id | Get site | Yes | All |
-| PUT | /sites/:id | Update site | Yes | admin+ |
-| DELETE | /sites/:id | Delete site | Yes | admin+ |
-| **Areas** |
-| GET | /sites/:siteId/areas | List areas | Yes | All |
-| POST | /sites/:siteId/areas | Create area | Yes | admin+ |
-| PUT | /areas/:id | Update area | Yes | admin+ |
-| DELETE | /areas/:id | Delete area | Yes | admin+ |
-| **Units** |
-| GET | /areas/:areaId/units | List units | Yes | All |
-| POST | /areas/:areaId/units | Create unit | Yes | admin+ |
-| GET | /units/:id | Get unit | Yes | All |
-| PUT | /units/:id | Update unit | Yes | manager+ |
-| DELETE | /units/:id | Delete unit | Yes | admin+ |
-| **Readings** |
-| GET | /units/:unitId/readings | Get readings | Yes | All |
-| POST | /readings/bulk | Bulk insert readings | API Key | - |
-| **Alerts** |
-| GET | /units/:unitId/alerts | List alerts | Yes | All |
-| GET | /alerts/:id | Get alert | Yes | All |
-| PUT | /alerts/:id/acknowledge | Acknowledge alert | Yes | staff+ |
-| PUT | /alerts/:id/resolve | Resolve alert | Yes | staff+ |
-| **Alert Rules** |
-| GET | /organizations/:orgId/alert-rules | List rules | Yes | manager+ |
-| GET | /units/:unitId/effective-rules | Get effective rules | Yes | All |
-| POST | /alert-rules | Create rule | Yes | admin+ |
-| PUT | /alert-rules/:id | Update rule | Yes | admin+ |
-| **Webhooks** |
-| POST | /webhooks/ttn | TTN uplink | API Key | - |
-| POST | /webhooks/stripe | Stripe events | Signature | - |
-| POST | /webhooks/telnyx | Telnyx SMS | Signature | - |
-| **Health** |
-| GET | /health | Health check | No | - |
-| GET | /health/ready | Readiness probe | No | - |
-| GET | /health/live | Liveness probe | No | - |
-| GET | /metrics | Prometheus metrics | No | - |
+| GET               | /organizations/:id                | Get organization            | Yes       | All          |
+| PUT               | /organizations/:id                | Update organization         | Yes       | owner, admin |
+| GET               | /organizations/:id/users          | List org users              | Yes       | admin+       |
+| POST              | /organizations/:id/invite         | Invite user                 | Yes       | admin+       |
+| **Sites**         |
+| GET               | /organizations/:orgId/sites       | List sites                  | Yes       | All          |
+| POST              | /organizations/:orgId/sites       | Create site                 | Yes       | admin+       |
+| GET               | /sites/:id                        | Get site                    | Yes       | All          |
+| PUT               | /sites/:id                        | Update site                 | Yes       | admin+       |
+| DELETE            | /sites/:id                        | Delete site                 | Yes       | admin+       |
+| **Areas**         |
+| GET               | /sites/:siteId/areas              | List areas                  | Yes       | All          |
+| POST              | /sites/:siteId/areas              | Create area                 | Yes       | admin+       |
+| PUT               | /areas/:id                        | Update area                 | Yes       | admin+       |
+| DELETE            | /areas/:id                        | Delete area                 | Yes       | admin+       |
+| **Units**         |
+| GET               | /areas/:areaId/units              | List units                  | Yes       | All          |
+| POST              | /areas/:areaId/units              | Create unit                 | Yes       | admin+       |
+| GET               | /units/:id                        | Get unit                    | Yes       | All          |
+| PUT               | /units/:id                        | Update unit                 | Yes       | manager+     |
+| DELETE            | /units/:id                        | Delete unit                 | Yes       | admin+       |
+| **Readings**      |
+| GET               | /units/:unitId/readings           | Get readings                | Yes       | All          |
+| POST              | /readings/bulk                    | Bulk insert readings        | API Key   | -            |
+| **Alerts**        |
+| GET               | /units/:unitId/alerts             | List alerts                 | Yes       | All          |
+| GET               | /alerts/:id                       | Get alert                   | Yes       | All          |
+| PUT               | /alerts/:id/acknowledge           | Acknowledge alert           | Yes       | staff+       |
+| PUT               | /alerts/:id/resolve               | Resolve alert               | Yes       | staff+       |
+| **Alert Rules**   |
+| GET               | /organizations/:orgId/alert-rules | List rules                  | Yes       | manager+     |
+| GET               | /units/:unitId/effective-rules    | Get effective rules         | Yes       | All          |
+| POST              | /alert-rules                      | Create rule                 | Yes       | admin+       |
+| PUT               | /alert-rules/:id                  | Update rule                 | Yes       | admin+       |
+| **Webhooks**      |
+| POST              | /webhooks/ttn                     | TTN uplink                  | API Key   | -            |
+| POST              | /webhooks/stripe                  | Stripe events               | Signature | -            |
+| POST              | /webhooks/telnyx                  | Telnyx SMS                  | Signature | -            |
+| **Health**        |
+| GET               | /health                           | Health check                | No        | -            |
+| GET               | /health/ready                     | Readiness probe             | No        | -            |
+| GET               | /health/live                      | Liveness probe              | No        | -            |
+| GET               | /metrics                          | Prometheus metrics          | No        | -            |
 
 ---
 
@@ -634,18 +648,18 @@ interface SuccessResponse<T> {
 
 ### Error Codes
 
-| Code | HTTP Status | Description |
-|------|-------------|-------------|
-| `AUTH_INVALID_TOKEN` | 401 | Invalid or expired JWT |
-| `AUTH_MISSING_TOKEN` | 401 | No authorization header |
-| `FORBIDDEN_NO_ROLE` | 403 | User has no role in organization |
-| `FORBIDDEN_INSUFFICIENT_ROLE` | 403 | Role lacks required permissions |
-| `FORBIDDEN_ORG_ACCESS` | 403 | User not member of organization |
-| `NOT_FOUND` | 404 | Resource not found |
-| `VALIDATION_ERROR` | 400 | Request validation failed |
-| `CONFLICT` | 409 | Resource already exists |
-| `RATE_LIMITED` | 429 | Too many requests |
-| `INTERNAL_ERROR` | 500 | Unexpected server error |
+| Code                          | HTTP Status | Description                      |
+| ----------------------------- | ----------- | -------------------------------- |
+| `AUTH_INVALID_TOKEN`          | 401         | Invalid or expired JWT           |
+| `AUTH_MISSING_TOKEN`          | 401         | No authorization header          |
+| `FORBIDDEN_NO_ROLE`           | 403         | User has no role in organization |
+| `FORBIDDEN_INSUFFICIENT_ROLE` | 403         | Role lacks required permissions  |
+| `FORBIDDEN_ORG_ACCESS`        | 403         | User not member of organization  |
+| `NOT_FOUND`                   | 404         | Resource not found               |
+| `VALIDATION_ERROR`            | 400         | Request validation failed        |
+| `CONFLICT`                    | 409         | Resource already exists          |
+| `RATE_LIMITED`                | 429         | Too many requests                |
+| `INTERNAL_ERROR`              | 500         | Unexpected server error          |
 
 ---
 
@@ -733,7 +747,7 @@ app.get('/health/ready', async () => {
     minio: await checkMinio(),
   };
 
-  const healthy = Object.values(checks).every(c => c.status === 'ok');
+  const healthy = Object.values(checks).every((c) => c.status === 'ok');
 
   return {
     ready: healthy,
@@ -941,56 +955,56 @@ erDiagram
 
 ### Fastify vs Express vs NestJS
 
-| Criteria | Fastify | Express | NestJS |
-|----------|---------|---------|--------|
-| Performance | Excellent | Good | Good |
-| TypeScript | Excellent | Manual | Excellent |
-| Learning Curve | Medium | Low | High |
-| Plugin Ecosystem | Good | Excellent | Good |
-| Validation | Built-in | Manual | Built-in |
-| **Decision** | **Selected** | - | - |
+| Criteria         | Fastify      | Express   | NestJS    |
+| ---------------- | ------------ | --------- | --------- |
+| Performance      | Excellent    | Good      | Good      |
+| TypeScript       | Excellent    | Manual    | Excellent |
+| Learning Curve   | Medium       | Low       | High      |
+| Plugin Ecosystem | Good         | Excellent | Good      |
+| Validation       | Built-in     | Manual    | Built-in  |
+| **Decision**     | **Selected** | -         | -         |
 
 **Rationale:** Fastify offers the best balance of performance and developer experience for this scale. NestJS adds unnecessary complexity for a small team.
 
 ### Drizzle vs Prisma vs TypeORM
 
-| Criteria | Drizzle | Prisma | TypeORM |
-|----------|---------|--------|---------|
-| Type Safety | Excellent | Excellent | Good |
-| Performance | Excellent | Good | Good |
-| SQL Proximity | High | Low | Medium |
-| Bundle Size | Small | Large | Medium |
-| Migration UX | Good | Excellent | Good |
-| **Decision** | **Selected** | - | - |
+| Criteria      | Drizzle      | Prisma    | TypeORM |
+| ------------- | ------------ | --------- | ------- |
+| Type Safety   | Excellent    | Excellent | Good    |
+| Performance   | Excellent    | Good      | Good    |
+| SQL Proximity | High         | Low       | Medium  |
+| Bundle Size   | Small        | Large     | Medium  |
+| Migration UX  | Good         | Excellent | Good    |
+| **Decision**  | **Selected** | -         | -       |
 
 **Rationale:** Drizzle provides SQL-like syntax with full type safety and minimal overhead. Better for team familiar with SQL.
 
 ### Stack Auth vs Keycloak vs Custom JWT
 
-| Criteria | Stack Auth | Keycloak | Custom JWT |
-|----------|------------|----------|------------|
-| Setup Time | Minutes | Hours | Days |
-| Multi-tenant | Built-in | Plugin | Manual |
-| Maintenance | None (hosted) | High | Medium |
-| Cost | Usage-based | Free (self-host) | Free |
-| **Decision** | **Selected** | - | - |
+| Criteria     | Stack Auth    | Keycloak         | Custom JWT |
+| ------------ | ------------- | ---------------- | ---------- |
+| Setup Time   | Minutes       | Hours            | Days       |
+| Multi-tenant | Built-in      | Plugin           | Manual     |
+| Maintenance  | None (hosted) | High             | Medium     |
+| Cost         | Usage-based   | Free (self-host) | Free       |
+| **Decision** | **Selected**  | -                | -          |
 
 **Rationale:** Stack Auth provides enterprise features with zero maintenance. Hosted service aligns with reducing operational burden.
 
 ### Socket.io vs Raw WebSocket vs SSE
 
-| Criteria | Socket.io | Raw WebSocket | SSE |
-|----------|-----------|---------------|-----|
-| Room Abstraction | Built-in | Manual | N/A |
-| Reconnection | Automatic | Manual | Manual |
-| Redis Adapter | Official | Third-party | N/A |
-| Bidirectional | Yes | Yes | No |
-| **Decision** | **Selected** | - | - |
+| Criteria         | Socket.io    | Raw WebSocket | SSE    |
+| ---------------- | ------------ | ------------- | ------ |
+| Room Abstraction | Built-in     | Manual        | N/A    |
+| Reconnection     | Automatic    | Manual        | Manual |
+| Redis Adapter    | Official     | Third-party   | N/A    |
+| Bidirectional    | Yes          | Yes           | No     |
+| **Decision**     | **Selected** | -             | -      |
 
 **Rationale:** Socket.io's built-in room management is perfect for multi-tenant isolation, and the Redis adapter enables horizontal scaling.
 
 ---
 
-*Architecture Document Version: 1.1*
-*Created: January 2026*
-*Last Updated: January 2026*
+_Architecture Document Version: 1.1_
+_Created: January 2026_
+_Last Updated: January 2026_

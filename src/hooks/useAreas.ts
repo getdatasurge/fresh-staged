@@ -37,7 +37,7 @@ import { useTRPC, useTRPCClient } from '@/lib/trpc';
 export function useAreas(
   organizationId: string | undefined,
   siteId: string | undefined,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) {
   const trpc = useTRPC();
 
@@ -48,7 +48,7 @@ export function useAreas(
 
   return useQuery({
     ...queryOptions,
-    enabled: !!organizationId && !!siteId && (options?.enabled !== false),
+    enabled: !!organizationId && !!siteId && options?.enabled !== false,
     staleTime: 60_000, // 1 minute
     gcTime: 5 * 60_000, // 5 minutes
   });
@@ -67,7 +67,7 @@ export function useArea(
   organizationId: string | undefined,
   siteId: string | undefined,
   areaId: string | undefined,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) {
   const trpc = useTRPC();
 
@@ -79,11 +79,7 @@ export function useArea(
 
   return useQuery({
     ...queryOptions,
-    enabled:
-      !!organizationId &&
-      !!siteId &&
-      !!areaId &&
-      (options?.enabled !== false),
+    enabled: !!organizationId && !!siteId && !!areaId && options?.enabled !== false,
     staleTime: 60_000, // 1 minute
     gcTime: 5 * 60_000, // 5 minutes
   });
@@ -215,11 +211,7 @@ export function useDeleteArea() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (variables: {
-      organizationId: string;
-      siteId: string;
-      areaId: string;
-    }) => {
+    mutationFn: async (variables: { organizationId: string; siteId: string; areaId: string }) => {
       return client.areas.delete.mutate(variables);
     },
     onSuccess: (_data, variables) => {

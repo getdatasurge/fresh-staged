@@ -15,44 +15,53 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 <!-- Shipped and confirmed valuable -->
 
 **Infrastructure (v1.0)**
+
 - Docker Compose with PostgreSQL, Redis, MinIO — v1.0
 - Development scripts and environment template — v1.0
 - Drizzle ORM with 22 tables, 14 enums, full migration system — v1.0
 
 **Authentication & RBAC (v1.0)**
+
 - Stack Auth JWT validation with JWKS caching — v1.0
 - Role hierarchy (owner > admin > manager > staff > viewer) — v1.0
 - Organization context middleware with tenant isolation — v1.0
 
 **Core API (v1.0)**
+
 - REST API with Zod validation for organizations, sites, areas, units — v1.0
 - 91+ backend tests covering auth, validation, RBAC — v1.0
 
 **Sensor Data & Alerts (v1.0)**
+
 - Bulk readings ingestion with API key authentication — v1.0
 - Alert state machine with threshold evaluation and deduplication — v1.0
 - Alert lifecycle (trigger → acknowledge → resolve) — v1.0
 
 **Frontend (v1.0)**
+
 - Typed API client (Ky) with auth interceptor — v1.0
 - 27+ hooks migrated to Stack Auth — v1.0
 - TanStack Query caching preserved — v1.0
 
 **Data Migration (v1.0)**
+
 - Export/import scripts with 23-table dependency order — v1.0
 - Stack Auth user migration with 90-day ID mapping retention — v1.0
 - Verification with row counts and MD5 checksums — v1.0
 
 **Production Infrastructure (v1.0)**
+
 - Docker multi-stage builds, Caddy reverse proxy — v1.0
 - Prometheus/Grafana/Loki observability stack — v1.0
 - Deployment, rollback scripts, Uptime Kuma status page — v1.0
 
 **Frontend Auth (v1.1)**
+
 - All frontend hooks use Stack Auth (AUTH-01) — v1.1
 - All auth components use Stack Auth hooks (AUTH-03) — v1.1
 
 **Production Hardening (v1.1)**
+
 - Docker Secrets for sensitive configuration (HARD-01) — v1.1
 - Resource limits on all services (HARD-02) — v1.1
 - Health checks for zero-downtime deployments (HARD-03) — v1.1
@@ -61,6 +70,7 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Deployment notifications (HARD-06) — v1.1
 
 **Database Readiness (v1.1)**
+
 - PgBouncer connection pooling with transaction mode (DB-01) — v1.1
 - Backend PgBouncer compatibility audit (DB-02) — v1.1
 - Automated daily backups with 30-day retention (DB-03) — v1.1
@@ -68,6 +78,7 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - SSL certificate monitoring with 30-day alerts (DB-05) — v1.1
 
 **Deployment Targets (v1.1)**
+
 - Self-hosted VM deployment documentation (DEPLOY-01) — v1.1
 - Self-hosted deployment scripts with health validation (DEPLOY-02) — v1.1
 - SSL/TLS with Let's Encrypt auto-renewal (DEPLOY-03) — v1.1
@@ -76,12 +87,14 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Managed PostgreSQL integration (DEPLOY-06) — v1.1
 
 **E2E Validation (v1.1)**
+
 - Sensor → storage → alert pipeline validated (TEST-01) — v1.1
 - Alert notification delivery validated (TEST-02) — v1.1
 - Migration timing tested with 100K records (TEST-03) — v1.1
 - Zero-downtime deployment validated (TEST-04) — v1.1
 
 **Real-Time Foundation (v2.0)**
+
 - Socket.io server with Redis adapter for horizontal scaling (RT-01) — v2.0
 - Multi-tenant room architecture with organization-based isolation (RT-02) — v2.0
 - JWT authentication on WebSocket connections (RT-03) — v2.0
@@ -89,16 +102,19 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Real-time alert notifications delivered (RT-05) — v2.0
 
 **Background Jobs Infrastructure (v2.0)**
+
 - BullMQ integrated with Fastify backend (BG-01) — v2.0
 - Worker containers deployable separately from API (BG-02) — v2.0
 - Bull Board dashboard with authentication (BG-06) — v2.0
 
 **SMS & Email Notifications (v2.0)**
+
 - Telnyx SMS delivery via BullMQ workers (BG-03) — v2.0
 - Custom retry strategies based on Telnyx error codes (BG-04) — v2.0
 - Email digest scheduling with site filtering (BG-05) — v2.0
 
 **Stripe Billing (v2.0)**
+
 - Stripe checkout flow creates subscriptions (BILL-01) — v2.0
 - Active sensor count metered (BILL-02) — v2.0
 - Temperature reading volume metered (BILL-03) — v2.0
@@ -107,6 +123,7 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Subscription status enforcement (BILL-06) — v2.0
 
 **Backend API Migration (v2.0)**
+
 - tRPC v11 infrastructure with Fastify plugin (API-01) — v2.0
 - Type sharing between frontend and backend (API-02) — v2.0
 - Organizations, sites, areas, units migrated (API-03, API-04) — v2.0
@@ -116,27 +133,32 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - 9 frontend hooks migrated from Supabase to tRPC — v2.0
 
 **TTN Integration (v2.2)**
+
 - TTN settings/provisioning via tRPC (TTN-01) — v2.2
 - TTN provisioning UI wired to tRPC backend (TTN-02) — v2.2
 - TTN device diagnostics via tRPC (TTN-03) — v2.2
 
 **Edge Function Migration (v2.2)**
+
 - Reports export with real database queries (EDGE-01) — v2.2
 - Telnyx verification status via real API (EDGE-02) — v2.2
 - Telnyx webhook configuration via real API (EDGE-03) — v2.2
 - All edge function calls migrated to tRPC (EDGE-04) — v2.2
 
 **Error Handling (v2.2)**
+
 - MigrationErrorBoundary integrated into DashboardLayout (ERR-01) — v2.2
 - SupabaseMigrationError with isSupabaseMigrationError helper (ERR-02) — v2.2
 - Graceful degradation in 6+ UI components (ERR-03) — v2.2
 
 **System Hardening (v2.2)**
+
 - Security headers via @fastify/helmet (SEC-01) — v2.2
 - Request body limits and timeouts (SEC-02) — v2.2
 - Dependency vulnerability audit complete (SEC-03) — v2.2
 
 **Deployment Orchestration (v2.3)**
+
 - Checkpoint-based deployment with resume capability (DEPLOY-01 to DEPLOY-05) — v2.3
 - Multi-layer verification: health, SSL, dashboard, E2E, monitoring, 3-pass (VERIFY-01 to VERIFY-06) — v2.3
 - Secure credential display via /dev/tty (POST-01 to POST-05) — v2.3
@@ -144,6 +166,7 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Comprehensive documentation: prerequisites, walkthrough, troubleshooting, operations (DOCS-01 to DOCS-04) — v2.3
 
 **Tech Debt Cleanup (v2.4)**
+
 - All 141 frontend tests pass with proper tRPC mocking — v2.4
 - All backend queue.service tests pass with proper Redis/BullMQ mocking — v2.4
 - Test infrastructure supports tRPC queryOptions pattern mocking — v2.4
@@ -154,6 +177,7 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - supabase-placeholder.ts deleted, zero Supabase imports remaining — v2.4
 
 **Production Deployment (v2.6)**
+
 - VM provisioned with Ubuntu 24.04 LTS, 4 vCPU, 8GB RAM, IP 192.168.4.181 — v2.6
 - 14 Docker containers deployed and healthy — v2.6
 - Caddy reverse proxy with self-signed SSL for IP deployment — v2.6
@@ -161,6 +185,7 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Playwright E2E smoke test infrastructure created — v2.6
 
 **tRPC Client Fix (v2.7)**
+
 - Phantom `@trpc/react-query` removed, tRPC pinned to 11.9.0, Zod aligned to v4 (DEP-01..03) — v2.7
 - 30+ `.mutate()`/`.query()` proxy calls migrated to `useTRPCClient()` (TRPC-01..02) — v2.7
 - React mounts in production, no `TypeError: e[i] is not a function` (TRPC-03) — v2.7
@@ -168,6 +193,7 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Production URL fallback fixed (`import.meta.env.DEV` ternary), Caddy routes added (PROD-01..03) — v2.7
 
 **Production Polish (v2.8)**
+
 - `useSuperAdmin` returns safe default instead of throwing (SA-01, SA-02) — v2.8
 - ServiceWorker registration failure handled gracefully on self-signed SSL (SW-01, SW-02) — v2.8
 - Socket.io auth callback pattern eliminates JWT refresh race condition (WS-01) — v2.8
@@ -195,6 +221,7 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 ## Current State (v2.8 Shipped)
 
 **Codebase:**
+
 - Backend: ~55K LOC TypeScript (Fastify, Drizzle, PostgreSQL, tRPC, Socket.io, BullMQ)
 - Frontend: ~100K LOC TypeScript/TSX (React, TanStack Query, tRPC client)
 - Migration scripts: 1,354 LOC TypeScript
@@ -203,6 +230,7 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - 1,050+ backend tests passing, 141 frontend tests passing
 
 **Infrastructure:**
+
 - Docker Compose with 14 containers in production (backend, worker, frontend, PostgreSQL, Redis, MinIO, Caddy, Prometheus, Grafana, Loki, Promtail, Uptime Kuma, Node Exporter, Blackbox)
 - Production deployed at 192.168.4.181 (Ubuntu 24.04 LTS, 4 vCPU, 8GB RAM)
 - Caddy reverse proxy with port-based matching, self-signed SSL
@@ -213,11 +241,13 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 - Playwright E2E smoke test suite (4 tests)
 
 **Tech Debt:**
+
 - Zero Supabase imports remaining (migration complete)
 - 15 pre-existing failures in tests/api/ttn-devices.test.ts (unrelated to migration)
 - TTNCredentialsPanel has reduced test coverage (5 vs 21 tests)
 
 **Known Issues:**
+
 - None critical — production deployed, rendering, and polished
 
 ## Constraints
@@ -230,43 +260,44 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 
 ## Key Decisions
 
-| Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| Fastify over Express | Better TypeScript support, schema validation, plugin system | Good — delivered typed API with Zod |
-| Drizzle ORM over Prisma | Type-safe, SQL-like API, better migration control | Good — 22 tables, clean migrations |
-| Stack Auth over self-hosted | Reduces auth complexity, still portable | Good — JWT validation working |
-| Ky over Axios | Lightweight (157KB), built-in retry | Good — clean API client |
-| Freeze+Backfill over Dual-Write | Simpler, lower risk, acceptable downtime | Pending — not yet executed |
-| Socket.io over raw WebSockets | Built-in reconnection, rooms, Redis adapter | Good — v2.0 real-time streaming working |
-| MinIO for object storage | S3-compatible, works same locally and in cloud | Good — integrated |
-| BullMQ over Agenda/node-cron | Redis-backed, reliable, good DX | Good — v2.0 job processing working |
-| tRPC over REST expansion | Type safety, auto-completion, smaller bundle | Good — 15 routers, 9 hooks migrated |
-| Telnyx for SMS | Reliability, error categorization | Good — custom retry strategies working |
-| Stripe for billing | Industry standard, webhook reliability | Good — metering and subscriptions working |
-| Docker Compose override pattern | Multi-target deployment with shared base | Good — self-hosted + DO working |
-| PgBouncer transaction mode | ORM compatible with max_prepared_statements | Good — validated in 10-04 |
-| Bash E2E tests over Jest | Portable across deployment targets | Good — works locally and remote |
-| Health check-based deployments | Zero-downtime via Docker health checks | Good — >95% success rate |
-| createTRPCContext over createTRPCReact | queryOptions pattern used across codebase | Good — 165+ call sites standardized |
-| MigrationErrorBoundary wraps children only | Preserve header/sidebar on page errors | Good — graceful degradation working |
-| supabase-placeholder with SupabaseMigrationError | Graceful degradation during migration | Good — user-friendly error messages |
-| Checkpoint-based deployment | Resume from failure point | Good — v2.3 deploy-orchestrated.sh working |
-| /dev/tty for credentials | Prevents log capture of secrets | Good — v2.3 secure display working |
-| 3-consecutive-pass health check | Prevents transient false positives | Good — v2.3 stability verification |
-| useTRPCClient for imperative calls | tRPC v11 proxy only supports .queryOptions()/.mutationOptions() | Good — 30+ call sites fixed |
-| Port-based Caddy matching (:443/:80) | IP deployments have no hostname to match | Good — accepts any hostname/IP |
-| import.meta.env.DEV URL ternary | Empty string VITE_API_URL is falsy in JS || operator | Good — relative URLs in prod |
-| Self-signed SSL for IP deployment | No domain available, IP-only access | Good — works with cert exception |
-| Safe default from useSuperAdmin | Prevents render cascade when context unavailable | Good — loading state instead of crash |
-| injectRegister: false + React hook | Auto-generated SW script had no error handling | Good — graceful degradation on self-signed SSL |
-| Socket.io auth callback pattern | Imperative socket.auth assignment has async race condition | Good — Socket.io waits for cb() before handshake |
-| 500ms debounce on ConnectionStatus | Brief reconnections cause visual flicker | Good — smooth UX during reconnection |
+| Decision                                         | Rationale                                                       | Outcome                                          |
+| ------------------------------------------------ | --------------------------------------------------------------- | ------------------------------------------------ | -------- | ---------------------------- |
+| Fastify over Express                             | Better TypeScript support, schema validation, plugin system     | Good — delivered typed API with Zod              |
+| Drizzle ORM over Prisma                          | Type-safe, SQL-like API, better migration control               | Good — 22 tables, clean migrations               |
+| Stack Auth over self-hosted                      | Reduces auth complexity, still portable                         | Good — JWT validation working                    |
+| Ky over Axios                                    | Lightweight (157KB), built-in retry                             | Good — clean API client                          |
+| Freeze+Backfill over Dual-Write                  | Simpler, lower risk, acceptable downtime                        | Pending — not yet executed                       |
+| Socket.io over raw WebSockets                    | Built-in reconnection, rooms, Redis adapter                     | Good — v2.0 real-time streaming working          |
+| MinIO for object storage                         | S3-compatible, works same locally and in cloud                  | Good — integrated                                |
+| BullMQ over Agenda/node-cron                     | Redis-backed, reliable, good DX                                 | Good — v2.0 job processing working               |
+| tRPC over REST expansion                         | Type safety, auto-completion, smaller bundle                    | Good — 15 routers, 9 hooks migrated              |
+| Telnyx for SMS                                   | Reliability, error categorization                               | Good — custom retry strategies working           |
+| Stripe for billing                               | Industry standard, webhook reliability                          | Good — metering and subscriptions working        |
+| Docker Compose override pattern                  | Multi-target deployment with shared base                        | Good — self-hosted + DO working                  |
+| PgBouncer transaction mode                       | ORM compatible with max_prepared_statements                     | Good — validated in 10-04                        |
+| Bash E2E tests over Jest                         | Portable across deployment targets                              | Good — works locally and remote                  |
+| Health check-based deployments                   | Zero-downtime via Docker health checks                          | Good — >95% success rate                         |
+| createTRPCContext over createTRPCReact           | queryOptions pattern used across codebase                       | Good — 165+ call sites standardized              |
+| MigrationErrorBoundary wraps children only       | Preserve header/sidebar on page errors                          | Good — graceful degradation working              |
+| supabase-placeholder with SupabaseMigrationError | Graceful degradation during migration                           | Good — user-friendly error messages              |
+| Checkpoint-based deployment                      | Resume from failure point                                       | Good — v2.3 deploy-orchestrated.sh working       |
+| /dev/tty for credentials                         | Prevents log capture of secrets                                 | Good — v2.3 secure display working               |
+| 3-consecutive-pass health check                  | Prevents transient false positives                              | Good — v2.3 stability verification               |
+| useTRPCClient for imperative calls               | tRPC v11 proxy only supports .queryOptions()/.mutationOptions() | Good — 30+ call sites fixed                      |
+| Port-based Caddy matching (:443/:80)             | IP deployments have no hostname to match                        | Good — accepts any hostname/IP                   |
+| import.meta.env.DEV URL ternary                  | Empty string VITE_API_URL is falsy in JS                        |                                                  | operator | Good — relative URLs in prod |
+| Self-signed SSL for IP deployment                | No domain available, IP-only access                             | Good — works with cert exception                 |
+| Safe default from useSuperAdmin                  | Prevents render cascade when context unavailable                | Good — loading state instead of crash            |
+| injectRegister: false + React hook               | Auto-generated SW script had no error handling                  | Good — graceful degradation on self-signed SSL   |
+| Socket.io auth callback pattern                  | Imperative socket.auth assignment has async race condition      | Good — Socket.io waits for cb() before handshake |
+| 500ms debounce on ConnectionStatus               | Brief reconnections cause visual flicker                        | Good — smooth UX during reconnection             |
 
 ## Current Milestone: v2.9 Quality Assurance
 
 **Goal:** Fix known test failures, restore test coverage, and audit test health across frontend and backend.
 
 **Target fixes:**
+
 - Fix 15 pre-existing failures in `tests/api/ttn-devices.test.ts`
 - Restore TTNCredentialsPanel test coverage (from 5 to ~21 tests)
 - Audit and fix frontend test gaps
@@ -275,4 +306,5 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 **Approach:** Fix known failures first, then expand coverage where gaps exist. Not chasing 100% coverage — focus on fixing known broken tests and restoring lost coverage.
 
 ---
-*Last updated: 2026-01-30 after v2.9 milestone started*
+
+_Last updated: 2026-01-30 after v2.9 milestone started_

@@ -123,7 +123,12 @@ describe('TTN Devices API', () => {
       mockGetRole.mockResolvedValue('viewer');
       mockListDevices.mockResolvedValue([
         mockDeviceData,
-        { ...mockDeviceData, id: TEST_DEVICE_2_ID, deviceId: 'my-sensor-002', devEui: '0011223344556688' },
+        {
+          ...mockDeviceData,
+          id: TEST_DEVICE_2_ID,
+          deviceId: 'my-sensor-002',
+          devEui: '0011223344556688',
+        },
       ]);
 
       const response = await app.inject({
@@ -316,7 +321,7 @@ describe('TTN Devices API', () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('manager');
       mockProvisionDevice.mockRejectedValue(
-        new ttnDeviceService.TTNConfigError('TTN connection not configured for organization')
+        new ttnDeviceService.TTNConfigError('TTN connection not configured for organization'),
       );
 
       const response = await app.inject({
@@ -334,7 +339,7 @@ describe('TTN Devices API', () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('manager');
       mockProvisionDevice.mockRejectedValue(
-        new ttnDeviceService.TTNProvisioningError('Failed to provision device in TTN')
+        new ttnDeviceService.TTNProvisioningError('Failed to provision device in TTN'),
       );
 
       const response = await app.inject({
@@ -734,7 +739,7 @@ describe('TTN Devices API', () => {
         TEST_ORG_ID,
         expect.objectContaining({
           frequencyPlanId: 'EU_863_870',
-        })
+        }),
       );
     });
 
@@ -803,7 +808,7 @@ describe('TTN Devices API', () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('manager');
       mockBootstrapDevice.mockRejectedValue(
-        new ttnDeviceService.TTNConfigError('TTN connection not configured for organization')
+        new ttnDeviceService.TTNConfigError('TTN connection not configured for organization'),
       );
 
       const response = await app.inject({
@@ -821,7 +826,7 @@ describe('TTN Devices API', () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('manager');
       mockBootstrapDevice.mockRejectedValue(
-        new ttnDeviceService.TTNProvisioningError('Failed to provision device in TTN')
+        new ttnDeviceService.TTNProvisioningError('Failed to provision device in TTN'),
       );
 
       const response = await app.inject({
@@ -839,7 +844,9 @@ describe('TTN Devices API', () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('manager');
       mockBootstrapDevice.mockRejectedValue(
-        new ttnDeviceService.TTNProvisioningError('Site not found or does not belong to organization')
+        new ttnDeviceService.TTNProvisioningError(
+          'Site not found or does not belong to organization',
+        ),
       );
 
       const response = await app.inject({

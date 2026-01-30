@@ -10,13 +10,13 @@ FreshTrack Pro is a multi-tenant SaaS platform for refrigeration monitoring. Sec
 
 ### Security Classification
 
-| Data Type | Classification | Handling |
-|-----------|----------------|----------|
+| Data Type            | Classification     | Handling                            |
+| -------------------- | ------------------ | ----------------------------------- |
 | Temperature readings | Business Sensitive | Encrypted in transit, RLS protected |
-| TTN API keys | Secret | Encrypted at rest, never logged |
-| User credentials | Secret | Managed by Supabase Auth |
-| Organization data | Business Sensitive | Tenant-isolated via RLS |
-| Payment information | PCI Sensitive | Handled by Stripe (not stored) |
+| TTN API keys         | Secret             | Encrypted at rest, never logged     |
+| User credentials     | Secret             | Managed by Supabase Auth            |
+| Organization data    | Business Sensitive | Tenant-isolated via RLS             |
+| Payment information  | PCI Sensitive      | Handled by Stripe (not stored)      |
 
 ---
 
@@ -53,13 +53,13 @@ Every database query is scoped to the authenticated user's organization:
 
 ### 3. Least Privilege Access
 
-| Principal | Access Level | Justification |
-|-----------|-------------|---------------|
-| Anonymous users | Public pages only | No data access |
-| Authenticated users | Own organization only | RLS enforced |
-| Staff role | Read + limited write | Operational needs |
-| Admin role | Full org access | Management needs |
-| Service role | Cross-org (internal only) | Scheduled jobs |
+| Principal           | Access Level              | Justification     |
+| ------------------- | ------------------------- | ----------------- |
+| Anonymous users     | Public pages only         | No data access    |
+| Authenticated users | Own organization only     | RLS enforced      |
+| Staff role          | Read + limited write      | Operational needs |
+| Admin role          | Full org access           | Management needs  |
+| Service role        | Cross-org (internal only) | Scheduled jobs    |
 
 ### 4. Secure by Default
 
@@ -107,14 +107,14 @@ graph TB
 
 ### Boundary Definitions
 
-| Boundary | From | To | Validation |
-|----------|------|-----|------------|
-| **B1** | Browser | CDN | TLS, CORS |
-| **B2** | CDN | Edge Functions | JWT signature |
-| **B3** | TTN | Webhook | Per-org secret (constant-time compare) |
-| **B4** | Stripe | Webhook | HMAC signature |
-| **B5** | Edge Functions | Database | RLS policies + service role |
-| **B6** | Edge Functions | Secrets | Environment variables |
+| Boundary | From           | To             | Validation                             |
+| -------- | -------------- | -------------- | -------------------------------------- |
+| **B1**   | Browser        | CDN            | TLS, CORS                              |
+| **B2**   | CDN            | Edge Functions | JWT signature                          |
+| **B3**   | TTN            | Webhook        | Per-org secret (constant-time compare) |
+| **B4**   | Stripe         | Webhook        | HMAC signature                         |
+| **B5**   | Edge Functions | Database       | RLS policies + service role            |
+| **B6**   | Edge Functions | Secrets        | Environment variables                  |
 
 ---
 
@@ -122,42 +122,42 @@ graph TB
 
 ### Authentication Controls
 
-| Control | Implementation | Status |
-|---------|----------------|--------|
-| Password authentication | Supabase Auth | Active |
-| Session management | JWT with refresh tokens | Active |
-| Password strength | 8+ chars, complexity rules | Active |
-| Account lockout | Supabase rate limiting | Active |
-| Email verification | Supabase email confirmation | Active |
-| MFA/2FA | **TBD** - Not currently implemented | Planned |
+| Control                 | Implementation                      | Status  |
+| ----------------------- | ----------------------------------- | ------- |
+| Password authentication | Supabase Auth                       | Active  |
+| Session management      | JWT with refresh tokens             | Active  |
+| Password strength       | 8+ chars, complexity rules          | Active  |
+| Account lockout         | Supabase rate limiting              | Active  |
+| Email verification      | Supabase email confirmation         | Active  |
+| MFA/2FA                 | **TBD** - Not currently implemented | Planned |
 
 ### Authorization Controls
 
-| Control | Implementation | Status |
-|---------|----------------|--------|
-| Role-Based Access Control | 6 roles (owner → inspector) | Active |
-| Row-Level Security | PostgreSQL RLS policies | Active |
-| Organization isolation | `organization_id` on all tables | Active |
-| Permission functions | `has_role()`, `user_belongs_to_org()` | Active |
-| API endpoint protection | JWT verification per function | Active |
+| Control                   | Implementation                        | Status |
+| ------------------------- | ------------------------------------- | ------ |
+| Role-Based Access Control | 6 roles (owner → inspector)           | Active |
+| Row-Level Security        | PostgreSQL RLS policies               | Active |
+| Organization isolation    | `organization_id` on all tables       | Active |
+| Permission functions      | `has_role()`, `user_belongs_to_org()` | Active |
+| API endpoint protection   | JWT verification per function         | Active |
 
 ### Data Protection Controls
 
-| Control | Implementation | Status |
-|---------|----------------|--------|
-| Transport encryption | TLS 1.3 (Supabase managed) | Active |
-| Database encryption | Supabase managed encryption at rest | Active |
-| Sensitive field encryption | XOR-based obfuscation (v2 format) | Active |
-| Secret storage | Environment variables / Vault | Active |
-| Audit logging | `event_logs` table with hash chain | Active |
+| Control                    | Implementation                      | Status |
+| -------------------------- | ----------------------------------- | ------ |
+| Transport encryption       | TLS 1.3 (Supabase managed)          | Active |
+| Database encryption        | Supabase managed encryption at rest | Active |
+| Sensitive field encryption | XOR-based obfuscation (v2 format)   | Active |
+| Secret storage             | Environment variables / Vault       | Active |
+| Audit logging              | `event_logs` table with hash chain  | Active |
 
 ### Network Controls
 
-| Control | Implementation | Status |
-|---------|----------------|--------|
-| CORS | Configured per function | Active |
-| Rate limiting | Supabase platform level | Active |
-| DDoS protection | Supabase/Cloudflare | Active |
+| Control            | Implementation               | Status |
+| ------------------ | ---------------------------- | ------ |
+| CORS               | Configured per function      | Active |
+| Rate limiting      | Supabase platform level      | Active |
+| DDoS protection    | Supabase/Cloudflare          | Active |
 | Webhook validation | Per-integration verification | Active |
 
 ---
@@ -190,12 +190,12 @@ graph TB
 
 ### External Integrations
 
-| Integration | Auth Method | Data Flow |
-|-------------|-------------|-----------|
-| The Things Network | Per-org webhook secret | Inbound only |
-| Stripe | HMAC signature | Bidirectional |
-| Resend (Email) | API key | Outbound only |
-| Telnyx (SMS) | API key | Outbound only |
+| Integration        | Auth Method            | Data Flow     |
+| ------------------ | ---------------------- | ------------- |
+| The Things Network | Per-org webhook secret | Inbound only  |
+| Stripe             | HMAC signature         | Bidirectional |
+| Resend (Email)     | API key                | Outbound only |
+| Telnyx (SMS)       | API key                | Outbound only |
 
 ---
 
@@ -209,13 +209,13 @@ graph TB
 
 ### Regulatory Alignment
 
-| Requirement | Status | Notes |
-|-------------|--------|-------|
-| GDPR | Partial | Data deletion, audit logs implemented |
-| HACCP | Active | Temperature logging, tamper-evident records |
-| FDA 21 CFR Part 11 | Partial | Audit trail, electronic signatures TBD |
-| SOC 2 | TBD | Supabase platform certified |
-| PCI DSS | N/A | No card data stored (Stripe handles) |
+| Requirement        | Status  | Notes                                       |
+| ------------------ | ------- | ------------------------------------------- |
+| GDPR               | Partial | Data deletion, audit logs implemented       |
+| HACCP              | Active  | Temperature logging, tamper-evident records |
+| FDA 21 CFR Part 11 | Partial | Audit trail, electronic signatures TBD      |
+| SOC 2              | TBD     | Supabase platform certified                 |
+| PCI DSS            | N/A     | No card data stored (Stripe handles)        |
 
 ### Audit Capabilities
 
@@ -258,12 +258,12 @@ graph TB
 
 ### Acknowledged Risks
 
-| Risk | Mitigation | Status |
-|------|------------|--------|
-| CORS wildcard (*) | Protected by JWT/API key auth | Documented |
-| localStorage JWT | Refresh token rotation | Active |
-| API key in logs (last4) | Log access controls required | TBD |
-| Debug encryption mode | Temporary, requires reversion | In Progress |
+| Risk                    | Mitigation                    | Status      |
+| ----------------------- | ----------------------------- | ----------- |
+| CORS wildcard (\*)      | Protected by JWT/API key auth | Documented  |
+| localStorage JWT        | Refresh token rotation        | Active      |
+| API key in logs (last4) | Log access controls required  | TBD         |
+| Debug encryption mode   | Temporary, requires reversion | In Progress |
 
 ### Security Debt
 
@@ -276,12 +276,12 @@ graph TB
 
 ## Security Contacts
 
-| Role | Responsibility |
-|------|----------------|
-| Security Lead | Architecture, policy, incident response |
-| Platform Team | Infrastructure, Supabase configuration |
-| Development Team | Secure coding, vulnerability fixes |
-| Operations | Monitoring, log analysis |
+| Role             | Responsibility                          |
+| ---------------- | --------------------------------------- |
+| Security Lead    | Architecture, policy, incident response |
+| Platform Team    | Infrastructure, Supabase configuration  |
+| Development Team | Secure coding, vulnerability fixes      |
+| Operations       | Monitoring, log analysis                |
 
 ---
 

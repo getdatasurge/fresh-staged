@@ -58,7 +58,7 @@ describe('Escalation Configuration', () => {
 
     it('should have shorter escalation time for critical than warning', () => {
       expect(ESCALATION_RULES.critical.escalateAfterMinutes).toBeLessThan(
-        ESCALATION_RULES.warning.escalateAfterMinutes
+        ESCALATION_RULES.warning.escalateAfterMinutes,
       );
     });
   });
@@ -80,12 +80,12 @@ describe('Escalation Configuration', () => {
     it('should have reasonable defaults', () => {
       // Per-alert should be >= per-user to prevent re-notifying same users
       expect(COOLDOWN_CONFIG.perAlertMinutes).toBeGreaterThanOrEqual(
-        COOLDOWN_CONFIG.perUserMinutes
+        COOLDOWN_CONFIG.perUserMinutes,
       );
 
       // Org window should be larger than individual cooldowns
       expect(COOLDOWN_CONFIG.orgWindowMinutes).toBeGreaterThanOrEqual(
-        COOLDOWN_CONFIG.perAlertMinutes
+        COOLDOWN_CONFIG.perAlertMinutes,
       );
     });
   });
@@ -137,9 +137,7 @@ describe('getNextEscalationTime', () => {
 
     expect(nextTime).not.toBeNull();
     // Warning escalates after 30 minutes
-    expect(nextTime?.getTime()).toBe(
-      baseTime.getTime() + 30 * 60 * 1000
-    );
+    expect(nextTime?.getTime()).toBe(baseTime.getTime() + 30 * 60 * 1000);
   });
 
   it('should calculate correct next escalation time for critical', () => {
@@ -149,9 +147,7 @@ describe('getNextEscalationTime', () => {
 
     expect(nextTime).not.toBeNull();
     // Critical escalates after 15 minutes
-    expect(nextTime?.getTime()).toBe(
-      baseTime.getTime() + 15 * 60 * 1000
-    );
+    expect(nextTime?.getTime()).toBe(baseTime.getTime() + 15 * 60 * 1000);
   });
 
   it('should calculate from last escalation time', () => {
@@ -163,9 +159,7 @@ describe('getNextEscalationTime', () => {
 
     expect(nextTime).not.toBeNull();
     // Should be 15 minutes after escalatedAt
-    expect(nextTime?.getTime()).toBe(
-      escalatedAt.getTime() + 15 * 60 * 1000
-    );
+    expect(nextTime?.getTime()).toBe(escalatedAt.getTime() + 15 * 60 * 1000);
   });
 });
 

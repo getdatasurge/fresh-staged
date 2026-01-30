@@ -71,9 +71,7 @@ export default function PlatformAuditLog() {
   const [actionTypeFilter, setActionTypeFilter] = useState<string>('all');
   const [expandedEntries, setExpandedEntries] = useState<Set<string>>(new Set());
 
-  const auditLogQuery = useQuery(
-    trpc.admin.listSuperAdminAuditLog.queryOptions({ limit: 500 })
-  );
+  const auditLogQuery = useQuery(trpc.admin.listSuperAdminAuditLog.queryOptions({ limit: 500 }));
 
   // Handle side effect for logging
   useEffect(() => {
@@ -86,7 +84,7 @@ export default function PlatformAuditLog() {
   const isLoading = auditLogQuery.isLoading;
 
   const toggleExpanded = (id: string) => {
-    setExpandedEntries(prev => {
+    setExpandedEntries((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -98,7 +96,7 @@ export default function PlatformAuditLog() {
   };
 
   const filteredEntries = useMemo(() => {
-    return entries.filter(entry => {
+    return entries.filter((entry) => {
       if (actionTypeFilter !== 'all' && entry.action !== actionTypeFilter) {
         return false;
       }
@@ -113,7 +111,7 @@ export default function PlatformAuditLog() {
     });
   }, [entries, actionTypeFilter, searchQuery]);
 
-  const uniqueActionTypes = [...new Set(entries.map(e => e.action))];
+  const uniqueActionTypes = [...new Set(entries.map((e) => e.action))];
 
   return (
     <PlatformLayout title="Audit Log">
@@ -137,7 +135,7 @@ export default function PlatformAuditLog() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">
-              {entries.filter(e => e.action === 'SUPPORT_MODE_ENTERED').length}
+              {entries.filter((e) => e.action === 'SUPPORT_MODE_ENTERED').length}
             </div>
           </CardContent>
         </Card>
@@ -149,7 +147,7 @@ export default function PlatformAuditLog() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              {entries.filter(e => e.action === 'IMPERSONATION_STARTED').length}
+              {entries.filter((e) => e.action === 'IMPERSONATION_STARTED').length}
             </div>
           </CardContent>
         </Card>
@@ -161,11 +159,13 @@ export default function PlatformAuditLog() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {entries.filter(e => {
-                const date = new Date(e.createdAt);
-                const today = new Date();
-                return date.toDateString() === today.toDateString();
-              }).length}
+              {
+                entries.filter((e) => {
+                  const date = new Date(e.createdAt);
+                  const today = new Date();
+                  return date.toDateString() === today.toDateString();
+                }).length
+              }
             </div>
           </CardContent>
         </Card>
@@ -189,7 +189,7 @@ export default function PlatformAuditLog() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Actions</SelectItem>
-            {uniqueActionTypes.map(type => (
+            {uniqueActionTypes.map((type) => (
               <SelectItem key={type} value={type}>
                 {ACTION_TYPE_LABELS[type]?.label || type}
               </SelectItem>
@@ -236,7 +236,11 @@ export default function PlatformAuditLog() {
 
                   return (
                     <>
-                      <TableRow key={entry.id} className="cursor-pointer" onClick={() => toggleExpanded(entry.id)}>
+                      <TableRow
+                        key={entry.id}
+                        className="cursor-pointer"
+                        onClick={() => toggleExpanded(entry.id)}
+                      >
                         <TableCell>
                           {isExpanded ? (
                             <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -299,12 +303,16 @@ export default function PlatformAuditLog() {
                                   </div>
                                   <div className="flex">
                                     <dt className="w-32 text-muted-foreground">Actor ID:</dt>
-                                    <dd className="font-mono text-xs">{entry.actorEmail || entry.actorName || 'Unknown'}</dd>
+                                    <dd className="font-mono text-xs">
+                                      {entry.actorEmail || entry.actorName || 'Unknown'}
+                                    </dd>
                                   </div>
                                   {entry.impersonatedUserId && (
                                     <div className="flex">
                                       <dt className="w-32 text-muted-foreground">Impersonated:</dt>
-                                      <dd className="font-mono text-xs">{entry.impersonatedUserId}</dd>
+                                      <dd className="font-mono text-xs">
+                                        {entry.impersonatedUserId}
+                                      </dd>
                                     </div>
                                   )}
                                   {entry.targetId && (

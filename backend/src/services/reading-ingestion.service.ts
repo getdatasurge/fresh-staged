@@ -108,7 +108,7 @@ export function getDayEnd(date: Date): Date {
  */
 export function calculateMetricsForReadings(
   readings: SingleReading[],
-  thresholds?: ThresholdContext
+  thresholds?: ThresholdContext,
 ): CalculatedMetrics {
   if (readings.length === 0) {
     return {
@@ -195,7 +195,7 @@ export async function upsertHourlyMetrics(
   unitId: string,
   periodStart: Date,
   periodEnd: Date,
-  newMetrics: CalculatedMetrics
+  newMetrics: CalculatedMetrics,
 ): Promise<void> {
   const granularity: MetricGranularity = 'hourly';
 
@@ -207,8 +207,8 @@ export async function upsertHourlyMetrics(
       and(
         eq(readingMetrics.unitId, unitId),
         eq(readingMetrics.periodStart, periodStart),
-        eq(readingMetrics.granularity, granularity)
-      )
+        eq(readingMetrics.granularity, granularity),
+      ),
     )
     .limit(1);
 
@@ -221,12 +221,8 @@ export async function upsertHourlyMetrics(
     const mergedAvg = mergedSum / mergedCount;
 
     // Merge humidity if present
-    let mergedHumidityMin = existing.humidityMin
-      ? parseFloat(existing.humidityMin)
-      : null;
-    let mergedHumidityMax = existing.humidityMax
-      ? parseFloat(existing.humidityMax)
-      : null;
+    let mergedHumidityMin = existing.humidityMin ? parseFloat(existing.humidityMin) : null;
+    let mergedHumidityMax = existing.humidityMax ? parseFloat(existing.humidityMax) : null;
 
     if (newMetrics.humidityMin !== null) {
       mergedHumidityMin =
@@ -295,9 +291,7 @@ export async function upsertHourlyMetrics(
  * @param readings - Readings to process
  * @returns Number of metrics records updated
  */
-export async function processMetricsForReadings(
-  readings: SingleReading[]
-): Promise<number> {
+export async function processMetricsForReadings(readings: SingleReading[]): Promise<number> {
   if (readings.length === 0) {
     return 0;
   }
@@ -326,8 +320,7 @@ export async function processMetricsForReadings(
     // Try to get thresholds for anomaly detection
     let thresholds: ThresholdContext | undefined;
     try {
-      const effectiveThresholds =
-        await alertEvaluator.resolveEffectiveThresholds(unitId);
+      const effectiveThresholds = await alertEvaluator.resolveEffectiveThresholds(unitId);
       thresholds = {
         tempMin: effectiveThresholds.tempMin,
         tempMax: effectiveThresholds.tempMax,
@@ -363,7 +356,7 @@ export async function ingestReadings(
   readings: SingleReading[],
   organizationId: string,
   streamService?: SensorStreamService,
-  socketService?: SocketService
+  socketService?: SocketService,
 ): Promise<IngestionResult> {
   if (readings.length === 0) {
     return {
@@ -376,10 +369,7 @@ export async function ingestReadings(
   }
 
   // Step 1: Batch insert readings
-  const insertResult = await readingsService.ingestBulkReadings(
-    readings,
-    organizationId
-  );
+  const insertResult = await readingsService.ingestBulkReadings(readings, organizationId);
 
   // Step 1.5: Queue meter event for reading volume (async, fire-and-forget)
   try {
@@ -391,14 +381,12 @@ export async function ingestReadings(
         value: insertResult.insertedCount,
       };
 
-      queueService.addJob(
-        QueueNames.METER_REPORTING,
-        JobNames.METER_REPORT,
-        meterJobData
-      ).catch((err) => {
-        // Log but don't fail ingestion if queue is unavailable
-        console.warn(`[Ingestion] Failed to queue meter event: ${err.message}`);
-      });
+      queueService
+        .addJob(QueueNames.METER_REPORTING, JobNames.METER_REPORT, meterJobData)
+        .catch((err) => {
+          // Log but don't fail ingestion if queue is unavailable
+          console.warn(`[Ingestion] Failed to queue meter event: ${err.message}`);
+        });
     }
   } catch (err) {
     // Queue service not available - skip metering silently
@@ -437,9 +425,7 @@ export async function ingestReadings(
     // Find latest reading for this unit
     const unitReadings = readings.filter((r) => r.unitId === unitId);
     const latestReading = unitReadings.reduce((latest, current) => {
-      return new Date(current.recordedAt) > new Date(latest.recordedAt)
-        ? current
-        : latest;
+      return new Date(current.recordedAt) > new Date(latest.recordedAt) ? current : latest;
     });
 
     // Convert temperature to integer (multiply by 10 for precision)
@@ -457,7 +443,7 @@ export async function ingestReadings(
         unitId,
         tempInt,
         new Date(latestReading.recordedAt),
-        socketService
+        socketService,
       );
 
       if (evaluation.alertCreated || evaluation.alertResolved) {
@@ -501,7 +487,7 @@ export async function queryMetrics(
   unitId: string,
   start: Date,
   end: Date,
-  granularity: MetricGranularity = 'hourly'
+  granularity: MetricGranularity = 'hourly',
 ): Promise<
   {
     periodStart: Date;
@@ -519,12 +505,7 @@ export async function queryMetrics(
   const results = await db
     .select()
     .from(readingMetrics)
-    .where(
-      and(
-        eq(readingMetrics.unitId, unitId),
-        eq(readingMetrics.granularity, granularity)
-      )
-    )
+    .where(and(eq(readingMetrics.unitId, unitId), eq(readingMetrics.granularity, granularity)))
     .orderBy(readingMetrics.periodStart);
 
   // Filter by date range in application (Drizzle handles this in query)

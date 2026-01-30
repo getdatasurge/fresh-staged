@@ -52,11 +52,13 @@ metrics:
 ## What Was Built
 
 ### 1. sensorCapacityProcedure Middleware (`backend/src/trpc/procedures.ts`)
+
 - New procedure extending `orgProcedure` to check subscription sensor limits
 - Replicates `requireSensorCapacity` REST middleware logic for tRPC
 - Used by device provisioning operations (provision, bootstrap)
 
 ### 2. TTN Gateways Router (`backend/src/routers/ttn-gateways.router.ts`)
+
 6 procedures for gateway management:
 | Procedure | Type | Access | Description |
 |-----------|------|--------|-------------|
@@ -68,6 +70,7 @@ metrics:
 | `refreshStatus` | mutation | org member | Update gateway status from TTN |
 
 ### 3. TTN Devices Router (`backend/src/routers/ttn-devices.router.ts`)
+
 6 procedures for device management:
 | Procedure | Type | Access | Description |
 |-----------|------|--------|-------------|
@@ -79,11 +82,13 @@ metrics:
 | `deprovision` | mutation | manager/admin/owner | Remove device from TTN |
 
 ### 4. Test Coverage
+
 - **23 tests** for ttn-gateways.router.ts
 - **28 tests** for ttn-devices.router.ts
 - **51 total tests** passing
 
 Coverage includes:
+
 - Happy path for each procedure
 - Role-based access (manager/admin/owner vs viewer/staff)
 - Sensor capacity enforcement for provision/bootstrap
@@ -91,23 +96,26 @@ Coverage includes:
 
 ## Commits
 
-| Hash | Message |
-|------|---------|
+| Hash    | Message                                                          |
+| ------- | ---------------------------------------------------------------- |
 | 34ad33b | feat(21-02): add sensorCapacityProcedure for device provisioning |
-| d3d811d | feat(21-02): add TTN gateways and devices tRPC routers |
-| 7d374f1 | test(21-02): add comprehensive tests for TTN routers |
+| d3d811d | feat(21-02): add TTN gateways and devices tRPC routers           |
+| 7d374f1 | test(21-02): add comprehensive tests for TTN routers             |
 
 ## Technical Patterns
 
 ### Sensor Capacity Middleware
+
 ```typescript
 export const sensorCapacityProcedure = orgProcedure.use(hasSensorCapacity);
 ```
+
 - Checks `getActiveSensorCount` against org's `sensorLimit`
 - Throws FORBIDDEN if capacity exceeded
 - Used by `provision` and `bootstrap` procedures
 
 ### TTN Error Handling
+
 ```typescript
 if (error.name === 'TTNConfigError' || error.name === 'TTNProvisioningError') {
   throw new TRPCError({
@@ -132,8 +140,10 @@ None - plan executed exactly as written.
 ## Next Phase Readiness
 
 **Ready for:**
+
 - Plan 21-03: Additional routers (notifications, availability, etc.)
 - Frontend migration from REST to tRPC for TTN management
 
 **Notes:**
+
 - Pre-existing TypeScript errors in notification-policy.service.ts are unrelated to this plan

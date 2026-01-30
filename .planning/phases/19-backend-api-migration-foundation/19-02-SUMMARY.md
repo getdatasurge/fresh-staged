@@ -32,15 +32,15 @@ key-files:
     - backend/src/trpc/procedures.ts
 
 key-decisions:
-  - "Use ctx.user.organizationId from middleware instead of input.organizationId in procedure handlers"
-  - "Fix middleware to use getRawInput() for accessing input before validation"
-  - "Test routers via createCallerFactory with mocked service dependencies"
+  - 'Use ctx.user.organizationId from middleware instead of input.organizationId in procedure handlers'
+  - 'Fix middleware to use getRawInput() for accessing input before validation'
+  - 'Test routers via createCallerFactory with mocked service dependencies'
 
 patterns-established:
-  - "Domain router pattern: Export router with procedures, import into appRouter"
-  - "Role-based access control in procedure handler (owner check for update)"
-  - "Consistent error codes: NOT_FOUND for missing resources, FORBIDDEN for permission errors"
-  - "Output validation ensures mocked test data matches schema"
+  - 'Domain router pattern: Export router with procedures, import into appRouter'
+  - 'Role-based access control in procedure handler (owner check for update)'
+  - 'Consistent error codes: NOT_FOUND for missing resources, FORBIDDEN for permission errors'
+  - 'Output validation ensures mocked test data matches schema'
 
 # Metrics
 duration: 10min
@@ -60,6 +60,7 @@ completed: 2026-01-24
 - **Files modified:** 4
 
 ## Accomplishments
+
 - Created organizations domain router with all CRUD procedures
 - Registered router in appRouter with type-safe composition
 - Comprehensive unit tests (9 tests) covering success and error cases
@@ -87,6 +88,7 @@ Each task was committed atomically:
    - Fixed procedures.ts middleware to use getRawInput()
 
 ## Files Created/Modified
+
 - `backend/src/routers/organizations.router.ts` - tRPC organizations domain router with 4 procedures
 - `backend/src/trpc/router.ts` - App router composition with organizations namespace
 - `backend/tests/trpc/organizations.router.test.ts` - Unit tests for all procedures
@@ -95,16 +97,19 @@ Each task was committed atomically:
 ## Decisions Made
 
 **1. Use ctx.user.organizationId from middleware**
+
 - Router procedures access organizationId from ctx.user (populated by orgProcedure)
 - Input still includes organizationId for middleware to validate membership
 - Cleaner handler code, enforces that membership check happened
 
 **2. Fix middleware getRawInput() pattern**
+
 - Original middleware tried to access `input` parameter directly
 - tRPC v11 requires `getRawInput()` to access input in middleware
 - Prevents "Cannot destructure property of undefined" errors
 
 **3. Test with mocked services**
+
 - Used vitest vi.mock() to mock all service dependencies
 - Tests focus on router logic, not service implementation
 - Proper UUID format required for Zod schema validation
@@ -114,6 +119,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Fixed middleware input access pattern**
+
 - **Found during:** Task 3 (Writing router tests)
 - **Issue:** Middleware tried to access `input` parameter directly, which is undefined in tRPC v11
 - **Fix:** Changed to use `getRawInput()` to properly access input before validation
@@ -129,6 +135,7 @@ Each task was committed atomically:
 ## Issues Encountered
 
 **Test mocking complexity**
+
 - Initial attempts to mock userService failed due to vitest hoisting
 - Solution: Define mocks at top level with vi.fn(), import in beforeEach
 - UUID validation required proper v4 format ('123e4567-e89b-...' not 'org-456')
@@ -140,6 +147,7 @@ None - no external service configuration required.
 ## Next Phase Readiness
 
 **Ready for Plan 19-03: Sites/Areas/Units Routers**
+
 - Pattern established for domain router creation
 - Middleware fix applies to all future org-scoped routers
 - Testing pattern can be reused for other domain routers
@@ -149,5 +157,6 @@ None - no external service configuration required.
 **Concerns:** None - pilot migration successful
 
 ---
-*Phase: 19-backend-api-migration-foundation*
-*Completed: 2026-01-24*
+
+_Phase: 19-backend-api-migration-foundation_
+_Completed: 2026-01-24_

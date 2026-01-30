@@ -73,23 +73,12 @@ export const readingMetrics = pgTable(
   },
   (table) => [
     // Primary query pattern: metrics for a unit over time
-    index('reading_metrics_unit_period_idx').on(
-      table.unitId,
-      table.periodStart,
-      table.granularity
-    ),
+    index('reading_metrics_unit_period_idx').on(table.unitId, table.periodStart, table.granularity),
     // For querying by granularity across units
-    index('reading_metrics_granularity_idx').on(
-      table.granularity,
-      table.periodStart
-    ),
+    index('reading_metrics_granularity_idx').on(table.granularity, table.periodStart),
     // Prevent duplicate metrics for same unit/period/granularity
-    unique('reading_metrics_unique_period').on(
-      table.unitId,
-      table.periodStart,
-      table.granularity
-    ),
-  ]
+    unique('reading_metrics_unique_period').on(table.unitId, table.periodStart, table.granularity),
+  ],
 );
 
 // Type exports

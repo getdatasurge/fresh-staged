@@ -37,15 +37,15 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Dual logger using Proxy pattern for console pretty + file JSON output"
-  - "SSL auto-detect for new DB client (enabled for remote, disabled for localhost)"
-  - "23 tables in import order across 8 dependency levels"
-  - "7 tables identified with user ID columns requiring mapping"
+  - 'Dual logger using Proxy pattern for console pretty + file JSON output'
+  - 'SSL auto-detect for new DB client (enabled for remote, disabled for localhost)'
+  - '23 tables in import order across 8 dependency levels'
+  - '7 tables identified with user ID columns requiring mapping'
 
 patterns-established:
-  - "Database client pattern: Pool with connection test function and graceful shutdown"
-  - "Logger pattern: Proxy-based dual transport for console/file output"
-  - "Migration helper functions: logMigrationStart/Progress/Complete/Error"
+  - 'Database client pattern: Pool with connection test function and graceful shutdown'
+  - 'Logger pattern: Proxy-based dual transport for console/file output'
+  - 'Migration helper functions: logMigrationStart/Progress/Complete/Error'
 
 # Metrics
 duration: 5min
@@ -125,5 +125,6 @@ None - no external service configuration required. Users will need to create `.e
 - Ready for 06-02: Export Scripts implementation
 
 ---
-*Phase: 06-data-migration-scripts*
-*Completed: 2026-01-23*
+
+_Phase: 06-data-migration-scripts_
+_Completed: 2026-01-23_

@@ -261,7 +261,7 @@ describe('Asset Storage Service', () => {
           filename: 'document.pdf',
           mimeType: 'application/pdf',
           data: Buffer.from('data'),
-        })
+        }),
       ).rejects.toThrow(FileValidationError);
 
       expect(mockSend).not.toHaveBeenCalled();
@@ -278,7 +278,7 @@ describe('Asset Storage Service', () => {
           filename: 'large-image.jpg',
           mimeType: 'image/jpeg',
           data: largeBuffer,
-        })
+        }),
       ).rejects.toThrow(FileValidationError);
 
       expect(mockSend).not.toHaveBeenCalled();
@@ -295,7 +295,7 @@ describe('Asset Storage Service', () => {
           filename: 'image.jpg',
           mimeType: 'image/jpeg',
           data: Buffer.from('data'),
-        })
+        }),
       ).rejects.toThrow(StorageError);
     });
 
@@ -311,7 +311,7 @@ describe('Asset Storage Service', () => {
           filename: 'image.jpg',
           mimeType: 'image/jpeg',
           data: Buffer.from('data'),
-        })
+        }),
       ).rejects.toThrow(StorageConfigError);
     });
 
@@ -327,7 +327,7 @@ describe('Asset Storage Service', () => {
           filename: 'image.jpg',
           mimeType: 'image/jpeg',
           data: Buffer.from('data'),
-        })
+        }),
       ).rejects.toThrow(StorageConfigError);
     });
 
@@ -343,7 +343,7 @@ describe('Asset Storage Service', () => {
           filename: 'image.jpg',
           mimeType: 'image/jpeg',
           data: Buffer.from('data'),
-        })
+        }),
       ).rejects.toThrow(StorageConfigError);
     });
 
@@ -411,9 +411,7 @@ describe('Asset Storage Service', () => {
     it('should throw StorageError on S3 failure', async () => {
       mockSend.mockRejectedValue(new Error('Access denied'));
 
-      await expect(
-        deleteAsset('some/key.jpg')
-      ).rejects.toThrow(StorageError);
+      await expect(deleteAsset('some/key.jpg')).rejects.toThrow(StorageError);
     });
   });
 

@@ -18,28 +18,30 @@ re_verification: false
 
 ### Observable Truths
 
-| # | Truth | Status | Evidence |
-|---|-------|--------|----------|
-| 1 | Zero it.skip() markers remain in any TTN webhook test file | ✓ VERIFIED | `grep -c 'it\.skip\|test\.skip\|it\.todo\|test\.todo'` returns 0 |
-| 2 | All TTN webhook tests pass (32 tests covering ingestion, alerts, metadata, edge cases) | ✓ VERIFIED | `npx vitest run tests/api/ttn-webhooks.test.ts` shows 32 passed, 0 failed, 0 skipped |
-| 3 | No duplicate test files exist for the same route | ✓ VERIFIED | `ls backend/tests/routes/` returns "No such file or directory" |
-| 4 | Test directory structure follows the tests/api/ convention | ✓ VERIFIED | File exists at `backend/tests/api/ttn-webhooks.test.ts` (31,263 bytes, 943 lines) |
+| #   | Truth                                                                                  | Status     | Evidence                                                                             |
+| --- | -------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------ |
+| 1   | Zero it.skip() markers remain in any TTN webhook test file                             | ✓ VERIFIED | `grep -c 'it\.skip\|test\.skip\|it\.todo\|test\.todo'` returns 0                     |
+| 2   | All TTN webhook tests pass (32 tests covering ingestion, alerts, metadata, edge cases) | ✓ VERIFIED | `npx vitest run tests/api/ttn-webhooks.test.ts` shows 32 passed, 0 failed, 0 skipped |
+| 3   | No duplicate test files exist for the same route                                       | ✓ VERIFIED | `ls backend/tests/routes/` returns "No such file or directory"                       |
+| 4   | Test directory structure follows the tests/api/ convention                             | ✓ VERIFIED | File exists at `backend/tests/api/ttn-webhooks.test.ts` (31,263 bytes, 943 lines)    |
 
 **Score:** 4/4 truths verified
 
 ### Required Artifacts
 
-| Artifact | Expected | Status | Details |
-|----------|----------|--------|---------|
+| Artifact                                 | Expected                                                | Status     | Details                                                                                                                                               |
+| ---------------------------------------- | ------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `backend/tests/api/ttn-webhooks.test.ts` | Complete TTN webhook test suite with socket plugin mock | ✓ VERIFIED | EXISTS (943 lines), SUBSTANTIVE (32 test cases, 0 stub patterns), WIRED (imports from `../../src/app.js`, mocks `../../src/plugins/socket.plugin.js`) |
 
 **Artifact Verification Details:**
 
 **Level 1 - Existence:**
+
 - File exists at `/home/swoop/swoop-claude-projects/fresh-staged/backend/tests/api/ttn-webhooks.test.ts`
 - Size: 31,263 bytes, 943 lines
 
 **Level 2 - Substantive:**
+
 - Line count: 943 lines (well above 15-line minimum for test files)
 - Test cases: 32 active test cases (no `.skip` or `.todo` markers)
 - Contains `Symbol.for('skip-override')`: Found 2 occurrences (socket plugin mock pattern)
@@ -48,6 +50,7 @@ re_verification: false
 - **SUBSTANTIVE** ✓
 
 **Level 3 - Wired:**
+
 - Imports buildApp from `../../src/app.js` (line 84) ✓
 - Mocks socket plugin at `../../src/plugins/socket.plugin.js` (line 32) ✓
 - Uses `app.inject()` to call route: Found 32+ calls to `app.inject({ method: 'POST', url: '/api/webhooks/ttn', ... })` ✓
@@ -55,19 +58,20 @@ re_verification: false
 
 ### Key Link Verification
 
-| From | To | Via | Status | Details |
-|------|----|----|--------|---------|
-| `backend/tests/api/ttn-webhooks.test.ts` | `backend/src/routes/ttn-webhooks.ts` | buildApp + app.inject POST /api/webhooks/ttn | ✓ WIRED | Imports buildApp (line 84), calls `app.inject({ url: '/api/webhooks/ttn' })` in 32+ tests |
-| `backend/tests/api/ttn-webhooks.test.ts` | `backend/src/plugins/socket.plugin.ts` | vi.mock with Symbol.for('skip-override') | ✓ WIRED | Mocks socket plugin (line 32-57) with `Symbol.for('skip-override')` pattern, decorates fastify with sensorStreamService and socketService |
+| From                                     | To                                     | Via                                          | Status  | Details                                                                                                                                   |
+| ---------------------------------------- | -------------------------------------- | -------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `backend/tests/api/ttn-webhooks.test.ts` | `backend/src/routes/ttn-webhooks.ts`   | buildApp + app.inject POST /api/webhooks/ttn | ✓ WIRED | Imports buildApp (line 84), calls `app.inject({ url: '/api/webhooks/ttn' })` in 32+ tests                                                 |
+| `backend/tests/api/ttn-webhooks.test.ts` | `backend/src/plugins/socket.plugin.ts` | vi.mock with Symbol.for('skip-override')     | ✓ WIRED | Mocks socket plugin (line 32-57) with `Symbol.for('skip-override')` pattern, decorates fastify with sensorStreamService and socketService |
 
 ### Requirements Coverage
 
-| Requirement | Status | Evidence |
-|-------------|--------|----------|
-| TTN-01: All 14 skipped tests in `ttn-webhooks.test.ts` are eliminated and passing | ✓ SATISFIED | 0 skip markers found, 32 tests pass |
+| Requirement                                                                                    | Status      | Evidence                                                                                                                                                                                                                                                                                                       |
+| ---------------------------------------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TTN-01: All 14 skipped tests in `ttn-webhooks.test.ts` are eliminated and passing              | ✓ SATISFIED | 0 skip markers found, 32 tests pass                                                                                                                                                                                                                                                                            |
 | TTN-02: TTN webhook ingestion path (reading creation, alert triggers, device metadata) covered | ✓ SATISFIED | Test groups cover: Authentication (4 tests), Device Lookup (3 tests), Payload Parsing (5 tests), Successful Processing (8 tests including reading storage, alert evaluation, metadata updates), Duplicate Handling (1 test), Alternative Formats (5 tests), Error Handling (3 tests), End-to-End Flow (1 test) |
 
 **TTN-02 Coverage Breakdown:**
+
 - Reading creation: "should store reading with correct sensor/unit association", "should add reading to real-time streaming service"
 - Alert triggers: "should trigger alert evaluation for the unit", "should report alertsTriggered=1 when alert is created", "should report alertsTriggered=1 when alert is resolved"
 - Device metadata: "should update device metadata after processing", "should continue processing if device metadata update fails"
@@ -78,6 +82,7 @@ re_verification: false
 **NONE** - No blocker, warning, or info anti-patterns detected.
 
 Checks performed:
+
 - ✓ No TODO/FIXME/XXX/HACK comments
 - ✓ No placeholder content
 - ✓ No empty return statements

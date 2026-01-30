@@ -9,22 +9,26 @@ Creates historical record, moves planning files to history, preserves codebase m
 <philosophy>
 
 **Why archive milestones:**
+
 - Clean slate for next milestone planning
-- Historical traceability of decisions and progress  
+- Historical traceability of decisions and progress
 - Git-based recovery (tag + commit)
 - Preserves what mattered without cluttering active workspace
 
 **Archive vs complete-milestone:**
+
 - `archive-milestone`: Moves files to history (reversible)
 - `complete-milestone`: Full v[X.Y] tagging with evolution review
 
 **Safety first:**
+
 - Git validation prevents accidental data loss
 - User confirmation required
 - Atomic operations with transaction pattern
 - Preserves `.planning/codebase/` for continuity
 
 **Atomic operations:**
+
 - `mv` commands are atomic at filesystem level (file appears instantly at destination or not at all)
 - Git validation prevents execution on dirty state (rollback via git if issues)
 - Operations are ordered: directory creation → file moves → registry update → git commit
@@ -43,6 +47,7 @@ git status --porcelain
 ```
 
 **If not clean:**
+
 ```
 Git working directory is not clean. Please commit or stash changes before archiving.
 
@@ -67,7 +72,7 @@ Archive milestone '[milestone-name]'?
 
 This will move planning files to .planning/history/[milestone-name]/:
 - ROADMAP.md
-- STATE.md  
+- STATE.md
 - PROJECT.md
 - REQUIREMENTS.md
 - research/
@@ -109,7 +114,7 @@ mv .planning/STATE.md .planning/history/[milestone-name]/
 mv .planning/PROJECT.md .planning/history/[milestone-name]/
 mv .planning/REQUIREMENTS.md .planning/history/[milestone-name]/ 2>/dev/null || true
 
-# Move directories  
+# Move directories
 mv .planning/research .planning/history/[milestone-name]/ 2>/dev/null || true
 mv .planning/phases .planning/history/[milestone-name]/ 2>/dev/null || true
 ```
@@ -224,7 +229,7 @@ Next steps:
 - [ ] User confirmed intent to archive
 - [ ] Archive directory created at `.planning/history/[milestone-name]/`
 - [ ] ROADMAP.md, STATE.md, PROJECT.md, REQUIREMENTS.md moved to archive
-- [ ] research/ and phases/ directories moved to archive  
+- [ ] research/ and phases/ directories moved to archive
 - [ ] `.planning/codebase/` preserved (not moved)
 - [ ] MILESTONES.md updated with milestone entry
 - [ ] Git commit created with descriptive message

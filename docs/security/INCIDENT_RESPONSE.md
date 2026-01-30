@@ -6,12 +6,12 @@
 
 ## Document Information
 
-| Attribute | Value |
-|-----------|-------|
-| Document Owner | Security Lead |
-| Last Updated | 2026-01-12 |
-| Review Frequency | Semi-annual |
-| Test Frequency | Annual tabletop exercise |
+| Attribute        | Value                    |
+| ---------------- | ------------------------ |
+| Document Owner   | Security Lead            |
+| Last Updated     | 2026-01-12               |
+| Review Frequency | Semi-annual              |
+| Test Frequency   | Annual tabletop exercise |
 
 ---
 
@@ -19,22 +19,22 @@
 
 ### Severity Levels
 
-| Level | Description | Response Time | Examples |
-|-------|-------------|---------------|----------|
-| **P1 - Critical** | Active breach, data exfiltration | Immediate (< 15 min) | Credential theft, RLS bypass |
-| **P2 - High** | Potential breach, service impact | < 1 hour | Suspicious access, DoS attack |
-| **P3 - Medium** | Security weakness, limited impact | < 4 hours | Vulnerability discovered, failed attacks |
-| **P4 - Low** | Minor issue, informational | < 24 hours | Policy violation, audit finding |
+| Level             | Description                       | Response Time        | Examples                                 |
+| ----------------- | --------------------------------- | -------------------- | ---------------------------------------- |
+| **P1 - Critical** | Active breach, data exfiltration  | Immediate (< 15 min) | Credential theft, RLS bypass             |
+| **P2 - High**     | Potential breach, service impact  | < 1 hour             | Suspicious access, DoS attack            |
+| **P3 - Medium**   | Security weakness, limited impact | < 4 hours            | Vulnerability discovered, failed attacks |
+| **P4 - Low**      | Minor issue, informational        | < 24 hours           | Policy violation, audit finding          |
 
 ### Incident Categories
 
-| Category | Description | Examples |
-|----------|-------------|----------|
-| **Unauthorized Access** | Access beyond permissions | Tenant escape, privilege escalation |
-| **Data Breach** | Data exposure or theft | Customer data leak, API key exposure |
-| **Service Disruption** | Availability impact | DoS, infrastructure failure |
-| **Malware/Compromise** | System infection | Compromised credentials, malicious code |
-| **Policy Violation** | Non-compliance | Improper access, audit failure |
+| Category                | Description               | Examples                                |
+| ----------------------- | ------------------------- | --------------------------------------- |
+| **Unauthorized Access** | Access beyond permissions | Tenant escape, privilege escalation     |
+| **Data Breach**         | Data exposure or theft    | Customer data leak, API key exposure    |
+| **Service Disruption**  | Availability impact       | DoS, infrastructure failure             |
+| **Malware/Compromise**  | System infection          | Compromised credentials, malicious code |
+| **Policy Violation**    | Non-compliance            | Improper access, audit failure          |
 
 ---
 
@@ -42,13 +42,13 @@
 
 ### Roles and Responsibilities
 
-| Role | Primary Responsibility | Backup |
-|------|----------------------|--------|
-| **Incident Commander** | Overall coordination, decisions | Engineering Lead |
-| **Security Lead** | Technical investigation, containment | Senior Developer |
-| **Communications Lead** | Customer/stakeholder updates | Product Manager |
-| **Engineering Lead** | Technical remediation | On-call Engineer |
-| **Legal Counsel** | Regulatory compliance | External Counsel |
+| Role                    | Primary Responsibility               | Backup           |
+| ----------------------- | ------------------------------------ | ---------------- |
+| **Incident Commander**  | Overall coordination, decisions      | Engineering Lead |
+| **Security Lead**       | Technical investigation, containment | Senior Developer |
+| **Communications Lead** | Customer/stakeholder updates         | Product Manager  |
+| **Engineering Lead**    | Technical remediation                | On-call Engineer |
+| **Legal Counsel**       | Regulatory compliance                | External Counsel |
 
 ### Escalation Path
 
@@ -61,11 +61,11 @@ P1 → Full Response Team (all hands)
 
 ### Contact Information
 
-| Role | Contact Method | Availability |
-|------|---------------|--------------|
-| Security Lead | **[TBD - Add contact]** | 24/7 for P1/P2 |
-| On-call Engineer | **[TBD - PagerDuty/Opsgenie]** | 24/7 |
-| Incident Commander | **[TBD - Add contact]** | Business hours + P1 |
+| Role               | Contact Method                 | Availability        |
+| ------------------ | ------------------------------ | ------------------- |
+| Security Lead      | **[TBD - Add contact]**        | 24/7 for P1/P2      |
+| On-call Engineer   | **[TBD - PagerDuty/Opsgenie]** | 24/7                |
+| Incident Commander | **[TBD - Add contact]**        | Business hours + P1 |
 
 ---
 
@@ -73,34 +73,34 @@ P1 → Full Response Team (all hands)
 
 ### Detection Sources
 
-| Source | What It Detects | Alert Mechanism |
-|--------|-----------------|-----------------|
-| Supabase Logs | Auth failures, errors | Dashboard monitoring |
-| Edge Function Logs | Application errors | Log aggregation |
-| Event Logs Table | Business anomalies | Periodic review |
-| Customer Reports | Visible issues | Support channel |
-| External Scanners | Vulnerabilities | Scheduled scans |
-| Platform Alerts | Infrastructure issues | Supabase status |
+| Source             | What It Detects       | Alert Mechanism      |
+| ------------------ | --------------------- | -------------------- |
+| Supabase Logs      | Auth failures, errors | Dashboard monitoring |
+| Edge Function Logs | Application errors    | Log aggregation      |
+| Event Logs Table   | Business anomalies    | Periodic review      |
+| Customer Reports   | Visible issues        | Support channel      |
+| External Scanners  | Vulnerabilities       | Scheduled scans      |
+| Platform Alerts    | Infrastructure issues | Supabase status      |
 
 ### Detection Indicators
 
 #### High Confidence Indicators
 
-| Indicator | Likely Incident | Action |
-|-----------|-----------------|--------|
-| Multiple failed logins from one IP | Brute force attack | Block IP, investigate |
-| Cross-org data in logs | RLS bypass | Escalate immediately |
-| Unexpected service role usage | Credential theft | Rotate keys, investigate |
-| Webhook failures spike | Attack or misconfiguration | Validate secrets |
+| Indicator                          | Likely Incident            | Action                   |
+| ---------------------------------- | -------------------------- | ------------------------ |
+| Multiple failed logins from one IP | Brute force attack         | Block IP, investigate    |
+| Cross-org data in logs             | RLS bypass                 | Escalate immediately     |
+| Unexpected service role usage      | Credential theft           | Rotate keys, investigate |
+| Webhook failures spike             | Attack or misconfiguration | Validate secrets         |
 
 #### Medium Confidence Indicators
 
-| Indicator | Possible Incident | Action |
-|-----------|-------------------|--------|
-| Unusual login times/locations | Account compromise | Verify with user |
-| High API request volume | DoS or scraping | Review rate limits |
-| New admin user created | Privilege escalation | Audit user creation |
-| Configuration changes | Unauthorized change | Verify with admins |
+| Indicator                     | Possible Incident    | Action              |
+| ----------------------------- | -------------------- | ------------------- |
+| Unusual login times/locations | Account compromise   | Verify with user    |
+| High API request volume       | DoS or scraping      | Review rate limits  |
+| New admin user created        | Privilege escalation | Audit user creation |
+| Configuration changes         | Unauthorized change  | Verify with admins  |
 
 ### Initial Triage Checklist
 
@@ -210,13 +210,13 @@ USING (false);
 
 ### Evidence Preservation
 
-| Evidence | Collection Method | Retention |
-|----------|------------------|-----------|
-| Database logs | Supabase export | 90 days minimum |
-| Edge function logs | Supabase export | 90 days minimum |
-| Event logs table | Database backup | Permanent |
-| Network logs | Supabase/CDN logs | As available |
-| Timeline of actions | Incident document | Permanent |
+| Evidence            | Collection Method | Retention       |
+| ------------------- | ----------------- | --------------- |
+| Database logs       | Supabase export   | 90 days minimum |
+| Edge function logs  | Supabase export   | 90 days minimum |
+| Event logs table    | Database backup   | Permanent       |
+| Network logs        | Supabase/CDN logs | As available    |
+| Timeline of actions | Incident document | Permanent       |
 
 ---
 
@@ -265,13 +265,13 @@ USING (false);
 
 ### Common Remediation Actions
 
-| Issue | Remediation |
-|-------|-------------|
-| Weak RLS policy | Rewrite policy, audit similar |
-| Missing input validation | Add validation, review endpoints |
-| Exposed credentials | Rotate all affected, add scanning |
-| Missing rate limiting | Implement application-level limits |
-| Insufficient logging | Add logging for blind spots |
+| Issue                    | Remediation                        |
+| ------------------------ | ---------------------------------- |
+| Weak RLS policy          | Rewrite policy, audit similar      |
+| Missing input validation | Add validation, review endpoints   |
+| Exposed credentials      | Rotate all affected, add scanning  |
+| Missing rate limiting    | Implement application-level limits |
+| Insufficient logging     | Add logging for blind spots        |
 
 ---
 
@@ -291,20 +291,20 @@ USING (false);
 
 #### Customer Communication
 
-| Scenario | Communication |
-|----------|---------------|
-| No customer impact | Internal documentation only |
-| Service disruption | Status page update |
-| Data exposure (specific users) | Direct notification to affected |
-| Data breach (broad) | Public notification + regulatory |
+| Scenario                       | Communication                    |
+| ------------------------------ | -------------------------------- |
+| No customer impact             | Internal documentation only      |
+| Service disruption             | Status page update               |
+| Data exposure (specific users) | Direct notification to affected  |
+| Data breach (broad)            | Public notification + regulatory |
 
 #### Regulatory Notification
 
-| Regulation | Notification Requirement | Timeline |
-|------------|-------------------------|----------|
-| GDPR | Data breach to supervisory authority | 72 hours |
-| State laws (varies) | Consumer notification | Varies by state |
-| Industry specific | Per contractual requirements | Per contract |
+| Regulation          | Notification Requirement             | Timeline        |
+| ------------------- | ------------------------------------ | --------------- |
+| GDPR                | Data breach to supervisory authority | 72 hours        |
+| State laws (varies) | Consumer notification                | Varies by state |
+| Industry specific   | Per contractual requirements         | Per contract    |
 
 ### Recovery Verification
 
@@ -341,55 +341,64 @@ USING (false);
 # Security Incident Postmortem
 
 ## Incident Summary
+
 - **Date/Time:**
 - **Duration:**
 - **Severity:**
 - **Incident Commander:**
 
 ## What Happened
+
 [Factual description]
 
 ## Timeline
-| Time | Event |
-|------|-------|
-| | Detection |
-| | Containment began |
-| | Root cause identified |
-| | Fix deployed |
-| | Incident closed |
+
+| Time | Event                 |
+| ---- | --------------------- |
+|      | Detection             |
+|      | Containment began     |
+|      | Root cause identified |
+|      | Fix deployed          |
+|      | Incident closed       |
 
 ## Impact
+
 - **Users Affected:**
 - **Data Exposed:**
 - **Service Downtime:**
 - **Financial Impact:**
 
 ## Root Cause
+
 [Technical explanation]
 
 ## What Went Well
+
 - [List positives]
 
 ## What Went Poorly
+
 - [List improvements needed]
 
 ## Action Items
+
 | Action | Owner | Due Date | Status |
-|--------|-------|----------|--------|
-| | | | |
+| ------ | ----- | -------- | ------ |
+|        |       |          |        |
 
 ## Lessons Learned
+
 [Key takeaways]
 ```
 
 ### Action Item Tracking
 
-| Priority | Timeline | Example Actions |
-|----------|----------|-----------------|
-| Critical | 24 hours | Emergency patches, key rotation |
-| High | 1 week | Security control additions |
-| Medium | 1 month | Process improvements |
-| Low | 1 quarter | Documentation updates |
+| Priority | Timeline  | Example Actions                 |
+| -------- | --------- | ------------------------------- |
+| Critical | 24 hours  | Emergency patches, key rotation |
+| High     | 1 week    | Security control additions      |
+| Medium   | 1 month   | Process improvements            |
+| Low      | 1 quarter | Documentation updates           |
 
 ---
 
@@ -460,11 +469,11 @@ FreshTrack Pro Security Team
 
 ### Exercise Schedule
 
-| Exercise Type | Frequency | Participants |
-|---------------|-----------|--------------|
-| Tabletop scenario | Quarterly | Response team |
-| Technical drill | Semi-annual | Engineering |
-| Full simulation | Annual | All stakeholders |
+| Exercise Type     | Frequency   | Participants     |
+| ----------------- | ----------- | ---------------- |
+| Tabletop scenario | Quarterly   | Response team    |
+| Technical drill   | Semi-annual | Engineering      |
+| Full simulation   | Annual      | All stakeholders |
 
 ### Sample Scenarios
 
@@ -491,17 +500,18 @@ FreshTrack Pro Security Team
 
 ### Key Metrics
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| Mean Time to Detect (MTTD) | < 1 hour (P1) | Detection time - incident start |
-| Mean Time to Contain (MTTC) | < 4 hours (P1) | Containment time - detection |
-| Mean Time to Recover (MTTR) | < 24 hours (P1) | Recovery time - detection |
-| Postmortem completion | 100% (P1-P2) | Days to complete |
-| Action item closure | 90% on time | Per due date |
+| Metric                      | Target          | Measurement                     |
+| --------------------------- | --------------- | ------------------------------- |
+| Mean Time to Detect (MTTD)  | < 1 hour (P1)   | Detection time - incident start |
+| Mean Time to Contain (MTTC) | < 4 hours (P1)  | Containment time - detection    |
+| Mean Time to Recover (MTTR) | < 24 hours (P1) | Recovery time - detection       |
+| Postmortem completion       | 100% (P1-P2)    | Days to complete                |
+| Action item closure         | 90% on time     | Per due date                    |
 
 ### Continuous Improvement
 
 After each incident:
+
 1. Update runbooks with lessons learned
 2. Improve detection for similar incidents
 3. Enhance automated response where possible

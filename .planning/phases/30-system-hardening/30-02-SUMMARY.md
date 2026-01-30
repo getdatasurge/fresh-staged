@@ -26,12 +26,12 @@ key-files:
     - package-lock.json
 
 key-decisions:
-  - "Do not use --force flag to avoid breaking changes"
-  - "Accept moderate-severity dev-only vulnerabilities"
-  - "Accept unfixable upstream transitive dependencies"
+  - 'Do not use --force flag to avoid breaking changes'
+  - 'Accept moderate-severity dev-only vulnerabilities'
+  - 'Accept unfixable upstream transitive dependencies'
 
 patterns-established:
-  - "Pattern: npm audit fix without --force for non-breaking security updates"
+  - 'Pattern: npm audit fix without --force for non-breaking security updates'
 
 # Metrics
 duration: 8min
@@ -74,19 +74,19 @@ Each task was committed atomically:
 
 ### Backend (7 moderate, 0 high/critical)
 
-| Vulnerability | Severity | Package | Reason Cannot Fix |
-|--------------|----------|---------|-------------------|
-| esbuild <= 0.24.2 | moderate | drizzle-kit | Dev dependency, requires breaking drizzle-kit upgrade |
-| prismjs < 1.30.0 | moderate | @react-email/components | Requires breaking @react-email upgrade |
+| Vulnerability     | Severity | Package                 | Reason Cannot Fix                                     |
+| ----------------- | -------- | ----------------------- | ----------------------------------------------------- |
+| esbuild <= 0.24.2 | moderate | drizzle-kit             | Dev dependency, requires breaking drizzle-kit upgrade |
+| prismjs < 1.30.0  | moderate | @react-email/components | Requires breaking @react-email upgrade                |
 
 **All 7 moderate vulnerabilities are dev dependencies or require breaking changes (--force).**
 
 ### Frontend (4 low, 5 moderate, 0 high/critical)
 
-| Vulnerability | Severity | Package | Reason Cannot Fix |
-|--------------|----------|---------|-------------------|
-| elliptic * | low | @stackframe/stack-shared | No fix available (upstream Stack Auth SDK) |
-| esbuild <= 0.24.2 | moderate | vite | Dev dependency, requires vite 7.x (breaking) |
+| Vulnerability     | Severity | Package                  | Reason Cannot Fix                            |
+| ----------------- | -------- | ------------------------ | -------------------------------------------- |
+| elliptic \*       | low      | @stackframe/stack-shared | No fix available (upstream Stack Auth SDK)   |
+| esbuild <= 0.24.2 | moderate | vite                     | Dev dependency, requires vite 7.x (breaking) |
 
 **All moderate vulnerabilities are dev dependencies. Low severity elliptic is transitive from Stack Auth SDK with no available fix.**
 
@@ -101,6 +101,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Fixed Fastify response header API compatibility**
+
 - **Found during:** Task 1 (Backend npm audit fix)
 - **Issue:** After npm audit fix updated dependencies, TypeScript compilation failed with "Element implicitly has an 'any' type because expression 'x-response-time' can't be used to index type"
 - **Fix:** Changed `ctx.res.headers['x-response-time']` to `ctx.res.header('x-response-time', value)` with defensive check for test mocks
@@ -130,5 +131,6 @@ None - no external service configuration required.
 - Ready for additional security hardening in subsequent plans
 
 ---
-*Phase: 30-system-hardening*
-*Completed: 2026-01-29*
+
+_Phase: 30-system-hardening_
+_Completed: 2026-01-29_

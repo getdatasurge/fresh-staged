@@ -1,7 +1,7 @@
 ---
 name: gsd:plan-phase
 description: Create detailed execution plan for a phase (PLAN.md) with verification loop
-argument-hint: "[phase] [--research] [--skip-research] [--gaps] [--skip-verify]"
+argument-hint: '[phase] [--research] [--skip-research] [--gaps] [--skip-verify]'
 agent: gsd-planner
 allowed-tools:
   - Read
@@ -32,6 +32,7 @@ Create executable phase prompts (PLAN.md files) for a roadmap phase with integra
 Phase number: $ARGUMENTS (optional - auto-detects next unplanned phase if not provided)
 
 **Flags:**
+
 - `--research` — Force re-research even if RESEARCH.md exists
 - `--skip-research` — Skip research entirely, go straight to planning
 - `--gaps` — Gap closure mode (reads VERIFICATION.md, skips research)
@@ -116,12 +117,14 @@ ls "${PHASE_DIR}"/*-RESEARCH.md 2>/dev/null
 ```
 
 **If RESEARCH.md exists AND `--research` flag NOT set:**
+
 - Display: `Using existing research: ${PHASE_DIR}/${PHASE}-RESEARCH.md`
 - Skip to step 6
 
 **If RESEARCH.md missing OR `--research` flag set:**
 
 Display stage banner:
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  GSD ► RESEARCHING PHASE {X}
@@ -189,10 +192,12 @@ Task(
 ### Handle Researcher Return
 
 **`## RESEARCH COMPLETE`:**
+
 - Display: `Research complete. Proceeding to planning...`
 - Continue to step 6
 
 **`## RESEARCH BLOCKED`:**
+
 - Display blocker information
 - Offer: 1) Provide more context, 2) Skip research and plan anyway, 3) Abort
 - Wait for user response
@@ -225,6 +230,7 @@ UAT="${PHASE_DIR}/${PHASE}-UAT.md"
 ## 8. Spawn gsd-planner Agent
 
 Display stage banner:
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  GSD ► PLANNING PHASE {X}
@@ -270,7 +276,7 @@ Plans must be executable prompts with:
 - Tasks in XML format
 - Verification criteria
 - must_haves for goal-backward verification
-</downstream_consumer>
+  </downstream_consumer>
 
 <quality_gate>
 Before returning PLANNING COMPLETE:
@@ -281,7 +287,7 @@ Before returning PLANNING COMPLETE:
 - [ ] Dependencies correctly identified
 - [ ] Waves assigned for parallel execution
 - [ ] must_haves derived from phase goal
-</quality_gate>
+      </quality_gate>
 ```
 
 ```
@@ -297,14 +303,17 @@ Task(
 Parse planner output:
 
 **`## PLANNING COMPLETE`:**
+
 - Display: `Planner created {N} plan(s). Files on disk.`
 - If `--skip-verify`: Skip to step 13
 - Otherwise: Proceed to step 10
 
 **`## CHECKPOINT REACHED`:**
+
 - Present to user, get response, spawn continuation (see step 12)
 
 **`## PLANNING INCONCLUSIVE`:**
+
 - Show what was attempted
 - Offer: Add context, Retry, Manual
 - Wait for user response
@@ -312,6 +321,7 @@ Parse planner output:
 ## 10. Spawn gsd-plan-checker Agent
 
 Display:
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  GSD ► VERIFYING PLANS
@@ -329,7 +339,7 @@ Fill checker prompt and spawn:
 **Phase Goal:** {goal from ROADMAP}
 
 **Plans to verify:**
-@.planning/phases/{phase_dir}/*-PLAN.md
+@.planning/phases/{phase_dir}/\*-PLAN.md
 
 **Requirements (if exists):**
 @.planning/REQUIREMENTS.md
@@ -338,9 +348,10 @@ Fill checker prompt and spawn:
 
 <expected_output>
 Return one of:
+
 - ## VERIFICATION PASSED — all checks pass
 - ## ISSUES FOUND — structured issue list
-</expected_output>
+  </expected_output>
 ```
 
 ```
@@ -354,10 +365,12 @@ Task(
 ## 11. Handle Checker Return
 
 **If `## VERIFICATION PASSED`:**
+
 - Display: `Plans verified. Ready for execution.`
 - Proceed to step 13
 
 **If `## ISSUES FOUND`:**
+
 - Display: `Checker found issues:`
 - List issues from checker output
 - Check iteration count
@@ -380,7 +393,7 @@ Spawn gsd-planner with revision prompt:
 **Mode:** revision
 
 **Existing plans:**
-@.planning/phases/{phase_dir}/*-PLAN.md
+@.planning/phases/{phase_dir}/\*-PLAN.md
 
 **Checker issues:**
 {structured_issues_from_checker}
@@ -408,9 +421,11 @@ Task(
 **If iteration_count >= 3:**
 
 Display: `Max iterations reached. {N} issues remain:`
+
 - List remaining issues
 
 Offer options:
+
 1. Force proceed (execute despite issues)
 2. Provide guidance (user gives direction, retry)
 3. Abandon (exit planning)
@@ -427,15 +442,15 @@ Route to `<offer_next>`.
 Output this markdown directly (not as a code block):
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PHASE {X} PLANNED ✓
+GSD ► PHASE {X} PLANNED ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Phase {X}: {Name}** — {N} plan(s) in {M} wave(s)
 
-| Wave | Plans | What it builds |
-|------|-------|----------------|
-| 1    | 01, 02 | [objectives] |
-| 2    | 03     | [objective]  |
+| Wave | Plans  | What it builds |
+| ---- | ------ | -------------- |
+| 1    | 01, 02 | [objectives]   |
+| 2    | 03     | [objective]    |
 
 Research: {Completed | Used existing | Skipped}
 Verification: {Passed | Passed with override | Skipped}
@@ -453,13 +468,15 @@ Verification: {Passed | Passed with override | Skipped}
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- cat .planning/phases/{phase-dir}/*-PLAN.md — review plans
+
+- cat .planning/phases/{phase-dir}/\*-PLAN.md — review plans
 - /gsd:plan-phase {X} --research — re-research first
 
 ───────────────────────────────────────────────────────────────
 </offer_next>
 
 <success_criteria>
+
 - [ ] .planning/ directory validated
 - [ ] Phase validated against roadmap
 - [ ] Phase directory created if needed
@@ -472,4 +489,4 @@ Verification: {Passed | Passed with override | Skipped}
 - [ ] Verification passed OR user override OR max iterations with user decision
 - [ ] User sees status between agent spawns
 - [ ] User knows next steps (execute or review)
-</success_criteria>
+      </success_criteria>

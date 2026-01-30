@@ -90,11 +90,9 @@ export default async function preferencesRoutes(fastify: FastifyInstance) {
       // Parse digestSiteIds from JSON text to array
       return reply.send({
         ...profile,
-        digestSiteIds: profile.digestSiteIds
-          ? JSON.parse(profile.digestSiteIds)
-          : null,
+        digestSiteIds: profile.digestSiteIds ? JSON.parse(profile.digestSiteIds) : null,
       });
-    }
+    },
   );
 
   /**
@@ -142,12 +140,9 @@ export default async function preferencesRoutes(fastify: FastifyInstance) {
 
       if (body.digestDaily !== undefined) updates.digestDaily = body.digestDaily;
       if (body.digestWeekly !== undefined) updates.digestWeekly = body.digestWeekly;
-      if (body.digestDailyTime !== undefined)
-        updates.digestDailyTime = body.digestDailyTime;
+      if (body.digestDailyTime !== undefined) updates.digestDailyTime = body.digestDailyTime;
       if (body.digestSiteIds !== undefined) {
-        updates.digestSiteIds = body.digestSiteIds
-          ? JSON.stringify(body.digestSiteIds)
-          : null;
+        updates.digestSiteIds = body.digestSiteIds ? JSON.stringify(body.digestSiteIds) : null;
       }
       if (body.timezone !== undefined) updates.timezone = body.timezone;
 
@@ -178,11 +173,9 @@ export default async function preferencesRoutes(fastify: FastifyInstance) {
       // Parse digestSiteIds from JSON text to array
       return reply.send({
         ...updated,
-        digestSiteIds: updated.digestSiteIds
-          ? JSON.parse(updated.digestSiteIds)
-          : null,
+        digestSiteIds: updated.digestSiteIds ? JSON.parse(updated.digestSiteIds) : null,
       });
-    }
+    },
   );
 
   /**
@@ -229,6 +222,6 @@ export default async function preferencesRoutes(fastify: FastifyInstance) {
         success: true,
         message: 'All digest emails disabled',
       });
-    }
+    },
   );
 }

@@ -53,6 +53,7 @@ curl https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/ttn-provision-org
 ```
 
 You should see a response like:
+
 ```json
 {
   "status": "ok",
@@ -90,6 +91,7 @@ Once the secrets are set in production:
 ### "Supabase CLI not found" when running the script
 
 **Solution**: Install the Supabase CLI:
+
 ```bash
 npm install -g supabase
 # or
@@ -99,10 +101,12 @@ brew install supabase/tap/supabase
 ### Secrets set but edge function still returns "ready": false
 
 **Causes**:
+
 - Secrets may take a few seconds to propagate
 - Edge function may need to be redeployed
 
 **Solutions**:
+
 1. Wait 10-30 seconds and check again
 2. Redeploy the edge function:
    ```bash
@@ -112,6 +116,7 @@ brew install supabase/tap/supabase
 ### Still getting "Edge Function returned a non-2xx status code"
 
 **Solution**: Check the Supabase logs:
+
 1. Go to Supabase Dashboard → Edge Functions → ttn-provision-org
 2. Click on **Logs** tab
 3. Look for error messages that explain what's wrong
@@ -119,6 +124,7 @@ brew install supabase/tap/supabase
 ## Support
 
 If you continue to have issues:
+
 - Check [docs/TTN_SETUP.md](./TTN_SETUP.md) for general TTN setup documentation
 - Review edge function logs in the Supabase dashboard
 - Ensure your TTN Admin API Key has all required permissions

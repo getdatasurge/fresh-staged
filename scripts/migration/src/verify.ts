@@ -13,42 +13,34 @@
  *   pnpm verify --output ./report.json  # Custom output path
  */
 
-import "dotenv/config";
-import { Command } from "commander";
-import ora, { type Ora } from "ora";
-import path from "node:path";
-import fs from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import 'dotenv/config';
+import { Command } from 'commander';
+import ora, { type Ora } from 'ora';
+import path from 'node:path';
+import fs from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import {
   logger,
   logMigrationStart,
   logMigrationComplete,
   logMigrationError,
   closeLogger,
-} from "../lib/logger.js";
-import {
-  supabasePool,
-  testSupabaseConnection,
-  closeSupabasePool,
-} from "../lib/supabase-client.js";
-import {
-  newDbPool,
-  testNewDbConnection,
-  closeNewDbPool,
-} from "../lib/new-db-client.js";
+} from '../lib/logger.js';
+import { supabasePool, testSupabaseConnection, closeSupabasePool } from '../lib/supabase-client.js';
+import { newDbPool, testNewDbConnection, closeNewDbPool } from '../lib/new-db-client.js';
 import {
   getTableImportOrder,
   TABLE_IMPORT_ORDER,
   type TableName,
   requiresUserMapping,
   getUserIdColumns,
-} from "../lib/table-metadata.js";
+} from '../lib/table-metadata.js';
 import {
   getTableRowCount,
   computeTableChecksum,
   computeChecksumExcludingColumns,
   type TableComparison,
-} from "../lib/checksum.js";
+} from '../lib/checksum.js';
 
 // Get the directory name in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -56,17 +48,17 @@ const __dirname = path.dirname(__filename);
 
 // CLI program setup
 const program = new Command()
-  .name("verify")
-  .description("Verify data integrity after FreshTrack migration")
-  .version("1.0.0")
+  .name('verify')
+  .description('Verify data integrity after FreshTrack migration')
+  .version('1.0.0')
   .option(
-    "-o, --output <path>",
-    "Output path for verification report",
-    "./migration-data/verification-report.json"
+    '-o, --output <path>',
+    'Output path for verification report',
+    './migration-data/verification-report.json',
   )
-  .option("-t, --table <name>", "Verify a single table only")
-  .option("--skip-checksum", "Skip checksum verification (row counts only)")
-  .option("--fail-fast", "Stop verification on first mismatch")
+  .option('-t, --table <name>', 'Verify a single table only')
+  .option('--skip-checksum', 'Skip checksum verification (row counts only)')
+  .option('--fail-fast', 'Stop verification on first mismatch')
   .parse(process.argv);
 
 // CLI options interface
@@ -102,24 +94,24 @@ interface VerificationReport {
  * ANSI color codes for terminal output
  */
 const colors = {
-  reset: "\x1b[0m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  red: "\x1b[31m",
-  bold: "\x1b[1m",
-  dim: "\x1b[2m",
+  reset: '\x1b[0m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  red: '\x1b[31m',
+  bold: '\x1b[1m',
+  dim: '\x1b[2m',
 };
 
 /**
  * Format status with color
  */
-function formatStatus(status: "pass" | "fail" | "warn"): string {
+function formatStatus(status: 'pass' | 'fail' | 'warn'): string {
   switch (status) {
-    case "pass":
+    case 'pass':
       return `${colors.green}PASS${colors.reset}`;
-    case "fail":
+    case 'fail':
       return `${colors.red}FAIL${colors.reset}`;
-    case "warn":
+    case 'warn':
       return `${colors.yellow}WARN${colors.reset}`;
   }
 }
@@ -140,9 +132,7 @@ function getTablesToVerify(options: VerifyOptions): TableName[] {
   // Single table mode
   if (options.table) {
     if (!validateTableName(options.table)) {
-      throw new Error(
-        `Unknown table: ${options.table}. Valid tables: ${allTables.join(", ")}`
-      );
+      throw new Error(`Unknown table: ${options.table}. Valid tables: ${allTables.join(', ')}`);
     }
     return [options.table];
   }
@@ -156,7 +146,7 @@ function getTablesToVerify(options: VerifyOptions): TableName[] {
 async function verifyTable(
   table: TableName,
   skipChecksum: boolean,
-  spinner: Ora
+  spinner: Ora,
 ): Promise<TableComparison> {
   spinner.text = `Verifying ${table}...`;
 
@@ -197,15 +187,15 @@ async function verifyTable(
   }
 
   // Determine overall status
-  let status: "pass" | "fail" | "warn" = "pass";
+  let status: 'pass' | 'fail' | 'warn' = 'pass';
 
   if (!rowCountMatch) {
-    status = "fail";
+    status = 'fail';
   } else if (checksumMatch === false) {
-    status = "fail";
+    status = 'fail';
   } else if (!skipChecksum && checksumMatch === null) {
     // Checksum couldn't be computed but row counts match
-    status = "warn";
+    status = 'warn';
   }
 
   return {
@@ -224,28 +214,23 @@ async function verifyTable(
  * Print verification summary table to console
  */
 function printSummaryTable(results: TableComparison[]): void {
-  console.log("\n=== Verification Summary ===\n");
+  console.log('\n=== Verification Summary ===\n');
 
   // Table header
-  const header = `${"Table".padEnd(28)} ${"Source".padStart(10)} ${"Target".padStart(10)} ${"Rows".padStart(6)} ${"Hash".padStart(6)} ${"Status".padStart(8)}`;
+  const header = `${'Table'.padEnd(28)} ${'Source'.padStart(10)} ${'Target'.padStart(10)} ${'Rows'.padStart(6)} ${'Hash'.padStart(6)} ${'Status'.padStart(8)}`;
   console.log(colors.bold + header + colors.reset);
-  console.log("-".repeat(header.length));
+  console.log('-'.repeat(header.length));
 
   // Table rows
   for (const result of results) {
-    const rowMatch = result.rowCountMatch ? "OK" : "DIFF";
-    const hashMatch =
-      result.checksumMatch === null
-        ? "N/A"
-        : result.checksumMatch
-          ? "OK"
-          : "DIFF";
+    const rowMatch = result.rowCountMatch ? 'OK' : 'DIFF';
+    const hashMatch = result.checksumMatch === null ? 'N/A' : result.checksumMatch ? 'OK' : 'DIFF';
 
     const line = `${result.tableName.padEnd(28)} ${String(result.sourceRowCount).padStart(10)} ${String(result.targetRowCount).padStart(10)} ${rowMatch.padStart(6)} ${hashMatch.padStart(6)} ${formatStatus(result.status).padStart(8 + colors.green.length + colors.reset.length)}`;
     console.log(line);
   }
 
-  console.log("-".repeat(header.length));
+  console.log('-'.repeat(header.length));
 }
 
 /**
@@ -255,35 +240,35 @@ async function main(): Promise<void> {
   const options = program.opts<VerifyOptions>();
   const startTime = Date.now();
 
-  logMigrationStart("verify", { options });
+  logMigrationStart('verify', { options });
 
   // Test source connection (Supabase)
-  const sourceSpinner = ora("Testing Supabase connection...").start();
+  const sourceSpinner = ora('Testing Supabase connection...').start();
   const sourceConnected = await testSupabaseConnection();
 
   if (!sourceConnected) {
-    sourceSpinner.fail("Supabase connection failed");
-    logMigrationError("verify", new Error("Supabase connection failed"));
+    sourceSpinner.fail('Supabase connection failed');
+    logMigrationError('verify', new Error('Supabase connection failed'));
     process.exit(1);
   }
-  sourceSpinner.succeed("Supabase connection OK");
+  sourceSpinner.succeed('Supabase connection OK');
 
   // Test target connection (new database)
-  const targetSpinner = ora("Testing new database connection...").start();
+  const targetSpinner = ora('Testing new database connection...').start();
   const targetConnected = await testNewDbConnection();
 
   if (!targetConnected) {
-    targetSpinner.fail("New database connection failed");
-    logMigrationError("verify", new Error("New database connection failed"));
+    targetSpinner.fail('New database connection failed');
+    logMigrationError('verify', new Error('New database connection failed'));
     process.exit(1);
   }
-  targetSpinner.succeed("New database connection OK");
+  targetSpinner.succeed('New database connection OK');
 
   // Get tables to verify
   const tables = getTablesToVerify(options);
   logger.info(
     { tableCount: tables.length, skipChecksum: options.skipChecksum },
-    `Verifying ${tables.length} tables`
+    `Verifying ${tables.length} tables`,
   );
 
   // Initialize results array
@@ -301,50 +286,38 @@ async function main(): Promise<void> {
     try {
       verifySpinner.text = `${progressPrefix} Verifying ${table}...`;
 
-      const result = await verifyTable(
-        table,
-        options.skipChecksum ?? false,
-        verifySpinner
-      );
+      const result = await verifyTable(table, options.skipChecksum ?? false, verifySpinner);
 
       results.push(result);
 
       // Update spinner based on result
-      if (result.status === "pass") {
+      if (result.status === 'pass') {
         verifySpinner.succeed(
-          `${progressPrefix} ${table}: ${formatStatus(result.status)} (${result.sourceRowCount} rows)`
+          `${progressPrefix} ${table}: ${formatStatus(result.status)} (${result.sourceRowCount} rows)`,
         );
         logger.info(
           { table, rowCount: result.sourceRowCount, status: result.status },
-          `Verified ${table}`
+          `Verified ${table}`,
         );
-      } else if (result.status === "warn") {
+      } else if (result.status === 'warn') {
         verifySpinner.warn(
-          `${progressPrefix} ${table}: ${formatStatus(result.status)} (checksum not computed)`
+          `${progressPrefix} ${table}: ${formatStatus(result.status)} (checksum not computed)`,
         );
-        logger.warn(
-          { table, result },
-          `Verification warning: checksum not computed for ${table}`
-        );
+        logger.warn({ table, result }, `Verification warning: checksum not computed for ${table}`);
       } else {
-        verifySpinner.fail(
-          `${progressPrefix} ${table}: ${formatStatus(result.status)}`
-        );
-        logger.error(
-          { table, result },
-          `Verification failed for ${table}`
-        );
+        verifySpinner.fail(`${progressPrefix} ${table}: ${formatStatus(result.status)}`);
+        logger.error({ table, result }, `Verification failed for ${table}`);
         allPassed = false;
         failedCount++;
 
         if (options.failFast) {
-          logger.info("Stopping verification (--fail-fast mode)");
+          logger.info('Stopping verification (--fail-fast mode)');
           break;
         }
       }
     } catch (err) {
       verifySpinner.fail(`${progressPrefix} ${table}: ERROR`);
-      logMigrationError("verify", err, { table });
+      logMigrationError('verify', err, { table });
 
       // Add error result
       results.push({
@@ -355,14 +328,14 @@ async function main(): Promise<void> {
         sourceChecksum: null,
         targetChecksum: null,
         checksumMatch: null,
-        status: "fail",
+        status: 'fail',
       });
 
       allPassed = false;
       failedCount++;
 
       if (options.failFast) {
-        logger.info("Stopping verification (--fail-fast mode)");
+        logger.info('Stopping verification (--fail-fast mode)');
         break;
       }
     }
@@ -371,9 +344,9 @@ async function main(): Promise<void> {
   // Calculate summary
   const summary = {
     total: results.length,
-    passed: results.filter((r) => r.status === "pass").length,
-    warned: results.filter((r) => r.status === "warn").length,
-    failed: results.filter((r) => r.status === "fail").length,
+    passed: results.filter((r) => r.status === 'pass').length,
+    warned: results.filter((r) => r.status === 'warn').length,
+    failed: results.filter((r) => r.status === 'fail').length,
   };
 
   // Print summary table
@@ -383,8 +356,8 @@ async function main(): Promise<void> {
   const durationMs = Date.now() - startTime;
   const report: VerificationReport = {
     verifiedAt: new Date().toISOString(),
-    sourceDatabase: "supabase",
-    targetDatabase: "new-postgres",
+    sourceDatabase: 'supabase',
+    targetDatabase: 'new-postgres',
     options: {
       skipChecksum: options.skipChecksum ?? false,
       failFast: options.failFast ?? false,
@@ -400,12 +373,12 @@ async function main(): Promise<void> {
   const outputPath = path.resolve(options.output);
   const outputDir = path.dirname(outputPath);
   await fs.mkdir(outputDir, { recursive: true });
-  await fs.writeFile(outputPath, JSON.stringify(report, null, 2), "utf-8");
+  await fs.writeFile(outputPath, JSON.stringify(report, null, 2), 'utf-8');
 
-  logger.info({ outputPath }, "Wrote verification report");
+  logger.info({ outputPath }, 'Wrote verification report');
 
   // Final summary
-  console.log("\n=== Final Results ===\n");
+  console.log('\n=== Final Results ===\n');
   console.log(`Tables verified: ${summary.total}`);
   console.log(`  ${colors.green}Passed${colors.reset}: ${summary.passed}`);
   console.log(`  ${colors.yellow}Warned${colors.reset}: ${summary.warned}`);
@@ -414,11 +387,15 @@ async function main(): Promise<void> {
   console.log(`Report: ${outputPath}`);
 
   if (allPassed) {
-    console.log(`\n${colors.green}${colors.bold}VERIFICATION PASSED${colors.reset} - All tables match\n`);
-    logMigrationComplete("verify", durationMs, { summary, allPassed });
+    console.log(
+      `\n${colors.green}${colors.bold}VERIFICATION PASSED${colors.reset} - All tables match\n`,
+    );
+    logMigrationComplete('verify', durationMs, { summary, allPassed });
   } else {
-    console.log(`\n${colors.red}${colors.bold}VERIFICATION FAILED${colors.reset} - ${failedCount} table(s) have mismatches\n`);
-    logMigrationComplete("verify", durationMs, { summary, allPassed });
+    console.log(
+      `\n${colors.red}${colors.bold}VERIFICATION FAILED${colors.reset} - ${failedCount} table(s) have mismatches\n`,
+    );
+    logMigrationComplete('verify', durationMs, { summary, allPassed });
     process.exit(1);
   }
 }
@@ -426,11 +403,8 @@ async function main(): Promise<void> {
 // Run the verification
 main()
   .catch((error) => {
-    logger.error(
-      { error: error.message, stack: error.stack },
-      "Verification failed"
-    );
-    console.error("\nVerification failed:", error.message);
+    logger.error({ error: error.message, stack: error.stack }, 'Verification failed');
+    console.error('\nVerification failed:', error.message);
     process.exit(1);
   })
   .finally(async () => {

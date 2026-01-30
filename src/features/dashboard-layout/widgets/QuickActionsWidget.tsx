@@ -1,14 +1,14 @@
 /**
  * Quick Actions Widget
- * 
+ *
  * Provides quick action buttons for common operations.
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Zap, Thermometer, BellOff, MessageSquare, CheckCircle2 } from "lucide-react";
-import type { WidgetProps } from "../types";
-import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Zap, Thermometer, BellOff, MessageSquare, CheckCircle2 } from 'lucide-react';
+import type { WidgetProps } from '../types';
+import { toast } from 'sonner';
 
 export function QuickActionsWidget({ onLogTemp, alerts = [] }: WidgetProps) {
   const hasActiveAlerts = alerts.length > 0;
@@ -17,20 +17,20 @@ export function QuickActionsWidget({ onLogTemp, alerts = [] }: WidgetProps) {
     if (onLogTemp) {
       onLogTemp();
     } else {
-      toast.info("Log temperature modal not available");
+      toast.info('Log temperature modal not available');
     }
   };
 
   const handleAcknowledge = () => {
-    toast.info("Alert acknowledgement coming soon");
+    toast.info('Alert acknowledgement coming soon');
   };
 
   const handleSnooze = () => {
-    toast.info("Alert snooze coming soon");
+    toast.info('Alert snooze coming soon');
   };
 
   const handleAddNote = () => {
-    toast.info("Add note coming soon");
+    toast.info('Add note coming soon');
   };
 
   return (
@@ -52,7 +52,7 @@ export function QuickActionsWidget({ onLogTemp, alerts = [] }: WidgetProps) {
             <Thermometer className="h-4 w-4" />
             <span className="text-xs">Log Temp</span>
           </Button>
-          
+
           <Button
             variant="outline"
             size="sm"
@@ -63,7 +63,7 @@ export function QuickActionsWidget({ onLogTemp, alerts = [] }: WidgetProps) {
             <CheckCircle2 className="h-4 w-4" />
             <span className="text-xs">Acknowledge</span>
           </Button>
-          
+
           <Button
             variant="outline"
             size="sm"
@@ -74,7 +74,7 @@ export function QuickActionsWidget({ onLogTemp, alerts = [] }: WidgetProps) {
             <BellOff className="h-4 w-4" />
             <span className="text-xs">Snooze</span>
           </Button>
-          
+
           <Button
             variant="outline"
             size="sm"

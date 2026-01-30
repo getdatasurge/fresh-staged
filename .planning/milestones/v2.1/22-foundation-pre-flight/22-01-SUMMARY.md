@@ -27,14 +27,14 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Used color helpers matching deploy-selfhosted.sh pattern for consistency"
-  - "Exit code 1 categorized as recoverable:permission for common command failures"
-  - "Self-test block guarded by BASH_SOURCE check for library/standalone dual-use"
+  - 'Used color helpers matching deploy-selfhosted.sh pattern for consistency'
+  - 'Exit code 1 categorized as recoverable:permission for common command failures'
+  - 'Self-test block guarded by BASH_SOURCE check for library/standalone dual-use'
 
 patterns-established:
-  - "Library sourcing pattern: source $(dirname $0)/lib/preflight-lib.sh"
-  - "Error categorization by exit code ranges (network, permission, resource, signal)"
-  - "Credential sanitization via sed regex on sensitive patterns"
+  - 'Library sourcing pattern: source $(dirname $0)/lib/preflight-lib.sh'
+  - 'Error categorization by exit code ranges (network, permission, resource, signal)'
+  - 'Credential sanitization via sed regex on sensitive patterns'
 
 # Metrics
 duration: 3min
@@ -113,5 +113,6 @@ None - no external service configuration required.
 - [x] ERROR-07: Credentials never exposed (sanitization verified)
 
 ---
-*Phase: 22-foundation-pre-flight*
-*Completed: 2026-01-25*
+
+_Phase: 22-foundation-pre-flight_
+_Completed: 2026-01-25_

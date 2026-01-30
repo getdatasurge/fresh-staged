@@ -32,14 +32,14 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Alert rules support hierarchical inheritance (org-level defaults, site overrides, unit-specific rules)"
-  - "Hash chain in event logs provides tamper-evident audit trail for compliance"
-  - "Retry tracking in notification deliveries enables resilient delivery"
+  - 'Alert rules support hierarchical inheritance (org-level defaults, site overrides, unit-specific rules)'
+  - 'Hash chain in event logs provides tamper-evident audit trail for compliance'
+  - 'Retry tracking in notification deliveries enables resilient delivery'
 
 patterns-established:
-  - "Alert lifecycle: triggered > acknowledged > resolved (with escalation path)"
-  - "Corrective actions link to profiles for accountability and evidence (photos)"
-  - "Event logs capture full change context (old/new values, actor, request context)"
+  - 'Alert lifecycle: triggered > acknowledged > resolved (with escalation path)'
+  - 'Corrective actions link to profiles for accountability and evidence (photos)'
+  - 'Event logs capture full change context (old/new values, actor, request context)'
 
 # Metrics
 duration: 2min
@@ -59,6 +59,7 @@ completed: 2026-01-23
 - **Files modified:** 3
 
 ## Accomplishments
+
 - Alert rules with hierarchical inheritance (org > site > unit) for flexible threshold management
 - Full alert lifecycle tracking with escalation support
 - Corrective actions with compliance evidence (photos, resolution docs)
@@ -103,5 +104,6 @@ None - no external service configuration required.
 - No blockers for next phase
 
 ---
-*Phase: 01-local-development-environment*
-*Completed: 2026-01-23*
+
+_Phase: 01-local-development-environment_
+_Completed: 2026-01-23_

@@ -17,7 +17,7 @@ affects: [phase-29-data-migration, phase-30-system-hardening]
 # Tech tracking
 tech-stack:
   added: []
-  patterns: ["Supabase placeholder module for removed integrations"]
+  patterns: ['Supabase placeholder module for removed integrations']
 
 key-files:
   created: [src/lib/supabase-placeholder.ts]
@@ -32,10 +32,10 @@ key-files:
     - src/components/settings/TelnyxWebhookUrlsCard.tsx
 
 key-decisions:
-  - "Use a placeholder client to keep UI stable while Supabase-backed flows are removed"
+  - 'Use a placeholder client to keep UI stable while Supabase-backed flows are removed'
 
 patterns-established:
-  - "Placeholder module for disabled Supabase features with explicit errors"
+  - 'Placeholder module for disabled Supabase features with explicit errors'
 
 # Metrics
 duration: 29 min
@@ -55,6 +55,7 @@ completed: 2026-01-26
 - **Files modified:** 32
 
 ## Accomplishments
+
 - Removed the Supabase client dependency and integration files
 - Replaced Supabase imports with placeholder-backed stubs across TTN, layouts, and restore flows
 - Updated TTN/Telnyx webhook URLs and health/slug checks to backend-aligned fallbacks
@@ -70,6 +71,7 @@ Each task was committed atomically:
 _Note: Additional cleanup committed separately (see Deviations)_
 
 ## Files Created/Modified
+
 - `src/lib/supabase-placeholder.ts` - Placeholder client/types for removed Supabase calls
 - `src/hooks/useTTNOperations.ts` - Provisioning flow stubbed during migration
 - `src/features/dashboard-layout/hooks/useEntityLayoutStorage.ts` - Layout storage disabled without Supabase
@@ -79,6 +81,7 @@ _Note: Additional cleanup committed separately (see Deviations)_
 - `src/components/settings/TelnyxWebhookUrlsCard.tsx` - Telnyx webhook URL aligned to backend
 
 ## Decisions Made
+
 - Use a placeholder client to keep UI stable while Supabase-backed flows are removed and backend replacements are pending.
 
 ## Deviations from Plan
@@ -86,6 +89,7 @@ _Note: Additional cleanup committed separately (see Deviations)_
 ### Auto-fixed Issues
 
 **1. [Rule 2 - Missing Critical] Added placeholder client and stubs for Supabase-backed features**
+
 - **Found during:** Post-Task 3 (full removal sweep)
 - **Issue:** Remaining Supabase imports and edge-function checks would break runtime after dependency removal
 - **Fix:** Added `src/lib/supabase-placeholder.ts`, stubbed TTN/layout/soft-delete flows, and aligned webhook URLs
@@ -99,15 +103,19 @@ _Note: Additional cleanup committed separately (see Deviations)_
 **Impact on plan:** Necessary to prevent runtime failures after Supabase removal; no scope creep.
 
 ## Issues Encountered
+
 None.
 
 ## User Setup Required
+
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Phase 28 complete; ready to begin Phase 29 planning and data migration
 - Follow-up needed: replace placeholder TTN/layout/restore/health flows with backend endpoints
 
 ---
-*Phase: 28-supabase-removal*
-*Completed: 2026-01-26*
+
+_Phase: 28-supabase-removal_
+_Completed: 2026-01-26_

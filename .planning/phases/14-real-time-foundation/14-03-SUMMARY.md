@@ -19,9 +19,9 @@ affects: [14-04-frontend-socket-integration, 15-real-time-dashboard]
 tech-stack:
   added: []
   patterns:
-    - "Server-side buffering pattern to prevent UI thrashing"
-    - "Batched WebSocket broadcasts for performance optimization"
-    - "Per-unit reading cache for instant feedback on connection"
+    - 'Server-side buffering pattern to prevent UI thrashing'
+    - 'Batched WebSocket broadcasts for performance optimization'
+    - 'Per-unit reading cache for instant feedback on connection'
 
 key-files:
   created:
@@ -32,15 +32,15 @@ key-files:
     - backend/src/routes/readings.ts
 
 key-decisions:
-  - "1-second flush interval balances real-time feel with server/network efficiency"
-  - "Buffer keyed by org:unit combination for isolation and targeted broadcasting"
-  - "Latest reading cache enables immediate data for new client connections"
-  - "Transparent integration - no changes to API response contracts"
+  - '1-second flush interval balances real-time feel with server/network efficiency'
+  - 'Buffer keyed by org:unit combination for isolation and targeted broadcasting'
+  - 'Latest reading cache enables immediate data for new client connections'
+  - 'Transparent integration - no changes to API response contracts'
 
 patterns-established:
-  - "SensorStreamService manages buffering and streaming independently from ingestion"
-  - "Graceful shutdown clears flush interval to prevent memory leaks"
-  - "Dual broadcast strategy: organization-wide + unit-specific rooms"
+  - 'SensorStreamService manages buffering and streaming independently from ingestion'
+  - 'Graceful shutdown clears flush interval to prevent memory leaks'
+  - 'Dual broadcast strategy: organization-wide + unit-specific rooms'
 
 # Metrics
 duration: 4min
@@ -84,15 +84,19 @@ Each task was committed atomically:
 ## Decisions Made
 
 ### REALTIME-08: 1-second flush interval for batched broadcasts
+
 **Rationale:** Balances real-time feel (data appears within 1 second) with network/UI performance (prevents hundreds of individual messages). Configurable for future tuning.
 
 ### REALTIME-09: Buffer keyed by organization:unit combination
+
 **Rationale:** Enables organization-scoped isolation (security) while grouping readings per unit (logical batching). Efficient memory usage with cleanup after flush.
 
 ### REALTIME-10: Latest reading cache for instant client feedback
+
 **Rationale:** New client connections can query latest cached reading via get:latest event without waiting up to 1 second for next batch. Improves perceived responsiveness.
 
 ### REALTIME-11: Transparent streaming integration
+
 **Rationale:** Streaming added as side effect after ingestion, no changes to API response. Enables gradual frontend migration without breaking existing clients.
 
 ## Deviations from Plan
@@ -102,6 +106,7 @@ None - plan executed exactly as written.
 ## Issues Encountered
 
 **1. TypeScript interval type mismatch**
+
 - **Issue:** `NodeJS.Timer` type incompatible with `clearInterval()` in TypeScript
 - **Resolution:** Changed to `NodeJS.Timeout` which matches setInterval/clearInterval signatures
 - **Impact:** Type-safe interval cleanup without runtime changes
@@ -109,19 +114,23 @@ None - plan executed exactly as written.
 ## Next Phase Readiness
 
 **Ready for frontend integration (14-04):**
+
 - Backend broadcasts batched readings every 1 second to org/unit rooms
 - get:latest event available for querying cached readings
 - SensorStreamService integrated with readings ingestion pipeline
 
 **Performance characteristics established:**
+
 - Flush interval: 1000ms (configurable)
 - Memory-efficient buffer cleanup after flush
 - Dual broadcast strategy (org-wide + unit-specific)
 
 **Monitoring capabilities:**
+
 - Flush logs show readings count and unit count per cycle
 - getStats() method available for debugging buffer state
 
 ---
-*Phase: 14-real-time-foundation*
-*Completed: 2026-01-24*
+
+_Phase: 14-real-time-foundation_
+_Completed: 2026-01-24_

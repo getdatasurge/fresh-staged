@@ -18,12 +18,14 @@ Caddy obtains and renews TLS certificates automatically using the ACME protocol 
 ### HTTP-01 Challenge (Default)
 
 **How it works:**
+
 1. You request a certificate for `example.com`
 2. Let's Encrypt sends a challenge to `http://example.com/.well-known/acme-challenge/TOKEN`
 3. Caddy responds with the challenge value
 4. Let's Encrypt verifies ownership and issues the certificate
 
 **Requirements:**
+
 - Port 80 must be accessible from the internet
 - DNS must point to your server
 - One certificate per domain/subdomain
@@ -33,6 +35,7 @@ Caddy obtains and renews TLS certificates automatically using the ACME protocol 
 ### DNS-01 Challenge (Wildcard)
 
 **How it works:**
+
 1. You request a certificate for `*.example.com`
 2. Let's Encrypt requests a DNS TXT record at `_acme-challenge.example.com`
 3. Caddy creates the record via DNS provider API
@@ -40,6 +43,7 @@ Caddy obtains and renews TLS certificates automatically using the ACME protocol 
 5. Caddy removes the TXT record
 
 **Requirements:**
+
 - DNS provider API credentials
 - DNS provider supported by Caddy
 - Works with private servers (no port 80 exposure needed)
@@ -86,6 +90,7 @@ status.{$DOMAIN:localhost} {
 ```
 
 When `DOMAIN=freshtrackpro.com`, Caddy automatically obtains certificates for:
+
 - `freshtrackpro.com`
 - `monitoring.freshtrackpro.com`
 - `status.freshtrackpro.com`
@@ -101,6 +106,7 @@ status.freshtrackpro.com         A    203.0.113.42
 ```
 
 **For IPv6:**
+
 ```dns
 freshtrackpro.com                AAAA 2001:db8::1
 monitoring.freshtrackpro.com     AAAA 2001:db8::1
@@ -110,11 +116,13 @@ status.freshtrackpro.com         AAAA 2001:db8::1
 ### Deployment Steps
 
 1. **Set the DOMAIN environment variable:**
+
    ```bash
    echo "DOMAIN=freshtrackpro.com" >> .env
    ```
 
 2. **Configure admin email in Caddyfile:**
+
    ```caddyfile
    {
        email admin@freshtrackpro.com
@@ -122,6 +130,7 @@ status.freshtrackpro.com         AAAA 2001:db8::1
    ```
 
 3. **Ensure port 80 is open:**
+
    ```bash
    # Check firewall (Ubuntu/Debian)
    sudo ufw allow 80/tcp
@@ -134,11 +143,13 @@ status.freshtrackpro.com         AAAA 2001:db8::1
    ```
 
 4. **Start Caddy:**
+
    ```bash
    docker-compose up -d caddy
    ```
 
 5. **Verify certificates:**
+
    ```bash
    # Check Caddy logs
    docker-compose logs -f caddy
@@ -152,6 +163,7 @@ Caddy will automatically renew certificates ~30 days before expiry.
 ## Advanced Setup: Wildcard Certificates
 
 Use wildcard certificates when:
+
 - You have **many subdomains** (>10)
 - You want to **add subdomains without SSL configuration**
 - You have **DNS provider API access**
@@ -174,11 +186,13 @@ Use wildcard certificates when:
 ### Configuration
 
 1. **Copy the wildcard template:**
+
    ```bash
    cp docker/caddy/Caddyfile.wildcard.example docker/caddy/Caddyfile
    ```
 
 2. **Set DNS provider credentials:**
+
    ```bash
    # Example for Cloudflare
    echo "CLOUDFLARE_API_TOKEN=your-token-here" >> .env
@@ -215,11 +229,13 @@ Caddy supports 100+ DNS providers. See [Caddy DNS Providers](https://caddyserver
    - **Copy the token** (shown only once)
 
 2. **Set environment variable:**
+
    ```bash
    echo "CLOUDFLARE_API_TOKEN=your-token-here" >> .env
    ```
 
 3. **Update Caddyfile:**
+
    ```caddyfile
    *.{$DOMAIN} {
        tls {
@@ -235,6 +251,7 @@ Caddy supports 100+ DNS providers. See [Caddy DNS Providers](https://caddyserver
    ```
 
 **Troubleshooting:**
+
 - Token must have **Zone DNS Edit** permission
 - Zone Resources must include your domain
 - Token expires — check expiration in dashboard
@@ -254,6 +271,7 @@ Caddy supports 100+ DNS providers. See [Caddy DNS Providers](https://caddyserver
    - **Copy the token**
 
 2. **Set environment variable:**
+
    ```bash
    echo "DO_AUTH_TOKEN=your-token-here" >> .env
    ```
@@ -268,6 +286,7 @@ Caddy supports 100+ DNS providers. See [Caddy DNS Providers](https://caddyserver
    ```
 
 **Troubleshooting:**
+
 - Token must have **write** access (read-only won't work)
 - DNS records must be managed in DigitalOcean (not just domain registration)
 
@@ -278,21 +297,20 @@ Caddy supports 100+ DNS providers. See [Caddy DNS Providers](https://caddyserver
 **Setup:**
 
 1. **Create IAM user for DNS challenges:**
+
    ```bash
    aws iam create-user --user-name caddy-dns-challenge
    ```
 
 2. **Attach policy:**
+
    ```json
    {
      "Version": "2012-10-17",
      "Statement": [
        {
          "Effect": "Allow",
-         "Action": [
-           "route53:ListHostedZones",
-           "route53:GetChange"
-         ],
+         "Action": ["route53:ListHostedZones", "route53:GetChange"],
          "Resource": "*"
        },
        {
@@ -307,11 +325,13 @@ Caddy supports 100+ DNS providers. See [Caddy DNS Providers](https://caddyserver
    Replace `ZXXXXXXXXXXXXX` with your hosted zone ID.
 
 3. **Create access key:**
+
    ```bash
    aws iam create-access-key --user-name caddy-dns-challenge
    ```
 
 4. **Set environment variables:**
+
    ```bash
    echo "AWS_ACCESS_KEY_ID=your-key-id" >> .env
    echo "AWS_SECRET_ACCESS_KEY=your-secret-key" >> .env
@@ -328,6 +348,7 @@ Caddy supports 100+ DNS providers. See [Caddy DNS Providers](https://caddyserver
    ```
 
 **Troubleshooting:**
+
 - Hosted zone must exist in Route53
 - IAM user needs `route53:ChangeResourceRecordSets` permission
 - Check CloudTrail logs for permission errors
@@ -335,6 +356,7 @@ Caddy supports 100+ DNS providers. See [Caddy DNS Providers](https://caddyserver
 ### Other Providers
 
 Caddy supports 100+ DNS providers including:
+
 - **Namecheap**
 - **GoDaddy**
 - **Google Cloud DNS**
@@ -354,6 +376,7 @@ See [Caddy DNS module list](https://caddyserver.com/docs/modules/) for configura
 **Common causes:**
 
 1. **DNS not propagated:**
+
    ```bash
    # Check if DNS points to your server
    dig +short freshtrackpro.com
@@ -363,6 +386,7 @@ See [Caddy DNS module list](https://caddyserver.com/docs/modules/) for configura
    **Solution:** Wait for DNS propagation (up to 48 hours, typically <1 hour)
 
 2. **Port 80 blocked:**
+
    ```bash
    # Test from external server
    curl http://your-server-ip/.well-known/acme-challenge/test
@@ -371,6 +395,7 @@ See [Caddy DNS module list](https://caddyserver.com/docs/modules/) for configura
    **Solution:** Open port 80 in firewall, check cloud provider security groups
 
 3. **Domain not pointing to server:**
+
    ```bash
    # Check what IP the domain resolves to
    nslookup freshtrackpro.com
@@ -393,6 +418,7 @@ See [Caddy DNS module list](https://caddyserver.com/docs/modules/) for configura
 **Solutions:**
 
 1. **Use staging environment for testing:**
+
    ```caddyfile
    {
        acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
@@ -416,6 +442,7 @@ See [Let's Encrypt Rate Limits](#lets-encrypt-rate-limits) for details.
 **Solutions:**
 
 1. **Increase propagation timeout:**
+
    ```caddyfile
    *.{$DOMAIN} {
        tls {
@@ -427,6 +454,7 @@ See [Let's Encrypt Rate Limits](#lets-encrypt-rate-limits) for details.
    ```
 
 2. **Check DNS propagation:**
+
    ```bash
    # Check if TXT record is visible
    dig +short TXT _acme-challenge.freshtrackpro.com
@@ -451,6 +479,7 @@ See [Let's Encrypt Rate Limits](#lets-encrypt-rate-limits) for details.
 2. **DNS/firewall changes broke challenge:**
 
    **Solution:** Test certificate acquisition manually:
+
    ```bash
    docker-compose restart caddy
    docker-compose logs -f caddy
@@ -465,6 +494,7 @@ See [Let's Encrypt Rate Limits](#lets-encrypt-rate-limits) for details.
 **Before production deployment, test with Let's Encrypt staging:**
 
 1. **Add staging CA to Caddyfile:**
+
    ```caddyfile
    {
        acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
@@ -472,12 +502,14 @@ See [Let's Encrypt Rate Limits](#lets-encrypt-rate-limits) for details.
    ```
 
 2. **Start Caddy:**
+
    ```bash
    docker-compose up -d caddy
    docker-compose logs -f caddy
    ```
 
 3. **Verify certificate issued:**
+
    ```bash
    # Check certificate details
    echo | openssl s_client -connect freshtrackpro.com:443 2>/dev/null | openssl x509 -noout -issuer
@@ -498,11 +530,13 @@ Let's Encrypt enforces rate limits to prevent abuse. Key limits as of 2026:
 **Limit:** 50 certificates per registered domain per week
 
 **What counts:**
+
 - Each unique set of domains/subdomains is one certificate
 - Renewals of existing certificates (same domains) are free
 - Wildcard certificates count as 1 certificate regardless of subdomain count
 
 **Example:**
+
 - Certificate for `example.com` — 1 cert
 - Certificate for `api.example.com` — 1 cert
 - Certificate for `example.com` + `www.example.com` — 1 cert
@@ -511,6 +545,7 @@ Let's Encrypt enforces rate limits to prevent abuse. Key limits as of 2026:
 **Registered domain** = domain + public suffix. For `api.example.com`, registered domain is `example.com`.
 
 **Impact on FreshTrack Pro:**
+
 - Default setup uses 3 certificates (`example.com`, `monitoring.example.com`, `status.example.com`)
 - Well within 50/week limit
 - Wildcard setup uses 1 certificate total
@@ -524,6 +559,7 @@ Let's Encrypt enforces rate limits to prevent abuse. Key limits as of 2026:
 A duplicate certificate contains the exact same set of domains as a previously issued certificate.
 
 **What counts as duplicate:**
+
 - Requesting `example.com` after already having a valid cert for `example.com` → duplicate
 - Adding `www.example.com` to `example.com` → NOT duplicate (different domain set)
 
@@ -534,6 +570,7 @@ A duplicate certificate contains the exact same set of domains as a previously i
 **Limit:** 5 failed validations per account, per hostname, per hour
 
 **What counts:**
+
 - Failed HTTP-01 challenge (port 80 unreachable)
 - Failed DNS-01 challenge (DNS record not found)
 
@@ -561,6 +598,7 @@ An order is a request for a certificate. Renewals don't count against this limit
    - Don't manually delete and recreate certificates
 
 3. **Verify DNS before requesting certificates:**
+
    ```bash
    dig +short freshtrackpro.com
    # Should return your server IP
@@ -590,6 +628,7 @@ An order is a request for a certificate. Renewals don't count against this limit
 ---
 
 **Related Documentation:**
+
 - `docker/caddy/Caddyfile` — Default configuration (individual certificates)
 - `docker/caddy/Caddyfile.wildcard.example` — Wildcard certificate template
 - `docs/DEPLOYMENT.md` — Full deployment guide

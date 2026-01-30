@@ -1,26 +1,31 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Label } from '@/components/ui/label';
 import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Label } from "@/components/ui/label";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { usePermissions } from '@/hooks/useUserRole';
+import { useTRPC } from '@/lib/trpc';
+import { useUser } from '@stackframe/react';
+import { useMutation } from '@tanstack/react-query';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { usePermissions } from "@/hooks/useUserRole";
-import { useTRPC } from "@/lib/trpc";
-import { useUser } from "@stackframe/react";
-import { useMutation } from "@tanstack/react-query";
-import { ChevronDown, ChevronUp, Clock, Globe, Loader2, Save, Settings, Shield } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Globe,
+  Loader2,
+  Save,
+  Settings,
+  Shield,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface SiteComplianceSettingsProps {
   siteId: string;
@@ -34,26 +39,26 @@ interface SiteComplianceSettingsProps {
 }
 
 const timezones = [
-  { value: "America/New_York", label: "Eastern Time (ET)" },
-  { value: "America/Chicago", label: "Central Time (CT)" },
-  { value: "America/Denver", label: "Mountain Time (MT)" },
-  { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
-  { value: "America/Anchorage", label: "Alaska Time (AKT)" },
-  { value: "Pacific/Honolulu", label: "Hawaii Time (HT)" },
-  { value: "Europe/London", label: "London (GMT)" },
-  { value: "Europe/Paris", label: "Paris (CET)" },
-  { value: "Asia/Tokyo", label: "Tokyo (JST)" },
-  { value: "Australia/Sydney", label: "Sydney (AEST)" },
+  { value: 'America/New_York', label: 'Eastern Time (ET)' },
+  { value: 'America/Chicago', label: 'Central Time (CT)' },
+  { value: 'America/Denver', label: 'Mountain Time (MT)' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+  { value: 'America/Anchorage', label: 'Alaska Time (AKT)' },
+  { value: 'Pacific/Honolulu', label: 'Hawaii Time (HT)' },
+  { value: 'Europe/London', label: 'London (GMT)' },
+  { value: 'Europe/Paris', label: 'Paris (CET)' },
+  { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
+  { value: 'Australia/Sydney', label: 'Sydney (AEST)' },
 ];
 
 const cadenceOptions = [
-  { value: 1800, label: "30 minutes" },
-  { value: 3600, label: "1 hour" },
-  { value: 7200, label: "2 hours" },
-  { value: 14400, label: "4 hours" },
-  { value: 21600, label: "6 hours" },
-  { value: 28800, label: "8 hours" },
-  { value: 43200, label: "12 hours" },
+  { value: 1800, label: '30 minutes' },
+  { value: 3600, label: '1 hour' },
+  { value: 7200, label: '2 hours' },
+  { value: 14400, label: '4 hours' },
+  { value: 21600, label: '6 hours' },
+  { value: 28800, label: '8 hours' },
+  { value: 43200, label: '12 hours' },
 ];
 
 export function SiteComplianceSettings({
@@ -74,13 +79,13 @@ export function SiteComplianceSettings({
   const { canEditComplianceSettings, isLoading: permLoading } = usePermissions();
 
   const [localTimezone, setLocalTimezone] = useState(timezone);
-  const [localComplianceMode, setLocalComplianceMode] = useState(complianceMode || "fda_food_code");
+  const [localComplianceMode, setLocalComplianceMode] = useState(complianceMode || 'fda_food_code');
   const [localCadence, setLocalCadence] = useState(manualLogCadenceSeconds || 14400);
   const [localCorrectiveAction, setLocalCorrectiveAction] = useState(correctiveActionRequired);
 
   useEffect(() => {
     setLocalTimezone(timezone);
-    setLocalComplianceMode(complianceMode || "fda_food_code");
+    setLocalComplianceMode(complianceMode || 'fda_food_code');
     setLocalCadence(manualLogCadenceSeconds || 14400);
     setLocalCorrectiveAction(correctiveActionRequired);
   }, [timezone, complianceMode, manualLogCadenceSeconds, correctiveActionRequired]);
@@ -99,17 +104,17 @@ export function SiteComplianceSettings({
         },
       });
 
-      toast.success("Compliance settings updated");
+      toast.success('Compliance settings updated');
       onSettingsUpdated();
     } catch (error) {
-      console.error("Error saving compliance settings:", error);
-      toast.error("Failed to save settings");
+      console.error('Error saving compliance settings:', error);
+      toast.error('Failed to save settings');
     }
     setIsSaving(false);
   };
 
   const formatCadence = (seconds: number) => {
-    const option = cadenceOptions.find(o => o.value === seconds);
+    const option = cadenceOptions.find((o) => o.value === seconds);
     return option?.label || `${seconds / 3600} hours`;
   };
 
@@ -126,9 +131,9 @@ export function SiteComplianceSettings({
                 <div>
                   <CardTitle className="text-base">Compliance Settings</CardTitle>
                   <CardDescription className="text-xs mt-0.5">
-                    {localComplianceMode === "fda_food_code" ? "FDA Food Code" : "Custom"} · 
-                    {" "}{formatCadence(localCadence)} logging · 
-                    {" "}{timezones.find(t => t.value === localTimezone)?.label || localTimezone}
+                    {localComplianceMode === 'fda_food_code' ? 'FDA Food Code' : 'Custom'} ·{' '}
+                    {formatCadence(localCadence)} logging ·{' '}
+                    {timezones.find((t) => t.value === localTimezone)?.label || localTimezone}
                   </CardDescription>
                 </div>
               </div>
@@ -235,7 +240,7 @@ export function SiteComplianceSettings({
                     disabled={!canEditComplianceSettings}
                   />
                   <span className="text-sm text-muted-foreground">
-                    {localCorrectiveAction ? "Required" : "Optional"}
+                    {localCorrectiveAction ? 'Required' : 'Optional'}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
