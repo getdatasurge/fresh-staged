@@ -53,7 +53,7 @@ const socketPlugin: FastifyPluginAsync<SocketPluginOptions> = async (
   const io: TypedSocketIOServer = new SocketIOServer(fastify.server, {
     cors: corsConfig,
     // Performance optimizations
-    transports: ['websocket', 'polling'], // Prefer WebSocket, fallback to polling
+    transports: ['websocket'], // WebSocket only, no polling fallback
     pingTimeout: 20000, // 20 seconds
     pingInterval: 25000, // 25 seconds
   });

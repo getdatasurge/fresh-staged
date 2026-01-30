@@ -39,6 +39,10 @@ function RealtimeHandlers() {
 
 export function RealtimeProvider({ children }: { children: ReactNode }) {
   const user = useUser();
+  const userRef = useRef(user);
+  userRef.current = user;
+
+  const userId = user?.id;
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -46,7 +50,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Only connect if user is authenticated
-    if (!user) {
+    if (!userId) {
       disconnectSocket();
       return;
     }
@@ -54,10 +58,12 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     // Reset error count on new connection attempt
     connectErrorCountRef.current = 0;
 
-    // Get access token from Stack Auth
+    // Get access token from Stack Auth using ref (always fresh)
     const connectWithAuth = async () => {
       try {
-        const token = await user.getAccessToken();
+        const currentUser = userRef.current;
+        if (!currentUser) return;
+        const token = await currentUser.getAccessToken();
         if (!token) {
           console.warn('No access token available for WebSocket connection');
           return;
@@ -98,9 +104,24 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    // Refresh token before each reconnect attempt so we never send a stale JWT
+    function onReconnectAttempt() {
+      const currentUser = userRef.current;
+      if (currentUser) {
+        currentUser.getAccessToken().then((token) => {
+          if (token) {
+            socket.auth = { token };
+          }
+        }).catch(() => {
+          // Token refresh failed — socket.io will retry with existing auth
+        });
+      }
+    }
+
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('connect_error', onConnectError);
+    socket.io.on('reconnect_attempt', onReconnectAttempt);
 
     // Check if already connected (reconnect scenario)
     if (socket.connected) {
@@ -115,9 +136,10 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       socket.off('connect_error', onConnectError);
+      socket.io.off('reconnect_attempt', onReconnectAttempt);
       disconnectSocket();
     };
-  }, [user]);
+  }, [userId]);
 
   return (
     <RealtimeContext.Provider value={{ isConnected, isConnecting, connectionError }}>

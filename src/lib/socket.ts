@@ -24,6 +24,7 @@ export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
   import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin),
   {
     autoConnect: false, // Connect manually after auth
+    transports: ['websocket'], // Skip polling→websocket upgrade
     reconnection: true,
     reconnectionAttempts: 5, // Stop after 5 failures to avoid infinite error spam
     reconnectionDelay: 2000,

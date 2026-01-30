@@ -16,7 +16,7 @@ Fix known production issues discovered during v2.7 deployment verification: useS
 - ✅ **v2.5 TTN Test Fixes** — Phase 44 (shipped 2026-01-29)
 - ✅ **v2.6 Production Deployment** — Phase 45 (shipped 2026-01-29)
 - ✅ **v2.7 tRPC Client Fix** — Phases 46-48 (shipped 2026-01-30)
-- 🚧 **v2.8 Production Polish** — Phases 49-51 (in progress)
+- ✅ **v2.8 Production Polish** — Phases 49-51 (shipped 2026-01-30)
 
 ## Phase Details
 
@@ -73,7 +73,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 51-01-PLAN.md — Stabilize useEffect dependency, force WebSocket transport, add heartbeat
+- [x] 51-01-PLAN.md — Stabilize useEffect dependency, force WebSocket transport, refresh token on reconnect
 
 ---
 
@@ -83,9 +83,9 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 49. SuperAdmin Context Fix | v2.8 | 1/1 | Complete | 2026-01-30 |
 | 50. ServiceWorker Registration Fix | v2.8 | 1/1 | Complete | 2026-01-30 |
-| 51. WebSocket Reconnection Stability | v2.8 | 0/1 | Not started | - |
+| 51. WebSocket Reconnection Stability | v2.8 | 1/1 | Complete | 2026-01-30 |
 
-**v2.8 Total:** 2/3 plans complete (67%)
+**v2.8 Total:** 3/3 plans complete (100%)
 
 ---
 
