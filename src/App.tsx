@@ -12,6 +12,7 @@ import { StackProvider, StackTheme, useUser } from '@stackframe/react';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { Suspense, useMemo } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import PageSkeleton from './components/PageSkeleton';
 import { RequireImpersonationGuard } from './components/guards/RequireImpersonationGuard';
 import { ImpersonationCacheSync, PlatformGuard } from './components/platform';
 import AccountDeleted from './pages/AccountDeleted';
@@ -81,9 +82,7 @@ function TRPCWrapper({ children }: { children: React.ReactNode }) {
 
 const App = () => {
   return (
-    <Suspense
-      fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}
-    >
+    <Suspense fallback={<PageSkeleton />}>
       <ServiceWorkerRegistration />
       <StackProvider app={stackClientApp}>
         <StackTheme>
