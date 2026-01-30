@@ -88,6 +88,37 @@ const SuperAdminContext = createContext<SuperAdminContextType | undefined>(
 	undefined,
 )
 
+// Safe default for when hook is called before provider mounts
+const SUPER_ADMIN_DEFAULT: SuperAdminContextType = {
+	isSuperAdmin: false,
+	isLoadingSuperAdmin: true,
+	rolesLoaded: false,
+	roleLoadStatus: 'idle',
+	roleLoadError: null,
+	isSupportModeActive: false,
+	supportModeStartedAt: null,
+	supportModeExpiresAt: null,
+	enterSupportMode: async () => {},
+	exitSupportMode: async () => {},
+	impersonation: {
+		isImpersonating: false,
+		impersonatedUserId: null,
+		impersonatedUserEmail: null,
+		impersonatedUserName: null,
+		impersonatedOrgId: null,
+		impersonatedOrgName: null,
+		startedAt: null,
+	},
+	startImpersonation: async () => false,
+	stopImpersonation: async () => {},
+	registerImpersonationCallback: () => () => {},
+	viewingOrg: { orgId: null, orgName: null },
+	setViewingOrg: () => {},
+	exitToplatform: () => {},
+	logSuperAdminAction: async () => {},
+	refreshSuperAdminStatus: async () => {},
+}
+
 interface SuperAdminProviderProps {
 	children: ReactNode
 }
@@ -650,10 +681,10 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
 	)
 }
 
-export function useSuperAdmin() {
+export function useSuperAdmin(): SuperAdminContextType {
 	const context = useContext(SuperAdminContext)
 	if (context === undefined) {
-		throw new Error('useSuperAdmin must be used within a SuperAdminProvider')
+		return SUPER_ADMIN_DEFAULT
 	}
 	return context
 }
