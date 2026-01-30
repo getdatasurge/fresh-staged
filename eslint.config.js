@@ -33,7 +33,7 @@ export default tseslint.config(
   // Accessibility enforcement - jsx-a11y recommended rules for React components
   {
     ...jsxA11y.flatConfigs.recommended,
-    files: ['**/*.tsx'],
+    files: ['**/*.{jsx,tsx}'],
   },
   // Supabase edge functions - allow 'any' types due to Deno environment differences
   {
