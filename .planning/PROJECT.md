@@ -169,9 +169,9 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 
 ### Active
 
-<!-- No active milestone — v2.7 shipped, next milestone not yet defined -->
+<!-- Current milestone: v2.8 Production Polish -->
 
-(No active requirements — run `/gsd:new-milestone` to define next milestone)
+(Requirements defined in `.planning/REQUIREMENTS.md`)
 
 ### Out of Scope
 
@@ -253,11 +253,17 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 | import.meta.env.DEV URL ternary | Empty string VITE_API_URL is falsy in JS || operator | Good — relative URLs in prod |
 | Self-signed SSL for IP deployment | No domain available, IP-only access | Good — works with cert exception |
 
-## Last Shipped: v2.7 tRPC Client Fix (2026-01-30)
+## Current Milestone: v2.8 Production Polish
 
-Fixed tRPC runtime crash preventing React from mounting in production. All 10 milestones shipped (v1.0 through v2.7), 48 phases, 192 plans.
+**Goal:** Fix known production issues (useSuperAdmin context error, ServiceWorker registration, WebSocket stability) and address additional bugs discovered during QA.
 
-**Next:** Run `/gsd:new-milestone` to define next milestone.
+**Target fixes:**
+- Fix `useSuperAdmin` context error appearing in browser console
+- Gracefully handle ServiceWorker registration failure on self-signed SSL certs
+- Stabilize WebSocket reconnection behavior (reduce flicker)
+- Additional QA-discovered bugs (insert phases as needed)
+
+**Approach:** IP-based deployment stays (no domain). Self-signed certs remain. Focus on graceful handling and stability.
 
 ---
-*Last updated: 2026-01-30 after v2.7 milestone*
+*Last updated: 2026-01-30 after v2.8 milestone started*

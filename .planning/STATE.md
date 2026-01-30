@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** Planning next milestone
+**Current focus:** v2.8 Production Polish — defining requirements
 
 ## Current Position
 
-Milestone: None active (v2.7 shipped)
-Phase: N/A
-Plan: N/A
-Status: Between milestones
-Last activity: 2026-01-30 — v2.7 milestone archived
+Milestone: v2.8 Production Polish
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-01-30 — Milestone v2.8 started
 
-Progress: Ready for next milestone
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestones Shipped
 
@@ -32,7 +32,7 @@ Progress: Ready for next milestone
 | v2.6 | Production Deployment | 45 | 3 | 2026-01-29 |
 | v2.7 | tRPC Client Fix | 46-48 | 5 | 2026-01-30 |
 
-**Total shipped:** 10 milestones, 48 phases, 192 plans (v2.5 tag missing)
+**Total shipped:** 10 milestones, 48 phases, 192 plans
 
 ## Accumulated Context
 
@@ -44,15 +44,17 @@ Progress: Ready for next milestone
 - Caddy uses port-based matching (`:443`/`:80`) for IP deployments
 - `useTRPCClient()` for imperative `.mutate()`/`.query()` calls
 - `useTRPC()` only for `.queryOptions()`/`.mutationOptions()`
+- v2.8: Keep self-signed certs, disable ServiceWorker gracefully
 
 ### Blockers/Concerns
 
-- ServiceWorker registration fails due to self-signed cert (non-blocking)
-- `useSuperAdmin` context error (pre-existing)
+- ServiceWorker registration fails due to self-signed cert (non-blocking, to fix in v2.8)
+- `useSuperAdmin` context error (pre-existing, to fix in v2.8)
+- WebSocket reconnection flicker (to fix in v2.8)
 
 ## Session Continuity
 
 Last session: 2026-01-30
-Stopped at: v2.7 milestone archived
+Stopped at: v2.8 milestone started, defining requirements
 Resume file: None
-Next action: `/gsd:new-milestone` to define next milestone
+Next action: Complete requirements definition, then create roadmap
