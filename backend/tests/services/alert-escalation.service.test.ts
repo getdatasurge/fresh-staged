@@ -16,7 +16,7 @@ import {
  * - Contact priority routing
  * - Time-based escalation logic
  *
- * Note: Database integration tests are in tests/api/alerts.test.ts
+ * Note: Alert API tests are in tests/trpc/alerts.router.test.ts
  * These tests focus on the configuration and pure logic functions.
  */
 
