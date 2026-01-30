@@ -1,19 +1,21 @@
-# Project State: FreshTrack Pro Migration
+# Project State: FreshTrack Pro
 
 ## Project Reference
 
 See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.9 Quality Assurance — defining requirements
+**Current focus:** v2.9 Quality Assurance -- Phase 52: Backend TTN Webhook Tests
 
 ## Current Position
 
 Milestone: v2.9 Quality Assurance
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-01-30 — Milestone v2.9 started
+Phase: 52 of 55 (Backend TTN Webhook Tests)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-01-30 -- Roadmap created for v2.9
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Milestones Shipped
 
@@ -40,20 +42,18 @@ Last activity: 2026-01-30 — Milestone v2.9 started
 - IP-based deployment (192.168.4.181), no domain
 - Self-signed SSL via Caddy (static certs in `/etc/caddy/certs/`)
 - Docker compose: base `docker-compose.yml` + overlay `compose.production.yaml`
-- Caddy uses port-based matching (`:443`/`:80`) for IP deployments
 - `useTRPCClient()` for imperative `.mutate()`/`.query()` calls
 - `useTRPC()` only for `.queryOptions()`/`.mutationOptions()`
-- `useSuperAdmin` returns safe default (isLoadingSuperAdmin: true) instead of throwing when context unavailable
-- ServiceWorker uses `injectRegister: false` + React hook for graceful error handling
+- `useSuperAdmin` returns safe default instead of throwing when context unavailable
 - Socket.io `auth: (cb) =>` callback pattern for dynamic JWT on connect/reconnect
 
 ### Blockers/Concerns
 
-None — all known issues resolved through v2.8.
+None -- all known issues resolved through v2.8.
 
 ## Session Continuity
 
 Last session: 2026-01-30
-Stopped at: Defining v2.9 requirements
+Stopped at: Roadmap created for v2.9
 Resume file: None
-Next action: Define requirements, then create roadmap
+Next action: Plan Phase 52 (Backend TTN Webhook Tests)

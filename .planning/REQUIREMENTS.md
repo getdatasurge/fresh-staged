@@ -54,24 +54,24 @@ Fix known skipped tests and restore test coverage across backend and frontend. F
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TTN-01 | TBD | Pending |
-| TTN-02 | TBD | Pending |
-| ALERT-01 | TBD | Pending |
-| ALERT-02 | TBD | Pending |
-| READ-01 | TBD | Pending |
-| READ-02 | TBD | Pending |
-| SITE-01 | TBD | Pending |
-| FE-01 | TBD | Pending |
-| FE-02 | TBD | Pending |
-| FE-03 | TBD | Pending |
-| HEALTH-01 | TBD | Pending |
-| HEALTH-02 | TBD | Pending |
+| TTN-01 | Phase 52 | Pending |
+| TTN-02 | Phase 52 | Pending |
+| ALERT-01 | Phase 53 | Pending |
+| ALERT-02 | Phase 53 | Pending |
+| READ-01 | Phase 53 | Pending |
+| READ-02 | Phase 53 | Pending |
+| SITE-01 | Phase 53 | Pending |
+| FE-01 | Phase 54 | Pending |
+| FE-02 | Phase 54 | Pending |
+| FE-03 | Phase 54 | Pending |
+| HEALTH-01 | Phase 55 | Pending |
+| HEALTH-02 | Phase 55 | Pending |
 
 **Coverage:**
 - v2.9 requirements: 12 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 12
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-30*
-*Last updated: 2026-01-30 after initial definition*
+*Last updated: 2026-01-30 -- Traceability updated with phase assignments*
