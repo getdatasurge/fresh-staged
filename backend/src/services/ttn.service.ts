@@ -7,6 +7,43 @@
  * API Reference: https://www.thethingsindustries.com/docs/reference/api/
  */
 
+// TTN auth_info response types (for API key validation)
+export interface TTNAuthInfo {
+  is_admin?: boolean;
+  universal_rights?: string[];
+  api_key?: {
+    api_key?: {
+      rights?: string[];
+    };
+    entity_ids?: {
+      user_ids?: { user_id: string };
+      organization_ids?: { organization_id: string };
+      application_ids?: { application_id: string };
+    };
+  };
+}
+
+export interface TTNApiKeyValidation {
+  allowed: boolean;
+  key_type: 'personal' | 'organization' | 'application' | 'unknown';
+  owner_scope: 'user' | 'organization' | null;
+  scope_id: string | null;
+  has_gateway_rights: boolean;
+  missing_rights: string[];
+  rights: string[];
+}
+
+export interface TTNApplicationInfo {
+  ids: {
+    application_id: string;
+  };
+  created_at: string;
+  updated_at: string;
+  name?: string;
+  description?: string;
+  attributes?: Record<string, string>;
+}
+
 // TTN API response types for gateways
 export interface TTNGateway {
   ids: {
@@ -383,6 +420,113 @@ export class TTNClient {
     });
 
     return this.handleResponse<TTNDevice>(response);
+  }
+
+  // ==========================================
+  // API Key Validation & Application Info
+  // ==========================================
+
+  /**
+   * Validate an API key by calling TTN's auth_info endpoint.
+   * Determines key type (personal/organization/application), scope, and gateway rights.
+   * Replicates the logic from the ttn-gateway-preflight edge function.
+   */
+  async validateApiKey(apiKey?: string): Promise<TTNApiKeyValidation> {
+    const keyToValidate = apiKey ?? this.apiKey;
+    const url = `${this.apiUrl}/api/v3/auth_info`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${keyToValidate}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        return {
+          allowed: false,
+          key_type: 'unknown',
+          owner_scope: null,
+          scope_id: null,
+          has_gateway_rights: false,
+          missing_rights: ['gateways:read', 'gateways:write'],
+          rights: [],
+        };
+      }
+      const errorBody = await response.text();
+      throw new TTNApiError(response.status, `TTN auth_info failed: ${errorBody}`);
+    }
+
+    const authInfo: TTNAuthInfo = await response.json() as TTNAuthInfo;
+
+    // CRITICAL: TTN auth_info response for Personal API keys is DOUBLE-NESTED:
+    // { api_key: { api_key: { rights: [...] }, entity_ids: { user_ids: { user_id: "..." } } } }
+    const apiKeyWrapper = authInfo.api_key;
+    const entityIds = apiKeyWrapper?.entity_ids;
+    const innerApiKey = apiKeyWrapper?.api_key;
+
+    // Determine key type and scope from entity_ids
+    let keyType: TTNApiKeyValidation['key_type'] = 'unknown';
+    let ownerScope: TTNApiKeyValidation['owner_scope'] = null;
+    let scopeId: string | null = null;
+
+    if (entityIds?.user_ids?.user_id) {
+      keyType = 'personal';
+      ownerScope = 'user';
+      scopeId = entityIds.user_ids.user_id;
+    } else if (entityIds?.organization_ids?.organization_id) {
+      keyType = 'organization';
+      ownerScope = 'organization';
+      scopeId = entityIds.organization_ids.organization_id;
+    } else if (entityIds?.application_ids?.application_id) {
+      keyType = 'application';
+      ownerScope = null;
+      scopeId = entityIds.application_ids.application_id;
+    }
+
+    // Rights: inner.rights → universal_rights fallback
+    const rights = innerApiKey?.rights ?? authInfo.universal_rights ?? [];
+    const hasGatewayRead = rights.some(
+      (r) => r === 'RIGHT_GATEWAY_ALL' || r === 'RIGHT_GATEWAY_INFO' || r.includes('GATEWAY'),
+    );
+    const hasGatewayWrite = rights.some(
+      (r) =>
+        r === 'RIGHT_GATEWAY_ALL' ||
+        r === 'RIGHT_GATEWAY_SETTINGS_BASIC' ||
+        r === 'RIGHT_GATEWAY_SETTINGS_API_KEYS' ||
+        r === 'RIGHT_USER_GATEWAYS_CREATE',
+    );
+
+    const missingRights: string[] = [];
+    if (!hasGatewayRead) missingRights.push('gateways:read');
+    if (!hasGatewayWrite) missingRights.push('gateways:write');
+
+    // Application keys cannot provision gateways
+    const allowed = keyType !== 'application' && hasGatewayRead && hasGatewayWrite;
+
+    return {
+      allowed,
+      key_type: keyType,
+      owner_scope: ownerScope,
+      scope_id: scopeId,
+      has_gateway_rights: hasGatewayRead && hasGatewayWrite,
+      missing_rights: missingRights,
+      rights,
+    };
+  }
+
+  /**
+   * Get TTN application info. Verifies that the application exists
+   * and the API key has access to it.
+   */
+  async getApplicationInfo(): Promise<TTNApplicationInfo> {
+    const url = `${this.apiUrl}/api/v3/applications/${this.applicationId}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse<TTNApplicationInfo>(response);
   }
 
   // ==========================================

@@ -1,172 +1,399 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-01-26
+**Analysis Date:** 2026-01-29
+
+**Test Coverage:**
+- Test files: 75 files total (65 backend, 10 frontend)
+- Source files: 742 files
+- Test ratio: ~10% (test files / source files)
+- Note: Backend has significantly better test coverage than frontend
 
 ## Test Framework
 
 **Runner:**
-- Vitest (frontend) with config in `vitest.config.ts`
-- Vitest (backend) with config in `backend/vitest.config.ts`
+- Vitest 2.1.8
+- Config files: `vitest.config.ts` (frontend), `backend/vitest.config.ts` (backend), `vite.config.ts` (legacy)
+
+**Frontend Config:**
+```typescript
+// vitest.config.ts
+{
+  globals: true,
+  environment: 'happy-dom',
+  include: ['src/**/*.{test,spec}.{ts,tsx}'],
+  setupFiles: ['./src/test/setup.ts']
+}
+```
+
+**Backend Config:**
+```typescript
+// backend/vitest.config.ts
+{
+  globals: true,
+  environment: 'node',
+  include: ['tests/**/*.test.ts'],
+  setupFiles: ['./tests/setup.ts'],
+  testTimeout: 10000,
+  hookTimeout: 30000
+}
+```
 
 **Assertion Library:**
-- Vitest built-in `expect`
-- DOM matchers via `@testing-library/jest-dom` loaded in `src/test/setup.ts`
+- Vitest built-in assertions (Jest-compatible)
+- `@testing-library/jest-dom` for frontend DOM assertions
 
 **Run Commands:**
 ```bash
-npm test                                  # Run frontend tests via Vitest
-npm run test:watch                        # Frontend watch mode
-npm test -- src/lib/orgScopedInvalidation.test.ts
-cd backend && npm test                    # Run backend tests via Vitest
-cd backend && npm run test:watch          # Backend watch mode
-cd backend && npm test -- tests/api/sites.test.ts
+npm test              # Run all tests (frontend)
+npm run test:watch    # Watch mode (frontend)
+cd backend && npm test           # Run backend tests
+cd backend && npm run test:watch # Backend watch mode
 ```
 
 ## Test File Organization
 
 **Location:**
-- Frontend tests live under `src/**` and match `src/**/*.{test,spec}.{ts,tsx}` (see `vitest.config.ts`)
-- Backend tests live under `backend/tests/**/*.test.ts` (see `backend/vitest.config.ts`)
+- Frontend: Co-located with source in `__tests__` directories or separate `tests/` directory
+- Backend: Separate `backend/tests/` directory mirroring `backend/src/` structure
 
 **Naming:**
-- Unit/integration tests use `*.test.ts`/`*.test.tsx` naming
-- Some feature-specific locations use `__tests__` (examples: `src/lib/__tests__/api-client.test.ts`, `src/hooks/__tests__/useSites.test.tsx`)
+- Pattern: `*.test.ts` or `*.test.tsx`
+- Matches source file name: `ttn.service.ts` → `ttn.service.test.ts`
+- Components: `TTNCredentialsPanel.tsx` → `TTNCredentialsPanel.test.tsx`
 
-**Structure:**
+**Frontend Structure:**
 ```
 src/
-  lib/
-    api-client.ts
-    __tests__/api-client.test.ts
+  components/
+    settings/
+      TTNCredentialsPanel.tsx
+      __tests__/
+        TTNCredentialsPanel.test.tsx
   hooks/
-    __tests__/useSites.test.tsx
+    useAlerts.ts
+    __tests__/
+      useAlerts.test.tsx
   features/
     dashboard-layout/
-      __tests__/layoutValidation.test.ts
+      __tests__/
+        payloadClassification.test.ts
+```
+
+**Backend Structure:**
+```
 backend/
-  tests/
-    api/
-      sites.test.ts
+  src/
     services/
-      availability.service.test.ts
-    trpc/
-      e2e.test.ts
+      ttn.service.ts
+  tests/
+    services/
+      ttn.service.test.ts
+    setup.ts
 ```
 
 ## Test Structure
 
 **Suite Organization:**
 ```typescript
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+describe('ComponentName or FeatureName', () => {
+  let queryClient: QueryClient;
 
-describe('moduleName', () => {
   beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } }
+    });
     vi.clearAllMocks();
   });
 
-  it('handles the happy path', () => {
-    // arrange
-    // act
-    // assert
+  describe('Nested Feature Group', () => {
+    it('describes expected behavior', () => {
+      // Arrange
+      const mockData = { ... };
+
+      // Act
+      const result = functionUnderTest(mockData);
+
+      // Assert
+      expect(result).toBe(expected);
+    });
   });
 });
 ```
 
 **Patterns:**
-- `describe`/`it` structure with Vitest globals
-- `beforeEach` used to reset mocks/state in frontend hooks tests (example: `src/hooks/__tests__/useSites.test.tsx`)
-- Arrange/act/assert comments appear when tests are complex
+- Nested `describe` blocks for logical grouping
+- `beforeEach` for setup/teardown
+- `it` blocks describe behavior in present tense
+- Arrange-Act-Assert pattern (implicit, not commented)
+- Comprehensive test comments for complex scenarios
+
+**Example from `backend/tests/services/ttn.service.test.ts`:**
+```typescript
+describe('TTN Service', () => {
+  const testConfig: TTNConfig = { ... };
+  let client: TTNClient;
+
+  beforeEach(() => {
+    client = new TTNClient(testConfig);
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('listDevices', () => {
+    it('should list devices from TTN application', async () => {
+      const mockDevices = { ... };
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockDevices)
+      });
+
+      const devices = await client.listDevices();
+
+      expect(mockFetch).toHaveBeenCalledWith(...);
+      expect(devices).toHaveLength(1);
+    });
+  });
+});
+```
 
 ## Mocking
 
-**Framework:**
-- Vitest built-in mocking via `vi`
-- Module mocking with `vi.mock()` at top of test files
+**Framework:** Vitest's `vi` mocking utilities
 
-**Patterns:**
+**Frontend Patterns:**
 ```typescript
-import { vi } from 'vitest';
-
-vi.mock('@/lib/api', () => ({
-  sitesApi: { listSites: vi.fn() },
+// Mock external dependencies
+vi.mock('@stackframe/react', () => ({
+  useUser: vi.fn(() => ({
+    getAuthJson: vi.fn().mockResolvedValue({ accessToken: 'test-token' })
+  }))
 }));
 
-const mockFn = vi.mocked(sitesApi.listSites);
-mockFn.mockResolvedValueOnce([] as any);
+// Mock internal modules
+vi.mock('@/lib/trpc', () => ({
+  useTRPC: () => mockUseTRPC()
+}));
+
+// Use vi.hoisted for mock references
+const { toastMock, mutateMock } = vi.hoisted(() => ({
+  toastMock: { success: vi.fn(), error: vi.fn() },
+  mutateMock: vi.fn()
+}));
+```
+
+**Backend Patterns:**
+```typescript
+// Mock global fetch
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
+// Mock external libraries
+vi.mock('resend', () => ({
+  Resend: class MockResend {
+    emails = {
+      send: vi.fn().mockResolvedValue({ data: { id: 'mock-id' }, error: null })
+    };
+  }
+}));
 ```
 
 **What to Mock:**
-- External services and SDKs (examples mocked in `backend/tests/setup.ts`)
-- API modules and auth hooks in frontend tests (example: `src/hooks/__tests__/useSites.test.tsx`)
-- Network or storage boundaries
+- External APIs (TTN, Stripe, AWS SDK, Resend)
+- Authentication providers (Stack Auth)
+- Database clients (in unit tests)
+- HTTP clients (`fetch`, `ky`)
+- Toast notifications (`sonner`)
+- Optional runtime dependencies
 
 **What NOT to Mock:**
-- Pure helper functions when they are the unit under test (pattern implied in `src/lib/actions/sensorEligibility.test.ts`)
+- Business logic under test
+- Pure utility functions
+- Type definitions
+- Simple data transformations
 
 ## Fixtures and Factories
 
 **Test Data:**
 ```typescript
-// backend/tests/helpers/fixtures.ts
-export async function createTestOrg(...) { /* ... */ }
-export async function createTestUser(...) { /* ... */ }
-export function createTestReading(...) { /* ... */ }
+// Inline fixtures at top of test file
+const mockCredentialsReady = {
+  organization_name: 'Test Organization',
+  organization_id: 'org-test-123',
+  ttn_application_id: 'ft-test-app',
+  // ... all fields
+};
+
+const mockCredentialsFailed = {
+  ...mockCredentialsReady,
+  provisioning_status: 'failed',
+  provisioning_error: 'Application already exists'
+};
 ```
 
 **Location:**
-- Backend factories and fixtures live in `backend/tests/helpers/fixtures.ts`
-- Frontend shared fixtures: Not detected
+- Test fixtures defined inline at top of test file
+- Shared fixtures in test setup files: `src/test/setup.ts`, `backend/tests/setup.ts`
+- Sample payloads in dedicated constants: `SAMPLE_PAYLOADS` in `payloadClassification.test.ts`
 
 ## Coverage
 
-**Requirements:**
-- Not detected (no coverage target in package scripts)
-
-**Configuration:**
-- Not detected (no coverage config in `vitest.config.ts` or `backend/vitest.config.ts`)
+**Requirements:** No enforced coverage threshold detected
 
 **View Coverage:**
 ```bash
-Not detected
+# No coverage command configured
+# Vitest supports coverage via @vitest/coverage-* plugins (not installed)
 ```
+
+**Current State:**
+- Backend has comprehensive service-level test coverage
+- Frontend has selective testing (critical components, hooks, complex logic)
+- Widget components largely untested (UI-heavy, visual testing challenging)
+- Integration tests focused on tRPC flows and provisioning workflows
 
 ## Test Types
 
 **Unit Tests:**
-- Frontend utilities/hooks are tested in isolation with mocked dependencies (examples: `src/lib/actions/sensorEligibility.test.ts`, `src/hooks/__tests__/useSites.test.tsx`)
+- Scope: Individual functions, services, hooks
+- Approach: Mock all external dependencies
+- Location: Most tests are unit tests
+- Example: `ttn.service.test.ts` tests TTN API client methods in isolation
 
 **Integration Tests:**
-- Backend service and API tests exercise multiple modules (examples: `backend/tests/services/availability.service.test.ts`, `backend/tests/api/sites.test.ts`)
+- Scope: Component + hooks + tRPC queries
+- Approach: Mock external APIs but test React Query integration
+- Location: `src/components/settings/__tests__/TTNCredentialsPanel.test.tsx`
+- Example: Tests component rendering with tRPC queries and mutations
 
 **E2E Tests:**
-- Vitest-based E2E-style coverage exists in backend (example: `backend/tests/trpc/e2e.test.ts`)
+- Framework: Not detected (no Playwright, Cypress, or Puppeteer config)
+- Status: No E2E tests present
 
 ## Common Patterns
 
 **Async Testing:**
 ```typescript
-it('handles async work', async () => {
-  const result = await asyncFn();
-  expect(result).toBeDefined();
+it('should fetch data asynchronously', async () => {
+  mockFetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(data) });
+
+  const result = await client.getData();
+
+  expect(result).toEqual(expectedData);
+});
+
+// React Query with waitFor
+it('renders data after loading', async () => {
+  render(<Component />);
+
+  await waitFor(() => {
+    expect(screen.getByText('Expected Text')).toBeInTheDocument();
+  });
 });
 ```
 
 **Error Testing:**
 ```typescript
-it('throws on invalid input', () => {
-  expect(() => fn(null)).toThrow();
+it('should throw TTNApiError on API error', async () => {
+  mockFetch.mockResolvedValueOnce({
+    ok: false,
+    status: 401,
+    text: () => Promise.resolve(JSON.stringify({ message: 'Unauthorized' }))
+  });
+
+  await expect(client.listDevices()).rejects.toThrow(TTNApiError);
 });
 
-it('rejects on failure', async () => {
-  await expect(asyncFn()).rejects.toThrow();
+// Frontend error handling
+it('shows error toast on provision failure', async () => {
+  provisionMutateMock.mockResolvedValue({
+    success: false,
+    error: 'Application creation failed'
+  });
+
+  fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+
+  await waitFor(() => {
+    expect(toastMock.error).toHaveBeenCalledWith('Application creation failed', {
+      description: expect.any(String)
+    });
+  });
 });
 ```
 
-**Snapshot Testing:**
-- Not detected in frontend/backend tests
-- Opencode subproject includes snapshots (example: `opencode/packages/opencode/test/tool/__snapshots__/tool.test.ts.snap`)
+**React Component Testing:**
+```typescript
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+it('renders and responds to user interaction', async () => {
+  const queryClient = new QueryClient();
+
+  render(
+    <QueryClientProvider client={queryClient}>
+      <Component prop="value" />
+    </QueryClientProvider>
+  );
+
+  expect(screen.getByText('Initial State')).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button'));
+
+  await waitFor(() => {
+    expect(screen.getByText('Updated State')).toBeInTheDocument();
+  });
+});
+```
+
+**Mock Reset Patterns:**
+```typescript
+beforeEach(() => {
+  vi.clearAllMocks(); // Reset call counts and results
+  queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } }
+  });
+});
+
+afterEach(() => {
+  vi.clearAllMocks(); // Also in afterEach for cleanup
+});
+```
+
+## Test Documentation
+
+**Test File Headers:**
+```typescript
+/**
+ * TTNCredentialsPanel Integration Tests
+ *
+ * Tests the tRPC-migrated TTNCredentialsPanel component.
+ * Covers rendering states, credential loading, action buttons, error handling, and permissions.
+ */
+```
+
+**Section Comments:**
+```typescript
+// ============ RENDERING TESTS ============
+describe('Rendering', () => { ... });
+
+// ============ STATUS BADGE TESTS ============
+describe('Status Badges', () => { ... });
+```
+
+**CI Gate Tests:**
+```typescript
+/**
+ * Deterministic Payload Classification Tests
+ *
+ * CI Gate: These tests ensure every sample payload matches exactly one versioned
+ * payload type, or is explicitly classified as "unclassified".
+ *
+ * Ambiguous matches MUST fail CI (no silent ambiguity allowed).
+ */
+```
 
 ---
 
-*Testing analysis: 2026-01-26*
-*Update when test patterns change*
+*Testing analysis: 2026-01-29*

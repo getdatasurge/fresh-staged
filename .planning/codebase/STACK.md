@@ -1,83 +1,129 @@
 # Technology Stack
 
-**Analysis Date:** 2026-01-26
+**Analysis Date:** 2026-01-29
+
+**Codebase Size:**
+- Files analyzed: 910 files (742 frontend, 168 backend)
+- Lines of code: 199,292 lines (169,190 frontend + 30,102 backend, excluding node_modules, build artifacts)
 
 ## Languages
 
 **Primary:**
-- TypeScript 5.x - Frontend and backend application code in `src` and `backend/src`
+- TypeScript 5.8.3 - All source code (frontend and backend)
+- TypeScript configuration: Relaxed mode with `noImplicitAny: false`, `strictNullChecks: false`
 
 **Secondary:**
-- JavaScript - Tooling/scripts in `scripts`
-- SQL - Database migrations in `supabase/migrations` and `backend/drizzle`
-- Shell - Ops scripts in `scripts`
-- YAML - Infrastructure config in `docker-compose.yml` and `docker/compose.prod.yaml`
+- JavaScript (ESM) - Configuration files only
+- HTML - Entry point (`src/index.html`)
+- CSS - Styling with Tailwind
 
 ## Runtime
 
 **Environment:**
-- Node.js 20+ (inferred from package engines in `backend/pnpm-lock.yaml` and toolchain usage in `package.json`)
-- Deno (Supabase Edge Functions) in `supabase/functions`
+- Node.js v18.19.1+ (detected in environment, no `.nvmrc` specified)
 
 **Package Manager:**
-- pnpm - Lockfile: `pnpm-lock.yaml` present
-- npm - Lockfile: `package-lock.json` present
-- bun - Lockfile: `bun.lockb` present
+- npm (frontend uses `package.json`, lockfile status not checked)
+- npm (backend uses `package.json`)
+
+**Module System:**
+- ESM (`"type": "module"` in both `package.json` files)
 
 ## Frameworks
 
 **Core:**
-- React 18.x - Frontend UI in `src`
-- Vite 5.x - Frontend build/dev server in `vite.config.ts`
-- Fastify 5.x - Backend HTTP server in `backend/src`
-- tRPC 11.x - API layer for frontend/backend in `src/lib/trpc.ts` and `backend/src`
+- React 18.3.1 - Frontend UI framework
+- Fastify 5.7.1 - Backend HTTP server
+- tRPC 11.8.1 - Type-safe API layer (client and server)
+- Drizzle ORM 0.38.0 - Database ORM with PostgreSQL
 
 **Testing:**
-- Vitest 2.x/4.x - Frontend and backend tests via `vitest.config.ts` and `backend/vitest.config.ts`
-- Testing Library - React component tests (from `package.json`)
+- Vitest 2.1.8 (frontend) / 4.0.18 (backend) - Unit and integration testing
+- Playwright - E2E testing (configured but version not in dependencies)
+- @testing-library/react 16.3.1 - React component testing
+- happy-dom 20.4.0 - DOM environment for tests
 
 **Build/Dev:**
-- TypeScript 5.x - Compilation and type checking via `tsconfig.json` and `backend/tsconfig.json`
-- Tailwind CSS 3.x - Styling in `tailwind.config.ts`
-- PostCSS - Styling pipeline in `postcss.config.js`
+- Vite 5.4.19 - Frontend build tool and dev server
+- tsx 4.21.0 (frontend) / 4.19.0 (backend) - TypeScript execution
+- ESLint 9.32.0 - Linting with typescript-eslint 8.38.0
+- Tailwind CSS 3.4.17 - Utility-first CSS framework
+- PostCSS 8.5.6 - CSS processing
+- drizzle-kit 0.30.0 - Database migrations
 
 ## Key Dependencies
 
 **Critical:**
-- @stackframe/react 2.x - Stack Auth frontend SDK in `src/App.tsx`
-- drizzle-orm 0.38 - Database access layer in `backend/src`
-- zod 3.x/4.x - Runtime schema validation across `src/lib` and `backend/src`
-- socket.io 4.x - Realtime updates between client/server in `src/lib/socket.ts` and `backend/src`
-- stripe 20.x - Payments integration in `backend/src`
+- @stackframe/react 2.8.60 - Authentication provider (Stack Auth SDK)
+- @tanstack/react-query 5.83.0 - Data fetching and caching
+- socket.io-client 4.8.3 (frontend) / socket.io 4.8.3 (backend) - Real-time WebSocket communication
+- react-router-dom 6.30.1 - Frontend routing
+- zod 3.25.76 (frontend) / 4.3.6 (backend) - Schema validation
+- stripe 20.2.0 - Payment processing (backend)
+- drizzle-orm 0.38.0 - Database ORM
+- pg 8.13.0 - PostgreSQL client
 
 **Infrastructure:**
-- pg 8.x - PostgreSQL client in `backend/src`
-- ioredis 5.x / redis 5.x - Redis connectivity in `backend/src`
-- bullmq 5.x - Job queueing for background work in `backend/src`
-- @aws-sdk/client-s3 3.x - S3/MinIO object storage in `backend/src`
+- BullMQ 5.67.0 - Background job processing
+- IORedis 5.9.2 - Redis client for caching and queues
+- @bull-board/fastify 6.16.4 - Job queue UI
+- jose 6.1.3 - JWT authentication
+- @aws-sdk/client-s3 3.750.0 - S3-compatible storage (MinIO)
+- resend 4.2.0 - Email delivery service
+- telnyx 5.11.0 - SMS delivery service
+
+**UI Components:**
+- @radix-ui/* (20+ packages) - Headless UI components
+- lucide-react 0.462.0 - Icon library
+- recharts 2.15.4 - Data visualization
+- react-hook-form 7.61.1 - Form management
+- framer-motion 12.29.2 - Animation library
+- sonner 1.7.4 - Toast notifications
+- next-themes 0.3.0 - Theme management
+- vite-plugin-pwa 1.2.0 - Progressive Web App support
 
 ## Configuration
 
 **Environment:**
-- Environment variables documented in `docs/ENVIRONMENT_VARIABLES.md`
-- Secrets stored via files in `secrets/` for self-hosted deployments
+- Frontend: `.env` (local), `.env.production` (prod)
+- Backend: `.env` (local), `.env.production` (prod)
+- Secrets: File-based in `./secrets/` directory for production
+
+**Critical Environment Variables:**
+- `VITE_API_URL` - Backend API URL (default: http://localhost:3000)
+- `VITE_STACK_AUTH_PROJECT_ID` - Stack Auth project ID
+- `VITE_STACK_AUTH_PUBLISHABLE_CLIENT_KEY` - Stack Auth client key
+- `DATABASE_URL` - PostgreSQL connection string
+- `REDIS_URL` - Redis connection string
+- `STRIPE_SECRET_KEY` - Stripe API key
+- `RESEND_API_KEY` - Resend email API key
+- `TELNYX_API_KEY` - Telnyx SMS API key (optional)
+- `TTN_API_KEY` - The Things Network API key
 
 **Build:**
-- `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`
-- `tailwind.config.ts`, `postcss.config.js`, `eslint.config.js`
-- Docker Compose configs in `docker-compose.yml` and `docker/compose.prod.yaml`
+- Frontend: `vite.config.ts` - Vite configuration with React SWC plugin, PWA manifest
+- Backend: `tsconfig.json` - TypeScript compiler configuration
+- Database: `backend/drizzle.config.ts` - Database migrations config
+- Linting: `eslint.config.js` - Flat config format
+- Styling: `tailwind.config.ts`, `postcss.config.js`
+- Tests: `vitest.config.ts` (frontend and backend), `playwright.config.ts` (E2E)
 
 ## Platform Requirements
 
 **Development:**
-- Any OS with Node.js 20+ and Docker (local services) as described in `docs/LOCAL_DEV_ENV.md`
-- Supabase CLI only if working on Edge Functions in `supabase/functions`
+- Node.js v18.19.1+ (no explicit requirement file, inferred from environment)
+- PostgreSQL database
+- Redis server
+- MinIO or S3-compatible storage
 
 **Production:**
-- Docker-based deployment on Linux hosts (Ubuntu/Debian) per `docs/operations/DEPLOYMENT.md`
-- Supabase Edge Functions runtime (Deno) for functions in `supabase/functions`
+- Node.js runtime (server-side)
+- PostgreSQL (managed or self-hosted)
+- Redis (managed or self-hosted)
+- MinIO/S3 storage
+- Deployment: Static frontend (Vite build) + Node.js backend (Fastify)
+- Optional services: Stripe, Resend, Telnyx, TTN (The Things Network)
 
 ---
 
-*Stack analysis: 2026-01-26*
-*Update after major dependency changes*
+*Stack analysis: 2026-01-29*
