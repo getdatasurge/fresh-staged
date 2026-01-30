@@ -51,6 +51,7 @@
     "@radix-ui/react-toggle": "^1.1.9",
     "@radix-ui/react-toggle-group": "^1.1.10",
     "@radix-ui/react-tooltip": "^1.2.7",
+    "@rollup/rollup-linux-x64-gnu": "^4.57.0",
     "@stackframe/react": "^2.8.60",
     "@tanstack/react-query": "^5.83.0",
     "@testing-library/jest-dom": "^6.9.1",
@@ -86,6 +87,7 @@
     "vaul": "^0.9.9",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^2.1.8",
+    "workbox-window": "^7.4.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
