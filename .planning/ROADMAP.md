@@ -27,19 +27,18 @@ Milestone v2.9 eliminates all skipped tests across backend and frontend, restori
 ---
 
 ### Phase 52: Backend TTN Webhook Tests
-**Goal**: All 16 skipped TTN webhook tests implemented, covering the full ingestion path from raw webhook payload to reading creation, alert triggers, and device metadata updates
+**Goal**: Consolidate duplicate TTN webhook test files -- replace the broken api/ file (14 skipped tests) with the working routes/ file (32 passing tests), eliminating all skips with zero coverage loss
 **Depends on**: Nothing (first phase of v2.9)
 **Requirements**: TTN-01, TTN-02
 **Success Criteria** (what must be TRUE):
-  1. All 16 previously-skipped tests in `ttn-webhooks.test.ts` run and pass (no `.skip` or `.todo` markers remain)
-  2. Webhook ingestion creates temperature readings with correct values, timestamps, and device associations
-  3. Alert trigger logic fires when readings exceed configured thresholds
-  4. Device metadata (battery, RSSI, firmware) is extracted and persisted from webhook payloads
-**Plans**: TBD
+  1. All 14 previously-skipped tests eliminated (no `.skip` or `.todo` markers remain)
+  2. 32 TTN webhook tests pass covering the full ingestion path: authentication, payload validation, reading creation, alert triggers, device metadata, edge cases
+  3. Single canonical test file at `tests/api/ttn-webhooks.test.ts` with proper socket plugin mock
+  4. No regression in the broader backend test suite
+**Plans**: 1 plan
 
 Plans:
-- [ ] 52-01-PLAN.md -- Implement TTN webhook ingestion and reading creation tests
-- [ ] 52-02-PLAN.md -- Implement alert trigger and device metadata tests
+- [ ] 52-01-PLAN.md -- Consolidate TTN webhook tests (replace broken api/ file with working routes/ file)
 
 ---
 
@@ -98,7 +97,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 52. Backend TTN Webhook Tests | v2.9 | 0/2 | Not started | - |
+| 52. Backend TTN Webhook Tests | v2.9 | 0/1 | Planned | - |
 | 53. Backend API Tests | v2.9 | 0/3 | Not started | - |
 | 54. Frontend Test Restoration | v2.9 | 0/2 | Not started | - |
 | 55. Test Suite Health Validation | v2.9 | 0/1 | Not started | - |
@@ -120,4 +119,4 @@ Note: Phases 52-53 are sequential (shared backend test infra).
 ---
 
 *Roadmap created: 2026-01-30*
-*Milestone: v2.9 Quality Assurance -- 4 phases, 8 plans*
+*Milestone: v2.9 Quality Assurance -- 4 phases, 7 plans*
