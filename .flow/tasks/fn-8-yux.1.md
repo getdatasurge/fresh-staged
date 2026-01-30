@@ -21,17 +21,35 @@ Remove the Radix Toast system and consolidate all toast notifications to use Son
 
 ## Done summary
 
-Consolidated dual toast system (Radix + Sonner) into Sonner only across 22 files:
+## Summary
 
-- **App.tsx**: Removed Radix `<Toaster />` mount and import
-- **10 page files**: ManualLog, UnitDetail, Alerts, Reports, Sites, SiteDetail, AreaDetail, Onboarding, DataMaintenance, Areas
-- **8 component/hook files**: DashboardLayout, LogTempModal, DebugTerminal, ErrorExplanationModal, PlatformGuard, PlatformLayout, SupportDiagnosticsPanel, UnitSettingsSection
-- **2 context files**: DebugContext, SuperAdminContext
-- **2 hook files**: useAccountDeletion, useImpersonateAndNavigate
-- **1 test file**: page-a11y.test.tsx (mock updated)
+Consolidated dual toast system (Radix + Sonner) into Sonner only across 22 source files.
+
+### Changes
+
+- Removed Radix `<Toaster />` component mount and import from App.tsx
+- Converted 10 page files from `useToast()` hook to `import { toast } from 'sonner'`
+- Converted 8 component/hook files from `useToast()` to Sonner API
+- Converted 2 context files (DebugContext, SuperAdminContext)
+- Converted 2 hook files (useAccountDeletion, useImpersonateAndNavigate)
+- Updated test mock in page-a11y.test.tsx from `useToast` to `sonner`
+
+### API Migration Pattern
+
+- `toast({ title: '...', variant: 'destructive' })` → `toast.error('...')`
+- `toast({ title: '...', description: '...' })` → `toast.success('...', { description: '...' })`
+- `toast({ title: '...' })` → `toast.success('...')`
+- Removed all `const { toast } = useToast()` destructuring
+- Removed `toast` from useCallback/useEffect dependency arrays
+
+### Verification
+
+- Build: vite build succeeds
+- Tests: 154/154 passed (11 test files)
+- No remaining `useToast` imports in active source files
 
 ## Evidence
 
-- Commits: pending
-- Tests: 154 passed (11 test files), 0 failures
-- Build: vite build succeeds (3.15 MB bundle)
+- Commits:
+- Tests: command, status, total, passed, failed, files
+- PRs:

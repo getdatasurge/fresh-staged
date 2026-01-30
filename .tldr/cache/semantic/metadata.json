@@ -42,7 +42,7 @@
       "signature": "def truncate(s: str, max_len: int) -> str",
       "docstring": "",
       "calls": [],
-      "called_by": ["format_tool_result", "process_event", "format_tool_use"],
+      "called_by": ["process_event", "format_tool_use", "format_tool_result"],
       "cfg_summary": "complexity:2, blocks:5",
       "dfg_summary": "vars:3, def-use chains:6",
       "dependencies": "argparse, json, os, sys, typing",
@@ -89,7 +89,7 @@
       "unit_type": "function",
       "signature": "def process_event(event: dict, verbose: bool) -> None",
       "docstring": "Process a single stream-json event.",
-      "calls": ["truncate", "format_tool_result", "format_tool_use", "safe_print"],
+      "calls": ["format_tool_result", "truncate", "format_tool_use", "safe_print"],
       "called_by": ["main"],
       "cfg_summary": "complexity:12, blocks:28",
       "dfg_summary": "vars:20, def-use chains:31",
@@ -105,7 +105,13 @@
       "unit_type": "function",
       "signature": "def main() -> None",
       "docstring": "",
-      "calls": ["cmd_status", "cmd_done", "cmd_rp_builder", "cmd_memory_list", "cmd_epic_set_plan"],
+      "calls": [
+        "cmd_rp_setup_review",
+        "cmd_epic_set_plan",
+        "cmd_migrate_state",
+        "cmd_task_set_backend",
+        "cmd_ralph_resume"
+      ],
       "called_by": ["<module>", "<module>", "<module>"],
       "cfg_summary": "complexity:3, blocks:7",
       "dfg_summary": "vars:8, def-use chains:2",
@@ -123,11 +129,11 @@
       "docstring": "Find git repo root.",
       "calls": [],
       "called_by": [
-        "find_references",
-        "gather_context_hints",
-        "gather_context_hints",
         "find_active_runs",
-        "get_embedded_file_contents"
+        "cmd_codex_impl_review",
+        "find_active_runs",
+        "get_embedded_file_contents",
+        "gather_context_hints"
       ],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:3, def-use chains:1",
@@ -145,10 +151,10 @@
       "docstring": "Get .flow/ directory path.",
       "calls": ["get_repo_root", "get_repo_root"],
       "called_by": [
+        "load_task_definition",
+        "cmd_epic_add_dep",
         "save_task_definition",
         "cmd_checkpoint_save",
-        "cmd_epic_set_backend",
-        "cmd_task_set_spec",
         "cmd_task_create"
       ],
       "cfg_summary": "complexity:1, blocks:2",
@@ -167,11 +173,11 @@
       "docstring": "Check if .flow/ exists.",
       "calls": [],
       "called_by": [
-        "cmd_tasks",
-        "cmd_list",
         "cmd_checkpoint_save",
-        "require_memory_enabled",
-        "cmd_epic_add_dep"
+        "cmd_task_create",
+        "cmd_codex_plan_review",
+        "cmd_epic_set_plan",
+        "cmd_epic_set_plan_review_status"
       ],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:1, def-use chains:0",
@@ -188,7 +194,7 @@
       "signature": "def get_state_dir() -> Path",
       "docstring": "Get state directory for runtime task state.\n\nResolution order:\n1. FLOW_STATE_DIR env var (explicit override for orchestrators)\n2. git common-dir (shared across all worktrees automatically)\n3. Fallback to .flow/state for non-git repos",
       "calls": ["get_flow_dir", "get_flow_dir"],
-      "called_by": ["cmd_state_path", "cmd_state_path", "get_state_store", "get_state_store"],
+      "called_by": ["get_state_store", "cmd_state_path", "cmd_state_path", "get_state_store"],
       "cfg_summary": "complexity:2, blocks:6",
       "dfg_summary": "vars:7, def-use chains:1",
       "dependencies": "argparse, json, os, re, secrets",
@@ -203,13 +209,13 @@
       "unit_type": "function",
       "signature": "def get_state_store() -> LocalFileStateStore",
       "docstring": "Get the state store instance.",
-      "calls": ["LocalFileStateStore", "LocalFileStateStore", "get_state_dir", "get_state_dir"],
+      "calls": ["get_state_dir", "get_state_dir", "LocalFileStateStore", "LocalFileStateStore"],
       "called_by": [
-        "save_task_runtime",
-        "delete_task_runtime",
-        "load_task_with_state",
-        "save_task_runtime",
-        "cmd_migrate_state"
+        "cmd_start",
+        "cmd_migrate_state",
+        "reset_task_runtime",
+        "cmd_migrate_state",
+        "cmd_checkpoint_restore"
       ],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:2, def-use chains:0",
@@ -225,7 +231,7 @@
       "unit_type": "function",
       "signature": "def load_task_definition(task_id: str, use_json: bool) -> dict",
       "docstring": "Load task definition from tracked file (no runtime state).",
-      "calls": ["get_flow_dir", "get_flow_dir", "load_json_or_exit", "load_json_or_exit"],
+      "calls": ["get_flow_dir", "load_json_or_exit", "load_json_or_exit", "get_flow_dir"],
       "called_by": ["load_task_with_state", "cmd_start", "cmd_start", "load_task_with_state"],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:7, def-use chains:5",
@@ -244,11 +250,11 @@
       "calls": [
         "load_task_definition",
         "get_state_store",
-        "normalize_task",
         "get_state_store",
-        "normalize_task"
+        "normalize_task",
+        "load_task_definition"
       ],
-      "called_by": ["cmd_epic_close", "cmd_start", "cmd_block", "cmd_block", "cmd_show"],
+      "called_by": ["cmd_status", "cmd_next", "cmd_status", "cmd_tasks", "cmd_task_reset"],
       "cfg_summary": "complexity:3, blocks:6",
       "dfg_summary": "vars:11, def-use chains:13",
       "dependencies": "argparse, json, os, re, secrets",
@@ -311,7 +317,7 @@
       "unit_type": "function",
       "signature": "def save_task_definition(task_id: str, definition: dict) -> None",
       "docstring": "Write definition to tracked file (filters out runtime fields).",
-      "calls": ["get_flow_dir", "atomic_write_json", "atomic_write_json", "get_flow_dir"],
+      "calls": ["get_flow_dir", "get_flow_dir", "atomic_write_json", "atomic_write_json"],
       "called_by": [],
       "cfg_summary": "complexity:1, blocks:1",
       "dfg_summary": "vars:11, def-use chains:0",
@@ -328,7 +334,7 @@
       "signature": "def get_default_config() -> dict",
       "docstring": "Return default config structure.",
       "calls": [],
-      "called_by": ["set_config", "cmd_init", "cmd_init", "load_flow_config", "load_flow_config"],
+      "called_by": ["set_config", "cmd_init", "set_config", "cmd_init", "load_flow_config"],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:0, def-use chains:0",
       "dependencies": "argparse, json, os, re, secrets",
@@ -344,7 +350,7 @@
       "signature": "def deep_merge(base: dict, override: dict) -> dict",
       "docstring": "Deep merge override into base. Override values win for conflicts.",
       "calls": ["deep_merge", "deep_merge"],
-      "called_by": ["load_flow_config", "cmd_init", "load_flow_config", "cmd_init", "deep_merge"],
+      "called_by": ["cmd_init", "deep_merge", "deep_merge", "cmd_init", "load_flow_config"],
       "cfg_summary": "complexity:3, blocks:8",
       "dfg_summary": "vars:8, def-use chains:7",
       "dependencies": "argparse, json, os, re, secrets",
@@ -359,7 +365,7 @@
       "unit_type": "function",
       "signature": "def load_flow_config() -> dict",
       "docstring": "Load .flow/config.json, merging with defaults for missing keys.",
-      "calls": ["deep_merge", "deep_merge", "get_flow_dir", "get_flow_dir", "get_default_config"],
+      "calls": ["get_flow_dir", "get_flow_dir", "get_default_config", "deep_merge", "deep_merge"],
       "called_by": ["get_config", "get_config"],
       "cfg_summary": "complexity:3, blocks:8",
       "dfg_summary": "vars:10, def-use chains:7",
@@ -377,11 +383,11 @@
       "docstring": "Get nested config value like 'memory.enabled'.",
       "calls": ["load_flow_config", "load_flow_config"],
       "called_by": [
-        "require_memory_enabled",
         "cmd_config_get",
-        "cmd_memory_init",
-        "cmd_review_backend",
-        "cmd_config_get"
+        "require_memory_enabled",
+        "cmd_config_set",
+        "cmd_config_get",
+        "cmd_review_backend"
       ],
       "cfg_summary": "complexity:4, blocks:11",
       "dfg_summary": "vars:7, def-use chains:10",
@@ -398,11 +404,11 @@
       "signature": "def set_config(key: str, value) -> dict",
       "docstring": "Set nested config value and return updated config.",
       "calls": [
+        "atomic_write_json",
+        "atomic_write_json",
         "get_default_config",
-        "get_flow_dir",
-        "atomic_write_json",
-        "atomic_write_json",
-        "get_default_config"
+        "get_default_config",
+        "get_flow_dir"
       ],
       "called_by": ["cmd_config_set", "cmd_config_set"],
       "cfg_summary": "complexity:8, blocks:20",
@@ -420,13 +426,7 @@
       "signature": "def json_output(data: dict, success: bool) -> None",
       "docstring": "Output JSON response.",
       "calls": [],
-      "called_by": [
-        "cmd_config_get",
-        "cmd_epic_close",
-        "_task_set_section",
-        "cmd_epic_create",
-        "cmd_codex_check"
-      ],
+      "called_by": ["cmd_epics", "cmd_ralph_pause", "cmd_task_create", "cmd_dep_add", "cmd_init"],
       "cfg_summary": "complexity:1, blocks:1",
       "dfg_summary": "vars:6, def-use chains:0",
       "dependencies": "argparse, json, os, re, secrets",
@@ -443,11 +443,11 @@
       "docstring": "Output error and exit.",
       "calls": ["json_output", "json_output"],
       "called_by": [
+        "cmd_task_show_backend",
+        "cmd_checkpoint_save",
         "cmd_validate",
-        "parse_builder_tab",
-        "read_text_or_exit",
-        "cmd_rp_setup_review",
-        "cmd_migrate_state"
+        "read_file_or_stdin",
+        "require_memory_enabled"
       ],
       "cfg_summary": "complexity:2, blocks:4",
       "dfg_summary": "vars:6, def-use chains:3",
@@ -465,10 +465,10 @@
       "docstring": "Current timestamp in ISO format.",
       "calls": [],
       "called_by": [
-        "cmd_task_create",
-        "save_task_runtime",
-        "cmd_epic_rm_dep",
+        "cmd_epic_set_backend",
+        "cmd_task_set_spec",
         "cmd_epic_set_branch",
+        "cmd_epic_create",
         "cmd_epic_rm_dep"
       ],
       "cfg_summary": "complexity:1, blocks:2",
@@ -501,13 +501,13 @@
       "unit_type": "function",
       "signature": "def run_rp_cli(args: list[str], timeout: Optional[int]) -> subprocess.CompletedProcess",
       "docstring": "Run rp-cli with safe error handling and timeout.\n\nArgs:\n    args: Command arguments to pass to rp-cli\n    timeout: Max seconds to wait. Default from FLOW_RP_TIMEOUT env or 1200s (20min).",
-      "calls": ["error_exit", "error_exit", "require_rp_cli", "require_rp_cli"],
+      "calls": ["require_rp_cli", "error_exit", "error_exit", "require_rp_cli"],
       "called_by": [
-        "cmd_rp_select_add",
+        "cmd_rp_windows",
         "cmd_rp_prompt_export",
-        "cmd_rp_prompt_get",
-        "cmd_rp_select_get",
-        "cmd_rp_ensure_workspace"
+        "cmd_rp_prompt_set",
+        "cmd_rp_ensure_workspace",
+        "cmd_rp_prompt_get"
       ],
       "cfg_summary": "complexity:2, blocks:4",
       "dfg_summary": "vars:12, def-use chains:3",
@@ -546,11 +546,11 @@
       "docstring": "Parse rp-cli windows JSON.",
       "calls": ["error_exit", "error_exit"],
       "called_by": [
+        "cmd_rp_pick_window",
         "cmd_rp_windows",
-        "cmd_rp_pick_window",
-        "cmd_rp_pick_window",
         "cmd_rp_setup_review",
-        "cmd_rp_setup_review"
+        "cmd_rp_windows",
+        "cmd_rp_pick_window"
       ],
       "cfg_summary": "complexity:3, blocks:7",
       "dfg_summary": "vars:8, def-use chains:4",
@@ -568,10 +568,10 @@
       "docstring": "",
       "calls": [],
       "called_by": [
-        "cmd_rp_pick_window",
+        "cmd_rp_setup_review",
         "cmd_rp_pick_window",
         "cmd_rp_setup_review",
-        "cmd_rp_setup_review"
+        "cmd_rp_pick_window"
       ],
       "cfg_summary": "complexity:3, blocks:8",
       "dfg_summary": "vars:3, def-use chains:2",
@@ -590,8 +590,8 @@
       "calls": [],
       "called_by": [
         "cmd_rp_pick_window",
-        "cmd_rp_setup_review",
         "cmd_rp_pick_window",
+        "cmd_rp_setup_review",
         "cmd_rp_setup_review"
       ],
       "cfg_summary": "complexity:5, blocks:13",
@@ -610,8 +610,8 @@
       "docstring": "",
       "calls": ["error_exit", "error_exit"],
       "called_by": [
-        "cmd_rp_builder",
         "cmd_rp_setup_review",
+        "cmd_rp_builder",
         "cmd_rp_setup_review",
         "cmd_rp_builder"
       ],
@@ -646,7 +646,7 @@
       "signature": "def build_chat_payload(message: str, mode: str, new_chat: bool, chat_name: Optional[str], chat_id: Optional[str], selected_paths: Optional[list[str]]) -> str",
       "docstring": "",
       "calls": [],
-      "called_by": ["cmd_prep_chat", "cmd_rp_chat_send", "cmd_rp_chat_send", "cmd_prep_chat"],
+      "called_by": ["cmd_rp_chat_send", "cmd_prep_chat", "cmd_prep_chat", "cmd_rp_chat_send"],
       "cfg_summary": "complexity:5, blocks:10",
       "dfg_summary": "vars:8, def-use chains:10",
       "dependencies": "argparse, json, os, re, secrets",
@@ -662,7 +662,7 @@
       "signature": "def is_supported_schema(version: Any) -> bool",
       "docstring": "Check schema version compatibility.",
       "calls": [],
-      "called_by": ["cmd_detect", "cmd_detect", "validate_flow_root", "validate_flow_root"],
+      "called_by": ["validate_flow_root", "cmd_detect", "cmd_detect", "validate_flow_root"],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:3, def-use chains:1",
       "dependencies": "argparse, json, os, re, secrets",
@@ -679,11 +679,11 @@
       "docstring": "Write file atomically via temp + rename.",
       "calls": [],
       "called_by": [
-        "_task_set_section",
-        "cmd_task_create",
-        "cmd_block",
-        "cmd_task_set_spec",
-        "cmd_task_create"
+        "cmd_checkpoint_restore",
+        "clear_task_evidence",
+        "cmd_done",
+        "cmd_epic_set_plan",
+        "cmd_memory_init"
       ],
       "cfg_summary": "complexity:1, blocks:1",
       "dfg_summary": "vars:7, def-use chains:0",
@@ -701,11 +701,11 @@
       "docstring": "Write JSON file atomically with sorted keys.",
       "calls": ["atomic_write", "atomic_write"],
       "called_by": [
-        "cmd_task_set_spec",
+        "set_config",
+        "cmd_task_create",
         "cmd_init",
-        "save_task_definition",
-        "cmd_epic_set_backend",
-        "cmd_epic_close"
+        "set_config",
+        "cmd_task_set_backend"
       ],
       "cfg_summary": "complexity:1, blocks:1",
       "dfg_summary": "vars:5, def-use chains:0",
@@ -724,10 +724,10 @@
       "calls": [],
       "called_by": [
         "cmd_migrate_state",
-        "cmd_task_reset",
-        "cmd_migrate_state",
+        "find_dependents",
         "cmd_status",
-        "cmd_task_reset"
+        "cmd_checkpoint_save",
+        "cmd_checkpoint_save"
       ],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:4, def-use chains:2",
@@ -745,11 +745,11 @@
       "docstring": "Load JSON file with safe error handling.",
       "calls": ["error_exit", "error_exit"],
       "called_by": [
-        "cmd_task_reset",
-        "cmd_epic_add_dep",
-        "cmd_checkpoint_restore",
-        "cmd_epic_close",
-        "cmd_epic_create"
+        "cmd_task_set_backend",
+        "cmd_dep_add",
+        "cmd_task_set_spec",
+        "validate_epic",
+        "cmd_next"
       ],
       "cfg_summary": "complexity:2, blocks:4",
       "dfg_summary": "vars:8, def-use chains:6",
@@ -767,11 +767,11 @@
       "docstring": "Read text file with safe error handling.",
       "calls": ["error_exit", "error_exit"],
       "called_by": [
-        "cmd_prep_chat",
+        "read_file_or_stdin",
+        "cmd_rp_prompt_set",
         "cmd_task_set_spec",
-        "cmd_prep_chat",
-        "cmd_done",
-        "read_file_or_stdin"
+        "cmd_task_set_spec",
+        "cmd_prep_chat"
       ],
       "cfg_summary": "complexity:2, blocks:4",
       "dfg_summary": "vars:5, def-use chains:5",
@@ -787,13 +787,13 @@
       "unit_type": "function",
       "signature": "def read_file_or_stdin(file_arg: str, what: str, use_json: bool) -> str",
       "docstring": "Read from file path or stdin if file_arg is '-'.\n\nSupports heredoc usage: flowctl ... --file - <<'EOF'",
-      "calls": ["read_text_or_exit", "error_exit", "read_text_or_exit", "error_exit"],
+      "calls": ["read_text_or_exit", "error_exit", "error_exit", "read_text_or_exit"],
       "called_by": [
+        "cmd_epic_set_plan",
         "cmd_task_set_spec",
-        "cmd_epic_set_plan",
-        "cmd_epic_set_plan",
+        "cmd_task_set_spec",
         "_task_set_section",
-        "cmd_task_set_spec"
+        "_task_set_section"
       ],
       "cfg_summary": "complexity:2, blocks:5",
       "dfg_summary": "vars:8, def-use chains:6",
@@ -826,7 +826,7 @@
       "signature": "def parse_id(id_str: str) -> tuple[Optional[int], Optional[int]]",
       "docstring": "Parse ID into (epic_num, task_num). Returns (epic, None) for epic IDs.\n\nSupports both legacy (fn-N) and new (fn-N-xxx) formats with optional suffix.",
       "calls": [],
-      "called_by": ["epic_sort_key", "sort_key", "task_sort_key", "is_task_id", "cmd_tasks"],
+      "called_by": ["is_task_id", "sort_key", "cmd_epics", "cmd_ready", "is_epic_id"],
       "cfg_summary": "complexity:2, blocks:5",
       "dfg_summary": "vars:6, def-use chains:7",
       "dependencies": "argparse, json, os, re, secrets",
@@ -843,11 +843,11 @@
       "docstring": "Apply defaults for optional epic fields.",
       "calls": [],
       "called_by": [
-        "cmd_epic_set_backend",
-        "cmd_list",
         "cmd_task_show_backend",
-        "cmd_next",
-        "cmd_epic_set_plan_review_status"
+        "cmd_epics",
+        "cmd_epic_set_backend",
+        "validate_epic",
+        "cmd_next"
       ],
       "cfg_summary": "complexity:8, blocks:16",
       "dfg_summary": "vars:1, def-use chains:8",
@@ -865,11 +865,11 @@
       "docstring": "Apply defaults for optional task fields and migrate legacy keys.",
       "calls": [],
       "called_by": [
-        "load_task_with_state",
-        "load_task_with_state",
         "cmd_start",
         "cmd_task_show_backend",
-        "cmd_start"
+        "cmd_start",
+        "cmd_task_show_backend",
+        "load_task_with_state"
       ],
       "cfg_summary": "complexity:6, blocks:12",
       "dfg_summary": "vars:1, def-use chains:7",
@@ -886,7 +886,7 @@
       "signature": "def task_priority(task_data: dict) -> int",
       "docstring": "Priority for sorting (None -> 999).",
       "calls": [],
-      "called_by": ["cmd_ready", "sort_key", "cmd_next", "cmd_ready", "sort_key"],
+      "called_by": ["sort_key", "sort_key", "cmd_ready", "cmd_next", "cmd_next"],
       "cfg_summary": "complexity:2, blocks:5",
       "dfg_summary": "vars:2, def-use chains:2",
       "dependencies": "argparse, json, os, re, secrets",
@@ -903,11 +903,11 @@
       "docstring": "Check if ID is an epic ID (fn-N).",
       "calls": ["parse_id", "parse_id"],
       "called_by": [
-        "cmd_ready",
-        "cmd_codex_plan_review",
-        "cmd_epic_set_plan_review_status",
-        "cmd_epic_add_dep",
-        "cmd_epic_close"
+        "cmd_epic_close",
+        "cmd_show",
+        "cmd_next",
+        "cmd_task_create",
+        "cmd_codex_plan_review"
       ],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:4, def-use chains:3",
@@ -924,13 +924,7 @@
       "signature": "def is_task_id(id_str: str) -> bool",
       "docstring": "Check if ID is a task ID (fn-N.M).",
       "calls": ["parse_id", "parse_id"],
-      "called_by": [
-        "cmd_epic_close",
-        "cmd_tasks",
-        "cmd_checkpoint_save",
-        "cmd_block",
-        "cmd_state_path"
-      ],
+      "called_by": ["_task_set_section", "cmd_list", "cmd_block", "cmd_epics", "cmd_migrate_state"],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:4, def-use chains:3",
       "dependencies": "argparse, json, os, re, secrets",
@@ -947,10 +941,10 @@
       "docstring": "Extract epic ID from task ID. Raises ValueError if invalid.\n\nPreserves suffix: fn-5-x7k.3 -> fn-5-x7k",
       "calls": ["parse_id", "parse_id"],
       "called_by": [
+        "cmd_task_create",
         "cmd_dep_add",
         "cmd_task_reset",
         "cmd_task_reset",
-        "find_dependents",
         "cmd_dep_add"
       ],
       "cfg_summary": "complexity:2, blocks:4",
@@ -992,8 +986,8 @@
       "called_by": [
         "cmd_codex_impl_review",
         "cmd_codex_plan_review",
-        "cmd_codex_impl_review",
-        "cmd_codex_plan_review"
+        "cmd_codex_plan_review",
+        "cmd_codex_impl_review"
       ],
       "cfg_summary": "complexity:21, blocks:51",
       "dfg_summary": "vars:45, def-use chains:88",
@@ -1042,16 +1036,16 @@
       "signature": "def gather_context_hints(base_branch: str, max_hints: int) -> str",
       "docstring": "Gather context hints for code review.\n\nReturns formatted hints like:\nConsider these related files:\n- src/auth.ts:15 - references validateToken\n- src/types.ts:42 - references User",
       "calls": [
-        "extract_symbols_from_file",
+        "find_references",
+        "find_references",
         "get_repo_root",
-        "get_repo_root",
         "extract_symbols_from_file",
-        "find_references"
+        "get_changed_files"
       ],
       "called_by": [
+        "cmd_codex_plan_review",
+        "cmd_codex_plan_review",
         "cmd_codex_impl_review",
-        "cmd_codex_plan_review",
-        "cmd_codex_plan_review",
         "cmd_codex_impl_review"
       ],
       "cfg_summary": "complexity:11, blocks:30",
@@ -1102,8 +1096,8 @@
       "docstring": "Resolve sandbox mode, handling 'auto' based on platform.\n\nPriority: CLI --sandbox (if not 'auto') > CODEX_SANDBOX env var > platform default.\n'auto' resolves to 'danger-full-access' on Windows (where sandbox blocks reads),\nand 'read-only' on Unix.\n\nReturns the resolved sandbox value (never returns 'auto').\nRaises ValueError if invalid mode specified.",
       "calls": [],
       "called_by": [
-        "cmd_codex_plan_review",
         "cmd_codex_impl_review",
+        "cmd_codex_plan_review",
         "cmd_codex_plan_review",
         "cmd_codex_impl_review"
       ],
@@ -1121,10 +1115,10 @@
       "unit_type": "function",
       "signature": "def run_codex_exec(prompt: str, session_id: Optional[str], sandbox: str, model: Optional[str]) -> tuple[str, Optional[str], int, str]",
       "docstring": "Run codex exec and return (stdout, thread_id, exit_code, stderr).\n\nIf session_id provided, tries to resume. Falls back to new session if resume fails.\nModel: FLOW_CODEX_MODEL env > parameter > default (gpt-5.2 + high reasoning).\n\nNote: Prompt is passed via stdin (using '-') to avoid Windows command-line\nlength limits (~8191 chars) and special character escaping issues. (GH-35)\n\nReturns:\n    tuple: (stdout, thread_id, exit_code, stderr)\n    - exit_code is 0 for success, non-zero for failure\n    - stderr contains error output from the process",
-      "calls": ["require_codex", "require_codex", "parse_codex_thread_id", "parse_codex_thread_id"],
+      "calls": ["parse_codex_thread_id", "parse_codex_thread_id", "require_codex", "require_codex"],
       "called_by": [
-        "cmd_codex_plan_review",
         "cmd_codex_impl_review",
+        "cmd_codex_plan_review",
         "cmd_codex_plan_review",
         "cmd_codex_impl_review"
       ],
@@ -1162,8 +1156,8 @@
       "called_by": [
         "cmd_codex_impl_review",
         "cmd_codex_plan_review",
-        "cmd_codex_impl_review",
-        "cmd_codex_plan_review"
+        "cmd_codex_plan_review",
+        "cmd_codex_impl_review"
       ],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:3, def-use chains:3",
@@ -1181,10 +1175,10 @@
       "docstring": "Detect if codex failure is due to sandbox restrictions.\n\nReturns True if the failure appears to be caused by sandbox policy blocking\noperations rather than actual code issues. Checks:\n1. exit_code != 0 (must be a failure)\n2. Error patterns in stderr or JSON item failures in stdout\n\nOnly matches error patterns in actual error contexts (stderr, failed items),\nnot in regular output that might mention these phrases.",
       "calls": [],
       "called_by": [
+        "cmd_codex_plan_review",
         "cmd_codex_impl_review",
-        "cmd_codex_plan_review",
-        "cmd_codex_plan_review",
-        "cmd_codex_impl_review"
+        "cmd_codex_impl_review",
+        "cmd_codex_plan_review"
       ],
       "cfg_summary": "complexity:11, blocks:29",
       "dfg_summary": "vars:13, def-use chains:13",
@@ -1204,8 +1198,8 @@
       "called_by": [
         "cmd_codex_impl_review",
         "cmd_codex_plan_review",
-        "cmd_codex_impl_review",
-        "cmd_codex_plan_review"
+        "cmd_codex_plan_review",
+        "cmd_codex_impl_review"
       ],
       "cfg_summary": "complexity:8, blocks:18",
       "dfg_summary": "vars:11, def-use chains:27",
@@ -1223,8 +1217,8 @@
       "docstring": "Build preamble for re-reviews.\n\nWhen resuming a Codex session, file contents may be cached from the original review.\nThis preamble explicitly instructs Codex how to access updated content.\n\nfiles_embedded: True if files are embedded (Windows), False if Codex can read from disk (Unix)",
       "calls": [],
       "called_by": [
-        "cmd_codex_impl_review",
         "cmd_codex_plan_review",
+        "cmd_codex_impl_review",
         "cmd_codex_impl_review",
         "cmd_codex_plan_review"
       ],
@@ -1243,7 +1237,7 @@
       "signature": "def get_actor() -> str",
       "docstring": "Determine current actor for soft-claim semantics.\n\nPriority:\n1. FLOW_ACTOR env var\n2. git config user.email\n3. git config user.name\n4. $USER env var\n5. \"unknown\"",
       "calls": [],
-      "called_by": ["cmd_next", "cmd_done", "cmd_start", "cmd_next", "cmd_ready"],
+      "called_by": ["cmd_ready", "cmd_done", "cmd_start", "cmd_done", "cmd_next"],
       "cfg_summary": "complexity:5, blocks:14",
       "dfg_summary": "vars:7, def-use chains:2",
       "dependencies": "argparse, json, os, re, secrets",
@@ -1340,11 +1334,11 @@
       "docstring": "Patch a specific section in task spec. Preserves other sections.\n\nRaises ValueError on invalid content (duplicate/missing headings).",
       "calls": [],
       "called_by": [
-        "cmd_done",
-        "_task_set_section",
-        "cmd_block",
         "cmd_task_set_spec",
-        "_task_set_section"
+        "cmd_task_set_spec",
+        "_task_set_section",
+        "_task_set_section",
+        "cmd_block"
       ],
       "cfg_summary": "complexity:8, blocks:19",
       "dfg_summary": "vars:16, def-use chains:22",
@@ -1392,7 +1386,7 @@
       "unit_type": "function",
       "signature": "def clear_task_evidence(task_id: str) -> None",
       "docstring": "Clear ## Evidence section contents but keep the heading with empty template.",
-      "calls": ["get_flow_dir", "atomic_write", "atomic_write", "get_flow_dir"],
+      "calls": ["atomic_write", "get_flow_dir", "get_flow_dir", "atomic_write"],
       "called_by": ["cmd_task_reset", "cmd_task_reset"],
       "cfg_summary": "complexity:3, blocks:6",
       "dfg_summary": "vars:11, def-use chains:11",
@@ -1408,7 +1402,7 @@
       "unit_type": "function",
       "signature": "def find_dependents(task_id: str, same_epic: bool) -> list[str]",
       "docstring": "Find tasks that depend on task_id (recursive). Returns list of dependent task IDs.",
-      "calls": ["epic_id_from_task", "epic_id_from_task", "load_json", "load_json", "get_flow_dir"],
+      "calls": ["load_json", "get_flow_dir", "is_task_id", "load_json", "is_task_id"],
       "called_by": ["cmd_task_reset", "cmd_task_reset"],
       "cfg_summary": "complexity:9, blocks:25",
       "dfg_summary": "vars:20, def-use chains:18",
@@ -1440,13 +1434,13 @@
       "unit_type": "function",
       "signature": "def find_active_run(run_id: Optional[str], use_json: bool) -> tuple[str, Path]",
       "docstring": "Find a single active run. Auto-detect if run_id is None.\nReturns (run_id, run_dir) tuple.",
-      "calls": ["error_exit", "error_exit", "find_active_runs", "find_active_runs"],
+      "calls": ["error_exit", "find_active_runs", "error_exit", "find_active_runs"],
       "called_by": [
+        "cmd_ralph_pause",
+        "cmd_ralph_resume",
         "cmd_ralph_status",
         "cmd_ralph_stop",
-        "cmd_ralph_resume",
-        "cmd_ralph_pause",
-        "cmd_ralph_resume"
+        "cmd_ralph_pause"
       ],
       "cfg_summary": "complexity:5, blocks:11",
       "dfg_summary": "vars:10, def-use chains:14",
@@ -1463,11 +1457,11 @@
       "signature": "def cmd_init(args: argparse.Namespace) -> None",
       "docstring": "Initialize or upgrade .flow/ directory structure (idempotent).",
       "calls": [
-        "atomic_write_json",
         "deep_merge",
+        "json_output",
+        "atomic_write_json",
         "get_default_config",
-        "get_flow_dir",
-        "json_output"
+        "get_flow_dir"
       ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:9, blocks:21",
@@ -1484,13 +1478,7 @@
       "unit_type": "function",
       "signature": "def cmd_detect(args: argparse.Namespace) -> None",
       "docstring": "Check if .flow/ exists and is valid.",
-      "calls": [
-        "is_supported_schema",
-        "load_json",
-        "load_json",
-        "is_supported_schema",
-        "json_output"
-      ],
+      "calls": ["get_flow_dir", "get_flow_dir", "load_json", "is_supported_schema", "load_json"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:11, blocks:27",
       "dfg_summary": "vars:25, def-use chains:28",
@@ -1506,7 +1494,13 @@
       "unit_type": "function",
       "signature": "def cmd_status(args: argparse.Namespace) -> None",
       "docstring": "Show .flow state and active Ralph runs.",
-      "calls": ["load_json", "find_active_runs", "get_flow_dir", "is_task_id", "json_output"],
+      "calls": [
+        "load_task_with_state",
+        "get_flow_dir",
+        "find_active_runs",
+        "load_json",
+        "load_task_with_state"
+      ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:17, blocks:41",
       "dfg_summary": "vars:31, def-use chains:48",
@@ -1538,7 +1532,7 @@
       "unit_type": "function",
       "signature": "def cmd_ralph_resume(args: argparse.Namespace) -> None",
       "docstring": "Resume a paused Ralph run.",
-      "calls": ["find_active_run", "json_output", "find_active_run", "json_output"],
+      "calls": ["find_active_run", "json_output", "json_output", "find_active_run"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:2, blocks:4",
       "dfg_summary": "vars:7, def-use chains:7",
@@ -1570,7 +1564,7 @@
       "unit_type": "function",
       "signature": "def cmd_ralph_status(args: argparse.Namespace) -> None",
       "docstring": "Show Ralph run status.",
-      "calls": ["find_active_run", "json_output", "json_output", "find_active_run"],
+      "calls": ["json_output", "find_active_run", "json_output", "find_active_run"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:10, blocks:21",
       "dfg_summary": "vars:22, def-use chains:43",
@@ -1586,7 +1580,7 @@
       "unit_type": "function",
       "signature": "def cmd_config_get(args: argparse.Namespace) -> None",
       "docstring": "Get a config value.",
-      "calls": ["json_output", "get_config", "ensure_flow_exists", "get_config", "error_exit"],
+      "calls": ["get_config", "error_exit", "json_output", "get_config", "json_output"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:5, blocks:12",
       "dfg_summary": "vars:9, def-use chains:12",
@@ -1602,7 +1596,7 @@
       "unit_type": "function",
       "signature": "def cmd_config_set(args: argparse.Namespace) -> None",
       "docstring": "Set a config value.",
-      "calls": ["json_output", "ensure_flow_exists", "get_config", "set_config", "error_exit"],
+      "calls": ["get_config", "json_output", "get_config", "json_output", "set_config"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:3, blocks:6",
       "dfg_summary": "vars:8, def-use chains:10",
@@ -1618,13 +1612,7 @@
       "unit_type": "function",
       "signature": "def cmd_review_backend(args: argparse.Namespace) -> None",
       "docstring": "Get review backend for skill conditionals. Returns ASK if not configured.",
-      "calls": [
-        "ensure_flow_exists",
-        "get_config",
-        "json_output",
-        "ensure_flow_exists",
-        "get_config"
-      ],
+      "calls": ["ensure_flow_exists", "get_config", "json_output", "get_config", "json_output"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:5, blocks:13",
       "dfg_summary": "vars:10, def-use chains:17",
@@ -1640,7 +1628,7 @@
       "unit_type": "function",
       "signature": "def cmd_memory_init(args: argparse.Namespace) -> None",
       "docstring": "Initialize memory directory with templates.",
-      "calls": ["ensure_flow_exists", "get_config", "get_flow_dir", "atomic_write", "json_output"],
+      "calls": ["ensure_flow_exists", "get_flow_dir", "atomic_write", "error_exit", "get_config"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:9, blocks:22",
       "dfg_summary": "vars:19, def-use chains:9",
@@ -1656,19 +1644,13 @@
       "unit_type": "function",
       "signature": "def require_memory_enabled(args) -> Path",
       "docstring": "Check memory is enabled and return memory dir. Exits on error.",
-      "calls": [
-        "ensure_flow_exists",
-        "get_config",
-        "error_exit",
-        "ensure_flow_exists",
-        "get_flow_dir"
-      ],
+      "calls": ["get_config", "error_exit", "json_output", "get_config", "json_output"],
       "called_by": [
+        "cmd_memory_add",
         "cmd_memory_search",
         "cmd_memory_list",
         "cmd_memory_read",
-        "cmd_memory_read",
-        "cmd_memory_list"
+        "cmd_memory_read"
       ],
       "cfg_summary": "complexity:6, blocks:14",
       "dfg_summary": "vars:13, def-use chains:7",
@@ -1684,7 +1666,13 @@
       "unit_type": "function",
       "signature": "def cmd_memory_add(args: argparse.Namespace) -> None",
       "docstring": "Add a memory entry manually.",
-      "calls": ["json_output", "error_exit", "require_memory_enabled", "json_output", "error_exit"],
+      "calls": [
+        "require_memory_enabled",
+        "error_exit",
+        "error_exit",
+        "json_output",
+        "require_memory_enabled"
+      ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:4, blocks:8",
       "dfg_summary": "vars:14, def-use chains:24",
@@ -1700,13 +1688,7 @@
       "unit_type": "function",
       "signature": "def cmd_memory_read(args: argparse.Namespace) -> None",
       "docstring": "Read memory entries.",
-      "calls": [
-        "require_memory_enabled",
-        "require_memory_enabled",
-        "error_exit",
-        "error_exit",
-        "json_output"
-      ],
+      "calls": ["error_exit", "error_exit", "json_output", "require_memory_enabled", "json_output"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:8, blocks:20",
       "dfg_summary": "vars:12, def-use chains:16",
@@ -1722,7 +1704,7 @@
       "unit_type": "function",
       "signature": "def cmd_memory_list(args: argparse.Namespace) -> None",
       "docstring": "List memory entry counts.",
-      "calls": ["require_memory_enabled", "require_memory_enabled", "json_output", "json_output"],
+      "calls": ["json_output", "require_memory_enabled", "json_output", "require_memory_enabled"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:5, blocks:13",
       "dfg_summary": "vars:15, def-use chains:12",
@@ -1738,13 +1720,7 @@
       "unit_type": "function",
       "signature": "def cmd_memory_search(args: argparse.Namespace) -> None",
       "docstring": "Search memory entries.",
-      "calls": [
-        "require_memory_enabled",
-        "error_exit",
-        "json_output",
-        "error_exit",
-        "require_memory_enabled"
-      ],
+      "calls": ["json_output", "require_memory_enabled", "error_exit", "error_exit", "json_output"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:9, blocks:24",
       "dfg_summary": "vars:17, def-use chains:9",
@@ -1761,11 +1737,11 @@
       "signature": "def cmd_epic_create(args: argparse.Namespace) -> None",
       "docstring": "Create a new epic.",
       "calls": [
-        "json_output",
-        "load_json_or_exit",
-        "generate_epic_suffix",
+        "scan_max_epic_id",
         "now_iso",
-        "atomic_write"
+        "atomic_write",
+        "json_output",
+        "generate_epic_suffix"
       ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:4, blocks:8",
@@ -1782,7 +1758,13 @@
       "unit_type": "function",
       "signature": "def cmd_task_create(args: argparse.Namespace) -> None",
       "docstring": "Create a new task under an epic.",
-      "calls": ["now_iso", "atomic_write", "error_exit", "get_flow_dir", "atomic_write"],
+      "calls": [
+        "json_output",
+        "ensure_flow_exists",
+        "epic_id_from_task",
+        "atomic_write_json",
+        "get_flow_dir"
+      ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:10, blocks:21",
       "dfg_summary": "vars:33, def-use chains:63",
@@ -1799,11 +1781,11 @@
       "signature": "def cmd_dep_add(args: argparse.Namespace) -> None",
       "docstring": "Add a dependency to a task.",
       "calls": [
-        "ensure_flow_exists",
+        "json_output",
+        "load_json_or_exit",
         "epic_id_from_task",
-        "is_task_id",
-        "atomic_write_json",
-        "now_iso"
+        "json_output",
+        "atomic_write_json"
       ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:8, blocks:16",
@@ -1820,7 +1802,7 @@
       "unit_type": "function",
       "signature": "def cmd_show(args: argparse.Namespace) -> None",
       "docstring": "Show epic or task details.",
-      "calls": ["error_exit", "get_flow_dir", "ensure_flow_exists", "json_output", "get_flow_dir"],
+      "calls": ["task_sort_key", "is_task_id", "is_epic_id", "ensure_flow_exists", "get_flow_dir"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:11, blocks:29",
       "dfg_summary": "vars:30, def-use chains:53",
@@ -1837,7 +1819,7 @@
       "signature": "def task_sort_key(t)",
       "docstring": "",
       "calls": ["parse_id", "parse_id"],
-      "called_by": ["cmd_tasks", "cmd_tasks", "cmd_show", "cmd_show"],
+      "called_by": ["cmd_show", "cmd_tasks", "cmd_tasks", "cmd_show"],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:4, def-use chains:1",
       "dependencies": "argparse, json, os, re, secrets",
@@ -1852,7 +1834,7 @@
       "unit_type": "function",
       "signature": "def cmd_epics(args: argparse.Namespace) -> None",
       "docstring": "List all epics.",
-      "calls": ["error_exit", "error_exit", "ensure_flow_exists", "epic_sort_key", "epic_sort_key"],
+      "calls": ["json_output", "normalize_epic", "is_task_id", "parse_id", "epic_sort_key"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:11, blocks:27",
       "dfg_summary": "vars:31, def-use chains:40",
@@ -1869,7 +1851,7 @@
       "signature": "def epic_sort_key(e)",
       "docstring": "",
       "calls": ["parse_id", "parse_id"],
-      "called_by": ["cmd_list", "cmd_epics", "cmd_epics", "cmd_list"],
+      "called_by": ["cmd_list", "cmd_epics", "cmd_list", "cmd_epics"],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:4, def-use chains:3",
       "dependencies": "argparse, json, os, re, secrets",
@@ -1884,7 +1866,13 @@
       "unit_type": "function",
       "signature": "def cmd_tasks(args: argparse.Namespace) -> None",
       "docstring": "List tasks.",
-      "calls": ["ensure_flow_exists", "task_sort_key", "is_task_id", "parse_id", "task_sort_key"],
+      "calls": [
+        "ensure_flow_exists",
+        "get_flow_dir",
+        "ensure_flow_exists",
+        "get_flow_dir",
+        "error_exit"
+      ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:10, blocks:26",
       "dfg_summary": "vars:26, def-use chains:46",
@@ -1901,7 +1889,7 @@
       "signature": "def task_sort_key(t)",
       "docstring": "",
       "calls": ["parse_id", "parse_id"],
-      "called_by": ["cmd_tasks", "cmd_tasks", "cmd_show", "cmd_show"],
+      "called_by": ["cmd_show", "cmd_tasks", "cmd_tasks", "cmd_show"],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:4, def-use chains:1",
       "dependencies": "argparse, json, os, re, secrets",
@@ -1917,11 +1905,11 @@
       "signature": "def cmd_list(args: argparse.Namespace) -> None",
       "docstring": "List all epics and their tasks.",
       "calls": [
-        "ensure_flow_exists",
-        "normalize_epic",
-        "get_flow_dir",
+        "is_task_id",
+        "epic_sort_key",
         "load_json_or_exit",
-        "json_output"
+        "json_output",
+        "ensure_flow_exists"
       ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:15, blocks:39",
@@ -1939,7 +1927,7 @@
       "signature": "def epic_sort_key(e)",
       "docstring": "",
       "calls": ["parse_id", "parse_id"],
-      "called_by": ["cmd_list", "cmd_epics", "cmd_epics", "cmd_list"],
+      "called_by": ["cmd_list", "cmd_epics", "cmd_list", "cmd_epics"],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:4, def-use chains:3",
       "dependencies": "argparse, json, os, re, secrets",
@@ -1954,7 +1942,13 @@
       "unit_type": "function",
       "signature": "def cmd_cat(args: argparse.Namespace) -> None",
       "docstring": "Print markdown spec for epic or task.",
-      "calls": ["error_exit", "get_flow_dir", "is_task_id", "ensure_flow_exists", "get_flow_dir"],
+      "calls": [
+        "is_task_id",
+        "read_text_or_exit",
+        "get_flow_dir",
+        "read_text_or_exit",
+        "is_epic_id"
+      ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:4, blocks:10",
       "dfg_summary": "vars:13, def-use chains:7",
@@ -1972,10 +1966,10 @@
       "docstring": "Set/overwrite entire epic spec from file.",
       "calls": [
         "ensure_flow_exists",
-        "ensure_flow_exists",
         "get_flow_dir",
-        "get_flow_dir",
-        "atomic_write_json"
+        "atomic_write",
+        "error_exit",
+        "read_file_or_stdin"
       ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:5, blocks:10",
@@ -1992,13 +1986,7 @@
       "unit_type": "function",
       "signature": "def cmd_epic_set_plan_review_status(args: argparse.Namespace) -> None",
       "docstring": "Set plan review status for an epic.",
-      "calls": [
-        "is_epic_id",
-        "ensure_flow_exists",
-        "ensure_flow_exists",
-        "atomic_write_json",
-        "atomic_write_json"
-      ],
+      "calls": ["ensure_flow_exists", "get_flow_dir", "error_exit", "now_iso", "load_json_or_exit"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:5, blocks:10",
       "dfg_summary": "vars:15, def-use chains:23",
@@ -2014,7 +2002,13 @@
       "unit_type": "function",
       "signature": "def cmd_epic_set_branch(args: argparse.Namespace) -> None",
       "docstring": "Set epic branch name.",
-      "calls": ["now_iso", "error_exit", "now_iso", "error_exit", "get_flow_dir"],
+      "calls": [
+        "now_iso",
+        "load_json_or_exit",
+        "json_output",
+        "ensure_flow_exists",
+        "normalize_epic"
+      ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:5, blocks:10",
       "dfg_summary": "vars:15, def-use chains:22",
@@ -2030,13 +2024,7 @@
       "unit_type": "function",
       "signature": "def cmd_epic_add_dep(args: argparse.Namespace) -> None",
       "docstring": "Add epic-level dependency.",
-      "calls": [
-        "ensure_flow_exists",
-        "load_json_or_exit",
-        "is_epic_id",
-        "atomic_write_json",
-        "load_json_or_exit"
-      ],
+      "calls": ["get_flow_dir", "get_flow_dir", "error_exit", "is_epic_id", "ensure_flow_exists"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:10, blocks:22",
       "dfg_summary": "vars:18, def-use chains:46",
@@ -2052,7 +2040,7 @@
       "unit_type": "function",
       "signature": "def cmd_epic_rm_dep(args: argparse.Namespace) -> None",
       "docstring": "Remove epic-level dependency.",
-      "calls": ["now_iso", "error_exit", "now_iso", "error_exit", "get_flow_dir"],
+      "calls": ["now_iso", "json_output", "load_json_or_exit", "atomic_write_json", "is_epic_id"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:7, blocks:16",
       "dfg_summary": "vars:17, def-use chains:35",
@@ -2068,13 +2056,7 @@
       "unit_type": "function",
       "signature": "def cmd_epic_set_backend(args: argparse.Namespace) -> None",
       "docstring": "Set epic default backend specs for impl/review/sync.",
-      "calls": [
-        "normalize_epic",
-        "get_flow_dir",
-        "atomic_write_json",
-        "json_output",
-        "ensure_flow_exists"
-      ],
+      "calls": ["now_iso", "json_output", "normalize_epic", "atomic_write_json", "is_epic_id"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:9, blocks:18",
       "dfg_summary": "vars:16, def-use chains:42",
@@ -2091,11 +2073,11 @@
       "signature": "def cmd_task_set_backend(args: argparse.Namespace) -> None",
       "docstring": "Set task backend specs for impl/review/sync.",
       "calls": [
-        "ensure_flow_exists",
+        "load_json_or_exit",
+        "json_output",
         "atomic_write_json",
-        "get_flow_dir",
-        "is_task_id",
-        "load_json_or_exit"
+        "json_output",
+        "atomic_write_json"
       ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:9, blocks:18",
@@ -2112,7 +2094,7 @@
       "unit_type": "function",
       "signature": "def cmd_task_show_backend(args: argparse.Namespace) -> None",
       "docstring": "Show effective backend specs for a task (task + epic levels only).",
-      "calls": ["resolve_spec", "get_flow_dir", "normalize_epic", "json_output", "error_exit"],
+      "calls": ["error_exit", "normalize_epic", "normalize_task", "resolve_spec", "fmt"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:7, blocks:14",
       "dfg_summary": "vars:33, def-use chains:50",
@@ -2193,11 +2175,11 @@
       "signature": "def cmd_task_set_spec(args: argparse.Namespace) -> None",
       "docstring": "Set task spec - full replacement (--file) or section patches.\n\nFull replacement mode: --file replaces entire spec content (like epic set-plan).\nSection patch mode: --description and/or --acceptance update specific sections.",
       "calls": [
-        "read_text_or_exit",
-        "atomic_write_json",
-        "read_file_or_stdin",
-        "get_flow_dir",
-        "atomic_write"
+        "patch_task_section",
+        "now_iso",
+        "patch_task_section",
+        "load_json_or_exit",
+        "read_text_or_exit"
       ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:10, blocks:22",
@@ -2214,13 +2196,7 @@
       "unit_type": "function",
       "signature": "def cmd_task_reset(args: argparse.Namespace) -> None",
       "docstring": "Reset task status to todo.",
-      "calls": [
-        "load_json_or_exit",
-        "epic_id_from_task",
-        "epic_id_from_task",
-        "find_dependents",
-        "find_dependents"
-      ],
+      "calls": ["ensure_flow_exists", "get_flow_dir", "epic_id_from_task", "now_iso", "error_exit"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:14, blocks:33",
       "dfg_summary": "vars:34, def-use chains:67",
@@ -2236,12 +2212,12 @@
       "unit_type": "function",
       "signature": "def _task_set_section(task_id: str, section: str, file_path: str, use_json: bool) -> None",
       "docstring": "Helper to set a task spec section.",
-      "calls": ["atomic_write", "json_output", "patch_task_section", "get_flow_dir", "is_task_id"],
+      "calls": ["is_task_id", "patch_task_section", "now_iso", "patch_task_section", "now_iso"],
       "called_by": [
-        "cmd_task_set_description",
+        "cmd_task_set_acceptance",
         "cmd_task_set_description",
         "cmd_task_set_acceptance",
-        "cmd_task_set_acceptance"
+        "cmd_task_set_description"
       ],
       "cfg_summary": "complexity:5, blocks:10",
       "dfg_summary": "vars:27, def-use chains:35",
@@ -2257,7 +2233,7 @@
       "unit_type": "function",
       "signature": "def cmd_ready(args: argparse.Namespace) -> None",
       "docstring": "List ready tasks for an epic.",
-      "calls": ["is_epic_id", "task_priority", "sort_key", "error_exit", "get_actor"],
+      "calls": ["sort_key", "get_actor", "parse_id", "json_output", "task_priority"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:23, blocks:60",
       "dfg_summary": "vars:37, def-use chains:62",
@@ -2273,7 +2249,7 @@
       "unit_type": "function",
       "signature": "def sort_key(t: dict) -> tuple[int, int]",
       "docstring": "",
-      "calls": ["parse_id", "task_priority", "task_priority", "parse_id"],
+      "calls": ["task_priority", "parse_id", "task_priority", "parse_id"],
       "called_by": ["cmd_next", "cmd_ready", "cmd_ready", "cmd_next"],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:5, def-use chains:1",
@@ -2289,7 +2265,13 @@
       "unit_type": "function",
       "signature": "def cmd_next(args: argparse.Namespace) -> None",
       "docstring": "Select the next plan/work unit.",
-      "calls": ["sort_key", "get_actor", "ensure_flow_exists", "error_exit", "is_task_id"],
+      "calls": [
+        "sort_key",
+        "load_task_with_state",
+        "load_json_or_exit",
+        "is_epic_id",
+        "json_output"
+      ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:38, blocks:102",
       "dfg_summary": "vars:55, def-use chains:87",
@@ -2305,7 +2287,7 @@
       "unit_type": "function",
       "signature": "def sort_key(t: dict) -> tuple[int, int]",
       "docstring": "",
-      "calls": ["parse_id", "task_priority", "task_priority", "parse_id"],
+      "calls": ["task_priority", "parse_id", "task_priority", "parse_id"],
       "called_by": ["cmd_next", "cmd_ready", "cmd_ready", "cmd_next"],
       "cfg_summary": "complexity:1, blocks:2",
       "dfg_summary": "vars:5, def-use chains:1",
@@ -2322,11 +2304,11 @@
       "signature": "def cmd_start(args: argparse.Namespace) -> None",
       "docstring": "Start a task (set status to in_progress).",
       "calls": [
-        "load_task_definition",
-        "json_output",
-        "load_task_with_state",
+        "normalize_task",
+        "get_state_store",
+        "is_task_id",
         "get_actor",
-        "now_iso"
+        "ensure_flow_exists"
       ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:18, blocks:38",
@@ -2343,13 +2325,7 @@
       "unit_type": "function",
       "signature": "def cmd_done(args: argparse.Namespace) -> None",
       "docstring": "Complete a task with summary and evidence.",
-      "calls": [
-        "patch_task_section",
-        "get_actor",
-        "ensure_flow_exists",
-        "read_text_or_exit",
-        "get_flow_dir"
-      ],
+      "calls": ["to_list", "atomic_write", "save_task_runtime", "is_task_id", "get_actor"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:12, blocks:29",
       "dfg_summary": "vars:40, def-use chains:85",
@@ -2381,7 +2357,13 @@
       "unit_type": "function",
       "signature": "def cmd_block(args: argparse.Namespace) -> None",
       "docstring": "Block a task with a reason.",
-      "calls": ["ensure_flow_exists", "atomic_write", "json_output", "get_flow_dir", "is_task_id"],
+      "calls": [
+        "save_task_runtime",
+        "is_task_id",
+        "ensure_flow_exists",
+        "patch_task_section",
+        "get_flow_dir"
+      ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:7, blocks:15",
       "dfg_summary": "vars:25, def-use chains:36",
@@ -2397,7 +2379,7 @@
       "unit_type": "function",
       "signature": "def cmd_state_path(args: argparse.Namespace) -> None",
       "docstring": "Show resolved state directory path.",
-      "calls": ["is_task_id", "get_state_dir", "json_output", "error_exit", "get_state_dir"],
+      "calls": ["error_exit", "json_output", "get_state_dir", "get_state_dir", "is_task_id"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:5, blocks:12",
       "dfg_summary": "vars:9, def-use chains:13",
@@ -2413,7 +2395,7 @@
       "unit_type": "function",
       "signature": "def cmd_migrate_state(args: argparse.Namespace) -> None",
       "docstring": "Migrate runtime state from definition files to state-dir.",
-      "calls": ["error_exit", "load_json", "get_state_store", "error_exit", "load_json"],
+      "calls": ["load_json", "is_task_id", "atomic_write_json", "get_state_store", "json_output"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:13, blocks:33",
       "dfg_summary": "vars:26, def-use chains:48",
@@ -2429,13 +2411,7 @@
       "unit_type": "function",
       "signature": "def cmd_epic_close(args: argparse.Namespace) -> None",
       "docstring": "Close an epic (all tasks must be done).",
-      "calls": [
-        "json_output",
-        "is_task_id",
-        "load_task_with_state",
-        "load_json_or_exit",
-        "atomic_write_json"
-      ],
+      "calls": ["is_epic_id", "ensure_flow_exists", "get_flow_dir", "error_exit", "is_task_id"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:10, blocks:22",
       "dfg_summary": "vars:22, def-use chains:31",
@@ -2451,7 +2427,7 @@
       "unit_type": "function",
       "signature": "def validate_flow_root(flow_dir: Path) -> list[str]",
       "docstring": "Validate .flow/ root invariants. Returns list of errors.",
-      "calls": ["load_json", "is_supported_schema", "load_json", "is_supported_schema"],
+      "calls": ["is_supported_schema", "load_json", "load_json", "is_supported_schema"],
       "called_by": ["cmd_validate", "cmd_validate"],
       "cfg_summary": "complexity:5, blocks:12",
       "dfg_summary": "vars:16, def-use chains:14",
@@ -2468,11 +2444,11 @@
       "signature": "def validate_epic(flow_dir: Path, epic_id: str, use_json: bool) -> tuple[list[str], list[str], int]",
       "docstring": "Validate a single epic. Returns (errors, warnings, task_count).",
       "calls": [
-        "load_task_with_state",
-        "is_task_id",
-        "is_task_id",
-        "load_task_with_state",
-        "validate_task_spec_headings"
+        "has_cycle",
+        "load_json_or_exit",
+        "validate_task_spec_headings",
+        "load_json_or_exit",
+        "normalize_epic"
       ],
       "called_by": ["cmd_validate", "cmd_validate"],
       "cfg_summary": "complexity:26, blocks:67",
@@ -2490,7 +2466,7 @@
       "signature": "def has_cycle(task_id: str, visited: set, rec_stack: set) -> list[str]",
       "docstring": "",
       "calls": ["has_cycle", "has_cycle"],
-      "called_by": ["has_cycle", "validate_epic", "has_cycle", "validate_epic"],
+      "called_by": ["validate_epic", "has_cycle", "validate_epic", "has_cycle"],
       "cfg_summary": "complexity:5, blocks:14",
       "dfg_summary": "vars:7, def-use chains:15",
       "dependencies": "argparse, json, os, re, secrets",
@@ -2544,8 +2520,8 @@
       "signature": "def cmd_rp_pick_window(args: argparse.Namespace) -> None",
       "docstring": "",
       "calls": [
-        "extract_root_paths",
-        "extract_window_id",
+        "normalize_repo_root",
+        "parse_windows",
         "extract_window_id",
         "normalize_repo_root",
         "run_rp_cli"
@@ -2565,7 +2541,7 @@
       "unit_type": "function",
       "signature": "def cmd_rp_ensure_workspace(args: argparse.Namespace) -> None",
       "docstring": "",
-      "calls": ["run_rp_cli", "error_exit", "run_rp_cli", "extract_names", "error_exit"],
+      "calls": ["run_rp_cli", "error_exit", "error_exit", "run_rp_cli", "extract_names"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:2, blocks:3",
       "dfg_summary": "vars:24, def-use chains:31",
@@ -2597,7 +2573,7 @@
       "unit_type": "function",
       "signature": "def cmd_rp_builder(args: argparse.Namespace) -> None",
       "docstring": "",
-      "calls": ["parse_builder_tab", "run_rp_cli", "parse_builder_tab", "run_rp_cli"],
+      "calls": ["parse_builder_tab", "run_rp_cli", "run_rp_cli", "parse_builder_tab"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:6, blocks:14",
       "dfg_summary": "vars:19, def-use chains:39",
@@ -2629,7 +2605,7 @@
       "unit_type": "function",
       "signature": "def cmd_rp_prompt_set(args: argparse.Namespace) -> None",
       "docstring": "",
-      "calls": ["run_rp_cli", "read_text_or_exit", "run_rp_cli", "read_text_or_exit"],
+      "calls": ["read_text_or_exit", "run_rp_cli", "run_rp_cli", "read_text_or_exit"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:1, blocks:1",
       "dfg_summary": "vars:11, def-use chains:0",
@@ -2661,7 +2637,7 @@
       "unit_type": "function",
       "signature": "def cmd_rp_select_add(args: argparse.Namespace) -> None",
       "docstring": "",
-      "calls": ["run_rp_cli", "run_rp_cli", "error_exit", "error_exit"],
+      "calls": ["error_exit", "run_rp_cli", "error_exit", "run_rp_cli"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:2, blocks:3",
       "dfg_summary": "vars:10, def-use chains:1",
@@ -2678,11 +2654,11 @@
       "signature": "def cmd_rp_chat_send(args: argparse.Namespace) -> None",
       "docstring": "",
       "calls": [
-        "parse_chat_id",
         "build_chat_payload",
-        "read_text_or_exit",
+        "parse_chat_id",
         "run_rp_cli",
-        "read_text_or_exit"
+        "parse_chat_id",
+        "build_chat_payload"
       ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:2, blocks:4",
@@ -2716,11 +2692,11 @@
       "signature": "def cmd_rp_setup_review(args: argparse.Namespace) -> None",
       "docstring": "Atomic setup: pick-window + builder.\n\nReturns W=<window> T=<tab> on success, exits non-zero on failure.\nWith --response-type review, also returns CHAT_ID and review findings.\nWrites state file for ralph-guard to verify pick-window ran.\n\nNote: ensure-workspace removed - if user opens RP on a folder, workspace\nalready exists. pick-window matches by folder path.\n\nRequires RepoPrompt 1.6.0+ for --response-type review.",
       "calls": [
-        "error_exit",
-        "parse_builder_tab",
-        "extract_root_paths",
         "extract_window_id",
-        "parse_builder_tab"
+        "parse_builder_tab",
+        "normalize_repo_root",
+        "run_rp_cli",
+        "error_exit"
       ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:18, blocks:44",
@@ -2737,7 +2713,7 @@
       "unit_type": "function",
       "signature": "def cmd_codex_check(args: argparse.Namespace) -> None",
       "docstring": "Check if codex CLI is available and return version.",
-      "calls": ["get_codex_version", "json_output", "get_codex_version", "json_output"],
+      "calls": ["json_output", "get_codex_version", "json_output", "get_codex_version"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:3, blocks:7",
       "dfg_summary": "vars:8, def-use chains:7",
@@ -2769,13 +2745,7 @@
       "unit_type": "function",
       "signature": "def cmd_codex_impl_review(args: argparse.Namespace) -> None",
       "docstring": "Run implementation review via codex exec.",
-      "calls": [
-        "build_review_prompt",
-        "build_review_prompt",
-        "get_embedded_file_contents",
-        "get_embedded_file_contents",
-        "get_changed_files"
-      ],
+      "calls": ["resolve_codex_sandbox", "now_iso", "get_repo_root", "run_codex_exec", "now_iso"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:28, blocks:60",
       "dfg_summary": "vars:67, def-use chains:139",
@@ -2792,11 +2762,11 @@
       "signature": "def cmd_codex_plan_review(args: argparse.Namespace) -> None",
       "docstring": "Run plan review via codex exec.",
       "calls": [
-        "is_epic_id",
-        "build_review_prompt",
-        "get_embedded_file_contents",
-        "now_iso",
-        "get_embedded_file_contents"
+        "gather_context_hints",
+        "ensure_flow_exists",
+        "get_flow_dir",
+        "error_exit",
+        "build_rereview_preamble"
       ],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:26, blocks:58",
@@ -2813,7 +2783,7 @@
       "unit_type": "function",
       "signature": "def cmd_checkpoint_save(args: argparse.Namespace) -> None",
       "docstring": "Save full epic + tasks state to checkpoint file.\n\nCreates .flow/.checkpoint-fn-N.json with complete state snapshot.\nUse before plan-review or other long operations to enable recovery\nif context compaction occurs.",
-      "calls": ["ensure_flow_exists", "get_flow_dir", "get_flow_dir", "is_task_id", "json_output"],
+      "calls": ["error_exit", "ensure_flow_exists", "get_flow_dir", "error_exit", "now_iso"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:10, blocks:22",
       "dfg_summary": "vars:36, def-use chains:47",
@@ -2829,13 +2799,7 @@
       "unit_type": "function",
       "signature": "def cmd_checkpoint_restore(args: argparse.Namespace) -> None",
       "docstring": "Restore epic + tasks state from checkpoint file.\n\nReads .flow/.checkpoint-fn-N.json and overwrites current state.\nUse to recover after context compaction or to rollback changes.",
-      "calls": [
-        "load_json_or_exit",
-        "ensure_flow_exists",
-        "get_flow_dir",
-        "delete_task_runtime",
-        "atomic_write_json"
-      ],
+      "calls": ["delete_task_runtime", "atomic_write", "now_iso", "atomic_write", "json_output"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:10, blocks:22",
       "dfg_summary": "vars:33, def-use chains:49",
@@ -2851,7 +2815,7 @@
       "unit_type": "function",
       "signature": "def cmd_checkpoint_delete(args: argparse.Namespace) -> None",
       "docstring": "Delete checkpoint file for an epic.",
-      "calls": ["ensure_flow_exists", "error_exit", "is_epic_id", "get_flow_dir", "json_output"],
+      "calls": ["json_output", "json_output", "get_flow_dir", "is_epic_id", "is_epic_id"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:6, blocks:14",
       "dfg_summary": "vars:10, def-use chains:17",
@@ -2867,7 +2831,7 @@
       "unit_type": "function",
       "signature": "def cmd_validate(args: argparse.Namespace) -> None",
       "docstring": "Validate epic structure or all epics.",
-      "calls": ["error_exit", "get_flow_dir", "get_flow_dir", "validate_flow_root", "json_output"],
+      "calls": ["error_exit", "json_output", "validate_flow_root", "is_epic_id", "validate_epic"],
       "called_by": ["main", "main"],
       "cfg_summary": "complexity:21, blocks:50",
       "dfg_summary": "vars:33, def-use chains:63",
@@ -2883,7 +2847,13 @@
       "unit_type": "function",
       "signature": "def main() -> None",
       "docstring": "",
-      "calls": ["cmd_status", "cmd_done", "cmd_rp_builder", "cmd_memory_list", "cmd_epic_set_plan"],
+      "calls": [
+        "cmd_rp_setup_review",
+        "cmd_epic_set_plan",
+        "cmd_migrate_state",
+        "cmd_task_set_backend",
+        "cmd_ralph_resume"
+      ],
       "called_by": ["<module>", "<module>", "<module>"],
       "cfg_summary": "complexity:1, blocks:1",
       "dfg_summary": "vars:147, def-use chains:0",
