@@ -1,0 +1,14 @@
+{
+  "assignee": null,
+  "claim_note": "",
+  "claimed_at": null,
+  "created_at": "2026-01-30T11:40:02.977996Z",
+  "depends_on": ["fn-9-1f4.2"],
+  "epic": "fn-9-1f4",
+  "id": "fn-9-1f4.3",
+  "priority": null,
+  "spec_path": ".flow/tasks/fn-9-1f4.3.md",
+  "status": "todo",
+  "title": "Add QueryErrorResetBoundary for data-fetching retry",
+  "updated_at": "2026-01-30T11:40:17.433190Z"
+}

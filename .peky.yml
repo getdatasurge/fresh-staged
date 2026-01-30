@@ -1,0 +1,15 @@
+# peky - Project Layout Configuration
+# This file defines the peky layout for this project.
+# Teammates with peky installed will get this layout automatically.
+#
+# Variables: ${PROJECT_NAME}, ${PROJECT_PATH}, ${EDITOR}, or any env var
+# Use ${VAR:-default} for defaults
+
+session: fresh-staged
+
+layout:
+  panes:
+    - cmd: ${EDITOR:-}
+      size: 60%
+    - split: horizontal
+    - split: vertical

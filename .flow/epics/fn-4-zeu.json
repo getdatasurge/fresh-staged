@@ -1,0 +1,13 @@
+{
+  "branch_name": "fn-4-zeu",
+  "created_at": "2026-01-30T11:35:12.144044Z",
+  "depends_on_epics": ["fn-1-fy4", "fn-2-qos", "fn-3-j7y"],
+  "id": "fn-4-zeu",
+  "next_task": 1,
+  "plan_review_status": "unknown",
+  "plan_reviewed_at": null,
+  "spec_path": ".flow/specs/fn-4-zeu.md",
+  "status": "done",
+  "title": "Test Suite Health Validation",
+  "updated_at": "2026-01-30T11:48:35.692204Z"
+}

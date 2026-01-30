@@ -1,0 +1,14 @@
+{
+  "assignee": null,
+  "claim_note": "",
+  "claimed_at": null,
+  "created_at": "2026-01-30T11:36:17.963369Z",
+  "depends_on": [],
+  "epic": "fn-1-fy4",
+  "id": "fn-1-fy4.1",
+  "priority": null,
+  "spec_path": ".flow/tasks/fn-1-fy4.1.md",
+  "status": "todo",
+  "title": "Consolidate TTN webhook tests (replace broken api/ with working routes/)",
+  "updated_at": "2026-01-30T11:36:17.963382Z"
+}

@@ -1,0 +1,118 @@
+# Refactoring Discovery - Find Specific Issues
+
+## Context
+
+- **Playbook:** Refactor
+- **Agent:** ds -codex -coderefactor
+- **Project:** Z:\home\swoop\swoop-claude-projects\fresh-staged
+- **Auto Run Folder:** Z:\home\swoop\swoop-claude-projects\fresh-staged\Auto Run Docs\code-refactoring
+- **Loop:** 00001
+
+## Objective
+
+Execute ONE tactic from `Z:\home\swoop\swoop-claude-projects\fresh-staged\Auto Run Docs\code-refactoring/LOOP_00001_GAME_PLAN.md` to find specific refactoring candidates. Output findings to `Z:\home\swoop\swoop-claude-projects\fresh-staged\Auto Run Docs\code-refactoring/LOOP_00001_CANDIDATES.md`.
+
+## Instructions
+
+1. **Read `Z:\home\swoop\swoop-claude-projects\fresh-staged\Auto Run Docs\code-refactoring/LOOP_00001_GAME_PLAN.md`** to see available investigation tactics
+2. **Read `Z:\home\swoop\swoop-claude-projects\fresh-staged\Auto Run Docs\code-refactoring/LOOP_00001_CANDIDATES.md`** (if it exists) to see which tactics have already been executed
+3. **Select ONE unexecuted tactic** from the game plan
+4. **Execute the tactic**: Search the codebase using the specified patterns
+5. **Document findings** in `Z:\home\swoop\swoop-claude-projects\fresh-staged\Auto Run Docs\code-refactoring/LOOP_00001_CANDIDATES.md`
+
+## Task
+
+- [ ] **Execute one tactic (or mark exhausted)**: Read Z:\home\swoop\swoop-claude-projects\fresh-staged\Auto Run Docs\code-refactoring/LOOP_00001_GAME_PLAN.md and check for unexecuted tactics. If ALL tactics are already marked `[EXECUTED]`, append a section `## ALL_TACTICS_EXHAUSTED` to Z:\home\swoop\swoop-claude-projects\fresh-staged\Auto Run Docs\code-refactoring/LOOP_00001_CANDIDATES.md and mark this task complete. Otherwise, pick one unexecuted tactic, search the codebase for matching issues, append findings to Z:\home\swoop\swoop-claude-projects\fresh-staged\Auto Run Docs\code-refactoring/LOOP_00001_CANDIDATES.md, and mark the tactic as `[EXECUTED]` in the game plan.
+
+## Output Format
+
+Append to `Z:\home\swoop\swoop-claude-projects\fresh-staged\Auto Run Docs\code-refactoring/LOOP_00001_CANDIDATES.md` using this format:
+
+```markdown
+---
+
+## [Tactic Name] - Executed [YYYY-MM-DD HH:MM]
+
+### Finding 1: [Brief Description]
+
+- **Category:** [File Size / Duplication / Complexity / Dead Code / Organization]
+- **Location:** `path/to/file:LINE-LINE`
+- **Current State:** [Describe what's wrong]
+- **Proposed Change:** [Brief description of the refactoring]
+- **Code Context:**
+```
+
+// Relevant code snippet showing the issue
+
+```
+
+### Finding 2: [Brief Description]
+...
+
+### Tactic Summary
+- **Issues Found:** [count]
+- **Files Affected:** [count]
+- **Status:** EXECUTED
+```
+
+## What to Look For
+
+### File Size Candidates
+
+- Files over 500 LOC → Consider splitting by concern
+- Single file with multiple unrelated exports → Extract to separate modules
+- Component files with embedded utilities → Move utilities to shared location
+
+### Duplication Candidates
+
+- Two functions that differ only in variable names → Parameterize
+- Repeated code blocks (3+ occurrences) → Extract to utility
+- Similar components → Create shared base or composition
+
+### Complexity Candidates
+
+- Functions with 3+ levels of nesting → Extract to smaller functions
+- Functions over 50 LOC → Break into logical steps
+- Complex conditionals → Extract to named boolean functions
+- Many parameters → Use options object pattern
+
+### Dead Code Candidates
+
+- Functions with no callers → Remove (verify first)
+- Commented-out code → Remove (it's in git history)
+- Unused imports → Remove
+- Unused variables → Remove or investigate
+
+### Organization Candidates
+
+- Utilities in component files → Move to utils/
+- Constants scattered → Consolidate to constants/
+- Types in multiple files → Consolidate to types/
+
+## Guidelines
+
+- **One tactic per run**: Only execute ONE tactic, then stop. This allows the pipeline to iterate.
+- **Be thorough within the tactic**: Search comprehensively for the pattern specified
+- **Be specific**: Include exact file paths and line numbers
+- **Show context**: Include code snippets that illustrate the issue
+- **One issue per candidate**: Don't bundle unrelated issues
+- **Skip trivials**: Focus on issues worth the refactoring effort
+- **Note dependencies**: If a change might affect other files, note it
+- **Mark as executed**: Update `Z:\home\swoop\swoop-claude-projects\fresh-staged\Auto Run Docs\code-refactoring/LOOP_00001_GAME_PLAN.md` to show which tactics have been run (add `[EXECUTED]` prefix)
+
+## How to Know You're Done
+
+This task is complete when ONE of the following is true:
+
+**Option A - Executed a tactic:**
+
+1. You've executed exactly ONE tactic from the game plan
+2. You've appended all findings to `Z:\home\swoop\swoop-claude-projects\fresh-staged\Auto Run Docs\code-refactoring/LOOP_00001_CANDIDATES.md`
+3. You've marked the tactic as `[EXECUTED]` in `Z:\home\swoop\swoop-claude-projects\fresh-staged\Auto Run Docs\code-refactoring/LOOP_00001_GAME_PLAN.md`
+
+**Option B - All tactics exhausted:**
+
+1. All tactics in the game plan are already marked as `[EXECUTED]`
+2. You've appended `## ALL_TACTICS_EXHAUSTED` to `Z:\home\swoop\swoop-claude-projects\fresh-staged\Auto Run Docs\code-refactoring/LOOP_00001_CANDIDATES.md`
+
+The `ALL_TACTICS_EXHAUSTED` marker signals to downstream documents that discovery is complete.

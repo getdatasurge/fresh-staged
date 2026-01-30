@@ -1,0 +1,13 @@
+{
+  "branch_name": "fn-2-qos",
+  "created_at": "2026-01-30T11:35:09.930825Z",
+  "depends_on_epics": ["fn-1-fy4"],
+  "id": "fn-2-qos",
+  "next_task": 1,
+  "plan_review_status": "unknown",
+  "plan_reviewed_at": null,
+  "spec_path": ".flow/specs/fn-2-qos.md",
+  "status": "done",
+  "title": "Backend API Tests",
+  "updated_at": "2026-01-30T11:37:15.535093Z"
+}

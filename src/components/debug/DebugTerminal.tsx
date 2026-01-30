@@ -102,19 +102,10 @@ function LogEntry({ entry, onExplain, onFilterByCorrelation, onCopyEntry }: LogE
         LEVEL_BG[entry.level],
       )}
     >
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- keyboard access provided by dedicated toggle button */}
       <div
-        className="flex items-start gap-2 px-2 py-1 cursor-pointer"
-        role="button"
-        tabIndex={0}
-        aria-expanded={expanded}
-        aria-label={`Toggle details for ${entry.category} log entry`}
+        className={cn('flex items-start gap-2 px-2 py-1', entry.payload && 'cursor-pointer')}
         onClick={() => entry.payload && setExpanded(!expanded)}
-        onKeyDown={(e) => {
-          if ((e.key === 'Enter' || e.key === ' ') && entry.payload) {
-            e.preventDefault();
-            setExpanded(!expanded);
-          }
-        }}
       >
         <span className="text-muted-foreground shrink-0 w-20">{time}</span>
         <Badge
@@ -181,7 +172,17 @@ function LogEntry({ entry, onExplain, onFilterByCorrelation, onCopyEntry }: LogE
           </Button>
         )}
         {entry.payload && (
-          <Button variant="ghost" size="sm" className="h-4 w-4 p-0 shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-4 w-4 p-0 shrink-0"
+            aria-expanded={expanded}
+            aria-label={`Toggle details for ${entry.category} log entry`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded(!expanded);
+            }}
+          >
             {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
           </Button>
         )}

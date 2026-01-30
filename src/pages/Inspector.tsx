@@ -481,14 +481,12 @@ const Inspector = () => {
 
             {/* Date Range */}
             <div className="space-y-2">
-              <span className="text-sm font-medium" id="inspector-date-range-label">
-                Date Range
-              </span>
+              <span className="text-sm font-medium">Date Range</span>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    aria-labelledby="inspector-date-range-label"
+                    aria-label={`Date Range: ${format(dateRange.from, 'MMM d')} - ${format(dateRange.to, 'MMM d')}`}
                     className={cn('w-full justify-start text-left font-normal')}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />

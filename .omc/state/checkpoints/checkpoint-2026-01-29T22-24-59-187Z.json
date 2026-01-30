@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-01-29T22:24:59.187Z",
+  "trigger": "auto",
+  "active_modes": {
+    "ultrawork": {
+      "original_prompt": "onboarding:1  Uncaught (in promise) SecurityError: Failed to register a ServiceWorker for scope ('https://192.168.4.181/') with script ('https://192.168.4.181/sw.js'): An SSL certificate error occurred when fetching the script.\nindex-D0RyVubt.js:3966 [useEffectiveIdentity] profile data: undefined isLoading: true error: null\nindex-D0RyVubt.js:3966 [useEffectiveIdentity] profile data: undefined isLoading: true error: null\nindex-D0RyVubt.js:40  TypeError: e[i] is not a function\n    at index-D0RyVubt.js:3966:57520\n    at Object.apply (index-D0RyVubt.js:3966:42640)\n    at N9e (index-D0RyVubt.js:4018:21495)\n    at E6 (index-D0RyVubt.js:38:17031)\n    at VW (index-D0RyVubt.js:40:44104)\n    at UW (index-D0RyVubt.js:40:39822)\n    at Ade (index-D0RyVubt.js:40:39748)\n    at t1 (index-D0RyVubt.js:40:39598)\n    at LS (index-D0RyVubt.js:40:35960)\n    at BW (index-D0RyVubt.js:40:34907)\nES @ index-D0RyVubt.js:40\nindex-D0RyVubt.js:40  Uncaught TypeError: e[i] is not a function\n    at index-D0RyVubt.js:3966:57520\n    at Object.apply (index-D0RyVubt.js:3966:42640)\n    at N9e (index-D0RyVubt.js:4018:21495)\n    at E6 (index-D0RyVubt.js:38:17031)\n    at VW (index-D0RyVubt.js:40:44104)\n    at UW (index-D0RyVubt.js:40:39822)\n    at Ade (index-D0RyVubt.js:40:39748)\n    at t1 (index-D0RyVubt.js:40:39598)\n    at LS (index-D0RyVubt.js:40:35960)\n    at BW (index-D0RyVubt.js:40:34907)\n"
+    }
+  },
+  "todo_summary": {
+    "pending": 0,
+    "in_progress": 0,
+    "completed": 0
+  },
+  "wisdom_exported": false
+}

@@ -272,6 +272,7 @@ export default function PlatformLayout({
               onClick={() => setMobileNavOpen(false)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
                   setMobileNavOpen(false);
                 }
               }}

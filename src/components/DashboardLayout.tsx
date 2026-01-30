@@ -365,6 +365,7 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
               onClick={() => setMobileNavOpen(false)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
                   setMobileNavOpen(false);
                 }
               }}

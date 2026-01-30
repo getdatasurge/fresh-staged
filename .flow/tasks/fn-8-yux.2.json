@@ -1,0 +1,14 @@
+{
+  "assignee": null,
+  "claim_note": "",
+  "claimed_at": null,
+  "created_at": "2026-01-30T11:40:01.545946Z",
+  "depends_on": [],
+  "epic": "fn-8-yux",
+  "id": "fn-8-yux.2",
+  "priority": null,
+  "spec_path": ".flow/tasks/fn-8-yux.2.md",
+  "status": "todo",
+  "title": "Rename MigrationErrorBoundary to AppErrorBoundary",
+  "updated_at": "2026-01-30T11:40:01.545958Z"
+}

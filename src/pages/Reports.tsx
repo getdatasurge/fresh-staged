@@ -270,17 +270,12 @@ const Reports = () => {
 
             {/* Start Date */}
             <div className="space-y-2">
-              <span
-                className="text-sm font-medium text-muted-foreground"
-                id="reports-start-date-label"
-              >
-                Start Date
-              </span>
+              <span className="text-sm font-medium text-muted-foreground">Start Date</span>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    aria-labelledby="reports-start-date-label"
+                    aria-label={`Start Date: ${dateRange.from ? format_(dateRange.from, 'MMM d, yyyy') : 'not selected'}`}
                     className={cn(
                       'w-full justify-start text-left font-normal',
                       !dateRange.from && 'text-muted-foreground',
@@ -303,17 +298,12 @@ const Reports = () => {
 
             {/* End Date */}
             <div className="space-y-2">
-              <span
-                className="text-sm font-medium text-muted-foreground"
-                id="reports-end-date-label"
-              >
-                End Date
-              </span>
+              <span className="text-sm font-medium text-muted-foreground">End Date</span>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    aria-labelledby="reports-end-date-label"
+                    aria-label={`End Date: ${dateRange.to ? format_(dateRange.to, 'MMM d, yyyy') : 'not selected'}`}
                     className={cn(
                       'w-full justify-start text-left font-normal',
                       !dateRange.to && 'text-muted-foreground',

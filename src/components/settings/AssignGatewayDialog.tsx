@@ -86,24 +86,16 @@ export function AssignGatewayDialog({
         <div className="space-y-2 max-h-[300px] overflow-y-auto py-2">
           {unassignedGateways.length > 0 ? (
             unassignedGateways.map((gateway) => (
-              <div
+              <label
                 key={gateway.id}
+                htmlFor={`gateway-checkbox-${gateway.id}`}
                 className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer"
-                role="checkbox"
-                tabIndex={0}
-                aria-checked={selectedIds.has(gateway.id)}
-                aria-label={`Select gateway ${gateway.name}`}
-                onClick={() => toggleSelection(gateway.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    toggleSelection(gateway.id);
-                  }
-                }}
               >
                 <Checkbox
+                  id={`gateway-checkbox-${gateway.id}`}
                   checked={selectedIds.has(gateway.id)}
                   onCheckedChange={() => toggleSelection(gateway.id)}
+                  aria-label={`Select gateway ${gateway.name}`}
                 />
                 <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center shrink-0">
                   <Radio className="w-4 h-4 text-muted-foreground" />
@@ -114,7 +106,7 @@ export function AssignGatewayDialog({
                     {formatEUI(gateway.gateway_eui)}
                   </p>
                 </div>
-              </div>
+              </label>
             ))
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center">
