@@ -62,11 +62,14 @@ vi.mock('@/contexts/SuperAdminContext', () => ({
   })),
 }));
 
-// Mock useToast
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: vi.fn(() => ({
-    toast: vi.fn(),
-  })),
+// Mock sonner toast
+vi.mock('sonner', () => ({
+  toast: Object.assign(vi.fn(), {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    info: vi.fn(),
+  }),
 }));
 
 // Mock useUserRole / usePermissions

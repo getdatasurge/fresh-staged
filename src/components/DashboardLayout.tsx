@@ -9,7 +9,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSuperAdmin } from '@/contexts/SuperAdminContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
 import { usePermissions } from '@/hooks/useUserRole';
 import { clearOfflineStorage } from '@/lib/offlineStorage';
@@ -56,7 +56,6 @@ const navItemsAfterAccordions = [
 const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const user = useUser();
   const { canDeleteEntities, isLoading: permissionsLoading } = usePermissions();
@@ -166,16 +165,12 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
         await user.signOut();
       }
 
-      toast({ title: 'Signed out successfully' });
+      toast.success('Signed out successfully');
       // Stack Auth useUser() updates automatically, triggering navigation via useEffect
       navigate('/');
     } catch (err) {
       console.error('Sign out error:', err);
-      toast({
-        title: 'Sign out failed',
-        description: 'An unexpected error occurred',
-        variant: 'destructive',
-      });
+      toast.error('Sign out failed', { description: 'An unexpected error occurred' });
     }
   };
 

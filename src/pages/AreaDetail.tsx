@@ -38,7 +38,7 @@ import {
   WifiOff,
   Trash2,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 type UnitType =
   | 'fridge'
@@ -83,7 +83,6 @@ import { STATUS_CONFIG } from '@/lib/statusConfig';
 const AreaDetail = () => {
   const { siteId, areaId } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const user = useUser();
   const trpc = useTRPC();
   const trpcClient = useTRPCClient();
@@ -189,7 +188,7 @@ const AreaDetail = () => {
 
   const handleCreateUnit = async () => {
     if (!formData.name.trim()) {
-      toast({ title: 'Unit name is required', variant: 'destructive' });
+      toast.error('Unit name is required');
       return;
     }
 
@@ -206,20 +205,20 @@ const AreaDetail = () => {
           tempMin: formData.temp_limit_low ? parseFloat(formData.temp_limit_low) : null,
         },
       });
-      toast({ title: 'Unit created successfully' });
+      toast.success('Unit created successfully');
       setFormData({ name: '', unit_type: 'fridge', temp_limit_high: '41', temp_limit_low: '' });
       setDialogOpen(false);
       refreshAreaData();
     } catch (error) {
       console.error('Error creating unit:', error);
-      toast({ title: 'Failed to create unit', variant: 'destructive' });
+      toast.error('Failed to create unit');
     }
     setIsSubmitting(false);
   };
 
   const handleUpdateArea = async () => {
     if (!editFormData.name.trim()) {
-      toast({ title: 'Area name is required', variant: 'destructive' });
+      toast.error('Area name is required');
       return;
     }
 
@@ -234,12 +233,12 @@ const AreaDetail = () => {
           description: editFormData.description || null,
         },
       });
-      toast({ title: 'Area updated successfully' });
+      toast.success('Area updated successfully');
       setEditDialogOpen(false);
       refreshAreaData();
     } catch (error) {
       console.error('Error updating area:', error);
-      toast({ title: 'Failed to update area', variant: 'destructive' });
+      toast.error('Failed to update area');
     }
     setIsSubmitting(false);
   };
@@ -252,11 +251,11 @@ const AreaDetail = () => {
         siteId: siteId,
         areaId: areaId,
       });
-      toast({ title: 'Area deleted' });
+      toast.success('Area deleted');
       navigate(`/sites/${siteId}`);
     } catch (err) {
       console.error('Error deleting area:', err);
-      toast({ title: 'Failed to delete area', variant: 'destructive' });
+      toast.error('Failed to delete area');
     }
   };
 

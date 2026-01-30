@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useUpdateUnit } from '@/hooks/useUnits';
 import {
   Settings,
@@ -67,7 +67,6 @@ export default function UnitSettingsSection({
   doorOpenGraceMinutes = 20,
   onSettingsUpdated,
 }: UnitSettingsSectionProps) {
-  const { toast } = useToast();
   const user = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -116,7 +115,7 @@ export default function UnitSettingsSection({
 
     // Check authentication
     if (!user) {
-      toast({ title: 'Not authenticated', variant: 'destructive' });
+      toast.error('Not authenticated');
       setIsSaving(false);
       return;
     }
@@ -126,7 +125,7 @@ export default function UnitSettingsSection({
       editUnitType !== unitType || lowVal !== tempLimitLow || highVal !== tempLimitHigh;
 
     if (!hasChanges) {
-      toast({ title: 'No changes to save' });
+      toast('No changes to save');
       setShowEditModal(false);
       setIsSaving(false);
       return;
@@ -153,16 +152,12 @@ export default function UnitSettingsSection({
         },
       });
 
-      toast({ title: 'Unit settings updated' });
+      toast.success('Unit settings updated');
       setShowEditModal(false);
       onSettingsUpdated();
     } catch (error: any) {
       console.error('Save error:', error);
-      toast({
-        title: 'Failed to save settings',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error('Failed to save settings', { description: error.message });
     }
 
     setIsSaving(false);

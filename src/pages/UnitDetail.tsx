@@ -19,7 +19,7 @@ import UnitAlertThresholdsSection from '@/components/unit/UnitAlertThresholdsSec
 import UnitSensorsCard from '@/components/unit/UnitSensorsCard';
 import UnitSettingsSection from '@/components/unit/UnitSettingsSection';
 import { EntityDashboard } from '@/features/dashboard-layout';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { DEFAULT_ALERT_RULES, useUnitAlertRules } from '@/hooks/useAlertRules';
 import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
 import { useEntityDashboardUrl } from '@/hooks/useEntityDashboardUrl';
@@ -102,7 +102,6 @@ import { getAlertClearCondition } from '@/lib/alertConfig';
 const UnitDetail = () => {
   const { unitId } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const user = useUser();
   const trpc = useTRPC();
   const trpcClient = useTRPCClient();
@@ -549,7 +548,7 @@ const UnitDetail = () => {
   const exportToCSV = async (reportType: 'daily' | 'exceptions' = 'daily') => {
     if (!unit) return;
     setIsExporting(true);
-    toast({ title: 'Migration in progress', description: 'CSV exports are moving to tRPC.' });
+    toast.success('Migration in progress', { description: 'CSV exports are moving to tRPC.' });
     setIsExporting(false);
   };
 
@@ -560,7 +559,7 @@ const UnitDetail = () => {
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast({ title: 'Link copied to clipboard' });
+    toast.success('Link copied to clipboard');
   };
 
   const handleDeleteUnit = async () => {
@@ -572,11 +571,11 @@ const UnitDetail = () => {
         areaId: unitLookup.areaId,
         unitId: unitId,
       });
-      toast({ title: 'Unit deleted' });
+      toast.success('Unit deleted');
       navigate(`/sites/${unitLookup.siteId}/areas/${unitLookup.areaId}`);
     } catch (err) {
       console.error('Error deleting unit:', err);
-      toast({ title: 'Failed to delete unit', variant: 'destructive' });
+      toast.error('Failed to delete unit');
     }
   };
 

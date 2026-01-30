@@ -27,7 +27,7 @@ import {
   Copy,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export function SupportDiagnosticsPanel() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -48,7 +48,6 @@ export function SupportDiagnosticsPanel() {
   } = useEffectiveIdentity();
 
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [cacheStats, setCacheStats] = useState<{
     totalCached: number;
     byKey: Record<string, number>;
@@ -80,19 +79,13 @@ export function SupportDiagnosticsPanel() {
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copied',
-      description: `${label} copied to clipboard`,
-    });
+    toast(`${label} copied to clipboard`);
   };
 
   const handleClearCaches = async () => {
     await clearAllOrgScopedCaches(queryClient);
     setCacheStats(getOrgCacheStats(queryClient));
-    toast({
-      title: 'Caches Cleared',
-      description: 'All org-scoped caches have been cleared.',
-    });
+    toast.success('Caches Cleared', { description: 'All org-scoped caches have been cleared.' });
   };
 
   return (

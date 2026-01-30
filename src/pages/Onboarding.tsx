@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useSlugAvailability } from '@/hooks/useSlugAvailability';
 import {
   Thermometer,
@@ -104,7 +104,6 @@ const steps: { key: Step; title: string; icon: React.ElementType }[] = [
 const Onboarding = () => {
   const navigate = useNavigate();
   const stackUser = useUser();
-  const { toast } = useToast();
   const trpc = useTRPC();
   const trpcClient = useTRPCClient();
   const [currentStep, setCurrentStep] = useState<Step>('organization');
@@ -311,10 +310,7 @@ const Onboarding = () => {
     // Validate organization name
     const nameResult = validateInput(organizationNameSchema, data.organization.name);
     if (!nameResult.success) {
-      toast({
-        title: (nameResult as { success: false; error: string }).error,
-        variant: 'destructive',
-      });
+      toast.error((nameResult as { success: false; error: string }).error);
       return;
     }
 
@@ -322,22 +318,17 @@ const Onboarding = () => {
     const slugToUse = data.organization.slug || generateSlug(data.organization.name);
     const slugResult = validateInput(organizationSlugSchema, slugToUse);
     if (!slugResult.success) {
-      toast({
-        title: (slugResult as { success: false; error: string }).error,
-        variant: 'destructive',
-      });
+      toast.error((slugResult as { success: false; error: string }).error);
       return;
     }
 
     // Check if slug was marked as unavailable
     if (slugStatus.available === false) {
-      toast({
-        title: 'URL Already Taken',
+      toast.error('URL Already Taken', {
         description:
           slugStatus.suggestions.length > 0
             ? `Try one of these: ${slugStatus.suggestions.slice(0, 3).join(', ')}`
             : 'Please choose a different URL slug.',
-        variant: 'destructive',
       });
       return;
     }
@@ -352,7 +343,7 @@ const Onboarding = () => {
 
       if (response.ok && response.organizationId) {
         setCreatedIds((prev) => ({ ...prev, orgId: response.organizationId }));
-        toast({ title: 'Organization created!' });
+        toast.success('Organization created!');
 
         // Trigger TTN provisioning in background (non-blocking)
         // Don't await - let it run while user continues onboarding
@@ -369,47 +360,37 @@ const Onboarding = () => {
         // Handle specific error codes
         switch (response.code) {
           case 'SLUG_TAKEN':
-            toast({
-              title: 'URL Already Taken',
+            toast.error('URL Already Taken', {
               description: response.suggestions?.length
                 ? `Try: ${response.suggestions.slice(0, 3).join(', ')}`
                 : 'Please choose a different URL.',
-              variant: 'destructive',
             });
             break;
           case 'ALREADY_IN_ORG':
-            toast({
-              title: 'Already Registered',
+            toast.error('Already Registered', {
               description: 'Your account is already associated with an organization.',
-              variant: 'destructive',
             });
             setTimeout(() => navigate('/auth/callback', { replace: true }), 2000);
             break;
           case 'AUTH_REQUIRED':
-            toast({ title: 'Please sign in', variant: 'destructive' });
+            toast.error('Please sign in');
             navigate('/auth', { replace: true });
             break;
           case 'VALIDATION_ERROR':
-            toast({
-              title: 'Invalid Input',
+            toast.error('Invalid Input', {
               description: response.message || 'Please check your input.',
-              variant: 'destructive',
             });
             break;
           default:
-            toast({
-              title: 'Could not create organization',
+            toast.error('Could not create organization', {
               description: response.message || 'Please try again.',
-              variant: 'destructive',
             });
         }
       }
     } catch (err: unknown) {
       console.error('Error creating organization:', err);
-      toast({
-        title: 'Could not create organization',
+      toast.error('Could not create organization', {
         description: 'A server error occurred. Please try again.',
-        variant: 'destructive',
       });
     }
     setIsLoading(false);
@@ -432,10 +413,7 @@ const Onboarding = () => {
     // Validate site name
     const nameResult = validateInput(siteNameSchema, data.site.name);
     if (!nameResult.success) {
-      toast({
-        title: (nameResult as { success: false; error: string }).error,
-        variant: 'destructive',
-      });
+      toast.error((nameResult as { success: false; error: string }).error);
       return;
     }
 
@@ -446,31 +424,19 @@ const Onboarding = () => {
     const postalResult = validateInput(postalCodeSchema, data.site.postalCode);
 
     if (!addressResult.success) {
-      toast({
-        title: (addressResult as { success: false; error: string }).error,
-        variant: 'destructive',
-      });
+      toast.error((addressResult as { success: false; error: string }).error);
       return;
     }
     if (!cityResult.success) {
-      toast({
-        title: (cityResult as { success: false; error: string }).error,
-        variant: 'destructive',
-      });
+      toast.error((cityResult as { success: false; error: string }).error);
       return;
     }
     if (!stateResult.success) {
-      toast({
-        title: (stateResult as { success: false; error: string }).error,
-        variant: 'destructive',
-      });
+      toast.error((stateResult as { success: false; error: string }).error);
       return;
     }
     if (!postalResult.success) {
-      toast({
-        title: (postalResult as { success: false; error: string }).error,
-        variant: 'destructive',
-      });
+      toast.error((postalResult as { success: false; error: string }).error);
       return;
     }
 
@@ -486,14 +452,12 @@ const Onboarding = () => {
       });
 
       setCreatedIds((prev) => ({ ...prev, siteId: result.siteId }));
-      toast({ title: 'Site created!' });
+      toast.success('Site created!');
       setCurrentStep('area');
     } catch (error: unknown) {
       console.error('Error creating site:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive',
       });
     }
     setIsLoading(false);
@@ -509,20 +473,14 @@ const Onboarding = () => {
     // Validate area name
     const nameResult = validateInput(areaNameSchema, data.area.name);
     if (!nameResult.success) {
-      toast({
-        title: (nameResult as { success: false; error: string }).error,
-        variant: 'destructive',
-      });
+      toast.error((nameResult as { success: false; error: string }).error);
       return;
     }
 
     // Validate description
     const descResult = validateInput(areaDescriptionSchema, data.area.description);
     if (!descResult.success) {
-      toast({
-        title: (descResult as { success: false; error: string }).error,
-        variant: 'destructive',
-      });
+      toast.error((descResult as { success: false; error: string }).error);
       return;
     }
 
@@ -536,14 +494,12 @@ const Onboarding = () => {
       });
 
       setCreatedIds((prev) => ({ ...prev, areaId: result.areaId }));
-      toast({ title: 'Area created!' });
+      toast.success('Area created!');
       setCurrentStep('unit');
     } catch (error: unknown) {
       console.error('Error creating area:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive',
       });
     }
     setIsLoading(false);
@@ -559,10 +515,7 @@ const Onboarding = () => {
     // Validate unit name
     const nameResult = validateInput(unitNameSchema, data.unit.name);
     if (!nameResult.success) {
-      toast({
-        title: (nameResult as { success: false; error: string }).error,
-        variant: 'destructive',
-      });
+      toast.error((nameResult as { success: false; error: string }).error);
       return;
     }
 
@@ -582,14 +535,12 @@ const Onboarding = () => {
       });
 
       setCreatedIds((prev) => ({ ...prev, unitId: result.unitId }));
-      toast({ title: 'Unit created!' });
+      toast.success('Unit created!');
       setCurrentStep('gateway');
     } catch (error: unknown) {
       console.error('Error creating unit:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive',
       });
     }
     setIsLoading(false);
@@ -604,14 +555,14 @@ const Onboarding = () => {
 
     // Validate gateway name
     if (!data.gateway.name.trim()) {
-      toast({ title: 'Gateway name is required', variant: 'destructive' });
+      toast.error('Gateway name is required');
       return;
     }
 
     // Validate gateway EUI (16 hex characters)
     const euiRegex = /^[0-9A-Fa-f]{16}$/;
     if (!euiRegex.test(data.gateway.eui)) {
-      toast({ title: 'Gateway EUI must be 16 hexadecimal characters', variant: 'destructive' });
+      toast.error('Gateway EUI must be 16 hexadecimal characters');
       return;
     }
 
@@ -625,14 +576,12 @@ const Onboarding = () => {
       });
 
       setCreatedIds((prev) => ({ ...prev, gatewayId: result.gatewayId }));
-      toast({ title: 'Gateway registered!' });
+      toast.success('Gateway registered!');
       setCurrentStep('complete');
     } catch (error: unknown) {
       console.error('Error creating gateway:', error);
-      toast({
-        title: 'Error',
+      toast.error('Error', {
         description: error instanceof Error ? error.message : 'Unknown error',
-        variant: 'destructive',
       });
     }
     setIsLoading(false);

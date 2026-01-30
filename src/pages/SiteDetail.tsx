@@ -24,7 +24,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { EntityDashboard } from '@/features/dashboard-layout';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useOrgAlertRules, useSiteAlertRules } from '@/hooks/useAlertRules';
 import { useEntityDashboardUrl } from '@/hooks/useEntityDashboardUrl';
 import { usePermissions } from '@/hooks/useUserRole';
@@ -78,7 +78,6 @@ import { useTRPC, useTRPCClient } from '@/lib/trpc';
 const SiteDetail = () => {
   const { siteId } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const user = useUser();
   const trpc = useTRPC();
   const trpcClient = useTRPCClient();
@@ -188,7 +187,7 @@ const SiteDetail = () => {
 
   const handleCreateArea = async () => {
     if (!formData.name.trim()) {
-      toast({ title: 'Area name is required', variant: 'destructive' });
+      toast.error('Area name is required');
       return;
     }
 
@@ -202,20 +201,20 @@ const SiteDetail = () => {
           description: formData.description || null,
         },
       });
-      toast({ title: 'Area created successfully' });
+      toast.success('Area created successfully');
       setFormData({ name: '', description: '' });
       setDialogOpen(false);
       refreshSiteData();
     } catch (err) {
       console.error('Error creating area:', err);
-      toast({ title: 'Failed to create area', variant: 'destructive' });
+      toast.error('Failed to create area');
     }
     setIsSubmitting(false);
   };
 
   const handleUpdateSite = async () => {
     if (!editFormData.name.trim()) {
-      toast({ title: 'Site name is required', variant: 'destructive' });
+      toast.error('Site name is required');
       return;
     }
 
@@ -232,12 +231,12 @@ const SiteDetail = () => {
           postalCode: editFormData.postal_code || null,
         },
       });
-      toast({ title: 'Site updated successfully' });
+      toast.success('Site updated successfully');
       setEditDialogOpen(false);
       refreshSiteData();
     } catch (err) {
       console.error('Error updating site:', err);
-      toast({ title: 'Failed to update site', variant: 'destructive' });
+      toast.error('Failed to update site');
     }
     setIsSubmitting(false);
   };
@@ -248,19 +247,18 @@ const SiteDetail = () => {
 
     try {
       if (!user) {
-        toast({ title: 'Session expired. Please sign in again.', variant: 'destructive' });
+        toast.error('Session expired. Please sign in again.');
         navigate('/auth');
         return;
       }
 
       // TODO: Migrate to tRPC export endpoint when available
-      toast({
-        title: 'Export in progress',
+      toast.success('Export in progress', {
         description: 'CSV exports are being migrated to the new backend. Please try again soon.',
       });
     } catch (error) {
       console.error('Export error:', error);
-      toast({ title: 'Export failed', variant: 'destructive' });
+      toast.error('Export failed');
     }
     setIsExporting(false);
   };
@@ -272,11 +270,11 @@ const SiteDetail = () => {
         organizationId: effectiveOrgId,
         siteId: siteId,
       });
-      toast({ title: 'Site deleted' });
+      toast.success('Site deleted');
       navigate('/sites');
     } catch (err) {
       console.error('Error deleting site:', err);
-      toast({ title: 'Failed to delete site', variant: 'destructive' });
+      toast.error('Failed to delete site');
     }
   };
 

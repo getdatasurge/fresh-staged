@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
 import { useTRPC, useTRPCClient } from '@/lib/trpc';
 import { useQuery } from '@tanstack/react-query';
@@ -28,7 +28,6 @@ interface Area {
 
 const Areas = () => {
   const { siteId } = useParams();
-  const { toast } = useToast();
   const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
   const trpc = useTRPC();
   const trpcClient = useTRPCClient();
@@ -66,7 +65,7 @@ const Areas = () => {
 
   const handleCreate = async () => {
     if (!formData.name.trim()) {
-      toast({ title: 'Area name is required', variant: 'destructive' });
+      toast.error('Area name is required');
       return;
     }
 
@@ -81,20 +80,20 @@ const Areas = () => {
         },
       });
 
-      toast({ title: 'Area created successfully' });
+      toast.success('Area created successfully');
       setFormData({ name: '', description: '' });
       setDialogOpen(false);
       areasQuery.refetch();
     } catch (error) {
       console.error('Error creating area:', error);
-      toast({ title: 'Failed to create area', variant: 'destructive' });
+      toast.error('Failed to create area');
     }
     setIsSubmitting(false);
   };
 
   const handleEdit = async () => {
     if (!editFormData.name.trim() || !selectedAreaId) {
-      toast({ title: 'Area name is required', variant: 'destructive' });
+      toast.error('Area name is required');
       return;
     }
 
@@ -110,14 +109,14 @@ const Areas = () => {
         },
       });
 
-      toast({ title: 'Area updated successfully' });
+      toast.success('Area updated successfully');
       setEditFormData({ name: '', description: '' });
       setSelectedAreaId(null);
       setEditDialogOpen(false);
       areasQuery.refetch();
     } catch (error) {
       console.error('Error updating area:', error);
-      toast({ title: 'Failed to update area', variant: 'destructive' });
+      toast.error('Failed to update area');
     }
     setIsSubmitting(false);
   };
@@ -133,13 +132,13 @@ const Areas = () => {
         areaId: selectedAreaId,
       });
 
-      toast({ title: 'Area deleted successfully' });
+      toast.success('Area deleted successfully');
       setSelectedAreaId(null);
       setDeleteDialogOpen(false);
       areasQuery.refetch();
     } catch (error) {
       console.error('Error deleting area:', error);
-      toast({ title: 'Failed to delete area', variant: 'destructive' });
+      toast.error('Failed to delete area');
     }
     setIsSubmitting(false);
   };

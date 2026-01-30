@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser, useStackApp } from '@stackframe/react';
 import { debugLog } from '@/lib/debugLogger';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export type DeletionStatus =
   | 'idle'
@@ -45,8 +45,6 @@ export function useAccountDeletion() {
   });
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
-
   const deleteAccount = async (userId: string) => {
     if (!user) {
       throw new Error('Not authenticated');
@@ -114,11 +112,7 @@ export function useAccountDeletion() {
         requestId,
       });
 
-      toast({
-        title: 'Deletion Failed',
-        description: message,
-        variant: 'destructive',
-      });
+      toast.error('Deletion Failed', { description: message });
 
       setIsDeleting(false);
       return false;

@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
 import { computeUnitAlerts } from '@/hooks/useUnitAlerts';
 import { UnitStatusInfo } from '@/hooks/useUnitStatus';
@@ -57,7 +57,6 @@ interface UnifiedAlert {
 
 const Alerts = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const user = useUser();
   const trpc = useTRPC();
   const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
@@ -203,15 +202,12 @@ const Alerts = () => {
 
   const handleAcknowledge = async () => {
     if (!selectedAlert || !acknowledgmentNotes.trim()) {
-      toast({ title: 'Please provide acknowledgment notes', variant: 'destructive' });
+      toast.error('Please provide acknowledgment notes');
       return;
     }
 
     if (selectedAlert.isComputed) {
-      toast({
-        title: 'Computed alerts cannot be acknowledged - resolve the underlying issue',
-        variant: 'destructive',
-      });
+      toast.error('Computed alerts cannot be acknowledged - resolve the underlying issue');
       return;
     }
 
@@ -223,14 +219,14 @@ const Alerts = () => {
         notes: acknowledgmentNotes.trim(),
       });
 
-      toast({ title: 'Alert acknowledged' });
+      toast.success('Alert acknowledged');
       setShowAcknowledgeDialog(false);
       setSelectedAlert(null);
       setAcknowledgmentNotes('');
       handleRefetch();
     } catch (error) {
       console.error('Error acknowledging alert:', error);
-      toast({ title: 'Failed to acknowledge', variant: 'destructive' });
+      toast.error('Failed to acknowledge');
     }
     setIsSubmitting(false);
   };
@@ -243,7 +239,7 @@ const Alerts = () => {
 
   const handleResolve = async () => {
     if (!selectedAlert || !correctiveAction.trim()) {
-      toast({ title: 'Please describe the corrective action', variant: 'destructive' });
+      toast.error('Please describe the corrective action');
       return;
     }
 
@@ -256,7 +252,7 @@ const Alerts = () => {
         correctiveAction: correctiveAction.trim(),
       });
 
-      toast({ title: 'Alert resolved with corrective action' });
+      toast.success('Alert resolved with corrective action');
       setShowResolveDialog(false);
       setSelectedAlert(null);
       setCorrectiveAction('');
@@ -264,7 +260,7 @@ const Alerts = () => {
       handleRefetch();
     } catch (error) {
       console.error('Error resolving alert:', error);
-      toast({ title: 'Failed to resolve', variant: 'destructive' });
+      toast.error('Failed to resolve');
     }
     setIsSubmitting(false);
   };

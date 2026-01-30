@@ -7,7 +7,7 @@ import React, {
   ReactNode,
 } from 'react';
 import { debugLog, DebugLogEntry } from '@/lib/debugLogger';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface DebugContextValue {
   isDebugEnabled: boolean;
@@ -32,7 +32,6 @@ const STORAGE_KEY = 'frostguard_debug_enabled';
 const TERMINAL_VISIBLE_KEY = 'frostguard_debug_terminal_visible';
 
 export function DebugProvider({ children }: { children: ReactNode }) {
-  const { toast } = useToast();
   const [isDebugEnabled, setIsDebugEnabled] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem(STORAGE_KEY) === 'true';
@@ -82,8 +81,7 @@ export function DebugProvider({ children }: { children: ReactNode }) {
         e.preventDefault();
 
         if (!isDebugEnabled) {
-          toast({
-            title: 'Debug Mode Disabled',
+          toast('Debug Mode Disabled', {
             description: 'Enable debug mode in Settings → Developer',
           });
           return;
@@ -95,7 +93,7 @@ export function DebugProvider({ children }: { children: ReactNode }) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDebugEnabled, toast]);
+  }, [isDebugEnabled]);
 
   const setDebugEnabled = useCallback((enabled: boolean) => {
     setIsDebugEnabled(enabled);

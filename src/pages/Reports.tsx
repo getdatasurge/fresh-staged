@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { format as format_, subDays } from 'date-fns';
 import {
   Download,
@@ -56,7 +56,6 @@ interface DateRange {
 }
 
 const Reports = () => {
-  const { toast } = useToast();
   const user = useUser();
   const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
   const trpc = useTRPC();
@@ -127,18 +126,11 @@ const Reports = () => {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-      toast({
-        title: 'Export complete',
-        description: `Report downloaded successfully.`,
-      });
+      toast.success('Export complete', { description: `Report downloaded successfully.` });
     },
     onError: (err) => {
       console.error('Export error:', err);
-      toast({
-        title: 'Export failed',
-        description: err.message || 'Unknown error',
-        variant: 'destructive',
-      });
+      toast.error('Export failed', { description: err.message || 'Unknown error' });
     },
   });
 
@@ -152,17 +144,13 @@ const Reports = () => {
     format: 'csv' | 'pdf' = 'csv',
   ) => {
     if (!dateRange.from || !dateRange.to) {
-      toast({
-        title: 'Date range required',
-        description: 'Please select a start and end date.',
-        variant: 'destructive',
-      });
+      toast.error('Date range required', { description: 'Please select a start and end date.' });
       return;
     }
 
     // Ensure user is authenticated and has organization context
     if (!user || !effectiveOrgId) {
-      toast({ title: 'Session expired. Please sign in again.', variant: 'destructive' });
+      toast.error('Session expired. Please sign in again.');
       window.location.href = '/auth';
       return;
     }

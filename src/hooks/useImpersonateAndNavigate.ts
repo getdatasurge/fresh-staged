@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSuperAdmin } from '@/contexts/SuperAdminContext';
 import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { invalidateAllOrgScopedCaches } from '@/lib/orgScopedInvalidation';
 
 // Configuration for impersonation navigation
@@ -31,7 +31,6 @@ export interface ImpersonationTarget {
 export function useImpersonateAndNavigate() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const { isSuperAdmin, isSupportModeActive, enterSupportMode, startImpersonation } =
     useSuperAdmin();
   const { effectiveOrgId, isImpersonating, refresh: refreshIdentity } = useEffectiveIdentity();
@@ -49,19 +48,13 @@ export function useImpersonateAndNavigate() {
   const requestImpersonation = useCallback(
     (user: ImpersonationTarget): ImpersonationTarget | null => {
       if (!isSuperAdmin) {
-        toast({
-          title: 'Access Denied',
-          description: 'Only Super Admins can impersonate users.',
-          variant: 'destructive',
-        });
+        toast.error('Access Denied', { description: 'Only Super Admins can impersonate users.' });
         return null;
       }
 
       if (!user.organization_id || !user.organization_name) {
-        toast({
-          title: 'Cannot impersonate',
+        toast.error('Cannot impersonate', {
           description: 'This user has no organization membership.',
-          variant: 'destructive',
         });
         return null;
       }
@@ -69,7 +62,7 @@ export function useImpersonateAndNavigate() {
       setPendingTarget(user);
       return user;
     },
-    [isSuperAdmin, toast],
+    [isSuperAdmin],
   );
 
   /**
@@ -181,11 +174,7 @@ export function useImpersonateAndNavigate() {
         return true;
       } catch (err) {
         console.error('Error in confirmAndNavigate:', err);
-        toast({
-          title: 'Impersonation Failed',
-          description: 'An unexpected error occurred.',
-          variant: 'destructive',
-        });
+        toast.error('Impersonation Failed', { description: 'An unexpected error occurred.' });
         return false;
       } finally {
         setIsNavigating(false);
@@ -197,7 +186,6 @@ export function useImpersonateAndNavigate() {
       enterSupportMode,
       startImpersonation,
       navigate,
-      toast,
       queryClient,
       waitForEffectiveIdentity,
     ],
@@ -210,19 +198,13 @@ export function useImpersonateAndNavigate() {
   const impersonateAndNavigate = useCallback(
     async (user: ImpersonationTarget): Promise<boolean> => {
       if (!isSuperAdmin) {
-        toast({
-          title: 'Access Denied',
-          description: 'Only Super Admins can impersonate users.',
-          variant: 'destructive',
-        });
+        toast.error('Access Denied', { description: 'Only Super Admins can impersonate users.' });
         return false;
       }
 
       if (!user.organization_id || !user.organization_name) {
-        toast({
-          title: 'Cannot impersonate',
+        toast.error('Cannot impersonate', {
           description: 'This user has no organization membership.',
-          variant: 'destructive',
         });
         return false;
       }
@@ -230,7 +212,7 @@ export function useImpersonateAndNavigate() {
       // For the legacy method, we directly execute
       return confirmAndNavigate(user);
     },
-    [isSuperAdmin, toast, confirmAndNavigate],
+    [isSuperAdmin, confirmAndNavigate],
   );
 
   return {

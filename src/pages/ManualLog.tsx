@@ -18,7 +18,7 @@ import {
   Clock,
   AlertTriangle,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import { useUser } from '@stackframe/react';
 import { computeUnitStatus, UnitStatusInfo } from '@/hooks/useUnitStatus';
@@ -29,7 +29,6 @@ interface UnitForLogging extends UnitStatusInfo {}
 const ManualLog = () => {
   const navigate = useNavigate();
   const user = useUser();
-  const { toast } = useToast();
   const { isOnline, pendingCount, isSyncing, syncPendingLogs } = useOfflineSync();
   const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
   const trpc = useTRPC();

@@ -1,4 +1,4 @@
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useTRPC } from '@/lib/trpc';
 import { useUser } from '@stackframe/react';
 import { useMutation } from '@tanstack/react-query';
@@ -120,7 +120,6 @@ interface SuperAdminProviderProps {
 }
 
 export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
-  const { toast } = useToast();
   const stackUser = useUser();
   const trpc = useTRPC();
   const logSuperAdminActionMutation = useMutation(trpc.admin.logSuperAdminAction.mutationOptions());
@@ -340,8 +339,7 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
       // Check inactivity timeout
       if (timeSinceActivity >= SUPPORT_MODE_INACTIVITY_TIMEOUT_MS) {
         exitSupportModeRef.current?.();
-        toast({
-          title: 'Support Mode Ended',
+        toast('Support Mode Ended', {
           description: 'Support mode has been automatically disabled due to inactivity.',
         });
         return;
@@ -350,8 +348,7 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
       // Check absolute timeout
       if (now >= supportModeExpiresAt) {
         exitSupportModeRef.current?.();
-        toast({
-          title: 'Support Mode Ended',
+        toast('Support Mode Ended', {
           description: 'Support mode has reached its maximum duration.',
         });
       }
@@ -359,7 +356,7 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
 
     const interval = setInterval(checkExpiry, 60000); // Check every minute
     return () => clearInterval(interval);
-  }, [isSupportModeActive, supportModeExpiresAt, lastActivityTime, toast]);
+  }, [isSupportModeActive, supportModeExpiresAt, lastActivityTime]);
 
   // Track activity for inactivity timeout
   useEffect(() => {

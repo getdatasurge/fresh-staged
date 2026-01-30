@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useSuperAdmin } from '@/contexts/SuperAdminContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
 import { useTRPC } from '@/lib/trpc';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -31,7 +31,6 @@ interface Site {
 }
 
 const Sites = () => {
-  const { toast } = useToast();
   const { effectiveOrgId, isInitialized, isImpersonating } = useEffectiveIdentity();
   const { isSupportModeActive } = useSuperAdmin();
   const trpc = useTRPC();
@@ -75,7 +74,7 @@ const Sites = () => {
 
   const handleCreate = async () => {
     if (!formData.name.trim()) {
-      toast({ title: 'Site name is required', variant: 'destructive' });
+      toast.error('Site name is required');
       return;
     }
 
@@ -92,13 +91,13 @@ const Sites = () => {
         },
       });
 
-      toast({ title: 'Site created successfully' });
+      toast.success('Site created successfully');
       setFormData({ name: '', address: '', city: '', state: '', postal_code: '' });
       setDialogOpen(false);
       sitesQuery.refetch();
     } catch (error) {
       console.error('Error creating site:', error);
-      toast({ title: 'Failed to create site', variant: 'destructive' });
+      toast.error('Failed to create site');
     }
     setIsSubmitting(false);
   };

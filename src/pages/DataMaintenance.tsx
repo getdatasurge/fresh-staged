@@ -26,7 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
 import { useTRPC } from '@/lib/trpc';
 import {
@@ -73,7 +73,6 @@ interface CleanupJob {
 
 const DataMaintenance = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const user = useUser();
   const trpc = useTRPC();
   const { isInitialized: identityInitialized } = useEffectiveIdentity();
@@ -109,11 +108,7 @@ const DataMaintenance = () => {
 
   useEffect(() => {
     if (adminStatsQuery.isError) {
-      toast({
-        title: 'Access Denied',
-        description: 'Admin access required',
-        variant: 'destructive',
-      });
+      toast.error('Access Denied', { description: 'Admin access required' });
       navigate('/dashboard');
     }
   }, [adminStatsQuery.isError, navigate, toast]);
@@ -123,14 +118,13 @@ const DataMaintenance = () => {
     try {
       // TODO: Add trpc.admin.findOrphanOrganizations endpoint
       // For now, show placeholder message
-      toast({
-        title: 'Feature migration in progress',
+      toast.success('Feature migration in progress', {
         description: 'Orphan organization scanning is being migrated to tRPC. Check back soon.',
       });
       setOrphanOrgs([]);
     } catch (error: any) {
       console.error('Error scanning orphans:', error);
-      toast({ title: 'Scan Failed', description: error.message, variant: 'destructive' });
+      toast.error('Scan Failed', { description: error.message });
     } finally {
       setIsScanning(false);
     }
@@ -150,15 +144,14 @@ const DataMaintenance = () => {
     setIsDeleting(true);
     try {
       // TODO: Add trpc.admin.softDeleteOrganization endpoint
-      toast({
-        title: 'Feature migration in progress',
+      toast.success('Feature migration in progress', {
         description: 'Organization soft delete is being migrated to tRPC.',
       });
       setDeleteDialogOpen(false);
       setSelectedOrg(null);
     } catch (error: any) {
       console.error('Error soft deleting org:', error);
-      toast({ title: 'Delete Failed', description: error.message, variant: 'destructive' });
+      toast.error('Delete Failed', { description: error.message });
     } finally {
       setIsDeleting(false);
     }
@@ -166,19 +159,14 @@ const DataMaintenance = () => {
 
   const handleHardDelete = async (org: OrphanOrg) => {
     if (deleteConfirmText !== 'DELETE') {
-      toast({
-        title: 'Confirmation Required',
-        description: 'Type DELETE to confirm',
-        variant: 'destructive',
-      });
+      toast.error('Confirmation Required', { description: 'Type DELETE to confirm' });
       return;
     }
 
     setIsDeleting(true);
     try {
       // TODO: Add trpc.admin.hardDeleteOrganization endpoint
-      toast({
-        title: 'Feature migration in progress',
+      toast.success('Feature migration in progress', {
         description: 'Organization hard delete is being migrated to tRPC.',
       });
       setHardDeleteDialogOpen(false);
@@ -186,7 +174,7 @@ const DataMaintenance = () => {
       setDeleteConfirmText('');
     } catch (error: any) {
       console.error('Error hard deleting org:', error);
-      toast({ title: 'Delete Failed', description: error.message, variant: 'destructive' });
+      toast.error('Delete Failed', { description: error.message });
     } finally {
       setIsDeleting(false);
     }

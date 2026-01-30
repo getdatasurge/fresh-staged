@@ -15,7 +15,7 @@ import {
   Home,
   Headphones,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import ThemeToggle from '@/components/ThemeToggle';
 import BrandedLogo from '@/components/BrandedLogo';
@@ -54,7 +54,6 @@ export default function PlatformLayout({
 }: PlatformLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   const stackApp = useStackApp();
   const {
     isSuperAdmin,
@@ -71,14 +70,12 @@ export default function PlatformLayout({
   // Redirect non-super-admins
   useEffect(() => {
     if (!isLoadingSuperAdmin && !isSuperAdmin) {
-      toast({
-        title: 'Access Denied',
+      toast.error('Access Denied', {
         description: 'Platform Admin access requires Super Admin privileges.',
-        variant: 'destructive',
       });
       navigate('/dashboard');
     }
-  }, [isSuperAdmin, isLoadingSuperAdmin, navigate, toast]);
+  }, [isSuperAdmin, isLoadingSuperAdmin, navigate]);
 
   const handleSignOut = async () => {
     try {
@@ -86,10 +83,8 @@ export default function PlatformLayout({
       navigate('/');
     } catch (err) {
       console.error('Sign out error:', err);
-      toast({
-        title: 'Sign out failed',
+      toast.error('Sign out failed', {
         description: err instanceof Error ? err.message : 'Unknown error',
-        variant: 'destructive',
       });
     }
   };

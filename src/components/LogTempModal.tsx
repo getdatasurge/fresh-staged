@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Thermometer, Loader2, WifiOff, Clock, Check } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
 import { temperatureSchema, notesSchema, validateInput } from '@/lib/validation';
 import { useUser } from '@stackframe/react';
@@ -40,7 +40,6 @@ const formatCadence = (seconds: number) => {
 
 const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps) => {
   const user = useUser();
-  const { toast } = useToast();
   const { isOnline, saveLogOffline } = useOfflineSync();
   const { effectiveOrgId: orgId } = useEffectiveIdentity();
   const trpc = useTRPC();
@@ -63,7 +62,7 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
 
   const handleSubmit = async () => {
     if (!unit) {
-      toast({ title: 'Please select a unit', variant: 'destructive' });
+      toast.error('Please select a unit');
       return;
     }
 
@@ -71,20 +70,14 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
     const temp = parseFloat(temperature);
     const tempResult = validateInput(temperatureSchema, temp);
     if (!tempResult.success) {
-      toast({
-        title: (tempResult as { success: false; error: string }).error,
-        variant: 'destructive',
-      });
+      toast.error((tempResult as { success: false; error: string }).error);
       return;
     }
 
     // Validate notes
     const notesResult = validateInput(notesSchema, notes);
     if (!notesResult.success) {
-      toast({
-        title: (notesResult as { success: false; error: string }).error,
-        variant: 'destructive',
-      });
+      toast.error((notesResult as { success: false; error: string }).error);
       return;
     }
 
@@ -95,10 +88,8 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
       (unit.temp_limit_low !== null && validatedTemp < unit.temp_limit_low);
 
     if (isOutOfRange && !correctiveAction.trim()) {
-      toast({
-        title: 'Corrective action required',
+      toast.error('Corrective action required', {
         description: 'Temperature is out of range. Please describe the corrective action taken.',
-        variant: 'destructive',
       });
       return;
     }
@@ -127,13 +118,10 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
           correctiveAction: isOutOfRange ? correctiveAction.trim() : null,
           isInRange: !isOutOfRange,
         });
-        toast({ title: 'Temperature logged successfully' });
+        toast.success('Temperature logged successfully');
       } else {
         await saveLogOffline(logEntry);
-        toast({
-          title: 'Saved offline',
-          description: 'Will sync when back online',
-        });
+        toast('Saved offline', { description: 'Will sync when back online' });
       }
 
       // Close modal and trigger callback
@@ -144,11 +132,7 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
 
       // Fallback to offline storage on any error
       await saveLogOffline(logEntry);
-      toast({
-        title: 'Saved offline',
-        description: 'Will sync when back online',
-        variant: 'default',
-      });
+      toast('Saved offline', { description: 'Will sync when back online' });
       onOpenChange(false);
       onSuccess?.();
     }

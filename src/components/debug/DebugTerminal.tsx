@@ -26,7 +26,7 @@ import {
   ArrowDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useUser } from '@stackframe/react';
 import { debugLog } from '@/lib/debugLogger';
 import { ErrorExplanationModal } from './ErrorExplanationModal';
@@ -205,7 +205,6 @@ function LogEntry({ entry, onExplain, onFilterByCorrelation, onCopyEntry }: LogE
 
 export function DebugTerminal() {
   const debugContext = useDebugContextSafe();
-  const { toast } = useToast();
   const user = useUser();
 
   // All hooks must be called unconditionally before any early returns
@@ -320,24 +319,21 @@ export function DebugTerminal() {
       .map((l) => `[${l.timestamp.toISOString()}] [${l.level}] [${l.category}] ${l.message}`)
       .join('\n');
     navigator.clipboard.writeText(text);
-    toast({ title: 'Logs copied to clipboard' });
-  }, [filteredLogs, toast]);
+    toast('Logs copied to clipboard');
+  }, [filteredLogs]);
 
-  const handleCopyEntry = useCallback(
-    (entry: DebugLogEntry) => {
-      const json = JSON.stringify(
-        {
-          ...entry,
-          timestamp: entry.timestamp.toISOString(),
-        },
-        null,
-        2,
-      );
-      navigator.clipboard.writeText(json);
-      toast({ title: 'Event copied to clipboard' });
-    },
-    [toast],
-  );
+  const handleCopyEntry = useCallback((entry: DebugLogEntry) => {
+    const json = JSON.stringify(
+      {
+        ...entry,
+        timestamp: entry.timestamp.toISOString(),
+      },
+      null,
+      2,
+    );
+    navigator.clipboard.writeText(json);
+    toast('Event copied to clipboard');
+  }, []);
 
   const handleExport = useCallback(() => {
     const json = debugLog.exportLogs();
@@ -348,8 +344,8 @@ export function DebugTerminal() {
     a.download = `frostguard-debug-${new Date().toISOString().slice(0, 19)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast({ title: 'Logs exported' });
-  }, [toast]);
+    toast('Logs exported');
+  }, []);
 
   const handleExportSupportSnapshot = useCallback(async () => {
     try {
@@ -360,26 +356,16 @@ export function DebugTerminal() {
         currentRoute: window.location.pathname,
       });
       downloadSnapshot(snapshot);
-      toast({
-        title: 'Snapshot exported (redacted)',
-        description: 'Safe to share with support.',
-      });
+      toast.success('Snapshot exported (redacted)', { description: 'Safe to share with support.' });
     } catch (error) {
-      toast({
-        title: 'Export failed',
-        description: 'Could not generate snapshot',
-        variant: 'destructive',
-      });
+      toast.error('Export failed', { description: 'Could not generate snapshot' });
     }
-  }, [userEmail, effectiveOrgId, toast]);
+  }, [userEmail, effectiveOrgId]);
 
-  const handleFilterByCorrelation = useCallback(
-    (correlationId: string) => {
-      setCorrelationFilter(correlationId);
-      toast({ title: `Filtering by correlation: ${correlationId.slice(-8)}` });
-    },
-    [toast],
-  );
+  const handleFilterByCorrelation = useCallback((correlationId: string) => {
+    setCorrelationFilter(correlationId);
+    toast(`Filtering by correlation: ${correlationId.slice(-8)}`);
+  }, []);
 
   const handleClearCorrelationFilter = useCallback(() => {
     setCorrelationFilter(null);

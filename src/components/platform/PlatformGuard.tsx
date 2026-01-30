@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSuperAdmin } from '@/contexts/SuperAdminContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Shield, Loader2 } from 'lucide-react';
 
 interface PlatformGuardProps {
@@ -18,7 +18,6 @@ interface PlatformGuardProps {
  */
 export function PlatformGuard({ children }: PlatformGuardProps) {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { isSuperAdmin, isLoadingSuperAdmin, rolesLoaded, roleLoadStatus } = useSuperAdmin();
   const [hasRedirected, setHasRedirected] = useState(false);
 
@@ -33,15 +32,13 @@ export function PlatformGuard({ children }: PlatformGuardProps) {
         rolesLoaded,
       });
 
-      toast({
-        title: 'Access Denied',
+      toast.error('Access Denied', {
         description: 'Platform Admin access requires Super Admin privileges.',
-        variant: 'destructive',
       });
 
       navigate('/dashboard', { replace: true });
     }
-  }, [rolesLoaded, isSuperAdmin, hasRedirected, navigate, toast, roleLoadStatus]);
+  }, [rolesLoaded, isSuperAdmin, hasRedirected, navigate, roleLoadStatus]);
 
   // Show loading state while checking roles
   if (isLoadingSuperAdmin || roleLoadStatus === 'idle') {
