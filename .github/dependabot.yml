@@ -85,10 +85,34 @@ updates:
           - '*'
 
   # ─────────────────────────────────────────────
-  # Docker (compose files and Dockerfiles)
+  # Docker — frontend (docker/frontend/Dockerfile)
   # ─────────────────────────────────────────────
   - package-ecosystem: docker
     directory: /docker/frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/New_York
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - docker
+    commit-message:
+      prefix: 'chore(docker)'
+    groups:
+      docker-images:
+        patterns:
+          - '*'
+
+  # ─────────────────────────────────────────────
+  # Docker — backend (backend/Dockerfile)
+  # Note: Dockerfile.worker uses same base image but Dependabot only
+  # detects files named "Dockerfile". Apply worker updates manually
+  # when backend/Dockerfile gets a Dependabot PR.
+  # ─────────────────────────────────────────────
+  - package-ecosystem: docker
+    directory: /backend
     schedule:
       interval: weekly
       day: monday
