@@ -1,6 +1,7 @@
 import BrandedLogo from '@/components/BrandedLogo';
 import { ConnectionStatus } from '@/components/common/ConnectionStatus';
 import { AppErrorBoundary } from '@/components/errors/AppErrorBoundary';
+import { RouteErrorFallback } from '@/components/errors/RouteErrorFallback';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import { SupportDiagnosticsPanel } from '@/components/platform/SupportDiagnosticsPanel';
 import { ImpersonationBanner, SupportModeBanner } from '@/components/platform/SupportModeBanner';
@@ -470,7 +471,13 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
         <main className="flex-1 lg:ml-64 min-w-0 overflow-x-hidden">
           <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
             {title && <h1 className="text-2xl font-bold text-foreground mb-6">{title}</h1>}
-            <AppErrorBoundary>{children}</AppErrorBoundary>
+            <AppErrorBoundary
+              fallbackRender={({ error, onRetry }) => (
+                <RouteErrorFallback error={error} title="Page Error" onRetry={onRetry} />
+              )}
+            >
+              {children}
+            </AppErrorBoundary>
           </div>
         </main>
 

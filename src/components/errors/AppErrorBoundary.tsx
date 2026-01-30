@@ -9,7 +9,7 @@
 import React, { Component, ReactNode } from 'react';
 import { ErrorFallback } from './ErrorFallback';
 
-interface FallbackRenderProps {
+export interface FallbackRenderProps {
   error: Error | null;
   onRetry: () => void;
 }
