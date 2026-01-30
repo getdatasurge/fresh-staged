@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.9 Quality Assurance -- Phase 53 in progress (plan 01 of 03 complete)
+**Current focus:** v2.9 Quality Assurance -- Phase 53 in progress (plans 01, 03 of 03 complete)
 
 ## Current Position
 
 Milestone: v2.9 Quality Assurance
 Phase: 53 of 55 (Backend API Tests)
-Plan: 01 of 03 complete (53-01 done: delete alert dupes)
+Plan: 03 of 03 (53-01 done: alert dupes deleted, 53-03 done: sites dupes removed, 53-02 pending: readings ingest fix)
 Status: In progress
-Last activity: 2026-01-30 -- Completed 53-01-PLAN.md (delete duplicate alert tests, -14 skipped)
+Last activity: 2026-01-30 -- Completed 53-03-PLAN.md (remove 2 skipped sites tRPC tests, -2 skipped)
 
-Progress: [██░░░░░░░░] 27%
+Progress: [██░░░░░░░░] 28%
 
 ## Milestones Shipped
 
@@ -48,6 +48,7 @@ Progress: [██░░░░░░░░] 27%
 - Socket.io `auth: (cb) =>` callback pattern for dynamic JWT on connect/reconnect
 - TTN webhook tests: consolidated via content replacement (routes -> api), not merge; routes file was untracked in git
 - Alert tests: deleted REST duplicate (`tests/api/alerts.test.ts`), kept tRPC version (19 passing tests, full lifecycle coverage)
+- Sites tests: removed 2 skipped tRPC update tests (duplicated by REST API file with 25 passing tests)
 
 ### Blockers/Concerns
 
@@ -56,6 +57,6 @@ None -- all known issues resolved through v2.8.
 ## Session Continuity
 
 Last session: 2026-01-30
-Stopped at: Completed 53-01-PLAN.md
+Stopped at: Completed 53-03-PLAN.md
 Resume file: None
-Next action: Execute 53-02-PLAN.md (fix readings ingest tests)
+Next action: Execute 53-02-PLAN.md (fix readings ingest tests, remove 3 query dupes)
