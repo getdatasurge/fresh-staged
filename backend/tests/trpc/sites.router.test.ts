@@ -258,51 +258,6 @@ describe('Sites tRPC Router', () => {
 	})
 
 	describe('update', () => {
-		it.skip('should update site when user is admin', async () => {
-			mockGetUserRoleInOrg.mockResolvedValue('admin')
-			const updatedSite = {
-				...baseMockSite,
-				name: 'Updated Warehouse',
-			}
-			mockUpdateSite.mockResolvedValue(updatedSite)
-
-			const ctx = createOrgContext()
-			const caller = createCaller(ctx)
-
-			const result = await caller.update({
-				organizationId: orgId,
-				siteId,
-				data: { name: 'Updated Warehouse' },
-			})
-
-			expect(result).toEqual(updatedSite)
-			expect(mockUpdateSite).toHaveBeenCalledWith(
-				siteId,
-				orgId,
-				expect.objectContaining({ name: 'Updated Warehouse' }),
-			)
-		})
-
-		it.skip('should update site when user is owner', async () => {
-			mockGetUserRoleInOrg.mockResolvedValue('owner')
-			const updatedSite = {
-				...baseMockSite,
-				name: 'Updated Warehouse',
-			}
-			mockUpdateSite.mockResolvedValue(updatedSite)
-
-			const ctx = createOrgContext()
-			const caller = createCaller(ctx)
-
-			const result = await caller.update({
-				organizationId: orgId,
-				siteId,
-				data: { name: 'Updated Warehouse' },
-			})
-
-			expect(result).toEqual(updatedSite)
-		})
-
 		it('should throw FORBIDDEN when non-admin tries to update', async () => {
 			mockGetUserRoleInOrg.mockResolvedValue('viewer')
 
