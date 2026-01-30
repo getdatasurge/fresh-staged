@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.9 Quality Assurance -- Phase 53 in progress (plans 01, 03 of 03 complete)
+**Current focus:** v2.9 Quality Assurance -- Phase 53 complete (all 3 plans done)
 
 ## Current Position
 
 Milestone: v2.9 Quality Assurance
 Phase: 53 of 55 (Backend API Tests)
-Plan: 03 of 03 (53-01 done: alert dupes deleted, 53-03 done: sites dupes removed, 53-02 pending: readings ingest fix)
-Status: In progress
-Last activity: 2026-01-30 -- Completed 53-03-PLAN.md (remove 2 skipped sites tRPC tests, -2 skipped)
+Plan: 03 of 03 (all complete: 53-01 alert dupes, 53-02 readings ingest fix, 53-03 sites dupes)
+Status: Phase complete
+Last activity: 2026-01-30 -- Completed 53-02-PLAN.md (fix 5 readings ingest tests, remove 3 query dupes)
 
 Progress: [██░░░░░░░░] 28%
 
@@ -49,6 +49,7 @@ Progress: [██░░░░░░░░] 28%
 - TTN webhook tests: consolidated via content replacement (routes -> api), not merge; routes file was untracked in git
 - Alert tests: deleted REST duplicate (`tests/api/alerts.test.ts`), kept tRPC version (19 passing tests, full lifecycle coverage)
 - Sites tests: removed 2 skipped tRPC update tests (duplicated by REST API file with 25 passing tests)
+- Readings tests: fixed 5 ingest tests via socket plugin mock, removed 3 duplicate query tests; fixed invalid UUID in TEST_READING_ID causing Zod serialization failure
 
 ### Blockers/Concerns
 
@@ -57,6 +58,6 @@ None -- all known issues resolved through v2.8.
 ## Session Continuity
 
 Last session: 2026-01-30
-Stopped at: Completed 53-03-PLAN.md
+Stopped at: Completed 53-02-PLAN.md (Phase 53 fully complete)
 Resume file: None
-Next action: Execute 53-02-PLAN.md (fix readings ingest tests, remove 3 query dupes)
+Next action: Phase 54 (if planned) or milestone completion
