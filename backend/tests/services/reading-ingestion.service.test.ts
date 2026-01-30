@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   calculateMetricsForReadings,
   getHourStart,
@@ -11,11 +11,11 @@ import {
   upsertHourlyMetrics,
   type CalculatedMetrics,
   type ThresholdContext,
-} from "../../src/services/reading-ingestion.service.js";
-import type { SingleReading } from "../../src/schemas/readings.js";
+} from '../../src/services/reading-ingestion.service.js';
+import type { SingleReading } from '../../src/schemas/readings.js';
 
 // Mock dependencies
-vi.mock("../../src/db/client.js", () => ({
+vi.mock('../../src/db/client.js', () => ({
   db: {
     select: vi.fn(() => ({
       from: vi.fn(() => ({
@@ -37,27 +37,25 @@ vi.mock("../../src/db/client.js", () => ({
   },
 }));
 
-vi.mock("../../src/services/readings.service.js", () => ({
+vi.mock('../../src/services/readings.service.js', () => ({
   ingestBulkReadings: vi.fn(),
 }));
 
-vi.mock("../../src/services/alert-evaluator.service.js", () => ({
+vi.mock('../../src/services/alert-evaluator.service.js', () => ({
   resolveEffectiveThresholds: vi.fn(),
   evaluateUnitAfterReading: vi.fn(),
 }));
 
-import * as readingsService from "../../src/services/readings.service.js";
-import * as alertEvaluator from "../../src/services/alert-evaluator.service.js";
+import * as readingsService from '../../src/services/readings.service.js';
+import * as alertEvaluator from '../../src/services/alert-evaluator.service.js';
 
 const mockIngestBulkReadings = vi.mocked(readingsService.ingestBulkReadings);
-const mockResolveThresholds = vi.mocked(
-  alertEvaluator.resolveEffectiveThresholds,
-);
+const mockResolveThresholds = vi.mocked(alertEvaluator.resolveEffectiveThresholds);
 const mockEvaluateUnit = vi.mocked(alertEvaluator.evaluateUnitAfterReading);
 
 // Test data
-const TEST_UNIT_ID = "6ee7bf36-9c9f-4a00-99ec-6e0730558f67";
-const TEST_ORG_ID = "bfc91766-90f0-4caf-b428-06cdcc49866a";
+const TEST_UNIT_ID = '6ee7bf36-9c9f-4a00-99ec-6e0730558f67';
+const TEST_ORG_ID = 'bfc91766-90f0-4caf-b428-06cdcc49866a';
 
 function createReading(overrides: Partial<SingleReading> = {}): SingleReading {
   return {
@@ -67,12 +65,12 @@ function createReading(overrides: Partial<SingleReading> = {}): SingleReading {
     battery: 85,
     signalStrength: -75,
     recordedAt: new Date().toISOString(),
-    source: "api",
+    source: 'api',
     ...overrides,
   };
 }
 
-describe("Reading Ingestion Service", () => {
+describe('Reading Ingestion Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -81,10 +79,10 @@ describe("Reading Ingestion Service", () => {
     vi.clearAllMocks();
   });
 
-  describe("Time Period Helpers", () => {
-    describe("getHourStart", () => {
-      it("should return start of hour for a given date", () => {
-        const date = new Date("2024-01-15T14:35:42.123Z");
+  describe('Time Period Helpers', () => {
+    describe('getHourStart', () => {
+      it('should return start of hour for a given date', () => {
+        const date = new Date('2024-01-15T14:35:42.123Z');
         const result = getHourStart(date);
 
         expect(result.getMinutes()).toBe(0);
@@ -93,7 +91,7 @@ describe("Reading Ingestion Service", () => {
         expect(result.getHours()).toBe(date.getHours());
       });
 
-      it("should handle midnight correctly", () => {
+      it('should handle midnight correctly', () => {
         // Use local timezone to avoid timezone conversion issues
         const date = new Date();
         date.setHours(0, 15, 0, 0);
@@ -103,7 +101,7 @@ describe("Reading Ingestion Service", () => {
         expect(result.getMinutes()).toBe(0);
       });
 
-      it("should handle end of day correctly", () => {
+      it('should handle end of day correctly', () => {
         // Use local timezone to avoid timezone conversion issues
         const date = new Date();
         date.setHours(23, 59, 59, 999);
@@ -114,9 +112,9 @@ describe("Reading Ingestion Service", () => {
       });
     });
 
-    describe("getHourEnd", () => {
-      it("should return end of hour for a given date", () => {
-        const date = new Date("2024-01-15T14:35:42.123Z");
+    describe('getHourEnd', () => {
+      it('should return end of hour for a given date', () => {
+        const date = new Date('2024-01-15T14:35:42.123Z');
         const result = getHourEnd(date);
 
         expect(result.getMinutes()).toBe(59);
@@ -126,9 +124,9 @@ describe("Reading Ingestion Service", () => {
       });
     });
 
-    describe("getDayStart", () => {
-      it("should return start of day for a given date", () => {
-        const date = new Date("2024-01-15T14:35:42.123Z");
+    describe('getDayStart', () => {
+      it('should return start of day for a given date', () => {
+        const date = new Date('2024-01-15T14:35:42.123Z');
         const result = getDayStart(date);
 
         expect(result.getHours()).toBe(0);
@@ -138,9 +136,9 @@ describe("Reading Ingestion Service", () => {
       });
     });
 
-    describe("getDayEnd", () => {
-      it("should return end of day for a given date", () => {
-        const date = new Date("2024-01-15T14:35:42.123Z");
+    describe('getDayEnd', () => {
+      it('should return end of day for a given date', () => {
+        const date = new Date('2024-01-15T14:35:42.123Z');
         const result = getDayEnd(date);
 
         expect(result.getHours()).toBe(23);
@@ -151,8 +149,8 @@ describe("Reading Ingestion Service", () => {
     });
   });
 
-  describe("calculateMetricsForReadings", () => {
-    it("should return zero metrics for empty readings array", () => {
+  describe('calculateMetricsForReadings', () => {
+    it('should return zero metrics for empty readings array', () => {
       const result = calculateMetricsForReadings([]);
 
       expect(result).toEqual({
@@ -168,7 +166,7 @@ describe("Reading Ingestion Service", () => {
       });
     });
 
-    it("should calculate correct temperature metrics for single reading", () => {
+    it('should calculate correct temperature metrics for single reading', () => {
       const readings = [createReading({ temperature: 35.5 })];
       const result = calculateMetricsForReadings(readings);
 
@@ -179,7 +177,7 @@ describe("Reading Ingestion Service", () => {
       expect(result.readingCount).toBe(1);
     });
 
-    it("should calculate correct temperature metrics for multiple readings", () => {
+    it('should calculate correct temperature metrics for multiple readings', () => {
       const readings = [
         createReading({ temperature: 30.0 }),
         createReading({ temperature: 35.5 }),
@@ -194,7 +192,7 @@ describe("Reading Ingestion Service", () => {
       expect(result.readingCount).toBe(3);
     });
 
-    it("should calculate correct humidity metrics when present", () => {
+    it('should calculate correct humidity metrics when present', () => {
       const readings = [
         createReading({ humidity: 40.0 }),
         createReading({ humidity: 50.0 }),
@@ -207,7 +205,7 @@ describe("Reading Ingestion Service", () => {
       expect(result.humidityAvg).toBe(50.0);
     });
 
-    it("should handle missing humidity values", () => {
+    it('should handle missing humidity values', () => {
       const readings = [
         createReading({ humidity: undefined }),
         createReading({ humidity: 50.0 }),
@@ -220,7 +218,7 @@ describe("Reading Ingestion Service", () => {
       expect(result.humidityAvg).toBe(50.0);
     });
 
-    it("should return null humidity metrics when all readings lack humidity", () => {
+    it('should return null humidity metrics when all readings lack humidity', () => {
       const readings = [
         createReading({ humidity: undefined }),
         createReading({ humidity: undefined }),
@@ -232,8 +230,8 @@ describe("Reading Ingestion Service", () => {
       expect(result.humidityAvg).toBeNull();
     });
 
-    describe("Anomaly Detection", () => {
-      it("should detect no anomalies when all readings are within thresholds", () => {
+    describe('Anomaly Detection', () => {
+      it('should detect no anomalies when all readings are within thresholds', () => {
         const readings = [
           createReading({ temperature: 32.0 }),
           createReading({ temperature: 35.5 }),
@@ -249,7 +247,7 @@ describe("Reading Ingestion Service", () => {
         expect(result.anomalyCount).toBe(0);
       });
 
-      it("should detect anomalies for readings above threshold", () => {
+      it('should detect anomalies for readings above threshold', () => {
         const readings = [
           createReading({ temperature: 35.0 }),
           createReading({ temperature: 42.0 }), // Above 40.0
@@ -265,7 +263,7 @@ describe("Reading Ingestion Service", () => {
         expect(result.anomalyCount).toBe(2);
       });
 
-      it("should detect anomalies for readings below threshold", () => {
+      it('should detect anomalies for readings below threshold', () => {
         const readings = [
           createReading({ temperature: 25.0 }), // Below 30.0
           createReading({ temperature: 28.0 }), // Below 30.0
@@ -281,7 +279,7 @@ describe("Reading Ingestion Service", () => {
         expect(result.anomalyCount).toBe(2);
       });
 
-      it("should detect anomalies for both above and below thresholds", () => {
+      it('should detect anomalies for both above and below thresholds', () => {
         const readings = [
           createReading({ temperature: 25.0 }), // Below 30.0
           createReading({ temperature: 35.0 }), // OK
@@ -297,7 +295,7 @@ describe("Reading Ingestion Service", () => {
         expect(result.anomalyCount).toBe(2);
       });
 
-      it("should not detect anomalies when thresholds are not provided", () => {
+      it('should not detect anomalies when thresholds are not provided', () => {
         const readings = [
           createReading({ temperature: 100.0 }), // Would be anomaly if thresholds provided
         ];
@@ -307,7 +305,7 @@ describe("Reading Ingestion Service", () => {
         expect(result.anomalyCount).toBe(0);
       });
 
-      it("should handle edge case at exact threshold boundary", () => {
+      it('should handle edge case at exact threshold boundary', () => {
         const readings = [
           createReading({ temperature: 30.0 }), // Exactly at min (30.0 * 10 = 300)
           createReading({ temperature: 40.0 }), // Exactly at max (40.0 * 10 = 400)
@@ -324,7 +322,7 @@ describe("Reading Ingestion Service", () => {
     });
   });
 
-  describe("ingestReadings", () => {
+  describe('ingestReadings', () => {
     const mockStreamService = {
       addReading: vi.fn(),
     };
@@ -336,7 +334,7 @@ describe("Reading Ingestion Service", () => {
     beforeEach(() => {
       mockIngestBulkReadings.mockResolvedValue({
         insertedCount: 1,
-        readingIds: ["reading-id-1"],
+        readingIds: ['reading-id-1'],
         alertsTriggered: 0,
       });
 
@@ -354,7 +352,7 @@ describe("Reading Ingestion Service", () => {
       });
     });
 
-    it("should return empty result for empty readings array", async () => {
+    it('should return empty result for empty readings array', async () => {
       const result = await ingestReadings([], TEST_ORG_ID);
 
       expect(result).toEqual({
@@ -368,22 +366,19 @@ describe("Reading Ingestion Service", () => {
       expect(mockIngestBulkReadings).not.toHaveBeenCalled();
     });
 
-    it("should call ingestBulkReadings with correct parameters", async () => {
+    it('should call ingestBulkReadings with correct parameters', async () => {
       const readings = [createReading()];
 
       await ingestReadings(readings, TEST_ORG_ID);
 
-      expect(mockIngestBulkReadings).toHaveBeenCalledWith(
-        readings,
-        TEST_ORG_ID,
-      );
+      expect(mockIngestBulkReadings).toHaveBeenCalledWith(readings, TEST_ORG_ID);
     });
 
-    it("should add readings to stream service when provided", async () => {
+    it('should add readings to stream service when provided', async () => {
       const readings = [createReading()];
       mockIngestBulkReadings.mockResolvedValue({
         insertedCount: 1,
-        readingIds: ["reading-id-1"],
+        readingIds: ['reading-id-1'],
         alertsTriggered: 0,
       });
 
@@ -398,38 +393,33 @@ describe("Reading Ingestion Service", () => {
       expect(mockStreamService.addReading).toHaveBeenCalledWith(
         TEST_ORG_ID,
         expect.objectContaining({
-          id: "reading-id-1",
+          id: 'reading-id-1',
           unitId: TEST_UNIT_ID,
         }),
       );
     });
 
-    it("should evaluate alerts for each unique unit", async () => {
+    it('should evaluate alerts for each unique unit', async () => {
       const readings = [
-        createReading({ unitId: "unit-1", temperature: 35.0 }),
-        createReading({ unitId: "unit-1", temperature: 36.0 }),
-        createReading({ unitId: "unit-2", temperature: 37.0 }),
+        createReading({ unitId: 'unit-1', temperature: 35.0 }),
+        createReading({ unitId: 'unit-1', temperature: 36.0 }),
+        createReading({ unitId: 'unit-2', temperature: 37.0 }),
       ];
       mockIngestBulkReadings.mockResolvedValue({
         insertedCount: 3,
-        readingIds: ["id-1", "id-2", "id-3"],
+        readingIds: ['id-1', 'id-2', 'id-3'],
         alertsTriggered: 0,
       });
 
-      await ingestReadings(
-        readings,
-        TEST_ORG_ID,
-        undefined,
-        mockSocketService as any,
-      );
+      await ingestReadings(readings, TEST_ORG_ID, undefined, mockSocketService as any);
 
       // Should be called twice - once per unique unit
       expect(mockEvaluateUnit).toHaveBeenCalledTimes(2);
     });
 
-    it("should use latest reading per unit for alert evaluation", async () => {
-      const oldDate = new Date("2024-01-15T10:00:00.000Z");
-      const newDate = new Date("2024-01-15T11:00:00.000Z");
+    it('should use latest reading per unit for alert evaluation', async () => {
+      const oldDate = new Date('2024-01-15T10:00:00.000Z');
+      const newDate = new Date('2024-01-15T11:00:00.000Z');
 
       const readings = [
         createReading({
@@ -445,16 +435,11 @@ describe("Reading Ingestion Service", () => {
       ];
       mockIngestBulkReadings.mockResolvedValue({
         insertedCount: 2,
-        readingIds: ["id-1", "id-2"],
+        readingIds: ['id-1', 'id-2'],
         alertsTriggered: 0,
       });
 
-      await ingestReadings(
-        readings,
-        TEST_ORG_ID,
-        undefined,
-        mockSocketService as any,
-      );
+      await ingestReadings(readings, TEST_ORG_ID, undefined, mockSocketService as any);
 
       // Should use temperature 40.0 * 10 = 400 (the latest reading)
       expect(mockEvaluateUnit).toHaveBeenCalledWith(
@@ -465,16 +450,16 @@ describe("Reading Ingestion Service", () => {
       );
     });
 
-    it("should count alerts triggered", async () => {
+    it('should count alerts triggered', async () => {
       const readings = [createReading()];
       mockIngestBulkReadings.mockResolvedValue({
         insertedCount: 1,
-        readingIds: ["id-1"],
+        readingIds: ['id-1'],
         alertsTriggered: 0,
       });
       mockEvaluateUnit.mockResolvedValue({
-        stateChange: { from: "ok", to: "excursion", reason: "test" },
-        alertCreated: { id: "alert-1" } as any,
+        stateChange: { from: 'ok', to: 'excursion', reason: 'test' },
+        alertCreated: { id: 'alert-1' } as any,
         alertResolved: null,
       });
 
@@ -488,11 +473,11 @@ describe("Reading Ingestion Service", () => {
       expect(result.alertsTriggered).toBe(1);
     });
 
-    it("should count anomalies detected", async () => {
+    it('should count anomalies detected', async () => {
       const readings = [createReading({ temperature: 50.0 })]; // Above 40.0 threshold
       mockIngestBulkReadings.mockResolvedValue({
         insertedCount: 1,
-        readingIds: ["id-1"],
+        readingIds: ['id-1'],
         alertsTriggered: 0,
       });
       mockResolveThresholds.mockResolvedValue({
@@ -512,40 +497,33 @@ describe("Reading Ingestion Service", () => {
       expect(result.anomaliesDetected).toBe(1);
     });
 
-    it("should emit metrics:updated event when metrics are calculated", async () => {
+    it('should emit metrics:updated event when metrics are calculated', async () => {
       const readings = [createReading()];
       mockIngestBulkReadings.mockResolvedValue({
         insertedCount: 1,
-        readingIds: ["id-1"],
+        readingIds: ['id-1'],
         alertsTriggered: 0,
       });
 
-      await ingestReadings(
-        readings,
-        TEST_ORG_ID,
-        undefined,
-        mockSocketService as any,
-      );
+      await ingestReadings(readings, TEST_ORG_ID, undefined, mockSocketService as any);
 
       expect(mockSocketService.emitToOrg).toHaveBeenCalledWith(
         TEST_ORG_ID,
-        "metrics:updated",
+        'metrics:updated',
         expect.objectContaining({
           unitsAffected: [TEST_UNIT_ID],
         }),
       );
     });
 
-    it("should continue processing when threshold resolution fails", async () => {
+    it('should continue processing when threshold resolution fails', async () => {
       const readings = [createReading()];
       mockIngestBulkReadings.mockResolvedValue({
         insertedCount: 1,
-        readingIds: ["id-1"],
+        readingIds: ['id-1'],
         alertsTriggered: 0,
       });
-      mockResolveThresholds.mockRejectedValue(
-        new Error("No thresholds configured"),
-      );
+      mockResolveThresholds.mockRejectedValue(new Error('No thresholds configured'));
 
       const result = await ingestReadings(readings, TEST_ORG_ID);
 
@@ -554,8 +532,8 @@ describe("Reading Ingestion Service", () => {
     });
   });
 
-  describe("Edge Cases", () => {
-    it("should handle negative temperatures", () => {
+  describe('Edge Cases', () => {
+    it('should handle negative temperatures', () => {
       const readings = [
         createReading({ temperature: -10.0 }),
         createReading({ temperature: -5.0 }),
@@ -569,7 +547,7 @@ describe("Reading Ingestion Service", () => {
       expect(result.tempAvg).toBe(-5.0);
     });
 
-    it("should handle very large temperature values", () => {
+    it('should handle very large temperature values', () => {
       const readings = [
         createReading({ temperature: 999.99 }),
         createReading({ temperature: 1000.0 }),
@@ -581,7 +559,7 @@ describe("Reading Ingestion Service", () => {
       expect(result.tempMax).toBe(1000.0);
     });
 
-    it("should handle decimal precision correctly", () => {
+    it('should handle decimal precision correctly', () => {
       const readings = [
         createReading({ temperature: 35.123 }),
         createReading({ temperature: 35.456 }),
@@ -595,7 +573,7 @@ describe("Reading Ingestion Service", () => {
       expect(result.tempSum).toBeCloseTo(106.368, 3);
     });
 
-    it("should handle single reading with null humidity", () => {
+    it('should handle single reading with null humidity', () => {
       const readings = [createReading({ humidity: undefined })];
 
       const result = calculateMetricsForReadings(readings);
@@ -605,7 +583,7 @@ describe("Reading Ingestion Service", () => {
       expect(result.humidityAvg).toBeNull();
     });
 
-    it("should handle mixed readings with some null humidity", () => {
+    it('should handle mixed readings with some null humidity', () => {
       const readings = [
         createReading({ temperature: 30.0, humidity: 50.0 }),
         createReading({ temperature: 35.0, humidity: undefined }),
@@ -621,8 +599,8 @@ describe("Reading Ingestion Service", () => {
     });
   });
 
-  describe("Real-time Dashboard Updates", () => {
-    it("should format streaming reading correctly", async () => {
+  describe('Real-time Dashboard Updates', () => {
+    it('should format streaming reading correctly', async () => {
       const mockStreamService = {
         addReading: vi.fn(),
       };
@@ -632,12 +610,12 @@ describe("Reading Ingestion Service", () => {
         humidity: 50.0,
         battery: 85,
         signalStrength: -75,
-        deviceId: "device-123",
+        deviceId: 'device-123',
       });
 
       mockIngestBulkReadings.mockResolvedValue({
         insertedCount: 1,
-        readingIds: ["reading-id-1"],
+        readingIds: ['reading-id-1'],
         alertsTriggered: 0,
       });
 
@@ -646,20 +624,20 @@ describe("Reading Ingestion Service", () => {
       expect(mockStreamService.addReading).toHaveBeenCalledWith(
         TEST_ORG_ID,
         expect.objectContaining({
-          id: "reading-id-1",
+          id: 'reading-id-1',
           unitId: TEST_UNIT_ID,
-          deviceId: "device-123",
+          deviceId: 'device-123',
           temperature: 35.5,
           humidity: 50.0,
           battery: 85,
           signalStrength: -75,
-          source: "api",
+          source: 'api',
           recordedAt: expect.any(Date),
         }),
       );
     });
 
-    it("should handle null deviceId correctly", async () => {
+    it('should handle null deviceId correctly', async () => {
       const mockStreamService = {
         addReading: vi.fn(),
       };
@@ -670,7 +648,7 @@ describe("Reading Ingestion Service", () => {
 
       mockIngestBulkReadings.mockResolvedValue({
         insertedCount: 1,
-        readingIds: ["reading-id-1"],
+        readingIds: ['reading-id-1'],
         alertsTriggered: 0,
       });
 
