@@ -23,6 +23,40 @@ vi.mock('../../src/services/alert-evaluator.service.js', () => ({
   evaluateUnitAfterReading: vi.fn(),
 }));
 
+// Mock socket plugin — inject mock sensorStreamService & socketService
+// so that the ingest handler's request.server.sensorStreamService works
+const mockAddReading = vi.fn();
+const mockGetLatestReading = vi.fn().mockReturnValue(null);
+const mockStop = vi.fn();
+const mockEmitToOrg = vi.fn();
+const mockInitialize = vi.fn().mockResolvedValue(undefined);
+const mockShutdown = vi.fn().mockResolvedValue(undefined);
+
+vi.mock('../../src/plugins/socket.plugin.js', () => {
+  return {
+    default: Object.assign(
+      async function socketPlugin(fastify: any) {
+        fastify.decorate('io', {});
+        fastify.decorate('socketService', {
+          emitToOrg: mockEmitToOrg,
+          joinOrganization: vi.fn(),
+          joinSite: vi.fn(),
+          joinUnit: vi.fn(),
+          leaveRoom: vi.fn(),
+          initialize: mockInitialize,
+          shutdown: mockShutdown,
+        });
+        fastify.decorate('sensorStreamService', {
+          addReading: mockAddReading,
+          getLatestReading: mockGetLatestReading,
+          stop: mockStop,
+        });
+      },
+      { [Symbol.for('skip-override')]: true }
+    ),
+  };
+});
+
 // Mock middleware
 vi.mock('../../src/middleware/api-key-auth.js', () => ({
   requireApiKey: vi.fn(),
@@ -60,7 +94,7 @@ const TEST_AREA_ID = '95e50b0a-9718-42bb-ba1c-7e56365e2c51';
 const TEST_UNIT_ID = '6ee7bf36-9c9f-4a00-99ec-6e0730558f67';
 const TEST_UNIT_2_ID = '761b1db4-846b-4664-ac3c-8ee488d945a2';
 const TEST_USER_ID = 'user_test123';
-const TEST_READING_ID = '12345678-1234-1234-1234-123456789012';
+const TEST_READING_ID = 'a1234567-89ab-4cde-8012-123456789abc';
 
 describe('Readings API', () => {
   let app: FastifyInstance;
@@ -164,15 +198,16 @@ describe('Readings API', () => {
 
     // NOTE: These tests validate service/route integration but have mocking issues with Fastify's response serialization
     // The passing tests above cover auth and validation. Full integration tests will be added in e2e suite.
-    it.skip('should return 200 with valid API key', async () => {
+    it('should return 200 with valid API key', async () => {
       mockValidApiKey();
       mockIngestBulkReadings.mockResolvedValue({
         insertedCount: 1,
         readingIds: [TEST_READING_ID],
       });
       mockEvaluateAlert.mockResolvedValue({
-        alertCreated: false,
-        alertResolved: false,
+        stateChange: null,
+        alertCreated: null,
+        alertResolved: null,
       });
 
       const response = await app.inject({
@@ -234,20 +269,155 @@ describe('Readings API', () => {
       });
     });
 
-    it.skip('should insert single reading successfully', async () => {
-      // Skipped: Fastify response serialization issue with mocks - covered in integration tests
+    it('should insert single reading successfully', async () => {
+      mockValidApiKey();
+      mockIngestBulkReadings.mockResolvedValue({
+        insertedCount: 1,
+        readingIds: [TEST_READING_ID],
+      });
+      mockEvaluateAlert.mockResolvedValue({
+        stateChange: null,
+        alertCreated: null,
+        alertResolved: null,
+      });
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/ingest/readings',
+        payload: {
+          readings: [validReading],
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(mockIngestBulkReadings).toHaveBeenCalledWith(
+        [expect.objectContaining({ unitId: TEST_UNIT_ID, temperature: 35.5 })],
+        TEST_ORG_ID
+      );
+      expect(mockAddReading).toHaveBeenCalledTimes(1);
+      expect(mockAddReading).toHaveBeenCalledWith(
+        TEST_ORG_ID,
+        expect.objectContaining({
+          id: TEST_READING_ID,
+          unitId: TEST_UNIT_ID,
+          temperature: 35.5,
+        })
+      );
     });
 
-    it.skip('should insert multiple readings successfully', async () => {
-      // Skipped: Fastify response serialization issue with mocks - covered in integration tests
+    it('should insert multiple readings successfully', async () => {
+      const secondReadingId = 'b2345678-89ab-4cde-8012-234567890abc';
+      const secondReading = {
+        unitId: TEST_UNIT_2_ID,
+        temperature: 28.0,
+        humidity: 45.0,
+        battery: 90,
+        signalStrength: -60,
+        recordedAt: new Date().toISOString(),
+        source: 'api' as const,
+      };
+
+      mockValidApiKey();
+      mockIngestBulkReadings.mockResolvedValue({
+        insertedCount: 2,
+        readingIds: [TEST_READING_ID, secondReadingId],
+      });
+      mockEvaluateAlert.mockResolvedValue({
+        stateChange: null,
+        alertCreated: null,
+        alertResolved: null,
+      });
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/ingest/readings',
+        payload: {
+          readings: [validReading, secondReading],
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const body = response.json();
+      expect(body.insertedCount).toBe(2);
+      expect(body.readingIds).toHaveLength(2);
+      expect(mockAddReading).toHaveBeenCalledTimes(2);
     });
 
-    it.skip('should return correct insertedCount and readingIds', async () => {
-      // Skipped: Fastify response serialization issue with mocks - covered in integration tests
+    it('should return correct insertedCount and readingIds', async () => {
+      const readingIds = [
+        'a1234567-89ab-4cde-8012-123456789abc',
+        'b2345678-89ab-4cde-8012-234567890abc',
+        'c3456789-89ab-4cde-8012-345678901abc',
+      ];
+      const readings = readingIds.map((_, i) => ({
+        unitId: TEST_UNIT_ID,
+        temperature: 30.0 + i,
+        humidity: 50.0,
+        battery: 80,
+        signalStrength: -70,
+        recordedAt: new Date().toISOString(),
+        source: 'api' as const,
+      }));
+
+      mockValidApiKey();
+      mockIngestBulkReadings.mockResolvedValue({
+        insertedCount: 3,
+        readingIds,
+      });
+      mockEvaluateAlert.mockResolvedValue({
+        stateChange: null,
+        alertCreated: null,
+        alertResolved: null,
+      });
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/ingest/readings',
+        payload: { readings },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const body = response.json();
+      expect(body.success).toBe(true);
+      expect(body.insertedCount).toBe(3);
+      expect(body.readingIds).toEqual(readingIds);
+      expect(body.alertsTriggered).toBe(0);
     });
 
-    it.skip('should trigger alert when temperature above threshold', async () => {
-      // Skipped: Fastify response serialization issue with mocks - covered in integration tests
+    it('should trigger alert when temperature above threshold', async () => {
+      const hotReading = {
+        ...validReading,
+        temperature: 45.0, // High temperature
+      };
+
+      mockValidApiKey();
+      mockIngestBulkReadings.mockResolvedValue({
+        insertedCount: 1,
+        readingIds: [TEST_READING_ID],
+      });
+      mockEvaluateAlert.mockResolvedValue({
+        stateChange: null,
+        alertCreated: { id: 'alert-123' } as any,
+        alertResolved: null,
+      });
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/ingest/readings',
+        payload: {
+          readings: [hotReading],
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const body = response.json();
+      expect(body.alertsTriggered).toBe(1);
+      expect(mockEvaluateAlert).toHaveBeenCalledWith(
+        TEST_UNIT_ID,
+        450, // Math.round(45.0 * 10)
+        expect.any(Date),
+        expect.anything() // socketService
+      );
     });
   });
 
