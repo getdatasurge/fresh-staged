@@ -176,9 +176,9 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 
 ### Active
 
-<!-- Next milestone TBD -->
+<!-- Current milestone: v2.9 Quality Assurance -->
 
-(No active requirements — run `/gsd:new-milestone` to define next milestone)
+(Requirements defined in `.planning/REQUIREMENTS.md`)
 
 ### Out of Scope
 
@@ -262,13 +262,17 @@ FreshTrack Pro is an IoT-based temperature monitoring system for food safety com
 | Socket.io auth callback pattern | Imperative socket.auth assignment has async race condition | Good — Socket.io waits for cb() before handshake |
 | 500ms debounce on ConnectionStatus | Brief reconnections cause visual flicker | Good — smooth UX during reconnection |
 
-## Latest Milestone: v2.8 Production Polish (Shipped 2026-01-30)
+## Current Milestone: v2.9 Quality Assurance
 
-All 7 requirements shipped. Console errors eliminated, ServiceWorker gracefully handled, WebSocket stable.
+**Goal:** Fix known test failures, restore test coverage, and audit test health across frontend and backend.
 
-## Next Milestone
+**Target fixes:**
+- Fix 15 pre-existing failures in `tests/api/ttn-devices.test.ts`
+- Restore TTNCredentialsPanel test coverage (from 5 to ~21 tests)
+- Audit and fix frontend test gaps
+- Audit and fix backend test gaps
 
-Not yet defined. Run `/gsd:new-milestone` to start next milestone planning.
+**Approach:** Fix known failures first, then expand coverage where gaps exist. Not chasing 100% coverage — focus on fixing known broken tests and restoring lost coverage.
 
 ---
-*Last updated: 2026-01-30 after v2.8 milestone shipped*
+*Last updated: 2026-01-30 after v2.9 milestone started*

@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** Planning next milestone
+**Current focus:** v2.9 Quality Assurance — defining requirements
 
 ## Current Position
 
-Milestone: None active (v2.8 shipped)
-Phase: N/A
-Plan: N/A
-Status: Ready for next milestone
-Last activity: 2026-01-30 — v2.8 Production Polish milestone archived
+Milestone: v2.9 Quality Assurance
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-01-30 — Milestone v2.9 started
 
 ## Milestones Shipped
 
@@ -54,6 +54,6 @@ None — all known issues resolved through v2.8.
 ## Session Continuity
 
 Last session: 2026-01-30
-Stopped at: v2.8 milestone archived
+Stopped at: Defining v2.9 requirements
 Resume file: None
-Next action: `/gsd:new-milestone` to define next milestone
+Next action: Define requirements, then create roadmap
