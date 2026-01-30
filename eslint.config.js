@@ -1,5 +1,6 @@
 import js from '@eslint/js';
 import globals from 'globals';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
@@ -28,6 +29,11 @@ export default tseslint.config(
       'no-useless-escape': 'warn',
       'prefer-const': 'warn',
     },
+  },
+  // Accessibility enforcement - jsx-a11y recommended rules for React components
+  {
+    ...jsxA11y.flatConfigs.recommended,
+    files: ['**/*.tsx'],
   },
   // Supabase edge functions - allow 'any' types due to Deno environment differences
   {
