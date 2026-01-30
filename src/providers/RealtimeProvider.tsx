@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
-import { socket, connectSocket, disconnectSocket } from '@/lib/socket';
+import { socket, connectSocket, disconnectSocket, setTokenGetter } from '@/lib/socket';
 import { useUser } from '@stackframe/react';
 import { useRealtimeSensorData } from '@/hooks/useRealtimeSensorData';
 import { useRealtimeAlerts } from '@/hooks/useRealtimeAlerts';
@@ -58,26 +58,17 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     // Reset error count on new connection attempt
     connectErrorCountRef.current = 0;
 
-    // Get access token from Stack Auth using ref (always fresh)
-    const connectWithAuth = async () => {
-      try {
-        const currentUser = userRef.current;
-        if (!currentUser) return;
-        const token = await currentUser.getAccessToken();
-        if (!token) {
-          console.warn('No access token available for WebSocket connection');
-          return;
-        }
+    // Register token getter so socket.io auth callback fetches fresh JWT
+    // on every connect and reconnect attempt (no race condition)
+    setTokenGetter(() => {
+      const currentUser = userRef.current;
+      if (!currentUser) return Promise.resolve(null);
+      return currentUser.getAccessToken();
+    });
 
-        setIsConnecting(true);
-        setConnectionError(null);
-        connectSocket(token);
-      } catch (error) {
-        console.error('Failed to get access token:', error);
-        setConnectionError('Failed to authenticate');
-        setIsConnecting(false);
-      }
-    };
+    setIsConnecting(true);
+    setConnectionError(null);
+    connectSocket();
 
     // Connection handlers - register OUTSIDE of connect event to avoid duplicates
     function onConnect() {
@@ -104,39 +95,21 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    // Refresh token before each reconnect attempt so we never send a stale JWT
-    function onReconnectAttempt() {
-      const currentUser = userRef.current;
-      if (currentUser) {
-        currentUser.getAccessToken().then((token) => {
-          if (token) {
-            socket.auth = { token };
-          }
-        }).catch(() => {
-          // Token refresh failed — socket.io will retry with existing auth
-        });
-      }
-    }
-
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('connect_error', onConnectError);
-    socket.io.on('reconnect_attempt', onReconnectAttempt);
 
     // Check if already connected (reconnect scenario)
     if (socket.connected) {
       setIsConnected(true);
       setIsConnecting(false);
-    } else {
-      // Initial connection
-      connectWithAuth();
     }
 
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       socket.off('connect_error', onConnectError);
-      socket.io.off('reconnect_attempt', onReconnectAttempt);
+      setTokenGetter(null);
       disconnectSocket();
     };
   }, [userId]);

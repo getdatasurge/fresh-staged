@@ -1,5 +1,8 @@
 import { io, Socket } from 'socket.io-client';
 
+// Token getter function registered by RealtimeProvider
+let tokenGetter: (() => Promise<string | null>) | null = null;
+
 // Type-safe socket with event interfaces
 interface ServerToClientEvents {
   'sensor:reading': (data: SensorReading) => void;
@@ -30,11 +33,23 @@ export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
     reconnectionDelay: 2000,
     reconnectionDelayMax: 10000,
     timeout: 20000,
+    auth: (cb) => {
+      if (tokenGetter) {
+        tokenGetter()
+          .then((token) => cb({ token: token || '' }))
+          .catch(() => cb({ token: '' }));
+      } else {
+        cb({ token: '' });
+      }
+    },
   }
 );
 
-export function connectSocket(token: string) {
-  socket.auth = { token };
+export function setTokenGetter(getter: (() => Promise<string | null>) | null) {
+  tokenGetter = getter;
+}
+
+export function connectSocket() {
   socket.connect();
 }
 
