@@ -56,7 +56,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 50-01-PLAN.md — Add error handling to ServiceWorker registration or disable auto-registration
+- [x] 50-01-PLAN.md — Add error handling to ServiceWorker registration using virtual:pwa-register/react hook
 
 ---
 
@@ -82,10 +82,10 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 49. SuperAdmin Context Fix | v2.8 | 1/1 | Complete | 2026-01-30 |
-| 50. ServiceWorker Registration Fix | v2.8 | 0/1 | Not started | - |
+| 50. ServiceWorker Registration Fix | v2.8 | 1/1 | Complete | 2026-01-30 |
 | 51. WebSocket Reconnection Stability | v2.8 | 0/1 | Not started | - |
 
-**v2.8 Total:** 1/3 plans complete (33%)
+**v2.8 Total:** 2/3 plans complete (67%)
 
 ---
 
