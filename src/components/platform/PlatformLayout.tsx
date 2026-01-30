@@ -266,7 +266,15 @@ export default function PlatformLayout({
           <div className="fixed inset-0 z-40 lg:hidden">
             <div
               className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+              role="button"
+              tabIndex={0}
+              aria-label="Close navigation menu"
               onClick={() => setMobileNavOpen(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  setMobileNavOpen(false);
+                }
+              }}
             />
             <aside
               className={cn(

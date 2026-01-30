@@ -224,9 +224,14 @@ const Reports = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Site Filter */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Site</label>
+              <label
+                htmlFor="reports-site-filter"
+                className="text-sm font-medium text-muted-foreground"
+              >
+                Site
+              </label>
               <Select value={selectedSite} onValueChange={setSelectedSite}>
-                <SelectTrigger>
+                <SelectTrigger id="reports-site-filter">
                   <SelectValue placeholder="All Sites" />
                 </SelectTrigger>
                 <SelectContent>
@@ -242,9 +247,14 @@ const Reports = () => {
 
             {/* Unit Filter */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Unit</label>
+              <label
+                htmlFor="reports-unit-filter"
+                className="text-sm font-medium text-muted-foreground"
+              >
+                Unit
+              </label>
               <Select value={selectedUnit} onValueChange={setSelectedUnit}>
-                <SelectTrigger>
+                <SelectTrigger id="reports-unit-filter">
                   <SelectValue placeholder="All Units" />
                 </SelectTrigger>
                 <SelectContent>
@@ -260,11 +270,17 @@ const Reports = () => {
 
             {/* Start Date */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Start Date</label>
+              <span
+                className="text-sm font-medium text-muted-foreground"
+                id="reports-start-date-label"
+              >
+                Start Date
+              </span>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
+                    aria-labelledby="reports-start-date-label"
                     className={cn(
                       'w-full justify-start text-left font-normal',
                       !dateRange.from && 'text-muted-foreground',
@@ -287,11 +303,17 @@ const Reports = () => {
 
             {/* End Date */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">End Date</label>
+              <span
+                className="text-sm font-medium text-muted-foreground"
+                id="reports-end-date-label"
+              >
+                End Date
+              </span>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
+                    aria-labelledby="reports-end-date-label"
                     className={cn(
                       'w-full justify-start text-left font-normal',
                       !dateRange.to && 'text-muted-foreground',

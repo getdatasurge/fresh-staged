@@ -441,9 +441,11 @@ const Inspector = () => {
           <div className="grid gap-4 sm:grid-cols-4">
             {/* Site Select */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Site</label>
+              <label htmlFor="inspector-site-select" className="text-sm font-medium">
+                Site
+              </label>
               <Select value={selectedSiteId} onValueChange={setSelectedSiteId}>
-                <SelectTrigger>
+                <SelectTrigger id="inspector-site-select">
                   <SelectValue placeholder="Select site" />
                 </SelectTrigger>
                 <SelectContent>
@@ -459,9 +461,11 @@ const Inspector = () => {
 
             {/* Unit Select */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Unit</label>
+              <label htmlFor="inspector-unit-select" className="text-sm font-medium">
+                Unit
+              </label>
               <Select value={selectedUnitId} onValueChange={setSelectedUnitId}>
-                <SelectTrigger>
+                <SelectTrigger id="inspector-unit-select">
                   <SelectValue placeholder="Select unit" />
                 </SelectTrigger>
                 <SelectContent>
@@ -477,11 +481,14 @@ const Inspector = () => {
 
             {/* Date Range */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Date Range</label>
+              <span className="text-sm font-medium" id="inspector-date-range-label">
+                Date Range
+              </span>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
+                    aria-labelledby="inspector-date-range-label"
                     className={cn('w-full justify-start text-left font-normal')}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -505,8 +512,14 @@ const Inspector = () => {
 
             {/* Quick Buttons */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Quick Select</label>
-              <div className="flex gap-2">
+              <span className="text-sm font-medium" id="inspector-quick-select-label">
+                Quick Select
+              </span>
+              <div
+                className="flex gap-2"
+                role="group"
+                aria-labelledby="inspector-quick-select-label"
+              >
                 <Button variant="outline" size="sm" onClick={() => handleQuickDate(1)}>
                   Today
                 </Button>

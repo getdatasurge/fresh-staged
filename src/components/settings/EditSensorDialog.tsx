@@ -180,8 +180,11 @@ export function EditSensorDialog({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">DevEUI</label>
+                <label htmlFor="sensor-dev-eui" className="text-sm font-medium">
+                  DevEUI
+                </label>
                 <Input
+                  id="sensor-dev-eui"
                   value={formatEUI(sensor.dev_eui)}
                   disabled
                   className="font-mono text-xs bg-background"
@@ -189,8 +192,11 @@ export function EditSensorDialog({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">AppEUI</label>
+                <label htmlFor="sensor-app-eui" className="text-sm font-medium">
+                  AppEUI
+                </label>
                 <Input
+                  id="sensor-app-eui"
                   value={sensor.app_eui ? formatEUI(sensor.app_eui) : '—'}
                   disabled
                   className="font-mono text-xs bg-background"
@@ -198,8 +204,11 @@ export function EditSensorDialog({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">AppKey</label>
+                <label htmlFor="sensor-app-key" className="text-sm font-medium">
+                  AppKey
+                </label>
                 <Input
+                  id="sensor-app-key"
                   value={maskAppKey(sensor.app_key)}
                   disabled
                   className="font-mono text-xs bg-background"

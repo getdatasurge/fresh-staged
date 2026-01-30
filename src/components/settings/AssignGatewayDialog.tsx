@@ -89,7 +89,17 @@ export function AssignGatewayDialog({
               <div
                 key={gateway.id}
                 className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 cursor-pointer"
+                role="checkbox"
+                tabIndex={0}
+                aria-checked={selectedIds.has(gateway.id)}
+                aria-label={`Select gateway ${gateway.name}`}
                 onClick={() => toggleSelection(gateway.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleSelection(gateway.id);
+                  }
+                }}
               >
                 <Checkbox
                   checked={selectedIds.has(gateway.id)}

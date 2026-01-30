@@ -198,6 +198,7 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
                 onChange={(e) => setNoteText(e.target.value)}
                 rows={3}
                 className="resize-none"
+                // eslint-disable-next-line jsx-a11y/no-autofocus -- intentional UX: focus textarea when user clicks "Add Note"
                 autoFocus
               />
               <div className="flex gap-2 justify-end">

@@ -104,7 +104,17 @@ function LogEntry({ entry, onExplain, onFilterByCorrelation, onCopyEntry }: LogE
     >
       <div
         className="flex items-start gap-2 px-2 py-1 cursor-pointer"
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
+        aria-label={`Toggle details for ${entry.category} log entry`}
         onClick={() => entry.payload && setExpanded(!expanded)}
+        onKeyDown={(e) => {
+          if ((e.key === 'Enter' || e.key === ' ') && entry.payload) {
+            e.preventDefault();
+            setExpanded(!expanded);
+          }
+        }}
       >
         <span className="text-muted-foreground shrink-0 w-20">{time}</span>
         <Badge

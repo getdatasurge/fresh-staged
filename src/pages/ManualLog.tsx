@@ -196,7 +196,16 @@ const ManualLog = () => {
                 <div
                   key={unit.id}
                   className="flex items-center justify-between p-3 rounded-lg bg-background cursor-pointer hover:bg-muted/50 transition-colors"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Log temperature for ${unit.name}`}
                   onClick={() => handleUnitClick(unit)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleUnitClick(unit);
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-3">
                     <Thermometer className="w-4 h-4 text-alarm" />

@@ -228,16 +228,21 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
             )}
 
             <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">
+              <label
+                htmlFor="log-temperature"
+                className="text-sm font-medium text-foreground mb-2 block"
+              >
                 Temperature (°F) *
               </label>
               <Input
+                id="log-temperature"
                 type="number"
                 inputMode="decimal"
                 placeholder="Enter temperature"
                 value={temperature}
                 onChange={(e) => setTemperature(e.target.value)}
                 className="text-2xl font-bold h-14 text-center"
+                // eslint-disable-next-line jsx-a11y/no-autofocus -- intentional UX: modal opens for quick data entry
                 autoFocus
               />
               {temperature && (
@@ -257,10 +262,14 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
             {/* Corrective Action - Required when out of range */}
             {isOutOfRange && (
               <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                <label className="text-sm font-medium text-destructive mb-2 block">
+                <label
+                  htmlFor="log-corrective-action"
+                  className="text-sm font-medium text-destructive mb-2 block"
+                >
                   Corrective Action Required *
                 </label>
                 <Textarea
+                  id="log-corrective-action"
                   placeholder="Describe the corrective action taken (e.g., 'Adjusted thermostat, discarded affected items, notified manager')"
                   value={correctiveAction}
                   onChange={(e) => setCorrectiveAction(e.target.value)}
@@ -275,10 +284,11 @@ const LogTempModal = ({ unit, open, onOpenChange, onSuccess }: LogTempModalProps
             )}
 
             <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">
+              <label htmlFor="log-notes" className="text-sm font-medium text-foreground mb-2 block">
                 Notes (optional)
               </label>
               <Textarea
+                id="log-notes"
                 placeholder="Any observations..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
