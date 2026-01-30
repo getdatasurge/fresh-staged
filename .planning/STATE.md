@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-30)
 
 **Core value:** Food safety data must flow reliably from sensors to alerts without interruption.
-**Current focus:** v2.9 Quality Assurance -- Phase 52 complete, ready for Phase 53
+**Current focus:** v2.9 Quality Assurance -- Phase 53 in progress (plan 01 of 03 complete)
 
 ## Current Position
 
 Milestone: v2.9 Quality Assurance
-Phase: 52 of 55 (Backend TTN Webhook Tests)
-Plan: 52-01-PLAN.md (1 plan, 1 wave)
-Status: Phase 52 complete — verified ✓
-Last activity: 2026-01-30 -- Phase 52 executed and verified (7/7 must-haves passed)
+Phase: 53 of 55 (Backend API Tests)
+Plan: 01 of 03 complete (53-01 done: delete alert dupes)
+Status: In progress
+Last activity: 2026-01-30 -- Completed 53-01-PLAN.md (delete duplicate alert tests, -14 skipped)
 
-Progress: [██░░░░░░░░] 25%
+Progress: [██░░░░░░░░] 27%
 
 ## Milestones Shipped
 
@@ -47,6 +47,7 @@ Progress: [██░░░░░░░░] 25%
 - `useSuperAdmin` returns safe default instead of throwing when context unavailable
 - Socket.io `auth: (cb) =>` callback pattern for dynamic JWT on connect/reconnect
 - TTN webhook tests: consolidated via content replacement (routes -> api), not merge; routes file was untracked in git
+- Alert tests: deleted REST duplicate (`tests/api/alerts.test.ts`), kept tRPC version (19 passing tests, full lifecycle coverage)
 
 ### Blockers/Concerns
 
@@ -54,7 +55,7 @@ None -- all known issues resolved through v2.8.
 
 ## Session Continuity
 
-Last session: 2026-01-30T08:14:46Z
-Stopped at: Completed 52-01-PLAN.md
+Last session: 2026-01-30
+Stopped at: Completed 53-01-PLAN.md
 Resume file: None
-Next action: Plan Phase 53 (Backend API Tests)
+Next action: Execute 53-02-PLAN.md (fix readings ingest tests)
