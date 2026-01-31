@@ -193,3 +193,41 @@ const hasSensorCapacity = middleware(async ({ ctx, next }) => {
  * Your input schema MUST include organizationId field.
  */
 export const sensorCapacityProcedure = orgProcedure.use(hasSensorCapacity);
+
+/**
+ * Platform admin middleware
+ * Checks that user has SUPER_ADMIN role in platform_roles table
+ */
+const isPlatformAdmin = middleware(async ({ ctx, next }) => {
+  // User is guaranteed to be non-null when used with protectedProcedure
+  const user = ctx.user as AuthUser;
+
+  // Import dynamically to avoid circular dependencies
+  const { platformRoles } = await import('../db/schema/users.js');
+  const { db } = await import('../db/client.js');
+  const { and, eq } = await import('drizzle-orm');
+
+  // Check if user has SUPER_ADMIN role
+  const [adminRole] = await db
+    .select()
+    .from(platformRoles)
+    .where(and(eq(platformRoles.userId, user.id), eq(platformRoles.role, 'SUPER_ADMIN')))
+    .limit(1);
+
+  if (!adminRole) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'Platform admin access required',
+    });
+  }
+
+  return next();
+});
+
+/**
+ * Platform admin procedure - requires authentication + SUPER_ADMIN role
+ *
+ * Use for platform-wide admin endpoints that expose cross-tenant data.
+ * Checks platform_roles table for SUPER_ADMIN role.
+ */
+export const platformAdminProcedure = protectedProcedure.use(isPlatformAdmin);

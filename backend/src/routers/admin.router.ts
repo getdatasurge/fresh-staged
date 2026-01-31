@@ -18,7 +18,7 @@ import { platformRoles, profiles, userRoles } from '../db/schema/users.js';
 import { getQueueService } from '../services/queue.service.js';
 import { getOrCreateProfile, getUserPrimaryOrganization } from '../services/user.service.js';
 import { router } from '../trpc/index.js';
-import { protectedProcedure } from '../trpc/procedures.js';
+import { platformAdminProcedure } from '../trpc/procedures.js';
 
 /**
  * Queue stats schema for response typing
@@ -53,9 +53,9 @@ export const adminRouter = router({
    * - Job counts by status (waiting, active, completed, failed, delayed)
    * - Redis connection status
    *
-   * @requires Authentication (protectedProcedure)
+   * @requires Platform admin (platformAdminProcedure)
    */
-  queueHealth: protectedProcedure
+  queueHealth: platformAdminProcedure
     .output(
       z.object({
         redisEnabled: z.boolean(),
@@ -116,7 +116,7 @@ export const adminRouter = router({
   /**
    * Get overall system status
    */
-  systemStatus: protectedProcedure
+  systemStatus: platformAdminProcedure
     .output(
       z.object({
         queues: z.object({
@@ -153,7 +153,7 @@ export const adminRouter = router({
   /**
    * Get system record counts
    */
-  systemStats: protectedProcedure
+  systemStats: platformAdminProcedure
     .output(
       z.object({
         organizations: z.number(),
@@ -196,7 +196,7 @@ export const adminRouter = router({
   /**
    * List all TTN connections across all organizations
    */
-  ttnConnections: protectedProcedure
+  ttnConnections: platformAdminProcedure
     .output(
       z.array(
         z.object({
@@ -238,7 +238,7 @@ export const adminRouter = router({
   /**
    * List all system organizations with stats
    */
-  listOrganizations: protectedProcedure
+  listOrganizations: platformAdminProcedure
     .output(
       z.array(
         z.object({
@@ -296,7 +296,7 @@ export const adminRouter = router({
   /**
    * List all system users with roles and organization context
    */
-  listUsers: protectedProcedure
+  listUsers: platformAdminProcedure
     .output(
       z.array(
         z.object({
@@ -357,7 +357,7 @@ export const adminRouter = router({
    * Search users by email or name
    * Used by GlobalUserSearch component for super admin support mode
    */
-  searchUsers: protectedProcedure
+  searchUsers: platformAdminProcedure
     .input(z.object({ query: z.string().min(2) }))
     .output(
       z.array(
@@ -408,7 +408,7 @@ export const adminRouter = router({
   /**
    * Log a super admin action for platform audit trail
    */
-  logSuperAdminAction: protectedProcedure
+  logSuperAdminAction: platformAdminProcedure
     .input(
       z.object({
         action: z.string(),
@@ -461,7 +461,7 @@ export const adminRouter = router({
   /**
    * List platform audit log entries
    */
-  listSuperAdminAuditLog: protectedProcedure
+  listSuperAdminAuditLog: platformAdminProcedure
     .input(
       z.object({
         limit: z.number().int().min(1).max(1000).optional(),

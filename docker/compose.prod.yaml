@@ -71,7 +71,7 @@ services:
     image: prometheuscommunity/pgbouncer-exporter:latest
     container_name: freshtrack-pgbouncer-exporter
     environment:
-      PGBOUNCER_EXPORTER_CONNECTION_STRING: 'postgres://pgbouncer_exporter:exporter_password@pgbouncer:6432/pgbouncer?sslmode=disable'
+      PGBOUNCER_EXPORTER_CONNECTION_STRING: 'postgres://pgbouncer_exporter:${PGBOUNCER_EXPORTER_PASSWORD}@pgbouncer:6432/pgbouncer?sslmode=disable'
     ports:
       - '9127:9127'
     depends_on:
@@ -107,7 +107,7 @@ services:
   # Redis (Cache, Jobs, PubSub)
   # ===========================================
   redis:
-    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD}
     deploy:
       resources:
         limits:

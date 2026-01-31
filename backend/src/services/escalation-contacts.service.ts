@@ -24,6 +24,11 @@ import type {
 // ============================================================================
 
 /**
+ * Valid notification channel types
+ */
+type NotificationChannel = 'WEB_TOAST' | 'IN_APP_CENTER' | 'EMAIL' | 'SMS';
+
+/**
  * Raw database row type with index signature for Drizzle compatibility
  */
 type RawEscalationContactRow = Record<string, unknown> & {
@@ -33,7 +38,7 @@ type RawEscalationContactRow = Record<string, unknown> & {
   email: string | null;
   phone: string | null;
   priority: number;
-  notification_channels: string[];
+  notification_channels: NotificationChannel[];
   is_active: boolean;
   user_id: string | null;
   created_at: string;
@@ -77,11 +82,14 @@ export async function createEscalationContact(
   organizationId: string,
   data: CreateEscalationContact,
 ): Promise<EscalationContact> {
-  // Build the notification_channels array literal for PostgreSQL
+  // Build the notification_channels array literal for PostgreSQL using parameterized queries
   const channelsArray =
     data.notification_channels.length > 0
-      ? `ARRAY[${data.notification_channels.map((c) => `'${c}'`).join(',')}]::text[]`
-      : 'ARRAY[]::text[]';
+      ? sql`ARRAY[${sql.join(
+          data.notification_channels.map((c) => sql`${c}`),
+          sql.raw(','),
+        )}]::text[]`
+      : sql`ARRAY[]::text[]`;
 
   const result = await db.execute<RawEscalationContactRow>(sql`
     INSERT INTO escalation_contacts (
@@ -99,7 +107,7 @@ export async function createEscalationContact(
       ${data.email},
       ${data.phone},
       ${data.priority},
-      ${sql.raw(channelsArray)},
+      ${channelsArray},
       ${data.is_active},
       ${data.user_id}
     )
@@ -190,11 +198,8 @@ export async function updateEscalationContact(
   }
 
   if (data.notification_channels !== undefined) {
-    const channelsArray =
-      data.notification_channels.length > 0
-        ? `ARRAY[${data.notification_channels.map((c) => `'${c}'`).join(',')}]::text[]`
-        : 'ARRAY[]::text[]';
-    setClauses.push(`notification_channels = ${channelsArray}`);
+    setClauses.push(`notification_channels = $${values.length + 1}::text[]`);
+    values.push(data.notification_channels);
   }
 
   if (data.is_active !== undefined) {

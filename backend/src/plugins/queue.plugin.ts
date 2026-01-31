@@ -128,11 +128,18 @@ function setupBullBoard(
     serverAdapter,
   });
 
-  // Register Bull Board routes with authentication
-  // Create a new plugin context to add authentication hook
+  // Register Bull Board routes with authentication and platform admin check
+  // Create a new plugin context to add authentication and authorization hooks
   fastify.register(async (fastifyInstance) => {
     // Add authentication requirement to all routes in this context
     fastifyInstance.addHook('onRequest', requireAuth);
+
+    // Add platform admin requirement
+    fastifyInstance.addHook('onRequest', async (request, reply) => {
+      // Import dynamically to avoid circular dependencies
+      const { requirePlatformAdmin } = await import('../middleware/auth.js');
+      await requirePlatformAdmin(request, reply);
+    });
 
     // Register Bull Board routes within authenticated context
     fastifyInstance.register(serverAdapter.registerPlugin(), {
@@ -140,7 +147,7 @@ function setupBullBoard(
     });
   });
 
-  fastify.log.info(`[BullBoard] Dashboard available at ${basePath} (authenticated)`);
+  fastify.log.info(`[BullBoard] Dashboard available at ${basePath} (platform admin only)`);
 }
 
 export default fastifyPlugin(queuePlugin, {

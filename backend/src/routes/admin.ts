@@ -10,18 +10,19 @@
  */
 
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
-import { requireAuth } from '../middleware/index.js';
+import { requireAuth, requirePlatformAdmin } from '../middleware/index.js';
 
 /**
  * Admin routes plugin
  *
  * Registers admin-only routes with authentication guards.
  * Bull Board dashboard is mounted by queue.plugin.ts at /admin/queues.
- * All routes under /api/admin require authentication.
+ * All routes under /api/admin require platform admin role.
  */
 const adminRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-  // Add authentication requirement to ALL routes under /api/admin
+  // Add authentication and platform admin requirement to ALL routes under /api/admin
   fastify.addHook('onRequest', requireAuth);
+  fastify.addHook('onRequest', requirePlatformAdmin);
   /**
    * GET /admin/queues/health
    *

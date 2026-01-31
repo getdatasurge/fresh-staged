@@ -2,7 +2,7 @@
 // Complete middleware stack for authentication, RBAC, and organization context
 
 // Auth middleware (02-02)
-export { requireAuth } from './auth.js';
+export { requireAuth, requirePlatformAdmin } from './auth.js';
 
 // RBAC middleware (02-03)
 export {
