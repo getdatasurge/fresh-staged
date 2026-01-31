@@ -9,7 +9,10 @@
 ```
 freshtrack-pro/
 ├── src/                    # Frontend React application
-├── supabase/               # Backend (edge functions, migrations)
+├── backend/                # Backend (Fastify + tRPC)
+├── supabase/               # Backend (edge functions, migrations - legacy)
+├── docker/                 # Docker configs (production)
+├── e2e/                    # Playwright E2E tests
 ├── docs/                   # Documentation
 ├── public/                 # Static assets (favicon, icons)
 ├── scripts/                # Build utilities
@@ -18,7 +21,7 @@ freshtrack-pro/
 ├── vite.config.ts          # Vite build configuration
 ├── tailwind.config.ts      # Tailwind CSS configuration
 ├── tsconfig.json           # TypeScript configuration
-└── KNOWLEDGE.md            # Coding conventions (READ THIS)
+└── CLAUDE.md               # Project instructions (READ THIS)
 ```
 
 ---
@@ -31,14 +34,16 @@ The React single-page application.
 
 **The entry point.** This file defines:
 
-- All routes (23 pages)
+- All routes (33 pages, 30 lazy-loaded via React.lazy)
 - Provider hierarchy (QueryClient, Tooltip, Debug, TTN contexts)
+- Suspense boundary with PageSkeleton fallback
 - Global components (Toasters, Debug terminal)
 
 **When to edit:** Adding a new route or changing provider order.
 
 ```typescript
-// Route pattern
+// Route pattern with lazy loading
+const UnitDetail = lazy(() => import("./pages/UnitDetail"));
 <Route path="/units/:unitId" element={<UnitDetail />} />
 ```
 
@@ -61,6 +66,8 @@ The React single-page application.
 | `SiteDetail.tsx`      | `/sites/:siteId`               | Site view              |
 | `AreaDetail.tsx`      | `/sites/:siteId/areas/:areaId` | Area view              |
 | `HealthDashboard.tsx` | `/admin/health`                | System health          |
+
+**Note:** 33 page components total — see App.tsx for complete route map.
 
 **Pattern:** Pages compose components from `/src/components/`.
 
@@ -193,7 +200,37 @@ integrations/
 
 ---
 
-## `/supabase` — Backend
+## `/backend` — Backend Application
+
+The Fastify + tRPC backend server (migrating from Supabase edge functions).
+
+### `/backend/src/`
+
+| Directory      | Purpose                                |
+| -------------- | -------------------------------------- |
+| `routers/`     | tRPC routers (30+ route files)         |
+| `services/`    | Business logic (40+ services)          |
+| `db/schema/`   | Drizzle ORM schema definitions         |
+| `db/client.ts` | Database connection                    |
+| `middleware/`  | Auth, rate limiting, admin role checks |
+| `plugins/`     | Fastify plugins (socket.io, etc.)      |
+| `trpc/`        | tRPC context + router setup            |
+| `jobs/`        | BullMQ job processors                  |
+| `workers/`     | Background workers                     |
+| `config/`      | Configuration                          |
+
+### Key Backend Concepts
+
+- **`orgProcedure`**: Middleware that enforces organization-scoping via `hasOrgAccess` check
+- **`protectedProcedure`**: Auth only (no role check)
+- **`platformAdminProcedure`**: Checks `platform_roles` table for SUPER_ADMIN role
+- **Drizzle ORM**: Type-safe PostgreSQL queries (no raw SQL)
+
+---
+
+## `/supabase` — Backend (Legacy)
+
+> **Note:** The primary backend has migrated to Fastify (`/backend`). Supabase edge functions in this directory are legacy code being phased out.
 
 ### `/supabase/functions/`
 
@@ -309,38 +346,39 @@ public/
 
 ### Configuration Files
 
-| File                 | Purpose                                   |
-| -------------------- | ----------------------------------------- |
-| `package.json`       | NPM dependencies and scripts              |
-| `vite.config.ts`     | Vite build config, PWA plugin, test setup |
-| `tailwind.config.ts` | Tailwind CSS customization                |
-| `tsconfig.json`      | TypeScript compiler options               |
-| `components.json`    | shadcn/ui configuration                   |
-| `.env`               | Environment variables (not in git)        |
+| File                 | Purpose                                                                  |
+| -------------------- | ------------------------------------------------------------------------ |
+| `package.json`       | NPM dependencies and scripts                                             |
+| `vite.config.ts`     | Vite build config, code splitting (manualChunks), PWA plugin, visualizer |
+| `tailwind.config.ts` | Tailwind CSS customization                                               |
+| `tsconfig.json`      | TypeScript compiler options                                              |
+| `components.json`    | shadcn/ui configuration                                                  |
+| `.env`               | Environment variables (not in git)                                       |
 
 ### Critical Logic Files
 
-| File                                              | What It Does                                   |
-| ------------------------------------------------- | ---------------------------------------------- |
-| `supabase/functions/process-unit-states/index.ts` | THE alert engine. Creates/resolves all alerts. |
-| `supabase/functions/ttn-webhook/index.ts`         | Receives all sensor data from TTN.             |
-| `src/hooks/useUnitStatus.ts`                      | Frontend status computation (mirrors backend). |
-| `src/lib/alertConfig.ts`                          | Alert type definitions and display config.     |
+| File                                          | What It Does                                   |
+| --------------------------------------------- | ---------------------------------------------- |
+| `backend/src/services/unit-state.service.ts`  | Alert evaluation engine                        |
+| `backend/src/services/ttn-webhook.service.ts` | TTN sensor data ingestion                      |
+| `src/hooks/useUnitStatus.ts`                  | Frontend status computation (mirrors backend). |
+| `src/lib/alertConfig.ts`                      | Alert type definitions and display config.     |
 
 ---
 
 ## Where to Find Things
 
-| I need to...         | Look in...                                |
-| -------------------- | ----------------------------------------- |
-| Add a new page       | `src/pages/` + `src/App.tsx`              |
-| Add a component      | `src/components/{feature}/`               |
-| Add a data hook      | `src/hooks/`                              |
-| Change alert logic   | `supabase/functions/process-unit-states/` |
-| Change TTN handling  | `supabase/functions/ttn-webhook/`         |
-| Add a database table | `supabase/migrations/`                    |
-| Change validation    | `src/lib/validation.ts`                   |
-| Add an edge function | `supabase/functions/{new-function}/`      |
+| I need to...           | Look in...                                           |
+| ---------------------- | ---------------------------------------------------- |
+| Add a new page         | `src/pages/` + `src/App.tsx` (add React.lazy import) |
+| Add a component        | `src/components/{feature}/`                          |
+| Add a data hook        | `src/hooks/`                                         |
+| Change alert logic     | `backend/src/services/unit-state.service.ts`         |
+| Change TTN handling    | `backend/src/services/ttn-webhook.service.ts`        |
+| Add a database table   | `backend/src/db/schema/`                             |
+| Change validation      | `src/lib/validation.ts`                              |
+| Add an edge function   | `backend/src/routers/` (prefer tRPC)                 |
+| Add backend middleware | `backend/src/middleware/`                            |
 
 ---
 

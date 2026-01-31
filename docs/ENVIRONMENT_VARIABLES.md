@@ -7,8 +7,8 @@ This document provides complete documentation of all environment variables used 
 | Category | Required Variables                                    | Secret Variables                             |
 | -------- | ----------------------------------------------------- | -------------------------------------------- |
 | Core     | `NODE_ENV`, `DOMAIN`                                  | -                                            |
-| Database | `DATABASE_URL`                                        | `POSTGRES_PASSWORD`                          |
-| Auth     | `STACK_AUTH_PROJECT_ID`, `STACK_AUTH_PUBLISHABLE_KEY` | `STACK_AUTH_SECRET_KEY`                      |
+| Database | `DATABASE_URL`                                        | `POSTGRES_PASSWORD`, `REDIS_PASSWORD`        |
+| Auth     | `STACK_AUTH_PROJECT_ID`, `STACK_AUTH_PUBLISHABLE_KEY` | `STACK_AUTH_SECRET_KEY`, `JWT_SECRET`        |
 | Storage  | `MINIO_ENDPOINT`                                      | `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`     |
 | Payments | -                                                     | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` |
 | IoT      | `TTN_APPLICATION_ID` (if using)                       | `TTN_API_KEY`, `TTN_WEBHOOK_SECRET`          |
@@ -53,11 +53,12 @@ This document provides complete documentation of all environment variables used 
 
 ### Redis
 
-| Variable     | Required | Default     | Description                                       |
-| ------------ | -------- | ----------- | ------------------------------------------------- |
-| `REDIS_URL`  | Yes      | -           | Redis connection URL (e.g., `redis://redis:6379`) |
-| `REDIS_HOST` | No       | `localhost` | Alternative: Redis host                           |
-| `REDIS_PORT` | No       | `6379`      | Alternative: Redis port                           |
+| Variable         | Required | Default     | Description                                                |
+| ---------------- | -------- | ----------- | ---------------------------------------------------------- |
+| `REDIS_URL`      | Yes      | -           | Redis connection URL (e.g., `redis://redis:6379`)          |
+| `REDIS_HOST`     | No       | `localhost` | Alternative: Redis host                                    |
+| `REDIS_PORT`     | No       | `6379`      | Alternative: Redis port                                    |
+| `REDIS_PASSWORD` | No       | -           | Redis authentication password (recommended for production) |
 
 ### Stack Auth (Authentication)
 
@@ -120,14 +121,15 @@ This document provides complete documentation of all environment variables used 
 
 ### Security & CORS
 
-| Variable                  | Required | Default  | Description                                |
-| ------------------------- | -------- | -------- | ------------------------------------------ |
-| `CORS_ORIGINS`            | Yes      | -        | Comma-separated allowed origins            |
-| `RATE_LIMIT_WINDOW`       | No       | `60000`  | Rate limit window (ms)                     |
-| `RATE_LIMIT_MAX`          | No       | `100`    | Max requests per window                    |
-| `SESSION_COOKIE_SECURE`   | No       | `true`   | Secure cookies (HTTPS only)                |
-| `SESSION_COOKIE_SAMESITE` | No       | `strict` | SameSite cookie attribute                  |
-| `SESSION_COOKIE_DOMAIN`   | No       | -        | Cookie domain (e.g., `.freshtrackpro.com`) |
+| Variable                  | Required | Default  | Description                                                    |
+| ------------------------- | -------- | -------- | -------------------------------------------------------------- |
+| `JWT_SECRET`              | Yes      | -        | Secret key for signing JWTs (min 32 chars, randomly generated) |
+| `CORS_ORIGINS`            | Yes      | -        | Comma-separated allowed origins                                |
+| `RATE_LIMIT_WINDOW`       | No       | `60000`  | Rate limit window (ms)                                         |
+| `RATE_LIMIT_MAX`          | No       | `100`    | Max requests per window                                        |
+| `SESSION_COOKIE_SECURE`   | No       | `true`   | Secure cookies (HTTPS only)                                    |
+| `SESSION_COOKIE_SAMESITE` | No       | `strict` | SameSite cookie attribute                                      |
+| `SESSION_COOKIE_DOMAIN`   | No       | -        | Cookie domain (e.g., `.freshtrackpro.com`)                     |
 
 ### Feature Flags
 
@@ -157,6 +159,7 @@ For self-hosted deployments, secrets are managed via files mounted as Docker sec
 ```
 secrets/
 ├── postgres_password.txt
+├── redis_password.txt
 ├── minio_user.txt
 ├── minio_password.txt
 ├── stack_auth_secret.txt
@@ -220,6 +223,7 @@ These are baked into the frontend build. For production, set them in the Docker 
 5. **Audit access** - Log who accesses production secrets
 6. **Separate environments** - Different secrets for dev/staging/production
 7. **No secrets in logs** - Ensure application doesn't log sensitive values
+8. **Require Redis authentication** - Set `REDIS_PASSWORD` in production to prevent unauthorized access
 
 ## Troubleshooting
 

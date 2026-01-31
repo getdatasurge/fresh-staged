@@ -8,15 +8,15 @@
 
 ### Authentication Provider
 
-FreshTrack Pro uses **Supabase Auth** for all user authentication:
+FrostGuard uses **Stack Auth** for all user authentication:
 
-| Component         | Technology                      |
-| ----------------- | ------------------------------- |
-| Identity Provider | Supabase Auth (GoTrue)          |
-| Token Format      | JWT (RS256 signed)              |
-| Session Storage   | Browser localStorage            |
-| Token Refresh     | Automatic refresh before expiry |
-| Password Hashing  | bcrypt (Supabase managed)       |
+| Component         | Technology                       |
+| ----------------- | -------------------------------- |
+| Identity Provider | Stack Auth                       |
+| Token Format      | JWT (RS256 signed)               |
+| Session Storage   | Browser (Stack Auth SDK manages) |
+| Token Refresh     | Automatic (Stack Auth SDK)       |
+| Password Hashing  | Stack Auth managed               |
 
 ### Authentication Flow
 
@@ -24,18 +24,16 @@ FreshTrack Pro uses **Supabase Auth** for all user authentication:
 sequenceDiagram
     participant U as User Browser
     participant A as Auth Page
-    participant SA as Supabase Auth
-    participant DB as Database
+    participant SA as Stack Auth
     participant D as Dashboard
 
     U->>A: Navigate to /auth
     A->>U: Display login form
     U->>A: Submit email/password
-    A->>SA: signInWithPassword()
+    A->>SA: Stack Auth sign-in
     SA->>SA: Validate credentials
-    SA->>DB: Create session record
     SA->>A: Return JWT + refresh token
-    A->>U: Store tokens in localStorage
+    A->>U: Store tokens (SDK managed)
     A->>D: Redirect to /dashboard
     D->>SA: Verify JWT on each request
     SA->>D: Return user context
@@ -44,13 +42,11 @@ sequenceDiagram
 ### Token Structure
 
 ```typescript
-// JWT Payload (decoded)
+// JWT Payload (decoded) - issued by Stack Auth
 {
-  "aud": "authenticated",
   "exp": 1704931200,           // Expiration timestamp
   "sub": "user-uuid-here",     // User ID
   "email": "user@example.com",
-  "role": "authenticated",     // Supabase role (not app role)
   "session_id": "session-uuid"
 }
 ```
@@ -59,19 +55,14 @@ sequenceDiagram
 
 | Aspect                 | Configuration                     |
 | ---------------------- | --------------------------------- |
-| Access token lifetime  | 1 hour (Supabase default)         |
+| Access token lifetime  | 1 hour (Stack Auth default)       |
 | Refresh token lifetime | 7 days                            |
 | Concurrent sessions    | Unlimited                         |
 | Session invalidation   | On password change, manual logout |
 
 ### Authentication Endpoints
 
-| Endpoint           | Purpose             | Rate Limited |
-| ------------------ | ------------------- | ------------ |
-| `/auth/v1/signup`  | User registration   | Yes          |
-| `/auth/v1/token`   | Login, refresh      | Yes          |
-| `/auth/v1/logout`  | Session termination | No           |
-| `/auth/v1/recover` | Password reset      | Yes          |
+Stack Auth handles all authentication endpoints externally via its SDK. The application does not expose direct auth API endpoints - all authentication flows are managed through the Stack Auth service and SDK integration.
 
 ---
 
@@ -92,9 +83,9 @@ password.length >= 8           // Minimum length
 
 ### Password Storage
 
-- **Hashing**: bcrypt with cost factor (Supabase managed)
-- **Salt**: Unique per password (bcrypt built-in)
-- **Storage**: `auth.users` table (never in application tables)
+- **Hashing**: Stack Auth managed (secure hashing algorithm)
+- **Salt**: Unique per password (Stack Auth built-in)
+- **Storage**: Stack Auth service (never in application database)
 
 ### Password Reset Flow
 
@@ -102,11 +93,11 @@ password.length >= 8           // Minimum length
 sequenceDiagram
     participant U as User
     participant A as Auth Page
-    participant SA as Supabase Auth
+    participant SA as Stack Auth
     participant E as Email Service
 
     U->>A: Click "Forgot Password"
-    A->>SA: resetPasswordForEmail()
+    A->>SA: Stack Auth reset flow
     SA->>E: Send reset link email
     E->>U: Email with magic link
     U->>A: Click reset link
@@ -114,7 +105,7 @@ sequenceDiagram
     SA->>A: Token valid
     A->>U: Show new password form
     U->>A: Submit new password
-    A->>SA: updateUser({ password })
+    A->>SA: Stack Auth password update
     SA->>SA: Invalidate other sessions
     SA->>A: Success
 ```
@@ -125,7 +116,7 @@ sequenceDiagram
 
 ### Role Hierarchy
 
-FreshTrack Pro implements a **role-based access control (RBAC)** model:
+FrostGuard implements a **role-based access control (RBAC)** model:
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -203,14 +194,16 @@ if (role === 'owner' || role === 'admin') {
 ### Permission Checking (Backend)
 
 ```typescript
-// Edge function pattern
-const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+// tRPC middleware pattern (backend/src/trpc/procedures.ts)
 
-if (!['owner', 'admin'].includes(profile.role)) {
-  return new Response(JSON.stringify({ error: 'Forbidden' }), {
-    status: 403,
-  });
-}
+// Auth only - no role check
+export const protectedProcedure = t.procedure.use(authMiddleware);
+
+// Org-scoped - verifies user belongs to organization
+export const orgProcedure = protectedProcedure.use(orgScopeMiddleware);
+
+// Platform admin - checks platform_roles table for SUPER_ADMIN
+export const platformAdminProcedure = protectedProcedure.use(platformAdminMiddleware);
 ```
 
 ---
@@ -246,6 +239,8 @@ graph TD
 ```
 
 ### Organization Isolation Enforcement
+
+**Primary enforcement** is via tRPC middleware (`orgProcedure`) with RLS as defense-in-depth.
 
 #### Database Level (RLS)
 
@@ -290,8 +285,12 @@ $$ LANGUAGE sql SECURITY DEFINER;
 #### Application Level
 
 ```typescript
-// Every data query includes organization scope
-const { data } = await supabase.from('units').select('*').eq('organization_id', organizationId); // Explicit scope
+// tRPC orgProcedure automatically injects organizationId
+// All queries in org-scoped routers include org filter via middleware
+const units = await db
+  .select()
+  .from(unitsTable)
+  .where(eq(unitsTable.organizationId, ctx.organizationId));
 ```
 
 ### Cross-Organization Protection
@@ -317,8 +316,8 @@ const { data } = await supabase.from('units').select('*').eq('organization_id', 
 ### Token Refresh Flow
 
 ```typescript
-// Automatic refresh (Supabase client)
-const { data, error } = await supabase.auth.refreshSession();
+// Automatic refresh (Stack Auth SDK)
+// SDK handles refresh automatically
 
 // Triggered when:
 // - Access token expires
@@ -337,44 +336,25 @@ const { data, error } = await supabase.auth.refreshSession();
 
 ---
 
-## JWT Verification in Edge Functions
+## JWT Verification in Backend
 
-### Automatic Verification (config.toml)
+### Automatic Verification (tRPC Middleware)
 
-```toml
-[functions.stripe-checkout]
-verify_jwt = true  # Supabase verifies before function executes
-```
+All tRPC procedures use middleware for JWT verification:
 
-### Manual Verification
+| Procedure                | Verification           | Use Case                   |
+| ------------------------ | ---------------------- | -------------------------- |
+| `publicProcedure`        | None                   | Health checks, public data |
+| `protectedProcedure`     | JWT required           | Authenticated endpoints    |
+| `orgProcedure`           | JWT + org membership   | Org-scoped data access     |
+| `platformAdminProcedure` | JWT + SUPER_ADMIN role | Platform administration    |
 
-```typescript
-// For functions with verify_jwt = false
-const authHeader = req.headers.get('Authorization');
-const token = authHeader?.replace('Bearer ', '');
+### Webhook Verification
 
-const {
-  data: { user },
-  error,
-} = await supabase.auth.getUser(token);
-
-if (error || !user) {
-  return new Response('Unauthorized', { status: 401 });
-}
-```
-
-### Verification Matrix
-
-| Function                  | JWT Verification | Auth Method      |
-| ------------------------- | ---------------- | ---------------- |
-| `stripe-checkout`         | Automatic        | Supabase JWT     |
-| `stripe-portal`           | Automatic        | Supabase JWT     |
-| `sensor-simulator`        | Automatic        | Supabase JWT     |
-| `ttn-webhook`             | None             | Webhook secret   |
-| `stripe-webhook`          | None             | HMAC signature   |
-| `manage-ttn-settings`     | Manual           | Bearer token     |
-| `process-unit-states`     | None             | Internal API key |
-| `export-temperature-logs` | Manual           | JWT or API key   |
+| Integration     | Auth Method            | Implementation                   |
+| --------------- | ---------------------- | -------------------------------- |
+| TTN webhooks    | Per-org webhook secret | Constant-time comparison         |
+| Stripe webhooks | HMAC signature         | stripe.webhooks.constructEvent() |
 
 ---
 
@@ -416,13 +396,13 @@ Used by: Stripe webhooks
 
 ## Security Events Logged
 
-| Event             | Logged Data                            | Table          |
-| ----------------- | -------------------------------------- | -------------- |
-| Login success     | user_id, IP, user_agent, timestamp     | Supabase audit |
-| Login failure     | email, IP, timestamp                   | Supabase audit |
-| Password change   | user_id, timestamp                     | Supabase audit |
-| Role change       | actor, target_user, old_role, new_role | event_logs     |
-| Permission denied | user_id, resource, action, timestamp   | Function logs  |
+| Event             | Logged Data                            | Table        |
+| ----------------- | -------------------------------------- | ------------ |
+| Login success     | user_id, IP, user_agent, timestamp     | Stack Auth   |
+| Login failure     | email, IP, timestamp                   | Stack Auth   |
+| Password change   | user_id, timestamp                     | Stack Auth   |
+| Role change       | actor, target_user, old_role, new_role | event_logs   |
+| Permission denied | user_id, resource, action, timestamp   | Backend logs |
 
 ---
 
@@ -436,6 +416,7 @@ Used by: Stripe webhooks
 - [x] Row-level security policies
 - [x] Webhook signature verification
 - [x] Service role isolation
+- [x] Platform admin role enforcement (platformAdminProcedure)
 
 ### Recommended Enhancements
 
