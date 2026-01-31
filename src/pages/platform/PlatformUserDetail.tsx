@@ -34,7 +34,7 @@ export default function PlatformUserDetail() {
   } = useImpersonateAndNavigate();
 
   const userQuery = useQuery(
-    trpc.admin.getUser.queryOptions({ userId: userId || '' }, { enabled: !!userId }),
+    (trpc.admin as any).getUser.queryOptions({ userId: userId || '' }, { enabled: !!userId }),
   );
 
   const hasLoggedUserRef = useRef(false);
@@ -43,17 +43,18 @@ export default function PlatformUserDetail() {
   useEffect(() => {
     if (userQuery.data && !hasLoggedUserRef.current) {
       hasLoggedUserRef.current = true;
+      const userData = userQuery.data as any;
       logSuperAdminAction(
         'VIEWED_USER_DETAIL',
         'user',
-        userQuery.data.userId,
-        userQuery.data.organizationId || undefined,
-        { user_email: userQuery.data.email },
+        userData.userId,
+        userData.organizationId || undefined,
+        { user_email: userData.email },
       );
     }
   }, [userQuery.data, logSuperAdminAction]);
 
-  const user = userQuery.data;
+  const user = userQuery.data as any;
   const isLoading = userQuery.isLoading;
 
   const handleViewAsUser = () => {

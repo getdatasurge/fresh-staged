@@ -35,7 +35,10 @@ export default function PlatformOrganizationDetail() {
   const trpc = useTRPC();
 
   const orgQuery = useQuery(
-    trpc.admin.getOrganization.queryOptions({ organizationId: orgId || '' }, { enabled: !!orgId }),
+    (trpc.admin as any).getOrganization.queryOptions(
+      { organizationId: orgId || '' },
+      { enabled: !!orgId },
+    ),
   );
 
   const hasLoggedOrgRef = useRef(false);
@@ -44,18 +47,15 @@ export default function PlatformOrganizationDetail() {
   useEffect(() => {
     if (orgQuery.data && !hasLoggedOrgRef.current) {
       hasLoggedOrgRef.current = true;
-      setViewingOrg(orgQuery.data.id, orgQuery.data.name);
-      logSuperAdminAction(
-        'VIEWED_ORGANIZATION_DETAIL',
-        'organization',
-        orgQuery.data.id,
-        orgQuery.data.id,
-        { org_name: orgQuery.data.name },
-      );
+      const org = orgQuery.data as any;
+      setViewingOrg(org.id, org.name);
+      logSuperAdminAction('VIEWED_ORGANIZATION_DETAIL', 'organization', org.id, org.id, {
+        org_name: org.name,
+      });
     }
   }, [orgQuery.data, setViewingOrg, logSuperAdminAction]);
 
-  const organization = orgQuery.data;
+  const organization = orgQuery.data as any;
   const isLoading = orgQuery.isLoading;
 
   const handleViewAsUser = async (user: any) => {

@@ -72,7 +72,7 @@ const Units = () => {
       unit_type: u.unitType,
       status: u.status,
       last_temp_reading: u.lastTemperature,
-      last_reading_at: u.lastReadingAt?.toISOString() || null,
+      last_reading_at: u.lastReadingAt || null,
       temp_limit_high: u.tempMax,
       temp_limit_low: u.tempMin,
       area: {

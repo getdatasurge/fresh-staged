@@ -365,20 +365,25 @@ const UnitDetail = () => {
 
   const primaryLoraSensor = useMemo(() => {
     if (!loraSensors?.length) return null;
-    const primary = loraSensors.find((s) => s.is_primary);
+    const primary = loraSensors.find((s) => (s as any).is_primary);
     if (primary) return primary;
     const tempSensors = loraSensors.filter((s) =>
-      ['temperature', 'temperature_humidity', 'combo'].includes(s.sensor_type || ''),
+      ['temperature', 'temperature_humidity', 'combo'].includes((s as any).sensor_type || ''),
     );
     return (
       tempSensors.sort(
-        (a, b) => new Date(b.last_seen_at || 0).getTime() - new Date(a.last_seen_at || 0).getTime(),
+        (a, b) =>
+          new Date((b as any).last_seen_at || 0).getTime() -
+          new Date((a as any).last_seen_at || 0).getTime(),
       )[0] || loraSensors[0]
     );
   }, [loraSensors]);
 
   const doorSensor = useMemo(
-    () => loraSensors?.find((s) => s.sensor_type === 'door' || s.sensor_type === 'contact') || null,
+    () =>
+      loraSensors?.find(
+        (s) => (s as any).sensor_type === 'door' || (s as any).sensor_type === 'contact',
+      ) || null,
     [loraSensors],
   );
 
@@ -391,16 +396,16 @@ const UnitDetail = () => {
 
   const effectiveDoorState = useMemo(() => {
     const latestEvent = doorEventsQuery.data?.[0];
-    if (latestEvent && unitQuery.data?.doorLastChangedAt) {
+    if (latestEvent && (unitQuery.data as any)?.doorLastChangedAt) {
       const eventTime = new Date(latestEvent.occurredAt).getTime();
-      const unitTime = new Date(unitQuery.data.doorLastChangedAt).getTime();
+      const unitTime = new Date((unitQuery.data as any).doorLastChangedAt).getTime();
       if (eventTime >= unitTime) {
         return { state: latestEvent.state, since: latestEvent.occurredAt.toISOString() };
       }
     }
     return {
-      state: unitQuery.data?.doorState || 'unknown',
-      since: unitQuery.data?.doorLastChangedAt?.toISOString() || null,
+      state: (unitQuery.data as any)?.doorState || 'unknown',
+      since: (unitQuery.data as any)?.doorLastChangedAt?.toISOString() || null,
     };
   }, [doorEventsQuery.data, unitQuery.data]);
 
@@ -503,7 +508,7 @@ const UnitDetail = () => {
       last_manual_log_at: unit.last_manual_log_at,
       last_reading_at: unit.last_reading_at,
       last_temp_reading: unit.last_temp_reading,
-      last_checkin_at: primaryLoraSensor?.last_seen_at || unit.last_reading_at,
+      last_checkin_at: (primaryLoraSensor as any)?.last_seen_at || unit.last_reading_at,
       checkin_interval_minutes: effectiveRules.expected_reading_interval_seconds / 60,
       area: {
         name: unit.area.name,
@@ -514,7 +519,7 @@ const UnitDetail = () => {
     const computed = computeUnitStatus(unitStatusInfo, effectiveRules);
     const sensorId = primaryLoraSensor?.id || device?.id || null;
     const now = Date.now();
-    const lastSeenAt = primaryLoraSensor?.last_seen_at || null;
+    const lastSeenAt = (primaryLoraSensor as any)?.last_seen_at || null;
     const lastReadingAtVal = unit?.last_reading_at || null;
     const effectiveLastCheckin = lastSeenAt || lastReadingAtVal;
 
@@ -733,12 +738,12 @@ const UnitDetail = () => {
               primaryLoraSensor
                 ? {
                     id: primaryLoraSensor.id,
-                    name: primaryLoraSensor.name,
-                    last_seen_at: primaryLoraSensor.last_seen_at,
-                    battery_level: primaryLoraSensor.battery_level,
-                    signal_strength: primaryLoraSensor.signal_strength,
-                    status: primaryLoraSensor.status,
-                    sensor_type: primaryLoraSensor.sensor_type,
+                    name: (primaryLoraSensor as any).name,
+                    last_seen_at: (primaryLoraSensor as any).last_seen_at,
+                    battery_level: (primaryLoraSensor as any).battery_level,
+                    signal_strength: (primaryLoraSensor as any).signal_strength,
+                    status: (primaryLoraSensor as any).status,
+                    sensor_type: (primaryLoraSensor as any).sensor_type,
                   }
                 : undefined
             }
@@ -748,11 +753,11 @@ const UnitDetail = () => {
             loraSensors={
               loraSensors?.map((s) => ({
                 id: s.id,
-                name: s.name,
-                battery_level: s.battery_level,
-                signal_strength: s.signal_strength,
-                last_seen_at: s.last_seen_at,
-                status: s.status,
+                name: (s as any).name,
+                battery_level: (s as any).battery_level,
+                signal_strength: (s as any).signal_strength,
+                last_seen_at: (s as any).last_seen_at,
+                status: (s as any).status,
               })) || []
             }
             lastKnownGood={lastKnownGood}
