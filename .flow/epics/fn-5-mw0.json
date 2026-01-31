@@ -1,0 +1,13 @@
+{
+  "branch_name": "fn-5-mw0",
+  "created_at": "2026-01-30T11:38:20.468614Z",
+  "depends_on_epics": [],
+  "id": "fn-5-mw0",
+  "next_task": 1,
+  "plan_review_status": "unknown",
+  "plan_reviewed_at": null,
+  "spec_path": ".flow/specs/fn-5-mw0.md",
+  "status": "done",
+  "title": "DX Tooling: Prettier, Husky, lint-staged",
+  "updated_at": "2026-01-30T12:36:16.966825Z"
+}

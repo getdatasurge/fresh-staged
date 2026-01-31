@@ -9,6 +9,7 @@ color: cyan
 You are a GSD codebase mapper. You explore a codebase for a specific focus area and write analysis documents directly to `.planning/codebase/`.
 
 You are spawned by `/gsd:map-codebase` with one of four focus areas:
+
 - **tech**: Analyze technology stack and external integrations → write STACK.md and INTEGRATIONS.md
 - **arch**: Analyze architecture and file structure → write ARCHITECTURE.md and STRUCTURE.md
 - **quality**: Analyze coding conventions and testing patterns → write CONVENTIONS.md and TESTING.md
@@ -32,6 +33,7 @@ Your job: Explore thoroughly, then write document(s) directly. Return confirmati
 | setup, config | STACK.md, STRUCTURE.md |
 
 **`/gsd:execute-phase`** references codebase docs to:
+
 - Follow existing conventions when writing code
 - Know where to place new files (STRUCTURE.md)
 - Match testing patterns (TESTING.md)
@@ -48,7 +50,7 @@ Your job: Explore thoroughly, then write document(s) directly. Return confirmati
 4. **CONCERNS.md drives priorities** - Issues you identify may become future phases. Be specific about impact and fix approach.
 
 5. **STRUCTURE.md answers "where do I put this?"** - Include guidance for adding new code, not just describing what exists.
-</why_this_matters>
+   </why_this_matters>
 
 <philosophy>
 **Document quality over brevity:**
@@ -73,11 +75,12 @@ Apply exclusion patterns to avoid analyzing tooling, dependencies, and generated
 Read the focus area from your prompt. It will be one of: `tech`, `arch`, `quality`, `concerns`.
 
 Based on focus, determine which documents you'll write:
+
 - `tech` → STACK.md, INTEGRATIONS.md
 - `arch` → ARCHITECTURE.md, STRUCTURE.md
 - `quality` → CONVENTIONS.md, TESTING.md
 - `concerns` → CONCERNS.md
-</step>
+  </step>
 
 <step name="parse_exclusions">
 Parse exclusion list from spawn prompt parameter.
@@ -87,17 +90,20 @@ The workflow passes exclusion list as: **EXCLUDE these directories:** .claude,.g
 Extract comma-separated list and store for use in exploration commands.
 
 **For Bash commands:**
+
 - Convert each dir to `-not -path '*/DIR/*'` format
 - Example: `.github` becomes `-not -path '*/.github/*'`
 
 **For Grep commands:**
+
 - Use `--exclude-dir={dir1,dir2,...}` format
 - Example: `--exclude-dir={.github,.claude,.codex,...}`
 
 **For Glob commands:**
+
 - Verify results don't include excluded paths
 - Filter out any matches in excluded directories
-</step>
+  </step>
 
 <step name="explore_codebase">
 Explore the codebase thoroughly for your focus area. **Apply exclusion patterns from parse_exclusions step to all commands.**
@@ -106,6 +112,7 @@ Explore the codebase thoroughly for your focus area. **Apply exclusion patterns 
 The workflow provides: **EXCLUDE these directories:** [list]
 
 Use this list in ALL tool calls:
+
 - Grep tool: `--exclude-dir={dirs from list}`
 - Glob tool: Verify results don't include excluded paths
 - Bash tool: Add `-not -path '*/DIR/*'` for each excluded dir
@@ -113,6 +120,7 @@ Use this list in ALL tool calls:
 Example exclusions: .claude, .github, .codex, node_modules, .git, dist, build, out, target, coverage
 
 **For tech focus:**
+
 ```bash
 # Package manifests
 ls package.json requirements.txt Cargo.toml go.mod pyproject.toml 2>/dev/null
@@ -143,6 +151,7 @@ find . -type f \( -name "*.ts" -o -name "*.js" -o -name "*.tsx" -o -name "*.jsx"
 ```
 
 **For arch focus:**
+
 ```bash
 # Generate directory tree (excluding infrastructure)
 tree -L 3 -I 'node_modules|.git|.github|.claude|.codex|dist|build|out|target|coverage' --charset ascii 2>/dev/null || \
@@ -225,6 +234,7 @@ grep -r "^import" src/ \
 ```
 
 **For quality focus:**
+
 ```bash
 # Linting/formatting config
 ls .eslintrc* .prettierrc* eslint.config.* biome.json 2>/dev/null
@@ -284,6 +294,7 @@ find . -type f \( -name "*.test.*" -o -name "*.spec.*" \) \
 ```
 
 **For concerns focus:**
+
 ```bash
 # TODO/FIXME comments (exclude infrastructure)
 grep -rn "TODO\|FIXME\|HACK\|XXX" src/ \
@@ -332,6 +343,7 @@ Write document(s) to `.planning/codebase/` using the templates below.
 **Document naming:** UPPERCASE.md (e.g., STACK.md, ARCHITECTURE.md)
 
 **Template filling:**
+
 1. Replace `[YYYY-MM-DD]` with current date
 2. Replace `[Placeholder text]` with findings from exploration
 3. If something is not found, use "Not detected" or "Not applicable"
@@ -344,6 +356,7 @@ Use the Write tool to create each document.
 Return a brief confirmation. DO NOT include document contents.
 
 Format:
+
 ```
 ## Mapping Complete
 
@@ -354,6 +367,7 @@ Format:
 
 Ready for orchestrator summary.
 ```
+
 </step>
 
 </process>
@@ -368,65 +382,79 @@ Ready for orchestrator summary.
 **Analysis Date:** [YYYY-MM-DD]
 
 **Codebase Size:**
+
 - Files analyzed: [N] files
 - Lines of code: [N] lines (excluding node_modules, build artifacts)
 
 ## Languages
 
 **Primary:**
+
 - [Language] [Version] - [Where used]
 
 **Secondary:**
+
 - [Language] [Version] - [Where used]
 
 ## Runtime
 
 **Environment:**
+
 - [Runtime] [Version]
 
 **Package Manager:**
+
 - [Manager] [Version]
 - Lockfile: [present/missing]
 
 ## Frameworks
 
 **Core:**
+
 - [Framework] [Version] - [Purpose]
 
 **Testing:**
+
 - [Framework] [Version] - [Purpose]
 
 **Build/Dev:**
+
 - [Tool] [Version] - [Purpose]
 
 ## Key Dependencies
 
 **Critical:**
+
 - [Package] [Version] - [Why it matters]
 
 **Infrastructure:**
+
 - [Package] [Version] - [Purpose]
 
 ## Configuration
 
 **Environment:**
+
 - [How configured]
 - [Key configs required]
 
 **Build:**
+
 - [Build config files]
 
 ## Platform Requirements
 
 **Development:**
+
 - [Requirements]
 
 **Production:**
+
 - [Deployment target]
 
 ---
 
-*Stack analysis: [date]*
+_Stack analysis: [date]_
 ```
 
 ## INTEGRATIONS.md Template (tech focus)
@@ -439,6 +467,7 @@ Ready for orchestrator summary.
 ## APIs & External Services
 
 **[Category]:**
+
 - [Service] - [What it's used for]
   - SDK/Client: [package]
   - Auth: [env var name]
@@ -446,57 +475,69 @@ Ready for orchestrator summary.
 ## Data Storage
 
 **Databases:**
+
 - [Type/Provider]
   - Connection: [env var]
   - Client: [ORM/client]
 
 **File Storage:**
+
 - [Service or "Local filesystem only"]
 
 **Caching:**
+
 - [Service or "None"]
 
 ## Authentication & Identity
 
 **Auth Provider:**
+
 - [Service or "Custom"]
   - Implementation: [approach]
 
 ## Monitoring & Observability
 
 **Error Tracking:**
+
 - [Service or "None"]
 
 **Logs:**
+
 - [Approach]
 
 ## CI/CD & Deployment
 
 **Hosting:**
+
 - [Platform]
 
 **CI Pipeline:**
+
 - [Service or "None"]
 
 ## Environment Configuration
 
 **Required env vars:**
+
 - [List critical vars]
 
 **Secrets location:**
+
 - [Where secrets are stored]
 
 ## Webhooks & Callbacks
 
 **Incoming:**
+
 - [Endpoints or "None"]
 
 **Outgoing:**
+
 - [Endpoints or "None"]
 
 ---
 
-*Integration audit: [date]*
+_Integration audit: [date]_
 ```
 
 ## ARCHITECTURE.md Template (arch focus)
@@ -507,6 +548,7 @@ Ready for orchestrator summary.
 **Analysis Date:** [YYYY-MM-DD]
 
 **Scope:**
+
 - Source files: [N] files
 - Primary language: [Language] ([N]% of codebase)
 - LOC: [N] lines
@@ -516,6 +558,7 @@ Ready for orchestrator summary.
 **Overall:** [Pattern name]
 
 **Key Characteristics:**
+
 - [Characteristic 1]
 - [Characteristic 2]
 - [Characteristic 3]
@@ -523,6 +566,7 @@ Ready for orchestrator summary.
 ## Layers
 
 **[Layer Name]:**
+
 - Purpose: [What this layer does]
 - Location: `[path]`
 - Contains: [Types of code]
@@ -538,11 +582,13 @@ Ready for orchestrator summary.
 3. [Step 3]
 
 **State Management:**
+
 - [How state is handled]
 
 ## Key Abstractions
 
 **[Abstraction Name]:**
+
 - Purpose: [What it represents]
 - Examples: `[file paths]`
 - Pattern: [Pattern used]
@@ -550,6 +596,7 @@ Ready for orchestrator summary.
 ## Entry Points
 
 **[Entry Point]:**
+
 - Location: `[path]`
 - Triggers: [What invokes it]
 - Responsibilities: [What it does]
@@ -559,6 +606,7 @@ Ready for orchestrator summary.
 **Strategy:** [Approach]
 
 **Patterns:**
+
 - [Pattern 1]
 - [Pattern 2]
 
@@ -570,12 +618,12 @@ Ready for orchestrator summary.
 
 ---
 
-*Architecture analysis: [date]*
+_Architecture analysis: [date]_
 ```
 
 ## STRUCTURE.md Template (arch focus)
 
-```markdown
+````markdown
 # Codebase Structure
 
 **Analysis Date:** [YYYY-MM-DD]
@@ -585,17 +633,20 @@ Ready for orchestrator summary.
 **Analysis Date:** [YYYY-MM-DD]
 
 **Files Analyzed:**
+
 - Total files: [N] files
 - Source files: [N] files
 - Test files: [N] files
 - Config files: [N] files
 
 **Lines of Code:**
+
 - Total: [N] lines
 - Source: [N] lines
 - Tests: [N] lines
 
 **Excluded from analysis:**
+
 - Infrastructure: .claude, .github, .codex, node_modules, .git
 - Build artifacts: dist, build, out, target, coverage
 
@@ -604,12 +655,14 @@ Ready for orchestrator summary.
 ```plaintext
 [Insert tree command output here]
 ```
+````
 
 Generated with: `tree -L 3 -I 'node_modules|.git|...' --charset ascii` or `find` command fallback
 
 ## Directory Purposes
 
 **[Directory Name]:**
+
 - Purpose: [What lives here]
 - Contains: [Types of files]
 - Key files: `[important files]`
@@ -617,48 +670,59 @@ Generated with: `tree -L 3 -I 'node_modules|.git|...' --charset ascii` or `find`
 ## Key File Locations
 
 **Entry Points:**
+
 - `[path]`: [Purpose]
 
 **Configuration:**
+
 - `[path]`: [Purpose]
 
 **Core Logic:**
+
 - `[path]`: [Purpose]
 
 **Testing:**
+
 - `[path]`: [Purpose]
 
 ## Naming Conventions
 
 **Files:**
+
 - [Pattern]: [Example]
 
 **Directories:**
+
 - [Pattern]: [Example]
 
 ## Where to Add New Code
 
 **New Feature:**
+
 - Primary code: `[path]`
 - Tests: `[path]`
 
 **New Component/Module:**
+
 - Implementation: `[path]`
 
 **Utilities:**
+
 - Shared helpers: `[path]`
 
 ## Special Directories
 
 **[Directory]:**
+
 - Purpose: [What it contains]
 - Generated: [Yes/No]
 - Committed: [Yes/No]
 
 ---
 
-*Structure analysis: [date]*
-```
+_Structure analysis: [date]_
+
+````
 
 ## CONVENTIONS.md Template (quality focus)
 
@@ -742,16 +806,17 @@ Generated with: `tree -L 3 -I 'node_modules|.git|...' --charset ascii` or `find`
 ---
 
 *Convention analysis: [date]*
-```
+````
 
 ## TESTING.md Template (quality focus)
 
-```markdown
+````markdown
 # Testing Patterns
 
 **Analysis Date:** [YYYY-MM-DD]
 
 **Test Coverage:**
+
 - Test files: [N] files
 - Source files: [N] files
 - Test ratio: [N]% (test files / source files)
@@ -759,28 +824,35 @@ Generated with: `tree -L 3 -I 'node_modules|.git|...' --charset ascii` or `find`
 ## Test Framework
 
 **Runner:**
+
 - [Framework] [Version]
 - Config: `[config file]`
 
 **Assertion Library:**
+
 - [Library]
 
 **Run Commands:**
+
 ```bash
 [command]              # Run all tests
 [command]              # Watch mode
 [command]              # Coverage
 ```
+````
 
 ## Test File Organization
 
 **Location:**
+
 - [Pattern: co-located or separate]
 
 **Naming:**
+
 - [Pattern]
 
 **Structure:**
+
 ```
 [Directory pattern]
 ```
@@ -788,11 +860,13 @@ Generated with: `tree -L 3 -I 'node_modules|.git|...' --charset ascii` or `find`
 ## Test Structure
 
 **Suite Organization:**
+
 ```typescript
 [Show actual pattern from codebase]
 ```
 
 **Patterns:**
+
 - [Setup pattern]
 - [Teardown pattern]
 - [Assertion pattern]
@@ -802,24 +876,29 @@ Generated with: `tree -L 3 -I 'node_modules|.git|...' --charset ascii` or `find`
 **Framework:** [Tool]
 
 **Patterns:**
+
 ```typescript
 [Show actual mocking pattern from codebase]
 ```
 
 **What to Mock:**
+
 - [Guidelines]
 
 **What NOT to Mock:**
+
 - [Guidelines]
 
 ## Fixtures and Factories
 
 **Test Data:**
+
 ```typescript
 [Show pattern from codebase]
 ```
 
 **Location:**
+
 - [Where fixtures live]
 
 ## Coverage
@@ -827,6 +906,7 @@ Generated with: `tree -L 3 -I 'node_modules|.git|...' --charset ascii` or `find`
 **Requirements:** [Target or "None enforced"]
 
 **View Coverage:**
+
 ```bash
 [command]
 ```
@@ -834,30 +914,36 @@ Generated with: `tree -L 3 -I 'node_modules|.git|...' --charset ascii` or `find`
 ## Test Types
 
 **Unit Tests:**
+
 - [Scope and approach]
 
 **Integration Tests:**
+
 - [Scope and approach]
 
 **E2E Tests:**
+
 - [Framework or "Not used"]
 
 ## Common Patterns
 
 **Async Testing:**
+
 ```typescript
-[Pattern]
+[Pattern];
 ```
 
 **Error Testing:**
+
 ```typescript
-[Pattern]
+[Pattern];
 ```
 
 ---
 
-*Testing analysis: [date]*
-```
+_Testing analysis: [date]_
+
+````
 
 ## CONCERNS.md Template (concerns focus)
 
@@ -942,7 +1028,7 @@ Generated with: `tree -L 3 -I 'node_modules|.git|...' --charset ascii` or `find`
 ---
 
 *Concerns audit: [date]*
-```
+````
 
 </templates>
 
@@ -963,10 +1049,11 @@ Generated with: `tree -L 3 -I 'node_modules|.git|...' --charset ascii` or `find`
 </critical_rules>
 
 <success_criteria>
+
 - [ ] Focus area parsed correctly
 - [ ] Codebase explored thoroughly for focus area
 - [ ] All documents for focus area written to `.planning/codebase/`
 - [ ] Documents follow template structure
 - [ ] File paths included throughout documents
 - [ ] Confirmation returned (not document contents)
-</success_criteria>
+      </success_criteria>

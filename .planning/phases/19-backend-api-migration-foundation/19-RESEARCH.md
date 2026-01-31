@@ -19,26 +19,30 @@ Key findings: (1) tRPC v11.8.1 is the current stable version requiring TypeScrip
 The established libraries/tools for this domain:
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| @trpc/server | ^11.8.1 | Backend tRPC router/procedures | Official tRPC server package, Fastify adapter included |
-| @trpc/client | ^11.8.1 | Frontend tRPC client | Official client for type-safe API calls |
-| @trpc/tanstack-react-query | ^11.8.1 | React Query integration | New native integration, replaces classic @trpc/react-query |
+
+| Library                    | Version | Purpose                        | Why Standard                                               |
+| -------------------------- | ------- | ------------------------------ | ---------------------------------------------------------- |
+| @trpc/server               | ^11.8.1 | Backend tRPC router/procedures | Official tRPC server package, Fastify adapter included     |
+| @trpc/client               | ^11.8.1 | Frontend tRPC client           | Official client for type-safe API calls                    |
+| @trpc/tanstack-react-query | ^11.8.1 | React Query integration        | New native integration, replaces classic @trpc/react-query |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| zod | ^4.3.6 (backend) | Input validation | Already installed, reuse existing schemas |
-| @tanstack/react-query | ^5.83.0 | Query state management | Already installed on frontend |
-| @fastify/websocket | ^11.x | WebSocket support | If subscriptions needed (not in Phase 19 scope) |
+
+| Library               | Version          | Purpose                | When to Use                                     |
+| --------------------- | ---------------- | ---------------------- | ----------------------------------------------- |
+| zod                   | ^4.3.6 (backend) | Input validation       | Already installed, reuse existing schemas       |
+| @tanstack/react-query | ^5.83.0          | Query state management | Already installed on frontend                   |
+| @fastify/websocket    | ^11.x            | WebSocket support      | If subscriptions needed (not in Phase 19 scope) |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
+
+| Instead of                 | Could Use                   | Tradeoff                                                                                   |
+| -------------------------- | --------------------------- | ------------------------------------------------------------------------------------------ |
 | @trpc/tanstack-react-query | @trpc/react-query (classic) | Classic is stable but won't receive new features; new integration is TanStack Query-native |
-| Domain routers | Flat merged router | Domain routers match existing REST structure, better for large codebases |
+| Domain routers             | Flat merged router          | Domain routers match existing REST structure, better for large codebases                   |
 
 **Installation:**
+
 ```bash
 # Backend
 cd backend && npm install @trpc/server@^11.8.1
@@ -50,6 +54,7 @@ npm install @trpc/client@^11.8.1 @trpc/tanstack-react-query@^11.8.1
 ## Architecture Patterns
 
 ### Recommended Project Structure
+
 ```
 backend/src/
 ├── trpc/                    # tRPC infrastructure
@@ -72,9 +77,11 @@ frontend/src/
 ```
 
 ### Pattern 1: Fastify Plugin Registration
+
 **What:** Register tRPC as a Fastify plugin alongside existing REST routes
 **When to use:** During migration phase, allows both REST and tRPC to coexist
 **Example:**
+
 ```typescript
 // Source: https://trpc.io/docs/server/adapters/fastify
 import { fastifyTRPCPlugin, FastifyTRPCPluginOptions } from '@trpc/server/adapters/fastify';
@@ -95,9 +102,11 @@ app.register(fastifyTRPCPlugin, {
 ```
 
 ### Pattern 2: Protected Procedure with Auth Context
+
 **What:** Reusable procedure that enforces authentication and provides typed user context
 **When to use:** All procedures requiring authentication (most of them)
 **Example:**
+
 ```typescript
 // Source: https://trpc.io/docs/server/authorization
 import { initTRPC, TRPCError } from '@trpc/server';
@@ -128,9 +137,11 @@ export const orgProcedure = protectedProcedure.use(async (opts) => {
 ```
 
 ### Pattern 3: Domain Router Organization
+
 **What:** Group procedures by domain (organizations, sites, units) matching existing REST structure
 **When to use:** All routers - maintains consistency with current API design
 **Example:**
+
 ```typescript
 // Source: https://trpc.io/docs/server/merging-routers
 // backend/src/routers/organizations.router.ts
@@ -151,10 +162,12 @@ export const organizationsRouter = router({
     }),
 
   update: orgProcedure
-    .input(z.object({
-      organizationId: z.string().uuid(),
-      data: UpdateOrganizationSchema,
-    }))
+    .input(
+      z.object({
+        organizationId: z.string().uuid(),
+        data: UpdateOrganizationSchema,
+      }),
+    )
     .output(OrganizationSchema)
     .mutation(async ({ ctx, input }) => {
       // Role check (requireRole equivalent)
@@ -173,9 +186,11 @@ export const organizationsRouter = router({
 ```
 
 ### Pattern 4: Frontend TanStack React Query Integration (New Style)
+
 **What:** Use new @trpc/tanstack-react-query with createTRPCContext
 **When to use:** All frontend tRPC usage
 **Example:**
+
 ```typescript
 // Source: https://trpc.io/docs/client/tanstack-react-query/setup
 // frontend/src/lib/trpc.ts
@@ -200,6 +215,7 @@ export function createTRPCClientInstance(getAccessToken: () => Promise<string>) 
 ```
 
 ### Anti-Patterns to Avoid
+
 - **Calling procedures from procedures:** Use `createCallerFactory` only for testing, not runtime - it re-executes context/middleware unnecessarily
 - **Mixing Zod versions in shared schemas:** Backend uses Zod 4, frontend Zod 3 - use `z.infer<typeof Schema>` for type sharing, not schema sharing
 - **Large monolithic routers:** Split by domain to avoid TypeScript performance issues at scale
@@ -210,30 +226,33 @@ export function createTRPCClientInstance(getAccessToken: () => Promise<string>) 
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Type-safe API calls | Custom fetch wrappers with manual types | tRPC client | End-to-end type safety, automatic inference |
-| Input validation | Manual type guards | Zod schemas with `.input()` | Compile-time + runtime validation |
-| Auth middleware | Per-procedure auth checks | `protectedProcedure` middleware | DRY, consistent, type-safe context narrowing |
-| Query key management | Manual string keys | tRPC's automatic query keys | Prevents key mismatches, auto-invalidation |
-| Error responses | Custom error formats | TRPCError codes | Standardized HTTP mapping, typed on client |
-| Batch requests | Multiple individual requests | httpBatchLink | Built-in request batching |
+| Problem              | Don't Build                             | Use Instead                     | Why                                          |
+| -------------------- | --------------------------------------- | ------------------------------- | -------------------------------------------- |
+| Type-safe API calls  | Custom fetch wrappers with manual types | tRPC client                     | End-to-end type safety, automatic inference  |
+| Input validation     | Manual type guards                      | Zod schemas with `.input()`     | Compile-time + runtime validation            |
+| Auth middleware      | Per-procedure auth checks               | `protectedProcedure` middleware | DRY, consistent, type-safe context narrowing |
+| Query key management | Manual string keys                      | tRPC's automatic query keys     | Prevents key mismatches, auto-invalidation   |
+| Error responses      | Custom error formats                    | TRPCError codes                 | Standardized HTTP mapping, typed on client   |
+| Batch requests       | Multiple individual requests            | httpBatchLink                   | Built-in request batching                    |
 
 **Key insight:** tRPC provides the entire type-safe data layer - don't rebuild any part of it manually. The value is in the integrated system, not individual pieces.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Zod Version Mismatch
+
 **What goes wrong:** Importing Zod schemas directly from backend to frontend fails due to v3/v4 incompatibility
 **Why it happens:** Project evolved with different Zod versions (backend v4, frontend v3)
 **How to avoid:** Share types via `z.infer<>`, not schema objects. Export types from a shared location.
 **Warning signs:** "Cannot find module" or type inference failures when importing schemas
 
 ### Pitfall 2: Context Not Available in Tests
+
 **What goes wrong:** Tests fail with "Cannot read property of undefined" on ctx.user
 **Why it happens:** Test setup doesn't provide proper context to createCallerFactory
 **How to avoid:** Create test utilities that properly mock context matching auth middleware behavior
 **Warning signs:** Tests pass individually but fail in suite, or auth-related tests all fail
+
 ```typescript
 // Test helper pattern
 const createTestCaller = (userOverrides?: Partial<AuthUser>) => {
@@ -247,18 +266,21 @@ const createTestCaller = (userOverrides?: Partial<AuthUser>) => {
 ```
 
 ### Pitfall 3: Missing maxParamLength Configuration
+
 **What goes wrong:** Large batch requests fail with Fastify parameter length errors
 **Why it happens:** Default Fastify maxParamLength is 100, tRPC batches encode in URL
 **How to avoid:** Set `routerOptions: { maxParamLength: 5000 }` in Fastify config
 **Warning signs:** Batch requests with many procedures fail; single requests work fine
 
 ### Pitfall 4: Forgetting to Export AppRouter Type
+
 **What goes wrong:** Frontend has no type information, procedures show as `any`
 **Why it happens:** AppRouter type not exported or import path wrong
 **How to avoid:** Export `export type AppRouter = typeof appRouter;` and use `import type` on frontend
 **Warning signs:** No autocomplete on `trpc.organizations.get`, no type errors on wrong inputs
 
 ### Pitfall 5: Mixing REST and tRPC Auth Patterns
+
 **What goes wrong:** Inconsistent auth behavior between REST and tRPC routes
 **Why it happens:** Different auth implementations instead of shared logic
 **How to avoid:** Extract auth verification to shared utility, use in both REST middleware and tRPC context
@@ -269,6 +291,7 @@ const createTestCaller = (userOverrides?: Partial<AuthUser>) => {
 Verified patterns from official sources:
 
 ### Context Creation (Fastify Adapter)
+
 ```typescript
 // Source: https://trpc.io/docs/server/adapters/fastify
 import { CreateFastifyContextOptions } from '@trpc/server/adapters/fastify';
@@ -277,8 +300,9 @@ import type { AuthUser } from '../types/auth.js';
 
 export async function createContext({ req, res }: CreateFastifyContextOptions) {
   // Extract token - same logic as existing requireAuth middleware
-  const token = req.headers['x-stack-access-token'] as string | undefined
-    ?? req.headers.authorization?.slice(7);
+  const token =
+    (req.headers['x-stack-access-token'] as string | undefined) ??
+    req.headers.authorization?.slice(7);
 
   let user: AuthUser | null = null;
 
@@ -303,6 +327,7 @@ export type Context = Awaited<ReturnType<typeof createContext>>;
 ```
 
 ### App Router Composition
+
 ```typescript
 // Source: https://trpc.io/docs/server/merging-routers
 import { router } from './index.js';
@@ -320,6 +345,7 @@ export type AppRouter = typeof appRouter;
 ```
 
 ### Frontend Provider Setup
+
 ```typescript
 // Source: https://trpc.io/docs/client/tanstack-react-query/setup
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -353,6 +379,7 @@ function App() {
 ```
 
 ### Testing with createCallerFactory
+
 ```typescript
 // Source: https://trpc.io/docs/v10/server/server-side-calls
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -381,23 +408,24 @@ describe('Organizations Router', () => {
 
   it('should reject unauthorized user', async () => {
     const caller = createCaller({ ...mockContext, user: null });
-    await expect(
-      caller.organizations.get({ organizationId: 'org-456' })
-    ).rejects.toThrow('UNAUTHORIZED');
+    await expect(caller.organizations.get({ organizationId: 'org-456' })).rejects.toThrow(
+      'UNAUTHORIZED',
+    );
   });
 });
 ```
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| @trpc/react-query (classic) | @trpc/tanstack-react-query | Feb 2025 | Native TanStack Query integration, better DX |
-| Wrapped useQuery/useMutation | queryOptions/mutationOptions factories | Feb 2025 | Simpler, follows TanStack Query patterns |
-| router.createCaller() | t.createCallerFactory(router) | v11 | Deprecated method removed |
-| TypeScript 5.0+ | TypeScript 5.7.2+ | v11 | Required for tRPC v11 |
+| Old Approach                 | Current Approach                       | When Changed | Impact                                       |
+| ---------------------------- | -------------------------------------- | ------------ | -------------------------------------------- |
+| @trpc/react-query (classic)  | @trpc/tanstack-react-query             | Feb 2025     | Native TanStack Query integration, better DX |
+| Wrapped useQuery/useMutation | queryOptions/mutationOptions factories | Feb 2025     | Simpler, follows TanStack Query patterns     |
+| router.createCaller()        | t.createCallerFactory(router)          | v11          | Deprecated method removed                    |
+| TypeScript 5.0+              | TypeScript 5.7.2+                      | v11          | Required for tRPC v11                        |
 
 **Deprecated/outdated:**
+
 - `@trpc/react-query`: Still maintained but stable/no new features; use `@trpc/tanstack-react-query` for new projects
 - `router.createCaller()`: Deprecated; use `t.createCallerFactory(router)` instead
 - Wrapping useQuery: The new integration uses factories (`.queryOptions()`) instead of custom hooks
@@ -424,6 +452,7 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - [tRPC Fastify Adapter](https://trpc.io/docs/server/adapters/fastify) - Plugin setup, context creation, WebSocket support
 - [tRPC TanStack React Query Setup](https://trpc.io/docs/client/tanstack-react-query/setup) - New integration pattern
 - [tRPC Authorization](https://trpc.io/docs/server/authorization) - Protected procedures, middleware
@@ -432,16 +461,19 @@ Things that couldn't be fully resolved:
 - [tRPC Server-Side Calls](https://trpc.io/docs/v10/server/server-side-calls) - createCallerFactory for testing
 
 ### Secondary (MEDIUM confidence)
+
 - [GitHub tRPC Releases](https://github.com/trpc/trpc/releases) - Version info (v11.8.1 current)
 - [tRPC Blog: Introducing TanStack React Query Integration](https://trpc.io/blog/introducing-tanstack-react-query-client) - Migration rationale
 
 ### Tertiary (LOW confidence)
+
 - [DEV.to: Mastering tRPC with React Server Components 2026](https://dev.to/christadrian/mastering-trpc-with-react-server-components-the-definitive-2026-guide-1i2e) - Community patterns
 - [Better Stack: From REST to tRPC](https://betterstack.com/community/guides/scaling-nodejs/trpc-explained/) - Migration guidance
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - Official tRPC documentation verified all packages and versions
 - Architecture: HIGH - Patterns from official docs, verified against existing codebase structure
 - Pitfalls: HIGH - Documented in official sources + verified Zod version mismatch in project

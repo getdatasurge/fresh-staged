@@ -8,26 +8,26 @@ Prerequisites validated and deployment information collected for self-hosted pro
 
 ## Deployment Configuration
 
-| Item | Value |
-|------|-------|
-| VM_HOST | 192.168.4.181 |
-| VM_USER | root |
-| Auth | Password |
-| Ubuntu | 24.04 LTS |
-| Specs | 4+ vCPU, 8+ GB RAM, 100+ GB SSD (confirmed) |
-| Domain | None (IP-based access) |
-| Email | bialek.christopher@me.com |
-| SSL | Self-signed (local network) |
+| Item    | Value                                       |
+| ------- | ------------------------------------------- |
+| VM_HOST | 192.168.4.181                               |
+| VM_USER | root                                        |
+| Auth    | Password                                    |
+| Ubuntu  | 24.04 LTS                                   |
+| Specs   | 4+ vCPU, 8+ GB RAM, 100+ GB SSD (confirmed) |
+| Domain  | None (IP-based access)                      |
+| Email   | bialek.christopher@me.com                   |
+| SSL     | Self-signed (local network)                 |
 
 ## External Services Status
 
-| Service | Status | Required |
-|---------|--------|----------|
-| Stack Auth | Ready | Yes |
-| Stripe | Ready | Yes |
-| Resend | Ready | Yes |
-| TTN | Skipped | No |
-| Telnyx | Skipped | No |
+| Service    | Status  | Required |
+| ---------- | ------- | -------- |
+| Stack Auth | Ready   | Yes      |
+| Stripe     | Ready   | Yes      |
+| Resend     | Ready   | Yes      |
+| TTN        | Skipped | No       |
+| Telnyx     | Skipped | No       |
 
 ## Connectivity Verified
 
@@ -47,4 +47,5 @@ Prerequisites validated and deployment information collected for self-hosted pro
 Proceed to 45-02: Execute deployment to VM
 
 ---
-*Completed: 2026-01-29*
+
+_Completed: 2026-01-29_

@@ -18,14 +18,15 @@ FreshTrack Pro uses a structured approach to monitoring with:
 
 Logging behavior is controlled via environment variables:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `LOG_LEVEL` | `info` | Log level: `fatal`, `error`, `warn`, `info`, `debug`, `trace` |
-| `NODE_ENV` | `development` | Environment: `development` for pretty logs, `production` for JSON |
+| Variable    | Default       | Description                                                       |
+| ----------- | ------------- | ----------------------------------------------------------------- |
+| `LOG_LEVEL` | `info`        | Log level: `fatal`, `error`, `warn`, `info`, `debug`, `trace`     |
+| `NODE_ENV`  | `development` | Environment: `development` for pretty logs, `production` for JSON |
 
 ### Log Format
 
 **Production (JSON):**
+
 ```json
 {
   "level": "info",
@@ -40,6 +41,7 @@ Logging behavior is controlled via environment variables:
 ```
 
 **Development (Pretty):**
+
 ```
 12:00:00 INFO: Request completed
     requestId: req-abc123
@@ -47,14 +49,14 @@ Logging behavior is controlled via environment variables:
 
 ### Log Levels
 
-| Level | Usage |
-|-------|-------|
-| `fatal` | System is unusable, immediate action required |
-| `error` | Error events that need investigation |
-| `warn` | Unusual conditions, slow requests (>3s) |
-| `info` | Normal operations: startup, shutdown, config changes |
-| `debug` | Detailed debugging (development only) |
-| `trace` | Very detailed tracing (performance impact) |
+| Level   | Usage                                                |
+| ------- | ---------------------------------------------------- |
+| `fatal` | System is unusable, immediate action required        |
+| `error` | Error events that need investigation                 |
+| `warn`  | Unusual conditions, slow requests (>3s)              |
+| `info`  | Normal operations: startup, shutdown, config changes |
+| `debug` | Detailed debugging (development only)                |
+| `trace` | Very detailed tracing (performance impact)           |
 
 ### Sensitive Data Redaction
 
@@ -82,6 +84,7 @@ All endpoints are publicly accessible (no authentication required).
 Comprehensive health check for monitoring dashboards.
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -103,10 +106,12 @@ Comprehensive health check for monitoring dashboards.
 ```
 
 **Status Codes:**
+
 - `200` - Healthy or degraded (can accept traffic)
 - `503` - Unhealthy (should not accept traffic)
 
 **Overall Status:**
+
 - `healthy` - All checks passing
 - `degraded` - Required checks passing, optional checks failing
 - `unhealthy` - Required checks failing (database)
@@ -150,10 +155,10 @@ Configure in `docker-compose.prod.yml`:
 services:
   backend:
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "100m"
-        max-file: "5"
+        max-size: '100m'
+        max-file: '5'
 ```
 
 **Option 2: Fluent Bit Sidecar**
@@ -184,16 +189,19 @@ services:
 ### Common Log Queries
 
 **Find errors by request ID:**
+
 ```bash
 docker compose logs backend | jq 'select(.requestId == "req-abc123")'
 ```
 
 **Find slow requests:**
+
 ```bash
 docker compose logs backend | jq 'select(.responseTime > 3000)'
 ```
 
 **Count errors by type:**
+
 ```bash
 docker compose logs backend | jq -s 'map(select(.level == "error")) | group_by(.err.type) | map({type: .[0].err.type, count: length})'
 ```
@@ -204,6 +212,7 @@ docker compose logs backend | jq -s 'map(select(.level == "error")) | group_by(.
 
 1. Create a Sentry project at https://sentry.io
 2. Set environment variable:
+
    ```
    SENTRY_DSN=https://key@sentry.io/project-id
    ```
@@ -227,6 +236,7 @@ docker compose logs backend | jq -s 'map(select(.level == "error")) | group_by(.
 ### Context
 
 Each error includes:
+
 - Request ID
 - HTTP method and URL
 - User ID and organization ID (if authenticated)
@@ -236,19 +246,19 @@ Each error includes:
 
 ### Critical Alerts
 
-| Metric | Threshold | Action |
-|--------|-----------|--------|
-| `/health` returns 503 | Any occurrence | Page on-call |
-| Error rate | > 5% of requests | Page on-call |
-| Response time p99 | > 5 seconds | Notify team |
+| Metric                | Threshold        | Action       |
+| --------------------- | ---------------- | ------------ |
+| `/health` returns 503 | Any occurrence   | Page on-call |
+| Error rate            | > 5% of requests | Page on-call |
+| Response time p99     | > 5 seconds      | Notify team  |
 
 ### Warning Alerts
 
-| Metric | Threshold | Action |
-|--------|-----------|--------|
-| Error rate | > 1% of requests | Notify team |
-| Redis health check fails | 3 consecutive | Investigate |
-| Memory usage | > 80% | Scale or investigate |
+| Metric                   | Threshold        | Action               |
+| ------------------------ | ---------------- | -------------------- |
+| Error rate               | > 1% of requests | Notify team          |
+| Redis health check fails | 3 consecutive    | Investigate          |
+| Memory usage             | > 80%            | Scale or investigate |
 
 ## Metrics Export (Optional)
 
@@ -259,6 +269,7 @@ pnpm add fastify-metrics
 ```
 
 Then export `/metrics` endpoint for:
+
 - Request count by route and status
 - Response time histograms
 - Active connections

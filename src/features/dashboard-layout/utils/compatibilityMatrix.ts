@@ -1,14 +1,18 @@
 /**
  * Compatibility Matrix Utilities
- * 
+ *
  * Provides capability-based widget compatibility checking.
  * Determines which widgets work with which sensor types based on capabilities.
  */
 
-import type { DeviceCapability } from "@/lib/registry/capabilityRegistry";
-import { getCapabilitiesForSensorType, hasCapabilities, getCapabilityDisplayNames } from "@/lib/registry/capabilityRegistry";
-import { WIDGET_REGISTRY, getWidgetsForEntity } from "../registry/widgetRegistry";
-import type { WidgetDefinition, EntityType } from "../types";
+import type { DeviceCapability } from '@/lib/registry/capabilityRegistry';
+import {
+  getCapabilitiesForSensorType,
+  hasCapabilities,
+  getCapabilityDisplayNames,
+} from '@/lib/registry/capabilityRegistry';
+import { WIDGET_REGISTRY, getWidgetsForEntity } from '../registry/widgetRegistry';
+import type { WidgetDefinition, EntityType } from '../types';
 
 // ============================================================================
 // TYPES
@@ -41,10 +45,10 @@ export interface WidgetCompatibilityInfo {
  */
 export function checkWidgetCompatibility(
   widgetId: string,
-  availableCapabilities: DeviceCapability[]
+  availableCapabilities: DeviceCapability[],
 ): CompatibilityResult {
   const widget = WIDGET_REGISTRY[widgetId];
-  
+
   if (!widget) {
     return {
       compatible: false,
@@ -54,10 +58,10 @@ export function checkWidgetCompatibility(
       missingOptional: [],
     };
   }
-  
+
   const required = widget.requiredCapabilities ?? [];
   const optional = widget.optionalCapabilities ?? [];
-  
+
   // If no required capabilities, widget is always compatible
   if (required.length === 0) {
     return {
@@ -68,11 +72,11 @@ export function checkWidgetCompatibility(
       missingOptional: [],
     };
   }
-  
+
   // Check for missing required capabilities
-  const missingRequired = required.filter(cap => !availableCapabilities.includes(cap));
-  const missingOptional = optional.filter(cap => !availableCapabilities.includes(cap));
-  
+  const missingRequired = required.filter((cap) => !availableCapabilities.includes(cap));
+  const missingOptional = optional.filter((cap) => !availableCapabilities.includes(cap));
+
   if (missingRequired.length > 0) {
     const missingNames = getCapabilityDisplayNames(missingRequired);
     return {
@@ -83,14 +87,14 @@ export function checkWidgetCompatibility(
       missingOptional,
     };
   }
-  
+
   // All required present, check if partially compatible
   const isPartial = missingOptional.length > 0;
-  
+
   return {
     compatible: true,
     partial: isPartial,
-    reason: isPartial 
+    reason: isPartial
       ? `Limited functionality: missing ${getCapabilityDisplayNames(missingOptional).join(', ')}`
       : null,
     missingRequired: [],
@@ -103,13 +107,13 @@ export function checkWidgetCompatibility(
  */
 export function checkWidgetCompatibilityBySensorType(
   widgetId: string,
-  sensorType?: string
+  sensorType?: string,
 ): CompatibilityResult {
   if (!sensorType) {
     // No sensor assigned - check if widget requires any capabilities
     const widget = WIDGET_REGISTRY[widgetId];
     const required = widget?.requiredCapabilities ?? [];
-    
+
     if (required.length === 0) {
       return {
         compatible: true,
@@ -119,7 +123,7 @@ export function checkWidgetCompatibilityBySensorType(
         missingOptional: [],
       };
     }
-    
+
     return {
       compatible: false,
       partial: false,
@@ -128,7 +132,7 @@ export function checkWidgetCompatibilityBySensorType(
       missingOptional: widget?.optionalCapabilities ?? [],
     };
   }
-  
+
   const capabilities = getCapabilitiesForSensorType(sensorType);
   return checkWidgetCompatibility(widgetId, capabilities);
 }
@@ -142,10 +146,10 @@ export function checkWidgetCompatibilityBySensorType(
  */
 export function getCompatibleWidgets(
   availableCapabilities: DeviceCapability[],
-  entityType: EntityType
+  entityType: EntityType,
 ): WidgetDefinition[] {
   const widgets = getWidgetsForEntity(entityType);
-  return widgets.filter(widget => {
+  return widgets.filter((widget) => {
     const result = checkWidgetCompatibility(widget.id, availableCapabilities);
     return result.compatible;
   });
@@ -156,15 +160,15 @@ export function getCompatibleWidgets(
  */
 export function getIncompatibleWidgets(
   availableCapabilities: DeviceCapability[],
-  entityType: EntityType
+  entityType: EntityType,
 ): WidgetCompatibilityInfo[] {
   const widgets = getWidgetsForEntity(entityType);
   return widgets
-    .map(widget => ({
+    .map((widget) => ({
       widget,
       result: checkWidgetCompatibility(widget.id, availableCapabilities),
     }))
-    .filter(info => !info.result.compatible);
+    .filter((info) => !info.result.compatible);
 }
 
 /**
@@ -172,10 +176,10 @@ export function getIncompatibleWidgets(
  */
 export function getWidgetsWithCompatibility(
   availableCapabilities: DeviceCapability[],
-  entityType: EntityType
+  entityType: EntityType,
 ): WidgetCompatibilityInfo[] {
   const widgets = getWidgetsForEntity(entityType);
-  return widgets.map(widget => ({
+  return widgets.map((widget) => ({
     widget,
     result: checkWidgetCompatibility(widget.id, availableCapabilities),
   }));
@@ -191,18 +195,18 @@ export function getWidgetsWithCompatibility(
  */
 export function generateCompatibilityMatrix(
   payloadTypes: Record<string, DeviceCapability[]>,
-  entityType: EntityType
+  entityType: EntityType,
 ): Record<string, Record<string, CompatibilityResult>> {
   const widgets = getWidgetsForEntity(entityType);
   const matrix: Record<string, Record<string, CompatibilityResult>> = {};
-  
+
   for (const widget of widgets) {
     matrix[widget.id] = {};
     for (const [payloadType, capabilities] of Object.entries(payloadTypes)) {
       matrix[widget.id][payloadType] = checkWidgetCompatibility(widget.id, capabilities);
     }
   }
-  
+
   return matrix;
 }
 
@@ -215,19 +219,19 @@ export function getWidgetRequirementsSummary(widgetId: string): {
   compatibleSensorTypes: string[];
 } {
   const widget = WIDGET_REGISTRY[widgetId];
-  
+
   if (!widget) {
     return { required: [], optional: [], compatibleSensorTypes: [] };
   }
-  
+
   const required = widget.requiredCapabilities ?? [];
   const optional = widget.optionalCapabilities ?? [];
-  
+
   // Find compatible sensor types from SENSOR_TYPE_CAPABILITIES
-  const { SENSOR_TYPE_CAPABILITIES } = require("@/lib/registry/capabilityRegistry");
+  const { SENSOR_TYPE_CAPABILITIES } = require('@/lib/registry/capabilityRegistry');
   const compatibleSensorTypes = Object.entries(SENSOR_TYPE_CAPABILITIES)
     .filter(([_, caps]) => hasCapabilities(caps as DeviceCapability[], required))
     .map(([type]) => type);
-  
+
   return { required, optional, compatibleSensorTypes };
 }

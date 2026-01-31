@@ -31,41 +31,41 @@ key-files:
     - scripts/deploy-digitalocean.sh (461 lines, +63 lines for managed DB integration)
 decisions:
   - id: DEPLOY-DB-01
-    title: "Docker Compose profiles for database mode switching"
-    rationale: "Allows same compose file to support both self-hosted and managed PostgreSQL without manual editing"
+    title: 'Docker Compose profiles for database mode switching'
+    rationale: 'Allows same compose file to support both self-hosted and managed PostgreSQL without manual editing'
     alternatives:
-      - "Separate compose files for each mode (harder to maintain)"
-      - "Environment variable conditionals (not supported by Docker Compose)"
-    impact: "Services can be conditionally started based on profile activation"
+      - 'Separate compose files for each mode (harder to maintain)'
+      - 'Environment variable conditionals (not supported by Docker Compose)'
+    impact: 'Services can be conditionally started based on profile activation'
   - id: DEPLOY-DB-02
-    title: "Always use pooler endpoint for managed PostgreSQL"
-    rationale: "Direct connections bypass PgBouncer and exhaust connection limit (25 default)"
+    title: 'Always use pooler endpoint for managed PostgreSQL'
+    rationale: 'Direct connections bypass PgBouncer and exhaust connection limit (25 default)'
     alternatives:
-      - "Allow direct connections (would hit connection limits quickly)"
-      - "Increase connection limit (more expensive)"
+      - 'Allow direct connections (would hit connection limits quickly)'
+      - 'Increase connection limit (more expensive)'
     impact: "All managed DB connections go through DigitalOcean's built-in PgBouncer"
   - id: DEPLOY-DB-03
-    title: "SSL mode=require enforced for managed database"
-    rationale: "Managed databases are network-accessible, SSL required for security"
+    title: 'SSL mode=require enforced for managed database'
+    rationale: 'Managed databases are network-accessible, SSL required for security'
     alternatives:
-      - "Allow insecure connections (security risk)"
-      - "SSL mode=verify-full (requires additional CA cert configuration)"
-    impact: "All connections encrypted, CA certificate downloaded during setup"
+      - 'Allow insecure connections (security risk)'
+      - 'SSL mode=verify-full (requires additional CA cert configuration)'
+    impact: 'All connections encrypted, CA certificate downloaded during setup'
   - id: DEPLOY-DB-04
-    title: "VPC private networking for managed database and Droplet"
-    rationale: "Reduces latency (~1ms vs 5-10ms), no bandwidth charges, improved security"
+    title: 'VPC private networking for managed database and Droplet'
+    rationale: 'Reduces latency (~1ms vs 5-10ms), no bandwidth charges, improved security'
     alternatives:
-      - "Public internet connections (higher latency, bandwidth costs)"
-    impact: "Database and Droplet must be in same VPC, deployment script handles VPC creation"
+      - 'Public internet connections (higher latency, bandwidth costs)'
+    impact: 'Database and Droplet must be in same VPC, deployment script handles VPC creation'
   - id: DEPLOY-DB-05
-    title: "Graceful fallback to self-hosted mode on managed DB failure"
-    rationale: "Deployment should not fail if managed DB setup has issues (API limits, billing)"
+    title: 'Graceful fallback to self-hosted mode on managed DB failure'
+    rationale: 'Deployment should not fail if managed DB setup has issues (API limits, billing)'
     alternatives:
-      - "Hard fail on managed DB setup failure (blocks entire deployment)"
-    impact: "Deployment continues with containerized PostgreSQL if managed DB setup fails"
+      - 'Hard fail on managed DB setup failure (blocks entire deployment)'
+    impact: 'Deployment continues with containerized PostgreSQL if managed DB setup fails'
 metrics:
-  duration: "297 seconds (~5 minutes)"
-  completed: "2026-01-24"
+  duration: '297 seconds (~5 minutes)'
+  completed: '2026-01-24'
 ---
 
 # Phase 12 Plan 03: Managed PostgreSQL Integration Summary
@@ -79,20 +79,24 @@ metrics:
 Created 8 functions for DigitalOcean Managed PostgreSQL lifecycle management:
 
 **Provisioning:**
+
 - `check_existing_database()` - Check if cluster already exists (idempotent)
 - `create_managed_database()` - Provision PostgreSQL 15 with VPC, connection pool, SSL cert
 - `create_connection_pool()` - Create transaction mode pool (25 connections default)
 - `download_ssl_certificate()` - Download CA cert to secrets directory (chmod 600)
 
 **Connection Management:**
+
 - `get_connection_string()` - Build connection string with pooler endpoint
 - `save_connection_string()` - Save to secrets file with obfuscated logging
 
 **Database Management:**
+
 - `configure_trusted_sources()` - Add Droplet to database firewall (private networking)
 - `show_database_info()` - Display cluster details, pools, dashboard link
 
 **Key features:**
+
 - Pooler endpoint transformation: `host.db.ondigitalocean.com` → `host-pooler.db.ondigitalocean.com`
 - SSL mode=require enforced in connection strings
 - VPC UUID support for private networking
@@ -103,10 +107,12 @@ Created 8 functions for DigitalOcean Managed PostgreSQL lifecycle management:
 Enhanced overlay to support two deployment modes:
 
 **Profiles added:**
+
 - `self-hosted-db` - For postgres, pgbouncer, pgbouncer_exporter, postgres_backup
 - `self-hosted-storage` - For minio, minio-setup, postgres_backup
 
 **How it works:**
+
 ```bash
 # Self-hosted mode (default):
 docker compose --profile self-hosted-db --profile self-hosted-storage up -d
@@ -117,10 +123,12 @@ docker compose --profile self-hosted-storage up -d
 ```
 
 **Secrets added:**
+
 - `do_database_url` - Managed PostgreSQL pooler connection string
 - `spaces_access_key` / `spaces_secret_key` - DigitalOcean Spaces credentials
 
 **Documentation improvements:**
+
 - Prominent pooler endpoint warning (prevents connection exhaustion)
 - VPC private networking benefits explained
 - Mode switching instructions
@@ -131,6 +139,7 @@ docker compose --profile self-hosted-storage up -d
 Added managed database support to main deployment script:
 
 **New functionality:**
+
 - `setup_managed_database()` function - Orchestrates full managed DB setup
   - Creates VPC for private networking
   - Provisions database cluster with `create_managed_database()`
@@ -142,6 +151,7 @@ Added managed database support to main deployment script:
 - Graceful fallback to self-hosted mode if managed DB setup fails
 
 **Integration points:**
+
 - Called after Droplet cloud-init completes
 - Before application deployment (database ready for migrations)
 - Error handling with warning (not hard fail)
@@ -156,6 +166,7 @@ DigitalOcean Managed PostgreSQL provides two connection endpoints:
 2. **Pooler connection** - Uses built-in PgBouncer, supports 100s of connections
 
 **Implementation:**
+
 ```bash
 # get_connection_string() transforms hostname:
 host="private-db-123.db.ondigitalocean.com"
@@ -177,6 +188,7 @@ configure_trusted_sources "$DB_CLUSTER_ID" "$DROPLET_ID"
 ```
 
 **Benefits:**
+
 - ~1ms latency (vs 5-10ms over public internet)
 - No bandwidth charges for database traffic
 - Database not exposed to public internet (security)
@@ -190,7 +202,7 @@ Fixed Docker Compose validation errors by placing dependent services in correct 
 # postgres_backup depends on both postgres AND minio:
 postgres_backup:
   profiles:
-    - self-hosted-db      # For postgres dependency
+    - self-hosted-db # For postgres dependency
     - self-hosted-storage # For minio dependency
 
 # pgbouncer_exporter depends on pgbouncer:
@@ -228,6 +240,7 @@ All verification steps passed:
 ```
 
 **Output:**
+
 - Creates `freshtrack-db` cluster (PostgreSQL 15, db-s-1vcpu-2gb)
 - Creates `app-pool` connection pool (transaction mode, 25 connections)
 - Downloads CA certificate to `/opt/freshtrack-pro/secrets/ca-certificate.crt`
@@ -246,6 +259,7 @@ DO_DB_SIZE=db-s-2vcpu-4gb  # Optional, defaults to db-s-1vcpu-2gb
 ```
 
 **What happens:**
+
 1. Provisions Droplet (as before)
 2. Waits for cloud-init (Docker installation)
 3. **NEW:** Calls `setup_managed_database()`
@@ -267,6 +281,7 @@ USE_MANAGED_DB=false
 ```
 
 **What happens:**
+
 - Skips managed database setup
 - Docker Compose starts postgres, pgbouncer, pgbouncer_exporter, postgres_backup
 - Uses containerized PostgreSQL (same as Phase 11 self-hosted)
@@ -274,6 +289,7 @@ USE_MANAGED_DB=false
 ## Files Modified
 
 ### Created
+
 - `scripts/lib/managed-db-helpers.sh` (232 lines)
   - 8 managed database lifecycle functions
   - Pooler endpoint transformation logic
@@ -281,6 +297,7 @@ USE_MANAGED_DB=false
   - Database firewall configuration
 
 ### Modified
+
 - `docker/compose.digitalocean.yaml` (+43 lines)
   - Docker Compose profiles for postgres, pgbouncer, minio services
   - Profile assignments for dependent services (pgbouncer_exporter, minio-setup, postgres_backup)
@@ -307,6 +324,7 @@ USE_MANAGED_DB=false
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Docker Compose profile dependency validation errors**
+
 - **Found during:** Task 2 verification
 - **Issue:** Services with dependencies on profiled services caused validation errors
   - `minio-setup` depends on `minio` (profiled as self-hosted-storage)
@@ -321,19 +339,23 @@ USE_MANAGED_DB=false
 ## Next Phase Readiness
 
 ### Blockers
+
 None.
 
 ### Concerns
+
 1. **Managed database costs** - $15/month for smallest cluster (db-s-1vcpu-2gb) vs $0 for self-hosted
 2. **Connection pool exhaustion** - If app uses pooler incorrectly, could still hit limits
 3. **Database migration timing** - Need to run migrations before starting backend (handled by deploy-selfhosted.sh)
 
 ### Recommendations for Next Plans
+
 1. **Documentation (12-04?)** - Add managed PostgreSQL setup instructions, cost comparison
 2. **Cost optimization** - Document when to use managed vs self-hosted based on scale
 3. **Monitoring** - Add alerts for managed database connection pool usage (DigitalOcean provides metrics)
 
 ## Related Files
+
 - `docker/compose.digitalocean.yaml` - Deployment overlay with profile system
 - `scripts/deploy-digitalocean.sh` - Main deployment orchestrator
 - `scripts/lib/doctl-helpers.sh` - DigitalOcean CLI helper functions (from 12-01)
@@ -353,4 +375,4 @@ ec6d07b feat(12-03): enhance compose.digitalocean.yaml for managed PostgreSQL
 
 ---
 
-*Completed in 297 seconds (~5 minutes) on 2026-01-24*
+_Completed in 297 seconds (~5 minutes) on 2026-01-24_

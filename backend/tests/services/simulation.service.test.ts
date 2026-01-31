@@ -291,10 +291,7 @@ describe('Simulation Service', () => {
 
       const result = await runSimulation(config, 'org-id');
 
-      expect(ingestBulkReadings).toHaveBeenCalledWith(
-        expect.any(Array),
-        'org-id'
-      );
+      expect(ingestBulkReadings).toHaveBeenCalledWith(expect.any(Array), 'org-id');
 
       // Verify the readings passed to ingestion
       const passedReadings = vi.mocked(ingestBulkReadings).mock.calls[0][0];
@@ -325,9 +322,7 @@ describe('Simulation Service', () => {
       expect(result.readingIds.length).toBe(10);
       expect(result.startTime).toBeInstanceOf(Date);
       expect(result.endTime).toBeInstanceOf(Date);
-      expect(result.endTime.getTime()).toBeGreaterThan(
-        result.startTime.getTime()
-      );
+      expect(result.endTime.getTime()).toBeGreaterThan(result.startTime.getTime());
     });
 
     it('should handle empty simulation gracefully', async () => {
@@ -348,9 +343,7 @@ describe('Simulation Service', () => {
     });
 
     it('should propagate errors from ingestion service', async () => {
-      vi.mocked(ingestBulkReadings).mockRejectedValue(
-        new Error('No valid units found')
-      );
+      vi.mocked(ingestBulkReadings).mockRejectedValue(new Error('No valid units found'));
 
       const config: SimulationConfig = {
         unitId: '550e8400-e29b-41d4-a716-446655440000',
@@ -360,9 +353,7 @@ describe('Simulation Service', () => {
         variance: 2,
       };
 
-      await expect(runSimulation(config, 'org-id')).rejects.toThrow(
-        'No valid units found'
-      );
+      await expect(runSimulation(config, 'org-id')).rejects.toThrow('No valid units found');
     });
   });
 });

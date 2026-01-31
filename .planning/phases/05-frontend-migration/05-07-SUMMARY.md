@@ -31,17 +31,17 @@ key-files:
     - src/hooks/useNotificationPolicies.ts
 
 key-decisions:
-  - "Site location mutation fully migrated to sitesApi.updateSite (backend has sites CRUD)"
-  - "Escalation contacts use Stack Auth for identity but keep Supabase data calls (no backend endpoint yet)"
-  - "Notification policies use Stack Auth for identity but keep Supabase data calls (no backend endpoint yet)"
+  - 'Site location mutation fully migrated to sitesApi.updateSite (backend has sites CRUD)'
+  - 'Escalation contacts use Stack Auth for identity but keep Supabase data calls (no backend endpoint yet)'
+  - 'Notification policies use Stack Auth for identity but keep Supabase data calls (no backend endpoint yet)'
   - "All Supabase data calls marked with 'TODO Phase 6' comments for future migration"
-  - "Convert lat/lon from numbers to strings for UpdateSiteRequest API compliance"
+  - 'Convert lat/lon from numbers to strings for UpdateSiteRequest API compliance'
 
 patterns-established:
-  - "Hybrid migration: Stack Auth for identity, Supabase for data with TODO markers"
-  - "Full migration when backend endpoint exists (sitesApi pattern)"
-  - "Clear TODO comments marking temporary Supabase usage"
-  - "Authentication checks in all mutation functions before executing"
+  - 'Hybrid migration: Stack Auth for identity, Supabase for data with TODO markers'
+  - 'Full migration when backend endpoint exists (sitesApi pattern)'
+  - 'Clear TODO comments marking temporary Supabase usage'
+  - 'Authentication checks in all mutation functions before executing'
 
 # Metrics
 duration: 3min 32sec
@@ -125,18 +125,21 @@ None - hooks ready for use by components.
 ## Next Phase Readiness
 
 **Ready for Phase 05-08 (remaining hooks migration):**
+
 - Site location mutation fully operational via sitesApi
 - Escalation contacts operational with Stack Auth identity
 - Notification policies operational with Stack Auth identity
 - Pattern established for hybrid migration (Stack Auth + Supabase data + TODO markers)
 
 **Foundation established:**
+
 - Full migration pattern when backend endpoint exists
 - Hybrid migration pattern when backend endpoint doesn't exist yet
 - TODO marker convention for temporary Supabase usage
 - Authentication checks in all mutations
 
 **Known limitations:**
+
 - Escalation contacts still use Supabase for data (not blocking - TODO markers in place)
 - Notification policies still use Supabase for data (not blocking - TODO markers in place)
 - Backend needs escalation-contacts and notification-policies endpoints for full migration
@@ -144,5 +147,6 @@ None - hooks ready for use by components.
 **No blockers.** Ready to continue migrating remaining hooks in subsequent plans.
 
 ---
-*Phase: 05-frontend-migration*
-*Completed: 2026-01-23*
+
+_Phase: 05-frontend-migration_
+_Completed: 2026-01-23_

@@ -57,9 +57,7 @@ const mockEvaluateUnit = vi.mocked(alertEvaluator.evaluateUnitAfterReading);
 const TEST_UNIT_ID = '6ee7bf36-9c9f-4a00-99ec-6e0730558f67';
 const TEST_ORG_ID = 'bfc91766-90f0-4caf-b428-06cdcc49866a';
 
-function createReading(
-  overrides: Partial<SingleReading> = {}
-): SingleReading {
+function createReading(overrides: Partial<SingleReading> = {}): SingleReading {
   return {
     unitId: TEST_UNIT_ID,
     temperature: 35.5,
@@ -78,7 +76,7 @@ describe('Reading Ingestion Service', () => {
   });
 
   afterEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Time Period Helpers', () => {
@@ -388,7 +386,7 @@ describe('Reading Ingestion Service', () => {
         readings,
         TEST_ORG_ID,
         mockStreamService as any,
-        mockSocketService as any
+        mockSocketService as any,
       );
 
       expect(mockStreamService.addReading).toHaveBeenCalledTimes(1);
@@ -397,7 +395,7 @@ describe('Reading Ingestion Service', () => {
         expect.objectContaining({
           id: 'reading-id-1',
           unitId: TEST_UNIT_ID,
-        })
+        }),
       );
     });
 
@@ -413,12 +411,7 @@ describe('Reading Ingestion Service', () => {
         alertsTriggered: 0,
       });
 
-      await ingestReadings(
-        readings,
-        TEST_ORG_ID,
-        undefined,
-        mockSocketService as any
-      );
+      await ingestReadings(readings, TEST_ORG_ID, undefined, mockSocketService as any);
 
       // Should be called twice - once per unique unit
       expect(mockEvaluateUnit).toHaveBeenCalledTimes(2);
@@ -446,19 +439,14 @@ describe('Reading Ingestion Service', () => {
         alertsTriggered: 0,
       });
 
-      await ingestReadings(
-        readings,
-        TEST_ORG_ID,
-        undefined,
-        mockSocketService as any
-      );
+      await ingestReadings(readings, TEST_ORG_ID, undefined, mockSocketService as any);
 
       // Should use temperature 40.0 * 10 = 400 (the latest reading)
       expect(mockEvaluateUnit).toHaveBeenCalledWith(
         TEST_UNIT_ID,
         400, // 40.0 * 10
         expect.any(Date),
-        mockSocketService
+        mockSocketService,
       );
     });
 
@@ -479,7 +467,7 @@ describe('Reading Ingestion Service', () => {
         readings,
         TEST_ORG_ID,
         undefined,
-        mockSocketService as any
+        mockSocketService as any,
       );
 
       expect(result.alertsTriggered).toBe(1);
@@ -503,7 +491,7 @@ describe('Reading Ingestion Service', () => {
         readings,
         TEST_ORG_ID,
         undefined,
-        mockSocketService as any
+        mockSocketService as any,
       );
 
       expect(result.anomaliesDetected).toBe(1);
@@ -517,19 +505,14 @@ describe('Reading Ingestion Service', () => {
         alertsTriggered: 0,
       });
 
-      await ingestReadings(
-        readings,
-        TEST_ORG_ID,
-        undefined,
-        mockSocketService as any
-      );
+      await ingestReadings(readings, TEST_ORG_ID, undefined, mockSocketService as any);
 
       expect(mockSocketService.emitToOrg).toHaveBeenCalledWith(
         TEST_ORG_ID,
         'metrics:updated',
         expect.objectContaining({
           unitsAffected: [TEST_UNIT_ID],
-        })
+        }),
       );
     });
 
@@ -636,11 +619,7 @@ describe('Reading Ingestion Service', () => {
         alertsTriggered: 0,
       });
 
-      await ingestReadings(
-        [reading],
-        TEST_ORG_ID,
-        mockStreamService as any
-      );
+      await ingestReadings([reading], TEST_ORG_ID, mockStreamService as any);
 
       expect(mockStreamService.addReading).toHaveBeenCalledWith(
         TEST_ORG_ID,
@@ -654,7 +633,7 @@ describe('Reading Ingestion Service', () => {
           signalStrength: -75,
           source: 'api',
           recordedAt: expect.any(Date),
-        })
+        }),
       );
     });
 
@@ -673,17 +652,13 @@ describe('Reading Ingestion Service', () => {
         alertsTriggered: 0,
       });
 
-      await ingestReadings(
-        [reading],
-        TEST_ORG_ID,
-        mockStreamService as any
-      );
+      await ingestReadings([reading], TEST_ORG_ID, mockStreamService as any);
 
       expect(mockStreamService.addReading).toHaveBeenCalledWith(
         TEST_ORG_ID,
         expect.objectContaining({
           deviceId: null,
-        })
+        }),
       );
     });
   });

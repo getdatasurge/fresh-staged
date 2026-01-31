@@ -3,22 +3,11 @@
  * Visual indicator of TTN configuration state and source
  */
 
-import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Pencil,
-  CheckCircle2,
-  Database,
-  AlertTriangle,
-  XCircle,
-  Info,
-} from "lucide-react";
-import type { TTNConfigContext } from "@/types/ttnState";
-import { cn } from "@/lib/utils";
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Pencil, CheckCircle2, Database, AlertTriangle, XCircle, Info } from 'lucide-react';
+import type { TTNConfigContext } from '@/types/ttnState';
+import { cn } from '@/lib/utils';
 
 interface TTNConfigSourceBadgeProps {
   context: TTNConfigContext | null;
@@ -79,8 +68,15 @@ export function TTNConfigSourceBadge({
 }: TTNConfigSourceBadgeProps) {
   if (!context) {
     return (
-      <Badge variant="outline" className={cn("gap-1", size === 'sm' ? "text-xs px-2 py-0.5" : "text-sm px-3 py-1", className)}>
-        <Info className={cn("text-muted-foreground", size === 'sm' ? "h-3 w-3" : "h-4 w-4")} />
+      <Badge
+        variant="outline"
+        className={cn(
+          'gap-1',
+          size === 'sm' ? 'text-xs px-2 py-0.5' : 'text-sm px-3 py-1',
+          className,
+        )}
+      >
+        <Info className={cn('text-muted-foreground', size === 'sm' ? 'h-3 w-3' : 'h-4 w-4')} />
         Unknown
       </Badge>
     );
@@ -88,17 +84,17 @@ export function TTNConfigSourceBadge({
 
   const config = STATE_CONFIG[context.state];
   const Icon = config.icon;
-  
+
   const badge = (
-    <Badge 
-      variant={config.variant} 
+    <Badge
+      variant={config.variant}
       className={cn(
-        "gap-1 font-medium",
-        size === 'sm' ? "text-xs px-2 py-0.5" : "text-sm px-3 py-1",
-        className
+        'gap-1 font-medium',
+        size === 'sm' ? 'text-xs px-2 py-0.5' : 'text-sm px-3 py-1',
+        className,
       )}
     >
-      <Icon className={cn(config.color, size === 'sm' ? "h-3 w-3" : "h-4 w-4")} />
+      <Icon className={cn(config.color, size === 'sm' ? 'h-3 w-3' : 'h-4 w-4')} />
       {config.label}
     </Badge>
   );
@@ -109,22 +105,29 @@ export function TTNConfigSourceBadge({
 
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        {badge}
-      </TooltipTrigger>
+      <TooltipTrigger asChild>{badge}</TooltipTrigger>
       <TooltipContent side="bottom" className="max-w-xs">
         <div className="space-y-1.5">
           <p className="font-medium">{config.description}</p>
           <div className="text-xs text-muted-foreground space-y-0.5">
-            <p><span className="font-medium">Source:</span> {SOURCE_LABELS[context.source]}</p>
+            <p>
+              <span className="font-medium">Source:</span> {SOURCE_LABELS[context.source]}
+            </p>
             {context.last_validated_at && (
-              <p><span className="font-medium">Validated:</span> {new Date(context.last_validated_at).toLocaleString()}</p>
+              <p>
+                <span className="font-medium">Validated:</span>{' '}
+                {new Date(context.last_validated_at).toLocaleString()}
+              </p>
             )}
             {context.request_id && (
-              <p><span className="font-medium">Request ID:</span> {context.request_id}</p>
+              <p>
+                <span className="font-medium">Request ID:</span> {context.request_id}
+              </p>
             )}
             {context.error_message && (
-              <p className="text-destructive"><span className="font-medium">Error:</span> {context.error_message}</p>
+              <p className="text-destructive">
+                <span className="font-medium">Error:</span> {context.error_message}
+              </p>
             )}
           </div>
         </div>
@@ -144,14 +147,14 @@ export function TTNConfigStateIndicator({
   className?: string;
 }) {
   if (!state) return null;
-  
+
   const config = STATE_CONFIG[state];
   const Icon = config.icon;
-  
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Icon className={cn("h-4 w-4", config.color, className)} />
+        <Icon className={cn('h-4 w-4', config.color, className)} />
       </TooltipTrigger>
       <TooltipContent>
         <p>{config.description}</p>

@@ -20,7 +20,14 @@ affects: [03-04, 03-05, areas-endpoints, units-endpoints, location-hierarchy-fea
 # Tech tracking
 tech-stack:
   added: []
-  patterns: [service-layer-crud, zod-validation, nested-rest-routes, soft-delete, organization-scoped-queries]
+  patterns:
+    [
+      service-layer-crud,
+      zod-validation,
+      nested-rest-routes,
+      soft-delete,
+      organization-scoped-queries,
+    ]
 
 key-files:
   created:
@@ -33,16 +40,16 @@ key-files:
     - backend/src/app.ts
 
 key-decisions:
-  - "Service layer returns null for not-found (routes decide 404 response)"
-  - "Soft delete via isActive flag with cascading to child entities"
-  - "List/Get routes require auth+org-context, mutating routes add admin role check"
-  - "All site queries filter by organizationId AND isActive for tenant isolation"
+  - 'Service layer returns null for not-found (routes decide 404 response)'
+  - 'Soft delete via isActive flag with cascading to child entities'
+  - 'List/Get routes require auth+org-context, mutating routes add admin role check'
+  - 'All site queries filter by organizationId AND isActive for tenant isolation'
 
 patterns-established:
-  - "Service layer pattern: Pure database operations returning domain types"
-  - "Route handler pattern: Middleware → Service → Error handling → Response"
-  - "Nested resource routes: /api/orgs/:organizationId/sites for hierarchy"
-  - "Silent filtering: Services enforce org boundaries, no error on missing cross-org access"
+  - 'Service layer pattern: Pure database operations returning domain types'
+  - 'Route handler pattern: Middleware → Service → Error handling → Response'
+  - 'Nested resource routes: /api/orgs/:organizationId/sites for hierarchy'
+  - 'Silent filtering: Services enforce org boundaries, no error on missing cross-org access'
 
 # Metrics
 duration: 4min 49s
@@ -115,5 +122,6 @@ None - all TypeScript compilation passed, existing tests remain green (10/10 pas
 **Service layer pattern established:** Other entity endpoints (devices, alerts, telemetry) can follow the same service → schema → routes → app registration pattern for consistency.
 
 ---
-*Phase: 03-core-api-endpoints*
-*Completed: 2026-01-23*
+
+_Phase: 03-core-api-endpoints_
+_Completed: 2026-01-23_

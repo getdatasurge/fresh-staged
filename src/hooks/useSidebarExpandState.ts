@@ -1,6 +1,6 @@
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from 'react';
 
-const STORAGE_KEY = "frostguard-sidebar-expand-state";
+const STORAGE_KEY = 'frostguard-sidebar-expand-state';
 
 interface ExpandState {
   expandedSites: string[];
@@ -31,7 +31,7 @@ function loadFromStorage(): ExpandState {
       };
     }
   } catch (e) {
-    console.warn("[useSidebarExpandState] Failed to load:", e);
+    console.warn('[useSidebarExpandState] Failed to load:', e);
   }
   return DEFAULT_STATE;
 }
@@ -40,7 +40,7 @@ function saveToStorage(state: ExpandState): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (e) {
-    console.warn("[useSidebarExpandState] Failed to save:", e);
+    console.warn('[useSidebarExpandState] Failed to save:', e);
   }
 }
 
@@ -82,12 +82,12 @@ export function useSidebarExpandState() {
 
   const isSiteExpanded = useCallback(
     (siteId: string) => state.expandedSites.includes(siteId),
-    [state.expandedSites]
+    [state.expandedSites],
   );
 
   const isUnitExpanded = useCallback(
     (unitId: string) => state.expandedUnits.includes(unitId),
-    [state.expandedUnits]
+    [state.expandedUnits],
   );
 
   const toggleSite = useCallback((siteId: string) => {

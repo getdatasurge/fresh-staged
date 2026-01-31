@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTypePolicyCard } from "./AlertTypePolicyCard";
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertTypePolicyCard } from './AlertTypePolicyCard';
 import {
   ALERT_TYPES,
   ALERT_TYPE_LABELS,
@@ -11,8 +11,18 @@ import {
   useSiteNotificationPolicies,
   useUnitNotificationPolicies,
   getPolicyForAlertType,
-} from "@/hooks/useNotificationPolicies";
-import { Bell, AlertTriangle, Thermometer, Wifi, Clock, DoorOpen, Battery, Wrench, Flame } from "lucide-react";
+} from '@/hooks/useNotificationPolicies';
+import {
+  Bell,
+  AlertTriangle,
+  Thermometer,
+  Wifi,
+  Clock,
+  DoorOpen,
+  Battery,
+  Wrench,
+  Flame,
+} from 'lucide-react';
 
 interface NotificationPolicyEditorProps {
   scope: { organization_id?: string; site_id?: string; unit_id?: string };
@@ -40,21 +50,21 @@ export function NotificationPolicyEditor({
   canEdit,
   onSave,
 }: NotificationPolicyEditorProps) {
-  const [selectedAlertType, setSelectedAlertType] = useState<AlertType>("temp_excursion");
-  
+  const [selectedAlertType, setSelectedAlertType] = useState<AlertType>('temp_excursion');
+
   const isOrgScope = !!scope.organization_id && !scope.site_id && !scope.unit_id;
   const isSiteScope = !!scope.site_id;
   const isUnitScope = !!scope.unit_id;
 
   // Fetch policies for current scope
   const { data: orgPolicies, refetch: refetchOrg } = useOrgNotificationPolicies(
-    isOrgScope ? scope.organization_id || null : null
+    isOrgScope ? scope.organization_id || null : null,
   );
   const { data: sitePolicies, refetch: refetchSite } = useSiteNotificationPolicies(
-    isSiteScope ? scope.site_id || null : null
+    isSiteScope ? scope.site_id || null : null,
   );
   const { data: unitPolicies, refetch: refetchUnit } = useUnitNotificationPolicies(
-    isUnitScope ? scope.unit_id || null : null
+    isUnitScope ? scope.unit_id || null : null,
   );
 
   const currentPolicies = isOrgScope ? orgPolicies : isSiteScope ? sitePolicies : unitPolicies;
@@ -83,7 +93,7 @@ export function NotificationPolicyEditor({
         </CardTitle>
         <CardDescription>
           Configure how and when notifications are sent for each alert type.
-          {!isOrgScope && " Leave settings empty to inherit from parent level."}
+          {!isOrgScope && ' Leave settings empty to inherit from parent level.'}
         </CardDescription>
       </CardHeader>
       <CardContent>

@@ -3,6 +3,7 @@
 **Analysis Date:** 2026-01-29
 
 **Test Coverage:**
+
 - Test files: 75 files total (65 backend, 10 frontend)
 - Source files: 742 files
 - Test ratio: ~10% (test files / source files)
@@ -11,10 +12,12 @@
 ## Test Framework
 
 **Runner:**
+
 - Vitest 2.1.8
 - Config files: `vitest.config.ts` (frontend), `backend/vitest.config.ts` (backend), `vite.config.ts` (legacy)
 
 **Frontend Config:**
+
 ```typescript
 // vitest.config.ts
 {
@@ -26,6 +29,7 @@
 ```
 
 **Backend Config:**
+
 ```typescript
 // backend/vitest.config.ts
 {
@@ -39,10 +43,12 @@
 ```
 
 **Assertion Library:**
+
 - Vitest built-in assertions (Jest-compatible)
 - `@testing-library/jest-dom` for frontend DOM assertions
 
 **Run Commands:**
+
 ```bash
 npm test              # Run all tests (frontend)
 npm run test:watch    # Watch mode (frontend)
@@ -53,15 +59,18 @@ cd backend && npm run test:watch # Backend watch mode
 ## Test File Organization
 
 **Location:**
+
 - Frontend: Co-located with source in `__tests__` directories or separate `tests/` directory
 - Backend: Separate `backend/tests/` directory mirroring `backend/src/` structure
 
 **Naming:**
+
 - Pattern: `*.test.ts` or `*.test.tsx`
 - Matches source file name: `ttn.service.ts` → `ttn.service.test.ts`
 - Components: `TTNCredentialsPanel.tsx` → `TTNCredentialsPanel.test.tsx`
 
 **Frontend Structure:**
+
 ```
 src/
   components/
@@ -80,6 +89,7 @@ src/
 ```
 
 **Backend Structure:**
+
 ```
 backend/
   src/
@@ -94,6 +104,7 @@ backend/
 ## Test Structure
 
 **Suite Organization:**
+
 ```typescript
 describe('ComponentName or FeatureName', () => {
   let queryClient: QueryClient;
@@ -121,6 +132,7 @@ describe('ComponentName or FeatureName', () => {
 ```
 
 **Patterns:**
+
 - Nested `describe` blocks for logical grouping
 - `beforeEach` for setup/teardown
 - `it` blocks describe behavior in present tense
@@ -128,6 +140,7 @@ describe('ComponentName or FeatureName', () => {
 - Comprehensive test comments for complex scenarios
 
 **Example from `backend/tests/services/ttn.service.test.ts`:**
+
 ```typescript
 describe('TTN Service', () => {
   const testConfig: TTNConfig = { ... };
@@ -164,27 +177,29 @@ describe('TTN Service', () => {
 **Framework:** Vitest's `vi` mocking utilities
 
 **Frontend Patterns:**
+
 ```typescript
 // Mock external dependencies
 vi.mock('@stackframe/react', () => ({
   useUser: vi.fn(() => ({
-    getAuthJson: vi.fn().mockResolvedValue({ accessToken: 'test-token' })
-  }))
+    getAuthJson: vi.fn().mockResolvedValue({ accessToken: 'test-token' }),
+  })),
 }));
 
 // Mock internal modules
 vi.mock('@/lib/trpc', () => ({
-  useTRPC: () => mockUseTRPC()
+  useTRPC: () => mockUseTRPC(),
 }));
 
 // Use vi.hoisted for mock references
 const { toastMock, mutateMock } = vi.hoisted(() => ({
   toastMock: { success: vi.fn(), error: vi.fn() },
-  mutateMock: vi.fn()
+  mutateMock: vi.fn(),
 }));
 ```
 
 **Backend Patterns:**
+
 ```typescript
 // Mock global fetch
 const mockFetch = vi.fn();
@@ -194,13 +209,14 @@ global.fetch = mockFetch;
 vi.mock('resend', () => ({
   Resend: class MockResend {
     emails = {
-      send: vi.fn().mockResolvedValue({ data: { id: 'mock-id' }, error: null })
+      send: vi.fn().mockResolvedValue({ data: { id: 'mock-id' }, error: null }),
     };
-  }
+  },
 }));
 ```
 
 **What to Mock:**
+
 - External APIs (TTN, Stripe, AWS SDK, Resend)
 - Authentication providers (Stack Auth)
 - Database clients (in unit tests)
@@ -209,6 +225,7 @@ vi.mock('resend', () => ({
 - Optional runtime dependencies
 
 **What NOT to Mock:**
+
 - Business logic under test
 - Pure utility functions
 - Type definitions
@@ -217,6 +234,7 @@ vi.mock('resend', () => ({
 ## Fixtures and Factories
 
 **Test Data:**
+
 ```typescript
 // Inline fixtures at top of test file
 const mockCredentialsReady = {
@@ -229,11 +247,12 @@ const mockCredentialsReady = {
 const mockCredentialsFailed = {
   ...mockCredentialsReady,
   provisioning_status: 'failed',
-  provisioning_error: 'Application already exists'
+  provisioning_error: 'Application already exists',
 };
 ```
 
 **Location:**
+
 - Test fixtures defined inline at top of test file
 - Shared fixtures in test setup files: `src/test/setup.ts`, `backend/tests/setup.ts`
 - Sample payloads in dedicated constants: `SAMPLE_PAYLOADS` in `payloadClassification.test.ts`
@@ -243,12 +262,14 @@ const mockCredentialsFailed = {
 **Requirements:** No enforced coverage threshold detected
 
 **View Coverage:**
+
 ```bash
 # No coverage command configured
 # Vitest supports coverage via @vitest/coverage-* plugins (not installed)
 ```
 
 **Current State:**
+
 - Backend has comprehensive service-level test coverage
 - Frontend has selective testing (critical components, hooks, complex logic)
 - Widget components largely untested (UI-heavy, visual testing challenging)
@@ -257,24 +278,28 @@ const mockCredentialsFailed = {
 ## Test Types
 
 **Unit Tests:**
+
 - Scope: Individual functions, services, hooks
 - Approach: Mock all external dependencies
 - Location: Most tests are unit tests
 - Example: `ttn.service.test.ts` tests TTN API client methods in isolation
 
 **Integration Tests:**
+
 - Scope: Component + hooks + tRPC queries
 - Approach: Mock external APIs but test React Query integration
 - Location: `src/components/settings/__tests__/TTNCredentialsPanel.test.tsx`
 - Example: Tests component rendering with tRPC queries and mutations
 
 **E2E Tests:**
+
 - Framework: Not detected (no Playwright, Cypress, or Puppeteer config)
 - Status: No E2E tests present
 
 ## Common Patterns
 
 **Async Testing:**
+
 ```typescript
 it('should fetch data asynchronously', async () => {
   mockFetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(data) });
@@ -295,12 +320,13 @@ it('renders data after loading', async () => {
 ```
 
 **Error Testing:**
+
 ```typescript
 it('should throw TTNApiError on API error', async () => {
   mockFetch.mockResolvedValueOnce({
     ok: false,
     status: 401,
-    text: () => Promise.resolve(JSON.stringify({ message: 'Unauthorized' }))
+    text: () => Promise.resolve(JSON.stringify({ message: 'Unauthorized' })),
   });
 
   await expect(client.listDevices()).rejects.toThrow(TTNApiError);
@@ -310,20 +336,21 @@ it('should throw TTNApiError on API error', async () => {
 it('shows error toast on provision failure', async () => {
   provisionMutateMock.mockResolvedValue({
     success: false,
-    error: 'Application creation failed'
+    error: 'Application creation failed',
   });
 
   fireEvent.click(screen.getByRole('button', { name: /retry/i }));
 
   await waitFor(() => {
     expect(toastMock.error).toHaveBeenCalledWith('Application creation failed', {
-      description: expect.any(String)
+      description: expect.any(String),
     });
   });
 });
 ```
 
 **React Component Testing:**
+
 ```typescript
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -348,11 +375,12 @@ it('renders and responds to user interaction', async () => {
 ```
 
 **Mock Reset Patterns:**
+
 ```typescript
 beforeEach(() => {
   vi.clearAllMocks(); // Reset call counts and results
   queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } }
+    defaultOptions: { queries: { retry: false } },
   });
 });
 
@@ -364,6 +392,7 @@ afterEach(() => {
 ## Test Documentation
 
 **Test File Headers:**
+
 ```typescript
 /**
  * TTNCredentialsPanel Integration Tests
@@ -374,6 +403,7 @@ afterEach(() => {
 ```
 
 **Section Comments:**
+
 ```typescript
 // ============ RENDERING TESTS ============
 describe('Rendering', () => { ... });
@@ -383,6 +413,7 @@ describe('Status Badges', () => { ... });
 ```
 
 **CI Gate Tests:**
+
 ```typescript
 /**
  * Deterministic Payload Classification Tests
@@ -396,4 +427,4 @@ describe('Status Badges', () => { ... });
 
 ---
 
-*Testing analysis: 2026-01-29*
+_Testing analysis: 2026-01-29_

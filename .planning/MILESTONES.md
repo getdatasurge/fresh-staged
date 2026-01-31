@@ -122,7 +122,7 @@
 - Multi-Layer Verification — verify-deployment.sh validates 6 checks: service health endpoints (VERIFY-01), SSL certificates (VERIFY-02), dashboard accessibility (VERIFY-03), E2E pipeline (VERIFY-04), monitoring stack (VERIFY-05), and 3-consecutive-pass stability (VERIFY-06)
 - Secure Credential Display — post-deploy-lib.sh outputs credentials to `/dev/tty` only (prevents log capture), with masking showing first/last 4 characters for identification
 - Grafana Sensor Dashboard — 6-panel freshtrack-sensors.json dashboard auto-provisioned with active sensors, readings count, temperature timeseries, and battery gauge
-- Comprehensive Documentation — Prerequisites guide with VM specs/DNS/firewall checklists, step-by-step deployment walkthrough with 5-phase table, troubleshooting playbook with VERIFY-* error codes and quick reference table, and 720-line operations manual
+- Comprehensive Documentation — Prerequisites guide with VM specs/DNS/firewall checklists, step-by-step deployment walkthrough with 5-phase table, troubleshooting playbook with VERIFY-\* error codes and quick reference table, and 720-line operations manual
 
 **Stats:**
 

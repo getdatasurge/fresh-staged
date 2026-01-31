@@ -91,7 +91,9 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       if (connectErrorCountRef.current === 1) {
         console.warn('Socket.io connection error:', error.message);
       } else if (connectErrorCountRef.current === 5) {
-        console.warn(`Socket.io: giving up after ${connectErrorCountRef.current} failed attempts (${error.message})`);
+        console.warn(
+          `Socket.io: giving up after ${connectErrorCountRef.current} failed attempts (${error.message})`,
+        );
       }
     }
 

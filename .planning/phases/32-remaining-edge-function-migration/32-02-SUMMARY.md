@@ -19,12 +19,12 @@ key-files:
     - src/pages/Inspector.tsx
     - src/components/reports/ComplianceReportCard.tsx
 decisions:
-  - id: "32-02-01"
-    choice: "Shared export mutation across all 3 components"
-    rationale: "Single tRPC procedure replaces 3 identical edge function calls"
+  - id: '32-02-01'
+    choice: 'Shared export mutation across all 3 components'
+    rationale: 'Single tRPC procedure replaces 3 identical edge function calls'
 metrics:
-  duration: "~4m"
-  completed: "2026-01-29"
+  duration: '~4m'
+  completed: '2026-01-29'
 ---
 
 # Phase 32 Plan 02: Reports Export Migration Summary
@@ -34,6 +34,7 @@ metrics:
 ## What Was Built
 
 ### Backend
+
 1. **reports.router.ts** - New tRPC router with export procedure
    - Input: organizationId, startDate, endDate, reportType, format, siteId?, unitId?
    - Output: content, contentType, filename
@@ -42,6 +43,7 @@ metrics:
 2. **router.ts** - Registered reportsRouter in appRouter
 
 ### Frontend
+
 3. **Reports.tsx** - Replaced supabase.functions.invoke with tRPC mutation
    - Added useEffectiveIdentity hook for organizationId
    - Added trpc.reports.export.useMutation with onSuccess file download
@@ -58,10 +60,10 @@ metrics:
 
 ## Key Changes
 
-| File | Before | After |
-|------|--------|-------|
-| Reports.tsx | supabase.functions.invoke | trpc.reports.export.useMutation |
-| Inspector.tsx | supabase.functions.invoke | trpc.reports.export.useMutation |
+| File                     | Before                    | After                           |
+| ------------------------ | ------------------------- | ------------------------------- |
+| Reports.tsx              | supabase.functions.invoke | trpc.reports.export.useMutation |
+| Inspector.tsx            | supabase.functions.invoke | trpc.reports.export.useMutation |
 | ComplianceReportCard.tsx | supabase.functions.invoke | trpc.reports.export.useMutation |
 
 ## Decisions Made
@@ -86,10 +88,10 @@ None - plan executed exactly as written.
 
 ## Commits
 
-| Hash | Message |
-|------|---------|
+| Hash    | Message                                                       |
+| ------- | ------------------------------------------------------------- |
 | 4c681dc | feat(32-02): create reports tRPC router with export procedure |
-| ed594f4 | feat(32-02): migrate frontend export calls to tRPC |
+| ed594f4 | feat(32-02): migrate frontend export calls to tRPC            |
 
 ## Next Phase Readiness
 

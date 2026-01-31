@@ -3,16 +3,16 @@
  * Shows TTN routing status and controls for the sensor simulator
  */
 
-import { useState, useEffect, useCallback } from "react";
-import { useTRPC } from "@/lib/trpc";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner";
+import { useState, useEffect, useCallback } from 'react';
+import { useTRPC } from '@/lib/trpc';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
 import {
   Radio,
   Wifi,
@@ -26,13 +26,13 @@ import {
   RefreshCw,
   Zap,
   Route,
-} from "lucide-react";
-import { TTNSetupWizard } from "./TTNSetupWizard";
-import { cn } from "@/lib/utils";
-import { useTTNConfig } from "@/contexts/TTNConfigContext";
-import { TTNConfigSourceBadge } from "@/components/ttn/TTNConfigSourceBadge";
-import { TTNGuardDisplay } from "@/components/ttn/TTNGuardDisplay";
-import { checkTTNOperationAllowed } from "@/lib/ttn/guards";
+} from 'lucide-react';
+import { TTNSetupWizard } from './TTNSetupWizard';
+import { cn } from '@/lib/utils';
+import { useTTNConfig } from '@/contexts/TTNConfigContext';
+import { TTNConfigSourceBadge } from '@/components/ttn/TTNConfigSourceBadge';
+import { TTNGuardDisplay } from '@/components/ttn/TTNGuardDisplay';
+import { checkTTNOperationAllowed } from '@/lib/ttn/guards';
 
 interface EmulatorTTNRoutingCardProps {
   organizationId: string | null;
@@ -72,8 +72,8 @@ export function EmulatorTTNRoutingCard({
   const settingsQuery = useQuery(
     trpc.ttnSettings.get.queryOptions(
       { organizationId: organizationId || '' },
-      { enabled: !!organizationId }
-    )
+      { enabled: !!organizationId },
+    ),
   );
 
   // tRPC mutation for connection test
@@ -81,30 +81,36 @@ export function EmulatorTTNRoutingCard({
     trpc.ttnSettings.test.mutationOptions({
       onSuccess: (result) => {
         if (result.success) {
-          toast.success("TTN connection verified!");
+          toast.success('TTN connection verified!');
         } else {
-          toast.error(result.error || "Connection test failed");
+          toast.error(result.error || 'Connection test failed');
         }
         // Refetch settings to update last test info
         settingsQuery.refetch();
       },
       onError: (err) => {
-        console.error("[EmulatorTTNRoutingCard] Test error:", err);
-        toast.error(err.message || "Failed to test connection");
+        console.error('[EmulatorTTNRoutingCard] Test error:', err);
+        toast.error(err.message || 'Failed to test connection');
       },
-    })
+    }),
   );
 
   // Derive status from query data
-  const status: TTNConnectionStatus | null = settingsQuery.data ? {
-    isEnabled: settingsQuery.data.is_enabled || false,
-    hasApiKey: settingsQuery.data.has_api_key || false,
-    region: settingsQuery.data.ttn_region || "nam1",
-    applicationId: settingsQuery.data.ttn_application_id || null,
-    lastTestSuccess: (settingsQuery.data.last_connection_test_result as { success?: boolean } | null)?.success ?? null,
-    lastTestAt: settingsQuery.data.last_connection_test_at || null,
-    lastTestError: (settingsQuery.data.last_connection_test_result as { error?: string } | null)?.error || null,
-  } : null;
+  const status: TTNConnectionStatus | null = settingsQuery.data
+    ? {
+        isEnabled: settingsQuery.data.is_enabled || false,
+        hasApiKey: settingsQuery.data.has_api_key || false,
+        region: settingsQuery.data.ttn_region || 'nam1',
+        applicationId: settingsQuery.data.ttn_application_id || null,
+        lastTestSuccess:
+          (settingsQuery.data.last_connection_test_result as { success?: boolean } | null)
+            ?.success ?? null,
+        lastTestAt: settingsQuery.data.last_connection_test_at || null,
+        lastTestError:
+          (settingsQuery.data.last_connection_test_result as { error?: string } | null)?.error ||
+          null,
+      }
+    : null;
 
   const isLoading = settingsQuery.isLoading;
   const isTesting = testMutation.isPending;
@@ -130,16 +136,16 @@ export function EmulatorTTNRoutingCard({
     onRoutingModeChange?.(enabled);
 
     if (enabled) {
-      toast.info("TTN routing enabled - uplinks will flow through The Things Network");
+      toast.info('TTN routing enabled - uplinks will flow through The Things Network');
     } else {
-      toast.info("Direct injection mode - uplinks bypass TTN");
+      toast.info('Direct injection mode - uplinks bypass TTN');
     }
   };
 
   const handleCopyDevEui = () => {
     if (emulatorDevEui) {
       navigator.clipboard.writeText(emulatorDevEui);
-      toast.success("DevEUI copied to clipboard");
+      toast.success('DevEUI copied to clipboard');
     }
   };
 
@@ -165,7 +171,7 @@ export function EmulatorTTNRoutingCard({
           {routeViaTTN && !guardResult.allowed && (
             <TTNGuardDisplay result={guardResult} showWarnings />
           )}
-          
+
           {/* Routing Mode Toggle */}
           <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
             <div className="flex items-center gap-3">
@@ -176,12 +182,12 @@ export function EmulatorTTNRoutingCard({
               )}
               <div>
                 <p className="text-sm font-medium">
-                  {routeViaTTN ? "Route Through TTN" : "Direct Injection"}
+                  {routeViaTTN ? 'Route Through TTN' : 'Direct Injection'}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {routeViaTTN 
-                    ? "Uplinks flow through TTN webhook" 
-                    : "Data injected directly to database"}
+                  {routeViaTTN
+                    ? 'Uplinks flow through TTN webhook'
+                    : 'Data injected directly to database'}
                 </p>
               </div>
             </div>
@@ -200,14 +206,16 @@ export function EmulatorTTNRoutingCard({
           ) : status ? (
             <div className="space-y-3">
               {/* Connection Status */}
-              <div className={cn(
-                "flex items-center justify-between p-3 rounded-lg border",
-                isReady 
-                  ? "bg-green-500/5 border-green-500/20" 
-                  : status.isEnabled
-                    ? "bg-amber-500/5 border-amber-500/20"
-                    : "bg-muted/50"
-              )}>
+              <div
+                className={cn(
+                  'flex items-center justify-between p-3 rounded-lg border',
+                  isReady
+                    ? 'bg-green-500/5 border-green-500/20'
+                    : status.isEnabled
+                      ? 'bg-amber-500/5 border-amber-500/20'
+                      : 'bg-muted/50',
+                )}
+              >
                 <div className="flex items-center gap-2">
                   {isReady ? (
                     <CheckCircle2 className="w-4 h-4 text-green-500" />
@@ -217,14 +225,14 @@ export function EmulatorTTNRoutingCard({
                     <WifiOff className="w-4 h-4 text-muted-foreground" />
                   )}
                   <span className="text-sm">
-                    {isReady 
-                      ? "Connected" 
-                      : status.isEnabled 
-                        ? "Configuration Incomplete" 
-                        : "Not Configured"}
+                    {isReady
+                      ? 'Connected'
+                      : status.isEnabled
+                        ? 'Configuration Incomplete'
+                        : 'Not Configured'}
                   </span>
                 </div>
-                <Badge variant={isReady ? "default" : "secondary"} className="text-xs">
+                <Badge variant={isReady ? 'default' : 'secondary'} className="text-xs">
                   {status.region.toUpperCase()}
                 </Badge>
               </div>
@@ -249,13 +257,21 @@ export function EmulatorTTNRoutingCard({
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label className="text-xs">Emulator DevEUI</Label>
-                      <Button variant="ghost" size="sm" onClick={handleCopyDevEui} className="h-6 px-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCopyDevEui}
+                        className="h-6 px-2"
+                      >
                         <Copy className="w-3 h-3 mr-1" />
                         Copy
                       </Button>
                     </div>
                     <code className="block text-xs font-mono p-2 rounded bg-muted border text-center">
-                      {emulatorDevEui.match(/.{1,2}/g)?.join(':').toUpperCase() || emulatorDevEui}
+                      {emulatorDevEui
+                        .match(/.{1,2}/g)
+                        ?.join(':')
+                        .toUpperCase() || emulatorDevEui}
                     </code>
                     <p className="text-xs text-amber-500 flex items-center gap-1">
                       <AlertTriangle className="w-3 h-3" />

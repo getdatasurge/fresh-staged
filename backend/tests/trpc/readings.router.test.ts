@@ -78,7 +78,10 @@ describe('Readings tRPC Router', () => {
 
   describe('list', () => {
     it('should list readings for unit with pagination', async () => {
-      const mockReadings = [mockReading, { ...mockReading, id: '723e4567-e89b-12d3-a456-426614174006' }];
+      const mockReadings = [
+        mockReading,
+        { ...mockReading, id: '723e4567-e89b-12d3-a456-426614174006' },
+      ];
       mockQueryReadings.mockResolvedValue(mockReadings);
 
       const ctx = createOrgContext();
@@ -159,13 +162,9 @@ describe('Readings tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.list({ organizationId: orgId, unitId })
-      ).rejects.toThrow(TRPCError);
+      await expect(caller.list({ organizationId: orgId, unitId })).rejects.toThrow(TRPCError);
 
-      await expect(
-        caller.list({ organizationId: orgId, unitId })
-      ).rejects.toMatchObject({
+      await expect(caller.list({ organizationId: orgId, unitId })).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Unit not found or access denied',
       });
@@ -218,13 +217,9 @@ describe('Readings tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.latest({ organizationId: orgId, unitId })
-      ).rejects.toThrow(TRPCError);
+      await expect(caller.latest({ organizationId: orgId, unitId })).rejects.toThrow(TRPCError);
 
-      await expect(
-        caller.latest({ organizationId: orgId, unitId })
-      ).rejects.toMatchObject({
+      await expect(caller.latest({ organizationId: orgId, unitId })).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Unit not found or access denied',
       });

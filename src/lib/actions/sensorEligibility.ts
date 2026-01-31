@@ -3,7 +3,7 @@ import type {
   TTNConfigState,
   SensorForEligibility,
   ActionPermissions,
-} from "./types";
+} from './types';
 
 /**
  * Check if a sensor can be provisioned to TTN.
@@ -17,14 +17,14 @@ import type {
 export function canProvisionSensor(
   sensor: SensorForEligibility,
   ttnConfig: TTNConfigState | null | undefined,
-  permissions?: ActionPermissions
+  permissions?: ActionPermissions,
 ): ActionEligibility {
   // Already provisioned
   if (sensor.ttn_device_id) {
     return {
       allowed: false,
-      code: "SENSOR_ALREADY_PROVISIONED",
-      reason: "Sensor is already provisioned to TTN",
+      code: 'SENSOR_ALREADY_PROVISIONED',
+      reason: 'Sensor is already provisioned to TTN',
     };
   }
 
@@ -32,8 +32,8 @@ export function canProvisionSensor(
   if (permissions && permissions.canManageSensors === false) {
     return {
       allowed: false,
-      code: "PERMISSION_DENIED",
-      reason: "You do not have permission to provision sensors",
+      code: 'PERMISSION_DENIED',
+      reason: 'You do not have permission to provision sensors',
     };
   }
 
@@ -41,24 +41,24 @@ export function canProvisionSensor(
   if (!ttnConfig?.isEnabled) {
     return {
       allowed: false,
-      code: "TTN_NOT_CONFIGURED",
-      reason: "TTN connection is not enabled for this organization",
+      code: 'TTN_NOT_CONFIGURED',
+      reason: 'TTN connection is not enabled for this organization',
     };
   }
 
   if (!ttnConfig?.hasApiKey) {
     return {
       allowed: false,
-      code: "TTN_MISSING_API_KEY",
-      reason: "TTN API key is not configured",
+      code: 'TTN_MISSING_API_KEY',
+      reason: 'TTN API key is not configured',
     };
   }
 
   if (!ttnConfig?.applicationId) {
     return {
       allowed: false,
-      code: "TTN_MISSING_APPLICATION",
-      reason: "TTN application is not configured",
+      code: 'TTN_MISSING_APPLICATION',
+      reason: 'TTN application is not configured',
     };
   }
 
@@ -66,23 +66,23 @@ export function canProvisionSensor(
   if (!sensor.dev_eui) {
     return {
       allowed: false,
-      code: "MISSING_DEV_EUI",
-      reason: "Sensor is missing DevEUI",
+      code: 'MISSING_DEV_EUI',
+      reason: 'Sensor is missing DevEUI',
     };
   }
 
   if (!sensor.app_key) {
     return {
       allowed: false,
-      code: "MISSING_APP_KEY",
-      reason: "Sensor is missing AppKey for OTAA provisioning",
+      code: 'MISSING_APP_KEY',
+      reason: 'Sensor is missing AppKey for OTAA provisioning',
     };
   }
 
   // All checks passed
   return {
     allowed: true,
-    code: "ALLOWED",
+    code: 'ALLOWED',
   };
 }
 
@@ -91,19 +91,19 @@ export function canProvisionSensor(
  */
 export function canEditSensor(
   sensor: SensorForEligibility,
-  permissions?: ActionPermissions
+  permissions?: ActionPermissions,
 ): ActionEligibility {
   if (permissions && permissions.canEdit === false) {
     return {
       allowed: false,
-      code: "PERMISSION_DENIED",
-      reason: "You do not have permission to edit sensors",
+      code: 'PERMISSION_DENIED',
+      reason: 'You do not have permission to edit sensors',
     };
   }
 
   return {
     allowed: true,
-    code: "ALLOWED",
+    code: 'ALLOWED',
   };
 }
 
@@ -112,18 +112,18 @@ export function canEditSensor(
  */
 export function canDeleteSensor(
   sensor: SensorForEligibility,
-  permissions?: ActionPermissions
+  permissions?: ActionPermissions,
 ): ActionEligibility {
   if (permissions && permissions.canManageSensors === false) {
     return {
       allowed: false,
-      code: "PERMISSION_DENIED",
-      reason: "You do not have permission to delete sensors",
+      code: 'PERMISSION_DENIED',
+      reason: 'You do not have permission to delete sensors',
     };
   }
 
   return {
     allowed: true,
-    code: "ALLOWED",
+    code: 'ALLOWED',
   };
 }

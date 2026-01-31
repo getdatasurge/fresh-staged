@@ -1,7 +1,7 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   AlertTriangle,
   ClipboardEdit,
@@ -12,8 +12,8 @@ import {
   Mail,
   MailCheck,
   MailX,
-} from "lucide-react";
-import { getAlertTypeConfig, getSeverityConfig } from "@/lib/alertConfig";
+} from 'lucide-react';
+import { getAlertTypeConfig, getSeverityConfig } from '@/lib/alertConfig';
 
 interface AlertRowProps {
   alert: {
@@ -21,8 +21,8 @@ interface AlertRowProps {
     title: string;
     message: string | null;
     alertType: string;
-    severity: "critical" | "warning" | "info";
-    status: "active" | "acknowledged" | "resolved";
+    severity: 'critical' | 'warning' | 'info';
+    status: 'active' | 'acknowledged' | 'resolved';
     unit_id: string;
     unit_name: string;
     site_name: string;
@@ -46,7 +46,7 @@ interface AlertRowProps {
 
 const getTimeAgo = (dateStr: string) => {
   const diffMins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
-  if (diffMins < 1) return "Just now";
+  if (diffMins < 1) return 'Just now';
   if (diffMins < 60) return `${diffMins}m ago`;
   const diffHours = Math.floor(diffMins / 60);
   if (diffHours < 24) return `${diffHours}h ago`;
@@ -57,14 +57,17 @@ const AlertRow = ({ alert, onLogTemp, onAcknowledge, onResolve, isSubmitting }: 
   const typeConfig = getAlertTypeConfig(alert.alertType);
   const severity = getSeverityConfig(alert.severity);
   const Icon = typeConfig?.icon || AlertTriangle;
-  const showLogButton = alert.alertType === "MANUAL_REQUIRED" || alert.alertType === "missed_manual_entry";
+  const showLogButton =
+    alert.alertType === 'MANUAL_REQUIRED' || alert.alertType === 'missed_manual_entry';
 
   return (
-    <Card className={alert.status === "active" ? "border-alarm/30" : ""}>
+    <Card className={alert.status === 'active' ? 'border-alarm/30' : ''}>
       <CardContent className="p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
           {/* Icon */}
-          <div className={`w-10 h-10 rounded-lg ${severity.bgColor} flex items-center justify-center flex-shrink-0`}>
+          <div
+            className={`w-10 h-10 rounded-lg ${severity.bgColor} flex items-center justify-center flex-shrink-0`}
+          >
             <Icon className={`w-5 h-5 ${severity.color}`} />
           </div>
 
@@ -94,7 +97,7 @@ const AlertRow = ({ alert, onLogTemp, onAcknowledge, onResolve, isSubmitting }: 
                   {alert.site_name} · {alert.area_name} · {alert.unit_name}
                 </p>
               </div>
-              
+
               <div className="text-left sm:text-right flex-shrink-0">
                 <p className="text-xs text-muted-foreground">{getTimeAgo(alert.triggered_at)}</p>
                 {alert.acknowledged_at && (
@@ -129,7 +132,9 @@ const AlertRow = ({ alert, onLogTemp, onAcknowledge, onResolve, isSubmitting }: 
                 {alert.last_notified_at ? (
                   <>
                     <MailCheck className="w-3.5 h-3.5 text-safe" />
-                    <span className="text-safe">Email sent {getTimeAgo(alert.last_notified_at)}</span>
+                    <span className="text-safe">
+                      Email sent {getTimeAgo(alert.last_notified_at)}
+                    </span>
                   </>
                 ) : alert.last_notified_reason ? (
                   <>
@@ -146,7 +151,7 @@ const AlertRow = ({ alert, onLogTemp, onAcknowledge, onResolve, isSubmitting }: 
             )}
 
             {/* Action Buttons */}
-            {alert.status === "active" && (
+            {alert.status === 'active' && (
               <div className="flex flex-wrap gap-2 pt-1">
                 {showLogButton && onLogTemp && (
                   <Button
@@ -184,7 +189,7 @@ const AlertRow = ({ alert, onLogTemp, onAcknowledge, onResolve, isSubmitting }: 
             )}
 
             {/* Acknowledged state */}
-            {alert.status === "acknowledged" && (
+            {alert.status === 'acknowledged' && (
               <div className="space-y-2 pt-1">
                 {alert.acknowledgment_notes && (
                   <div className="p-2 rounded bg-muted/50 text-sm break-words">

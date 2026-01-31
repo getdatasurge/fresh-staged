@@ -5,19 +5,36 @@
  * Persists selection in widget preferences.
  */
 
-import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { BarChart3, Plus, X, Check, Thermometer, Clock, AlertTriangle, Wifi, WifiOff } from "lucide-react";
-import { useTRPC } from "@/lib/trpc";
-import { formatDistanceToNow } from "date-fns";
-import type { WidgetProps } from "../types";
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  BarChart3,
+  Plus,
+  X,
+  Check,
+  Thermometer,
+  Clock,
+  AlertTriangle,
+  Wifi,
+  WifiOff,
+} from 'lucide-react';
+import { useTRPC } from '@/lib/trpc';
+import { formatDistanceToNow } from 'date-fns';
+import type { WidgetProps } from '../types';
 
 interface ComparisonUnit {
   id: string;
@@ -31,7 +48,12 @@ interface ComparisonUnit {
 
 const MAX_COMPARE_UNITS = 4;
 
-export function UnitComparisonWidget({ organizationId, site, preferences, onPreferencesChange }: WidgetProps) {
+export function UnitComparisonWidget({
+  organizationId,
+  site,
+  preferences,
+  onPreferencesChange,
+}: WidgetProps) {
   const [selectorOpen, setSelectorOpen] = useState(false);
   const trpc = useTRPC();
 
@@ -60,7 +82,7 @@ export function UnitComparisonWidget({ organizationId, site, preferences, onPref
         id: u.id,
         name: u.name,
         area_id: u.areaId,
-        area_name: u.areaName || "",
+        area_name: u.areaName || '',
         last_temp_reading: u.lastTemperature,
         temp_limit_high: u.tempMax,
         temp_limit_low: u.tempMin,
@@ -107,24 +129,24 @@ export function UnitComparisonWidget({ organizationId, site, preferences, onPref
     const now = Date.now();
     const offlineThresholdMs = 2 * 60 * 60 * 1000;
     const lastReadingTime = unit.last_reading_at ? new Date(unit.last_reading_at).getTime() : 0;
-    const isOffline = !unit.last_reading_at || (now - lastReadingTime > offlineThresholdMs);
+    const isOffline = !unit.last_reading_at || now - lastReadingTime > offlineThresholdMs;
 
-    if (isOffline) return { label: "Offline", color: "bg-gray-500", icon: WifiOff };
-    
+    if (isOffline) return { label: 'Offline', color: 'bg-gray-500', icon: WifiOff };
+
     if (unit.last_temp_reading !== null) {
       const temp = unit.last_temp_reading;
       const high = unit.temp_limit_high;
       const low = unit.temp_limit_low ?? -Infinity;
-      
+
       if (temp > high || temp < low) {
-        return { label: "Critical", color: "bg-red-500", icon: AlertTriangle };
+        return { label: 'Critical', color: 'bg-red-500', icon: AlertTriangle };
       }
       if (temp > high - 2 || temp < low + 2) {
-        return { label: "Warning", color: "bg-yellow-500", icon: AlertTriangle };
+        return { label: 'Warning', color: 'bg-yellow-500', icon: AlertTriangle };
       }
     }
-    
-    return { label: "OK", color: "bg-green-500", icon: Wifi };
+
+    return { label: 'OK', color: 'bg-green-500', icon: Wifi };
   };
 
   if (unitsLoading) {
@@ -179,7 +201,9 @@ export function UnitComparisonWidget({ organizationId, site, preferences, onPref
                           <div className="flex flex-col">
                             <span>{unit.name}</span>
                             {unit.area_name && (
-                              <span className="text-xs text-muted-foreground">{unit.area_name}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {unit.area_name}
+                              </span>
                             )}
                           </div>
                         </CommandItem>
@@ -209,19 +233,16 @@ export function UnitComparisonWidget({ organizationId, site, preferences, onPref
               {selectedUnits.map((unit) => {
                 const status = getUnitStatus(unit);
                 const StatusIcon = status.icon;
-                
+
                 return (
-                  <div 
-                    key={unit.id}
-                    className="p-3 rounded-lg border bg-card relative group"
-                  >
+                  <div key={unit.id} className="p-3 rounded-lg border bg-card relative group">
                     <button
                       onClick={() => handleRemoveUnit(unit.id)}
                       className="absolute top-1 right-1 p-1 rounded-full opacity-0 group-hover:opacity-100 hover:bg-muted transition-opacity"
                     >
                       <X className="h-3 w-3" />
                     </button>
-                    
+
                     <div className="flex items-start justify-between mb-2">
                       <div className="pr-4">
                         <p className="text-sm font-medium truncate">{unit.name}</p>
@@ -229,35 +250,33 @@ export function UnitComparisonWidget({ organizationId, site, preferences, onPref
                           <p className="text-xs text-muted-foreground truncate">{unit.area_name}</p>
                         )}
                       </div>
-                      <Badge 
-                        variant="secondary" 
+                      <Badge
+                        variant="secondary"
                         className={`${status.color} text-white text-xs shrink-0`}
                       >
                         <StatusIcon className="h-3 w-3 mr-1" />
                         {status.label}
                       </Badge>
                     </div>
-                    
+
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-sm">
                         <Thermometer className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium">
-                          {unit.last_temp_reading !== null 
-                            ? `${unit.last_temp_reading.toFixed(1)}°` 
-                            : "—"
-                          }
+                          {unit.last_temp_reading !== null
+                            ? `${unit.last_temp_reading.toFixed(1)}°`
+                            : '—'}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          ({unit.temp_limit_low ?? "—"}° to {unit.temp_limit_high}°)
+                          ({unit.temp_limit_low ?? '—'}° to {unit.temp_limit_high}°)
                         </span>
                       </div>
-                      
+
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
-                        {unit.last_reading_at 
+                        {unit.last_reading_at
                           ? formatDistanceToNow(new Date(unit.last_reading_at), { addSuffix: true })
-                          : "Never"
-                        }
+                          : 'Never'}
                       </div>
                     </div>
                   </div>

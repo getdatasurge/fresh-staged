@@ -39,10 +39,7 @@ export type { AppRole } from '../types/auth.js';
  * )
  */
 export function requireRole(minimumRole: AppRole): preHandlerHookHandler {
-  return async function (
-    request: FastifyRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  return async function (request: FastifyRequest, reply: FastifyReply): Promise<void> {
     // Check authentication
     if (!request.user) {
       return reply.status(401).send({

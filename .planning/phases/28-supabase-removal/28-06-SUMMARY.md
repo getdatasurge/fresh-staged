@@ -31,11 +31,11 @@ key-files:
     - src/pages/RecentlyDeleted.tsx
 
 key-decisions:
-  - "Resolve unit hierarchy via units.listByOrg before calling units.get"
-  - "Placeholder recently deleted list pending tRPC endpoint"
+  - 'Resolve unit hierarchy via units.listByOrg before calling units.get'
+  - 'Placeholder recently deleted list pending tRPC endpoint'
 
 patterns-established:
-  - "Lookup hierarchy IDs for unit routes before scoped tRPC queries"
+  - 'Lookup hierarchy IDs for unit routes before scoped tRPC queries'
 
 # Metrics
 duration: 15 min
@@ -55,6 +55,7 @@ completed: 2026-01-26
 - **Files modified:** 5
 
 ## Accomplishments
+
 - Migrated Unit Detail to tRPC units.get with hierarchy lookup and manual log refresh.
 - Switched Site and Area delete flows to tRPC mutations with error handling.
 - Removed Supabase queries from Recently Deleted and clarified migration status.
@@ -71,6 +72,7 @@ Each task was committed atomically:
 **Plan metadata:** Pending
 
 ## Files Created/Modified
+
 - `src/pages/UnitDetail.tsx` - Lookup hierarchy IDs and fetch latest manual log for alerts.
 - `src/pages/SiteDetail.tsx` - Use tRPC delete mutation and surface errors.
 - `src/pages/AreaDetail.tsx` - Use tRPC delete mutation and surface errors.
@@ -78,6 +80,7 @@ Each task was committed atomically:
 - `src/pages/RecentlyDeleted.tsx` - Remove Supabase reads and add migration notice.
 
 ## Decisions Made
+
 - Used units.listByOrg to resolve site/area IDs before calling units.get.
 - Temporarily present an empty Recently Deleted list while the tRPC endpoint is pending.
 
@@ -98,5 +101,6 @@ None - no external service configuration required.
 Ready for 28-07-PLAN.md.
 
 ---
-*Phase: 28-supabase-removal*
-*Completed: 2026-01-26*
+
+_Phase: 28-supabase-removal_
+_Completed: 2026-01-26_

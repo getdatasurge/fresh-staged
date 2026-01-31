@@ -288,7 +288,7 @@ describe('Notification Policies tRPC Router', () => {
           scope: { organization_id: orgId },
           alertType: 'temp_excursion',
           policy: { requires_ack: true },
-        })
+        }),
       ).rejects.toThrow(TRPCError);
 
       await expect(
@@ -297,7 +297,7 @@ describe('Notification Policies tRPC Router', () => {
           scope: { organization_id: orgId },
           alertType: 'temp_excursion',
           policy: { requires_ack: true },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -315,7 +315,7 @@ describe('Notification Policies tRPC Router', () => {
           scope: { organization_id: orgId },
           alertType: 'temp_excursion',
           policy: { requires_ack: true },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -333,7 +333,7 @@ describe('Notification Policies tRPC Router', () => {
           scope: { organization_id: orgId },
           alertType: 'temp_excursion',
           policy: { requires_ack: true },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -419,7 +419,7 @@ describe('Notification Policies tRPC Router', () => {
           organizationId: orgId,
           scope: { organization_id: orgId },
           alertType: 'temp_excursion',
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -436,7 +436,7 @@ describe('Notification Policies tRPC Router', () => {
           organizationId: orgId,
           scope: { organization_id: orgId },
           alertType: 'temp_excursion',
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -453,7 +453,7 @@ describe('Notification Policies tRPC Router', () => {
           organizationId: orgId,
           scope: { organization_id: orgId },
           alertType: 'temp_excursion',
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -487,10 +487,7 @@ describe('Notification Policies tRPC Router', () => {
       });
 
       expect(result).toEqual({ success: true });
-      expect(mockDeletePolicy).toHaveBeenCalledWith(
-        { site_id: siteId },
-        'temp_excursion'
-      );
+      expect(mockDeletePolicy).toHaveBeenCalledWith({ site_id: siteId }, 'temp_excursion');
     });
 
     it('should delete unit-level policy', async () => {
@@ -506,10 +503,7 @@ describe('Notification Policies tRPC Router', () => {
       });
 
       expect(result).toEqual({ success: true });
-      expect(mockDeletePolicy).toHaveBeenCalledWith(
-        { unit_id: unitId },
-        'temp_excursion'
-      );
+      expect(mockDeletePolicy).toHaveBeenCalledWith({ unit_id: unitId }, 'temp_excursion');
     });
   });
 });

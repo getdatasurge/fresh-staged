@@ -34,13 +34,13 @@ key-files:
     - backend/tests/trpc/ttn-settings.router.test.ts
 
 key-decisions:
-  - "Use Drizzle schema extension for additional ttn_connections columns"
-  - "Graceful decryption failure with status enum (empty/decrypted/failed)"
-  - "Admin/owner only for mutations, manager allowed for getCredentials read"
+  - 'Use Drizzle schema extension for additional ttn_connections columns'
+  - 'Graceful decryption failure with status enum (empty/decrypted/failed)'
+  - 'Admin/owner only for mutations, manager allowed for getCredentials read'
 
 patterns-established:
-  - "SafeDecrypt pattern: return { value, status } for tracked decryption"
-  - "TTN provisioning flow: retry -> startFresh -> deepClean escalation"
+  - 'SafeDecrypt pattern: return { value, status } for tracked decryption'
+  - 'TTN provisioning flow: retry -> startFresh -> deepClean escalation'
 
 # Metrics
 duration: 12min
@@ -60,6 +60,7 @@ completed: 2026-01-29
 - **Files modified:** 5
 
 ## Accomplishments
+
 - Added getCredentials procedure returning decrypted TTN secrets with status tracking (empty/decrypted/failed)
 - Added getStatus procedure returning provisioning state (with legacy status value mapping)
 - Added provision procedure to retry failed provisioning, with use_start_fresh guidance
@@ -77,6 +78,7 @@ Each task was committed atomically:
 3. **Task 3: Add backend tests for new procedures** - `d34426e` (test)
 
 ## Files Created/Modified
+
 - `backend/src/routers/ttn-settings.router.ts` - Added 5 new tRPC procedures (getCredentials, getStatus, provision, startFresh, deepClean)
 - `backend/src/services/ttn/provisioning.ts` - Added retryProvisioning, startFresh, deepClean methods
 - `backend/src/schemas/ttn-settings.ts` - Added Zod schemas for credentials, status, and response types
@@ -84,6 +86,7 @@ Each task was committed atomically:
 - `backend/tests/trpc/ttn-settings.router.test.ts` - Added 18 new tests (35 total)
 
 ## Decisions Made
+
 - **Drizzle schema extension:** Added additional columns to ttnConnections table definition to match database schema. This allows type-safe access to provisioning state fields.
 - **SafeDecrypt pattern:** Return { value, status } object to distinguish empty vs decrypted vs failed states, matching edge function behavior.
 - **Role-based access:** getCredentials allows manager for read-only access; all mutations require admin/owner.
@@ -94,6 +97,7 @@ Each task was committed atomically:
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 - Pre-existing test failures in ttn-devices.test.ts (15 failures) are unrelated to this plan. These are documented in STATE.md as requiring subscription middleware mocks.
 
 ## User Setup Required
@@ -101,6 +105,7 @@ None - plan executed exactly as written.
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Backend procedures ready for frontend consumption
 - Frontend can now call tRPC procedures instead of edge functions for:
   - Viewing decrypted credentials (developer panel)
@@ -111,5 +116,6 @@ None - no external service configuration required.
 - Next plan should wire frontend UI to these new endpoints
 
 ---
-*Phase: 31-ttn-provisioning-ui-migration*
-*Completed: 2026-01-29*
+
+_Phase: 31-ttn-provisioning-ui-migration_
+_Completed: 2026-01-29_

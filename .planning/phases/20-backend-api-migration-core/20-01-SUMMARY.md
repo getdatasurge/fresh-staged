@@ -19,9 +19,9 @@ affects: [20-backend-api-migration-core, 21-frontend-api-migration]
 tech-stack:
   added: []
   patterns:
-    - "Domain router CRUD pattern following organizations.router.ts"
+    - 'Domain router CRUD pattern following organizations.router.ts'
     - "Role-based access control with ['admin', 'owner'].includes(ctx.user.role)"
-    - "Hierarchical entity validation (areas validate site access before operations)"
+    - 'Hierarchical entity validation (areas validate site access before operations)'
 
 key-files:
   created:
@@ -33,14 +33,14 @@ key-files:
     - backend/src/trpc/router.ts
 
 key-decisions:
-  - "Sites/areas follow same pattern as organizations.router.ts for consistency"
-  - "Admin/owner role check matches existing REST route authorization"
-  - "Areas router validates site access via service layer, returns NOT_FOUND for invalid site"
+  - 'Sites/areas follow same pattern as organizations.router.ts for consistency'
+  - 'Admin/owner role check matches existing REST route authorization'
+  - 'Areas router validates site access via service layer, returns NOT_FOUND for invalid site'
 
 patterns-established:
-  - "CRUD router pattern: list/get as queries, create/update/delete as mutations"
+  - 'CRUD router pattern: list/get as queries, create/update/delete as mutations'
   - "Role check pattern: if (!['admin', 'owner'].includes(ctx.user.role)) throw FORBIDDEN"
-  - "NOT_FOUND pattern: service returns null, router throws TRPCError"
+  - 'NOT_FOUND pattern: service returns null, router throws TRPCError'
 
 # Metrics
 duration: 6min
@@ -60,6 +60,7 @@ completed: 2026-01-24
 - **Files modified:** 5
 
 ## Accomplishments
+
 - Sites tRPC router with list, get, create, update, delete procedures
 - Areas tRPC router with list, get, create, update, delete procedures matching REST functionality
 - Both routers registered in appRouter with proper namespace mounting
@@ -74,6 +75,7 @@ Each task was committed atomically:
 3. **Task 3: Add unit tests for sites and areas routers** - `63d1013` (test)
 
 ## Files Created/Modified
+
 - `backend/src/routers/sites.router.ts` - Sites domain tRPC router with 5 procedures
 - `backend/src/routers/areas.router.ts` - Areas domain tRPC router with 5 procedures
 - `backend/src/trpc/router.ts` - Updated to import and mount sites/areas routers
@@ -81,6 +83,7 @@ Each task was committed atomically:
 - `backend/tests/trpc/areas.router.test.ts` - 18 unit tests for areas router
 
 ## Decisions Made
+
 - Followed organizations.router.ts pattern exactly for consistency
 - Role check uses `['admin', 'owner'].includes()` matching REST route permissions
 - Areas router delegates site validation to area service, throws NOT_FOUND for invalid site
@@ -90,6 +93,7 @@ Each task was committed atomically:
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 - Test assertion mismatch with Zod default values: UpdateSiteSchema and UpdateAreaSchema apply defaults (timezone: 'UTC', sortOrder: 0) when fields are not provided. Fixed by using `expect.objectContaining()` for service call assertions.
 
 ## User Setup Required
@@ -97,10 +101,12 @@ None - plan executed exactly as written.
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Sites and areas routers ready for frontend integration
 - Pattern established for remaining domain routers (units, readings, alerts)
 - Units router (Plan 02) can follow same CRUD pattern
 
 ---
-*Phase: 20-backend-api-migration-core*
-*Completed: 2026-01-24*
+
+_Phase: 20-backend-api-migration-core_
+_Completed: 2026-01-24_

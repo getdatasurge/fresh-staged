@@ -20,26 +20,23 @@ export function useRealtimeUnitState(organizationId: string | undefined) {
 
     function handleUnitStateChanged(data: UnitStateChangeEvent) {
       // Update unit status cache
-      queryClient.setQueryData(
-        qk.unit(data.unitId).status(),
-        (old: any) => {
-          if (!old) return old;
-          return {
-            ...old,
-            state: data.newState,
-            status: data.newState,
-          };
-        }
-      );
+      queryClient.setQueryData(qk.unit(data.unitId).status(), (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          state: data.newState,
+          status: data.newState,
+        };
+      });
 
       // Invalidate unit list queries to refresh unit cards
       queryClient.invalidateQueries({
-        queryKey: qk.org(organizationId).units()
+        queryKey: qk.org(organizationId).units(),
       });
 
       // Invalidate organization stats (unit counts)
       queryClient.invalidateQueries({
-        queryKey: qk.org(organizationId).stats()
+        queryKey: qk.org(organizationId).stats(),
       });
 
       // Show toast for significant state changes

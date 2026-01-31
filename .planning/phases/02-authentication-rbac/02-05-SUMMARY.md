@@ -38,14 +38,14 @@ key-files:
     - backend/package.json
 
 key-decisions:
-  - "Mock verifyAccessToken for unit tests instead of generating test tokens"
-  - "Use Fastify inject() for integration testing without network I/O"
-  - "Test routes in app.ts factory are for testing only, not production routes"
+  - 'Mock verifyAccessToken for unit tests instead of generating test tokens'
+  - 'Use Fastify inject() for integration testing without network I/O'
+  - 'Test routes in app.ts factory are for testing only, not production routes'
 
 patterns-established:
-  - "Testing pattern: Mock external services (Stack Auth) at module boundary"
-  - "App factory pattern: buildApp() returns configured Fastify instance for tests"
-  - "Test isolation: beforeEach/afterEach lifecycle ensures clean state per test"
+  - 'Testing pattern: Mock external services (Stack Auth) at module boundary'
+  - 'App factory pattern: buildApp() returns configured Fastify instance for tests'
+  - 'Test isolation: beforeEach/afterEach lifecycle ensures clean state per test'
 
 # Metrics
 duration: 2min
@@ -93,17 +93,20 @@ Each task was committed atomically:
 ## Decisions Made
 
 **Testing strategy: Vitest mocking vs real tokens**
+
 - Mock `verifyAccessToken` and `getUserRoleInOrg` at module boundaries for unit tests
 - Avoids dependency on real Stack Auth project during CI/CD
 - Integration tests would use real Stack Auth test project with actual JWT tokens
 - Rationale: Fast, isolated unit tests; leave E2E for later integration testing phase
 
 **Test routes in app factory**
+
 - app.ts contains example routes solely for testing middleware behavior
 - Production routes will be added in Phase 3 (API development)
 - Rationale: Separation of concerns - middleware testing doesn't require full API surface
 
 **Fastify inject pattern**
+
 - Use Fastify's built-in inject() method for HTTP testing without network I/O
 - No need for supertest or separate HTTP client
 - Rationale: Faster tests, better error messages, built-in Fastify feature
@@ -125,6 +128,7 @@ None - no external service configuration required. Tests use mocked Stack Auth v
 **Phase 2 Complete!** Authentication and RBAC foundation fully implemented and tested.
 
 **What's ready:**
+
 - JWT token validation with Stack Auth JWKS integration
 - Request authentication middleware (requireAuth)
 - Role-based access control with hierarchy enforcement (requireRole)
@@ -134,6 +138,7 @@ None - no external service configuration required. Tests use mocked Stack Auth v
 - All middleware returning proper HTTP status codes (401 auth, 403 authz)
 
 **Test coverage:**
+
 - ✅ AUTH-02: JWT validation middleware tested
 - ✅ AUTH-03: 401 for invalid tokens tested
 - ✅ AUTH-04: request.user populated tested
@@ -148,5 +153,6 @@ None - no external service configuration required. Tests use mocked Stack Auth v
 **No blockers or concerns.**
 
 ---
-*Phase: 02-authentication-rbac*
-*Completed: 2026-01-23*
+
+_Phase: 02-authentication-rbac_
+_Completed: 2026-01-23_

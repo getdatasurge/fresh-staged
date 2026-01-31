@@ -17,9 +17,9 @@ key-files:
     - src/hooks/useWidgetHealthMetrics.ts
 decisions:
   - id: TRPC-HOOK-01
-    description: "Keep useTRPC() alongside useTRPCClient() in hooks that use both .queryOptions() and imperative .mutate()"
+    description: 'Keep useTRPC() alongside useTRPCClient() in hooks that use both .queryOptions() and imperative .mutate()'
   - id: TRPC-HOOK-02
-    description: "Replace useTRPC() entirely with useTRPCClient() in hooks that only use imperative calls (useWidgetHealthMetrics)"
+    description: 'Replace useTRPC() entirely with useTRPCClient() in hooks that only use imperative calls (useWidgetHealthMetrics)'
 metrics:
   duration: ~3 minutes
   completed: 2026-01-29
@@ -32,6 +32,7 @@ Migrated 12 imperative `.mutate()`/`.query()` calls across 4 hook files from `us
 ## What Was Done
 
 ### Task 1: Fix .mutate() calls in 3 hook files
+
 - **useAlertRules.ts**: Added `useTRPCClient` import, switched 3 mutations (upsert, delete, clearField) to `trpcClient`
 - **useAlertRulesHistory.ts**: Added `useTRPCClient` import, switched 1 mutation (create) to `trpcClient`
 - **useSiteLocationMutation.ts**: Added `useTRPCClient` import, switched 1 mutation (update) to `trpcClient`
@@ -39,6 +40,7 @@ Migrated 12 imperative `.mutate()`/`.query()` calls across 4 hook files from `us
 - Commit: `bf1077f`
 
 ### Task 2: Fix .mutate() and .query() calls in useWidgetHealthMetrics.ts
+
 - Replaced `useTRPC` entirely with `useTRPCClient` (no `.queryOptions()` usage in this file)
 - Switched 3 `.mutate()` calls: trackHealthChange, flushHealthMetrics, resetOrgCounters
 - Switched 4 `.query()` calls: getHealthDistribution, getFailuresByLayer, hasCriticalIssues, getBufferedEvents
@@ -56,27 +58,27 @@ None -- plan executed exactly as written.
 
 ## Decisions Made
 
-| ID | Decision | Rationale |
-|----|----------|-----------|
+| ID           | Decision                                                              | Rationale                                                                                             |
+| ------------ | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | TRPC-HOOK-01 | Keep both `useTRPC()` and `useTRPCClient()` in hooks with mixed usage | Hooks like useAlertRules need `useTRPC()` for `.queryOptions()` and `useTRPCClient()` for `.mutate()` |
-| TRPC-HOOK-02 | Replace `useTRPC()` entirely in useWidgetHealthMetrics | File only uses imperative calls, no need for proxy at all |
+| TRPC-HOOK-02 | Replace `useTRPC()` entirely in useWidgetHealthMetrics                | File only uses imperative calls, no need for proxy at all                                             |
 
 ## Call Sites Fixed (12 total)
 
-| File | Method | Router Path |
-|------|--------|-------------|
-| useAlertRules.ts | .mutate() | alertRules.upsert |
-| useAlertRules.ts | .mutate() | alertRules.delete |
-| useAlertRules.ts | .mutate() | alertRules.clearField |
-| useAlertRulesHistory.ts | .mutate() | alertHistory.create |
-| useSiteLocationMutation.ts | .mutate() | sites.update |
-| useWidgetHealthMetrics.ts | .mutate() | widgetHealth.trackHealthChange |
-| useWidgetHealthMetrics.ts | .mutate() | widgetHealth.flushHealthMetrics |
-| useWidgetHealthMetrics.ts | .mutate() | widgetHealth.resetOrgCounters |
-| useWidgetHealthMetrics.ts | .query() | widgetHealth.getHealthDistribution |
-| useWidgetHealthMetrics.ts | .query() | widgetHealth.getFailuresByLayer |
-| useWidgetHealthMetrics.ts | .query() | widgetHealth.hasCriticalIssues |
-| useWidgetHealthMetrics.ts | .query() | widgetHealth.getBufferedEvents |
+| File                       | Method    | Router Path                        |
+| -------------------------- | --------- | ---------------------------------- |
+| useAlertRules.ts           | .mutate() | alertRules.upsert                  |
+| useAlertRules.ts           | .mutate() | alertRules.delete                  |
+| useAlertRules.ts           | .mutate() | alertRules.clearField              |
+| useAlertRulesHistory.ts    | .mutate() | alertHistory.create                |
+| useSiteLocationMutation.ts | .mutate() | sites.update                       |
+| useWidgetHealthMetrics.ts  | .mutate() | widgetHealth.trackHealthChange     |
+| useWidgetHealthMetrics.ts  | .mutate() | widgetHealth.flushHealthMetrics    |
+| useWidgetHealthMetrics.ts  | .mutate() | widgetHealth.resetOrgCounters      |
+| useWidgetHealthMetrics.ts  | .query()  | widgetHealth.getHealthDistribution |
+| useWidgetHealthMetrics.ts  | .query()  | widgetHealth.getFailuresByLayer    |
+| useWidgetHealthMetrics.ts  | .query()  | widgetHealth.hasCriticalIssues     |
+| useWidgetHealthMetrics.ts  | .query()  | widgetHealth.getBufferedEvents     |
 
 ## Next Phase Readiness
 

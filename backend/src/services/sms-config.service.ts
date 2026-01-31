@@ -44,9 +44,7 @@ function toResponse(config: SmsConfig): SmsConfigResponse {
  * @param organizationId - Organization UUID
  * @returns SmsConfigResponse if configured, null otherwise
  */
-export async function getSmsConfig(
-  organizationId: string
-): Promise<SmsConfigResponse | null> {
+export async function getSmsConfig(organizationId: string): Promise<SmsConfigResponse | null> {
   const [config] = await db
     .select()
     .from(smsConfigs)
@@ -66,7 +64,7 @@ export async function getSmsConfig(
  */
 export async function upsertSmsConfig(
   organizationId: string,
-  data: SmsConfigCreate
+  data: SmsConfigCreate,
 ): Promise<SmsConfigResponse> {
   // Check if config already exists
   const existing = await db
@@ -115,7 +113,7 @@ export async function upsertSmsConfig(
  */
 export async function updateSmsConfig(
   organizationId: string,
-  data: SmsConfigUpdate
+  data: SmsConfigUpdate,
 ): Promise<SmsConfigResponse | null> {
   // Build update object with only provided fields
   const updateData: Partial<InsertSmsConfig> & { updatedAt: Date } = {
@@ -167,7 +165,7 @@ export async function deleteSmsConfig(organizationId: string): Promise<boolean> 
  * @returns Full SmsConfig including API key, or null if not found
  */
 export async function getSmsConfigWithCredentials(
-  organizationId: string
+  organizationId: string,
 ): Promise<SmsConfig | null> {
   const [config] = await db
     .select()

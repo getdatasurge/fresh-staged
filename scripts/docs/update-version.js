@@ -56,7 +56,7 @@ function parseArgs() {
   const result = {
     appVersion: null,
     isDev: false,
-    help: false
+    help: false,
   };
 
   for (const arg of args) {
@@ -140,9 +140,7 @@ function main() {
     docsVersion = 'dev';
   } else if (args.appVersion) {
     // Remove 'v' prefix if present for consistency
-    appVersion = args.appVersion.startsWith('v')
-      ? args.appVersion
-      : `v${args.appVersion}`;
+    appVersion = args.appVersion.startsWith('v') ? args.appVersion : `v${args.appVersion}`;
     docsVersion = appVersion;
   } else {
     // Default to dev if no version specified
@@ -160,7 +158,7 @@ function main() {
     gitCommit: getGitCommit(),
     gitShortCommit: getGitShortCommit(),
     builtAt: new Date().toISOString(),
-    buildSource
+    buildSource,
   };
 
   // Ensure directory exists

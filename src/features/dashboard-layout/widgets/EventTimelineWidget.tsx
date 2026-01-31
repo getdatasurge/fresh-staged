@@ -5,46 +5,40 @@
  * Includes filter chips. Uses tRPC for data fetching.
  */
 
-import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
-import {
-  Clock,
-  AlertTriangle,
-  ClipboardList,
-  DoorOpen,
-  Activity,
-  Loader2
-} from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { useTRPC } from "@/lib/trpc";
-import type { WidgetProps } from "../types";
-import { format, isToday, isYesterday } from "date-fns";
+import { useMemo, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { Clock, AlertTriangle, ClipboardList, DoorOpen, Activity, Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { useTRPC } from '@/lib/trpc';
+import type { WidgetProps } from '../types';
+import { format, isToday, isYesterday } from 'date-fns';
 
 interface TimelineEvent {
   id: string;
-  type: "alert" | "reading" | "manual_log" | "door";
+  type: 'alert' | 'reading' | 'manual_log' | 'door';
   title: string;
   description?: string;
   timestamp: string | Date;
 }
 
-type FilterType = "alert" | "manual_log" | "door";
+type FilterType = 'alert' | 'manual_log' | 'door';
 
 const EVENTS_PER_PAGE = 20;
 
 function formatDateHeader(date: Date): string {
-  if (isToday(date)) return "Today";
-  if (isYesterday(date)) return "Yesterday";
-  return format(date, "MMMM d, yyyy");
+  if (isToday(date)) return 'Today';
+  if (isYesterday(date)) return 'Yesterday';
+  return format(date, 'MMMM d, yyyy');
 }
 
 function groupEventsByDate(events: TimelineEvent[]): Map<string, TimelineEvent[]> {
   const groups = new Map<string, TimelineEvent[]>();
-  events.forEach(event => {
-    const timestamp = typeof event.timestamp === 'string' ? new Date(event.timestamp) : event.timestamp;
-    const dateKey = format(timestamp, "yyyy-MM-dd");
+  events.forEach((event) => {
+    const timestamp =
+      typeof event.timestamp === 'string' ? new Date(event.timestamp) : event.timestamp;
+    const dateKey = format(timestamp, 'yyyy-MM-dd');
     if (!groups.has(dateKey)) groups.set(dateKey, []);
     groups.get(dateKey)!.push(event);
   });
@@ -104,7 +98,7 @@ export function EventTimelineWidget({ entityId, organizationId }: WidgetProps) {
 
     // Add alerts
     if (filters.alert && alertsQuery.data) {
-      alertsQuery.data.forEach(a => {
+      alertsQuery.data.forEach((a) => {
         allEvents.push({
           id: `alert-${a.id}`,
           type: 'alert',
@@ -117,7 +111,7 @@ export function EventTimelineWidget({ entityId, organizationId }: WidgetProps) {
 
     // Add manual logs
     if (filters.manual_log && logsQuery.data) {
-      logsQuery.data.forEach(l => {
+      logsQuery.data.forEach((l) => {
         allEvents.push({
           id: `log-${l.id}`,
           type: 'manual_log',
@@ -130,7 +124,7 @@ export function EventTimelineWidget({ entityId, organizationId }: WidgetProps) {
 
     // Add door events
     if (filters.door && doorEventsQuery.data) {
-      doorEventsQuery.data.forEach(d => {
+      doorEventsQuery.data.forEach((d) => {
         allEvents.push({
           id: `door-${d.id}`,
           type: 'door',
@@ -142,8 +136,10 @@ export function EventTimelineWidget({ entityId, organizationId }: WidgetProps) {
 
     // Sort by timestamp descending
     allEvents.sort((a, b) => {
-      const aTime = typeof a.timestamp === 'string' ? new Date(a.timestamp).getTime() : a.timestamp.getTime();
-      const bTime = typeof b.timestamp === 'string' ? new Date(b.timestamp).getTime() : b.timestamp.getTime();
+      const aTime =
+        typeof a.timestamp === 'string' ? new Date(a.timestamp).getTime() : a.timestamp.getTime();
+      const bTime =
+        typeof b.timestamp === 'string' ? new Date(b.timestamp).getTime() : b.timestamp.getTime();
       return bTime - aTime;
     });
 
@@ -151,23 +147,23 @@ export function EventTimelineWidget({ entityId, organizationId }: WidgetProps) {
   }, [filters, alertsQuery.data, logsQuery.data, doorEventsQuery.data]);
 
   const toggleFilter = (type: FilterType) => {
-    setFilters(prev => ({ ...prev, [type]: !prev[type] }));
+    setFilters((prev) => ({ ...prev, [type]: !prev[type] }));
   };
 
   const filterLabels: Record<FilterType, string> = {
-    alert: "Alerts",
-    manual_log: "Logs",
-    door: "Door",
+    alert: 'Alerts',
+    manual_log: 'Logs',
+    door: 'Door',
   };
 
   const typeConfig = {
-    alert: { icon: AlertTriangle, color: "text-destructive" },
-    reading: { icon: Activity, color: "text-blue-500" },
-    manual_log: { icon: ClipboardList, color: "text-green-500" },
-    door: { icon: DoorOpen, color: "text-orange-500" },
+    alert: { icon: AlertTriangle, color: 'text-destructive' },
+    reading: { icon: Activity, color: 'text-blue-500' },
+    manual_log: { icon: ClipboardList, color: 'text-green-500' },
+    door: { icon: DoorOpen, color: 'text-orange-500' },
   };
 
-  const filteredEvents = events.filter(e => filters[e.type as FilterType]);
+  const filteredEvents = events.filter((e) => filters[e.type as FilterType]);
   const groupedEvents = groupEventsByDate(filteredEvents);
 
   if (isLoading) {
@@ -194,10 +190,10 @@ export function EventTimelineWidget({ entityId, organizationId }: WidgetProps) {
           Event Timeline
         </CardTitle>
         <div className="flex gap-1 flex-wrap">
-          {(Object.keys(filters) as FilterType[]).map(type => (
+          {(Object.keys(filters) as FilterType[]).map((type) => (
             <Button
               key={type}
-              variant={filters[type] ? "secondary" : "outline"}
+              variant={filters[type] ? 'secondary' : 'outline'}
               size="sm"
               className="h-6 text-xs px-2"
               onClick={() => toggleFilter(type)}
@@ -224,9 +220,10 @@ export function EventTimelineWidget({ entityId, organizationId }: WidgetProps) {
                     {dateEvents.map((event) => {
                       const config = typeConfig[event.type];
                       const Icon = config.icon;
-                      const timestamp = typeof event.timestamp === 'string'
-                        ? new Date(event.timestamp)
-                        : event.timestamp;
+                      const timestamp =
+                        typeof event.timestamp === 'string'
+                          ? new Date(event.timestamp)
+                          : event.timestamp;
                       return (
                         <div
                           key={event.id}
@@ -243,7 +240,7 @@ export function EventTimelineWidget({ entityId, organizationId }: WidgetProps) {
                               </p>
                             )}
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {format(timestamp, "h:mm a")}
+                              {format(timestamp, 'h:mm a')}
                             </p>
                           </div>
                         </div>

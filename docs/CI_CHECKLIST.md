@@ -14,48 +14,48 @@ This document describes the automated checks run by `npm run docs:lint` and the 
 
 ### ✅ Structure Validation
 
-| Check | Severity | Description |
-|-------|----------|-------------|
-| **H1 Title Required** | Error | Every document must have exactly one H1 (`#`) title |
-| **Heading Hierarchy** | Warning | Heading levels should not skip (e.g., H2 → H4) |
-| **Description Block** | Warning | Documents should have a description blockquote after title |
-| **Related Documents** | Warning | Documents should link to related content |
+| Check                 | Severity | Description                                                |
+| --------------------- | -------- | ---------------------------------------------------------- |
+| **H1 Title Required** | Error    | Every document must have exactly one H1 (`#`) title        |
+| **Heading Hierarchy** | Warning  | Heading levels should not skip (e.g., H2 → H4)             |
+| **Description Block** | Warning  | Documents should have a description blockquote after title |
+| **Related Documents** | Warning  | Documents should link to related content                   |
 
 ### ✅ Link Validation
 
-| Check | Severity | Description |
-|-------|----------|-------------|
-| **Broken Internal Links** | Error | All `[text](./path.md)` links must resolve to existing files |
-| **Orphaned Documents** | Warning | All docs should be linked from INDEX.md |
-| **Anchor Links** | Info | Links to specific sections are validated |
+| Check                     | Severity | Description                                                  |
+| ------------------------- | -------- | ------------------------------------------------------------ |
+| **Broken Internal Links** | Error    | All `[text](./path.md)` links must resolve to existing files |
+| **Orphaned Documents**    | Warning  | All docs should be linked from INDEX.md                      |
+| **Anchor Links**          | Info     | Links to specific sections are validated                     |
 
 ### ✅ Content Validation
 
-| Check | Severity | Description |
-|-------|----------|-------------|
-| **Placeholder Text** | Error | No `[TBD]`, `[TODO]`, or `[PLACEHOLDER]` in content |
-| **TODO Markers** | Warning | `TODO`, `FIXME`, `XXX` should be resolved |
-| **Empty Code Blocks** | Warning | Code blocks should contain content |
-| **Minimum Length** | Warning | Documents should have meaningful content (>100 chars) |
-| **Table Formatting** | Warning | Table rows should have consistent column counts |
+| Check                 | Severity | Description                                           |
+| --------------------- | -------- | ----------------------------------------------------- |
+| **Placeholder Text**  | Error    | No `[TBD]`, `[TODO]`, or `[PLACEHOLDER]` in content   |
+| **TODO Markers**      | Warning  | `TODO`, `FIXME`, `XXX` should be resolved             |
+| **Empty Code Blocks** | Warning  | Code blocks should contain content                    |
+| **Minimum Length**    | Warning  | Documents should have meaningful content (>100 chars) |
+| **Table Formatting**  | Warning  | Table rows should have consistent column counts       |
 
 ### ✅ Diagram Validation
 
-| Check | Severity | Description |
-|-------|----------|-------------|
-| **Mermaid Syntax** | Error | Mermaid diagrams must have valid syntax |
-| **Diagram Type** | Error | Must start with valid diagram type (graph, flowchart, etc.) |
+| Check              | Severity | Description                                                 |
+| ------------------ | -------- | ----------------------------------------------------------- |
+| **Mermaid Syntax** | Error    | Mermaid diagrams must have valid syntax                     |
+| **Diagram Type**   | Error    | Must start with valid diagram type (graph, flowchart, etc.) |
 
 ### ✅ Required Files
 
-| File | Required | Purpose |
-|------|----------|---------|
-| `README.md` | Yes | Project overview |
-| `INDEX.md` | Yes | Documentation navigation |
-| `GLOSSARY.md` | Yes | Term definitions |
-| `architecture/ARCHITECTURE.md` | Yes | System architecture |
-| `engineering/API.md` | Yes | API documentation |
-| `engineering/DATA_MODEL.md` | Yes | Data model documentation |
+| File                           | Required | Purpose                  |
+| ------------------------------ | -------- | ------------------------ |
+| `README.md`                    | Yes      | Project overview         |
+| `INDEX.md`                     | Yes      | Documentation navigation |
+| `GLOSSARY.md`                  | Yes      | Term definitions         |
+| `architecture/ARCHITECTURE.md` | Yes      | System architecture      |
+| `engineering/API.md`           | Yes      | API documentation        |
+| `engineering/DATA_MODEL.md`    | Yes      | Data model documentation |
 
 ---
 
@@ -64,7 +64,8 @@ This document describes the automated checks run by `npm run docs:lint` and the 
 ### Trigger Conditions
 
 The documentation CI runs on:
-- Push to `main` or `develop` branches (docs/** changes)
+
+- Push to `main` or `develop` branches (docs/\*\* changes)
 - Pull requests touching `docs/**` files
 - Manual workflow dispatch
 
@@ -82,10 +83,10 @@ The documentation CI runs on:
 
 ### Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| 0 | All checks passed |
-| 1 | One or more errors found |
+| Code | Meaning                  |
+| ---- | ------------------------ |
+| 0    | All checks passed        |
+| 1    | One or more errors found |
 
 ---
 
@@ -130,6 +131,7 @@ fi
 # Error: Broken link: ./missing.md
 
 # Fix: Update the link to correct path
+
 [Text](./correct-path.md)
 ```
 
@@ -139,6 +141,7 @@ fi
 # Error: Document missing H1 title
 
 # Fix: Add title at top of document
+
 # My Document Title
 
 Content here...
@@ -150,11 +153,15 @@ Content here...
 # Warning: Heading level jumps from H2 to H4
 
 # Bad:
+
 ## Section
+
 #### Subsection
 
 # Good:
+
 ## Section
+
 ### Subsection
 ```
 
@@ -164,6 +171,7 @@ Content here...
 # Error: Contains placeholder text: [TBD]
 
 # Fix: Replace with actual content
+
 [TBD] → The actual implementation details...
 ```
 
@@ -173,14 +181,16 @@ Content here...
 # Error: Mermaid diagram: Missing diagram type
 
 # Bad:
+
 \`\`\`mermaid
 A --> B
 \`\`\`
 
 # Good:
+
 \`\`\`mermaid
 graph LR
-    A --> B
+A --> B
 \`\`\`
 ```
 
@@ -188,11 +198,11 @@ graph LR
 
 ## Severity Levels
 
-| Level | CI Impact | Action Required |
-|-------|-----------|-----------------|
-| **Error** | Fails CI | Must fix before merge |
+| Level       | CI Impact | Action Required          |
+| ----------- | --------- | ------------------------ |
+| **Error**   | Fails CI  | Must fix before merge    |
 | **Warning** | Passes CI | Should fix, not blocking |
-| **Info** | Passes CI | Optional improvement |
+| **Info**    | Passes CI | Optional improvement     |
 
 ---
 
@@ -239,6 +249,7 @@ Some warnings can be suppressed per-file:
 
 ```markdown
 <!-- docs-lint-disable missing-related -->
+
 # Document Without Related Section
 
 This document intentionally has no related documents section.
@@ -250,12 +261,12 @@ This document intentionally has no related documents section.
 
 Track documentation health over time:
 
-| Metric | Target | Current |
-|--------|--------|---------|
-| Broken links | 0 | - |
-| Orphaned docs | 0 | - |
-| TODO markers | 0 | - |
-| Coverage | 100% | - |
+| Metric        | Target | Current |
+| ------------- | ------ | ------- |
+| Broken links  | 0      | -       |
+| Orphaned docs | 0      | -       |
+| TODO markers  | 0      | -       |
+| Coverage      | 100%   | -       |
 
 Run `npm run docs:lint` to see current counts.
 

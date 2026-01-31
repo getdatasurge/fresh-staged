@@ -28,8 +28,8 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Document pre-existing TTN devices test failures (missing subscription mocks) as known issue"
-  - "Security headers verification confirmed via curl inspection"
+  - 'Document pre-existing TTN devices test failures (missing subscription mocks) as known issue'
+  - 'Security headers verification confirmed via curl inspection'
 
 patterns-established: []
 
@@ -80,20 +80,20 @@ Each task was a verification task with no code changes:
 ### Backend Tests
 
 | Category | Count |
-|----------|-------|
-| Passed | 1030 |
-| Failed | 15 |
-| Skipped | 47 |
-| Total | 1092 |
+| -------- | ----- |
+| Passed   | 1030  |
+| Failed   | 15    |
+| Skipped  | 47    |
+| Total    | 1092  |
 
 ### Test Failures (Pre-existing)
 
 All 15 failures are in `tests/api/ttn-devices.test.ts` and are **pre-existing issues** unrelated to hardening changes:
 
-| Test File | Failures | Cause |
-|-----------|----------|-------|
+| Test File           | Failures           | Cause                                           |
+| ------------------- | ------------------ | ----------------------------------------------- |
 | ttn-devices.test.ts | 12 bootstrap tests | Missing `requireSensorCapacity` middleware mock |
-| ttn-devices.test.ts | 3 provision tests | Missing `requireSensorCapacity` middleware mock |
+| ttn-devices.test.ts | 3 provision tests  | Missing `requireSensorCapacity` middleware mock |
 
 **Root cause:** When `requireSensorCapacity` middleware was added in commit `5ad9f0b`, the test file was not updated to mock the subscription middleware's database calls. The middleware queries the database for organization sensor limits, causing 500 errors in tests.
 
@@ -149,5 +149,6 @@ None - no external service configuration required.
 - Known test issue documented for future remediation
 
 ---
-*Phase: 30-system-hardening*
-*Completed: 2026-01-29*
+
+_Phase: 30-system-hardening_
+_Completed: 2026-01-29_

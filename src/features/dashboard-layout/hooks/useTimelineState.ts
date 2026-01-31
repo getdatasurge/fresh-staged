@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { subHours, subDays, startOfDay, endOfDay, format, parseISO } from "date-fns";
-import type { TimelineState } from "../types";
-import { DEFAULT_TIMELINE_STATE } from "../constants/defaultLayout";
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { subHours, subDays, startOfDay, endOfDay, format, parseISO } from 'date-fns';
+import type { TimelineState } from '../types';
+import { DEFAULT_TIMELINE_STATE } from '../constants/defaultLayout';
 
 export interface DateRange {
   from: Date;
@@ -17,17 +17,17 @@ function computeDateRange(state: TimelineState): DateRange {
   const now = new Date();
 
   switch (state.range) {
-    case "1h":
+    case '1h':
       return { from: subHours(now, 1), to: now };
-    case "6h":
+    case '6h':
       return { from: subHours(now, 6), to: now };
-    case "24h":
+    case '24h':
       return { from: subHours(now, 24), to: now };
-    case "7d":
+    case '7d':
       return { from: subDays(now, 7), to: now };
-    case "30d":
+    case '30d':
       return { from: subDays(now, 30), to: now };
-    case "custom":
+    case 'custom':
       if (state.customFrom && state.customTo) {
         return {
           from: parseISO(state.customFrom),
@@ -47,7 +47,7 @@ function computeComparisonRange(state: TimelineState): ComparisonRange {
     return { primary, comparison: null };
   }
 
-  if (state.compare === "previous_period") {
+  if (state.compare === 'previous_period') {
     const duration = primary.to.getTime() - primary.from.getTime();
     return {
       primary,
@@ -59,7 +59,7 @@ function computeComparisonRange(state: TimelineState): ComparisonRange {
   }
 
   // Custom comparison range
-  if (typeof state.compare === "object" && state.compare.from && state.compare.to) {
+  if (typeof state.compare === 'object' && state.compare.from && state.compare.to) {
     return {
       primary,
       comparison: {
@@ -75,7 +75,7 @@ function computeComparisonRange(state: TimelineState): ComparisonRange {
 export function useTimelineState(
   initialState: TimelineState = DEFAULT_TIMELINE_STATE,
   onUpdate?: (state: TimelineState) => void,
-  isDefaultLayout: boolean = true
+  isDefaultLayout: boolean = true,
 ) {
   const [timelineState, setTimelineState] = useState<TimelineState>(initialState);
 
@@ -94,37 +94,37 @@ export function useTimelineState(
         onUpdate(newState);
       }
     },
-    [timelineState, isDefaultLayout, onUpdate]
+    [timelineState, isDefaultLayout, onUpdate],
   );
 
   // Quick range setters
   const setRange = useCallback(
-    (range: TimelineState["range"]) => {
+    (range: TimelineState['range']) => {
       updateTimeline({
         range,
         customFrom: undefined,
         customTo: undefined,
       });
     },
-    [updateTimeline]
+    [updateTimeline],
   );
 
   const setCustomRange = useCallback(
     (from: Date, to: Date) => {
       updateTimeline({
-        range: "custom",
+        range: 'custom',
         customFrom: from.toISOString(),
         customTo: to.toISOString(),
       });
     },
-    [updateTimeline]
+    [updateTimeline],
   );
 
   const setCompare = useCallback(
-    (compare: TimelineState["compare"]) => {
+    (compare: TimelineState['compare']) => {
       updateTimeline({ compare });
     },
-    [updateTimeline]
+    [updateTimeline],
   );
 
   const clearCompare = useCallback(() => {
@@ -135,7 +135,7 @@ export function useTimelineState(
     (zoomLevel: number) => {
       updateTimeline({ zoomLevel: Math.max(1, Math.min(4, zoomLevel)) });
     },
-    [updateTimeline]
+    [updateTimeline],
   );
 
   // Computed values
@@ -144,10 +144,10 @@ export function useTimelineState(
 
   // Formatted labels for display
   const rangeLabel = useMemo(() => {
-    if (timelineState.range === "custom" && timelineState.customFrom && timelineState.customTo) {
+    if (timelineState.range === 'custom' && timelineState.customFrom && timelineState.customTo) {
       const from = parseISO(timelineState.customFrom);
       const to = parseISO(timelineState.customTo);
-      return `${format(from, "MMM d")} - ${format(to, "MMM d")}`;
+      return `${format(from, 'MMM d')} - ${format(to, 'MMM d')}`;
     }
     return timelineState.range;
   }, [timelineState]);

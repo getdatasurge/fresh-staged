@@ -54,28 +54,28 @@ stateDiagram-v2
 
 ### State Descriptions
 
-| Status | Description | Priority | Color |
-|--------|-------------|----------|-------|
-| `ok` | Normal operation | 5 | Green |
-| `excursion` | Temp out of range (unconfirmed) | 2 | Orange-red |
-| `alarm_active` | Confirmed temp alarm | 1 (highest) | Red |
-| `restoring` | Recovering from issue | 4 | Blue |
-| `offline` | Warning-level offline (1-4 missed) | 6 | Gray |
-| `monitoring_interrupted` | Critical offline (5+ missed) | 3 | Gray |
-| `manual_required` | Manual logging needed | 4 | Orange |
+| Status                   | Description                        | Priority    | Color      |
+| ------------------------ | ---------------------------------- | ----------- | ---------- |
+| `ok`                     | Normal operation                   | 5           | Green      |
+| `excursion`              | Temp out of range (unconfirmed)    | 2           | Orange-red |
+| `alarm_active`           | Confirmed temp alarm               | 1 (highest) | Red        |
+| `restoring`              | Recovering from issue              | 4           | Blue       |
+| `offline`                | Warning-level offline (1-4 missed) | 6           | Gray       |
+| `monitoring_interrupted` | Critical offline (5+ missed)       | 3           | Gray       |
+| `manual_required`        | Manual logging needed              | 4           | Orange     |
 
 ### Transitions
 
-| From | To | Trigger |
-|------|----|---------|
-| `ok` → `excursion` | Temperature exceeds threshold |
-| `excursion` → `alarm_active` | Confirm time (10-20 min) passed |
-| `alarm_active` → `restoring` | Temperature returns to safe range |
-| `restoring` → `ok` | 2 consecutive in-range readings |
-| `ok` → `offline` | 1-4 missed check-ins |
-| `offline` → `monitoring_interrupted` | 5+ missed check-ins |
-| `monitoring_interrupted` → `manual_required` | 4+ hours since last reading |
-| `*` → `restoring` | Sensor data received |
+| From                                         | To                                | Trigger |
+| -------------------------------------------- | --------------------------------- | ------- |
+| `ok` → `excursion`                           | Temperature exceeds threshold     |
+| `excursion` → `alarm_active`                 | Confirm time (10-20 min) passed   |
+| `alarm_active` → `restoring`                 | Temperature returns to safe range |
+| `restoring` → `ok`                           | 2 consecutive in-range readings   |
+| `ok` → `offline`                             | 1-4 missed check-ins              |
+| `offline` → `monitoring_interrupted`         | 5+ missed check-ins               |
+| `monitoring_interrupted` → `manual_required` | 4+ hours since last reading       |
+| `*` → `restoring`                            | Sensor data received              |
 
 ---
 
@@ -104,11 +104,11 @@ stateDiagram-v2
 
 ### State Descriptions
 
-| Status | Description | Actions Available |
-|--------|-------------|-------------------|
-| `triggered` | Active alert, not yet acknowledged | Acknowledge, Resolve |
-| `acknowledged` | User has seen and is handling | Resolve |
-| `resolved` | Alert closed (auto or manual) | None (archived) |
+| Status         | Description                        | Actions Available    |
+| -------------- | ---------------------------------- | -------------------- |
+| `triggered`    | Active alert, not yet acknowledged | Acknowledge, Resolve |
+| `acknowledged` | User has seen and is handling      | Resolve              |
+| `resolved`     | Alert closed (auto or manual)      | None (archived)      |
 
 ### Escalation Behavior
 
@@ -164,13 +164,13 @@ stateDiagram-v2
 
 ### State Descriptions
 
-| Status | Description | Next Actions |
-|--------|-------------|--------------|
-| `pending` | Registered in FreshTrack, not in TTN | Provision |
+| Status    | Description                          | Next Actions    |
+| --------- | ------------------------------------ | --------------- |
+| `pending` | Registered in FreshTrack, not in TTN | Provision       |
 | `joining` | Provisioned in TTN, waiting for join | Wait for uplink |
-| `active` | Receiving data normally | Monitor |
-| `offline` | No recent data | Investigate |
-| `fault` | Error condition | Troubleshoot |
+| `active`  | Receiving data normally              | Monitor         |
+| `offline` | No recent data                       | Investigate     |
+| `fault`   | Error condition                      | Troubleshoot    |
 
 ---
 

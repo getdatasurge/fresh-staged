@@ -5,6 +5,7 @@
 ## APIs & External Services
 
 **Authentication:**
+
 - Stack Auth - User authentication and identity management
   - SDK/Client: `@stackframe/react` 2.8.60 (frontend), JWT validation (backend)
   - Auth: `VITE_STACK_AUTH_PROJECT_ID`, `VITE_STACK_AUTH_PUBLISHABLE_CLIENT_KEY`
@@ -12,6 +13,7 @@
   - Usage: JWT tokens passed via `x-stack-access-token` header
 
 **Payment Processing:**
+
 - Stripe - Subscription billing and metered usage
   - SDK/Client: `stripe` 20.2.0
   - Auth: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
@@ -20,6 +22,7 @@
   - Events: subscription lifecycle, meter events
 
 **IoT Device Integration:**
+
 - The Things Network (TTN) - LoRaWAN device management
   - SDK/Client: Custom HTTP client (no SDK, REST API)
   - Auth: `TTN_API_KEY`, `TTN_APPLICATION_ID`
@@ -29,6 +32,7 @@
   - Operations: device provisioning, deprovisioning, gateway management
 
 **Email Delivery:**
+
 - Resend - Transactional email service
   - SDK/Client: `resend` 4.2.0
   - Auth: `RESEND_API_KEY`
@@ -37,6 +41,7 @@
   - Usage: Digest emails, alert notifications (via BullMQ jobs)
 
 **SMS Notifications:**
+
 - Telnyx - SMS delivery service (optional)
   - SDK/Client: `telnyx` 5.11.0
   - Auth: `TELNYX_API_KEY`, `TELNYX_MESSAGING_PROFILE_ID`
@@ -48,6 +53,7 @@
 ## Data Storage
 
 **Databases:**
+
 - PostgreSQL - Primary relational database
   - Connection: `DATABASE_URL`
   - Client: Drizzle ORM 0.38.0 with `pg` 8.13.0
@@ -56,6 +62,7 @@
   - Pool settings: `DB_POOL_MIN`, `DB_POOL_MAX`, `DB_POOL_IDLE_TIMEOUT`, `DB_POOL_CONNECTION_TIMEOUT`
 
 **File Storage:**
+
 - MinIO / AWS S3 - Object storage for assets
   - SDK/Client: `@aws-sdk/client-s3` 3.750.0
   - Connection: `MINIO_ENDPOINT`, `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`
@@ -66,6 +73,7 @@
   - Usage: Presigned URLs for upload/download
 
 **Caching:**
+
 - Redis - Cache and job queue backend
   - Connection: `REDIS_URL` (default: redis://redis:6379)
   - Client: `ioredis` 5.9.2 (BullMQ), `redis` 5.10.0 (Socket.IO adapter)
@@ -74,6 +82,7 @@
 ## Authentication & Identity
 
 **Auth Provider:**
+
 - Stack Auth - Third-party authentication service
   - Implementation: JWT-based authentication
   - Frontend: `@stackframe/react` provider wraps entire app (`src/App.tsx`)
@@ -84,20 +93,24 @@
 ## Monitoring & Observability
 
 **Error Tracking:**
+
 - Sentry (configured but optional)
   - Environment vars: `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE`
 
 **Logs:**
+
 - Structured JSON logging via Fastify built-in logger
   - Config: `backend/src/utils/logger.js` (getFastifyLoggerConfig)
   - Pretty printing: `pino-pretty` 13.1.3 (dev dependency)
   - Log level: `LOG_LEVEL` environment variable
 
 **Metrics:**
+
 - Prometheus export (optional)
   - Environment vars: `METRICS_ENABLED`, `METRICS_PORT` (default: 9090)
 
 **Job Monitoring:**
+
 - Bull Board - Web UI for BullMQ queues
   - Integration: `@bull-board/fastify` 6.16.4
   - Mounted in: `backend/src/plugins/queue.plugin.ts`
@@ -105,20 +118,24 @@
 ## CI/CD & Deployment
 
 **Hosting:**
+
 - Platform: Not detected (self-hosted or cloud platform)
   - Frontend: Static build output from Vite (SPA)
   - Backend: Node.js server (Fastify)
 
 **CI Pipeline:**
+
 - Not detected (no `.github/workflows`, `.gitlab-ci.yml`, or similar)
 
 **Deployment Configuration:**
+
 - Docker: Not detected (no `Dockerfile` or `docker-compose.yml` analyzed)
 - Environment-specific builds: `npm run build` (production), `npm run build:dev` (development mode)
 
 ## Environment Configuration
 
 **Required env vars:**
+
 - `VITE_API_URL` - Backend API URL
 - `VITE_STACK_AUTH_PROJECT_ID` - Stack Auth project ID
 - `VITE_STACK_AUTH_PUBLISHABLE_CLIENT_KEY` - Stack Auth client key
@@ -134,6 +151,7 @@
 - `MINIO_ROOT_PASSWORD` - MinIO secret key
 
 **Optional env vars:**
+
 - `TELNYX_API_KEY` - Telnyx SMS API key (SMS notifications)
 - `TELNYX_MESSAGING_PROFILE_ID` - Telnyx messaging profile
 - `TELNYX_PHONE_NUMBER` - Telnyx sender phone number
@@ -141,6 +159,7 @@
 - `VITE_DEBUG_API` - Enable API debug logging (frontend)
 
 **Secrets location:**
+
 - Development: `.env` files (gitignored)
 - Production: File-based secrets in `./secrets/` directory
   - `secrets/postgres_password.txt`
@@ -151,12 +170,14 @@
   - `secrets/grafana_password.txt`
 
 **Environment Files:**
+
 - `.env.example` - Development environment template
 - `.env.production.example` - Production environment template with Docker setup guidance
 
 ## Webhooks & Callbacks
 
 **Incoming:**
+
 - `POST /api/webhooks/ttn` - The Things Network device data
   - Implementation: `backend/src/routes/ttn-webhooks.ts`
   - Purpose: Receive temperature sensor readings from IoT devices
@@ -169,6 +190,7 @@
   - Purpose: Track SMS delivery status
 
 **Outgoing:**
+
 - TTN webhook registration: Configured via `TTN_WEBHOOK_URL`
   - Target: `https://api.{domain}/api/webhooks/ttn`
   - Purpose: Receive device uplink messages
@@ -176,6 +198,7 @@
 ## Real-Time Communication
 
 **WebSocket:**
+
 - Socket.IO 4.8.3 - Bidirectional real-time updates
   - Client: `src/lib/socket.ts`
   - Server: `backend/src/plugins/socket.plugin.ts`
@@ -193,6 +216,7 @@
 ## Background Jobs
 
 **Job Queue:**
+
 - BullMQ 5.67.0 - Background job processing
   - Redis-backed job queue
   - Implementation: `backend/src/jobs/index.ts`, `backend/src/workers/index.ts`
@@ -204,4 +228,4 @@
 
 ---
 
-*Integration audit: 2026-01-29*
+_Integration audit: 2026-01-29_

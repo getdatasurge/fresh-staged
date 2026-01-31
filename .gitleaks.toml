@@ -1,0 +1,18 @@
+# Gitleaks configuration
+# https://github.com/gitleaks/gitleaks
+
+title = "FrostGuard Gitleaks Config"
+
+# Extend the default rules (don't replace them)
+[extend]
+
+# Paths to ignore entirely (generated/vendored content)
+[allowlist]
+  paths = [
+    '''node_modules''',
+    '''dist''',
+    '''\.next''',
+    '''pnpm-lock\.yaml''',
+    '''package-lock\.json''',
+    '''docs/_build''',
+  ]

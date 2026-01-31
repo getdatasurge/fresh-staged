@@ -24,6 +24,7 @@ State the decision that was made.
 > **We will [do X].**
 
 Be specific about what is being decided. Include:
+
 - The chosen approach or technology
 - Scope of the decision
 - Any exceptions or edge cases
@@ -54,10 +55,12 @@ Be specific about what is being decided. Include:
 **Description:** Brief description of the alternative
 
 **Pros:**
+
 - Pro 1
 - Pro 2
 
 **Cons:**
+
 - Con 1
 - Con 2
 
@@ -68,9 +71,11 @@ Be specific about what is being decided. Include:
 **Description:** Brief description of the alternative
 
 **Pros:**
+
 - Pro 1
 
 **Cons:**
+
 - Con 1
 
 **Why not chosen:** Reason for rejection

@@ -23,10 +23,10 @@ import {
   HelpCircle,
   FileJson,
   Link2,
-  ArrowDown
+  ArrowDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useUser } from '@stackframe/react';
 import { debugLog } from '@/lib/debugLogger';
 import { ErrorExplanationModal } from './ErrorExplanationModal';
@@ -82,43 +82,47 @@ interface LogEntryProps {
 
 function LogEntry({ entry, onExplain, onFilterByCorrelation, onCopyEntry }: LogEntryProps) {
   const [expanded, setExpanded] = useState(false);
-  
-  const time = entry.timestamp.toLocaleTimeString('en-US', { 
-    hour12: false, 
-    hour: '2-digit', 
-    minute: '2-digit', 
-    second: '2-digit'
-  }) + '.' + entry.timestamp.getMilliseconds().toString().padStart(3, '0');
+
+  const time =
+    entry.timestamp.toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }) +
+    '.' +
+    entry.timestamp.getMilliseconds().toString().padStart(3, '0');
 
   const showExplainButton = (entry.level === 'error' || entry.level === 'warn') && onExplain;
 
   return (
-    <div 
+    <div
       className={cn(
-        "font-mono text-xs border-b border-border/30 hover:bg-muted/30 transition-colors",
-        LEVEL_BG[entry.level]
+        'font-mono text-xs border-b border-border/30 hover:bg-muted/30 transition-colors',
+        LEVEL_BG[entry.level],
       )}
     >
-      <div 
-        className="flex items-start gap-2 px-2 py-1 cursor-pointer"
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- keyboard access provided by dedicated toggle button */}
+      <div
+        className={cn('flex items-start gap-2 px-2 py-1', entry.payload && 'cursor-pointer')}
         onClick={() => entry.payload && setExpanded(!expanded)}
       >
         <span className="text-muted-foreground shrink-0 w-20">{time}</span>
-        <Badge 
-          variant="outline" 
-          className={cn("text-[10px] px-1.5 py-0 shrink-0", CATEGORY_COLORS[entry.category])}
+        <Badge
+          variant="outline"
+          className={cn('text-[10px] px-1.5 py-0 shrink-0', CATEGORY_COLORS[entry.category])}
         >
           {entry.category}
         </Badge>
         {entry.entityType && (
-          <Badge 
-            variant="outline" 
-            className={cn("text-[10px] px-1.5 py-0 shrink-0", ENTITY_COLORS[entry.entityType])}
+          <Badge
+            variant="outline"
+            className={cn('text-[10px] px-1.5 py-0 shrink-0', ENTITY_COLORS[entry.entityType])}
           >
             {entry.entityType}
           </Badge>
         )}
-        <span className={cn("font-medium shrink-0", LEVEL_COLORS[entry.level])}>
+        <span className={cn('font-medium shrink-0', LEVEL_COLORS[entry.level])}>
           [{entry.level.toUpperCase()}]
         </span>
         <span className="text-foreground flex-1 break-all">{entry.message}</span>
@@ -126,13 +130,13 @@ function LogEntry({ entry, onExplain, onFilterByCorrelation, onCopyEntry }: LogE
           <span className="text-muted-foreground shrink-0">{entry.duration}ms</span>
         )}
         {entry.correlationId && onFilterByCorrelation && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="h-5 px-1 text-xs shrink-0 hover:bg-primary/20"
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              onFilterByCorrelation(entry.correlationId!); 
+            onClick={(e) => {
+              e.stopPropagation();
+              onFilterByCorrelation(entry.correlationId!);
             }}
             title="Filter by correlation ID"
           >
@@ -140,13 +144,13 @@ function LogEntry({ entry, onExplain, onFilterByCorrelation, onCopyEntry }: LogE
           </Button>
         )}
         {onCopyEntry && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="h-5 px-1 text-xs shrink-0 hover:bg-primary/20"
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              onCopyEntry(entry); 
+            onClick={(e) => {
+              e.stopPropagation();
+              onCopyEntry(entry);
             }}
             title="Copy event"
           >
@@ -154,13 +158,13 @@ function LogEntry({ entry, onExplain, onFilterByCorrelation, onCopyEntry }: LogE
           </Button>
         )}
         {showExplainButton && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="h-5 px-2 text-xs shrink-0 hover:bg-primary/20"
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              onExplain(entry); 
+            onClick={(e) => {
+              e.stopPropagation();
+              onExplain(entry);
             }}
           >
             <HelpCircle className="h-3 w-3 mr-1" />
@@ -168,7 +172,17 @@ function LogEntry({ entry, onExplain, onFilterByCorrelation, onCopyEntry }: LogE
           </Button>
         )}
         {entry.payload && (
-          <Button variant="ghost" size="sm" className="h-4 w-4 p-0 shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-4 w-4 p-0 shrink-0"
+            aria-expanded={expanded}
+            aria-label={`Toggle details for ${entry.category} log entry`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded(!expanded);
+            }}
+          >
             {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
           </Button>
         )}
@@ -191,7 +205,6 @@ function LogEntry({ entry, onExplain, onFilterByCorrelation, onCopyEntry }: LogE
 
 export function DebugTerminal() {
   const debugContext = useDebugContextSafe();
-  const { toast } = useToast();
   const user = useUser();
 
   // All hooks must be called unconditionally before any early returns
@@ -235,11 +248,13 @@ export function DebugTerminal() {
   const categoryCounts = useMemo(() => {
     return {
       all: logs.length,
-      network: logs.filter(l => l.category === 'edge' || l.category === 'network').length,
-      crud: logs.filter(l => l.category === 'crud' || l.category === 'db' || l.category === 'mutation').length,
-      sync: logs.filter(l => l.category === 'sync' || l.category === 'realtime').length,
-      ttn: logs.filter(l => l.category === 'ttn' || l.category === 'provisioning').length,
-      errors: logs.filter(l => l.level === 'error' || l.level === 'warn').length,
+      network: logs.filter((l) => l.category === 'edge' || l.category === 'network').length,
+      crud: logs.filter(
+        (l) => l.category === 'crud' || l.category === 'db' || l.category === 'mutation',
+      ).length,
+      sync: logs.filter((l) => l.category === 'sync' || l.category === 'realtime').length,
+      ttn: logs.filter((l) => l.category === 'ttn' || l.category === 'provisioning').length,
+      errors: logs.filter((l) => l.level === 'error' || l.level === 'warn').length,
     };
   }, [logs]);
 
@@ -248,46 +263,51 @@ export function DebugTerminal() {
 
     // Correlation filter takes precedence
     if (correlationFilter) {
-      return filtered.filter(l => l.correlationId === correlationFilter);
+      return filtered.filter((l) => l.correlationId === correlationFilter);
     }
 
     // Tab-based filtering
     if (activeTab === 'network') {
-      filtered = filtered.filter(l => l.category === 'edge' || l.category === 'network');
+      filtered = filtered.filter((l) => l.category === 'edge' || l.category === 'network');
     } else if (activeTab === 'crud') {
-      filtered = filtered.filter(l => l.category === 'crud' || l.category === 'db' || l.category === 'mutation');
+      filtered = filtered.filter(
+        (l) => l.category === 'crud' || l.category === 'db' || l.category === 'mutation',
+      );
     } else if (activeTab === 'sync') {
-      filtered = filtered.filter(l => l.category === 'sync' || l.category === 'realtime');
+      filtered = filtered.filter((l) => l.category === 'sync' || l.category === 'realtime');
     } else if (activeTab === 'ttn') {
-      filtered = filtered.filter(l => l.category === 'ttn' || l.category === 'provisioning');
+      filtered = filtered.filter((l) => l.category === 'ttn' || l.category === 'provisioning');
     } else if (activeTab === 'errors') {
-      filtered = filtered.filter(l => l.level === 'error' || l.level === 'warn');
+      filtered = filtered.filter((l) => l.level === 'error' || l.level === 'warn');
     }
 
     // Level filter
     if (levelFilter !== 'all') {
-      filtered = filtered.filter(l => l.level === levelFilter);
+      filtered = filtered.filter((l) => l.level === levelFilter);
     }
 
     // Category filter
     if (categoryFilter !== 'all') {
-      filtered = filtered.filter(l => l.category === categoryFilter);
+      filtered = filtered.filter((l) => l.category === categoryFilter);
     }
 
     // Entity filter
     if (entityFilter !== 'all') {
-      filtered = filtered.filter(l => l.entityType === entityFilter);
+      filtered = filtered.filter((l) => l.entityType === entityFilter);
     }
 
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(l =>
-        l.message.toLowerCase().includes(query) ||
-        l.category.toLowerCase().includes(query) ||
-        l.correlationId?.toLowerCase().includes(query) ||
-        l.entityType?.toLowerCase().includes(query) ||
-        JSON.stringify(l.payload || {}).toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (l) =>
+          l.message.toLowerCase().includes(query) ||
+          l.category.toLowerCase().includes(query) ||
+          l.correlationId?.toLowerCase().includes(query) ||
+          l.entityType?.toLowerCase().includes(query) ||
+          JSON.stringify(l.payload || {})
+            .toLowerCase()
+            .includes(query),
       );
     }
 
@@ -296,20 +316,24 @@ export function DebugTerminal() {
 
   const handleCopy = useCallback(() => {
     const text = filteredLogs
-      .map(l => `[${l.timestamp.toISOString()}] [${l.level}] [${l.category}] ${l.message}`)
+      .map((l) => `[${l.timestamp.toISOString()}] [${l.level}] [${l.category}] ${l.message}`)
       .join('\n');
     navigator.clipboard.writeText(text);
-    toast({ title: "Logs copied to clipboard" });
-  }, [filteredLogs, toast]);
+    toast('Logs copied to clipboard');
+  }, [filteredLogs]);
 
   const handleCopyEntry = useCallback((entry: DebugLogEntry) => {
-    const json = JSON.stringify({
-      ...entry,
-      timestamp: entry.timestamp.toISOString(),
-    }, null, 2);
+    const json = JSON.stringify(
+      {
+        ...entry,
+        timestamp: entry.timestamp.toISOString(),
+      },
+      null,
+      2,
+    );
     navigator.clipboard.writeText(json);
-    toast({ title: "Event copied to clipboard" });
-  }, [toast]);
+    toast('Event copied to clipboard');
+  }, []);
 
   const handleExport = useCallback(() => {
     const json = debugLog.exportLogs();
@@ -320,8 +344,8 @@ export function DebugTerminal() {
     a.download = `frostguard-debug-${new Date().toISOString().slice(0, 19)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast({ title: "Logs exported" });
-  }, [toast]);
+    toast('Logs exported');
+  }, []);
 
   const handleExportSupportSnapshot = useCallback(async () => {
     try {
@@ -332,23 +356,16 @@ export function DebugTerminal() {
         currentRoute: window.location.pathname,
       });
       downloadSnapshot(snapshot);
-      toast({
-        title: "Snapshot exported (redacted)",
-        description: "Safe to share with support."
-      });
+      toast.success('Snapshot exported (redacted)', { description: 'Safe to share with support.' });
     } catch (error) {
-      toast({
-        title: "Export failed",
-        description: "Could not generate snapshot",
-        variant: "destructive"
-      });
+      toast.error('Export failed', { description: 'Could not generate snapshot' });
     }
-  }, [userEmail, effectiveOrgId, toast]);
+  }, [userEmail, effectiveOrgId]);
 
   const handleFilterByCorrelation = useCallback((correlationId: string) => {
     setCorrelationFilter(correlationId);
-    toast({ title: `Filtering by correlation: ${correlationId.slice(-8)}` });
-  }, [toast]);
+    toast(`Filtering by correlation: ${correlationId.slice(-8)}`);
+  }, []);
 
   const handleClearCorrelationFilter = useCallback(() => {
     setCorrelationFilter(null);
@@ -358,8 +375,11 @@ export function DebugTerminal() {
   if (!debugContext) return null;
   if (!isDebugEnabled || !isTerminalVisible) return null;
 
-  const environment = window.location.hostname.includes('localhost') ? 'dev' : 
-                      window.location.hostname.includes('staging') ? 'staging' : 'prod';
+  const environment = window.location.hostname.includes('localhost')
+    ? 'dev'
+    : window.location.hostname.includes('staging')
+      ? 'staging'
+      : 'prod';
 
   return (
     <>
@@ -371,223 +391,265 @@ export function DebugTerminal() {
         userEmail={userEmail || undefined}
         orgId={effectiveOrgId || undefined}
       />
-    <div 
-      className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t border-border shadow-2xl"
-      style={{ height: isMinimized ? 40 : height }}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-muted/50 border-b border-border">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <Bug className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-sm">Debug Terminal</span>
-          </div>
-          <Badge variant="outline" className="text-[10px]">
-            {environment}
-          </Badge>
-          <Badge variant="outline" className="text-[10px]">
-            {logs.length} / {debugLog.getMaxBufferSize()}
-          </Badge>
-          {userEmail && (
-            <span className="text-xs text-muted-foreground">{userEmail}</span>
-          )}
-          {effectiveOrgId && (
-            <span className="text-xs text-muted-foreground font-mono">
-              org:{effectiveOrgId.slice(0, 8)}
-            </span>
-          )}
-          {isPaused && (
-            <Badge variant="destructive" className="text-[10px]">PAUSED</Badge>
-          )}
-          {correlationFilter && (
-            <Badge variant="secondary" className="text-[10px] flex items-center gap-1">
-              <Link2 className="h-3 w-3" />
-              {correlationFilter.slice(-8)}
-              <button 
-                onClick={handleClearCorrelationFilter}
-                className="ml-1 hover:bg-background/50 rounded"
-              >
-                <X className="h-3 w-3" />
-              </button>
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t border-border shadow-2xl"
+        style={{ height: isMinimized ? 40 : height }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-3 py-1.5 bg-muted/50 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <Bug className="h-4 w-4 text-primary" />
+              <span className="font-semibold text-sm">Debug Terminal</span>
+            </div>
+            <Badge variant="outline" className="text-[10px]">
+              {environment}
             </Badge>
-          )}
-        </div>
-        
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setIsMinimized(!isMinimized)}>
-            {isMinimized ? <Maximize2 className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
-          </Button>
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={hideTerminal}>
-            <X className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      </div>
-
-      {!isMinimized && (
-        <>
-          {/* Tabs and Controls */}
-          <div className="flex items-center justify-between px-2 py-1 border-b border-border bg-muted/30">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
-              <TabsList className="h-7 bg-transparent">
-                <TabsTrigger value="events" className="text-xs h-6 px-2">
-                  Events
-                  {categoryCounts.all > 0 && (
-                    <span className="ml-1 text-[9px] text-muted-foreground">({categoryCounts.all})</span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="crud" className="text-xs h-6 px-2">
-                  CRUD
-                  {categoryCounts.crud > 0 && (
-                    <span className="ml-1 text-[9px] text-muted-foreground">({categoryCounts.crud})</span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="network" className="text-xs h-6 px-2">
-                  Network
-                  {categoryCounts.network > 0 && (
-                    <span className="ml-1 text-[9px] text-muted-foreground">({categoryCounts.network})</span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="sync" className="text-xs h-6 px-2">
-                  Sync
-                  {categoryCounts.sync > 0 && (
-                    <span className="ml-1 text-[9px] text-muted-foreground">({categoryCounts.sync})</span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="ttn" className="text-xs h-6 px-2">
-                  TTN
-                  {categoryCounts.ttn > 0 && (
-                    <span className="ml-1 text-[9px] text-muted-foreground">({categoryCounts.ttn})</span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="errors" className="text-xs h-6 px-2">
-                  Errors
-                  {categoryCounts.errors > 0 && (
-                    <span className="ml-1 text-[9px] text-red-400">({categoryCounts.errors})</span>
-                  )}
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                <Input 
-                  placeholder="Search..." 
-                  className="h-6 w-32 pl-7 text-xs"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              
-              <select 
-                className="h-6 text-xs bg-background border border-border rounded px-1"
-                value={levelFilter}
-                onChange={(e) => setLevelFilter(e.target.value as DebugLogLevel | 'all')}
-              >
-                <option value="all">All Levels</option>
-                <option value="debug">Debug</option>
-                <option value="info">Info</option>
-                <option value="warn">Warn</option>
-                <option value="error">Error</option>
-              </select>
-
-              <select 
-                className="h-6 text-xs bg-background border border-border rounded px-1"
-                value={entityFilter}
-                onChange={(e) => setEntityFilter(e.target.value as EntityType | 'all')}
-              >
-                <option value="all">All Entities</option>
-                <option value="sensor">Sensor</option>
-                <option value="gateway">Gateway</option>
-                <option value="unit">Unit</option>
-                <option value="area">Area</option>
-                <option value="site">Site</option>
-                <option value="alert">Alert</option>
-                <option value="device">Device</option>
-              </select>
-
-              <div className="flex items-center gap-1 border-l border-border pl-2">
-                <div className="flex items-center space-x-1">
-                  <Checkbox
-                    id="autoscroll"
-                    checked={autoScroll}
-                    onCheckedChange={(checked) => setAutoScroll(!!checked)}
-                    className="h-4 w-4"
-                  />
-                  <label htmlFor="autoscroll" className="text-xs text-muted-foreground flex items-center gap-1">
-                    <ArrowDown className="h-3 w-3" />
-                  </label>
-                </div>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={clearLogs} title="Clear">
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-6 w-6 p-0" 
-                  onClick={isPaused ? resumeLogging : pauseLogging}
-                  title={isPaused ? "Resume" : "Pause"}
+            <Badge variant="outline" className="text-[10px]">
+              {logs.length} / {debugLog.getMaxBufferSize()}
+            </Badge>
+            {userEmail && <span className="text-xs text-muted-foreground">{userEmail}</span>}
+            {effectiveOrgId && (
+              <span className="text-xs text-muted-foreground font-mono">
+                org:{effectiveOrgId.slice(0, 8)}
+              </span>
+            )}
+            {isPaused && (
+              <Badge variant="destructive" className="text-[10px]">
+                PAUSED
+              </Badge>
+            )}
+            {correlationFilter && (
+              <Badge variant="secondary" className="text-[10px] flex items-center gap-1">
+                <Link2 className="h-3 w-3" />
+                {correlationFilter.slice(-8)}
+                <button
+                  onClick={handleClearCorrelationFilter}
+                  className="ml-1 hover:bg-background/50 rounded"
                 >
-                  {isPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
-                </Button>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={handleCopy} title="Copy all">
-                  <Copy className="h-3.5 w-3.5" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={handleExport} title="Export Logs">
-                  <Download className="h-3.5 w-3.5" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-6 px-2 text-xs" 
-                  onClick={handleExportSupportSnapshot}
-                  title="Export Support Snapshot"
-                >
-                  <FileJson className="h-3.5 w-3.5 mr-1" />
-                  Snapshot
-                </Button>
-              </div>
-            </div>
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
           </div>
 
-          {/* Log Content */}
-          <ScrollArea className="flex-1" style={{ height: height - 80 }}>
-            <div ref={scrollRef}>
-              {filteredLogs.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-muted-foreground text-sm py-8">
-                  {correlationFilter ? (
-                    <div className="text-center">
-                      <p>No events for correlation ID</p>
-                      <Button 
-                        variant="link" 
-                        size="sm" 
-                        onClick={handleClearCorrelationFilter}
-                      >
-                        Clear filter
-                      </Button>
-                    </div>
-                  ) : (
-                    "No logs to display"
-                  )}
-                </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+              onClick={() => setIsMinimized(!isMinimized)}
+            >
+              {isMinimized ? (
+                <Maximize2 className="h-3.5 w-3.5" />
               ) : (
-                <div className="divide-y divide-border/30">
-                  {filteredLogs.map(entry => (
-                    <LogEntry 
-                      key={entry.id} 
-                      entry={entry} 
-                      onExplain={showExplanation} 
-                      onFilterByCorrelation={handleFilterByCorrelation}
-                      onCopyEntry={handleCopyEntry}
-                    />
-                  ))}
-                </div>
+                <Minus className="h-3.5 w-3.5" />
               )}
+            </Button>
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={hideTerminal}>
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+
+        {!isMinimized && (
+          <>
+            {/* Tabs and Controls */}
+            <div className="flex items-center justify-between px-2 py-1 border-b border-border bg-muted/30">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
+                <TabsList className="h-7 bg-transparent">
+                  <TabsTrigger value="events" className="text-xs h-6 px-2">
+                    Events
+                    {categoryCounts.all > 0 && (
+                      <span className="ml-1 text-[9px] text-muted-foreground">
+                        ({categoryCounts.all})
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="crud" className="text-xs h-6 px-2">
+                    CRUD
+                    {categoryCounts.crud > 0 && (
+                      <span className="ml-1 text-[9px] text-muted-foreground">
+                        ({categoryCounts.crud})
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="network" className="text-xs h-6 px-2">
+                    Network
+                    {categoryCounts.network > 0 && (
+                      <span className="ml-1 text-[9px] text-muted-foreground">
+                        ({categoryCounts.network})
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="sync" className="text-xs h-6 px-2">
+                    Sync
+                    {categoryCounts.sync > 0 && (
+                      <span className="ml-1 text-[9px] text-muted-foreground">
+                        ({categoryCounts.sync})
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="ttn" className="text-xs h-6 px-2">
+                    TTN
+                    {categoryCounts.ttn > 0 && (
+                      <span className="ml-1 text-[9px] text-muted-foreground">
+                        ({categoryCounts.ttn})
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="errors" className="text-xs h-6 px-2">
+                    Errors
+                    {categoryCounts.errors > 0 && (
+                      <span className="ml-1 text-[9px] text-red-400">
+                        ({categoryCounts.errors})
+                      </span>
+                    )}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                  <Input
+                    placeholder="Search..."
+                    className="h-6 w-32 pl-7 text-xs"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+
+                <select
+                  className="h-6 text-xs bg-background border border-border rounded px-1"
+                  value={levelFilter}
+                  onChange={(e) => setLevelFilter(e.target.value as DebugLogLevel | 'all')}
+                >
+                  <option value="all">All Levels</option>
+                  <option value="debug">Debug</option>
+                  <option value="info">Info</option>
+                  <option value="warn">Warn</option>
+                  <option value="error">Error</option>
+                </select>
+
+                <select
+                  className="h-6 text-xs bg-background border border-border rounded px-1"
+                  value={entityFilter}
+                  onChange={(e) => setEntityFilter(e.target.value as EntityType | 'all')}
+                >
+                  <option value="all">All Entities</option>
+                  <option value="sensor">Sensor</option>
+                  <option value="gateway">Gateway</option>
+                  <option value="unit">Unit</option>
+                  <option value="area">Area</option>
+                  <option value="site">Site</option>
+                  <option value="alert">Alert</option>
+                  <option value="device">Device</option>
+                </select>
+
+                <div className="flex items-center gap-1 border-l border-border pl-2">
+                  <div className="flex items-center space-x-1">
+                    <Checkbox
+                      id="autoscroll"
+                      checked={autoScroll}
+                      onCheckedChange={(checked) => setAutoScroll(!!checked)}
+                      className="h-4 w-4"
+                    />
+                    <label
+                      htmlFor="autoscroll"
+                      className="text-xs text-muted-foreground flex items-center gap-1"
+                    >
+                      <ArrowDown className="h-3 w-3" />
+                    </label>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={clearLogs}
+                    title="Clear"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={isPaused ? resumeLogging : pauseLogging}
+                    title={isPaused ? 'Resume' : 'Pause'}
+                  >
+                    {isPaused ? (
+                      <Play className="h-3.5 w-3.5" />
+                    ) : (
+                      <Pause className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={handleCopy}
+                    title="Copy all"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={handleExport}
+                    title="Export Logs"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={handleExportSupportSnapshot}
+                    title="Export Support Snapshot"
+                  >
+                    <FileJson className="h-3.5 w-3.5 mr-1" />
+                    Snapshot
+                  </Button>
+                </div>
+              </div>
             </div>
-          </ScrollArea>
-        </>
-      )}
-    </div>
+
+            {/* Log Content */}
+            <ScrollArea className="flex-1" style={{ height: height - 80 }}>
+              <div ref={scrollRef}>
+                {filteredLogs.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-muted-foreground text-sm py-8">
+                    {correlationFilter ? (
+                      <div className="text-center">
+                        <p>No events for correlation ID</p>
+                        <Button variant="link" size="sm" onClick={handleClearCorrelationFilter}>
+                          Clear filter
+                        </Button>
+                      </div>
+                    ) : (
+                      'No logs to display'
+                    )}
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border/30">
+                    {filteredLogs.map((entry) => (
+                      <LogEntry
+                        key={entry.id}
+                        entry={entry}
+                        onExplain={showExplanation}
+                        onFilterByCorrelation={handleFilterByCorrelation}
+                        onCopyEntry={handleCopyEntry}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </>
+        )}
+      </div>
     </>
   );
 }

@@ -18,13 +18,13 @@ affects: [14-03, 14-04, 14-05, real-time sensor streaming, alert notifications]
 # Tech tracking
 tech-stack:
   added:
-    - "@socket.io/redis-adapter": "^8.3.0"
-    - "redis": "^4.7.0"
+    - '@socket.io/redis-adapter': '^8.3.0'
+    - 'redis': '^4.7.0'
   patterns:
-    - "JWT authentication for WebSocket connections via socket.handshake.auth.token"
-    - "Organization-scoped room naming: org:{orgId}, org:{orgId}:site:{siteId}, org:{orgId}:unit:{unitId}"
-    - "SocketService singleton pattern for broadcasting across routes"
-    - "Graceful fallback to single-instance mode when Redis not configured"
+    - 'JWT authentication for WebSocket connections via socket.handshake.auth.token'
+    - 'Organization-scoped room naming: org:{orgId}, org:{orgId}:site:{siteId}, org:{orgId}:unit:{unitId}'
+    - 'SocketService singleton pattern for broadcasting across routes'
+    - 'Graceful fallback to single-instance mode when Redis not configured'
 
 key-files:
   created:
@@ -38,16 +38,16 @@ key-files:
     - backend/src/app.ts
 
 key-decisions:
-  - "WebSocket authentication uses existing Stack Auth JWT verification (verifyAccessToken)"
-  - "Auto-join users to organization room on connection for org-wide broadcasts"
-  - "Redis adapter optional - graceful fallback for local development"
-  - "Socket.data populated with userId, profileId, organizationId, role, email"
+  - 'WebSocket authentication uses existing Stack Auth JWT verification (verifyAccessToken)'
+  - 'Auto-join users to organization room on connection for org-wide broadcasts'
+  - 'Redis adapter optional - graceful fallback for local development'
+  - 'Socket.data populated with userId, profileId, organizationId, role, email'
 
 patterns-established:
-  - "setupSocketAuth(io) middleware pattern for JWT validation"
-  - "SocketService.initialize() async setup in plugin ready callback"
-  - "Room-based multi-tenancy with organization-scoped naming"
-  - "Fastify decorator for socketService to enable route broadcasting"
+  - 'setupSocketAuth(io) middleware pattern for JWT validation'
+  - 'SocketService.initialize() async setup in plugin ready callback'
+  - 'Room-based multi-tenancy with organization-scoped naming'
+  - 'Fastify decorator for socketService to enable route broadcasting'
 
 # Metrics
 duration: 7min
@@ -67,6 +67,7 @@ completed: 2026-01-24
 - **Files modified:** 8
 
 ## Accomplishments
+
 - WebSocket connections require valid JWT tokens (invalid/missing tokens rejected)
 - Redis adapter configured for multi-instance horizontal scaling
 - Organization-based room isolation for secure multi-tenancy
@@ -82,6 +83,7 @@ Each task was committed atomically:
 3. **Task 3: Integrate auth middleware and SocketService into plugin** - `e7eb5f1` (feat)
 
 ## Files Created/Modified
+
 - `backend/src/middleware/socket-auth.ts` - JWT authentication middleware for Socket.io connections
 - `backend/src/services/socket.service.ts` - Room management and Redis adapter service
 - `backend/src/services/user.service.ts` - Added getUserPrimaryOrganization method
@@ -94,22 +96,26 @@ Each task was committed atomically:
 ## Decisions Made
 
 **REALTIME-04: WebSocket authentication via socket.handshake.auth.token**
+
 - Tokens extracted from handshake auth object (client sends on connection)
 - Uses existing Stack Auth JWT verification (verifyAccessToken)
 - Rejects connections with clear error messages before connection established
 
 **REALTIME-05: Organization-scoped room naming convention**
+
 - Format: `org:{organizationId}`, `org:{organizationId}:site:{siteId}`, `org:{organizationId}:unit:{unitId}`
 - Prevents cross-organization message leakage
 - Enables targeted broadcasting by scope level
 
 **REALTIME-06: Redis adapter optional for local development**
+
 - Environment variables: REDIS_URL or REDIS_HOST/REDIS_PORT
 - Logs warning when Redis not configured
 - Graceful fallback to single-instance mode
 - Enables local development without Redis infrastructure
 
 **REALTIME-07: Auto-join organization room on connection**
+
 - All authenticated sockets automatically join their org room
 - Enables org-wide broadcasts (e.g., system alerts, announcements)
 - Site/unit subscriptions are explicit via client events
@@ -119,6 +125,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 2 - Missing Critical] Added getUserPrimaryOrganization to user.service**
+
 - **Found during:** Task 1 (Socket authentication middleware implementation)
 - **Issue:** Socket auth needed to get user's organization context from JWT, but no service method existed to query user's primary organization
 - **Fix:** Added getUserPrimaryOrganization method to return first organization user belongs to with their role
@@ -127,6 +134,7 @@ Each task was committed atomically:
 - **Committed in:** 8aa629f (Task 1 commit)
 
 **2. [Rule 2 - Missing Critical] Added profileId to SocketData interface**
+
 - **Found during:** Task 1 (Socket auth middleware implementation)
 - **Issue:** Socket auth middleware populates profileId but SocketData interface didn't include it
 - **Fix:** Added profileId: string to SocketData interface in socket.d.ts
@@ -135,6 +143,7 @@ Each task was committed atomically:
 - **Committed in:** e7eb5f1 (Task 3 commit)
 
 **3. [Rule 3 - Blocking] Moved socketService decorator before ready callback**
+
 - **Found during:** Task 3 verification (Backend startup test)
 - **Issue:** Fastify threw FST_ERR_DEC_AFTER_START error when decorating after server start
 - **Fix:** Create SocketService instance and decorate before ready callback, initialize in ready callback
@@ -148,6 +157,7 @@ Each task was committed atomically:
 **Impact on plan:** All auto-fixes necessary for correct operation. No scope creep.
 
 ## Issues Encountered
+
 None - plan executed smoothly with expected auto-fixes for missing service methods and TypeScript types.
 
 ## User Setup Required
@@ -155,6 +165,7 @@ None - plan executed smoothly with expected auto-fixes for missing service metho
 None - no external service configuration required. Redis is optional and backend falls back gracefully.
 
 For production deployments requiring horizontal scaling:
+
 - Set REDIS_URL or REDIS_HOST/REDIS_PORT in environment
 - Backend will detect and configure Redis adapter automatically
 - Local development works without Redis
@@ -162,18 +173,21 @@ For production deployments requiring horizontal scaling:
 ## Next Phase Readiness
 
 **Ready for 14-03 (Real-time sensor data streaming):**
+
 - WebSocket connections authenticated and secure
 - Room-based broadcasting infrastructure in place
 - SocketService accessible from routes for emitting events
 - Redis adapter ready for production scaling
 
 **Authentication flow verified:**
+
 - Connections without tokens rejected with "Authentication token required"
 - Invalid/expired tokens rejected with clear error messages
 - Valid tokens populate socket.data with full user context
 - Organization room isolation prevents cross-tenant data leakage
 
 **Broadcasting ready:**
+
 - `socketService.emitToOrg(orgId, event, data)` - Organization-wide events
 - `socketService.emitToSite(orgId, siteId, event, data)` - Site-specific events
 - `socketService.emitToUnit(orgId, unitId, event, data)` - Unit-specific events
@@ -181,5 +195,6 @@ For production deployments requiring horizontal scaling:
 **No blockers.**
 
 ---
-*Phase: 14-real-time-foundation*
-*Completed: 2026-01-24*
+
+_Phase: 14-real-time-foundation_
+_Completed: 2026-01-24_

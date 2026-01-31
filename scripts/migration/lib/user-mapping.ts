@@ -9,9 +9,9 @@
  * potential rollback scenarios.
  */
 
-import fs from "node:fs";
-import path from "node:path";
-import { logger } from "./logger.js";
+import fs from 'node:fs';
+import path from 'node:path';
+import { logger } from './logger.js';
 
 /**
  * Represents a single user ID mapping entry
@@ -50,7 +50,7 @@ export const MAPPING_RETENTION_DAYS = 90;
 /**
  * Default path for the user mapping file
  */
-export const DEFAULT_MAPPING_PATH = "./migration-data/user-mapping.json";
+export const DEFAULT_MAPPING_PATH = './migration-data/user-mapping.json';
 
 /**
  * Load a user mapping file and return a Map for efficient lookup
@@ -66,7 +66,7 @@ export function loadMapping(filePath: string = DEFAULT_MAPPING_PATH): Map<string
     throw new Error(`Mapping file not found: ${absolutePath}`);
   }
 
-  const content = fs.readFileSync(absolutePath, "utf-8");
+  const content = fs.readFileSync(absolutePath, 'utf-8');
   const mappingFile: UserMappingFile = JSON.parse(content);
 
   // Validate structure
@@ -85,7 +85,7 @@ export function loadMapping(filePath: string = DEFAULT_MAPPING_PATH): Map<string
         retainUntil: mappingFile.retainUntil,
       },
       `Mapping file is ${mappingAge} days old (exceeds ${MAPPING_RETENTION_DAYS} day retention). ` +
-        "This mapping may be stale. Consider regenerating if issues occur."
+        'This mapping may be stale. Consider regenerating if issues occur.',
     );
   }
 
@@ -101,7 +101,7 @@ export function loadMapping(filePath: string = DEFAULT_MAPPING_PATH): Map<string
       mappingCount: mapping.size,
       generatedAt: mappingFile.generatedAt,
     },
-    `Loaded ${mapping.size} user mappings from ${absolutePath}`
+    `Loaded ${mapping.size} user mappings from ${absolutePath}`,
   );
 
   return mapping;
@@ -120,7 +120,7 @@ export function loadMappingFile(filePath: string = DEFAULT_MAPPING_PATH): UserMa
     throw new Error(`Mapping file not found: ${absolutePath}`);
   }
 
-  const content = fs.readFileSync(absolutePath, "utf-8");
+  const content = fs.readFileSync(absolutePath, 'utf-8');
   return JSON.parse(content) as UserMappingFile;
 }
 
@@ -132,7 +132,7 @@ export function loadMappingFile(filePath: string = DEFAULT_MAPPING_PATH): UserMa
  */
 export function saveMapping(
   filePath: string = DEFAULT_MAPPING_PATH,
-  mappings: UserMapping[]
+  mappings: UserMapping[],
 ): void {
   const absolutePath = path.resolve(filePath);
   const dir = path.dirname(absolutePath);
@@ -153,7 +153,7 @@ export function saveMapping(
     mappings,
   };
 
-  fs.writeFileSync(absolutePath, JSON.stringify(mappingFile, null, 2), "utf-8");
+  fs.writeFileSync(absolutePath, JSON.stringify(mappingFile, null, 2), 'utf-8');
 
   logger.info(
     {
@@ -162,7 +162,7 @@ export function saveMapping(
       generatedAt: mappingFile.generatedAt,
       retainUntil: mappingFile.retainUntil,
     },
-    `Saved ${mappings.length} user mappings to ${absolutePath}`
+    `Saved ${mappings.length} user mappings to ${absolutePath}`,
   );
 }
 
@@ -179,7 +179,7 @@ export function mapUserId(mapping: Map<string, string>, supabaseId: string): str
   if (!stackAuthId) {
     logger.warn(
       { supabaseId },
-      `No mapping found for Supabase user ID: ${supabaseId}. This user may not have been migrated.`
+      `No mapping found for Supabase user ID: ${supabaseId}. This user may not have been migrated.`,
     );
     return null;
   }
@@ -200,7 +200,7 @@ export function getMappingAge(filePath: string = DEFAULT_MAPPING_PATH): number {
     return -1; // File doesn't exist
   }
 
-  const content = fs.readFileSync(absolutePath, "utf-8");
+  const content = fs.readFileSync(absolutePath, 'utf-8');
   const mappingFile: UserMappingFile = JSON.parse(content);
 
   const generatedDate = new Date(mappingFile.generatedAt);
@@ -248,7 +248,7 @@ export function getMappingStats(filePath: string = DEFAULT_MAPPING_PATH): {
     };
   }
 
-  const content = fs.readFileSync(absolutePath, "utf-8");
+  const content = fs.readFileSync(absolutePath, 'utf-8');
   const mappingFile: UserMappingFile = JSON.parse(content);
   const ageInDays = getMappingAge(filePath);
 
@@ -271,7 +271,7 @@ export function getMappingStats(filePath: string = DEFAULT_MAPPING_PATH): {
  */
 export function validateMappings(
   mapping: Map<string, string>,
-  requiredIds: string[]
+  requiredIds: string[],
 ): {
   valid: boolean;
   missingIds: string[];

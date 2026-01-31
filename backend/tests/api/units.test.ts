@@ -86,8 +86,8 @@ describe('Units API', () => {
     name: 'Test Fridge',
     unitType: 'fridge' as const,
     status: 'ok' as const,
-    tempMin: 320,  // 32.0 F
-    tempMax: 400,  // 40.0 F
+    tempMin: 320, // 32.0 F
+    tempMax: 400, // 40.0 F
     tempUnit: 'F' as const,
     manualMonitoringRequired: false,
     manualMonitoringInterval: null,
@@ -136,7 +136,7 @@ describe('Units API', () => {
     it('should return 404 when area is not found (hierarchy validation)', async () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('viewer');
-      mockListUnits.mockResolvedValue(null);  // Service returns null when area not in site/org
+      mockListUnits.mockResolvedValue(null); // Service returns null when area not in site/org
 
       const response = await app.inject({
         method: 'GET',
@@ -294,7 +294,7 @@ describe('Units API', () => {
         payload: {
           name: 'Invalid Fridge',
           unitType: 'fridge',
-          tempMin: 500,  // Higher than max
+          tempMin: 500, // Higher than max
           tempMax: 400,
         },
       });

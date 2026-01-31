@@ -1,12 +1,12 @@
 /**
  * Humidity Chart Widget
- * 
+ *
  * Shows humidity readings over time.
  */
 
-import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Droplets } from "lucide-react";
+import { useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Droplets } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -15,18 +15,18 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-} from "recharts";
-import type { WidgetProps } from "../types";
-import { format } from "date-fns";
+} from 'recharts';
+import type { WidgetProps } from '../types';
+import { format } from 'date-fns';
 
 export function HumidityChartWidget({ readings = [] }: WidgetProps) {
   const chartData = useMemo(() => {
     if (!readings || readings.length === 0) return [];
 
     return readings
-      .filter(r => r.humidity !== null)
-      .map(r => ({
-        time: format(new Date(r.recorded_at), "HH:mm"),
+      .filter((r) => r.humidity !== null)
+      .map((r) => ({
+        time: format(new Date(r.recorded_at), 'HH:mm'),
         humidity: r.humidity,
         timestamp: new Date(r.recorded_at).getTime(),
       }))
@@ -67,11 +67,7 @@ export function HumidityChartWidget({ readings = [] }: WidgetProps) {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis
-              dataKey="time"
-              tick={{ fontSize: 10 }}
-              className="text-muted-foreground"
-            />
+            <XAxis dataKey="time" tick={{ fontSize: 10 }} className="text-muted-foreground" />
             <YAxis
               domain={[0, 100]}
               tick={{ fontSize: 10 }}
@@ -80,12 +76,12 @@ export function HumidityChartWidget({ readings = [] }: WidgetProps) {
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "hsl(var(--popover))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "var(--radius)",
+                backgroundColor: 'hsl(var(--popover))',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: 'var(--radius)',
               }}
-              labelStyle={{ color: "hsl(var(--foreground))" }}
-              formatter={(value: number) => [`${value.toFixed(1)}%`, "Humidity"]}
+              labelStyle={{ color: 'hsl(var(--foreground))' }}
+              formatter={(value: number) => [`${value.toFixed(1)}%`, 'Humidity']}
             />
             <Area
               type="monotone"

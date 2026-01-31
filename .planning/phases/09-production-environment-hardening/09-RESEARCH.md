@@ -19,28 +19,32 @@ The stack currently has health checks on infrastructure services (PostgreSQL, Pg
 The established libraries/tools for Docker Compose production hardening:
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| [Docker Compose](https://docs.docker.com/compose/) | v3+ | Multi-container orchestration | Official Docker tooling, compose spec v3+ required for resource limits |
-| [Infisical](https://infisical.com/) | Latest | Centralized secrets management | Open-source, self-hosted, superior to Docker Secrets for rotation/management |
-| [Docker BuildKit](https://docs.docker.com/build/buildkit/) | Latest | Secure builds with secret mounts | Prevents secrets in image layers via `--mount=type=secret` |
+
+| Library                                                    | Version | Purpose                          | Why Standard                                                                 |
+| ---------------------------------------------------------- | ------- | -------------------------------- | ---------------------------------------------------------------------------- |
+| [Docker Compose](https://docs.docker.com/compose/)         | v3+     | Multi-container orchestration    | Official Docker tooling, compose spec v3+ required for resource limits       |
+| [Infisical](https://infisical.com/)                        | Latest  | Centralized secrets management   | Open-source, self-hosted, superior to Docker Secrets for rotation/management |
+| [Docker BuildKit](https://docs.docker.com/build/buildkit/) | Latest  | Secure builds with secret mounts | Prevents secrets in image layers via `--mount=type=secret`                   |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| [docker-rollout](https://github.com/wowu/docker-rollout) | Latest | Zero-downtime deployments | Rolling updates for Docker Compose (Swarm feature for Compose) |
-| [Loki Docker Driver](https://grafana.com/docs/loki/latest/send-data/docker-driver/) | Latest | Structured log shipping | Already have Loki from Phase 7, driver lighter than Promtail |
-| [Prometheus Node Exporter](https://prometheus.io/docs/guides/node-exporter/) | Latest | Host metrics | Already configured from Phase 7 |
+
+| Library                                                                             | Version | Purpose                   | When to Use                                                    |
+| ----------------------------------------------------------------------------------- | ------- | ------------------------- | -------------------------------------------------------------- |
+| [docker-rollout](https://github.com/wowu/docker-rollout)                            | Latest  | Zero-downtime deployments | Rolling updates for Docker Compose (Swarm feature for Compose) |
+| [Loki Docker Driver](https://grafana.com/docs/loki/latest/send-data/docker-driver/) | Latest  | Structured log shipping   | Already have Loki from Phase 7, driver lighter than Promtail   |
+| [Prometheus Node Exporter](https://prometheus.io/docs/guides/node-exporter/)        | Latest  | Host metrics              | Already configured from Phase 7                                |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Infisical | Docker Secrets | Docker Secrets simpler but no rotation, no centralized UI, no external access |
-| Infisical | HashiCorp Vault | Vault more enterprise features but complex setup, resource-heavy |
-| docker-rollout | Docker Swarm | Swarm has native rolling updates but requires swarm mode, more complex |
+
+| Instead of         | Could Use         | Tradeoff                                                                                 |
+| ------------------ | ----------------- | ---------------------------------------------------------------------------------------- |
+| Infisical          | Docker Secrets    | Docker Secrets simpler but no rotation, no centralized UI, no external access            |
+| Infisical          | HashiCorp Vault   | Vault more enterprise features but complex setup, resource-heavy                         |
+| docker-rollout     | Docker Swarm      | Swarm has native rolling updates but requires swarm mode, more complex                   |
 | Alpine base images | Distroless images | Distroless more secure (no shell, smaller attack surface) but less tooling for debugging |
 
 **Installation:**
+
 ```bash
 # Infisical (via docker-compose)
 curl -o docker-compose.infisical.yml https://raw.githubusercontent.com/Infisical/infisical/main/docker-compose.prod.yml
@@ -56,6 +60,7 @@ docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all
 ## Architecture Patterns
 
 ### Recommended Project Structure
+
 ```
 docker/
 ├── docker-compose.yml                 # Base development configuration
@@ -82,9 +87,11 @@ backend/
 ```
 
 ### Pattern 1: Layered Production Configuration
+
 **What:** Override base compose with environment-specific production files
 **When to use:** Multiple deployment targets with shared production settings
 **Example:**
+
 ```yaml
 # Source: https://docs.docker.com/compose/how-tos/production/
 # compose.prod.yaml - Shared production settings
@@ -124,14 +131,17 @@ secrets:
 ```
 
 **Usage:**
+
 ```bash
 docker compose -f docker-compose.yml -f compose.prod.yaml -f compose.selfhosted.yaml up -d
 ```
 
 ### Pattern 2: Infisical Secret Injection
+
 **What:** Mount secrets from Infisical into containers at runtime
 **When to use:** All production deployments requiring credentials
 **Example:**
+
 ```yaml
 # Source: https://infisical.com/docs/self-hosting/deployment-options/docker-compose
 services:
@@ -154,9 +164,11 @@ secrets:
 ```
 
 ### Pattern 3: Resource Limits by Service Type
+
 **What:** Set CPU/memory limits based on service resource profile
 **When to use:** Production deployments to prevent resource contention
 **Example:**
+
 ```yaml
 # Source: https://docs.docker.com/reference/compose-file/deploy/
 services:
@@ -196,24 +208,26 @@ services:
 ```
 
 ### Pattern 4: Multi-Layer Health Checks
+
 **What:** Combine startup period, interval, and retries for reliable health detection
 **When to use:** All services requiring zero-downtime deployments
 **Example:**
+
 ```yaml
 # Source: https://docs.docker.com/reference/compose-file/services/
 services:
   backend:
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s      # Bootstrap time
-      start_interval: 5s     # Faster checks during startup
+      start_period: 40s # Bootstrap time
+      start_interval: 5s # Faster checks during startup
 
   postgres:
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
       interval: 10s
       timeout: 10s
       retries: 5
@@ -221,9 +235,11 @@ services:
 ```
 
 ### Pattern 5: Secure Docker Builds
+
 **What:** Use BuildKit secret mounts to prevent credentials in image layers
 **When to use:** Building images requiring credentials (npm private registry, etc.)
 **Example:**
+
 ```dockerfile
 # Source: https://docs.docker.com/build/building/secrets/
 # syntax=docker/dockerfile:1
@@ -244,16 +260,18 @@ docker buildx build --secret id=npmrc,src=$HOME/.npmrc -t myapp:latest .
 ```
 
 ### Pattern 6: Zero-Downtime Rolling Updates
+
 **What:** Use docker-rollout to scale up new container, health check, then remove old
 **When to use:** Production deployments requiring zero downtime
 **Example:**
+
 ```yaml
 # Source: https://github.com/wowu/docker-rollout
 services:
   backend:
     # MUST have health check for rollout to work
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
       interval: 15s
       timeout: 5s
       retries: 3
@@ -271,6 +289,7 @@ docker-rollout -f compose.prod.yaml backend
 ```
 
 ### Anti-Patterns to Avoid
+
 - **Environment variables for secrets:** Visible in `docker inspect`, process lists, and logs. Use Docker Secrets or secret files instead.
 - **No resource limits:** Allows runaway containers to crash host. Always set limits in production.
 - **No health checks:** Prevents zero-downtime deployments and auto-recovery. Required for production.
@@ -282,93 +301,105 @@ docker-rollout -f compose.prod.yaml backend
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Secrets rotation | Cron scripts updating env vars | Infisical with rotation policies | Handles rotation, audit logs, access control, API integration |
-| Zero-downtime deployment | Custom rolling update scripts | docker-rollout or Docker Swarm | Health check integration, rollback on failure, battle-tested |
-| Log aggregation | Custom log shippers | Loki Docker Driver or Promtail | Automatic container metadata, label extraction, Grafana integration |
-| TLS certificate management | Manual Let's Encrypt scripts | Caddy with automatic HTTPS | Auto-renewal, OCSP stapling, cert storage, zero config |
-| Resource monitoring | Custom metric collectors | Prometheus + Node Exporter | Standard metrics, exporters for all services, alerting |
-| Health check endpoints | Custom `/ping` implementations | Standard `/health` with checks | Standardized, integrates with Docker, orchestrators, load balancers |
+| Problem                    | Don't Build                    | Use Instead                      | Why                                                                 |
+| -------------------------- | ------------------------------ | -------------------------------- | ------------------------------------------------------------------- |
+| Secrets rotation           | Cron scripts updating env vars | Infisical with rotation policies | Handles rotation, audit logs, access control, API integration       |
+| Zero-downtime deployment   | Custom rolling update scripts  | docker-rollout or Docker Swarm   | Health check integration, rollback on failure, battle-tested        |
+| Log aggregation            | Custom log shippers            | Loki Docker Driver or Promtail   | Automatic container metadata, label extraction, Grafana integration |
+| TLS certificate management | Manual Let's Encrypt scripts   | Caddy with automatic HTTPS       | Auto-renewal, OCSP stapling, cert storage, zero config              |
+| Resource monitoring        | Custom metric collectors       | Prometheus + Node Exporter       | Standard metrics, exporters for all services, alerting              |
+| Health check endpoints     | Custom `/ping` implementations | Standard `/health` with checks   | Standardized, integrates with Docker, orchestrators, load balancers |
 
 **Key insight:** Docker Compose production hardening is a solved problem in 2026. The tooling ecosystem (Infisical, docker-rollout, Loki driver, Caddy, Prometheus) is mature and well-integrated. Custom solutions introduce maintenance burden and miss edge cases (cert renewal failures, log rotation, health check flapping, secret audit trails).
 
 ## Common Pitfalls
 
 ### Pitfall 1: Secrets Persist in Image Layers
+
 **What goes wrong:** Using `ARG` or `ENV` for secrets during build causes them to persist in image layers forever, visible in `docker history`.
 **Why it happens:** Developers think removing a secret in a later layer deletes it, but Docker's immutable layer architecture preserves it.
 **How to avoid:**
+
 - Use BuildKit `--mount=type=secret` for build-time secrets (never persisted)
 - Use Docker Secrets or secret files for runtime secrets (mounted at runtime)
 - Add comprehensive `.dockerignore` patterns (`.env*`, `*.key`, `*.pem`, `secrets/`)
-**Warning signs:**
+  **Warning signs:**
 - Secrets visible in `docker history <image>`
 - Secrets found in exported tar archives (`docker save`)
 - Security scanners (Trivy, GitGuardian) detect credentials in layers
 
 ### Pitfall 2: Insufficient Resource Limits Cause OOM Kills
+
 **What goes wrong:** Without memory limits, containers consume all host RAM, triggering Linux OOM killer which terminates random processes (possibly Docker daemon or critical services).
 **Why it happens:** Developers test on high-memory dev machines, but production runs on smaller VMs. Memory leaks or traffic spikes exhaust RAM.
 **How to avoid:**
+
 - Always set `deploy.resources.limits` in production compose files
 - Set limits to 1.5x observed peak usage from load testing
 - Set `restart_policy: on-failure` to auto-restart OOM-killed containers
 - Monitor with Prometheus alerts on memory usage >80%
-**Warning signs:**
+  **Warning signs:**
 - `docker logs` shows "Killed" with exit code 137
 - Host system logs show "Out of memory: Kill process"
 - Services randomly restart without error logs
 
 ### Pitfall 3: Health Checks Fail During Deployment
+
 **What goes wrong:** Health checks mark new containers as unhealthy during bootstrap (DB migrations, cache warming), preventing zero-downtime deployment.
 **Why it happens:** `start_period` too short for initialization, or health check endpoint requires dependencies that aren't ready yet.
 **How to avoid:**
+
 - Set `start_period` longer than worst-case bootstrap time
 - Use shallow health checks (app responding) not deep checks (DB connectivity) during startup
 - Configure `start_interval` for faster checks during bootstrap (5s vs 30s normal interval)
 - Implement health check endpoint with `/health` (shallow) and `/health/ready` (deep)
-**Warning signs:**
+  **Warning signs:**
 - Containers restart in loop during deployment
 - Health checks timeout during first 30-60 seconds
 - Zero-downtime deployments roll back immediately
 
 ### Pitfall 4: Production Override Files Not Applied
+
 **What goes wrong:** Developers deploy with base `docker-compose.yml` only, missing production resource limits, logging, and secrets configuration.
 **Why it happens:** Deployment scripts hardcode `docker compose up` instead of using `-f` flags for overrides, or CI/CD doesn't pass production files.
 **How to avoid:**
+
 - Document exact deployment command with all override files in README
 - Use environment variable: `COMPOSE_FILE=docker-compose.yml:compose.prod.yaml:compose.selfhosted.yaml`
 - Validate production config in CI with `docker compose -f ... config` (renders final merged config)
 - Add verification step checking resource limits exist after deployment
-**Warning signs:**
+  **Warning signs:**
 - `docker inspect` shows no memory limits in production
 - Containers log to default JSON driver instead of Loki
 - Secrets mounted from `.env` files instead of Infisical
 
 ### Pitfall 5: Infisical Single Point of Failure
+
 **What goes wrong:** All services depend on Infisical for secrets at startup. If Infisical crashes or DB corrupts, entire stack fails to start.
 **Why it happens:** No fallback mechanism, secrets not cached locally, Infisical has no health check or backup.
 **How to avoid:**
+
 - Configure Infisical with its own health check and auto-restart
 - Back up Infisical PostgreSQL database regularly
 - Use `depends_on` with `condition: service_healthy` for Infisical dependencies
 - Consider exporting critical secrets to encrypted local files as fallback
 - Document manual recovery procedure (restore Infisical DB from backup)
-**Warning signs:**
+  **Warning signs:**
 - All services stuck in restart loop if Infisical container stops
 - No automated Infisical database backups configured
 - No documented recovery procedure
 
 ### Pitfall 6: Logs Overwhelm Loki Storage
+
 **What goes wrong:** High-traffic services produce GBs of logs daily, filling disk and crashing Loki.
 **Why it happens:** No log retention policy, debug logging in production, no rate limits on log shipping.
 **How to avoid:**
+
 - Configure Loki retention period (`retention_deletes_enabled: true`, `retention_period: 30d`)
 - Use structured JSON logging with levels, filter debug logs in production
 - Set Loki Docker Driver `loki-batch-size` and `loki-retries` to prevent memory buildup
 - Monitor Loki disk usage with Prometheus alerts
-**Warning signs:**
+  **Warning signs:**
 - Loki disk usage grows unbounded
 - Loki OOM kills or slow query performance
 - Grafana logs panel times out loading data
@@ -378,6 +409,7 @@ Problems that look simple but have existing solutions:
 Verified patterns from official sources:
 
 ### Docker Compose Production Configuration with Resource Limits
+
 ```yaml
 # Source: https://docs.docker.com/reference/compose-file/deploy/
 services:
@@ -397,7 +429,7 @@ services:
         max_attempts: 3
         window: 120s
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
       interval: 10s
       timeout: 10s
       retries: 5
@@ -405,8 +437,8 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
-        loki-external-labels: "service=postgres,environment=production"
+        loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-external-labels: 'service=postgres,environment=production'
 
   pgbouncer:
     image: bitnami/pgbouncer:latest
@@ -419,30 +451,39 @@ services:
           cpus: '0.25'
           memory: 128MB
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -p 6432 -U $${PGBOUNCER_USER}"]
+      test: ['CMD-SHELL', 'pg_isready -h localhost -p 6432 -U $${PGBOUNCER_USER}']
       interval: 5s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
+    command:
+      [
+        'redis-server',
+        '--appendonly',
+        'yes',
+        '--maxmemory',
+        '512mb',
+        '--maxmemory-policy',
+        'allkeys-lru',
+      ]
     deploy:
       resources:
         limits:
           cpus: '1.0'
-          memory: 768MB  # 512MB data + 256MB overhead
+          memory: 768MB # 512MB data + 256MB overhead
         reservations:
           cpus: '0.5'
           memory: 512MB
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 3s
       retries: 5
 
   minio:
-    image: minio/minio:RELEASE.2026-01-10T21-58-47Z  # Version pinned
+    image: minio/minio:RELEASE.2026-01-10T21-58-47Z # Version pinned
     deploy:
       resources:
         limits:
@@ -452,7 +493,7 @@ services:
           cpus: '0.5'
           memory: 1GB
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
       interval: 10s
       timeout: 5s
       retries: 3
@@ -471,7 +512,7 @@ services:
           cpus: '0.5'
           memory: 512MB
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -480,11 +521,12 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
-        loki-external-labels: "service=backend,environment=production"
+        loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-external-labels: 'service=backend,environment=production'
 ```
 
 ### Docker Compose Secrets Configuration
+
 ```yaml
 # Source: https://docs.docker.com/reference/compose-file/services/
 services:
@@ -515,6 +557,7 @@ secrets:
 ```
 
 ### Comprehensive .dockerignore
+
 ```
 # Source: https://docs.docker.com/build/building/context/#dockerignore-files
 # Dependencies
@@ -567,6 +610,7 @@ Thumbs.db
 ```
 
 ### Infisical Docker Compose Stack
+
 ```yaml
 # Source: https://infisical.com/docs/self-hosting/deployment-options/docker-compose
 # docker-compose.infisical.yml
@@ -580,7 +624,7 @@ services:
     volumes:
       - infisical_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U infisical"]
+      test: ['CMD-SHELL', 'pg_isready -U infisical']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -590,7 +634,7 @@ services:
     volumes:
       - infisical_redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 3s
       retries: 5
@@ -605,13 +649,13 @@ services:
     environment:
       DB_CONNECTION_URI: postgresql://infisical:${INFISICAL_DB_PASSWORD}@infisical-db:5432/infisical
       REDIS_URL: redis://infisical-redis:6379
-      ENCRYPTION_KEY: ${INFISICAL_ENCRYPTION_KEY}  # Generate with: openssl rand -hex 32
-      AUTH_SECRET: ${INFISICAL_AUTH_SECRET}        # Generate with: openssl rand -hex 32
+      ENCRYPTION_KEY: ${INFISICAL_ENCRYPTION_KEY} # Generate with: openssl rand -hex 32
+      AUTH_SECRET: ${INFISICAL_AUTH_SECRET} # Generate with: openssl rand -hex 32
       SITE_URL: https://secrets.yourdomain.com
     ports:
-      - "80:80"
+      - '80:80'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/api/status"]
+      test: ['CMD', 'curl', '-f', 'http://localhost/api/status']
       interval: 10s
       timeout: 5s
       retries: 3
@@ -622,6 +666,7 @@ volumes:
 ```
 
 ### Health Check Endpoint Implementation (Node.js/Express)
+
 ```typescript
 // Source: Production best practices from research
 // backend/src/routes/health.ts
@@ -672,6 +717,7 @@ export default router;
 ```
 
 ### Zero-Downtime Deployment Script
+
 ```bash
 # Source: https://github.com/wowu/docker-rollout
 #!/bin/bash
@@ -702,17 +748,18 @@ echo "Deployment successful!"
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Docker Secrets (swarm) | External secrets managers (Infisical, Vault) | 2023-2024 | Centralized rotation, audit logs, API access, web UI |
-| Manual resource limits | Automatic profiling tools (cAdvisor, docker stats) | 2024-2025 | Data-driven limits based on actual usage |
-| Static compose files | Environment-specific overlays | Always supported | Single source of truth with env-specific overrides |
-| JSON file logging | Structured logging drivers (Loki, Fluentd) | 2022-2023 | Centralized logs with metadata, easier troubleshooting |
-| Alpine base images | Distroless images | 2024-2025 | Smaller attack surface, no shell, better security |
-| Docker Compose v2 | Docker Compose v3+ | 2020-2021 | Resource limits, secrets, configs, deploy section |
-| docker-compose (Python) | docker compose (Go plugin) | 2021-2022 | Faster, better maintained, official Docker tooling |
+| Old Approach            | Current Approach                                   | When Changed     | Impact                                                 |
+| ----------------------- | -------------------------------------------------- | ---------------- | ------------------------------------------------------ |
+| Docker Secrets (swarm)  | External secrets managers (Infisical, Vault)       | 2023-2024        | Centralized rotation, audit logs, API access, web UI   |
+| Manual resource limits  | Automatic profiling tools (cAdvisor, docker stats) | 2024-2025        | Data-driven limits based on actual usage               |
+| Static compose files    | Environment-specific overlays                      | Always supported | Single source of truth with env-specific overrides     |
+| JSON file logging       | Structured logging drivers (Loki, Fluentd)         | 2022-2023        | Centralized logs with metadata, easier troubleshooting |
+| Alpine base images      | Distroless images                                  | 2024-2025        | Smaller attack surface, no shell, better security      |
+| Docker Compose v2       | Docker Compose v3+                                 | 2020-2021        | Resource limits, secrets, configs, deploy section      |
+| docker-compose (Python) | docker compose (Go plugin)                         | 2021-2022        | Faster, better maintained, official Docker tooling     |
 
 **Deprecated/outdated:**
+
 - **Docker Swarm for production:** Kubernetes or managed services (ECS, Cloud Run) replaced Swarm for large deployments. Docker Compose sufficient for small-medium self-hosted.
 - **--oom-kill-disable flag:** Strongly discouraged by Docker. Use restart policies and proper limits instead.
 - **mem_limit (v2 syntax):** Deprecated. Use `deploy.resources.limits.memory` (v3+) instead.
@@ -751,6 +798,7 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - [Docker Compose Deploy Specification](https://docs.docker.com/reference/compose-file/deploy/) - Resource limits, restart policies, deployment strategies
 - [Docker Compose Services Specification](https://docs.docker.com/reference/compose-file/services/) - Secrets, healthchecks, logging drivers
 - [Docker Resource Constraints](https://docs.docker.com/engine/containers/resource_constraints/) - Memory limits, CPU shares, OOM behavior
@@ -760,6 +808,7 @@ Things that couldn't be fully resolved:
 - [Docker Merge Compose Files](https://docs.docker.com/compose/how-tos/multiple-compose-files/merge/) - File merging behavior and precedence
 
 ### Secondary (MEDIUM confidence)
+
 - [Infisical Self-Hosting Homelab Guide](https://infisical.com/blog/self-hosting-infisical-homelab) - Self-hosted deployment walkthrough (2025)
 - [Docker Compose Health Checks Guide - Last9](https://last9.io/blog/docker-compose-health-checks/) - Health check configuration patterns
 - [Docker Compose Memory Limits - Peter Kellner](https://peterkellner.net/2023-09-24-managing-redis-memory-limits-with-docker-compose/) - Redis memory configuration
@@ -772,12 +821,14 @@ Things that couldn't be fully resolved:
 - [Caddy Reverse Proxy Docker - Virtualization Howto](https://www.virtualizationhowto.com/2025/09/caddy-reverse-proxy-in-2025-the-simplest-docker-setup-for-your-home-lab/) - Caddy Docker setup (2025)
 
 ### Tertiary (LOW confidence)
+
 - WebSearch: Various Stack Overflow discussions on Docker OOM behavior - community experiences, not authoritative
 - WebSearch: Webhook notification reliability discussions - implementation-specific, needs testing
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - Infisical, Docker Compose, BuildKit all well-documented with official sources
 - Architecture patterns: HIGH - All patterns verified with official Docker documentation and Context7
 - Resource limits: MEDIUM - General guidance well-documented, specific values require load testing

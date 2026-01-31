@@ -27,6 +27,7 @@ Before starting T-48h timeline:
 **When:** 48 hours before cutover window
 
 ### DNS Preparation
+
 - [ ] Lower DNS TTL to 300 seconds (5 minutes) for all domains
   - [ ] `freshtrackpro.com` A/AAAA records
   - [ ] `api.freshtrackpro.com` A/AAAA records
@@ -34,12 +35,14 @@ Before starting T-48h timeline:
   - [ ] Verify TTL change propagated: `dig freshtrackpro.com` shows 300s TTL
 
 ### User Communication (T-48h)
+
 - [ ] Send advance notice email to all users (see `USER_NOTICE_TEMPLATE.md`)
 - [ ] Post announcement on status page
 - [ ] Update in-app banner with cutover schedule
 - [ ] Notify key stakeholders individually (if applicable)
 
 ### Staging Verification
+
 - [ ] Run full migration pipeline in staging environment
 - [ ] Verify all data migrated correctly (run `verify-migration.ts`)
 - [ ] Test authentication flows (login, signup, password reset)
@@ -58,6 +61,7 @@ Before starting T-48h timeline:
 **When:** 24 hours before cutover window
 
 ### System Health Check
+
 - [ ] Verify Supabase export completes successfully (dry run)
 - [ ] Verify production server ready:
   - [ ] All services healthy
@@ -67,6 +71,7 @@ Before starting T-48h timeline:
 - [ ] Test rollback procedure in staging (restore from backup)
 
 ### Data Preparation
+
 - [ ] Create final Supabase backup (pre-freeze)
 - [ ] Document current system state:
   - [ ] Total user count
@@ -76,6 +81,7 @@ Before starting T-48h timeline:
 - [ ] Verify MinIO buckets ready to receive exports
 
 ### Communication (T-24h)
+
 - [ ] Send 24h reminder email to users
 - [ ] Update status page with cutover timeline
 - [ ] Confirm all team members available during cutover window
@@ -235,6 +241,7 @@ Before starting T-48h timeline:
 **Focus:** Immediate issue detection
 
 ### Every 15 Minutes
+
 - [ ] Check error rates in Grafana
 - [ ] Review application logs for exceptions
 - [ ] Monitor response times
@@ -242,13 +249,16 @@ Before starting T-48h timeline:
 - [ ] Verify no failed logins (Stack Auth dashboard)
 
 ### Active Monitoring
+
 - [ ] Watch for user-reported issues (email, support channels)
 - [ ] Monitor TTN webhook success rate
 - [ ] Check alert delivery (SMS, email)
 - [ ] Verify readings ingestion continuing normally
 
 ### Escalation Criteria
+
 **Trigger rollback if:**
+
 - Error rate > 5% of requests
 - Database connection failures
 - Authentication completely broken
@@ -262,6 +272,7 @@ Before starting T-48h timeline:
 **Focus:** Performance tuning and minor fixes
 
 ### Every 2 Hours
+
 - [ ] Review error logs and trends
 - [ ] Check performance metrics vs baseline
 - [ ] Verify backup jobs ran successfully
@@ -269,12 +280,14 @@ Before starting T-48h timeline:
 - [ ] Check memory/CPU usage trends
 
 ### Active Support
+
 - [ ] Respond to user questions about password reset
 - [ ] Fix minor UI issues if discovered
 - [ ] Tune database query performance if needed
 - [ ] Adjust rate limits if necessary
 
 ### Rollback Decision Point (T+24h)
+
 - [ ] Review 24h stability metrics
 - [ ] Assess user feedback
 - [ ] Determine: Proceed or rollback?
@@ -287,6 +300,7 @@ Before starting T-48h timeline:
 **When:** 24 hours after cutover
 
 ### Metrics Review
+
 - [ ] Compare error rates: Pre-cutover vs post-cutover
 - [ ] Compare response times: Before vs after
 - [ ] User activity levels normal?
@@ -294,17 +308,20 @@ Before starting T-48h timeline:
 - [ ] Alert delivery success rate normal?
 
 ### User Feedback
+
 - [ ] Collect user feedback (survey, direct outreach)
 - [ ] Address any usability concerns
 - [ ] Document common user questions for FAQ
 
 ### System Health
+
 - [ ] Database size trending as expected
 - [ ] Backup jobs completing successfully
 - [ ] Log rotation working correctly
 - [ ] Resource usage within limits
 
 ### Decision
+
 - [ ] **PROCEED:** Continue with new system, begin monitoring ramp-down
 - [ ] **ROLLBACK:** Execute rollback procedure (see below)
 
@@ -315,13 +332,16 @@ Before starting T-48h timeline:
 **Purpose:** Safety net for unforeseen issues
 
 ### Daily Checks (Until T+7d)
+
 - [ ] Review error logs for patterns
 - [ ] Monitor user retention/activity
 - [ ] Check for data inconsistencies
 - [ ] Verify backup integrity
 
 ### Rollback Criteria
+
 **Consider rollback if:**
+
 - Persistent critical bugs affecting > 10% of users
 - Data integrity issues discovered
 - Performance degradation > 50% slower
@@ -329,6 +349,7 @@ Before starting T-48h timeline:
 - Critical third-party integration failure (TTN, Telnyx)
 
 ### Rollback Decision Authority
+
 - **Minor issues:** Engineering team fixes forward
 - **Major issues:** Engineering + Product leads decide
 - **Critical issues:** Immediate rollback, notify all stakeholders
@@ -340,6 +361,7 @@ Before starting T-48h timeline:
 **When:** 7 days after cutover (rollback window closed)
 
 ### Final Actions
+
 - [ ] Archive Supabase export data (long-term backup)
 - [ ] Update DNS TTL back to normal (86400s / 24h)
 - [ ] Remove maintenance mode code from application
@@ -347,6 +369,7 @@ Before starting T-48h timeline:
 - [ ] Conduct retrospective meeting
 
 ### Formal Sign-Off
+
 - [ ] Engineering lead confirms system stable
 - [ ] Product lead confirms user acceptance
 - [ ] Operations confirms monitoring/backup operational
@@ -359,6 +382,7 @@ Before starting T-48h timeline:
 **See:** `docs/PRODUCTION_DEPLOYMENT.md` (Rollback section)
 
 ### Quick Rollback Steps
+
 1. **Immediately:** Revert DNS to old Supabase backend
 2. **Within 5min:** Disable new system (stop containers)
 3. **Within 15min:** Verify users can access old system
@@ -366,6 +390,7 @@ Before starting T-48h timeline:
 5. **Within 1h:** Post-mortem to identify root cause
 
 ### Data Considerations
+
 - **Writes during new system:** May be lost if rollback required
 - **Mitigation:** Minimize rollback window, fix forward if possible
 - **Last resort only:** Rollback is disruptive and loses new data
@@ -375,15 +400,18 @@ Before starting T-48h timeline:
 ## Emergency Contacts
 
 **On-Call Engineers:**
+
 - Primary: [Name] - [Phone] - [Email]
 - Secondary: [Name] - [Phone] - [Email]
 
 **External Services Support:**
+
 - Stack Auth: support@stack-auth.com
 - Uptime Robot: (if using for external monitoring)
 - Infrastructure Provider: [Contact info]
 
 **Escalation Path:**
+
 1. On-call engineer (immediate response)
 2. Engineering lead (15min response)
 3. CTO/VP Engineering (30min response)

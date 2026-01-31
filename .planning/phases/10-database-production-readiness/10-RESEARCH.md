@@ -17,31 +17,35 @@ The standard approach uses PgBouncer 1.20+ in transaction pooling mode with max_
 The established libraries/tools for this domain:
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| PgBouncer | 1.20+ | Connection pooling | Industry-standard PostgreSQL pooler, supports transaction mode with protocol-level prepared statements (max_prepared_statements) |
-| pgbouncer_exporter | latest | Prometheus metrics | prometheus-community official exporter, exposes pools/stats/databases metrics on port 9127 |
-| PostgreSQL pg_dump | 14+ | Database backup | Native PostgreSQL backup utility, reliable full backup solution |
-| MinIO Client (mc) | latest | S3-compatible CLI | Official MinIO CLI for uploading backups, uses S3 API |
-| Blackbox Exporter | latest | SSL cert monitoring | Prometheus official exporter, probe_ssl_earliest_cert_expiry metric for TLS certificates |
+
+| Library            | Version | Purpose             | Why Standard                                                                                                                     |
+| ------------------ | ------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| PgBouncer          | 1.20+   | Connection pooling  | Industry-standard PostgreSQL pooler, supports transaction mode with protocol-level prepared statements (max_prepared_statements) |
+| pgbouncer_exporter | latest  | Prometheus metrics  | prometheus-community official exporter, exposes pools/stats/databases metrics on port 9127                                       |
+| PostgreSQL pg_dump | 14+     | Database backup     | Native PostgreSQL backup utility, reliable full backup solution                                                                  |
+| MinIO Client (mc)  | latest  | S3-compatible CLI   | Official MinIO CLI for uploading backups, uses S3 API                                                                            |
+| Blackbox Exporter  | latest  | SSL cert monitoring | Prometheus official exporter, probe_ssl_earliest_cert_expiry metric for TLS certificates                                         |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| kartoza/pg-backup | latest | Automated backup container | Pre-built Docker image with cron, pg_dump, compression, and retention policies |
-| bitnami/pgbouncer | latest | PgBouncer Docker image | Alternative to building custom image, includes health checks |
-| ssl_exporter | latest | Dedicated cert exporter | Alternative to Blackbox for certificate-only monitoring (not needed if using Blackbox) |
+
+| Library           | Version | Purpose                    | When to Use                                                                            |
+| ----------------- | ------- | -------------------------- | -------------------------------------------------------------------------------------- |
+| kartoza/pg-backup | latest  | Automated backup container | Pre-built Docker image with cron, pg_dump, compression, and retention policies         |
+| bitnami/pgbouncer | latest  | PgBouncer Docker image     | Alternative to building custom image, includes health checks                           |
+| ssl_exporter      | latest  | Dedicated cert exporter    | Alternative to Blackbox for certificate-only monitoring (not needed if using Blackbox) |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Transaction mode | Session mode | Session mode doesn't release connections until session ends - much less efficient pooling |
-| pg_dump | pgBackRest | pgBackRest provides incremental backups and PITR but adds complexity - overkill for current scale |
-| pg_dump | Barman | Barman is enterprise-grade but requires dedicated server and more complex setup |
-| Daily backups | Hourly backups | More frequent backups reduce RPO but increase storage costs and I/O overhead |
-| Blackbox Exporter | cert-exporter | cert-exporter is certificate-specific but Blackbox already handles HTTP probes + certs |
+
+| Instead of        | Could Use      | Tradeoff                                                                                          |
+| ----------------- | -------------- | ------------------------------------------------------------------------------------------------- |
+| Transaction mode  | Session mode   | Session mode doesn't release connections until session ends - much less efficient pooling         |
+| pg_dump           | pgBackRest     | pgBackRest provides incremental backups and PITR but adds complexity - overkill for current scale |
+| pg_dump           | Barman         | Barman is enterprise-grade but requires dedicated server and more complex setup                   |
+| Daily backups     | Hourly backups | More frequent backups reduce RPO but increase storage costs and I/O overhead                      |
+| Blackbox Exporter | cert-exporter  | cert-exporter is certificate-specific but Blackbox already handles HTTP probes + certs            |
 
 **Installation:**
+
 ```bash
 # PgBouncer (via Docker)
 docker pull bitnami/pgbouncer:latest
@@ -63,6 +67,7 @@ docker pull kartoza/pg-backup:latest
 ## Architecture Patterns
 
 ### Recommended Project Structure
+
 ```
 docker/
 ├── pgbouncer/
@@ -80,9 +85,11 @@ docker/
 ```
 
 ### Pattern 1: PgBouncer Transaction Pooling
+
 **What:** Application connects to PgBouncer on port 6432, PgBouncer pools connections to PostgreSQL on port 5432, releasing connections after each transaction completes.
 **When to use:** Production environments with multiple application instances or high connection churn.
 **Example:**
+
 ```ini
 # docker/pgbouncer/pgbouncer.ini
 [databases]
@@ -113,9 +120,11 @@ stats_users = pgbouncer_exporter
 ```
 
 ### Pattern 2: Backend Connection String Update
+
 **What:** Backend switches from direct PostgreSQL connection to PgBouncer connection by changing port from 5432 to 6432.
 **When to use:** After PgBouncer is deployed and validated.
 **Example:**
+
 ```typescript
 // backend/src/db/client.ts
 const pool = new Pool({
@@ -129,9 +138,11 @@ const pool = new Pool({
 ```
 
 ### Pattern 3: Daily Backup to MinIO with Retention
+
 **What:** Cron job runs daily pg_dump, compresses output, uploads to MinIO, deletes backups older than 30 days.
 **When to use:** Production environments requiring point-in-time recovery capability.
 **Example:**
+
 ```bash
 #!/bin/bash
 # docker/scripts/backup-postgres.sh
@@ -169,9 +180,11 @@ echo "Backup completed: ${BACKUP_FILE}"
 ```
 
 ### Pattern 4: PgBouncer Metrics Monitoring
+
 **What:** pgbouncer_exporter sidecar connects to PgBouncer admin interface, exposes metrics on port 9127 for Prometheus scraping.
 **When to use:** Always - essential for monitoring connection pool health.
 **Example:**
+
 ```yaml
 # docker/compose.prod.yaml
 services:
@@ -184,7 +197,7 @@ services:
     volumes:
       - ./pgbouncer/pgbouncer.ini:/bitnami/pgbouncer/conf/pgbouncer.ini:ro
     ports:
-      - "6432:6432"
+      - '6432:6432'
     healthcheck:
       test: ['CMD', 'pg_isready', '-h', 'localhost', '-p', '6432']
       interval: 10s
@@ -194,17 +207,19 @@ services:
   pgbouncer_exporter:
     image: prometheuscommunity/pgbouncer-exporter:latest
     environment:
-      PGBOUNCER_EXPORTER_CONNECTION_STRING: "postgresql://pgbouncer_exporter:password@pgbouncer:6432/pgbouncer?sslmode=disable"
+      PGBOUNCER_EXPORTER_CONNECTION_STRING: 'postgresql://pgbouncer_exporter:password@pgbouncer:6432/pgbouncer?sslmode=disable'
     ports:
-      - "9127:9127"
+      - '9127:9127'
     depends_on:
       - pgbouncer
 ```
 
 ### Pattern 5: SSL Certificate Expiry Monitoring
+
 **What:** Blackbox Exporter probes Caddy's HTTPS endpoint, Prometheus scrapes probe_ssl_earliest_cert_expiry metric, AlertManager fires alert 30 days before expiry.
 **When to use:** Always - prevents service outages from expired certificates.
 **Example:**
+
 ```yaml
 # docker/prometheus/prometheus.yml
 scrape_configs:
@@ -233,11 +248,12 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "SSL certificate expires in less than 30 days"
-          description: "Certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}"
+          summary: 'SSL certificate expires in less than 30 days'
+          description: 'Certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}'
 ```
 
 ### Anti-Patterns to Avoid
+
 - **Using session pooling mode:** Session mode holds connections for entire client session, defeating pooling benefits - always use transaction mode.
 - **Setting default_pool_size too high:** Each pool consumes database connections - calculate based on `max_concurrent_ops / number_of_pools`.
 - **Forgetting ignore_startup_parameters:** pgbouncer_exporter requires `ignore_startup_parameters = extra_float_digits` or connections fail.
@@ -248,56 +264,63 @@ groups:
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Backup scheduling | Custom cron scripts | kartoza/pg-backup container | Pre-built with cron, compression, retention, S3 upload, error handling |
-| Connection pooling | Application-level pool | PgBouncer | Centralizes pooling, works across multiple app instances, reduces DB connections |
-| Backup cleanup | Manual deletion | find -mtime +30 -delete or mc ls with date parsing | Handles edge cases (timezone, DST, leap years), atomic operations |
-| SSL monitoring | Custom cert checker | Blackbox Exporter | Industry-standard, integrates with Prometheus/Grafana, handles renewal edge cases |
-| PgBouncer metrics | Custom admin queries | pgbouncer_exporter | Exposes all SHOW POOLS/STATS/DATABASES metrics, Prometheus-native format |
-| Backup compression | gzip in scripts | pg_dump -Fc (custom format) | Native compression, faster restore, supports parallel restore |
+| Problem            | Don't Build            | Use Instead                                        | Why                                                                               |
+| ------------------ | ---------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Backup scheduling  | Custom cron scripts    | kartoza/pg-backup container                        | Pre-built with cron, compression, retention, S3 upload, error handling            |
+| Connection pooling | Application-level pool | PgBouncer                                          | Centralizes pooling, works across multiple app instances, reduces DB connections  |
+| Backup cleanup     | Manual deletion        | find -mtime +30 -delete or mc ls with date parsing | Handles edge cases (timezone, DST, leap years), atomic operations                 |
+| SSL monitoring     | Custom cert checker    | Blackbox Exporter                                  | Industry-standard, integrates with Prometheus/Grafana, handles renewal edge cases |
+| PgBouncer metrics  | Custom admin queries   | pgbouncer_exporter                                 | Exposes all SHOW POOLS/STATS/DATABASES metrics, Prometheus-native format          |
+| Backup compression | gzip in scripts        | pg_dump -Fc (custom format)                        | Native compression, faster restore, supports parallel restore                     |
 
 **Key insight:** Database reliability is mission-critical - use battle-tested tools (PgBouncer since 2007, pg_dump native to PostgreSQL, Prometheus exporters maintained by community) rather than custom solutions that miss edge cases (connection storms, backup corruption, SSL renewal race conditions).
 
 ## Common Pitfalls
 
 ### Pitfall 1: Backend Pool Size Misconfiguration with PgBouncer
+
 **What goes wrong:** Developers set backend's `max: 20` pool size thinking PgBouncer's `default_pool_size` should match, leading to 20 backend connections × 20 PgBouncer connections = 400 database connections.
 **Why it happens:** Confusion between client-side pooling (backend to PgBouncer) and server-side pooling (PgBouncer to PostgreSQL).
 **How to avoid:** Backend pool size controls concurrent requests from that app instance. PgBouncer pool size controls database connections. Keep backend pool modest (10-20), PgBouncer pool based on `1.5x-2x CPU cores` for CPU-bound workloads.
 **Warning signs:** PostgreSQL logs "too many connections", `pg_stat_activity` shows hundreds of idle connections.
 
 ### Pitfall 2: Backup Fails Silently, No Monitoring
+
 **What goes wrong:** Backup script runs via cron but fails (disk full, network timeout, credentials expired), no alert fires, discovery happens when restore is needed.
 **Why it happens:** Cron jobs run silently unless explicitly configured to alert on failure.
 **How to avoid:** Backup script should call notify.sh webhook on failure (exit 1 triggers alert), Prometheus alert on missing backup file age metric, test restore procedure quarterly.
 **Warning signs:** No recent backup files in MinIO, backup logs show errors but no alerts fired.
 
 ### Pitfall 3: PgBouncer Transaction Mode Breaks SET SESSION Commands
+
 **What goes wrong:** Application runs `SET SESSION timezone = 'UTC'` expecting it to persist, but PgBouncer transaction mode resets connection state after each transaction.
 **Why it happens:** Transaction pooling releases connections after COMMIT/ROLLBACK, losing session state.
 **How to avoid:** Audit code for `SET SESSION`, `SET LOCAL` (safe, resets after transaction), use application-level timezone handling instead of database session variables.
 **Warning signs:** Intermittent bugs where timezone/encoding settings "randomly" change between requests.
 
 ### Pitfall 4: SSL Certificate Monitoring Only Checks Primary Domain
+
 **What goes wrong:** Monitoring configured for `freshtrack.example.com` but not `www.freshtrack.example.com`, wildcard cert expires, monitoring doesn't catch it.
 **Why it happens:** Blackbox Exporter only probes configured targets.
 **How to avoid:** Probe all public endpoints served by Caddy, check `probe_ssl_earliest_cert_expiry` applies to cert chain (intermediate + root).
 **Warning signs:** Certificate expires but no alert, Blackbox shows healthy probe but cert is actually expired.
 
 ### Pitfall 5: Backup Retention Cleanup Based on File Count Instead of Age
+
 **What goes wrong:** Script keeps "last 30 backups" assuming daily schedule, but backup failures create gaps, 30 backups span 40+ days, violates compliance.
 **Why it happens:** File count is easier to implement than date-based cleanup.
 **How to avoid:** Always use date-based retention (`find -mtime +30` or parse backup filename date), validate backups exist for each day within retention window.
 **Warning signs:** Backup count stays at 30 but oldest backup is older than 30 days.
 
 ### Pitfall 6: PgBouncer userlist.txt Credentials Out of Sync
+
 **What goes wrong:** PostgreSQL password rotated via Infisical, backend updated, but `userlist.txt` still has old password, PgBouncer auth fails.
 **Why it happens:** `userlist.txt` requires manual update, not automatically synced from Infisical.
 **How to avoid:** Mount `userlist.txt` from Infisical secret (template), use md5 hashes (stable even if password changes), or use `auth_query` to delegate auth to PostgreSQL.
 **Warning signs:** Backend connection errors "password authentication failed for user", PgBouncer logs authentication failures.
 
 ### Pitfall 7: Backup During High Write Load Causes Performance Degradation
+
 **What goes wrong:** Daily backup at 2 AM coincides with batch job, pg_dump reads entire database, heavy I/O contention, queries slow down.
 **Why it happens:** pg_dump acquires ACCESS SHARE locks and reads all tables, competes with writes for I/O.
 **How to avoid:** Schedule backups during low-traffic hours (identify via Grafana query metrics), use `pg_dump --jobs=4` for parallel dump (faster, less blocking), monitor PostgreSQL I/O metrics during backup window.
@@ -308,6 +331,7 @@ Problems that look simple but have existing solutions:
 Verified patterns from official sources:
 
 ### PgBouncer Configuration with Transaction Mode
+
 ```ini
 # Source: https://www.pgbouncer.org/config.html
 # docker/pgbouncer/pgbouncer.ini
@@ -360,6 +384,7 @@ log_pooler_errors = 1
 ```
 
 ### Drizzle ORM with node-postgres (No Changes Needed)
+
 ```typescript
 // Source: Verified - node-postgres doesn't use prepared statements unless named
 // backend/src/db/client.ts
@@ -383,6 +408,7 @@ export const db = drizzle({ client: pool, schema });
 ```
 
 ### Docker Compose Backup Service with Cron
+
 ```yaml
 # Source: https://github.com/kartoza/docker-pg-backup pattern
 # docker/compose.prod.yaml
@@ -399,9 +425,9 @@ services:
       POSTGRES_PASS: ${POSTGRES_PASSWORD}
 
       # Backup settings
-      CRON_SCHEDULE: "0 2 * * *"  # Daily at 2 AM UTC
+      CRON_SCHEDULE: '0 2 * * *' # Daily at 2 AM UTC
       BACKUP_DIR: /backups
-      DUMP_ARGS: "-Fc"  # Custom format (compressed)
+      DUMP_ARGS: '-Fc' # Custom format (compressed)
 
       # MinIO S3 upload
       S3_BUCKET: postgres-backups
@@ -425,10 +451,10 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
-        loki-batch-size: "400"
-        loki-retries: "3"
-        loki-external-labels: "service={{.Name}},environment=production"
+        loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-retries: '3'
+        loki-external-labels: 'service={{.Name}},environment=production'
 
 volumes:
   backup_data:
@@ -436,6 +462,7 @@ volumes:
 ```
 
 ### Prometheus SSL Certificate Monitoring
+
 ```yaml
 # Source: https://www.robustperception.io/get-alerted-before-your-ssl-certificates-expire/
 # docker/prometheus/prometheus.yml
@@ -472,8 +499,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "SSL certificate expires in less than 30 days"
-          description: "Certificate for {{ $labels.instance }} expires on {{ $value | humanizeTimestamp }}"
+          summary: 'SSL certificate expires in less than 30 days'
+          description: 'Certificate for {{ $labels.instance }} expires on {{ $value | humanizeTimestamp }}'
 
       - alert: SSLCertExpiring7Days
         expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 7
@@ -481,11 +508,12 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "SSL certificate expires in less than 7 days"
-          description: "Certificate for {{ $labels.instance }} expires on {{ $value | humanizeTimestamp }} - URGENT RENEWAL NEEDED"
+          summary: 'SSL certificate expires in less than 7 days'
+          description: 'Certificate for {{ $labels.instance }} expires on {{ $value | humanizeTimestamp }} - URGENT RENEWAL NEEDED'
 ```
 
 ### PgBouncer Health Check
+
 ```yaml
 # Source: https://github.com/edoburu/docker-pgbouncer/blob/master/examples/docker-compose/docker-compose.yml
 # docker/compose.prod.yaml
@@ -502,6 +530,7 @@ services:
 ```
 
 ### Backup Restoration Test Procedure
+
 ```bash
 # Source: PostgreSQL official documentation pattern
 # docker/scripts/test-restore.sh
@@ -547,15 +576,16 @@ rm /tmp/restore-test.sql.gz
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| PgBouncer doesn't support prepared statements in transaction mode | max_prepared_statements=200 enables protocol-level prepared statement tracking | PgBouncer 1.20.0 (April 2024) | Transaction mode now works with most ORMs without code changes |
-| Each service needs custom backup scripts | Containerized backup solutions (kartoza/pg-backup) with cron, S3, retention | ~2020 | Standardized backup patterns, less custom code |
-| SSL monitoring via custom scripts | Blackbox Exporter probe_ssl_earliest_cert_expiry metric | Prometheus ecosystem maturity (~2018) | Native Prometheus integration, unified alerting |
-| pg_dump -Fp (plain SQL) | pg_dump -Fc (custom format) | Always available but adoption increased ~2015 | Compressed backups, parallel restore, better performance |
-| Manual connection pooling in app code | Centralized PgBouncer transaction pooling | PgBouncer transaction mode since ~2010 | Works across multiple app instances, reduces DB connections |
+| Old Approach                                                      | Current Approach                                                               | When Changed                                  | Impact                                                         |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------- | -------------------------------------------------------------- |
+| PgBouncer doesn't support prepared statements in transaction mode | max_prepared_statements=200 enables protocol-level prepared statement tracking | PgBouncer 1.20.0 (April 2024)                 | Transaction mode now works with most ORMs without code changes |
+| Each service needs custom backup scripts                          | Containerized backup solutions (kartoza/pg-backup) with cron, S3, retention    | ~2020                                         | Standardized backup patterns, less custom code                 |
+| SSL monitoring via custom scripts                                 | Blackbox Exporter probe_ssl_earliest_cert_expiry metric                        | Prometheus ecosystem maturity (~2018)         | Native Prometheus integration, unified alerting                |
+| pg_dump -Fp (plain SQL)                                           | pg_dump -Fc (custom format)                                                    | Always available but adoption increased ~2015 | Compressed backups, parallel restore, better performance       |
+| Manual connection pooling in app code                             | Centralized PgBouncer transaction pooling                                      | PgBouncer transaction mode since ~2010        | Works across multiple app instances, reduces DB connections    |
 
 **Deprecated/outdated:**
+
 - **PgBouncer statement pooling mode:** Rarely needed, transaction mode is sufficient for 99% of use cases
 - **pgpool-II for connection pooling:** PgBouncer has become the de-facto standard, simpler configuration
 - **pg_basebackup for logical backups:** pg_basebackup is for physical backups (PITR), pg_dump is standard for logical backups
@@ -588,6 +618,7 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - [PgBouncer Configuration Documentation](https://www.pgbouncer.org/config.html) - Pool mode, max_prepared_statements, default values
 - [PgBouncer Features Documentation](https://www.pgbouncer.org/features.html) - Transaction mode limitations (SET, LISTEN, advisory locks)
 - [node-postgres Query Documentation](https://node-postgres.com/features/queries) - Prepared statement opt-in behavior
@@ -595,6 +626,7 @@ Things that couldn't be fully resolved:
 - [Caddy Prometheus Metrics Documentation](https://caddyserver.com/docs/metrics) - Official Caddy metrics endpoint
 
 ### Secondary (MEDIUM confidence)
+
 - [PgBouncer Best Practices - Azure](https://techcommunity.microsoft.com/blog/adforpostgresql/pgbouncer-best-practices-in-azure-database-for-postgresql-%E2%80%93-part-1/4453323) - Pool sizing formulas verified with official docs
 - [PgBouncer Transaction Pooling - CYBERTEC](https://www.cybertec-postgresql.com/en/pgbouncer-types-of-postgresql-connection-pooling/) - Transaction vs session mode explained
 - [kartoza/docker-pg-backup](https://github.com/kartoza/docker-pg-backup) - Pre-built backup container pattern
@@ -603,6 +635,7 @@ Things that couldn't be fully resolved:
 - [MinIO mc Docker Hub](https://hub.docker.com/r/minio/mc/) - Official MinIO client container
 
 ### Tertiary (LOW confidence)
+
 - [Drizzle ORM PgBouncer Discussion](https://www.answeroverflow.com/m/1154594546202706004) - Community discussion, needs verification
 - [Supabase PgBouncer Documentation](https://supabase.com/docs/guides/database/connecting-to-postgres) - Supabase-specific context
 - [Medium: Backup Postgres to MinIO](https://sreyaj.dev/how-to-backup-postgres-data-to-s3-bucket-using-minio) - Individual blog post, pattern verified with official sources
@@ -610,6 +643,7 @@ Things that couldn't be fully resolved:
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - PgBouncer, pg_dump, Blackbox Exporter are industry-standard with official documentation
 - Architecture: HIGH - Patterns verified with official PgBouncer config docs and prometheus-community exporter
 - Pitfalls: MEDIUM - Based on community discussions and best practices guides, validated against official limitations

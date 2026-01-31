@@ -32,14 +32,14 @@ key_files:
     - docs/deployment/operations.md
 
 decisions:
-  - "Combined all 8 sections in single comprehensive document"
-  - "ASCII diagram for horizontal scaling architecture"
-  - "Threshold tables for monitoring alerts"
-  - "Secret rotation procedure with step-by-step commands"
+  - 'Combined all 8 sections in single comprehensive document'
+  - 'ASCII diagram for horizontal scaling architecture'
+  - 'Threshold tables for monitoring alerts'
+  - 'Secret rotation procedure with step-by-step commands'
 
 metrics:
-  duration: "~2 minutes"
-  completed: "2026-01-29"
+  duration: '~2 minutes'
+  completed: '2026-01-29'
   tasks_completed: 2
   tasks_total: 2
   lines_added: 672
@@ -70,12 +70,14 @@ Expanded from 90 lines to 720 lines with comprehensive coverage:
 8. **Service Management** - Start/stop, logs, container access, resource limits
 
 Plus:
+
 - **Troubleshooting** - Common issues and emergency procedures
 - **Quick Reference** - Essential commands, important paths, support resources
 
 ## Key Procedures Documented
 
 ### Update Procedure
+
 ```bash
 git pull origin main
 sudo ./scripts/deploy-automated.sh
@@ -83,11 +85,13 @@ sudo ./scripts/deploy-automated.sh
 ```
 
 ### Backup Procedure
+
 ```bash
 docker compose exec -T postgres pg_dump -U frostguard -Fc frostguard > backup.dump
 ```
 
 ### Restore Procedure
+
 ```bash
 docker compose stop backend worker
 docker compose exec -T postgres pg_restore -U frostguard -d frostguard < backup.dump
@@ -95,17 +99,18 @@ docker compose start backend worker
 ```
 
 ### Secret Rotation
+
 Step-by-step procedure for quarterly secret rotation with database password update.
 
 ## Monitoring Thresholds Documented
 
-| Metric | Warning | Critical |
-|--------|---------|----------|
-| CPU Usage | > 70% sustained | > 90% |
-| Memory Usage | > 80% | > 95% |
-| Disk Usage | > 70% | > 85% |
-| API Error Rate | > 1% | > 5% |
-| Response Time (p95) | > 500ms | > 2000ms |
+| Metric              | Warning         | Critical |
+| ------------------- | --------------- | -------- |
+| CPU Usage           | > 70% sustained | > 90%    |
+| Memory Usage        | > 80%           | > 95%    |
+| Disk Usage          | > 70%           | > 85%    |
+| API Error Rate      | > 1%            | > 5%     |
+| Response Time (p95) | > 500ms         | > 2000ms |
 
 ## Recovery Objectives Documented
 
@@ -116,8 +121,8 @@ Step-by-step procedure for quarterly secret rotation with database password upda
 
 ## Commits
 
-| Hash | Description |
-|------|-------------|
+| Hash    | Description                                  |
+| ------- | -------------------------------------------- |
 | 3e742b5 | docs(37-04): comprehensive operations manual |
 
 ## Verification Results
@@ -137,8 +142,8 @@ None - plan executed exactly as written.
 
 ## Requirements Satisfied
 
-| Requirement | Status |
-|-------------|--------|
+| Requirement               | Status   |
+| ------------------------- | -------- |
 | DOCS-04: Operations guide | Complete |
 
 ## Next Phase Readiness
@@ -146,9 +151,11 @@ None - plan executed exactly as written.
 Phase 37 (Documentation) plan 04 complete.
 
 **Remaining plans in Phase 37:**
+
 - 37-01, 37-02, 37-03 (may be executed in parallel or already complete)
 
 **Documentation now provides:**
+
 - Complete operations manual for production maintenance
 - Runnable commands for all common operations
 - Troubleshooting guide for common issues

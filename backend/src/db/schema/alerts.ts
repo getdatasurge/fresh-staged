@@ -1,18 +1,14 @@
 import {
-    boolean,
-    index,
-    integer,
-    pgTable,
-    text,
-    timestamp,
-    uuid,
-    varchar,
+  boolean,
+  index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  varchar,
 } from 'drizzle-orm/pg-core';
-import {
-    alertSeverityEnum,
-    alertStatusEnum,
-    alertTypeEnum,
-} from './enums.js';
+import { alertSeverityEnum, alertStatusEnum, alertTypeEnum } from './enums.js';
 import { sites, units } from './hierarchy.js';
 import { organizations } from './tenancy.js';
 import { profiles } from './users.js';
@@ -54,11 +50,11 @@ export const alertRules = pgTable(
     tempMax: integer('temp_max'),
     // Delay before triggering alert (minutes)
     delayMinutes: integer('delay_minutes').notNull().default(5),
-    
+
     // Manual Logging config
     manualIntervalMinutes: integer('manual_interval_minutes'),
     manualGraceMinutes: integer('manual_grace_minutes'),
-    
+
     // Offline/Heartbeat config
     expectedReadingIntervalSeconds: integer('expected_reading_interval_seconds'),
     offlineTriggerMultiplier: integer('offline_trigger_multiplier'), // float in DB? check useAlertRules types. It says number. integer usually int. use real/doublePrecision if float.
@@ -91,7 +87,7 @@ export const alertRules = pgTable(
     index('alert_rules_site_idx').on(table.siteId),
     index('alert_rules_unit_idx').on(table.unitId),
     index('alert_rules_enabled_idx').on(table.organizationId, table.isEnabled),
-  ]
+  ],
 );
 
 // Alert Rules History - audit trail for rule changes
@@ -119,7 +115,7 @@ export const alertRulesHistory = pgTable(
   (table) => [
     index('alert_rules_history_rule_idx').on(table.alertRuleId),
     index('alert_rules_history_date_idx').on(table.changedAt),
-  ]
+  ],
 );
 
 // Alerts - active and historical alerts
@@ -184,7 +180,7 @@ export const alerts = pgTable(
     index('alerts_triggered_idx').on(table.triggeredAt),
     // Composite for finding active alerts per unit
     index('alerts_unit_status_idx').on(table.unitId, table.status),
-  ]
+  ],
 );
 
 // Corrective Actions - resolution documentation for compliance
@@ -229,7 +225,7 @@ export const correctiveActions = pgTable(
     index('corrective_actions_unit_idx').on(table.unitId),
     index('corrective_actions_profile_idx').on(table.profileId),
     index('corrective_actions_date_idx').on(table.actionAt),
-  ]
+  ],
 );
 
 // Type exports

@@ -1,555 +1,982 @@
-# FreshTrack Pro System Architecture
+# FrostGuard Architecture Documentation
 
-> Complete system architecture documentation
-
-> **Architecture Migration in Progress**
->
-> This documentation describes the original Supabase-based architecture. The project is migrating to:
-> - **Authentication**: Stack Auth (replacing Supabase Auth)
-> - **Backend API**: Fastify 5 with Drizzle ORM (replacing Edge Functions)
-> - **Database**: PostgreSQL (Supabase or self-hosted)
->
-> See `.planning/STATE.md` for current migration status. The frontend codebase still uses `@supabase/supabase-js` for database queries during migration.
-
----
+This document provides a comprehensive architectural overview of the FrostGuard IoT refrigeration monitoring and food safety compliance platform.
 
 ## Table of Contents
 
-1. [Architecture Overview](#architecture-overview)
-2. [Frontend Architecture](#frontend-architecture)
-3. [Backend Architecture](#backend-architecture)
-4. [Database Architecture](#database-architecture)
-5. [Authentication & Authorization](#authentication-authorization)
-6. [Third-Party Integrations](#third-party-integrations)
-7. [Environment Separation](#environment-separation)
-8. [Security Boundaries](#security-boundaries)
-9. [Diagrams](#diagrams)
+1. [System Overview](#system-overview)
+2. [System Context Diagram](#1-system-context-diagram-c4-level-1)
+3. [Container Diagram](#2-container-diagram-c4-level-2)
+4. [Component Diagram - Frontend](#3-component-diagram---frontend)
+5. [Component Diagram - Backend](#4-component-diagram---backend)
+6. [Data Flow - Temperature Reading Ingestion](#5-data-flow---temperature-reading-ingestion)
+7. [Data Flow - User Authentication](#6-data-flow---user-authentication)
+8. [Domain Entity Relationship](#7-domain-entity-relationship)
+9. [Deployment Diagram](#8-deployment-diagram)
+10. [Architectural Decisions](#architectural-decisions)
+
+## System Overview
+
+FrostGuard is an enterprise IoT platform for real-time refrigeration monitoring and HACCP compliance. The system provides:
+
+- **Real-time monitoring**: LoRaWAN sensor integration via The Things Network
+- **Multi-tier alerting**: Threshold-based alerts with escalation pipelines
+- **Offline-first manual logging**: IndexedDB with background sync
+- **Multi-tenancy**: Organization-scoped data with role-based access control
+- **Compliance**: HACCP-compliant temperature logging and reporting
+
+### Tech Stack Summary
+
+| Layer            | Technology                                                |
+| ---------------- | --------------------------------------------------------- |
+| Frontend         | React 18, TypeScript 5, Vite 5, Tailwind CSS 3, shadcn/ui |
+| State Management | TanStack Query v5, React Context                          |
+| API              | tRPC v11 (end-to-end type-safe)                           |
+| Backend          | Fastify 5, Node.js ESM                                    |
+| Database         | PostgreSQL 15, Drizzle ORM                                |
+| Auth             | Stack Auth (migrating from Supabase)                      |
+| Real-time        | Socket.io v4 + Redis adapter                              |
+| Jobs             | BullMQ + Redis                                            |
+| Storage          | MinIO (S3-compatible)                                     |
+| IoT              | The Things Network (TTN), LoRaWAN                         |
+| Payments         | Stripe                                                    |
+| Notifications    | Telnyx (SMS), Resend (Email)                              |
+| PWA              | Workbox via vite-plugin-pwa                               |
 
 ---
 
-## Architecture Overview
+## 1. System Context Diagram (C4 Level 1)
 
-FreshTrack Pro follows a modern Jamstack architecture with:
-- **React SPA** for the frontend
-- **Supabase** for backend (PostgreSQL + Edge Functions + Auth)
-- **Event-driven processing** for sensor data and alerts
-- **Multi-tenant isolation** via Row-Level Security
-
-### Architectural Principles
-
-1. **Single Source of Truth (SSOT)**
-   - `process-unit-states` is the only service that creates/resolves alerts
-   - `process-escalations` is the only service that sends notifications
-   - `get_effective_alert_rules` RPC resolves the cascade logic
-
-2. **Event-Driven Processing**
-   - Sensor data triggers state evaluation
-   - State changes trigger notifications
-   - All actions are logged for audit
-
-3. **Hierarchical Configuration**
-   - Settings cascade: Organization → Site → Area → Unit
-   - Lower levels override higher levels
-
-4. **Offline-First for Critical Operations**
-   - Manual temperature logging works offline
-   - IndexedDB for local storage with sync
-
----
-
-## Frontend Architecture
-
-### Technology Stack
-
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| Framework | React 18.3.1 | UI components and state |
-| Routing | React Router 6.30.1 | Client-side navigation |
-| State | TanStack Query 5.83.0 | Server state management |
-| Forms | React Hook Form + Zod | Form handling and validation |
-| Styling | Tailwind CSS 3.4.17 | Utility-first CSS |
-| Components | shadcn/ui (Radix) | Accessible component library |
-| Build | Vite 5.4.19 | Fast development and bundling |
-
-### Component Architecture
-
-```
-src/
-├── pages/              # Route-level components (23 pages)
-│   ├── Dashboard.tsx   # Main monitoring view
-│   ├── Settings.tsx    # Multi-tab configuration
-│   └── ...
-├── components/         # Reusable components (112+ files)
-│   ├── ui/             # shadcn base components (43)
-│   ├── settings/       # Settings panels
-│   ├── unit/           # Unit monitoring
-│   ├── alerts/         # Alert display
-│   └── ...
-├── hooks/              # Custom React hooks (25)
-│   ├── useUnitStatus.ts
-│   ├── useAlertRules.ts
-│   └── ...
-├── lib/                # Utilities and config
-│   ├── alertConfig.ts
-│   ├── statusConfig.ts
-│   └── ...
-├── contexts/           # React contexts
-│   ├── DebugContext.tsx
-│   └── TTNConfigContext.tsx
-└── integrations/       # External service clients
-    └── supabase/
-```
-
-### State Management Pattern
-
-```mermaid
-graph LR
-    A[Server State] -->|TanStack Query| B[React Components]
-    C[Form State] -->|React Hook Form| B
-    D[URL State] -->|React Router| B
-    E[Theme State] -->|next-themes| B
-    F[Debug State] -->|React Context| B
-```
-
-### Key Patterns
-
-1. **Query Keys**: Structured for cache invalidation
-   ```typescript
-   ['units', unitId]
-   ['alerts', { organizationId, status: 'active' }]
-   ['alert-rules', { unitId }]
-   ```
-
-2. **Component Composition**: Use shadcn components as building blocks
-3. **Config Objects**: Centralized status/alert configuration in `lib/`
-
----
-
-## Backend Architecture
-
-### Edge Functions Overview
-
-The backend consists of 33 Deno-based edge functions organized by purpose:
-
-#### Data Ingestion (3 functions)
-| Function | Purpose | Trigger |
-|----------|---------|---------|
-| `ttn-webhook` | Receive TTN uplink messages | HTTP POST from TTN |
-| `ingest-readings` | Generic sensor data ingestion | HTTP POST |
-| `sensor-simulator` | Generate test data | HTTP POST |
-
-#### Alert Processing (2 functions)
-| Function | Purpose | Trigger |
-|----------|---------|---------|
-| `process-unit-states` | Evaluate unit states, create/resolve alerts | Called after ingestion |
-| `process-escalations` | Send notifications per policy | Called after state changes |
-
-#### TTN Management (12 functions)
-| Function | Purpose |
-|----------|---------|
-| `ttn-bootstrap` | Auto-configure webhooks |
-| `ttn-manage-application` | Create/update TTN apps |
-| `ttn-provision-device` | Register sensors with TTN |
-| `ttn-provision-gateway` | Register gateways with TTN |
-| `ttn-provision-org` | Provision org in TTN |
-| `ttn-provision-worker` | Background provisioning |
-| `ttn-list-devices` | List TTN devices |
-| `ttn-gateway-preflight` | Validate gateway permissions |
-| `ttn-deprovision-worker` | Cleanup deprovisioned devices |
-| `update-ttn-webhook` | Update webhook config |
-| `manage-ttn-settings` | TTN settings CRUD |
-| `sync-ttn-settings` | Sync from emulator |
-
-#### User & Data Management (6 functions)
-| Function | Purpose |
-|----------|---------|
-| `user-sync-emitter` | User sync events |
-| `cleanup-user-sensors` | User data cleanup |
-| `update-sensor-assignment` | Sensor assignment |
-| `account-deletion-jobs` | GDPR deletion |
-| `export-temperature-logs` | Compliance data export |
-| `check-password-breach` | Password security |
-
-#### Billing (3 functions)
-| Function | Purpose |
-|----------|---------|
-| `stripe-checkout` | Create checkout sessions |
-| `stripe-portal` | Customer portal access |
-| `stripe-webhook` | Handle Stripe events |
-
-#### Utilities (7 functions)
-| Function | Purpose |
-|----------|---------|
-| `health-check` | System health monitoring |
-| `check-slug-available` | Org slug validation |
-| `send-sms-alert` | Telnyx SMS delivery |
-| `org-state-api` | Pull-based state API |
-| `fetch-org-state` | Org TTN state |
-| `emulator-sync` | Emulator integration |
-| `run-simulator-heartbeats` | Simulated heartbeats |
-
-### Data Processing Pipeline
-
-```mermaid
-graph TD
-    A[Sensor] -->|LoRa| B[TTN]
-    B -->|Webhook| C[ttn-webhook]
-    D[Simulator] --> E[sensor-simulator]
-    F[Manual Entry] --> G[Frontend]
-
-    C --> H[sensor_readings]
-    E --> H
-    G --> I[manual_temperature_logs]
-
-    H --> J[ingest-readings]
-    J --> K[process-unit-states]
-    K --> L[alerts table]
-    K --> M[unit status update]
-    L --> N[process-escalations]
-    N --> O[Email/SMS/Push]
-```
-
-### Function Security
-
-| Security Level | Functions | Auth Method |
-|----------------|-----------|-------------|
-| Public | Health check endpoints | None |
-| User Auth | Most API endpoints | JWT (Supabase Auth) |
-| Internal Only | process-unit-states, process-escalations | INTERNAL_API_KEY header |
-| Webhook | ttn-webhook, stripe-webhook | Webhook secret |
-
----
-
-## Database Architecture
-
-### PostgreSQL 14.1 on Supabase
-
-The database contains 60+ tables organized by domain:
-
-#### Hierarchy Tables
-```
-organizations
-    └── sites
-        └── areas
-            └── units
-```
-
-#### Core Tables by Domain
-
-| Domain | Tables |
-|--------|--------|
-| Hierarchy | organizations, sites, areas, units |
-| Sensors | lora_sensors, gateways, devices (legacy), sensor_readings |
-| Alerts | alerts, alert_rules, alert_rules_history |
-| Notifications | notification_policies, notification_events, escalation_contacts |
-| Compliance | corrective_actions, calibration_records, event_logs |
-| TTN | ttn_connections, ttn_provisioning_queue, ttn_provisioning_logs |
-| Users | profiles, user_roles, user_sync_log |
-| Billing | subscriptions, invoices |
-
-### Row-Level Security (RLS)
-
-All tables enforce RLS policies based on:
-- User's organization membership (`user_roles`)
-- Data ownership chain (units → areas → sites → organizations)
-
-Example policy pattern:
-```sql
--- Users can only see units in their organization
-CREATE POLICY "Users can view org units" ON units
-  FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM user_roles ur
-      JOIN sites s ON s.organization_id = ur.organization_id
-      JOIN areas a ON a.site_id = s.id
-      WHERE a.id = units.area_id
-      AND ur.user_id = auth.uid()
-    )
-  );
-```
-
-### Key RPC Functions
-
-| Function | Purpose |
-|----------|---------|
-| `get_effective_alert_rules(p_unit_id)` | Resolve cascaded alert rules |
-| `get_effective_notification_policy(...)` | Resolve cascaded notification policy |
-| `create_organization_with_owner(...)` | Atomic org creation |
-| `user_belongs_to_org(...)` | Access check |
-| `has_role(...)` | Role authorization |
-| `enqueue_deprovision_jobs_for_unit(...)` | TTN cleanup queue |
-
----
-
-## Authentication & Authorization
-
-### Authentication Flow
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant A as Auth Page
-    participant S as Supabase Auth
-    participant D as Database
-
-    U->>A: Email/Password
-    A->>S: signInWithPassword()
-    S->>S: Validate credentials
-    S->>D: Create session
-    D-->>S: Session token
-    S-->>A: JWT + Refresh token
-    A->>U: Redirect to /dashboard
-```
-
-### Session Management
-- JWT tokens via Supabase Auth
-- Automatic token refresh
-- Session stored in localStorage
-
-### Authorization Model
-
-| Role | Capabilities |
-|------|--------------|
-| `owner` | Full org control, billing, user management |
-| `manager` | Settings, alerts, reports |
-| `operator` | Manual logging, alert acknowledgment |
-| `viewer` | Read-only dashboard access |
-
-### Permission Checks
-
-```typescript
-// Frontend hook
-const { hasRole } = useUserRole();
-if (hasRole('manager')) { /* show settings */ }
-
-// Backend RPC
-SELECT has_role(auth.uid(), 'manager', org_id);
-```
-
----
-
-## Third-Party Integrations
-
-### The Things Network (TTN)
-
-**Purpose**: LoRa sensor network connectivity
-
-**Architecture**:
-- Per-organization TTN Application
-- Webhook-based uplink reception
-- Device provisioning via TTN API
-
-**Data Flow**:
-```
-Sensor → LoRa Gateway → TTN → ttn-webhook → Database
-```
-
-**Configuration**: Stored in `ttn_connections` table per organization
-
-### Stripe
-
-**Purpose**: Subscription billing
-
-**Architecture**:
-- Checkout sessions for new subscriptions
-- Customer portal for management
-- Webhook for event processing
-
-**Plans**:
-| Plan | Price | Sensors | Features |
-|------|-------|---------|----------|
-| Starter | $29/mo | 5 | Basic monitoring |
-| Pro | $79/mo | 25 | SMS alerts |
-| HACCP | $199/mo | 100 | Compliance reports |
-| Enterprise | Custom | Unlimited | Custom features |
-
-### Telnyx
-
-**Purpose**: SMS alert delivery via toll-free number
-
-**Configuration**:
-| Property | Value |
-|----------|-------|
-| Messaging Profile | `frost guard` |
-| Profile ID | `40019baa-aa62-463c-b254-463c66f4b2d3` |
-| Phone Number | `+18889890560` (Toll-Free) |
-| Webhook | Ed25519 signature verification |
-
-**Usage**: Called by `process-escalations` → `send-sms-alert` for critical alerts
-
-**Secrets Required**:
-| Secret | Purpose |
-|--------|---------|
-| `TELNYX_API_KEY` | API authentication |
-| `TELNYX_PHONE_NUMBER` | Sender phone number |
-| `TELNYX_MESSAGING_PROFILE_ID` | Message routing |
-| `TELNYX_PUBLIC_KEY` | Webhook signature verification |
-
----
-
-## Environment Separation
-
-### Environments
-
-| Environment | Purpose | Database | Edge Functions |
-|-------------|---------|----------|----------------|
-| Local | Development | Local Supabase | `supabase functions serve` |
-| Staging | Testing | Staging project | Deployed |
-| Production | Live users | Production project | Deployed |
-
-### Environment Variables
-
-**Frontend (Vite)**:
-```env
-VITE_SUPABASE_URL=https://xxx.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbG...
-VITE_SUPABASE_PROJECT_ID=xxx
-```
-
-**Edge Functions**:
-```env
-SUPABASE_URL=<auto-injected>
-SUPABASE_SERVICE_ROLE_KEY=<auto-injected>
-INTERNAL_API_KEY=<secret>
-TTN_API_KEY=<per-org in database>
-STRIPE_SECRET_KEY=<secret>
-STRIPE_WEBHOOK_SECRET=<secret>
-TELNYX_API_KEY=<secret>
-TELNYX_PHONE_NUMBER=<secret>
-```
-
-### Configuration Management
-
-- **supabase/config.toml**: Edge function settings
-- **Database**: Organization-specific settings (TTN credentials)
-- **Secrets**: Managed via Supabase dashboard
-
----
-
-## Security Boundaries
-
-### Network Security
+This diagram shows the high-level system context: external actors and systems that FrostGuard interacts with.
 
 ```mermaid
 graph TB
-    subgraph "Public Internet"
-        U[Users]
-        TTN[TTN Cloud]
-        S[Stripe]
-    end
+    %% External Actors
+    FieldWorker[Field Worker<br/>Mobile/Tablet]
+    Manager[Manager<br/>Desktop/Mobile]
+    OrgAdmin[Org Admin<br/>Desktop]
+    PlatformAdmin[Platform Admin<br/>Desktop]
 
-    subgraph "Supabase Edge"
-        EF[Edge Functions]
-        GW[API Gateway]
-    end
+    %% FrostGuard System
+    FrostGuard[FrostGuard Platform<br/>IoT Monitoring & Compliance]
 
-    subgraph "Supabase Core"
-        AUTH[Auth]
-        DB[(PostgreSQL)]
-        ST[Storage]
-    end
+    %% External Systems
+    TTN[The Things Network<br/>LoRaWAN Network Server]
+    StackAuth[Stack Auth<br/>Authentication Provider]
+    Stripe[Stripe<br/>Payment Processing]
+    Telnyx[Telnyx<br/>SMS Gateway]
+    Resend[Resend<br/>Email Service]
+    LoRaSensor[LoRa Temperature Sensors<br/>IoT Devices]
 
-    U --> GW
-    TTN --> EF
-    S --> EF
-    GW --> AUTH
-    GW --> DB
-    EF --> DB
+    %% Relationships
+    FieldWorker -->|Manual temp logging,<br/>view alerts| FrostGuard
+    Manager -->|View dashboards,<br/>manage alerts| FrostGuard
+    OrgAdmin -->|Configure sites/units,<br/>manage users| FrostGuard
+    PlatformAdmin -->|Platform management,<br/>billing oversight| FrostGuard
+
+    LoRaSensor -->|Temperature readings<br/>LoRaWAN uplink| TTN
+    TTN -->|Webhook<br/>POST /api/webhook/ttn| FrostGuard
+
+    FrostGuard -->|User auth,<br/>JWT validation| StackAuth
+    FrostGuard -->|Subscription management,<br/>webhook events| Stripe
+    FrostGuard -->|SMS alerts| Telnyx
+    FrostGuard -->|Email alerts,<br/>reports| Resend
+
+    classDef user fill:#E1F5FF,stroke:#01579B,stroke-width:2px
+    classDef system fill:#FFF9C4,stroke:#F57F17,stroke-width:3px
+    classDef external fill:#F3E5F5,stroke:#4A148C,stroke-width:2px
+
+    class FieldWorker,Manager,OrgAdmin,PlatformAdmin user
+    class FrostGuard system
+    class TTN,StackAuth,Stripe,Telnyx,Resend,LoRaSensor external
 ```
 
-### Data Security
+**Key External Dependencies:**
 
-| Data Type | Protection |
-|-----------|------------|
-| User passwords | Bcrypt hash (Supabase Auth) |
-| TTN API keys | Encrypted at rest in database |
-| Webhook secrets | Hashed for comparison |
-| Session tokens | JWT with expiration |
-| Sensitive logs | Masked before logging |
-
-### Input Validation
-
-- **Frontend**: Zod schemas in `lib/validation.ts`
-- **Backend**: Zod validation in edge functions
-- **Database**: CHECK constraints and triggers
-
-### Security Best Practices
-
-1. **Never expose service role key** to frontend
-2. **Use RLS** for all data access
-3. **Validate internal API keys** for scheduled functions
-4. **Constant-time comparison** for webhook secrets
-5. **Log without sensitive data** (mask phone numbers, keys)
+- **The Things Network (TTN)**: Receives LoRaWAN sensor data, forwards via webhook
+- **Stack Auth**: Manages user authentication and JWT token issuance
+- **Stripe**: Handles subscription billing and payment processing
+- **Telnyx**: Delivers SMS alert notifications
+- **Resend**: Sends email notifications and reports
 
 ---
 
-## Diagrams
+## 2. Container Diagram (C4 Level 2)
 
-### System Context Diagram
-
-See: [SYSTEM_CONTEXT.md](../diagrams/SYSTEM_CONTEXT.md)
-
-### Container Diagram
-
-See: [CONTAINER_DIAGRAM.md](../diagrams/CONTAINER_DIAGRAM.md)
-
-### C4 Context (Embedded)
+This diagram shows the main runtime containers (applications and data stores) that make up FrostGuard.
 
 ```mermaid
-C4Context
-    title System Context Diagram - FreshTrack Pro
+graph TB
+    %% Users
+    User[User<br/>Browser/PWA]
 
-    Person(user, "Food Safety User", "Monitors refrigeration units")
-    Person(admin, "IT Administrator", "Configures sensors and TTN")
+    %% Frontend Container
+    ReactSPA[React SPA<br/>Vite + TypeScript<br/>33 routes, 30 lazy-loaded<br/>Port 8080]
 
-    System(freshtrack, "FreshTrack Pro", "Refrigeration monitoring platform")
+    %% Backend Containers
+    FastifyAPI[Fastify API Server<br/>tRPC v11 + REST<br/>28 tRPC routers<br/>23 REST endpoints<br/>Port 3000]
 
-    System_Ext(ttn, "The Things Network", "LoRa network infrastructure")
-    System_Ext(stripe, "Stripe", "Payment processing")
-    System_Ext(telnyx, "Telnyx", "SMS delivery")
-    System_Ext(email, "Email Service", "Supabase built-in")
+    Worker[Background Worker<br/>BullMQ Job Processor<br/>Alert escalation,<br/>Email/SMS jobs]
 
-    Rel(user, freshtrack, "Uses", "HTTPS")
-    Rel(admin, freshtrack, "Configures", "HTTPS")
-    Rel(freshtrack, ttn, "Receives sensor data", "Webhook")
-    Rel(freshtrack, stripe, "Processes payments", "API")
-    Rel(freshtrack, telnyx, "Sends SMS", "API")
-    Rel(freshtrack, email, "Sends email", "SMTP")
+    SocketServer[Socket.io Server<br/>Real-time events<br/>Redis adapter]
+
+    %% Data Stores
+    PostgreSQL[(PostgreSQL 15<br/>Drizzle ORM<br/>Primary data store<br/>Port 5432)]
+
+    Redis[(Redis 7<br/>Cache, Pub/Sub,<br/>BullMQ queues<br/>Port 6379)]
+
+    MinIO[(MinIO<br/>S3-compatible<br/>File/image storage<br/>Port 9200)]
+
+    %% External Systems
+    TTN[TTN Webhook]
+    StackAuth[Stack Auth]
+    Stripe[Stripe Webhook]
+    Telnyx[Telnyx API]
+    Resend[Resend API]
+
+    %% Relationships
+    User -->|HTTPS| ReactSPA
+    ReactSPA -->|tRPC over HTTP<br/>Socket.io WSS| FastifyAPI
+    ReactSPA -->|WebSocket| SocketServer
+
+    TTN -->|POST /api/webhook/ttn| FastifyAPI
+    Stripe -->|POST /api/webhook/stripe| FastifyAPI
+
+    FastifyAPI -->|SQL queries<br/>Drizzle ORM| PostgreSQL
+    FastifyAPI -->|Cache get/set<br/>Pub/Sub| Redis
+    FastifyAPI -->|File upload/download<br/>S3 API| MinIO
+    FastifyAPI -->|JWT validation| StackAuth
+
+    SocketServer -->|Pub/Sub<br/>Multi-process| Redis
+    SocketServer -.->|Shares process| FastifyAPI
+
+    Worker -->|Job processing<br/>BullMQ| Redis
+    Worker -->|Read/write data| PostgreSQL
+    Worker -->|Send SMS| Telnyx
+    Worker -->|Send email| Resend
+
+    FastifyAPI -->|Enqueue jobs| Redis
+
+    classDef frontend fill:#E1F5FF,stroke:#01579B,stroke-width:2px
+    classDef backend fill:#C8E6C9,stroke:#1B5E20,stroke-width:2px
+    classDef data fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+    classDef external fill:#F3E5F5,stroke:#4A148C,stroke-width:2px
+
+    class ReactSPA frontend
+    class FastifyAPI,Worker,SocketServer backend
+    class PostgreSQL,Redis,MinIO data
+    class TTN,StackAuth,Stripe,Telnyx,Resend external
 ```
 
-### Container Diagram (Embedded)
+**Container Responsibilities:**
 
-```mermaid
-C4Container
-    title Container Diagram - FreshTrack Pro
-
-    Person(user, "User", "")
-
-    Container(spa, "React SPA", "React, TypeScript", "Single-page application")
-    Container(edge, "Edge Functions", "Deno", "Serverless backend")
-    ContainerDb(db, "PostgreSQL", "Supabase", "Primary database")
-    Container(auth, "Auth Service", "Supabase Auth", "User authentication")
-
-    System_Ext(ttn, "TTN", "")
-    System_Ext(stripe, "Stripe", "")
-    System_Ext(telnyx, "Telnyx", "")
-
-    Rel(user, spa, "Uses", "HTTPS")
-    Rel(spa, edge, "API calls", "HTTPS")
-    Rel(spa, db, "Direct queries", "Supabase JS")
-    Rel(spa, auth, "Auth", "Supabase JS")
-    Rel(edge, db, "Queries", "Service Role")
-    Rel(ttn, edge, "Webhooks", "HTTPS")
-    Rel(stripe, edge, "Webhooks", "HTTPS")
-    Rel(edge, telnyx, "SMS", "API")
-```
+- **React SPA**: User interface, client-side routing, offline manual logging (IndexedDB)
+- **Fastify API**: Business logic, tRPC endpoints, REST webhooks, authentication
+- **Socket.io Server**: Real-time sensor data push, alert notifications (shares process with Fastify)
+- **Background Worker**: Asynchronous alert escalation, email/SMS delivery, scheduled reports
+- **PostgreSQL**: Primary data store for all domain entities
+- **Redis**: Cache, Socket.io pub/sub, BullMQ job queues
+- **MinIO**: File storage for images, reports, exports
 
 ---
 
-## Related Documentation
+## 3. Component Diagram - Frontend
 
-- [DATA_MODEL.md](../engineering/DATA_MODEL.md) - Database schema details
-- [API.md](../engineering/API.md) - Edge function documentation
-- [INTEGRATIONS.md](../engineering/INTEGRATIONS.md) - Third-party integration guides
-- [OBSERVABILITY.md](../engineering/OBSERVABILITY.md) - Logging and monitoring
+This diagram shows the internal structure of the React SPA container.
+
+```mermaid
+graph TB
+    subgraph "React SPA Container"
+        subgraph "Provider Hierarchy"
+            StackProvider[StackProvider<br/>Stack Auth context]
+            QueryProvider[QueryClientProvider<br/>TanStack Query]
+            TRPCProvider[TRPCProvider<br/>tRPC client]
+            RealtimeProvider[RealtimeProvider<br/>Socket.io connection]
+            DebugProvider[DebugProvider<br/>Dev tools]
+            TTNConfigProvider[TTNConfigProvider<br/>TTN credentials]
+            SuperAdminProvider[SuperAdminProvider<br/>Platform admin context]
+
+            StackProvider --> QueryProvider
+            QueryProvider --> TRPCProvider
+            TRPCProvider --> RealtimeProvider
+            RealtimeProvider --> DebugProvider
+            DebugProvider --> TTNConfigProvider
+            TTNConfigProvider --> SuperAdminProvider
+        end
+
+        subgraph "Routing Layer"
+            Router[BrowserRouter<br/>33 routes]
+            LazyRoutes[React.lazy<br/>30 code-split chunks]
+            Router --> LazyRoutes
+        end
+
+        subgraph "Page Components"
+            Dashboard[Dashboard Pages<br/>15 routes]
+            Settings[Settings Pages<br/>8 routes]
+            PlatformAdmin[Platform Admin<br/>5 routes]
+            Auth[Auth Pages<br/>3 routes]
+        end
+
+        subgraph "Dashboard Widgets"
+            WidgetComponents[83 widget files<br/>Temperature charts,<br/>Alert lists,<br/>Status cards]
+        end
+
+        subgraph "Shared Components"
+            UIComponents[shadcn/ui Components<br/>Button, Dialog, Table,<br/>Form, etc.]
+            FeatureModules[Feature Modules<br/>dashboard-layout,<br/>alert-manager, etc.]
+        end
+
+        subgraph "State Management"
+            TanStackQuery[TanStack Query<br/>Server state cache]
+            ReactContext[React Context<br/>Local UI state]
+            IndexedDB[(IndexedDB<br/>Offline manual logs)]
+        end
+
+        subgraph "API Layer"
+            TRPCClient[tRPC Client<br/>Type-safe API calls]
+            SocketIOClient[Socket.io Client<br/>Real-time events]
+        end
+
+        SuperAdminProvider --> Router
+        LazyRoutes --> Dashboard
+        LazyRoutes --> Settings
+        LazyRoutes --> PlatformAdmin
+        LazyRoutes --> Auth
+
+        Dashboard --> WidgetComponents
+        Dashboard --> TanStackQuery
+        Settings --> UIComponents
+
+        TRPCProvider --> TRPCClient
+        RealtimeProvider --> SocketIOClient
+
+        TRPCClient --> TanStackQuery
+        SocketIOClient --> ReactContext
+
+        Dashboard -.->|Offline write| IndexedDB
+        IndexedDB -.->|Background sync| TRPCClient
+    end
+
+    FastifyAPI[Fastify API Server]
+
+    TRPCClient -->|HTTP POST| FastifyAPI
+    SocketIOClient -->|WebSocket| FastifyAPI
+
+    classDef provider fill:#E1F5FF,stroke:#01579B,stroke-width:2px
+    classDef page fill:#C8E6C9,stroke:#1B5E20,stroke-width:2px
+    classDef state fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+    classDef api fill:#F3E5F5,stroke:#4A148C,stroke-width:2px
+
+    class StackProvider,QueryProvider,TRPCProvider,RealtimeProvider,DebugProvider,TTNConfigProvider,SuperAdminProvider provider
+    class Dashboard,Settings,PlatformAdmin,Auth page
+    class TanStackQuery,ReactContext,IndexedDB state
+    class TRPCClient,SocketIOClient api
+```
+
+**Frontend Architecture Notes:**
+
+- **Provider hierarchy**: 7 layers of context providers wrap the app root
+- **Code splitting**: 30 routes use `React.lazy()` for optimized bundle size
+- **State management**: TanStack Query for server state, React Context for local UI state
+- **Offline-first**: Manual temperature logs saved to IndexedDB, sync when online
+- **Type safety**: tRPC client provides full type inference from backend to frontend
+
+---
+
+## 4. Component Diagram - Backend
+
+This diagram shows the internal structure of the Fastify API container.
+
+```mermaid
+graph TB
+    subgraph "Fastify API Container"
+        subgraph "HTTP Layer"
+            TRPCRouters[tRPC Routers - 28<br/>alerts, units, sites, areas,<br/>organizations, readings,<br/>sensors, gateway, etc.]
+            RESTRoutes[REST Routes - 23<br/>TTN webhook,<br/>Stripe webhook,<br/>Telnyx webhook,<br/>health, metrics]
+        end
+
+        subgraph "Middleware"
+            Auth[Auth Middleware<br/>Stack Auth JWT verification]
+            RateLimit[Rate Limiting<br/>Per-IP throttling]
+            OrgAccess[Org Access Control<br/>requireOrgAccess,<br/>requirePlatformAdmin]
+        end
+
+        subgraph "Services - 45+"
+            subgraph "Core Services"
+                UnitState[unit-state.service<br/>SSOT for unit state]
+                AlertEvaluator[alert-evaluator.service<br/>Threshold checking]
+                ReadingsIngest[readings.ingest.service<br/>Sensor data ingestion]
+            end
+
+            subgraph "Notification Services"
+                Escalation[escalation.service<br/>Multi-tier alert pipeline]
+                NotificationService[notification.service<br/>Email/SMS delivery]
+                SocketService[socket.service<br/>Real-time broadcasts]
+            end
+
+            subgraph "Integration Services"
+                TTNServices[TTN Services - 8<br/>decoder, uplink,<br/>device sync, etc.]
+                StripeService[stripe.service<br/>Subscription management]
+                TelnyxService[telnyx.service<br/>SMS delivery]
+            end
+        end
+
+        subgraph "Plugins"
+            SocketPlugin[Socket.io Plugin<br/>WebSocket server]
+            QueuePlugin[Queue Plugin<br/>BullMQ + Bull Board UI]
+            MinIOPlugin[MinIO Plugin<br/>S3 client]
+            StripePlugin[Stripe Plugin<br/>SDK initialization]
+        end
+
+        subgraph "Background Jobs"
+            AlertJobs[Alert Processing Jobs<br/>Escalation, delivery]
+            EmailJobs[Email Jobs<br/>Notifications, reports]
+            SMSJobs[SMS Jobs<br/>Alert delivery]
+        end
+
+        subgraph "Data Layer"
+            DrizzleORM[Drizzle ORM<br/>Type-safe SQL queries]
+            DBSchema[DB Schema - 40+ tables<br/>organizations, sites, areas,<br/>units, sensors, readings,<br/>alerts, users, etc.]
+        end
+    end
+
+    TRPCRouters --> Auth
+    RESTRoutes --> RateLimit
+    Auth --> OrgAccess
+    OrgAccess --> UnitState
+    OrgAccess --> AlertEvaluator
+    OrgAccess --> ReadingsIngest
+
+    ReadingsIngest --> UnitState
+    UnitState --> AlertEvaluator
+    AlertEvaluator --> Escalation
+    Escalation --> NotificationService
+    NotificationService --> SocketService
+
+    RESTRoutes --> TTNServices
+    TTNServices --> ReadingsIngest
+
+    TRPCRouters --> StripeService
+    RESTRoutes --> StripeService
+
+    NotificationService --> TelnyxService
+
+    SocketPlugin --> SocketService
+    QueuePlugin --> AlertJobs
+    QueuePlugin --> EmailJobs
+    QueuePlugin --> SMSJobs
+
+    AlertJobs --> Escalation
+    EmailJobs --> NotificationService
+    SMSJobs --> TelnyxService
+
+    UnitState --> DrizzleORM
+    DrizzleORM --> DBSchema
+
+    PostgreSQL[(PostgreSQL)]
+    Redis[(Redis)]
+
+    DrizzleORM --> PostgreSQL
+    QueuePlugin --> Redis
+    SocketPlugin --> Redis
+
+    classDef http fill:#E1F5FF,stroke:#01579B,stroke-width:2px
+    classDef middleware fill:#FFF9C4,stroke:#F57F17,stroke-width:2px
+    classDef service fill:#C8E6C9,stroke:#1B5E20,stroke-width:2px
+    classDef plugin fill:#F3E5F5,stroke:#4A148C,stroke-width:2px
+    classDef job fill:#FFCCBC,stroke:#BF360C,stroke-width:2px
+    classDef data fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+
+    class TRPCRouters,RESTRoutes http
+    class Auth,RateLimit,OrgAccess middleware
+    class UnitState,AlertEvaluator,ReadingsIngest,Escalation,NotificationService,SocketService,TTNServices,StripeService,TelnyxService service
+    class SocketPlugin,QueuePlugin,MinIOPlugin,StripePlugin plugin
+    class AlertJobs,EmailJobs,SMSJobs job
+    class DrizzleORM,DBSchema data
+```
+
+**Backend Architecture Notes:**
+
+- **Single Source of Truth**: `unit-state.service` is the SSOT for all unit state and alert processing
+- **tRPC v11**: 28 type-safe routers provide end-to-end type safety with the frontend
+- **REST webhooks**: External integrations (TTN, Stripe, Telnyx) use REST endpoints
+- **Job queues**: BullMQ processes asynchronous tasks (alert escalation, notifications)
+- **Multi-tenancy**: All queries scoped by `orgId` via `orgProcedure` middleware
+- **Real-time**: Socket.io shares the Fastify process, uses Redis adapter for multi-process support
+
+---
+
+## 5. Data Flow - Temperature Reading Ingestion
+
+This sequence diagram shows the complete flow from sensor reading to user notification.
+
+```mermaid
+sequenceDiagram
+    participant Sensor as LoRa Temperature Sensor
+    participant TTN as The Things Network
+    participant Webhook as Fastify REST<br/>/api/webhook/ttn
+    participant Decoder as TTN Decoder Service
+    participant Ingest as readings.ingest.service
+    participant UnitState as unit-state.service<br/>(SSOT)
+    participant Evaluator as alert-evaluator.service
+    participant DB as PostgreSQL
+    participant Socket as Socket.io
+    participant Queue as BullMQ (Redis)
+    participant Worker as Background Worker
+    participant Email as Resend
+    participant SMS as Telnyx
+    participant Client as React Client
+
+    Sensor->>TTN: LoRaWAN uplink<br/>(encrypted payload)
+    TTN->>Webhook: POST webhook<br/>{"uplink_message": {...}}
+    Webhook->>Decoder: Decode payload<br/>(device-specific format)
+    Decoder-->>Webhook: {temperature: 7.2, humidity: 65}
+
+    Webhook->>Ingest: ingestReading(deviceId, temp, timestamp)
+    Ingest->>DB: INSERT INTO readings
+    DB-->>Ingest: reading_id
+
+    Ingest->>UnitState: updateUnitState(unitId, reading)
+    UnitState->>DB: SELECT current_state
+    UnitState->>Evaluator: evaluateAlertRules(unit, reading)
+
+    alt Threshold breached (temp > 8°C)
+        Evaluator->>DB: INSERT INTO alerts
+        Evaluator->>Socket: broadcast('alert:created', alertData)
+        Socket->>Client: WebSocket push (real-time)
+
+        Evaluator->>Queue: Enqueue escalation job
+        Queue->>Worker: Process alert escalation
+
+        Worker->>DB: SELECT notification_policy
+
+        alt Tier 1: Email + SMS
+            Worker->>Email: Send alert email
+            Worker->>SMS: Send alert SMS
+        end
+
+        alt No acknowledgment after 15 min
+            Worker->>Queue: Enqueue Tier 2 escalation
+        end
+    else No threshold breach
+        Evaluator-->>UnitState: No action
+    end
+
+    UnitState->>DB: UPDATE unit_state<br/>(last_reading_at, current_temp)
+    UnitState-->>Ingest: State updated
+    Ingest-->>Webhook: 200 OK
+```
+
+**Key Flow Characteristics:**
+
+- **Webhook ingestion**: TTN posts to `/api/webhook/ttn` with encrypted sensor payload
+- **Device-specific decoding**: Each sensor type has a decoder function (battery, temperature, etc.)
+- **SSOT pattern**: `unit-state.service` is the single point that triggers alert evaluation
+- **Real-time push**: Socket.io broadcasts alerts immediately to connected clients
+- **Asynchronous escalation**: BullMQ handles multi-tier alert delivery without blocking ingestion
+- **Multi-channel notifications**: Email (Resend) and SMS (Telnyx) delivered in parallel
+
+---
+
+## 6. Data Flow - User Authentication
+
+This sequence diagram shows the authentication flow using Stack Auth.
+
+```mermaid
+sequenceDiagram
+    participant User as User (Browser)
+    participant ReactAuth as React Auth Page<br/>(Stack Auth SDK)
+    participant StackAuth as Stack Auth API
+    participant TRPCClient as tRPC Client
+    participant Fastify as Fastify Server
+    participant AuthMiddleware as Auth Middleware<br/>(JWT verification)
+    participant TRPCContext as tRPC Context
+    participant OrgProcedure as orgProcedure<br/>(Org scoping)
+    participant DB as PostgreSQL
+
+    User->>ReactAuth: Enter credentials<br/>(email + password)
+    ReactAuth->>StackAuth: POST /auth/login
+    StackAuth-->>ReactAuth: JWT access token<br/>JWT refresh token
+    ReactAuth->>ReactAuth: Store tokens in memory<br/>(React state)
+
+    User->>TRPCClient: Call tRPC endpoint<br/>(e.g., units.list)
+    TRPCClient->>Fastify: HTTP POST /trpc/units.list<br/>Authorization: Bearer <JWT>
+
+    Fastify->>AuthMiddleware: Verify JWT
+    AuthMiddleware->>StackAuth: Validate token signature<br/>(or use cached public key)
+    StackAuth-->>AuthMiddleware: Token valid<br/>userId: "user_abc123"
+
+    AuthMiddleware->>TRPCContext: Inject userId into context<br/>{userId: "user_abc123"}
+    TRPCContext->>DB: SELECT org_id FROM org_members<br/>WHERE user_id = 'user_abc123'
+    DB-->>TRPCContext: orgId: "org_xyz789"
+
+    TRPCContext->>OrgProcedure: Invoke with context<br/>{userId, orgId}
+    OrgProcedure->>DB: SELECT * FROM units<br/>WHERE org_id = 'org_xyz789'
+    DB-->>OrgProcedure: [unit1, unit2, ...]
+
+    OrgProcedure-->>TRPCClient: tRPC response<br/>{units: [...]}
+    TRPCClient-->>User: Display data
+
+    alt Token expired
+        TRPCClient->>StackAuth: POST /auth/refresh<br/>refresh_token
+        StackAuth-->>TRPCClient: New JWT access token
+        TRPCClient->>Fastify: Retry request with new token
+    end
+
+    alt Platform Admin Access
+        AuthMiddleware->>DB: SELECT * FROM platform_roles<br/>WHERE user_id = 'user_abc123'<br/>AND role = 'SUPER_ADMIN'
+        DB-->>AuthMiddleware: role found
+        AuthMiddleware->>TRPCContext: {userId, isPlatformAdmin: true}
+        Note over TRPCContext: Platform admin can access<br/>all orgs via platformAdminProcedure
+    end
+```
+
+**Authentication Flow Notes:**
+
+- **JWT-based**: Stack Auth issues JWTs, Fastify validates them on every request
+- **Org scoping**: After authentication, user's `orgId` is resolved and injected into context
+- **Automatic filtering**: `orgProcedure` middleware ensures all queries are scoped by `orgId`
+- **Platform admin**: Special role (`SUPER_ADMIN`) bypasses org scoping for cross-org management
+- **Token refresh**: Stack Auth SDK handles automatic token refresh on expiration
+
+---
+
+## 7. Domain Entity Relationship
+
+This ER diagram shows the core domain model and relationships.
+
+```mermaid
+erDiagram
+    Organization ||--o{ Site : "has"
+    Organization ||--o{ User : "has members"
+    Organization ||--o{ NotificationPolicy : "has"
+    Organization ||--o{ StripeSubscription : "has"
+
+    Site ||--o{ Area : "has"
+    Site }o--|| Organization : "belongs to"
+
+    Area ||--o{ Unit : "has"
+    Area }o--|| Site : "belongs to"
+
+    Unit ||--o{ Sensor : "has"
+    Unit ||--o{ Reading : "records"
+    Unit ||--o{ Alert : "generates"
+    Unit }o--|| Area : "belongs to"
+
+    Sensor }o--|| Unit : "belongs to"
+    Sensor ||--o{ Reading : "produces"
+
+    Reading }o--|| Unit : "recorded by"
+    Reading }o--|| Sensor : "produced by"
+
+    Alert }o--|| Unit : "triggered by"
+    Alert }o--|| AlertRule : "based on"
+    Alert ||--o{ AlertAcknowledgment : "has"
+
+    AlertRule ||--o{ Alert : "triggers"
+
+    User }o--|| Organization : "member of"
+    User ||--o{ AlertAcknowledgment : "acknowledges"
+    User }o--o{ PlatformRole : "has (platform admin)"
+
+    NotificationPolicy ||--o{ EscalationContact : "has"
+    NotificationPolicy }o--|| Organization : "belongs to"
+
+    EscalationContact }o--|| NotificationPolicy : "belongs to"
+
+    StripeSubscription }o--|| Organization : "belongs to"
+
+    Organization {
+        uuid id PK
+        string name
+        string slug
+        timestamp created_at
+    }
+
+    Site {
+        uuid id PK
+        uuid org_id FK
+        string name
+        string location
+    }
+
+    Area {
+        uuid id PK
+        uuid site_id FK
+        string name
+        string type
+    }
+
+    Unit {
+        uuid id PK
+        uuid area_id FK
+        string name
+        string type
+        float current_temp
+        string state
+        timestamp last_reading_at
+    }
+
+    Sensor {
+        uuid id PK
+        uuid unit_id FK
+        string device_eui
+        string device_type
+        timestamp last_seen
+    }
+
+    Reading {
+        uuid id PK
+        uuid unit_id FK
+        uuid sensor_id FK
+        float temperature
+        float humidity
+        timestamp recorded_at
+    }
+
+    Alert {
+        uuid id PK
+        uuid unit_id FK
+        uuid alert_rule_id FK
+        string severity
+        string status
+        timestamp triggered_at
+        timestamp acknowledged_at
+    }
+
+    AlertRule {
+        uuid id PK
+        string name
+        float threshold_min
+        float threshold_max
+        int duration_minutes
+        string severity
+    }
+
+    User {
+        uuid id PK
+        string email
+        string name
+    }
+
+    NotificationPolicy {
+        uuid id PK
+        uuid org_id FK
+        jsonb escalation_tiers
+    }
+
+    EscalationContact {
+        uuid id PK
+        uuid policy_id FK
+        string name
+        string email
+        string phone
+        int tier
+    }
+```
+
+**Domain Model Notes:**
+
+- **Hierarchical structure**: Organization → Site → Area → Unit → Sensor (5 levels)
+- **Multi-tenancy**: All entities scoped by `org_id` (directly or via parent relationships)
+- **Alert SSOT**: Unit has `current_temp` and `state` fields that drive alert evaluation
+- **Sensor flexibility**: Units can have multiple sensors (primary + backup)
+- **Escalation**: NotificationPolicy defines multi-tier escalation (email → SMS → phone call)
+- **Platform roles**: Separate `platform_roles` table for cross-org admin access
+
+---
+
+## 8. Deployment Diagram
+
+This diagram shows the Docker Compose infrastructure and port mappings.
+
+```mermaid
+graph TB
+    subgraph "Development Environment (docker-compose.yml)"
+        subgraph "Core Services"
+            Postgres[PostgreSQL 15<br/>Port 5432<br/>Database: frostguard<br/>Volume: postgres-data]
+            Redis[Redis 7<br/>Port 6379<br/>Cache, Pub/Sub, Queues<br/>Volume: redis-data]
+            MinIO[MinIO<br/>API: Port 9200<br/>Console: Port 9201<br/>Volume: minio-data]
+        end
+
+        subgraph "Admin Tools (profile: admin)"
+            PgAdmin[pgAdmin 4<br/>Port 5050<br/>Web UI for PostgreSQL]
+            RedisCommander[Redis Commander<br/>Port 8081<br/>Web UI for Redis]
+        end
+    end
+
+    subgraph "Application Containers (local dev)"
+        Vite[Vite Dev Server<br/>Port 8080<br/>React SPA with HMR]
+        FastifyDev[Fastify API (tsx watch)<br/>Port 3000<br/>tRPC + REST + Socket.io]
+    end
+
+    subgraph "Production Deployment (docker/compose.prod.yaml)"
+        subgraph "Load Balancer"
+            Caddy[Caddy 2<br/>Ports 80, 443<br/>Reverse proxy + TLS]
+        end
+
+        subgraph "Application"
+            NginxStatic[Nginx<br/>Port 8080<br/>Serve static React build]
+            FastifyProd[Fastify API<br/>Port 3000<br/>Production build]
+            WorkerProd[Background Worker<br/>BullMQ processor]
+        end
+
+        subgraph "Data Layer"
+            PgBouncer[PgBouncer<br/>Port 6432<br/>Connection pooling]
+            PostgresProd[PostgreSQL 15<br/>Port 5432]
+            RedisProd[Redis 7<br/>Port 6379]
+            MinioProd[MinIO<br/>Ports 9200, 9201]
+        end
+    end
+
+    Internet[Internet]
+
+    Internet -->|HTTPS| Caddy
+    Caddy -->|Proxy /api/*| FastifyProd
+    Caddy -->|Proxy /*| NginxStatic
+
+    FastifyProd --> PgBouncer
+    PgBouncer --> PostgresProd
+    FastifyProd --> RedisProd
+    FastifyProd --> MinioProd
+
+    WorkerProd --> RedisProd
+    WorkerProd --> PostgresProd
+    WorkerProd --> MinioProd
+
+    Vite -.->|Dev proxy /api/*| FastifyDev
+    FastifyDev --> Postgres
+    FastifyDev --> Redis
+    FastifyDev --> MinIO
+
+    PgAdmin --> Postgres
+    RedisCommander --> Redis
+
+    classDef dev fill:#E1F5FF,stroke:#01579B,stroke-width:2px
+    classDef prod fill:#C8E6C9,stroke:#1B5E20,stroke-width:2px
+    classDef data fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+    classDef admin fill:#F3E5F5,stroke:#4A148C,stroke-width:2px
+
+    class Vite,FastifyDev dev
+    class Caddy,NginxStatic,FastifyProd,WorkerProd,PgBouncer prod
+    class Postgres,Redis,MinIO,PostgresProd,RedisProd,MinioProd data
+    class PgAdmin,RedisCommander admin
+```
+
+**Deployment Notes:**
+
+### Development (`docker-compose.yml`)
+
+- **Core services**: PostgreSQL, Redis, MinIO run in containers
+- **Admin tools**: pgAdmin (port 5050) and Redis Commander (port 8081) with `--profile admin`
+- **Application**: Run locally via `npm run dev` (Vite + tsx watch)
+
+### Production (`docker/compose.prod.yaml`)
+
+- **Caddy**: Automatic TLS via Let's Encrypt, reverse proxy to Nginx + Fastify
+- **Nginx**: Serves static React build with gzip compression
+- **Fastify**: Production build (`node dist/index.js`)
+- **Worker**: Separate container for BullMQ job processing
+- **PgBouncer**: Connection pooling for PostgreSQL (max 100 connections)
+- **Persistent volumes**: All data stores use Docker volumes for persistence
+
+### Port Mappings
+
+| Service          | Port    | Purpose                     |
+| ---------------- | ------- | --------------------------- |
+| React SPA (Vite) | 8080    | Frontend dev server         |
+| Fastify API      | 3000    | Backend API (tRPC + REST)   |
+| PostgreSQL       | 5432    | Database                    |
+| Redis            | 6379    | Cache, pub/sub, queues      |
+| MinIO API        | 9200    | S3-compatible storage       |
+| MinIO Console    | 9201    | MinIO web UI                |
+| pgAdmin          | 5050    | PostgreSQL admin (dev only) |
+| Redis Commander  | 8081    | Redis admin (dev only)      |
+| Caddy            | 80, 443 | HTTP/HTTPS (prod only)      |
+
+---
+
+## Architectural Decisions
+
+### 1. tRPC for API Layer
+
+**Decision**: Use tRPC v11 for all client-server communication instead of traditional REST.
+
+**Rationale**:
+
+- End-to-end type safety: Frontend gets full TypeScript types for all API calls
+- No manual API type definitions or code generation
+- Excellent developer experience with autocomplete and inline errors
+- Reduces bugs from API contract mismatches
+
+**Trade-offs**:
+
+- Learning curve for developers unfamiliar with tRPC
+- External integrations (TTN, Stripe) still require REST webhooks
+
+### 2. Single Source of Truth for Unit State
+
+**Decision**: `unit-state.service` is the SSOT for all unit state updates and alert evaluation.
+
+**Rationale**:
+
+- Prevents race conditions in alert processing
+- Ensures consistent alert evaluation logic
+- Single code path for all state changes (sensor ingestion, manual logging, etc.)
+
+**Implementation**:
+
+- All reading ingestion flows through `unit-state.service.updateUnitState()`
+- Alert evaluation always triggered from this service
+- No direct writes to `unit_state` table outside this service
+
+### 3. Multi-Tier Alert Escalation
+
+**Decision**: Implement configurable escalation tiers with time-based progression.
+
+**Rationale**:
+
+- HACCP compliance requires timely alert acknowledgment
+- Different severity levels need different response protocols
+- Reduces alert fatigue by progressive escalation
+
+**Implementation**:
+
+- Tier 1: Email + SMS to on-duty contacts (immediate)
+- Tier 2: Email + SMS to managers (after 15 minutes)
+- Tier 3: Phone call to emergency contacts (after 30 minutes)
+- BullMQ delayed jobs handle tier progression
+
+### 4. Offline-First Manual Logging
+
+**Decision**: Use IndexedDB for offline manual temperature logging with background sync.
+
+**Rationale**:
+
+- Field workers often in areas with poor connectivity
+- Cannot lose manual temperature logs
+- Service workers enable background sync when connection restored
+
+**Implementation**:
+
+- Manual logs saved to IndexedDB immediately
+- Background sync job posts to tRPC endpoint when online
+- UI shows sync status (pending/synced)
+
+### 5. Socket.io for Real-Time Updates
+
+**Decision**: Use Socket.io with Redis adapter for real-time sensor data and alerts.
+
+**Rationale**:
+
+- Low latency for critical temperature alerts
+- Better UX than polling (dashboard updates immediately)
+- Redis adapter enables multi-process deployment
+
+**Trade-offs**:
+
+- Additional infrastructure (Redis for pub/sub)
+- More complex connection management (reconnection logic)
+
+### 6. Drizzle ORM over Prisma
+
+**Decision**: Use Drizzle ORM instead of Prisma for database access.
+
+**Rationale**:
+
+- Lighter weight (no codegen, faster installs)
+- Better TypeScript inference (no separate client generation)
+- More control over SQL (closer to raw queries)
+
+**Trade-offs**:
+
+- Smaller ecosystem than Prisma
+- Less mature migration tooling
+
+### 7. Stack Auth Migration
+
+**Decision**: Migrate from Supabase Auth to Stack Auth.
+
+**Rationale**:
+
+- Stack Auth has better multi-tenancy support
+- More flexible role-based access control (RBAC)
+- Reduces vendor lock-in (Supabase-specific features)
+
+**Migration Status**:
+
+- Stack Auth implemented for new users
+- Legacy Supabase Auth users being migrated
+- Both systems coexist during transition
+
+### 8. Monorepo Structure
+
+**Decision**: Keep frontend and backend in a single monorepo.
+
+**Rationale**:
+
+- Shared TypeScript types via tRPC (no separate package needed)
+- Simplified deployment (single Docker build)
+- Easier atomic changes across frontend/backend
+
+**Trade-offs**:
+
+- Larger repository size
+- Requires careful build orchestration
+
+### 9. BullMQ for Background Jobs
+
+**Decision**: Use BullMQ (Redis-backed) for all asynchronous jobs.
+
+**Rationale**:
+
+- Reliable job processing with retries and backoff
+- Bull Board provides excellent admin UI
+- Redis already required for Socket.io
+
+**Use Cases**:
+
+- Alert escalation tier progression
+- Email/SMS delivery (decoupled from request handling)
+- Scheduled reports
+- Data exports
+
+### 10. MinIO for File Storage
+
+**Decision**: Use MinIO (self-hosted S3-compatible) instead of cloud storage.
+
+**Rationale**:
+
+- Data sovereignty (customer data stays on-premises)
+- Cost predictability (no per-GB egress charges)
+- S3-compatible API (easy migration if needed)
+
+**Trade-offs**:
+
+- Need to manage storage infrastructure
+- No global CDN (need to implement caching separately)
+
+---
+
+## Future Architecture Considerations
+
+### Planned Improvements
+
+1. **Edge Functions**: Evaluate Cloudflare Workers for TTN webhook processing (reduce latency)
+2. **Read Replicas**: Add PostgreSQL read replicas for analytics queries
+3. **GraphQL Subscriptions**: Consider GraphQL subscriptions as Socket.io alternative
+4. **Event Sourcing**: Implement event sourcing for audit trail and replay capabilities
+5. **Multi-Region**: Add support for multi-region deployments with data residency compliance
+
+### Scalability Concerns
+
+- **Socket.io connections**: Current Redis adapter scales to ~10K connections per instance
+- **Database queries**: Add indexes on `org_id` + `created_at` for common filters
+- **Job queue**: Monitor BullMQ queue depth (alert if >1000 pending jobs)
+- **Sensor ingestion**: Consider batching TTN webhook calls (currently 1 POST per uplink)
+
+---
+
+**Document Version**: 1.0
+**Last Updated**: 2026-01-30
+**Maintained By**: FrostGuard Architecture Team

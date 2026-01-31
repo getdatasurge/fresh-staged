@@ -18,6 +18,17 @@ vi.mock('../../src/services/queue.service.js', () => ({
   getQueueService: vi.fn(),
 }));
 
+// Mock the database client (used by platformAdminProcedure)
+vi.mock('../../src/db/client.js', () => {
+  const mockDb = {
+    select: vi.fn().mockReturnThis(),
+    from: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockResolvedValue([{ id: 'role-1', userId: 'user-123', role: 'SUPER_ADMIN' }]),
+  };
+  return { db: mockDb };
+});
+
 describe('Admin tRPC Router', () => {
   const createCaller = createCallerFactory(adminRouter);
 
@@ -66,7 +77,7 @@ describe('Admin tRPC Router', () => {
           new Map([
             ['sms-notifications', mockQueue],
             ['email-digests', mockQueue],
-          ])
+          ]),
         ),
       };
       mockGetQueueService.mockReturnValue(mockQueueService);
@@ -131,9 +142,7 @@ describe('Admin tRPC Router', () => {
 
       const mockQueueService = {
         isRedisEnabled: vi.fn().mockReturnValue(true),
-        getAllQueues: vi.fn().mockReturnValue(
-          new Map([['failing-queue', mockQueue]])
-        ),
+        getAllQueues: vi.fn().mockReturnValue(new Map([['failing-queue', mockQueue]])),
       };
       mockGetQueueService.mockReturnValue(mockQueueService);
 
@@ -169,7 +178,7 @@ describe('Admin tRPC Router', () => {
             ['queue1', {}],
             ['queue2', {}],
             ['queue3', {}],
-          ])
+          ]),
         ),
       };
       mockGetQueueService.mockReturnValue(mockQueueService);

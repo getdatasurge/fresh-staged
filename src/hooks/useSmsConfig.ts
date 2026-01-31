@@ -30,8 +30,8 @@
  * ```
  */
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTRPC, useTRPCClient } from "@/lib/trpc";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTRPC, useTRPCClient } from '@/lib/trpc';
 
 /**
  * SMS configuration response
@@ -70,10 +70,7 @@ export interface UpsertSmsConfigInput {
  * @param options - Query options including enabled flag
  * @returns React Query result with SMS config or unconfigured message
  */
-export function useSmsConfig(
-  organizationId: string | undefined,
-  options?: { enabled?: boolean }
-) {
+export function useSmsConfig(organizationId: string | undefined, options?: { enabled?: boolean }) {
   const trpc = useTRPC();
 
   const queryOptions = trpc.smsConfig.get.queryOptions({
@@ -82,7 +79,7 @@ export function useSmsConfig(
 
   return useQuery({
     ...queryOptions,
-    enabled: !!organizationId && (options?.enabled !== false),
+    enabled: !!organizationId && options?.enabled !== false,
     staleTime: 60_000, // 1 minute
     gcTime: 5 * 60_000, // 5 minutes
   });
@@ -101,10 +98,7 @@ export function useUpsertSmsConfig() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (variables: {
-      organizationId: string;
-      data: UpsertSmsConfigInput;
-    }) => {
+    mutationFn: async (variables: { organizationId: string; data: UpsertSmsConfigInput }) => {
       return client.smsConfig.upsert.mutate({
         organizationId: variables.organizationId,
         data: variables.data,
@@ -126,7 +120,7 @@ export function useUpsertSmsConfig() {
  * Helper to check if SMS is configured
  */
 export function isSmsConfigured(
-  config: SmsConfigResponse | undefined
+  config: SmsConfigResponse | undefined,
 ): config is Exclude<SmsConfigResponse, { configured: false }> {
   return config !== undefined && !('configured' in config && !config.configured);
 }

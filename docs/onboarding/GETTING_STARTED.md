@@ -47,17 +47,18 @@ Organization (tenant/customer)
 ```
 
 **Why this matters:**
+
 - Settings cascade down (org defaults → site overrides → unit overrides)
 - Users see only their organization's data (multi-tenancy via RLS)
 - Reports can roll up at any level
 
 ### The Three Pillars
 
-| Pillar | What It Does | Key Files |
-|--------|--------------|-----------|
-| **Frontend** | React SPA for user interaction | `src/` |
-| **Edge Functions** | Deno serverless backend logic | `supabase/functions/` |
-| **Database** | PostgreSQL with RLS | `supabase/migrations/` |
+| Pillar             | What It Does                   | Key Files              |
+| ------------------ | ------------------------------ | ---------------------- |
+| **Frontend**       | React SPA for user interaction | `src/`                 |
+| **Edge Functions** | Deno serverless backend logic  | `supabase/functions/`  |
+| **Database**       | PostgreSQL with RLS            | `supabase/migrations/` |
 
 ---
 
@@ -87,11 +88,11 @@ The system reacts to events, not user clicks:
 
 Critical operations have ONE place that does them:
 
-| Operation | SSOT |
-|-----------|------|
+| Operation                 | SSOT                                |
+| ------------------------- | ----------------------------------- |
 | Creating/resolving alerts | `process-unit-states` edge function |
-| Sending notifications | `process-escalations` edge function |
-| Alert rule resolution | `get_effective_alert_rules` RPC |
+| Sending notifications     | `process-escalations` edge function |
+| Alert rule resolution     | `get_effective_alert_rules` RPC     |
 
 **Implication**: Never duplicate this logic. Always call the SSOT.
 
@@ -116,15 +117,15 @@ Org sets: "Alert if temp > 40°F"
 
 Units have a status that reflects their current state:
 
-| Status | Meaning | Priority |
-|--------|---------|----------|
-| `ok` | Normal operation | 5 |
-| `excursion` | Temp out of range (unconfirmed) | 2 |
-| `alarm_active` | Confirmed temp alarm | 1 (highest) |
-| `restoring` | Recovering from issue | 4 |
-| `offline` | Warning-level offline | 6 |
-| `monitoring_interrupted` | Critical offline | 3 |
-| `manual_required` | Manual logging needed | 4 |
+| Status                   | Meaning                         | Priority    |
+| ------------------------ | ------------------------------- | ----------- |
+| `ok`                     | Normal operation                | 5           |
+| `excursion`              | Temp out of range (unconfirmed) | 2           |
+| `alarm_active`           | Confirmed temp alarm            | 1 (highest) |
+| `restoring`              | Recovering from issue           | 4           |
+| `offline`                | Warning-level offline           | 6           |
+| `monitoring_interrupted` | Critical offline                | 3           |
+| `manual_required`        | Manual logging needed           | 4           |
 
 Status is computed by `process-unit-states` (backend) and mirrored in `useUnitStatus` (frontend).
 
@@ -182,33 +183,33 @@ Wireless sensors using LoRa radio technology via The Things Network:
 
 ## Key Files to Bookmark
 
-| Purpose | File |
-|---------|------|
-| Coding conventions | `/KNOWLEDGE.md` |
-| All routes | `/src/App.tsx` |
-| Supabase client | `/src/integrations/supabase/client.ts` |
-| Database types | `/src/integrations/supabase/types.ts` |
-| Alert configuration | `/src/lib/alertConfig.ts` |
-| Status configuration | `/src/lib/statusConfig.ts` |
-| Unit status computation | `/src/hooks/useUnitStatus.ts` |
+| Purpose                    | File                                               |
+| -------------------------- | -------------------------------------------------- |
+| Coding conventions         | `/KNOWLEDGE.md`                                    |
+| All routes                 | `/src/App.tsx`                                     |
+| Supabase client            | `/src/integrations/supabase/client.ts`             |
+| Database types             | `/src/integrations/supabase/types.ts`              |
+| Alert configuration        | `/src/lib/alertConfig.ts`                          |
+| Status configuration       | `/src/lib/statusConfig.ts`                         |
+| Unit status computation    | `/src/hooks/useUnitStatus.ts`                      |
 | Alert processing (backend) | `/supabase/functions/process-unit-states/index.ts` |
-| TTN webhook | `/supabase/functions/ttn-webhook/index.ts` |
+| TTN webhook                | `/supabase/functions/ttn-webhook/index.ts`         |
 
 ---
 
 ## Terminology Quick Reference
 
-| Term | Meaning |
-|------|---------|
-| **Unit** | A refrigerator/freezer being monitored |
-| **Excursion** | Temperature outside safe limits |
-| **Alarm** | Confirmed excursion (beyond confirm time) |
-| **Escalation** | Notifying higher-level contacts |
-| **TTN** | The Things Network (LoRa infrastructure) |
-| **DevEUI** | Device Extended Unique Identifier |
-| **RLS** | Row-Level Security (Postgres access control) |
-| **SSOT** | Single Source of Truth |
-| **HACCP** | Hazard Analysis Critical Control Point (food safety) |
+| Term           | Meaning                                              |
+| -------------- | ---------------------------------------------------- |
+| **Unit**       | A refrigerator/freezer being monitored               |
+| **Excursion**  | Temperature outside safe limits                      |
+| **Alarm**      | Confirmed excursion (beyond confirm time)            |
+| **Escalation** | Notifying higher-level contacts                      |
+| **TTN**        | The Things Network (LoRa infrastructure)             |
+| **DevEUI**     | Device Extended Unique Identifier                    |
+| **RLS**        | Row-Level Security (Postgres access control)         |
+| **SSOT**       | Single Source of Truth                               |
+| **HACCP**      | Hazard Analysis Critical Control Point (food safety) |
 
 See the full glossary: `/docs/GLOSSARY.md`
 

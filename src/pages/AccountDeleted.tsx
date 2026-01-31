@@ -37,8 +37,8 @@ export default function AccountDeleted() {
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-sm text-muted-foreground">
-            Thank you for using FrostGuard. If you have any questions or need assistance,
-            please contact our support team.
+            Thank you for using FrostGuard. If you have any questions or need assistance, please
+            contact our support team.
           </p>
 
           <div className="pt-4 border-t">

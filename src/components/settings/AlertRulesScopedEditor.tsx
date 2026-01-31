@@ -1,26 +1,32 @@
-import { useState, useEffect, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useTRPC } from "@/lib/trpc";
-import { useSites } from "@/hooks/useSites";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { AlertRulesEditor } from "./AlertRulesEditor";
-import { AlertRulesHistoryModal } from "./AlertRulesHistoryModal";
-import { NotificationPolicyEditor } from "./NotificationPolicyEditor";
-import { 
-  useOrgAlertRules, 
-  useSiteAlertRules, 
+import { useState, useEffect, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useTRPC } from '@/lib/trpc';
+import { useSites } from '@/hooks/useSites';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { AlertRulesEditor } from './AlertRulesEditor';
+import { AlertRulesHistoryModal } from './AlertRulesHistoryModal';
+import { NotificationPolicyEditor } from './NotificationPolicyEditor';
+import {
+  useOrgAlertRules,
+  useSiteAlertRules,
   useUnitAlertRulesOverride,
-  AlertRulesRow 
-} from "@/hooks/useAlertRules";
+  AlertRulesRow,
+} from '@/hooks/useAlertRules';
 import {
   useOrgNotificationPolicies,
   useSiteNotificationPolicies,
   useUnitNotificationPolicies,
   NotificationPolicy,
-} from "@/hooks/useNotificationPolicies";
-import { Building2, MapPin, Thermometer, History, Loader2, Bell, Settings } from "lucide-react";
+} from '@/hooks/useNotificationPolicies';
+import { Building2, MapPin, Thermometer, History, Loader2, Bell, Settings } from 'lucide-react';
 
 interface Site {
   id: string;
@@ -38,22 +44,22 @@ interface AlertRulesScopedEditorProps {
   canEdit: boolean;
 }
 
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from '@tanstack/react-query';
 
 export function AlertRulesScopedEditor({ organizationId, canEdit }: AlertRulesScopedEditorProps) {
   const queryClient = useQueryClient();
   const trpc = useTRPC();
-  const [scopeTab, setScopeTab] = useState<"org" | "site" | "unit">("org");
-  const [editorTab, setEditorTab] = useState<"thresholds" | "notifications">("thresholds");
-  const [selectedSiteId, setSelectedSiteId] = useState<string>("");
-  const [selectedUnitId, setSelectedUnitId] = useState<string>("");
+  const [scopeTab, setScopeTab] = useState<'org' | 'site' | 'unit'>('org');
+  const [editorTab, setEditorTab] = useState<'thresholds' | 'notifications'>('thresholds');
+  const [selectedSiteId, setSelectedSiteId] = useState<string>('');
+  const [selectedUnitId, setSelectedUnitId] = useState<string>('');
   const [historyOpen, setHistoryOpen] = useState(false);
 
   // Fetch sites using tRPC hook
   const { data: sitesData, isLoading: isLoadingSites } = useSites(organizationId);
-  const sites = useMemo(() =>
-    (sitesData ?? []).map(s => ({ id: s.id, name: s.name })),
-    [sitesData]
+  const sites = useMemo(
+    () => (sitesData ?? []).map((s) => ({ id: s.id, name: s.name })),
+    [sitesData],
   );
 
   // Fetch all units for org using tRPC
@@ -62,15 +68,15 @@ export function AlertRulesScopedEditor({ organizationId, canEdit }: AlertRulesSc
   });
   const { data: allUnits, isLoading: isLoadingUnits } = useQuery({
     ...unitsQueryOptions,
-    enabled: !!organizationId && scopeTab === "unit" && !!selectedSiteId,
+    enabled: !!organizationId && scopeTab === 'unit' && !!selectedSiteId,
   });
 
   // Filter units for selected site
   const units = useMemo(() => {
     if (!allUnits || !selectedSiteId) return [];
     return allUnits
-      .filter(u => u.siteId === selectedSiteId)
-      .map(u => ({
+      .filter((u) => u.siteId === selectedSiteId)
+      .map((u) => ({
         id: u.id,
         name: u.name,
         area_name: u.areaName || '',
@@ -79,107 +85,107 @@ export function AlertRulesScopedEditor({ organizationId, canEdit }: AlertRulesSc
 
   // Fetch org rules
   const { data: orgRules, refetch: refetchOrg } = useOrgAlertRules(organizationId);
-  
+
   // Fetch site rules when site selected
   const { data: siteRules, refetch: refetchSite } = useSiteAlertRules(
-    scopeTab === "site" ? selectedSiteId : null
+    scopeTab === 'site' ? selectedSiteId : null,
   );
-  
+
   // Fetch unit rules when unit selected
   const { data: unitRules, refetch: refetchUnit } = useUnitAlertRulesOverride(
-    scopeTab === "unit" ? selectedUnitId : null
+    scopeTab === 'unit' ? selectedUnitId : null,
   );
 
   // Fetch notification policies for each scope
   const { data: orgNotifPolicies, refetch: refetchOrgNotif } = useOrgNotificationPolicies(
-    scopeTab === "org" ? organizationId : null
+    scopeTab === 'org' ? organizationId : null,
   );
   const { data: siteNotifPolicies, refetch: refetchSiteNotif } = useSiteNotificationPolicies(
-    scopeTab === "site" ? selectedSiteId : null
+    scopeTab === 'site' ? selectedSiteId : null,
   );
   const { data: unitNotifPolicies, refetch: refetchUnitNotif } = useUnitNotificationPolicies(
-    scopeTab === "unit" ? selectedUnitId : null
+    scopeTab === 'unit' ? selectedUnitId : null,
   );
 
   // Reset selections when changing tabs
   useEffect(() => {
-    if (scopeTab === "org") {
-      setSelectedSiteId("");
-      setSelectedUnitId("");
-    } else if (scopeTab === "site") {
-      setSelectedUnitId("");
+    if (scopeTab === 'org') {
+      setSelectedSiteId('');
+      setSelectedUnitId('');
+    } else if (scopeTab === 'site') {
+      setSelectedUnitId('');
     }
   }, [scopeTab]);
 
   const handleSave = () => {
-    if (scopeTab === "org") {
+    if (scopeTab === 'org') {
       refetchOrg();
       refetchOrgNotif();
-    } else if (scopeTab === "site") {
+    } else if (scopeTab === 'site') {
       refetchSite();
       refetchSiteNotif();
-    } else if (scopeTab === "unit") {
+    } else if (scopeTab === 'unit') {
       refetchUnit();
       refetchUnitNotif();
     }
-    queryClient.invalidateQueries({ queryKey: ["alert-rules"] });
-    queryClient.invalidateQueries({ queryKey: ["notification-policies"] });
+    queryClient.invalidateQueries({ queryKey: ['alert-rules'] });
+    queryClient.invalidateQueries({ queryKey: ['notification-policies'] });
   };
 
   const getCurrentScope = () => {
-    if (scopeTab === "org") {
+    if (scopeTab === 'org') {
       return { organization_id: organizationId };
-    } else if (scopeTab === "site" && selectedSiteId) {
+    } else if (scopeTab === 'site' && selectedSiteId) {
       return { site_id: selectedSiteId };
-    } else if (scopeTab === "unit" && selectedUnitId) {
+    } else if (scopeTab === 'unit' && selectedUnitId) {
       return { unit_id: selectedUnitId };
     }
     return { organization_id: organizationId };
   };
 
   const getCurrentScopeLabel = () => {
-    if (scopeTab === "org") {
-      return "Organization Defaults";
-    } else if (scopeTab === "site") {
+    if (scopeTab === 'org') {
+      return 'Organization Defaults';
+    } else if (scopeTab === 'site') {
       const site = sites.find((s) => s.id === selectedSiteId);
-      return site ? `Site: ${site.name}` : "Select a Site";
-    } else if (scopeTab === "unit") {
+      return site ? `Site: ${site.name}` : 'Select a Site';
+    } else if (scopeTab === 'unit') {
       const unit = units.find((u) => u.id === selectedUnitId);
-      return unit ? `Unit: ${unit.name}` : "Select a Unit";
+      return unit ? `Unit: ${unit.name}` : 'Select a Unit';
     }
-    return "Organization Defaults";
+    return 'Organization Defaults';
   };
 
   const getCurrentRules = (): AlertRulesRow | null => {
-    if (scopeTab === "org") return orgRules || null;
-    if (scopeTab === "site") return siteRules || null;
-    if (scopeTab === "unit") return unitRules || null;
+    if (scopeTab === 'org') return orgRules || null;
+    if (scopeTab === 'site') return siteRules || null;
+    if (scopeTab === 'unit') return unitRules || null;
     return null;
   };
 
   const getParentRules = (): Partial<AlertRulesRow> | null => {
-    if (scopeTab === "site") return orgRules || null;
-    if (scopeTab === "unit") return siteRules || orgRules || null;
+    if (scopeTab === 'site') return orgRules || null;
+    if (scopeTab === 'unit') return siteRules || orgRules || null;
     return null;
   };
 
   const getParentNotifPolicies = (): NotificationPolicy[] | undefined => {
-    if (scopeTab === "site") return orgNotifPolicies;
-    if (scopeTab === "unit") return siteNotifPolicies || orgNotifPolicies;
+    if (scopeTab === 'site') return orgNotifPolicies;
+    if (scopeTab === 'unit') return siteNotifPolicies || orgNotifPolicies;
     return undefined;
   };
 
   const canShowEditor = () => {
-    if (scopeTab === "org") return true;
-    if (scopeTab === "site") return !!selectedSiteId;
-    if (scopeTab === "unit") return !!selectedUnitId;
+    if (scopeTab === 'org') return true;
+    if (scopeTab === 'site') return !!selectedSiteId;
+    if (scopeTab === 'unit') return !!selectedUnitId;
     return false;
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Tabs value={scopeTab} onValueChange={(v) => setScopeTab(v as "org" | "site" | "unit")}>
+        <Tabs value={scopeTab} onValueChange={(v) => setScopeTab(v as 'org' | 'site' | 'unit')}>
           <TabsList>
             <TabsTrigger value="org" className="flex items-center gap-2">
               <Building2 className="w-4 h-4" />
@@ -203,11 +209,11 @@ export function AlertRulesScopedEditor({ organizationId, canEdit }: AlertRulesSc
       </div>
 
       {/* Scope Selectors */}
-      {scopeTab === "site" && (
+      {scopeTab === 'site' && (
         <div className="flex items-center gap-4">
           <Select value={selectedSiteId} onValueChange={setSelectedSiteId}>
             <SelectTrigger className="w-[300px]">
-              <SelectValue placeholder={isLoadingSites ? "Loading..." : "Select a site"} />
+              <SelectValue placeholder={isLoadingSites ? 'Loading...' : 'Select a site'} />
             </SelectTrigger>
             <SelectContent>
               {sites.map((site) => (
@@ -221,9 +227,15 @@ export function AlertRulesScopedEditor({ organizationId, canEdit }: AlertRulesSc
         </div>
       )}
 
-      {scopeTab === "unit" && (
+      {scopeTab === 'unit' && (
         <div className="flex items-center gap-4 flex-wrap">
-          <Select value={selectedSiteId} onValueChange={(v) => { setSelectedSiteId(v); setSelectedUnitId(""); }}>
+          <Select
+            value={selectedSiteId}
+            onValueChange={(v) => {
+              setSelectedSiteId(v);
+              setSelectedUnitId('');
+            }}
+          >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select site first" />
             </SelectTrigger>
@@ -236,19 +248,21 @@ export function AlertRulesScopedEditor({ organizationId, canEdit }: AlertRulesSc
             </SelectContent>
           </Select>
 
-          <Select 
-            value={selectedUnitId} 
+          <Select
+            value={selectedUnitId}
             onValueChange={setSelectedUnitId}
             disabled={!selectedSiteId}
           >
             <SelectTrigger className="w-[250px]">
-              <SelectValue placeholder={
-                !selectedSiteId 
-                  ? "Select site first" 
-                  : isLoadingUnits 
-                    ? "Loading..." 
-                    : "Select a unit"
-              } />
+              <SelectValue
+                placeholder={
+                  !selectedSiteId
+                    ? 'Select site first'
+                    : isLoadingUnits
+                      ? 'Loading...'
+                      : 'Select a unit'
+                }
+              />
             </SelectTrigger>
             <SelectContent>
               {units.map((unit) => (
@@ -264,7 +278,10 @@ export function AlertRulesScopedEditor({ organizationId, canEdit }: AlertRulesSc
 
       {/* Editor Tabs: Thresholds vs Notifications */}
       {canShowEditor() && (
-        <Tabs value={editorTab} onValueChange={(v) => setEditorTab(v as "thresholds" | "notifications")}>
+        <Tabs
+          value={editorTab}
+          onValueChange={(v) => setEditorTab(v as 'thresholds' | 'notifications')}
+        >
           <TabsList className="mb-4">
             <TabsTrigger value="thresholds" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />

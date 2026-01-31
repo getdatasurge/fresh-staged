@@ -56,12 +56,12 @@ FreshTrack Pro (internally codenamed **FrostGuard**) is a comprehensive IoT-base
 
 ### Target Users
 
-| Persona | Role | Primary Tasks |
-|---------|------|---------------|
-| Food Safety Manager | Strategic oversight | Dashboard review, report generation, policy configuration |
-| Operations Manager | Facilities management | Equipment monitoring, escalation setup, trend analysis |
-| Kitchen Staff | Day-to-day operations | Manual logging, alert acknowledgment, unit status checks |
-| IT Administrator | Technical setup | Sensor provisioning, TTN configuration, debugging |
+| Persona             | Role                  | Primary Tasks                                             |
+| ------------------- | --------------------- | --------------------------------------------------------- |
+| Food Safety Manager | Strategic oversight   | Dashboard review, report generation, policy configuration |
+| Operations Manager  | Facilities management | Equipment monitoring, escalation setup, trend analysis    |
+| Kitchen Staff       | Day-to-day operations | Manual logging, alert acknowledgment, unit status checks  |
+| IT Administrator    | Technical setup       | Sensor provisioning, TTN configuration, debugging         |
 
 ---
 
@@ -69,46 +69,46 @@ FreshTrack Pro (internally codenamed **FrostGuard**) is a comprehensive IoT-base
 
 ### Frontend
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| React | 18.3.1 | UI framework |
-| TypeScript | 5.8.3 | Type-safe JavaScript |
-| Vite | 5.4.19 | Build tool and dev server |
-| React Router | 6.30.1 | Client-side routing |
-| TanStack Query | 5.83.0 | Server state management |
-| React Hook Form | 7.61.1 | Form handling |
-| Zod | 3.25.76 | Schema validation |
-| Tailwind CSS | 3.4.17 | Utility-first styling |
-| shadcn/ui | - | Component library (Radix-based) |
-| Recharts | 2.15.4 | Data visualization |
-| Framer Motion | 12.23.26 | Animations |
-| Lucide React | 0.462.0 | Icons |
+| Technology      | Version  | Purpose                         |
+| --------------- | -------- | ------------------------------- |
+| React           | 18.3.1   | UI framework                    |
+| TypeScript      | 5.8.3    | Type-safe JavaScript            |
+| Vite            | 5.4.19   | Build tool and dev server       |
+| React Router    | 6.30.1   | Client-side routing             |
+| TanStack Query  | 5.83.0   | Server state management         |
+| React Hook Form | 7.61.1   | Form handling                   |
+| Zod             | 3.25.76  | Schema validation               |
+| Tailwind CSS    | 3.4.17   | Utility-first styling           |
+| shadcn/ui       | -        | Component library (Radix-based) |
+| Recharts        | 2.15.4   | Data visualization              |
+| Framer Motion   | 12.23.26 | Animations                      |
+| Lucide React    | 0.462.0  | Icons                           |
 
 ### Backend
 
-| Technology | Purpose |
-|------------|---------|
-| Supabase | PostgreSQL database, Auth, Edge Functions |
-| Deno | Edge function runtime |
-| PostgreSQL | 14.1 - Primary database |
-| Row-Level Security (RLS) | Data access control |
+| Technology               | Purpose                                   |
+| ------------------------ | ----------------------------------------- |
+| Supabase                 | PostgreSQL database, Auth, Edge Functions |
+| Deno                     | Edge function runtime                     |
+| PostgreSQL               | 14.1 - Primary database                   |
+| Row-Level Security (RLS) | Data access control                       |
 
 ### External Integrations
 
-| Service | Purpose |
-|---------|---------|
-| The Things Network (TTN) | LoRa sensor network |
-| Stripe | Payment processing |
-| Telnyx | SMS alert delivery (toll-free) |
+| Service                  | Purpose                        |
+| ------------------------ | ------------------------------ |
+| The Things Network (TTN) | LoRa sensor network            |
+| Stripe                   | Payment processing             |
+| Telnyx                   | SMS alert delivery (toll-free) |
 
 ### Development Tools
 
-| Tool | Purpose |
-|------|---------|
-| Vitest | Unit testing |
-| ESLint | Code linting |
-| Workbox | PWA service workers |
-| lovable-tagger | Deployment tagging |
+| Tool           | Purpose             |
+| -------------- | ------------------- |
+| Vitest         | Unit testing        |
+| ESLint         | Code linting        |
+| Workbox        | PWA service workers |
+| lovable-tagger | Deployment tagging  |
 
 ---
 
@@ -183,11 +183,11 @@ The app will be available at `http://localhost:8080`
 
 ### Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `VITE_SUPABASE_URL` | Supabase project URL |
+| Variable                        | Description                         |
+| ------------------------------- | ----------------------------------- |
+| `VITE_SUPABASE_URL`             | Supabase project URL                |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon key (safe for client) |
-| `VITE_SUPABASE_PROJECT_ID` | Supabase project ID |
+| `VITE_SUPABASE_PROJECT_ID`      | Supabase project ID                 |
 
 ### Running with Local Supabase
 
@@ -302,7 +302,6 @@ See [INDEX.md](#index) for a complete navigation guide to all documentation.
 
 Proprietary - All rights reserved.
 
-
 ---
 
 \newpage
@@ -320,135 +319,136 @@ Proprietary - All rights reserved.
 
 ## Quick Links
 
-| Document | Description |
-|----------|-------------|
-| [README](#readme) | Project overview and quick start |
-| [GLOSSARY](#glossary) | Terminology and definitions |
+| Document                      | Description                       |
+| ----------------------------- | --------------------------------- |
+| [README](#readme)             | Project overview and quick start  |
+| [GLOSSARY](#glossary)         | Terminology and definitions       |
 | [CI Checklist](#ci_checklist) | Documentation CI validation rules |
 
 ---
+
 ## Executive Summary
 
 High-level overviews for stakeholders and decision-makers.
 
-| Document | Description |
-|----------|-------------|
-| [FreshTrack Pro: Frequently Asked Questions](#executive-faq) | Frequently asked questions |
-| [FreshTrack Pro Overview](#executive-overview) | What FreshTrack Pro is and does |
-| [FreshTrack Pro: System at a Glance](#executive-system_at_a_glance) | High-level system overview |
-| [FreshTrack Pro User Journeys](#executive-user_journeys) | Day-in-the-life scenarios |
-| [FreshTrack Pro Value Proposition](#executive-value_proposition) | Business value and benefits |
+| Document                                                            | Description                     |
+| ------------------------------------------------------------------- | ------------------------------- |
+| [FreshTrack Pro: Frequently Asked Questions](#executive-faq)        | Frequently asked questions      |
+| [FreshTrack Pro Overview](#executive-overview)                      | What FreshTrack Pro is and does |
+| [FreshTrack Pro: System at a Glance](#executive-system_at_a_glance) | High-level system overview      |
+| [FreshTrack Pro User Journeys](#executive-user_journeys)            | Day-in-the-life scenarios       |
+| [FreshTrack Pro Value Proposition](#executive-value_proposition)    | Business value and benefits     |
 
 ## Architecture
 
 System design, components, and technical decisions.
 
-| Document | Description |
-|----------|-------------|
+| Document                                                         | Description                    |
+| ---------------------------------------------------------------- | ------------------------------ |
 | [FreshTrack Pro System Architecture](#architecture-architecture) | System architecture and design |
 
 ## Product
 
 Pages, user flows, and product functionality.
 
-| Document | Description |
-|----------|-------------|
+| Document                                             | Description                      |
+| ---------------------------------------------------- | -------------------------------- |
 | [FreshTrack Pro Pages Documentation](#product-pages) | All application pages and routes |
-| [FreshTrack Pro User Flows](#product-user_flows) | User interaction workflows |
+| [FreshTrack Pro User Flows](#product-user_flows)     | User interaction workflows       |
 
 ## Engineering
 
 API, data model, integrations, and technical details.
 
-| Document | Description |
-|----------|-------------|
-| [FreshTrack Pro API Documentation](#engineering-api) | Edge functions and API endpoints |
-| [FreshTrack Pro Data Model](#engineering-data_model) | Database schema and relationships |
-| [FreshTrack Pro Integrations](#engineering-integrations) | External service integrations |
-| [FreshTrack Pro Observability](#engineering-observability) | Logging and monitoring |
+| Document                                                   | Description                       |
+| ---------------------------------------------------------- | --------------------------------- |
+| [FreshTrack Pro API Documentation](#engineering-api)       | Edge functions and API endpoints  |
+| [FreshTrack Pro Data Model](#engineering-data_model)       | Database schema and relationships |
+| [FreshTrack Pro Integrations](#engineering-integrations)   | External service integrations     |
+| [FreshTrack Pro Observability](#engineering-observability) | Logging and monitoring            |
 
 ## Onboarding
 
 Getting started guides for new team members.
 
-| Document | Description |
-|----------|-------------|
-| [Common Development Tasks](#onboarding-common_tasks) | How to do common tasks |
-| [Debugging Guide](#onboarding-debugging_guide) | Troubleshooting and debugging |
+| Document                                                           | Description                     |
+| ------------------------------------------------------------------ | ------------------------------- |
+| [Common Development Tasks](#onboarding-common_tasks)               | How to do common tasks          |
+| [Debugging Guide](#onboarding-debugging_guide)                     | Troubleshooting and debugging   |
 | [Getting Started with FreshTrack Pro](#onboarding-getting_started) | Mental model for new developers |
-| [Local Development Setup](#onboarding-local_dev) | Development environment setup |
-| [Repository Tour](#onboarding-repo_tour) | Codebase walkthrough |
+| [Local Development Setup](#onboarding-local_dev)                   | Development environment setup   |
+| [Repository Tour](#onboarding-repo_tour)                           | Codebase walkthrough            |
 
 ## Quality Assurance
 
 Testing strategy, coverage, and quality assurance.
 
-| Document | Description |
-|----------|-------------|
-| [Coverage Map](#qa-coverage_map) | Test coverage by feature |
-| [End-to-End Test Scenarios](#qa-e2e_scenarios) | End-to-end test scenarios |
-| [Known Test Coverage Gaps](#qa-known_gaps) | Coverage gaps and risks |
-| [Manual Testing Guide](#qa-manual_testing) | Manual QA checklists |
-| [Test Strategy](#qa-test_strategy) | Testing philosophy and approach |
+| Document                                       | Description                     |
+| ---------------------------------------------- | ------------------------------- |
+| [Coverage Map](#qa-coverage_map)               | Test coverage by feature        |
+| [End-to-End Test Scenarios](#qa-e2e_scenarios) | End-to-end test scenarios       |
+| [Known Test Coverage Gaps](#qa-known_gaps)     | Coverage gaps and risks         |
+| [Manual Testing Guide](#qa-manual_testing)     | Manual QA checklists            |
+| [Test Strategy](#qa-test_strategy)             | Testing philosophy and approach |
 
 ## Security
 
 Security model, threats, and incident response.
 
-| Document | Description |
-|----------|-------------|
+| Document                                                     | Description                      |
+| ------------------------------------------------------------ | -------------------------------- |
 | [Authentication & Authorization Model](#security-auth_model) | Authentication and authorization |
-| [Data Protection](#security-data_protection) | Encryption and data handling |
-| [Incident Response](#security-incident_response) | Security incident procedures |
-| [Security Overview](#security-security_overview) | Security principles and controls |
-| [Threat Model](#security-threat_model) | Threats and mitigations |
+| [Data Protection](#security-data_protection)                 | Encryption and data handling     |
+| [Incident Response](#security-incident_response)             | Security incident procedures     |
+| [Security Overview](#security-security_overview)             | Security principles and controls |
+| [Threat Model](#security-threat_model)                       | Threats and mitigations          |
 
 ## Operations
 
 Monitoring, alerting, and operational procedures.
 
-| Document | Description |
-|----------|-------------|
-| [Alerting](#operations-alerting) | Alert conditions and escalation |
-| [Dashboards](#operations-dashboards) | Monitoring dashboards |
-| [Logging](#operations-logging) | Log sources and debugging |
-| [Metrics Overview](#operations-metrics_overview) | System metrics and thresholds |
-| [Runbooks](#operations-runbooks) | Operational procedures |
+| Document                                         | Description                     |
+| ------------------------------------------------ | ------------------------------- |
+| [Alerting](#operations-alerting)                 | Alert conditions and escalation |
+| [Dashboards](#operations-dashboards)             | Monitoring dashboards           |
+| [Logging](#operations-logging)                   | Log sources and debugging       |
+| [Metrics Overview](#operations-metrics_overview) | System metrics and thresholds   |
+| [Runbooks](#operations-runbooks)                 | Operational procedures          |
 
 ## Diagrams
 
 Visual representations and flowcharts.
 
-| Document | Description |
-|----------|-------------|
-| [Container Diagram](#diagrams-container_diagram) | Container architecture |
-| [Page Diagrams](#diagrams-page_diagrams) | Page component diagrams |
-| [Sequence Diagrams](#diagrams-sequences) | Sequence diagrams |
-| [State Machines](#diagrams-state_machines) | State machine diagrams |
-| [System Context Diagram](#diagrams-system_context) | System context diagram |
+| Document                                           | Description             |
+| -------------------------------------------------- | ----------------------- |
+| [Container Diagram](#diagrams-container_diagram)   | Container architecture  |
+| [Page Diagrams](#diagrams-page_diagrams)           | Page component diagrams |
+| [Sequence Diagrams](#diagrams-sequences)           | Sequence diagrams       |
+| [State Machines](#diagrams-state_machines)         | State machine diagrams  |
+| [System Context Diagram](#diagrams-system_context) | System context diagram  |
 
 ## Charts
 
 Data models and entity relationships.
 
-| Document | Description |
-|----------|-------------|
+| Document                                          | Description                 |
+| ------------------------------------------------- | --------------------------- |
 | [Entity-Relationship Diagram](#charts-er_diagram) | Entity relationship diagram |
-| [Flowcharts](#charts-flowcharts) | Process flowcharts |
+| [Flowcharts](#charts-flowcharts)                  | Process flowcharts          |
 
 ## General
 
 General documentation and guides.
 
-| Document | Description |
-|----------|-------------|
-| [Emulator Quick Start - TTN Integration](#emulator_quick_start) | Emulator quick start |
-| [Emulator TTN Integration Guide](#emulator_ttn_integration) | TTN emulator integration |
-| [FreshTrack Pro (FrostGuard)](#readme) | Project overview |
-| [TTN Production Secrets Setup](#ttn_production_setup) | Production TTN setup |
-| [The Things Network (TTN) Setup Guide](#ttn_setup) | TTN configuration guide |
-| [FrostGuard Deprecations](#deprecations) | Deprecated features |
-| [FrostGuard System Map](#system-map) | System component map |
+| Document                                                        | Description              |
+| --------------------------------------------------------------- | ------------------------ |
+| [Emulator Quick Start - TTN Integration](#emulator_quick_start) | Emulator quick start     |
+| [Emulator TTN Integration Guide](#emulator_ttn_integration)     | TTN emulator integration |
+| [FreshTrack Pro (FrostGuard)](#readme)                          | Project overview         |
+| [TTN Production Secrets Setup](#ttn_production_setup)           | Production TTN setup     |
+| [The Things Network (TTN) Setup Guide](#ttn_setup)              | TTN configuration guide  |
+| [FrostGuard Deprecations](#deprecations)                        | Deprecated features      |
+| [FrostGuard System Map](#system-map)                            | System component map     |
 
 ---
 
@@ -466,14 +466,14 @@ Executive Overview     →  Architecture  →  Engineering Details
 
 ### Key Cross-References
 
-| If you need... | Start with... | Then see... |
-|----------------|---------------|-------------|
-| System understanding | [Architecture](#architecture-architecture) | [System Context](#diagrams-system_context) |
-| User flows | [User Flows](#product-user_flows) | [Sequences](#diagrams-sequences) |
-| Data structures | [Data Model](#engineering-data_model) | [ER Diagram](#charts-er_diagram) |
-| Getting started | [Getting Started](#onboarding-getting_started) | [Local Dev](#onboarding-local_dev) |
-| Security review | [Security Overview](#security-security_overview) | [Threat Model](#security-threat_model) |
-| Operations | [Metrics](#operations-metrics_overview) | [Runbooks](#operations-runbooks) |
+| If you need...       | Start with...                                    | Then see...                                |
+| -------------------- | ------------------------------------------------ | ------------------------------------------ |
+| System understanding | [Architecture](#architecture-architecture)       | [System Context](#diagrams-system_context) |
+| User flows           | [User Flows](#product-user_flows)                | [Sequences](#diagrams-sequences)           |
+| Data structures      | [Data Model](#engineering-data_model)            | [ER Diagram](#charts-er_diagram)           |
+| Getting started      | [Getting Started](#onboarding-getting_started)   | [Local Dev](#onboarding-local_dev)         |
+| Security review      | [Security Overview](#security-security_overview) | [Threat Model](#security-threat_model)     |
+| Operations           | [Metrics](#operations-metrics_overview)          | [Runbooks](#operations-runbooks)           |
 
 ---
 
@@ -499,7 +499,6 @@ npm run docs:all
 
 See [CI_CHECKLIST.md](#ci_checklist) for documentation standards and validation rules.
 
-
 ---
 
 \newpage
@@ -524,13 +523,13 @@ Think of it as a **24/7 watchdog for your cold chain** that never takes a break,
 
 Every year, businesses lose billions of dollars to:
 
-| Problem | Impact |
-|---------|--------|
-| **Spoiled inventory** | A single freezer failure can destroy $10,000+ in product overnight |
-| **Health code violations** | Fines, closures, and reputation damage from failed inspections |
-| **Manual logging burden** | Staff waste hours on paper temperature logs that are error-prone |
-| **Late discovery** | Problems found hours or days after they started, when it's too late |
-| **Compliance gaps** | Missing or incomplete records during health inspections |
+| Problem                    | Impact                                                              |
+| -------------------------- | ------------------------------------------------------------------- |
+| **Spoiled inventory**      | A single freezer failure can destroy $10,000+ in product overnight  |
+| **Health code violations** | Fines, closures, and reputation damage from failed inspections      |
+| **Manual logging burden**  | Staff waste hours on paper temperature logs that are error-prone    |
+| **Late discovery**         | Problems found hours or days after they started, when it's too late |
+| **Compliance gaps**        | Missing or incomplete records during health inspections             |
 
 **FreshTrack Pro eliminates these problems** by automating temperature monitoring, alerting, and compliance documentation.
 
@@ -540,24 +539,27 @@ Every year, businesses lose billions of dollars to:
 
 FreshTrack Pro is designed for organizations that need to maintain strict temperature control:
 
-| Industry | Use Cases |
-|----------|-----------|
-| **Restaurants & Food Service** | Walk-in coolers, freezers, prep stations |
-| **Grocery & Retail** | Display cases, storage, receiving areas |
-| **Healthcare** | Vaccine storage, blood banks, pharmaceutical storage |
-| **Food Manufacturing** | Production lines, raw material storage, shipping |
-| **Hospitality** | Hotel kitchens, event catering, banquet facilities |
-| **Education** | School cafeterias, university dining halls |
+| Industry                       | Use Cases                                            |
+| ------------------------------ | ---------------------------------------------------- |
+| **Restaurants & Food Service** | Walk-in coolers, freezers, prep stations             |
+| **Grocery & Retail**           | Display cases, storage, receiving areas              |
+| **Healthcare**                 | Vaccine storage, blood banks, pharmaceutical storage |
+| **Food Manufacturing**         | Production lines, raw material storage, shipping     |
+| **Hospitality**                | Hotel kitchens, event catering, banquet facilities   |
+| **Education**                  | School cafeterias, university dining halls           |
 
 ---
 
 ## Key Capabilities
 
 ### 1. Continuous Monitoring
+
 Wireless sensors check temperatures every 5 minutes (configurable) and transmit readings automatically. No manual checks required.
 
 ### 2. Instant Alerts
+
 When temperatures go out of range, the system immediately notifies the right people via:
+
 - Email
 - Text message (SMS)
 - Mobile push notifications
@@ -565,21 +567,26 @@ When temperatures go out of range, the system immediately notifies the right peo
 Alerts escalate to managers and supervisors if not acknowledged within configurable timeframes.
 
 ### 3. Compliance Ready
+
 - **Automatic audit trails** that record every reading, alert, and action
 - **HACCP-compliant** documentation for health inspections
 - **One-click reports** showing compliance history for any time period
 - **Corrective action tracking** to document how issues were resolved
 
 ### 4. Multi-Location Management
+
 Manage all your locations from a single dashboard:
+
 - Organization → Sites → Areas → Individual Units
 - Centralized monitoring across cities, states, or countries
 - Role-based access so staff only see what they need
 
 ### 5. Offline-Ready Manual Logging
+
 When sensors aren't available, staff can log temperatures manually from any mobile device—even without internet connection. Logs sync automatically when connectivity returns.
 
 ### 6. Equipment Health Insights
+
 - **Battery life forecasting** for wireless sensors
 - **Connectivity monitoring** to catch communication issues early
 - **Calibration reminders** to ensure sensor accuracy
@@ -588,14 +595,14 @@ When sensors aren't available, staff can log temperatures manually from any mobi
 
 ## At a Glance
 
-| Feature | Description |
-|---------|-------------|
-| **Monitoring** | 24/7 automated temperature tracking |
-| **Alerting** | Multi-channel, escalating notifications |
-| **Compliance** | HACCP/FDA-ready documentation and reports |
-| **Access** | Web and mobile apps, works on any device |
-| **Scale** | From 1 unit to thousands across multiple locations |
-| **Deployment** | Cloud-based, no servers to maintain |
+| Feature        | Description                                        |
+| -------------- | -------------------------------------------------- |
+| **Monitoring** | 24/7 automated temperature tracking                |
+| **Alerting**   | Multi-channel, escalating notifications            |
+| **Compliance** | HACCP/FDA-ready documentation and reports          |
+| **Access**     | Web and mobile apps, works on any device           |
+| **Scale**      | From 1 unit to thousands across multiple locations |
+| **Deployment** | Cloud-based, no servers to maintain                |
 
 ---
 
@@ -615,7 +622,6 @@ To set clear expectations:
 - [System at a Glance](#system_at_a_glance) — How it works
 - [User Journeys](#user_journeys) — Day in the life with FreshTrack Pro
 - [FAQ](#faq) — Common questions answered
-
 
 ---
 
@@ -641,11 +647,11 @@ A typical walk-in freezer failure can destroy $10,000–$50,000 in inventory. A 
 
 ### 1. Prevent Costly Losses
 
-| Scenario | Without FreshTrack Pro | With FreshTrack Pro |
-|----------|------------------------|---------------------|
-| Freezer fails at 2 AM | Discovered at 6 AM opening. $15,000 inventory lost. | Alert sent immediately. Manager responds. $0 lost. |
-| Door left ajar overnight | Product quality compromised. Partial loss. | Alert sent after 20 min grace period. Staff responds. |
-| Slow cooling system decline | Not noticed until catastrophic failure. | Temperature trend detected. Preventive maintenance scheduled. |
+| Scenario                    | Without FreshTrack Pro                              | With FreshTrack Pro                                           |
+| --------------------------- | --------------------------------------------------- | ------------------------------------------------------------- |
+| Freezer fails at 2 AM       | Discovered at 6 AM opening. $15,000 inventory lost. | Alert sent immediately. Manager responds. $0 lost.            |
+| Door left ajar overnight    | Product quality compromised. Partial loss.          | Alert sent after 20 min grace period. Staff responds.         |
+| Slow cooling system decline | Not noticed until catastrophic failure.             | Temperature trend detected. Preventive maintenance scheduled. |
 
 **ROI Example**: One prevented incident = 12–24 months of subscription cost avoided.
 
@@ -653,12 +659,12 @@ A typical walk-in freezer failure can destroy $10,000–$50,000 in inventory. A 
 
 ### 2. Reduce Labor Costs
 
-| Task | Manual Process | With FreshTrack Pro |
-|------|----------------|---------------------|
-| Temperature logging | 15–30 min/day per location | Automatic |
-| Log organization | Paper filing, retrieval | Digital, searchable |
-| Report generation | Hours compiling spreadsheets | One-click export |
-| Inspector prep | Hunting for records | Ready in seconds |
+| Task                | Manual Process               | With FreshTrack Pro |
+| ------------------- | ---------------------------- | ------------------- |
+| Temperature logging | 15–30 min/day per location   | Automatic           |
+| Log organization    | Paper filing, retrieval      | Digital, searchable |
+| Report generation   | Hours compiling spreadsheets | One-click export    |
+| Inspector prep      | Hunting for records          | Ready in seconds    |
 
 **Savings**: 5–10 hours per week in staff time across a typical multi-unit operation.
 
@@ -667,11 +673,13 @@ A typical walk-in freezer failure can destroy $10,000–$50,000 in inventory. A 
 ### 3. Pass Inspections with Confidence
 
 Health inspectors want to see:
+
 - Consistent temperature records
 - Evidence of monitoring
 - Documentation of corrective actions
 
 FreshTrack Pro provides:
+
 - **Complete, unbroken temperature history** — no gaps, no missing logs
 - **Timestamped alerts** showing immediate response to issues
 - **Corrective action records** documenting what was done and when
@@ -695,14 +703,14 @@ In the age of social media, one foodborne illness outbreak can devastate a brand
 
 ### What Sets FreshTrack Pro Apart
 
-| Feature | FreshTrack Pro | Traditional Solutions |
-|---------|----------------|----------------------|
-| **Multi-location dashboard** | Single view of all sites | Separate systems per location |
-| **Escalating alerts** | Auto-escalate if not acknowledged | Single notification, easy to miss |
-| **Offline manual logging** | Works without internet | Requires connectivity |
-| **Hierarchical configuration** | Set rules at org/site/unit level | One-size-fits-all settings |
-| **Modern interface** | Mobile-first, intuitive | Desktop-focused, dated |
-| **Compliance-ready reports** | HACCP/FDA formatted | Manual formatting required |
+| Feature                        | FreshTrack Pro                    | Traditional Solutions             |
+| ------------------------------ | --------------------------------- | --------------------------------- |
+| **Multi-location dashboard**   | Single view of all sites          | Separate systems per location     |
+| **Escalating alerts**          | Auto-escalate if not acknowledged | Single notification, easy to miss |
+| **Offline manual logging**     | Works without internet            | Requires connectivity             |
+| **Hierarchical configuration** | Set rules at org/site/unit level  | One-size-fits-all settings        |
+| **Modern interface**           | Mobile-first, intuitive           | Desktop-focused, dated            |
+| **Compliance-ready reports**   | HACCP/FDA formatted               | Manual formatting required        |
 
 ### Why Customers Choose Us
 
@@ -716,12 +724,12 @@ In the age of social media, one foodborne illness outbreak can devastate a brand
 
 ## Pricing That Makes Sense
 
-| Plan | Monthly | Sensors | Key Features |
-|------|---------|---------|--------------|
-| **Starter** | $29 | Up to 5 | Basic monitoring, email alerts |
-| **Pro** | $79 | Up to 25 | + SMS alerts, advanced reports |
-| **HACCP** | $199 | Up to 100 | + Full compliance suite, audit tools |
-| **Enterprise** | Custom | Unlimited | Custom integrations, dedicated support |
+| Plan           | Monthly | Sensors   | Key Features                           |
+| -------------- | ------- | --------- | -------------------------------------- |
+| **Starter**    | $29     | Up to 5   | Basic monitoring, email alerts         |
+| **Pro**        | $79     | Up to 25  | + SMS alerts, advanced reports         |
+| **HACCP**      | $199    | Up to 100 | + Full compliance suite, audit tools   |
+| **Enterprise** | Custom  | Unlimited | Custom integrations, dedicated support |
 
 **No long-term contracts required.** Cancel anytime.
 
@@ -730,21 +738,25 @@ In the age of social media, one foodborne illness outbreak can devastate a brand
 ## Who Benefits?
 
 ### For Executives
+
 - **Risk reduction** — Minimize exposure to spoilage, fines, and liability
 - **Operational visibility** — See all locations at a glance
 - **Cost control** — Predictable subscription vs. unpredictable losses
 
 ### For Operations Managers
+
 - **Peace of mind** — Know you'll be alerted to problems immediately
 - **Trend analysis** — Spot equipment issues before they become failures
 - **Staff accountability** — See who acknowledged what and when
 
 ### For Frontline Staff
+
 - **Simple interface** — Quick logging, clear status indicators
 - **Mobile-friendly** — Works on any phone or tablet
 - **Clear alerts** — Know exactly what needs attention
 
 ### For Compliance Teams
+
 - **Audit-ready records** — Everything documented automatically
 - **Gap-free history** — Continuous monitoring = complete records
 - **Easy reporting** — Generate inspector-ready reports in seconds
@@ -755,13 +767,13 @@ In the age of social media, one foodborne illness outbreak can devastate a brand
 
 Consider what happens without automated monitoring:
 
-| Risk | Potential Cost |
-|------|----------------|
-| Single freezer failure | $10,000–$50,000 in lost inventory |
-| Health code violation | $500–$10,000 in fines |
-| Forced closure | $5,000–$50,000/day in lost revenue |
-| Foodborne illness lawsuit | $100,000+ in legal costs |
-| Brand damage | Immeasurable |
+| Risk                      | Potential Cost                     |
+| ------------------------- | ---------------------------------- |
+| Single freezer failure    | $10,000–$50,000 in lost inventory  |
+| Health code violation     | $500–$10,000 in fines              |
+| Forced closure            | $5,000–$50,000/day in lost revenue |
+| Foodborne illness lawsuit | $100,000+ in legal costs           |
+| Brand damage              | Immeasurable                       |
 
 **FreshTrack Pro subscription**: A few hundred dollars per month.
 
@@ -786,7 +798,6 @@ Ready to protect your cold chain?
 - [User Journeys](#user_journeys) — Day in the life
 - [FAQ](#faq) — Common questions
 
-
 ---
 
 \newpage
@@ -802,6 +813,7 @@ Ready to protect your cold chain?
 ## How It Works (The Simple Version)
 
 FreshTrack Pro is like having a tireless employee who:
+
 1. **Checks every refrigerator** every 5 minutes
 2. **Records every reading** automatically
 3. **Calls you immediately** if something is wrong
@@ -832,20 +844,26 @@ graph LR
 ```
 
 ### 1. Wireless Sensors
+
 Small devices placed inside refrigerators, freezers, and cold storage units that:
+
 - Measure temperature continuously
 - Send readings wirelessly (no cables needed)
 - Run for years on a single battery
 
 ### 2. Cloud Platform
+
 The "brain" of FreshTrack Pro that:
+
 - Receives all sensor readings
 - Compares temperatures to your safe limits
 - Sends alerts when something is wrong
 - Stores all data securely for compliance
 
 ### 3. Your Team's Access
+
 How you and your team interact with FreshTrack Pro:
+
 - **Web Dashboard** — Full view of all locations from any computer
 - **Mobile App** — Check status and respond to alerts from anywhere
 - **Notifications** — Email, text, and push alerts when action is needed
@@ -869,6 +887,7 @@ graph TD
 ```
 
 **Key Points:**
+
 - Alerts aren't sent for brief fluctuations (like when someone opens a door)
 - If the first person doesn't respond, alerts automatically escalate
 - Everything is documented for your records
@@ -894,6 +913,7 @@ graph TD
 ```
 
 **Benefits of this structure:**
+
 - Set rules at any level (organization-wide, per-site, or per-unit)
 - Give staff access to only their locations
 - Roll up reporting by site, region, or entire organization
@@ -902,14 +922,14 @@ graph TD
 
 ## What Gets Tracked
 
-| Data Point | How It's Captured |
-|------------|-------------------|
-| **Temperature** | Automatic sensor readings every 5 minutes |
-| **Door events** | Sensors detect when doors open/close |
-| **Sensor health** | Battery levels and signal strength |
-| **Alerts** | When triggered, who responded, how long to resolve |
-| **Manual logs** | Staff entries for backup or verification |
-| **Changes** | Who changed settings, when, and what |
+| Data Point        | How It's Captured                                  |
+| ----------------- | -------------------------------------------------- |
+| **Temperature**   | Automatic sensor readings every 5 minutes          |
+| **Door events**   | Sensors detect when doors open/close               |
+| **Sensor health** | Battery levels and signal strength                 |
+| **Alerts**        | When triggered, who responded, how long to resolve |
+| **Manual logs**   | Staff entries for backup or verification           |
+| **Changes**       | Who changed settings, when, and what               |
 
 **All data is stored securely and never deleted** — available for compliance audits at any time.
 
@@ -919,14 +939,15 @@ graph TD
 
 When you log in, you see:
 
-| Section | What It Shows |
-|---------|---------------|
-| **Status Overview** | Green/yellow/red indicators for every unit |
-| **Active Alerts** | Any issues needing immediate attention |
-| **Recent Activity** | Latest readings and events |
-| **Quick Actions** | Log temperature, acknowledge alerts, generate reports |
+| Section             | What It Shows                                         |
+| ------------------- | ----------------------------------------------------- |
+| **Status Overview** | Green/yellow/red indicators for every unit            |
+| **Active Alerts**   | Any issues needing immediate attention                |
+| **Recent Activity** | Latest readings and events                            |
+| **Quick Actions**   | Log temperature, acknowledge alerts, generate reports |
 
 **Color Coding:**
+
 - 🟢 **Green** — Everything normal
 - 🟡 **Yellow/Orange** — Needs attention (warning)
 - 🔴 **Red** — Immediate action required (critical)
@@ -936,13 +957,13 @@ When you log in, you see:
 
 ## Security & Reliability
 
-| Concern | How FreshTrack Pro Addresses It |
-|---------|--------------------------------|
-| **Data Security** | All data encrypted, stored in secure cloud infrastructure |
-| **Access Control** | Role-based permissions — staff only see what they need |
-| **Uptime** | Cloud platform designed for 99.9%+ availability |
-| **Data Backup** | Automatic backups, no data loss |
-| **Compliance** | Meets HACCP, FDA, and industry standards |
+| Concern            | How FreshTrack Pro Addresses It                           |
+| ------------------ | --------------------------------------------------------- |
+| **Data Security**  | All data encrypted, stored in secure cloud infrastructure |
+| **Access Control** | Role-based permissions — staff only see what they need    |
+| **Uptime**         | Cloud platform designed for 99.9%+ availability           |
+| **Data Backup**    | Automatic backups, no data loss                           |
+| **Compliance**     | Meets HACCP, FDA, and industry standards                  |
 
 ---
 
@@ -950,13 +971,13 @@ When you log in, you see:
 
 FreshTrack Pro can work with:
 
-| Integration | Purpose |
-|-------------|---------|
-| **Email systems** | Alert delivery |
+| Integration            | Purpose                   |
+| ---------------------- | ------------------------- |
+| **Email systems**      | Alert delivery            |
 | **SMS/Text messaging** | Critical alerts to phones |
-| **Payment processing** | Subscription billing |
+| **Payment processing** | Subscription billing      |
 
-*Enterprise customers can discuss additional integrations.*
+_Enterprise customers can discuss additional integrations._
 
 ---
 
@@ -980,7 +1001,6 @@ No servers to maintain. No software to install. Just protection for your cold ch
 - [User Journeys](#user_journeys) — Day in the life
 - [FAQ](#faq) — Common questions
 
-
 ---
 
 \newpage
@@ -997,12 +1017,12 @@ No servers to maintain. No software to install. Just protection for your cold ch
 
 Before we explore the journeys, let's introduce the people who use FreshTrack Pro:
 
-| Person | Role | What They Care About |
-|--------|------|---------------------|
-| **Alex** | Food Safety Manager | Compliance, inspections, protecting the business |
-| **Jordan** | Operations Manager | Equipment health, costs, staff efficiency |
-| **Sam** | Kitchen Lead | Getting work done, responding quickly to issues |
-| **Morgan** | Regional Director | Multi-site oversight, big-picture trends |
+| Person     | Role                | What They Care About                             |
+| ---------- | ------------------- | ------------------------------------------------ |
+| **Alex**   | Food Safety Manager | Compliance, inspections, protecting the business |
+| **Jordan** | Operations Manager  | Equipment health, costs, staff efficiency        |
+| **Sam**    | Kitchen Lead        | Getting work done, responding quickly to issues  |
+| **Morgan** | Regional Director   | Multi-site oversight, big-picture trends         |
 
 ---
 
@@ -1013,15 +1033,18 @@ Before we explore the journeys, let's introduce the people who use FreshTrack Pr
 **9:00 AM** — Alex receives an email that FreshTrack Pro is ready. She clicks the link and creates her account in under a minute.
 
 **9:05 AM** — The setup wizard walks her through adding her organization. She enters:
+
 - Company name: "Fresh Bites Restaurant Group"
 - First location: "Downtown Flagship"
 
 **9:10 AM** — Alex adds the areas within her location:
+
 - Main Kitchen
 - Walk-in Cooler
 - Freezer Storage
 
 **9:15 AM** — For each refrigeration unit, Alex sets:
+
 - A name everyone will recognize ("Prep Station Fridge")
 - Temperature limits (35°F to 40°F for coolers)
 - Who should be notified if there's a problem
@@ -1043,6 +1066,7 @@ Before we explore the journeys, let's introduce the people who use FreshTrack Pr
 **6:30 AM** — Jordan arrives and opens FreshTrack Pro on his phone before even entering the building.
 
 **The dashboard shows:**
+
 - ✅ All units green across 3 locations
 - 📊 Overnight temperature graphs look stable
 - 🔋 One sensor battery at 15% (reminder to replace this week)
@@ -1054,6 +1078,7 @@ Before we explore the journeys, let's introduce the people who use FreshTrack Pr
 **11:00 AM** — As part of HACCP requirements, Sam does a visual verification of the walk-in cooler using a handheld thermometer.
 
 **11:02 AM** — Sam pulls out his phone, opens FreshTrack Pro, and:
+
 1. Taps "Log Temperature"
 2. Selects "Walk-in Cooler"
 3. Enters "38°F"
@@ -1067,6 +1092,7 @@ Before we explore the journeys, let's introduce the people who use FreshTrack Pr
 **2:00 PM** — A food supplier asks for temperature records as part of their audit requirements.
 
 **2:05 PM** — Alex opens FreshTrack Pro, goes to Reports, and:
+
 1. Selects "Temperature Log Report"
 2. Chooses last 30 days
 3. Selects the receiving area cooler
@@ -1087,6 +1113,7 @@ Before we explore the journeys, let's introduce the people who use FreshTrack Pr
 **11:52 PM** — Temperature crosses the alert threshold (above 0°F). FreshTrack Pro confirms this isn't a brief fluctuation.
 
 **11:53 PM** — FreshTrack Pro sends:
+
 - 📱 Push notification to Sam's phone
 - 📧 Email to Sam
 - 📱 Text message to Sam
@@ -1105,6 +1132,7 @@ Before we explore the journeys, let's introduce the people who use FreshTrack Pr
 ### The Escalation That Didn't Happen
 
 **If Sam hadn't responded**, FreshTrack Pro would have:
+
 - **12:08 PM** (15 min later) — Escalated to Jordan (Operations Manager)
 - **12:23 PM** (30 min later) — Escalated to Alex (Food Safety Manager)
 
@@ -1117,6 +1145,7 @@ But because Sam acknowledged immediately, the right person was already handling 
 **1:00 AM** — Temperature returns to normal range. FreshTrack Pro automatically marks the alert as resolved.
 
 **1:01 AM** — Sam opens the app and documents the corrective action:
+
 - "Compressor failed, HVAC called immediately"
 - "Tech identified loose connection"
 - "No product affected - temp never exceeded 15°F"
@@ -1134,12 +1163,14 @@ But because Sam acknowledged immediately, the right person was already handling 
 **9:20 AM** — The inspector asks: "Can I see your temperature logs for the past 90 days?"
 
 **9:21 AM** — Alex opens FreshTrack Pro on her tablet and:
+
 1. Goes to Reports
 2. Selects "Compliance Report"
 3. Sets date range to past 90 days
 4. Clicks "Generate"
 
 **9:22 AM** — The report appears showing:
+
 - ✅ 12,960 automatic temperature readings
 - ✅ 180 manual verification logs
 - ✅ 3 alerts (all acknowledged within 5 minutes)
@@ -1161,11 +1192,13 @@ But because Sam acknowledged immediately, the right person was already handling 
 **Monday 8:00 AM** — Morgan, the Regional Director, opens FreshTrack Pro to review all 12 locations.
 
 **The Regional Dashboard shows:**
+
 - 🟢 10 locations all green
 - 🟡 1 location with a warning (sensor battery low)
 - 🔴 1 location had a critical alert over the weekend (since resolved)
 
 **8:05 AM** — Morgan drills into the location that had the critical alert:
+
 - **What happened**: Freezer door was propped open for cleaning
 - **How long**: 35 minutes
 - **Who responded**: Kitchen manager acknowledged within 8 minutes
@@ -1174,6 +1207,7 @@ But because Sam acknowledged immediately, the right person was already handling 
 **8:10 AM** — Morgan sends a quick message to that location's manager reminding them about the door-propping policy.
 
 **8:15 AM** — Morgan generates a weekly summary report for the executive team showing:
+
 - Total alerts across all locations: 7
 - Average response time: 6 minutes
 - Equipment issues requiring maintenance: 2
@@ -1191,14 +1225,15 @@ But because Sam acknowledged immediately, the right person was already handling 
 
 **Insights from the data:**
 
-| Finding | Action |
-|---------|--------|
-| Unit 3 shows slowly rising baseline temperature | Schedule compressor inspection before failure |
-| Friday evening has most door-open alerts | Adjust stocking schedule to reduce door time |
-| Location B has 40% more alerts than others | Investigate — older equipment? Training issue? |
-| Battery replacements needed Q2 | Order sensors now for proactive replacement |
+| Finding                                         | Action                                         |
+| ----------------------------------------------- | ---------------------------------------------- |
+| Unit 3 shows slowly rising baseline temperature | Schedule compressor inspection before failure  |
+| Friday evening has most door-open alerts        | Adjust stocking schedule to reduce door time   |
+| Location B has 40% more alerts than others      | Investigate — older equipment? Training issue? |
+| Battery replacements needed Q2                  | Order sensors now for proactive replacement    |
 
 **Alex's Report to Leadership:**
+
 - "We've prevented an estimated $45,000 in potential spoilage this quarter"
 - "Response time improved from 12 minutes to 6 minutes average"
 - "Zero compliance gaps identified"
@@ -1210,14 +1245,14 @@ But because Sam acknowledged immediately, the right person was already handling 
 
 ## Summary: The FreshTrack Pro Difference
 
-| Before FreshTrack Pro | With FreshTrack Pro |
-|----------------------|---------------------|
-| Paper logs, clipboards, filing cabinets | Digital, searchable, always accessible |
-| Problems discovered hours or days later | Alerts within minutes |
-| Scrambling for records during inspections | Reports generated in seconds |
-| No visibility across locations | Single dashboard for everything |
-| Reactive maintenance after failures | Proactive insights prevent failures |
-| Hope and luck | Confidence and control |
+| Before FreshTrack Pro                     | With FreshTrack Pro                    |
+| ----------------------------------------- | -------------------------------------- |
+| Paper logs, clipboards, filing cabinets   | Digital, searchable, always accessible |
+| Problems discovered hours or days later   | Alerts within minutes                  |
+| Scrambling for records during inspections | Reports generated in seconds           |
+| No visibility across locations            | Single dashboard for everything        |
+| Reactive maintenance after failures       | Proactive insights prevent failures    |
+| Hope and luck                             | Confidence and control                 |
 
 ---
 
@@ -1227,7 +1262,6 @@ But because Sam acknowledged immediately, the right person was already handling 
 - [Value Proposition](#value_proposition) — Why it matters
 - [System at a Glance](#system_at_a_glance) — How it works
 - [FAQ](#faq) — Common questions
-
 
 ---
 
@@ -1250,6 +1284,7 @@ FreshTrack Pro is a cloud-based system that automatically monitors temperatures 
 ### Who is FreshTrack Pro designed for?
 
 FreshTrack Pro is built for any organization that needs to maintain strict temperature control:
+
 - Restaurants and food service operations
 - Grocery stores and supermarkets
 - Healthcare facilities (vaccine storage, blood banks)
@@ -1260,6 +1295,7 @@ FreshTrack Pro is built for any organization that needs to maintain strict tempe
 ### How is this different from a simple thermometer?
 
 A thermometer tells you the temperature right now. FreshTrack Pro:
+
 - Monitors **continuously** (every 5 minutes, 24/7)
 - **Alerts you immediately** when something goes wrong
 - **Keeps permanent records** of all readings
@@ -1274,17 +1310,18 @@ A thermometer tells you the temperature right now. FreshTrack Pro:
 
 Yes. FreshTrack Pro employs enterprise-grade security:
 
-| Security Measure | Description |
-|------------------|-------------|
-| **Encryption** | All data encrypted in transit and at rest |
-| **Access Control** | Role-based permissions — users only see what they need |
-| **Cloud Infrastructure** | Hosted on enterprise-grade cloud platforms |
-| **Compliance** | Designed to meet HACCP, FDA, and industry standards |
-| **Audit Logging** | All access and changes are logged |
+| Security Measure         | Description                                            |
+| ------------------------ | ------------------------------------------------------ |
+| **Encryption**           | All data encrypted in transit and at rest              |
+| **Access Control**       | Role-based permissions — users only see what they need |
+| **Cloud Infrastructure** | Hosted on enterprise-grade cloud platforms             |
+| **Compliance**           | Designed to meet HACCP, FDA, and industry standards    |
+| **Audit Logging**        | All access and changes are logged                      |
 
 ### Who can see our data?
 
 Only people you authorize. FreshTrack Pro uses role-based access:
+
 - **Owners/Admins** — Full access to all data and settings
 - **Managers** — Access to their locations and reports
 - **Staff** — Access to log temperatures and acknowledge alerts
@@ -1294,6 +1331,7 @@ No one outside your organization can see your data.
 ### Where is our data stored?
 
 Data is stored in secure cloud infrastructure with:
+
 - Automatic backups
 - Geographic redundancy
 - 99.9%+ uptime guarantee
@@ -1317,6 +1355,7 @@ For compliance reasons, temperature data and audit logs are retained permanently
 ### What is your uptime guarantee?
 
 FreshTrack Pro is designed for 99.9%+ availability. Our cloud infrastructure is:
+
 - Distributed across multiple data centers
 - Automatically monitored 24/7
 - Designed with no single point of failure
@@ -1324,6 +1363,7 @@ FreshTrack Pro is designed for 99.9%+ availability. Our cloud infrastructure is:
 ### What if a sensor fails?
 
 Sensors are designed for years of reliable operation, but if one fails:
+
 - You'll receive a "sensor offline" alert
 - Manual logging can cover the gap
 - Replacement sensors are available for quick swap
@@ -1335,6 +1375,7 @@ Sensors are designed for years of reliable operation, but if one fails:
 ### How long does it take to get started?
 
 Most organizations are up and running in a single day:
+
 - **Account setup**: 10 minutes
 - **Location configuration**: 15-30 minutes per site
 - **Sensor installation**: 5-10 minutes per unit (just stick to wall)
@@ -1343,6 +1384,7 @@ Most organizations are up and running in a single day:
 ### Do we need to hire IT staff?
 
 No. FreshTrack Pro is fully managed:
+
 - No servers to maintain
 - No software to install or update
 - No database administration required
@@ -1351,16 +1393,19 @@ No. FreshTrack Pro is fully managed:
 ### What equipment do we need?
 
 **From FreshTrack Pro:**
+
 - Wireless temperature sensors (included or purchased)
 - Gateway device to connect sensors to internet (1 per location)
 
 **You provide:**
+
 - Internet connection at each location
 - Smartphones/tablets/computers for staff access
 
 ### Can we add more locations later?
 
 Yes. Adding a new location takes minutes:
+
 1. Create the location in the dashboard
 2. Install sensors
 3. Configure alert settings
@@ -1372,14 +1417,14 @@ Yes. Adding a new location takes minutes:
 
 ### How much does FreshTrack Pro cost?
 
-| Plan | Monthly Cost | Sensors Included | Best For |
-|------|--------------|------------------|----------|
-| **Starter** | $29 | Up to 5 | Single small location |
-| **Pro** | $79 | Up to 25 | Multi-unit locations |
-| **HACCP** | $199 | Up to 100 | Compliance-focused operations |
-| **Enterprise** | Custom | Unlimited | Large organizations |
+| Plan           | Monthly Cost | Sensors Included | Best For                      |
+| -------------- | ------------ | ---------------- | ----------------------------- |
+| **Starter**    | $29          | Up to 5          | Single small location         |
+| **Pro**        | $79          | Up to 25         | Multi-unit locations          |
+| **HACCP**      | $199         | Up to 100        | Compliance-focused operations |
+| **Enterprise** | Custom       | Unlimited        | Large organizations           |
 
-*Prices are per organization. Additional sensors available for purchase.*
+_Prices are per organization. Additional sensors available for purchase._
 
 ### Are there long-term contracts?
 
@@ -1393,11 +1438,12 @@ No long-term contracts required. Service is month-to-month, cancel anytime.
 - Email and in-app notifications
 - Standard support
 
-*SMS alerts and advanced features available in Pro plan and above.*
+_SMS alerts and advanced features available in Pro plan and above._
 
 ### What about hardware costs?
 
 Sensors can be:
+
 - **Purchased outright** — One-time cost, you own them
 - **Included in Enterprise plans** — Talk to sales
 
@@ -1410,6 +1456,7 @@ Gateway devices are typically one-time purchases per location.
 ### Does FreshTrack Pro meet HACCP requirements?
 
 Yes. FreshTrack Pro provides:
+
 - Continuous temperature monitoring
 - Automatic record-keeping with timestamps
 - Corrective action documentation
@@ -1418,6 +1465,7 @@ Yes. FreshTrack Pro provides:
 ### What about FDA requirements?
 
 FreshTrack Pro is designed to support FDA Food Safety Modernization Act (FSMA) compliance with:
+
 - Complete temperature history
 - Traceability of all records
 - Evidence of monitoring and response
@@ -1425,6 +1473,7 @@ FreshTrack Pro is designed to support FDA Food Safety Modernization Act (FSMA) c
 ### Can we generate reports for inspectors?
 
 Yes. One-click reports include:
+
 - Temperature logs for any time period
 - Alert history and response times
 - Corrective actions taken
@@ -1435,6 +1484,7 @@ Reports export as professional PDFs ready to share with inspectors.
 ### How long are records kept?
 
 All records are retained permanently:
+
 - Temperature readings
 - Alert history
 - Corrective actions
@@ -1448,16 +1498,17 @@ This ensures complete compliance documentation for any past period.
 
 ### What support is available?
 
-| Support Type | Availability |
-|--------------|--------------|
-| **Help documentation** | 24/7 online |
-| **Email support** | Business hours, typically 24-hour response |
-| **Phone support** | Available for Pro and above plans |
-| **Dedicated success manager** | Enterprise plans |
+| Support Type                  | Availability                               |
+| ----------------------------- | ------------------------------------------ |
+| **Help documentation**        | 24/7 online                                |
+| **Email support**             | Business hours, typically 24-hour response |
+| **Phone support**             | Available for Pro and above plans          |
+| **Dedicated success manager** | Enterprise plans                           |
 
 ### How are updates handled?
 
 FreshTrack Pro is cloud-based, so:
+
 - Updates are automatic
 - No downtime required
 - You always have the latest features
@@ -1478,6 +1529,7 @@ Enterprise customers have dedicated support contacts.
 ### How do the sensors communicate?
 
 Sensors use **LoRa wireless technology** — a long-range, low-power radio signal designed for sensors. Benefits:
+
 - Works through walls and across large facilities
 - Battery life of 2+ years
 - No need for WiFi in each refrigerator
@@ -1489,6 +1541,7 @@ The sensors themselves don't use WiFi. They communicate with a small gateway dev
 ### Can this work with our existing thermometers?
 
 FreshTrack Pro uses its own sensors for automated monitoring. However:
+
 - Staff can log readings from any thermometer manually
 - Existing sensors can sometimes be integrated (ask sales)
 
@@ -1502,14 +1555,14 @@ Standard FreshTrack Pro operates independently. Enterprise customers can discuss
 
 ### Why FreshTrack Pro over alternatives?
 
-| Feature | FreshTrack Pro | Traditional Solutions |
-|---------|----------------|----------------------|
-| Multi-location dashboard | ✅ Built-in | Often extra cost |
-| Escalating alerts | ✅ Automatic | Usually manual |
-| Offline capability | ✅ Yes | Rarely |
-| Modern interface | ✅ Mobile-first | Often dated |
-| HACCP reports | ✅ One-click | Manual work |
-| No servers needed | ✅ Cloud-native | Often on-premise |
+| Feature                  | FreshTrack Pro  | Traditional Solutions |
+| ------------------------ | --------------- | --------------------- |
+| Multi-location dashboard | ✅ Built-in     | Often extra cost      |
+| Escalating alerts        | ✅ Automatic    | Usually manual        |
+| Offline capability       | ✅ Yes          | Rarely                |
+| Modern interface         | ✅ Mobile-first | Often dated           |
+| HACCP reports            | ✅ One-click    | Manual work           |
+| No servers needed        | ✅ Cloud-native | Often on-premise      |
 
 ### Can I try before I buy?
 
@@ -1543,7 +1596,6 @@ For organizations with 10+ locations or specialized requirements, contact our en
 - [System at a Glance](#system_at_a_glance) — How it works
 - [User Journeys](#user_journeys) — Day in the life
 
-
 ---
 
 \newpage
@@ -1573,6 +1625,7 @@ For organizations with 10+ locations or specialized requirements, contact our en
 ## Architecture Overview
 
 FreshTrack Pro follows a modern Jamstack architecture with:
+
 - **React SPA** for the frontend
 - **Supabase** for backend (PostgreSQL + Edge Functions + Auth)
 - **Event-driven processing** for sensor data and alerts
@@ -1604,15 +1657,15 @@ FreshTrack Pro follows a modern Jamstack architecture with:
 
 ### Technology Stack
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| Framework | React 18.3.1 | UI components and state |
-| Routing | React Router 6.30.1 | Client-side navigation |
-| State | TanStack Query 5.83.0 | Server state management |
-| Forms | React Hook Form + Zod | Form handling and validation |
-| Styling | Tailwind CSS 3.4.17 | Utility-first CSS |
-| Components | shadcn/ui (Radix) | Accessible component library |
-| Build | Vite 5.4.19 | Fast development and bundling |
+| Layer      | Technology            | Purpose                       |
+| ---------- | --------------------- | ----------------------------- |
+| Framework  | React 18.3.1          | UI components and state       |
+| Routing    | React Router 6.30.1   | Client-side navigation        |
+| State      | TanStack Query 5.83.0 | Server state management       |
+| Forms      | React Hook Form + Zod | Form handling and validation  |
+| Styling    | Tailwind CSS 3.4.17   | Utility-first CSS             |
+| Components | shadcn/ui (Radix)     | Accessible component library  |
+| Build      | Vite 5.4.19           | Fast development and bundling |
 
 ### Component Architecture
 
@@ -1657,10 +1710,9 @@ graph LR
 ### Key Patterns
 
 1. **Query Keys**: Structured for cache invalidation
+
    ```typescript
-   ['units', unitId]
-   ['alerts', { organizationId, status: 'active' }]
-   ['alert-rules', { unitId }]
+   ['units', unitId][('alerts', { organizationId, status: 'active' })][('alert-rules', { unitId })];
    ```
 
 2. **Component Composition**: Use shadcn components as building blocks
@@ -1675,61 +1727,67 @@ graph LR
 The backend consists of 33 Deno-based edge functions organized by purpose:
 
 #### Data Ingestion (3 functions)
-| Function | Purpose | Trigger |
-|----------|---------|---------|
-| `ttn-webhook` | Receive TTN uplink messages | HTTP POST from TTN |
-| `ingest-readings` | Generic sensor data ingestion | HTTP POST |
-| `sensor-simulator` | Generate test data | HTTP POST |
+
+| Function           | Purpose                       | Trigger            |
+| ------------------ | ----------------------------- | ------------------ |
+| `ttn-webhook`      | Receive TTN uplink messages   | HTTP POST from TTN |
+| `ingest-readings`  | Generic sensor data ingestion | HTTP POST          |
+| `sensor-simulator` | Generate test data            | HTTP POST          |
 
 #### Alert Processing (2 functions)
-| Function | Purpose | Trigger |
-|----------|---------|---------|
-| `process-unit-states` | Evaluate unit states, create/resolve alerts | Called after ingestion |
-| `process-escalations` | Send notifications per policy | Called after state changes |
+
+| Function              | Purpose                                     | Trigger                    |
+| --------------------- | ------------------------------------------- | -------------------------- |
+| `process-unit-states` | Evaluate unit states, create/resolve alerts | Called after ingestion     |
+| `process-escalations` | Send notifications per policy               | Called after state changes |
 
 #### TTN Management (12 functions)
-| Function | Purpose |
-|----------|---------|
-| `ttn-bootstrap` | Auto-configure webhooks |
-| `ttn-manage-application` | Create/update TTN apps |
-| `ttn-provision-device` | Register sensors with TTN |
-| `ttn-provision-gateway` | Register gateways with TTN |
-| `ttn-provision-org` | Provision org in TTN |
-| `ttn-provision-worker` | Background provisioning |
-| `ttn-list-devices` | List TTN devices |
-| `ttn-gateway-preflight` | Validate gateway permissions |
+
+| Function                 | Purpose                       |
+| ------------------------ | ----------------------------- |
+| `ttn-bootstrap`          | Auto-configure webhooks       |
+| `ttn-manage-application` | Create/update TTN apps        |
+| `ttn-provision-device`   | Register sensors with TTN     |
+| `ttn-provision-gateway`  | Register gateways with TTN    |
+| `ttn-provision-org`      | Provision org in TTN          |
+| `ttn-provision-worker`   | Background provisioning       |
+| `ttn-list-devices`       | List TTN devices              |
+| `ttn-gateway-preflight`  | Validate gateway permissions  |
 | `ttn-deprovision-worker` | Cleanup deprovisioned devices |
-| `update-ttn-webhook` | Update webhook config |
-| `manage-ttn-settings` | TTN settings CRUD |
-| `sync-ttn-settings` | Sync from emulator |
+| `update-ttn-webhook`     | Update webhook config         |
+| `manage-ttn-settings`    | TTN settings CRUD             |
+| `sync-ttn-settings`      | Sync from emulator            |
 
 #### User & Data Management (6 functions)
-| Function | Purpose |
-|----------|---------|
-| `user-sync-emitter` | User sync events |
-| `cleanup-user-sensors` | User data cleanup |
-| `update-sensor-assignment` | Sensor assignment |
-| `account-deletion-jobs` | GDPR deletion |
-| `export-temperature-logs` | Compliance data export |
-| `check-password-breach` | Password security |
+
+| Function                   | Purpose                |
+| -------------------------- | ---------------------- |
+| `user-sync-emitter`        | User sync events       |
+| `cleanup-user-sensors`     | User data cleanup      |
+| `update-sensor-assignment` | Sensor assignment      |
+| `account-deletion-jobs`    | GDPR deletion          |
+| `export-temperature-logs`  | Compliance data export |
+| `check-password-breach`    | Password security      |
 
 #### Billing (3 functions)
-| Function | Purpose |
-|----------|---------|
+
+| Function          | Purpose                  |
+| ----------------- | ------------------------ |
 | `stripe-checkout` | Create checkout sessions |
-| `stripe-portal` | Customer portal access |
-| `stripe-webhook` | Handle Stripe events |
+| `stripe-portal`   | Customer portal access   |
+| `stripe-webhook`  | Handle Stripe events     |
 
 #### Utilities (7 functions)
-| Function | Purpose |
-|----------|---------|
-| `health-check` | System health monitoring |
-| `check-slug-available` | Org slug validation |
-| `send-sms-alert` | Twilio SMS delivery |
-| `org-state-api` | Pull-based state API |
-| `fetch-org-state` | Org TTN state |
-| `emulator-sync` | Emulator integration |
-| `run-simulator-heartbeats` | Simulated heartbeats |
+
+| Function                   | Purpose                  |
+| -------------------------- | ------------------------ |
+| `health-check`             | System health monitoring |
+| `check-slug-available`     | Org slug validation      |
+| `send-sms-alert`           | Twilio SMS delivery      |
+| `org-state-api`            | Pull-based state API     |
+| `fetch-org-state`          | Org TTN state            |
+| `emulator-sync`            | Emulator integration     |
+| `run-simulator-heartbeats` | Simulated heartbeats     |
 
 ### Data Processing Pipeline
 
@@ -1754,12 +1812,12 @@ graph TD
 
 ### Function Security
 
-| Security Level | Functions | Auth Method |
-|----------------|-----------|-------------|
-| Public | Health check endpoints | None |
-| User Auth | Most API endpoints | JWT (Supabase Auth) |
-| Internal Only | process-unit-states, process-escalations | INTERNAL_API_KEY header |
-| Webhook | ttn-webhook, stripe-webhook | Webhook secret |
+| Security Level | Functions                                | Auth Method             |
+| -------------- | ---------------------------------------- | ----------------------- |
+| Public         | Health check endpoints                   | None                    |
+| User Auth      | Most API endpoints                       | JWT (Supabase Auth)     |
+| Internal Only  | process-unit-states, process-escalations | INTERNAL_API_KEY header |
+| Webhook        | ttn-webhook, stripe-webhook              | Webhook secret          |
 
 ---
 
@@ -1770,6 +1828,7 @@ graph TD
 The database contains 60+ tables organized by domain:
 
 #### Hierarchy Tables
+
 ```
 organizations
     └── sites
@@ -1779,24 +1838,26 @@ organizations
 
 #### Core Tables by Domain
 
-| Domain | Tables |
-|--------|--------|
-| Hierarchy | organizations, sites, areas, units |
-| Sensors | lora_sensors, gateways, devices (legacy), sensor_readings |
-| Alerts | alerts, alert_rules, alert_rules_history |
+| Domain        | Tables                                                          |
+| ------------- | --------------------------------------------------------------- |
+| Hierarchy     | organizations, sites, areas, units                              |
+| Sensors       | lora_sensors, gateways, devices (legacy), sensor_readings       |
+| Alerts        | alerts, alert_rules, alert_rules_history                        |
 | Notifications | notification_policies, notification_events, escalation_contacts |
-| Compliance | corrective_actions, calibration_records, event_logs |
-| TTN | ttn_connections, ttn_provisioning_queue, ttn_provisioning_logs |
-| Users | profiles, user_roles, user_sync_log |
-| Billing | subscriptions, invoices |
+| Compliance    | corrective_actions, calibration_records, event_logs             |
+| TTN           | ttn_connections, ttn_provisioning_queue, ttn_provisioning_logs  |
+| Users         | profiles, user_roles, user_sync_log                             |
+| Billing       | subscriptions, invoices                                         |
 
 ### Row-Level Security (RLS)
 
 All tables enforce RLS policies based on:
+
 - User's organization membership (`user_roles`)
 - Data ownership chain (units → areas → sites → organizations)
 
 Example policy pattern:
+
 ```sql
 -- Users can only see units in their organization
 CREATE POLICY "Users can view org units" ON units
@@ -1814,14 +1875,14 @@ CREATE POLICY "Users can view org units" ON units
 
 ### Key RPC Functions
 
-| Function | Purpose |
-|----------|---------|
-| `get_effective_alert_rules(p_unit_id)` | Resolve cascaded alert rules |
+| Function                                 | Purpose                              |
+| ---------------------------------------- | ------------------------------------ |
+| `get_effective_alert_rules(p_unit_id)`   | Resolve cascaded alert rules         |
 | `get_effective_notification_policy(...)` | Resolve cascaded notification policy |
-| `create_organization_with_owner(...)` | Atomic org creation |
-| `user_belongs_to_org(...)` | Access check |
-| `has_role(...)` | Role authorization |
-| `enqueue_deprovision_jobs_for_unit(...)` | TTN cleanup queue |
+| `create_organization_with_owner(...)`    | Atomic org creation                  |
+| `user_belongs_to_org(...)`               | Access check                         |
+| `has_role(...)`                          | Role authorization                   |
+| `enqueue_deprovision_jobs_for_unit(...)` | TTN cleanup queue                    |
 
 ---
 
@@ -1846,18 +1907,19 @@ sequenceDiagram
 ```
 
 ### Session Management
+
 - JWT tokens via Supabase Auth
 - Automatic token refresh
 - Session stored in localStorage
 
 ### Authorization Model
 
-| Role | Capabilities |
-|------|--------------|
-| `owner` | Full org control, billing, user management |
-| `manager` | Settings, alerts, reports |
-| `operator` | Manual logging, alert acknowledgment |
-| `viewer` | Read-only dashboard access |
+| Role       | Capabilities                               |
+| ---------- | ------------------------------------------ |
+| `owner`    | Full org control, billing, user management |
+| `manager`  | Settings, alerts, reports                  |
+| `operator` | Manual logging, alert acknowledgment       |
+| `viewer`   | Read-only dashboard access                 |
 
 ### Permission Checks
 
@@ -1879,11 +1941,13 @@ SELECT has_role(auth.uid(), 'manager', org_id);
 **Purpose**: LoRa sensor network connectivity
 
 **Architecture**:
+
 - Per-organization TTN Application
 - Webhook-based uplink reception
 - Device provisioning via TTN API
 
 **Data Flow**:
+
 ```
 Sensor → LoRa Gateway → TTN → ttn-webhook → Database
 ```
@@ -1895,6 +1959,7 @@ Sensor → LoRa Gateway → TTN → ttn-webhook → Database
 **Purpose**: Subscription billing
 
 **Architecture**:
+
 - Checkout sessions for new subscriptions
 - Customer portal for management
 - Webhook for event processing
@@ -1919,15 +1984,16 @@ Sensor → LoRa Gateway → TTN → ttn-webhook → Database
 
 ### Environments
 
-| Environment | Purpose | Database | Edge Functions |
-|-------------|---------|----------|----------------|
-| Local | Development | Local Supabase | `supabase functions serve` |
-| Staging | Testing | Staging project | Deployed |
-| Production | Live users | Production project | Deployed |
+| Environment | Purpose     | Database           | Edge Functions             |
+| ----------- | ----------- | ------------------ | -------------------------- |
+| Local       | Development | Local Supabase     | `supabase functions serve` |
+| Staging     | Testing     | Staging project    | Deployed                   |
+| Production  | Live users  | Production project | Deployed                   |
 
 ### Environment Variables
 
 **Frontend (Vite)**:
+
 ```env
 VITE_SUPABASE_URL=https://xxx.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbG...
@@ -1935,6 +2001,7 @@ VITE_SUPABASE_PROJECT_ID=xxx
 ```
 
 **Edge Functions**:
+
 ```env
 SUPABASE_URL=<auto-injected>
 SUPABASE_SERVICE_ROLE_KEY=<auto-injected>
@@ -1987,13 +2054,13 @@ graph TB
 
 ### Data Security
 
-| Data Type | Protection |
-|-----------|------------|
-| User passwords | Bcrypt hash (Supabase Auth) |
-| TTN API keys | Encrypted at rest in database |
-| Webhook secrets | Hashed for comparison |
-| Session tokens | JWT with expiration |
-| Sensitive logs | Masked before logging |
+| Data Type       | Protection                    |
+| --------------- | ----------------------------- |
+| User passwords  | Bcrypt hash (Supabase Auth)   |
+| TTN API keys    | Encrypted at rest in database |
+| Webhook secrets | Hashed for comparison         |
+| Session tokens  | JWT with expiration           |
+| Sensitive logs  | Masked before logging         |
 
 ### Input Validation
 
@@ -2081,7 +2148,6 @@ C4Container
 - [INTEGRATIONS.md](#engineering-integrations) - Third-party integration guides
 - [OBSERVABILITY.md](#engineering-observability) - Logging and monitoring
 
-
 ---
 
 \newpage
@@ -2107,31 +2173,31 @@ C4Container
 
 ## Route Overview
 
-| Route | Page Component | Purpose | Auth Required |
-|-------|----------------|---------|---------------|
-| `/` | `Index.tsx` | Landing page | No |
-| `/auth` | `Auth.tsx` | Sign in/Sign up | No |
-| `/auth/callback` | `AuthCallback.tsx` | OAuth callback | No |
-| `/dashboard` | `Dashboard.tsx` | Main monitoring view | Yes |
-| `/organization` | `OrganizationDashboard.tsx` | Organization overview | Yes |
-| `/onboarding` | `Onboarding.tsx` | Initial setup flow | Yes |
-| `/sites` | `Sites.tsx` | Site listing | Yes |
-| `/sites/:siteId` | `SiteDetail.tsx` | Site details | Yes |
-| `/sites/:siteId/areas/:areaId` | `AreaDetail.tsx` | Area details | Yes |
-| `/units/:unitId` | `UnitDetail.tsx` | Unit monitoring | Yes |
-| `/manual-log` | `ManualLog.tsx` | Manual temperature entry | Yes |
-| `/alerts` | `Alerts.tsx` | Alert management | Yes |
-| `/reports` | `Reports.tsx` | Compliance reports | Yes |
-| `/settings` | `Settings.tsx` | Multi-tab settings | Yes |
-| `/inspector` | `Inspector.tsx` | Debug inspection | Yes |
-| `/pilot-setup` | `PilotSetup.tsx` | Pilot program setup | Yes |
-| `/events` | `EventHistory.tsx` | Audit event log | Yes |
-| `/admin/recently-deleted` | `RecentlyDeleted.tsx` | Soft-deleted items | Yes |
-| `/admin/ttn-cleanup` | `TTNCleanup.tsx` | TTN management | Yes |
-| `/admin/data-maintenance` | `DataMaintenance.tsx` | Database maintenance | Yes |
-| `/admin/health` | `HealthDashboard.tsx` | System health | Yes |
-| `/account-deleted` | `AccountDeleted.tsx` | Deletion confirmation | No |
-| `*` | `NotFound.tsx` | 404 handler | No |
+| Route                          | Page Component              | Purpose                  | Auth Required |
+| ------------------------------ | --------------------------- | ------------------------ | ------------- |
+| `/`                            | `Index.tsx`                 | Landing page             | No            |
+| `/auth`                        | `Auth.tsx`                  | Sign in/Sign up          | No            |
+| `/auth/callback`               | `AuthCallback.tsx`          | OAuth callback           | No            |
+| `/dashboard`                   | `Dashboard.tsx`             | Main monitoring view     | Yes           |
+| `/organization`                | `OrganizationDashboard.tsx` | Organization overview    | Yes           |
+| `/onboarding`                  | `Onboarding.tsx`            | Initial setup flow       | Yes           |
+| `/sites`                       | `Sites.tsx`                 | Site listing             | Yes           |
+| `/sites/:siteId`               | `SiteDetail.tsx`            | Site details             | Yes           |
+| `/sites/:siteId/areas/:areaId` | `AreaDetail.tsx`            | Area details             | Yes           |
+| `/units/:unitId`               | `UnitDetail.tsx`            | Unit monitoring          | Yes           |
+| `/manual-log`                  | `ManualLog.tsx`             | Manual temperature entry | Yes           |
+| `/alerts`                      | `Alerts.tsx`                | Alert management         | Yes           |
+| `/reports`                     | `Reports.tsx`               | Compliance reports       | Yes           |
+| `/settings`                    | `Settings.tsx`              | Multi-tab settings       | Yes           |
+| `/inspector`                   | `Inspector.tsx`             | Debug inspection         | Yes           |
+| `/pilot-setup`                 | `PilotSetup.tsx`            | Pilot program setup      | Yes           |
+| `/events`                      | `EventHistory.tsx`          | Audit event log          | Yes           |
+| `/admin/recently-deleted`      | `RecentlyDeleted.tsx`       | Soft-deleted items       | Yes           |
+| `/admin/ttn-cleanup`           | `TTNCleanup.tsx`            | TTN management           | Yes           |
+| `/admin/data-maintenance`      | `DataMaintenance.tsx`       | Database maintenance     | Yes           |
+| `/admin/health`                | `HealthDashboard.tsx`       | System health            | Yes           |
+| `/account-deleted`             | `AccountDeleted.tsx`        | Deletion confirmation    | No            |
+| `*`                            | `NotFound.tsx`              | 404 handler              | No            |
 
 ---
 
@@ -2144,12 +2210,14 @@ C4Container
 **Purpose**: Marketing landing page for unauthenticated users, redirects authenticated users to dashboard.
 
 **Layout**:
+
 - Hero section with value proposition
 - Feature highlights
 - Pricing information
 - Call-to-action buttons
 
 **State Machine**:
+
 ```
 [Loading] → (check auth)
    ├─ authenticated → [Redirect to /dashboard]
@@ -2157,6 +2225,7 @@ C4Container
 ```
 
 **API Calls**:
+
 - `supabase.auth.getSession()` - Check authentication status
 
 **Diagram Reference**: [Landing Page Diagram](#diagrams-page_diagrams#landing-page)
@@ -2172,6 +2241,7 @@ C4Container
 **Purpose**: User authentication (sign in and sign up).
 
 **Layout**:
+
 - Tabbed interface: Sign In / Sign Up
 - Email/password form
 - Social auth options (if configured)
@@ -2180,6 +2250,7 @@ C4Container
 **Preconditions**: User is not authenticated
 
 **State Machine**:
+
 ```
 [Idle] → (submit form)
    → [Submitting] → (success)
@@ -2189,20 +2260,24 @@ C4Container
 ```
 
 **Data Dependencies**:
+
 - None (creates new session)
 
 **API Calls**:
+
 - `supabase.auth.signInWithPassword()` - Sign in
 - `supabase.auth.signUp()` - Sign up
 - `supabase.functions.invoke('check-password-breach')` - Password validation
 
 **Error States**:
+
 - Invalid credentials
 - Email already registered
 - Password requirements not met
 - Network error
 
 **Files Involved**:
+
 - `src/pages/Auth.tsx`
 - `src/hooks/useAuthAndOnboarding.ts`
 - `src/lib/validation.ts`
@@ -2218,6 +2293,7 @@ C4Container
 **Purpose**: Handle OAuth callback and magic link authentication.
 
 **State Machine**:
+
 ```
 [Processing] → (validate token)
    ├─ valid → [Redirect to /dashboard or /onboarding]
@@ -2243,11 +2319,13 @@ C4Container
 | Widgets | Low battery alerts, offline sensors |
 
 **Preconditions**:
+
 - User authenticated
 - User belongs to an organization
 - Organization has completed onboarding
 
 **State Machine**:
+
 ```
 [Loading] → (fetch data)
    ├─ success → [Ready]
@@ -2269,6 +2347,7 @@ C4Container
 | Sensors | `lora_sensors` | `['lora-sensors', { organizationId }]` |
 
 **API Calls**:
+
 - Supabase direct queries via TanStack Query
 - Real-time subscriptions for unit status updates
 
@@ -2280,15 +2359,18 @@ C4Container
 | Acknowledge alert | Click acknowledge | Updates alert status |
 
 **Error States**:
+
 - Failed to load organization
 - Failed to load units
 - No units configured
 
 **Recovery**:
+
 - Retry button for failed queries
 - Link to Settings for configuration
 
 **Files Involved**:
+
 - `src/pages/Dashboard.tsx`
 - `src/components/DashboardLayout.tsx`
 - `src/components/dashboard/LowBatteryWidget.tsx`
@@ -2305,12 +2387,14 @@ C4Container
 **Purpose**: High-level organization overview with aggregated statistics.
 
 **Layout**:
+
 - Organization header with branding
 - Summary statistics (total units, active alerts, compliance score)
 - Site overview cards
 - Quick actions
 
 **Data Dependencies**:
+
 - Organization details
 - Site summaries
 - Alert counts
@@ -2327,11 +2411,13 @@ C4Container
 **Purpose**: Guide new users through initial organization setup.
 
 **Layout**:
+
 - Step-by-step wizard
 - Progress indicator
 - Form sections for each step
 
 **Steps**:
+
 1. Organization details (name, slug)
 2. First site creation
 3. First area creation
@@ -2339,6 +2425,7 @@ C4Container
 5. Sensor setup (optional)
 
 **State Machine**:
+
 ```
 [Step 1: Org] → (submit) → [Step 2: Site]
                          → [Step 3: Area]
@@ -2348,6 +2435,7 @@ C4Container
 ```
 
 **API Calls**:
+
 - `create_organization_with_owner()` RPC
 - `create_site_for_org()` RPC
 - `create_area_for_site()` RPC
@@ -2364,16 +2452,19 @@ C4Container
 **Purpose**: List all sites in the organization.
 
 **Layout**:
+
 - Site cards with address and status summary
 - Add site button
 - Filter/search options
 
 **Data Dependencies**:
+
 - `sites` table
 - Unit counts per site
 - Alert counts per site
 
 **Actions**:
+
 - Navigate to site detail
 - Create new site
 - Edit site
@@ -2400,18 +2491,21 @@ C4Container
 | Settings | Site-level configuration |
 
 **Data Dependencies**:
+
 - Site details
 - Areas within site
 - Units within areas
 - Gateway status
 
 **Actions**:
+
 - Add area
 - Add unit
 - Configure site settings
 - Manage gateways
 
 **Files Involved**:
+
 - `src/pages/SiteDetail.tsx`
 - `src/components/site/SiteComplianceSettings.tsx`
 - `src/components/site/SiteGatewaysCard.tsx`
@@ -2429,12 +2523,14 @@ C4Container
 **URL Parameters**: `siteId`, `areaId` (UUIDs)
 
 **Layout**:
+
 - Breadcrumb navigation
 - Unit cards
 - Area settings
 - Add unit button
 
 **Data Dependencies**:
+
 - Area details
 - Units in area
 - Site (for breadcrumb)
@@ -2463,9 +2559,11 @@ C4Container
 | History | Recent readings and events |
 
 **Preconditions**:
+
 - Unit exists and is accessible to user
 
 **State Machine**:
+
 ```
 [Loading] → (fetch)
    ├─ success → [Ready]
@@ -2489,6 +2587,7 @@ C4Container
 | Alert Rules | `alert_rules` RPC | `['alert-rules', { unitId }]` |
 
 **API Calls**:
+
 - `get_effective_alert_rules()` RPC
 - Direct table queries via Supabase
 
@@ -2501,11 +2600,13 @@ C4Container
 | Assign sensor | `AssignSensorToUnitDialog` | Update `lora_sensors.unit_id` |
 
 **Error States**:
+
 - Unit not found (404)
 - Failed to load readings
 - Failed to load alerts
 
 **Files Involved**:
+
 - `src/pages/UnitDetail.tsx`
 - `src/components/unit/UnitAlertsBanner.tsx`
 - `src/components/unit/UnitSensorsCard.tsx`
@@ -2529,6 +2630,7 @@ C4Container
 **Purpose**: Quick manual temperature logging interface with offline support.
 
 **Layout**:
+
 - Unit selector (hierarchical: Site → Area → Unit)
 - Temperature input
 - Notes field
@@ -2536,10 +2638,12 @@ C4Container
 - Offline indicator
 
 **Preconditions**:
+
 - User authenticated
 - At least one unit exists
 
 **State Machine**:
+
 ```
 [Select Unit] → (unit selected) → [Enter Temperature]
                                 → (submit) → [Submitting]
@@ -2551,19 +2655,23 @@ C4Container
 ```
 
 **Data Dependencies**:
+
 - Sites, areas, units (for selector)
 - Offline queue (IndexedDB)
 
 **API Calls**:
+
 - Insert to `manual_temperature_logs`
 - `src/lib/offlineStorage.ts` for offline queue
 
 **Offline Behavior**:
+
 - Logs stored in IndexedDB
 - Automatic sync when connection restored
 - Pending count indicator
 
 **Files Involved**:
+
 - `src/pages/ManualLog.tsx`
 - `src/components/LogTempModal.tsx`
 - `src/lib/offlineStorage.ts`
@@ -2587,6 +2695,7 @@ C4Container
 | Detail Panel | Selected alert details |
 
 **State Machine**:
+
 ```
 [Loading] → (fetch) → [Ready]
 
@@ -2597,6 +2706,7 @@ C4Container
 ```
 
 **Data Dependencies**:
+
 - `alerts` table with filters
 - Related units, sites, areas
 
@@ -2610,6 +2720,7 @@ C4Container
 | View unit | Navigate to unit detail |
 
 **Files Involved**:
+
 - `src/pages/Alerts.tsx`
 - `src/components/alerts/AlertRow.tsx`
 - `src/lib/alertConfig.ts`
@@ -2625,6 +2736,7 @@ C4Container
 **Purpose**: Generate and export compliance reports.
 
 **Layout**:
+
 - Report type selector
 - Date range picker
 - Unit/site filter
@@ -2641,15 +2753,18 @@ C4Container
 | Corrective Actions | Actions taken for violations |
 
 **Data Dependencies**:
+
 - `sensor_readings`
 - `manual_temperature_logs`
 - `alerts`
 - `corrective_actions`
 
 **API Calls**:
+
 - `export-temperature-logs` edge function
 
 **Files Involved**:
+
 - `src/pages/Reports.tsx`
 - `src/components/reports/ComplianceReportCard.tsx`
 
@@ -2666,11 +2781,13 @@ C4Container
 **Layout**: Tabbed interface with the following tabs:
 
 #### General Tab
+
 - Organization name and branding
 - Timezone settings
 - Compliance mode selection
 
 #### Alert Rules Tab
+
 - Default temperature thresholds
 - Offline detection settings
 - Manual log requirements
@@ -2678,6 +2795,7 @@ C4Container
 **Component**: `AlertRulesEditor.tsx`, `AlertRulesScopedEditor.tsx`
 
 #### Notification Policies Tab
+
 - Per-alert-type notification configuration
 - Escalation timing settings
 - Quiet hours
@@ -2685,6 +2803,7 @@ C4Container
 **Component**: `NotificationPolicyEditor.tsx`, `AlertTypePolicyCard.tsx`
 
 #### Sensors Tab
+
 - LoRa sensor inventory
 - Add/edit/remove sensors
 - Provisioning status
@@ -2692,6 +2811,7 @@ C4Container
 **Component**: `SensorManager.tsx`, `AddSensorDialog.tsx`, `EditSensorDialog.tsx`
 
 #### Gateways Tab
+
 - LoRa gateway inventory
 - Add/edit/remove gateways
 - Connection status
@@ -2699,6 +2819,7 @@ C4Container
 **Component**: `GatewayManager.tsx`, `AddGatewayDialog.tsx`, `EditGatewayDialog.tsx`
 
 #### TTN Connection Tab
+
 - TTN credentials
 - Webhook configuration
 - Provisioning logs
@@ -2706,6 +2827,7 @@ C4Container
 **Component**: `TTNConnectionSettings.tsx`, `TTNCredentialsPanel.tsx`, `TTNProvisioningLogs.tsx`
 
 #### Billing Tab
+
 - Current plan
 - Usage metrics
 - Invoice history
@@ -2714,11 +2836,13 @@ C4Container
 **Component**: `BillingTab.tsx`, `PlanCard.tsx`, `InvoiceHistory.tsx`
 
 #### Account Tab
+
 - User profile
 - Password change
 - Account deletion
 
 **State Machine**:
+
 ```
 [Loading] → (fetch settings) → [Ready]
 
@@ -2728,6 +2852,7 @@ C4Container
 ```
 
 **Files Involved**:
+
 - `src/pages/Settings.tsx`
 - `src/components/settings/*.tsx` (20+ components)
 - `src/hooks/useAlertRules.ts`
@@ -2746,15 +2871,18 @@ C4Container
 **Purpose**: Audit trail viewer for all system events.
 
 **Layout**:
+
 - Filterable event list
 - Event type icons
 - Timestamp display
 - Event details expandable
 
 **Data Dependencies**:
+
 - `event_logs` table
 
 **Filters**:
+
 - Event type (alert, temperature, configuration, user)
 - Severity (info, warning, error)
 - Date range
@@ -2781,12 +2909,14 @@ C4Container
 | TTN | Webhook status |
 
 **Components**:
+
 - `HealthCheckList.tsx`
 - `HealthStatusBadge.tsx`
 - `HealthStatusCard.tsx`
 - `OverallHealthSummary.tsx`
 
 **API Calls**:
+
 - `health-check` edge function
 - Database connectivity check
 
@@ -2801,6 +2931,7 @@ C4Container
 **Purpose**: Manage TTN device cleanup and deprovisioning.
 
 **Actions**:
+
 - View pending cleanup jobs
 - Trigger manual cleanup
 - View cleanup history
@@ -2814,6 +2945,7 @@ C4Container
 **Purpose**: Database maintenance operations.
 
 **Actions**:
+
 - Find orphan organizations
 - Cleanup old data
 - Repair data integrity
@@ -2827,6 +2959,7 @@ C4Container
 **Purpose**: View and restore soft-deleted items.
 
 **Layout**:
+
 - List of deleted items by type
 - Restore button
 - Permanent delete option
@@ -2840,6 +2973,7 @@ C4Container
 **Purpose**: Debug tool for examining organization data.
 
 **Features**:
+
 - View raw database records
 - Examine sensor states
 - Check TTN configuration
@@ -2864,6 +2998,7 @@ C4Container
 **Purpose**: Confirmation page shown after account deletion.
 
 **Layout**:
+
 - Confirmation message
 - Link to sign up again
 
@@ -2876,6 +3011,7 @@ C4Container
 **Purpose**: 404 error page for unknown routes.
 
 **Layout**:
+
 - Error message
 - Link to dashboard/home
 
@@ -2885,16 +3021,15 @@ C4Container
 
 All page-specific diagrams are located in [PAGE_DIAGRAMS.md](#diagrams-page_diagrams).
 
-| Page | Diagram Section |
-|------|-----------------|
-| Dashboard | [#dashboard](#diagrams-page_diagrams#dashboard) |
+| Page        | Diagram Section                                     |
+| ----------- | --------------------------------------------------- |
+| Dashboard   | [#dashboard](#diagrams-page_diagrams#dashboard)     |
 | Unit Detail | [#unit-detail](#diagrams-page_diagrams#unit-detail) |
-| Alerts | [#alerts](#diagrams-page_diagrams#alerts) |
-| Settings | [#settings](#diagrams-page_diagrams#settings) |
-| Manual Log | [#manual-log](#diagrams-page_diagrams#manual-log) |
-| Reports | [#reports](#diagrams-page_diagrams#reports) |
-| Auth | [#auth-page](#diagrams-page_diagrams#auth-page) |
-
+| Alerts      | [#alerts](#diagrams-page_diagrams#alerts)           |
+| Settings    | [#settings](#diagrams-page_diagrams#settings)       |
+| Manual Log  | [#manual-log](#diagrams-page_diagrams#manual-log)   |
+| Reports     | [#reports](#diagrams-page_diagrams#reports)         |
+| Auth        | [#auth-page](#diagrams-page_diagrams#auth-page)     |
 
 ---
 
@@ -2928,29 +3063,32 @@ All page-specific diagrams are located in [PAGE_DIAGRAMS.md](#diagrams-page_diag
 **Goal**: New user creates account and sets up their organization
 
 **Actors**:
+
 - Primary: New User (Food Safety Manager)
 - System: FreshTrack Pro, Supabase Auth
 
 **Preconditions**:
+
 - User has a valid email address
 - User is not already registered
 
 **Steps**:
 
-| Step | Actor | Action | System Response |
-|------|-------|--------|-----------------|
-| 1 | User | Navigates to `/auth` | Displays sign up form |
-| 2 | User | Enters email, password | Validates input (Zod schema) |
-| 3 | System | Checks password breach | `check-password-breach` edge function |
-| 4 | User | Clicks "Create Account" | Shows loading state |
-| 5 | System | Creates auth user | Supabase Auth `signUp()` |
-| 6 | System | Creates profile record | Database trigger |
-| 7 | System | Redirects to `/onboarding` | |
-| 8 | User | Enters organization name | Validates slug availability |
-| 9 | User | Completes onboarding steps | Creates org, site, area, unit |
-| 10 | System | Redirects to `/dashboard` | Shows empty dashboard |
+| Step | Actor  | Action                     | System Response                       |
+| ---- | ------ | -------------------------- | ------------------------------------- |
+| 1    | User   | Navigates to `/auth`       | Displays sign up form                 |
+| 2    | User   | Enters email, password     | Validates input (Zod schema)          |
+| 3    | System | Checks password breach     | `check-password-breach` edge function |
+| 4    | User   | Clicks "Create Account"    | Shows loading state                   |
+| 5    | System | Creates auth user          | Supabase Auth `signUp()`              |
+| 6    | System | Creates profile record     | Database trigger                      |
+| 7    | System | Redirects to `/onboarding` |                                       |
+| 8    | User   | Enters organization name   | Validates slug availability           |
+| 9    | User   | Completes onboarding steps | Creates org, site, area, unit         |
+| 10   | System | Redirects to `/dashboard`  | Shows empty dashboard                 |
 
 **APIs and Data Touched**:
+
 - `supabase.auth.signUp()` - Creates auth user
 - `check-password-breach` - Validates password
 - `check-slug-available` - Validates org slug
@@ -2976,26 +3114,29 @@ All page-specific diagrams are located in [PAGE_DIAGRAMS.md](#diagrams-page_diag
 **Goal**: Existing user signs in to access their organization
 
 **Actors**:
+
 - Primary: Returning User
 - System: FreshTrack Pro, Supabase Auth
 
 **Preconditions**:
+
 - User has a registered account
 - User knows their credentials
 
 **Steps**:
 
-| Step | Actor | Action | System Response |
-|------|-------|--------|-----------------|
-| 1 | User | Navigates to `/auth` | Displays sign in form |
-| 2 | User | Enters email, password | |
-| 3 | User | Clicks "Sign In" | Shows loading state |
-| 4 | System | Validates credentials | Supabase Auth |
-| 5 | System | Creates session | JWT token stored |
-| 6 | System | Loads organization | Fetches user's org |
-| 7 | System | Redirects to `/dashboard` | Shows dashboard |
+| Step | Actor  | Action                    | System Response       |
+| ---- | ------ | ------------------------- | --------------------- |
+| 1    | User   | Navigates to `/auth`      | Displays sign in form |
+| 2    | User   | Enters email, password    |                       |
+| 3    | User   | Clicks "Sign In"          | Shows loading state   |
+| 4    | System | Validates credentials     | Supabase Auth         |
+| 5    | System | Creates session           | JWT token stored      |
+| 6    | System | Loads organization        | Fetches user's org    |
+| 7    | System | Redirects to `/dashboard` | Shows dashboard       |
 
 **APIs and Data Touched**:
+
 - `supabase.auth.signInWithPassword()` - Authenticates
 - Tables: `profiles`, `user_roles`, `organizations`
 
@@ -3019,31 +3160,34 @@ All page-specific diagrams are located in [PAGE_DIAGRAMS.md](#diagrams-page_diag
 **Goal**: IT Administrator connects TTN and provisions sensors
 
 **Actors**:
+
 - Primary: IT Administrator
 - System: FreshTrack Pro, The Things Network
 
 **Preconditions**:
+
 - Organization exists
 - User has admin/owner role
 - TTN account exists with application
 
 **Steps**:
 
-| Step | Actor | Action | System Response |
-|------|-------|--------|-----------------|
-| 1 | Admin | Navigates to `/settings` → TTN tab | Displays TTN setup wizard |
-| 2 | Admin | Enters TTN Application ID | Validates format |
-| 3 | Admin | Enters TTN API Key | |
-| 4 | System | Validates API key permissions | `ttn-gateway-preflight` |
-| 5 | System | Stores encrypted credentials | Saves to `ttn_connections` |
-| 6 | System | Configures TTN webhook | `ttn-bootstrap` |
-| 7 | Admin | Clicks "Add Sensor" | Opens sensor dialog |
-| 8 | Admin | Enters DevEUI, name, type | |
-| 9 | System | Queues provisioning job | `ttn_provisioning_queue` |
-| 10 | System | Provisions device in TTN | `ttn-provision-device` |
-| 11 | System | Updates sensor status | Shows "active" when receiving data |
+| Step | Actor  | Action                             | System Response                    |
+| ---- | ------ | ---------------------------------- | ---------------------------------- |
+| 1    | Admin  | Navigates to `/settings` → TTN tab | Displays TTN setup wizard          |
+| 2    | Admin  | Enters TTN Application ID          | Validates format                   |
+| 3    | Admin  | Enters TTN API Key                 |                                    |
+| 4    | System | Validates API key permissions      | `ttn-gateway-preflight`            |
+| 5    | System | Stores encrypted credentials       | Saves to `ttn_connections`         |
+| 6    | System | Configures TTN webhook             | `ttn-bootstrap`                    |
+| 7    | Admin  | Clicks "Add Sensor"                | Opens sensor dialog                |
+| 8    | Admin  | Enters DevEUI, name, type          |                                    |
+| 9    | System | Queues provisioning job            | `ttn_provisioning_queue`           |
+| 10   | System | Provisions device in TTN           | `ttn-provision-device`             |
+| 11   | System | Updates sensor status              | Shows "active" when receiving data |
 
 **APIs and Data Touched**:
+
 - `ttn-gateway-preflight` - Validates TTN credentials
 - `ttn-bootstrap` - Configures webhook
 - `ttn-provision-device` - Registers device in TTN
@@ -3068,29 +3212,32 @@ All page-specific diagrams are located in [PAGE_DIAGRAMS.md](#diagrams-page_diag
 **Goal**: User adds a new monitored refrigeration unit
 
 **Actors**:
+
 - Primary: Manager or Owner
 - System: FreshTrack Pro
 
 **Preconditions**:
+
 - Organization, site, and area exist
 - User has manager or owner role
 
 **Steps**:
 
-| Step | Actor | Action | System Response |
-|------|-------|--------|-----------------|
-| 1 | User | Navigates to area page | Displays area with existing units |
-| 2 | User | Clicks "Add Unit" | Opens unit creation dialog |
-| 3 | User | Enters unit name | |
-| 4 | User | Sets temperature thresholds | High limit, low limit (optional) |
-| 5 | User | Configures check-in interval | Default 5 minutes |
-| 6 | User | Clicks "Create" | Shows loading |
-| 7 | System | Creates unit record | `create_unit_for_area()` RPC |
-| 8 | System | Creates default alert rules | Inherited from org/site |
-| 9 | System | Redirects to unit page | Shows empty unit |
-| 10 | User | Assigns sensor (optional) | Opens sensor assignment dialog |
+| Step | Actor  | Action                       | System Response                   |
+| ---- | ------ | ---------------------------- | --------------------------------- |
+| 1    | User   | Navigates to area page       | Displays area with existing units |
+| 2    | User   | Clicks "Add Unit"            | Opens unit creation dialog        |
+| 3    | User   | Enters unit name             |                                   |
+| 4    | User   | Sets temperature thresholds  | High limit, low limit (optional)  |
+| 5    | User   | Configures check-in interval | Default 5 minutes                 |
+| 6    | User   | Clicks "Create"              | Shows loading                     |
+| 7    | System | Creates unit record          | `create_unit_for_area()` RPC      |
+| 8    | System | Creates default alert rules  | Inherited from org/site           |
+| 9    | System | Redirects to unit page       | Shows empty unit                  |
+| 10   | User   | Assigns sensor (optional)    | Opens sensor assignment dialog    |
 
 **APIs and Data Touched**:
+
 - `create_unit_for_area()` RPC
 - Tables: `units`, `alert_rules`
 
@@ -3107,31 +3254,34 @@ All page-specific diagrams are located in [PAGE_DIAGRAMS.md](#diagrams-page_diag
 **Goal**: System receives and processes sensor temperature reading
 
 **Actors**:
+
 - System: TTN, FreshTrack Pro Edge Functions
 
 **Preconditions**:
+
 - Sensor is provisioned and active
 - Sensor is assigned to a unit
 - TTN webhook is configured
 
 **Steps**:
 
-| Step | Actor | Action | System Response |
-|------|-------|--------|-----------------|
-| 1 | Sensor | Transmits temperature via LoRa | |
-| 2 | TTN Gateway | Receives and forwards | |
-| 3 | TTN | Decodes payload | |
-| 4 | TTN | Calls webhook | POST to `ttn-webhook` |
-| 5 | System | Validates webhook secret | Per-org secret check |
-| 6 | System | Looks up sensor by DevEUI | Scoped to org |
-| 7 | System | Inserts reading | `sensor_readings` table |
-| 8 | System | Updates unit state | `last_reading_at`, `last_temp_reading` |
-| 9 | System | Triggers state processing | Calls `process-unit-states` |
-| 10 | System | Evaluates thresholds | Checks temp limits |
-| 11 | System | Creates/resolves alerts | If threshold exceeded |
-| 12 | System | Triggers notifications | Calls `process-escalations` |
+| Step | Actor       | Action                         | System Response                        |
+| ---- | ----------- | ------------------------------ | -------------------------------------- |
+| 1    | Sensor      | Transmits temperature via LoRa |                                        |
+| 2    | TTN Gateway | Receives and forwards          |                                        |
+| 3    | TTN         | Decodes payload                |                                        |
+| 4    | TTN         | Calls webhook                  | POST to `ttn-webhook`                  |
+| 5    | System      | Validates webhook secret       | Per-org secret check                   |
+| 6    | System      | Looks up sensor by DevEUI      | Scoped to org                          |
+| 7    | System      | Inserts reading                | `sensor_readings` table                |
+| 8    | System      | Updates unit state             | `last_reading_at`, `last_temp_reading` |
+| 9    | System      | Triggers state processing      | Calls `process-unit-states`            |
+| 10   | System      | Evaluates thresholds           | Checks temp limits                     |
+| 11   | System      | Creates/resolves alerts        | If threshold exceeded                  |
+| 12   | System      | Triggers notifications         | Calls `process-escalations`            |
 
 **APIs and Data Touched**:
+
 - `ttn-webhook` - Receives TTN uplink
 - `process-unit-states` - Evaluates state
 - `process-escalations` - Sends notifications
@@ -3155,31 +3305,34 @@ All page-specific diagrams are located in [PAGE_DIAGRAMS.md](#diagrams-page_diag
 **Goal**: Staff logs temperature reading manually when sensor unavailable
 
 **Actors**:
+
 - Primary: Kitchen Staff
 - System: FreshTrack Pro
 
 **Preconditions**:
+
 - User is authenticated
 - User has operator role or higher
 - Unit exists
 
 **Steps**:
 
-| Step | Actor | Action | System Response |
-|------|-------|--------|-----------------|
-| 1 | User | Navigates to `/manual-log` | Displays unit selector |
-| 2 | User | Selects site → area → unit | Hierarchical selection |
-| 3 | User | Enters temperature reading | Validates range |
-| 4 | User | Adds notes (optional) | |
-| 5 | User | Clicks "Log Temperature" | Shows loading |
-| 6 | System | Checks connectivity | |
-| 7a | Online | Saves to database | `manual_temperature_logs` |
-| 7b | Offline | Saves to IndexedDB | Local queue |
-| 8 | System | Shows success toast | |
-| 9 | System | Clears form | Ready for next log |
-| 10 | Offline→Online | Syncs queued logs | Background sync |
+| Step | Actor          | Action                     | System Response           |
+| ---- | -------------- | -------------------------- | ------------------------- |
+| 1    | User           | Navigates to `/manual-log` | Displays unit selector    |
+| 2    | User           | Selects site → area → unit | Hierarchical selection    |
+| 3    | User           | Enters temperature reading | Validates range           |
+| 4    | User           | Adds notes (optional)      |                           |
+| 5    | User           | Clicks "Log Temperature"   | Shows loading             |
+| 6    | System         | Checks connectivity        |                           |
+| 7a   | Online         | Saves to database          | `manual_temperature_logs` |
+| 7b   | Offline        | Saves to IndexedDB         | Local queue               |
+| 8    | System         | Shows success toast        |                           |
+| 9    | System         | Clears form                | Ready for next log        |
+| 10   | Offline→Online | Syncs queued logs          | Background sync           |
 
 **APIs and Data Touched**:
+
 - Direct insert to `manual_temperature_logs`
 - `src/lib/offlineStorage.ts` for IndexedDB
 - `event_logs` for audit trail
@@ -3202,25 +3355,28 @@ All page-specific diagrams are located in [PAGE_DIAGRAMS.md](#diagrams-page_diag
 **Goal**: User monitors all units from dashboard
 
 **Actors**:
+
 - Primary: Food Safety Manager
 - System: FreshTrack Pro
 
 **Preconditions**:
+
 - User is authenticated
 - Organization has units configured
 
 **Steps**:
 
-| Step | Actor | Action | System Response |
-|------|-------|--------|-----------------|
-| 1 | User | Navigates to `/dashboard` | Fetches all units |
-| 2 | System | Displays unit cards | Shows status, temp, last reading |
-| 3 | System | Applies status styling | Green/orange/red based on status |
-| 4 | User | Scans for issues | Identifies warning/alarm states |
-| 5 | User | Clicks unit card | Navigates to unit detail |
-| 6 | System | Polls for updates | Refreshes data periodically |
+| Step | Actor  | Action                    | System Response                  |
+| ---- | ------ | ------------------------- | -------------------------------- |
+| 1    | User   | Navigates to `/dashboard` | Fetches all units                |
+| 2    | System | Displays unit cards       | Shows status, temp, last reading |
+| 3    | System | Applies status styling    | Green/orange/red based on status |
+| 4    | User   | Scans for issues          | Identifies warning/alarm states  |
+| 5    | User   | Clicks unit card          | Navigates to unit detail         |
+| 6    | System | Polls for updates         | Refreshes data periodically      |
 
 **APIs and Data Touched**:
+
 - Supabase direct queries: `units`, `alerts`, `lora_sensors`
 - `useUnitStatus` hook for status computation
 
@@ -3237,27 +3393,30 @@ All page-specific diagrams are located in [PAGE_DIAGRAMS.md](#diagrams-page_diag
 **Goal**: User acknowledges they've seen an alert and are responding
 
 **Actors**:
+
 - Primary: Manager or Operator
 - System: FreshTrack Pro
 
 **Preconditions**:
+
 - Active alert exists
 - User has permission to acknowledge
 
 **Steps**:
 
-| Step | Actor | Action | System Response |
-|------|-------|--------|-----------------|
-| 1 | System | Displays alert notification | Push/email/SMS |
-| 2 | User | Clicks notification or navigates to alerts | Shows alert list |
-| 3 | User | Clicks "Acknowledge" button | Opens acknowledge dialog |
-| 4 | User | Enters notes (optional) | Describes action being taken |
-| 5 | User | Confirms acknowledgment | |
-| 6 | System | Updates alert record | Sets `acknowledged_at`, `acknowledged_by` |
-| 7 | System | Logs event | Audit trail entry |
-| 8 | System | Stops escalation timer | No further escalation |
+| Step | Actor  | Action                                     | System Response                           |
+| ---- | ------ | ------------------------------------------ | ----------------------------------------- |
+| 1    | System | Displays alert notification                | Push/email/SMS                            |
+| 2    | User   | Clicks notification or navigates to alerts | Shows alert list                          |
+| 3    | User   | Clicks "Acknowledge" button                | Opens acknowledge dialog                  |
+| 4    | User   | Enters notes (optional)                    | Describes action being taken              |
+| 5    | User   | Confirms acknowledgment                    |                                           |
+| 6    | System | Updates alert record                       | Sets `acknowledged_at`, `acknowledged_by` |
+| 7    | System | Logs event                                 | Audit trail entry                         |
+| 8    | System | Stops escalation timer                     | No further escalation                     |
 
 **APIs and Data Touched**:
+
 - Update `alerts` table
 - Insert `event_logs`
 
@@ -3278,35 +3437,39 @@ All page-specific diagrams are located in [PAGE_DIAGRAMS.md](#diagrams-page_diag
 **Goal**: System detects temperature excursion and creates alert
 
 **Actors**:
+
 - System: FreshTrack Pro Edge Functions
 
 **Preconditions**:
+
 - Unit has active sensor
 - Temperature thresholds configured
 
 **Steps**:
 
-| Step | System | Action |
-|------|--------|--------|
-| 1 | `ttn-webhook` | Receives temperature reading |
-| 2 | `process-unit-states` | Compares to thresholds |
-| 3 | Detection | Temp > high limit OR < low limit |
-| 4 | State Change | Unit status → `excursion` |
-| 5 | Alert Creation | Creates `temp_excursion` alert |
-| 6 | Timer Start | Begins confirm time countdown |
-| 7 | Confirm Wait | If temp stays out of range for confirm time |
-| 8 | Escalation | Status → `alarm_active`, severity → `critical` |
-| 9 | Notification | `process-escalations` sends alerts |
-| 10 | Resolution (if temp returns) | Status → `restoring` → `ok` |
-| 11 | Alert Resolved | Alert status → `resolved` |
+| Step | System                       | Action                                         |
+| ---- | ---------------------------- | ---------------------------------------------- |
+| 1    | `ttn-webhook`                | Receives temperature reading                   |
+| 2    | `process-unit-states`        | Compares to thresholds                         |
+| 3    | Detection                    | Temp > high limit OR < low limit               |
+| 4    | State Change                 | Unit status → `excursion`                      |
+| 5    | Alert Creation               | Creates `temp_excursion` alert                 |
+| 6    | Timer Start                  | Begins confirm time countdown                  |
+| 7    | Confirm Wait                 | If temp stays out of range for confirm time    |
+| 8    | Escalation                   | Status → `alarm_active`, severity → `critical` |
+| 9    | Notification                 | `process-escalations` sends alerts             |
+| 10   | Resolution (if temp returns) | Status → `restoring` → `ok`                    |
+| 11   | Alert Resolved               | Alert status → `resolved`                      |
 
 **State Transitions**:
+
 ```
 ok → excursion → alarm_active → restoring → ok
                               └─────────────┘
 ```
 
 **APIs and Data Touched**:
+
 - `process-unit-states` - State evaluation
 - `process-escalations` - Notifications
 - Tables: `units`, `alerts`, `notification_events`, `event_logs`
@@ -3322,25 +3485,28 @@ ok → excursion → alarm_active → restoring → ok
 **Goal**: System escalates alert to additional contacts when not acknowledged
 
 **Actors**:
+
 - System: FreshTrack Pro Edge Functions
 
 **Preconditions**:
+
 - Active alert exists
 - Alert not acknowledged within escalation period
 - Escalation contacts configured
 
 **Steps**:
 
-| Step | System | Action |
-|------|--------|--------|
-| 1 | Alert Created | Level 1 notification sent |
-| 2 | Timer | Escalation period expires |
-| 3 | Check | Alert still not acknowledged |
-| 4 | Level Up | Increment `escalation_level` |
-| 5 | Notify | Send to level 2 contacts |
-| 6 | Repeat | Continue until max level or acknowledged |
+| Step | System        | Action                                   |
+| ---- | ------------- | ---------------------------------------- |
+| 1    | Alert Created | Level 1 notification sent                |
+| 2    | Timer         | Escalation period expires                |
+| 3    | Check         | Alert still not acknowledged             |
+| 4    | Level Up      | Increment `escalation_level`             |
+| 5    | Notify        | Send to level 2 contacts                 |
+| 6    | Repeat        | Continue until max level or acknowledged |
 
 **APIs and Data Touched**:
+
 - `process-escalations` edge function
 - Tables: `alerts`, `escalation_contacts`, `notification_events`
 
@@ -3357,26 +3523,29 @@ ok → excursion → alarm_active → restoring → ok
 **Goal**: Manager adjusts temperature limits for a unit
 
 **Actors**:
+
 - Primary: Manager or Owner
 - System: FreshTrack Pro
 
 **Preconditions**:
+
 - User has manager or owner role
 - Unit exists
 
 **Steps**:
 
-| Step | Actor | Action | System Response |
-|------|-------|--------|-----------------|
-| 1 | User | Navigates to unit detail | Shows unit page |
-| 2 | User | Opens settings section | Displays threshold form |
-| 3 | User | Modifies high/low limits | Validates input |
-| 4 | User | Clicks "Save" | Shows loading |
-| 5 | System | Updates unit record | `units` table |
-| 6 | System | Logs change | `event_logs` and `alert_rules_history` |
-| 7 | System | Shows success toast | |
+| Step | Actor  | Action                   | System Response                        |
+| ---- | ------ | ------------------------ | -------------------------------------- |
+| 1    | User   | Navigates to unit detail | Shows unit page                        |
+| 2    | User   | Opens settings section   | Displays threshold form                |
+| 3    | User   | Modifies high/low limits | Validates input                        |
+| 4    | User   | Clicks "Save"            | Shows loading                          |
+| 5    | System | Updates unit record      | `units` table                          |
+| 6    | System | Logs change              | `event_logs` and `alert_rules_history` |
+| 7    | System | Shows success toast      |                                        |
 
 **APIs and Data Touched**:
+
 - Update `units` table
 - Insert `alert_rules_history` if cascade level changed
 - Insert `event_logs`
@@ -3392,27 +3561,30 @@ ok → excursion → alarm_active → restoring → ok
 **Goal**: Configure how alerts trigger notifications
 
 **Actors**:
+
 - Primary: Manager or Owner
 - System: FreshTrack Pro
 
 **Preconditions**:
+
 - User has manager or owner role
 - Organization exists
 
 **Steps**:
 
-| Step | Actor | Action | System Response |
-|------|-------|--------|-----------------|
-| 1 | User | Navigates to `/settings` → Notifications | Displays policy editor |
-| 2 | User | Selects alert type | Shows current policy |
-| 3 | User | Toggles notification channels | Email, SMS, Push |
-| 4 | User | Sets escalation timing | Minutes between escalations |
-| 5 | User | Configures quiet hours (optional) | Time ranges |
-| 6 | User | Clicks "Save" | Shows loading |
-| 7 | System | Updates policy | `notification_policies` table |
-| 8 | System | Shows success toast | |
+| Step | Actor  | Action                                   | System Response               |
+| ---- | ------ | ---------------------------------------- | ----------------------------- |
+| 1    | User   | Navigates to `/settings` → Notifications | Displays policy editor        |
+| 2    | User   | Selects alert type                       | Shows current policy          |
+| 3    | User   | Toggles notification channels            | Email, SMS, Push              |
+| 4    | User   | Sets escalation timing                   | Minutes between escalations   |
+| 5    | User   | Configures quiet hours (optional)        | Time ranges                   |
+| 6    | User   | Clicks "Save"                            | Shows loading                 |
+| 7    | System | Updates policy                           | `notification_policies` table |
+| 8    | System | Shows success toast                      |                               |
 
 **APIs and Data Touched**:
+
 - Update `notification_policies` table
 - `get_effective_notification_policy()` RPC for cascade
 
@@ -3429,28 +3601,31 @@ ok → excursion → alarm_active → restoring → ok
 **Goal**: Generate compliance documentation for health inspection
 
 **Actors**:
+
 - Primary: Food Safety Manager
 - System: FreshTrack Pro
 
 **Preconditions**:
+
 - Organization has compliance mode set
 - Temperature data exists for period
 
 **Steps**:
 
-| Step | Actor | Action | System Response |
-|------|-------|--------|-----------------|
-| 1 | User | Navigates to `/reports` | Displays report options |
-| 2 | User | Selects report type | Compliance summary |
-| 3 | User | Sets date range | Start and end dates |
-| 4 | User | Selects units/sites | Filter scope |
-| 5 | User | Clicks "Generate" | Shows loading |
-| 6 | System | Aggregates data | Queries readings, alerts |
-| 7 | System | Displays preview | Shows report content |
-| 8 | User | Clicks "Export PDF" | Triggers download |
-| 9 | System | Generates PDF | `export-temperature-logs` function |
+| Step | Actor  | Action                  | System Response                    |
+| ---- | ------ | ----------------------- | ---------------------------------- |
+| 1    | User   | Navigates to `/reports` | Displays report options            |
+| 2    | User   | Selects report type     | Compliance summary                 |
+| 3    | User   | Sets date range         | Start and end dates                |
+| 4    | User   | Selects units/sites     | Filter scope                       |
+| 5    | User   | Clicks "Generate"       | Shows loading                      |
+| 6    | System | Aggregates data         | Queries readings, alerts           |
+| 7    | System | Displays preview        | Shows report content               |
+| 8    | User   | Clicks "Export PDF"     | Triggers download                  |
+| 9    | System | Generates PDF           | `export-temperature-logs` function |
 
 **APIs and Data Touched**:
+
 - `export-temperature-logs` edge function
 - Tables: `sensor_readings`, `manual_temperature_logs`, `alerts`, `corrective_actions`
 
@@ -3465,29 +3640,32 @@ ok → excursion → alarm_active → restoring → ok
 **Goal**: Document steps taken to address temperature violation
 
 **Actors**:
+
 - Primary: Manager or Operator
 - System: FreshTrack Pro
 
 **Preconditions**:
+
 - Temperature excursion occurred
 - Alert exists (active or resolved)
 
 **Steps**:
 
-| Step | Actor | Action | System Response |
-|------|-------|--------|-----------------|
-| 1 | User | Views alert detail | Shows alert info |
-| 2 | User | Clicks "Add Corrective Action" | Opens form |
-| 3 | User | Describes root cause | Text input |
-| 4 | User | Describes action taken | Required field |
-| 5 | User | Describes preventive measures | Optional |
-| 6 | User | Uploads photos (optional) | File upload |
-| 7 | User | Clicks "Save" | Shows loading |
-| 8 | System | Creates record | `corrective_actions` table |
-| 9 | System | Links to alert | `alert_id` foreign key |
-| 10 | System | Logs event | Audit trail |
+| Step | Actor  | Action                         | System Response            |
+| ---- | ------ | ------------------------------ | -------------------------- |
+| 1    | User   | Views alert detail             | Shows alert info           |
+| 2    | User   | Clicks "Add Corrective Action" | Opens form                 |
+| 3    | User   | Describes root cause           | Text input                 |
+| 4    | User   | Describes action taken         | Required field             |
+| 5    | User   | Describes preventive measures  | Optional                   |
+| 6    | User   | Uploads photos (optional)      | File upload                |
+| 7    | User   | Clicks "Save"                  | Shows loading              |
+| 8    | System | Creates record                 | `corrective_actions` table |
+| 9    | System | Links to alert                 | `alert_id` foreign key     |
+| 10   | System | Logs event                     | Audit trail                |
 
 **APIs and Data Touched**:
+
 - Insert `corrective_actions` table
 - Insert `event_logs`
 
@@ -3499,17 +3677,16 @@ ok → excursion → alarm_active → restoring → ok
 
 All sequence diagrams are located in [SEQUENCES.md](#diagrams-sequences).
 
-| Flow | Diagram Section |
-|------|-----------------|
-| User Registration | [#user-registration](#diagrams-sequences#user-registration) |
-| User Sign In | [#user-sign-in](#diagrams-sequences#user-sign-in) |
-| TTN Setup | [#ttn-setup-flow](#diagrams-sequences#ttn-setup-flow) |
-| Temperature Reading | [#temperature-reading-flow](#diagrams-sequences#temperature-reading-flow) |
-| Manual Logging | [#manual-logging-flow](#diagrams-sequences#manual-logging-flow) |
-| Alert Acknowledgment | [#alert-acknowledgment](#diagrams-sequences#alert-acknowledgment) |
-| Excursion Detection | [#excursion-detection](#diagrams-sequences#excursion-detection) |
-| Alert Escalation | [#alert-escalation](#diagrams-sequences#alert-escalation) |
-
+| Flow                 | Diagram Section                                                           |
+| -------------------- | ------------------------------------------------------------------------- |
+| User Registration    | [#user-registration](#diagrams-sequences#user-registration)               |
+| User Sign In         | [#user-sign-in](#diagrams-sequences#user-sign-in)                         |
+| TTN Setup            | [#ttn-setup-flow](#diagrams-sequences#ttn-setup-flow)                     |
+| Temperature Reading  | [#temperature-reading-flow](#diagrams-sequences#temperature-reading-flow) |
+| Manual Logging       | [#manual-logging-flow](#diagrams-sequences#manual-logging-flow)           |
+| Alert Acknowledgment | [#alert-acknowledgment](#diagrams-sequences#alert-acknowledgment)         |
+| Excursion Detection  | [#excursion-detection](#diagrams-sequences#excursion-detection)           |
+| Alert Escalation     | [#alert-escalation](#diagrams-sequences#alert-escalation)                 |
 
 ---
 
@@ -3552,12 +3729,12 @@ https://<project-id>.supabase.co/functions/v1/<function-name>
 
 ### Common Headers
 
-| Header | Required | Description |
-|--------|----------|-------------|
-| `Authorization` | Varies | `Bearer <JWT>` for user-authenticated requests |
-| `Content-Type` | Yes | `application/json` |
-| `X-Internal-API-Key` | Some | Internal API key for scheduled/internal calls |
-| `X-Webhook-Secret` | Some | Per-org webhook secret for TTN/Stripe |
+| Header               | Required | Description                                    |
+| -------------------- | -------- | ---------------------------------------------- |
+| `Authorization`      | Varies   | `Bearer <JWT>` for user-authenticated requests |
+| `Content-Type`       | Yes      | `application/json`                             |
+| `X-Internal-API-Key` | Some     | Internal API key for scheduled/internal calls  |
+| `X-Webhook-Secret`   | Some     | Per-org webhook secret for TTN/Stripe          |
 
 ---
 
@@ -3565,19 +3742,21 @@ https://<project-id>.supabase.co/functions/v1/<function-name>
 
 ### Authentication Methods
 
-| Method | Used By | How |
-|--------|---------|-----|
+| Method              | Used By               | How                             |
+| ------------------- | --------------------- | ------------------------------- |
 | JWT (Supabase Auth) | User-facing endpoints | `Authorization: Bearer <token>` |
-| Internal API Key | Scheduled functions | `X-Internal-API-Key: <key>` |
-| Webhook Secret | External webhooks | `X-Webhook-Secret: <secret>` |
-| Service Role | Internal calls | Auto-injected by Supabase |
+| Internal API Key    | Scheduled functions   | `X-Internal-API-Key: <key>`     |
+| Webhook Secret      | External webhooks     | `X-Webhook-Secret: <secret>`    |
+| Service Role        | Internal calls        | Auto-injected by Supabase       |
 
 ### JWT Authentication
 
 ```typescript
 // Frontend: Token added automatically by Supabase client
 const { data } = await supabase.functions.invoke('function-name', {
-  body: { /* payload */ }
+  body: {
+    /* payload */
+  },
 });
 ```
 
@@ -3585,7 +3764,7 @@ const { data } = await supabase.functions.invoke('function-name', {
 
 ```typescript
 // Edge function validation
-import { validateInternalApiKey, unauthorizedResponse } from "../_shared/validation.ts";
+import { validateInternalApiKey, unauthorizedResponse } from '../_shared/validation.ts';
 
 const apiKeyResult = validateInternalApiKey(req);
 if (!apiKeyResult.valid) {
@@ -3608,6 +3787,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: Per-organization webhook secret (`X-Webhook-Secret`)
 
 **Request Body** (TTN Uplink Format):
+
 ```json
 {
   "end_device_ids": {
@@ -3622,17 +3802,20 @@ if (!apiKeyResult.valid) {
       "battery": 98,
       "door_open": false
     },
-    "rx_metadata": [{
-      "gateway_ids": { "gateway_id": "gw-001" },
-      "rssi": -75,
-      "snr": 8.5
-    }],
+    "rx_metadata": [
+      {
+        "gateway_ids": { "gateway_id": "gw-001" },
+        "rssi": -75,
+        "snr": 8.5
+      }
+    ],
     "received_at": "2026-01-12T10:30:00Z"
   }
 }
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -3651,6 +3834,7 @@ if (!apiKeyResult.valid) {
 | 401 | Invalid webhook secret |
 
 **Notes**:
+
 - Returns 202 for unknown devices to prevent TTN retries
 - Validates webhook secret via `lookupOrgByWebhookSecret()`
 - Triggers `process-unit-states` after successful ingestion
@@ -3668,6 +3852,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: Internal API Key
 
 **Request Body**:
+
 ```json
 {
   "unit_id": "uuid",
@@ -3679,6 +3864,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -3699,6 +3885,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: Internal API Key
 
 **Request Body**:
+
 ```json
 {
   "organization_id": "uuid",
@@ -3725,6 +3912,7 @@ if (!apiKeyResult.valid) {
 **Request Body**: None (processes all active units)
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -3742,6 +3930,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Processing Logic**:
+
 1. Fetches all active units
 2. Computes missed check-ins
 3. Evaluates temperature thresholds
@@ -3751,6 +3940,7 @@ if (!apiKeyResult.valid) {
 7. Triggers `process-escalations` for new alerts
 
 **Alert Types Created**:
+
 - `temp_excursion` - Temperature out of range
 - `monitoring_interrupted` - Sensor offline
 - `suspected_cooling_failure` - Door closed but temp not recovering
@@ -3768,6 +3958,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: Internal API Key
 
 **Request Body**:
+
 ```json
 {
   "alert_ids": ["uuid1", "uuid2"]
@@ -3775,6 +3966,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -3783,6 +3975,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Processing Logic**:
+
 1. Looks up effective notification policy
 2. Determines notification channels (email, SMS, push)
 3. Sends notifications via appropriate service
@@ -3804,6 +3997,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT (user authenticated)
 
 **Request Body**:
+
 ```json
 {
   "organization_id": "uuid"
@@ -3811,6 +4005,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -3831,6 +4026,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Request Body**:
+
 ```json
 {
   "sensor_id": "uuid",
@@ -3841,6 +4037,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -3861,6 +4058,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Request Body**:
+
 ```json
 {
   "gateway_id": "uuid",
@@ -3883,6 +4081,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Request Body**:
+
 ```json
 {
   "organization_id": "uuid",
@@ -3891,6 +4090,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "valid": true,
@@ -3914,9 +4114,11 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Query Parameters**:
+
 - `organization_id` (required)
 
 **Response**:
+
 ```json
 {
   "devices": [
@@ -4078,6 +4280,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Request Body**:
+
 ```json
 {
   "sensor_id": "uuid",
@@ -4111,6 +4314,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Request Body**:
+
 ```json
 {
   "organization_id": "uuid",
@@ -4136,6 +4340,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: None (public)
 
 **Request Body**:
+
 ```json
 {
   "password": "user_password"
@@ -4143,6 +4348,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "breached": false
@@ -4162,6 +4368,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Request Body**:
+
 ```json
 {
   "slug": "my-restaurant"
@@ -4169,6 +4376,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "available": true
@@ -4190,6 +4398,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Request Body**:
+
 ```json
 {
   "plan_id": "pro",
@@ -4198,6 +4407,7 @@ if (!apiKeyResult.valid) {
 ```
 
 **Response**:
+
 ```json
 {
   "checkout_url": "https://checkout.stripe.com/..."
@@ -4217,6 +4427,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: JWT
 
 **Response**:
+
 ```json
 {
   "portal_url": "https://billing.stripe.com/..."
@@ -4236,6 +4447,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: Stripe webhook signature
 
 **Events Handled**:
+
 - `checkout.session.completed`
 - `customer.subscription.created`
 - `customer.subscription.updated`
@@ -4258,6 +4470,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: None (public)
 
 **Response**:
+
 ```json
 {
   "status": "healthy",
@@ -4282,6 +4495,7 @@ if (!apiKeyResult.valid) {
 **Authentication**: Internal API Key
 
 **Request Body**:
+
 ```json
 {
   "to": "+15551234567",
@@ -4322,14 +4536,16 @@ if (!apiKeyResult.valid) {
 **Purpose**: Resolve cascaded alert rules for a unit
 
 **Signature**:
+
 ```sql
 get_effective_alert_rules(p_unit_id UUID) RETURNS JSON
 ```
 
 **Usage**:
+
 ```typescript
 const { data } = await supabase.rpc('get_effective_alert_rules', {
-  p_unit_id: unitId
+  p_unit_id: unitId,
 });
 ```
 
@@ -4342,6 +4558,7 @@ const { data } = await supabase.rpc('get_effective_alert_rules', {
 **Purpose**: Resolve cascaded notification policy
 
 **Signature**:
+
 ```sql
 get_effective_notification_policy(
   p_unit_id UUID,
@@ -4356,6 +4573,7 @@ get_effective_notification_policy(
 **Purpose**: Create organization and assign owner role atomically
 
 **Signature**:
+
 ```sql
 create_organization_with_owner(
   p_name TEXT,
@@ -4371,6 +4589,7 @@ create_organization_with_owner(
 **Purpose**: Check if user belongs to organization
 
 **Signature**:
+
 ```sql
 user_belongs_to_org(p_user_id UUID, p_org_id UUID) RETURNS BOOLEAN
 ```
@@ -4382,6 +4601,7 @@ user_belongs_to_org(p_user_id UUID, p_org_id UUID) RETURNS BOOLEAN
 **Purpose**: Check if user has specific role in organization
 
 **Signature**:
+
 ```sql
 has_role(p_user_id UUID, p_role TEXT, p_org_id UUID) RETURNS BOOLEAN
 ```
@@ -4393,6 +4613,7 @@ has_role(p_user_id UUID, p_role TEXT, p_org_id UUID) RETURNS BOOLEAN
 **Purpose**: Create site with proper hierarchy
 
 **Signature**:
+
 ```sql
 create_site_for_org(
   p_org_id UUID,
@@ -4408,6 +4629,7 @@ create_site_for_org(
 **Purpose**: Create area within site
 
 **Signature**:
+
 ```sql
 create_area_for_site(
   p_site_id UUID,
@@ -4422,6 +4644,7 @@ create_area_for_site(
 **Purpose**: Create unit within area
 
 **Signature**:
+
 ```sql
 create_unit_for_area(
   p_area_id UUID,
@@ -4438,6 +4661,7 @@ create_unit_for_area(
 **Purpose**: Queue TTN deprovisioning when unit is deleted
 
 **Signature**:
+
 ```sql
 enqueue_deprovision_jobs_for_unit(p_unit_id UUID) RETURNS VOID
 ```
@@ -4449,6 +4673,7 @@ enqueue_deprovision_jobs_for_unit(p_unit_id UUID) RETURNS VOID
 **Purpose**: Soft delete organization and cascade
 
 **Signature**:
+
 ```sql
 soft_delete_organization(p_org_id UUID) RETURNS VOID
 ```
@@ -4460,6 +4685,7 @@ soft_delete_organization(p_org_id UUID) RETURNS VOID
 **Purpose**: Find organizations without owners
 
 **Signature**:
+
 ```sql
 find_orphan_organizations() RETURNS TABLE(id UUID, name TEXT)
 ```
@@ -4480,23 +4706,23 @@ find_orphan_organizations() RETURNS TABLE(id UUID, name TEXT)
 
 ### Common Error Codes
 
-| Code | HTTP Status | Meaning |
-|------|-------------|---------|
-| `UNAUTHORIZED` | 401 | Missing or invalid authentication |
-| `FORBIDDEN` | 403 | Insufficient permissions |
-| `NOT_FOUND` | 404 | Resource not found |
-| `VALIDATION_ERROR` | 400 | Invalid request body |
-| `RATE_LIMITED` | 429 | Too many requests |
-| `INTERNAL_ERROR` | 500 | Server error |
+| Code               | HTTP Status | Meaning                           |
+| ------------------ | ----------- | --------------------------------- |
+| `UNAUTHORIZED`     | 401         | Missing or invalid authentication |
+| `FORBIDDEN`        | 403         | Insufficient permissions          |
+| `NOT_FOUND`        | 404         | Resource not found                |
+| `VALIDATION_ERROR` | 400         | Invalid request body              |
+| `RATE_LIMITED`     | 429         | Too many requests                 |
+| `INTERNAL_ERROR`   | 500         | Server error                      |
 
 ### Retry Behavior
 
-| Scenario | Retry |
-|----------|-------|
+| Scenario      | Retry                         |
+| ------------- | ----------------------------- |
 | Network error | Yes, with exponential backoff |
-| 5xx error | Yes, up to 3 times |
-| 4xx error | No (fix request) |
-| Timeout | Yes, once |
+| 5xx error     | Yes, up to 3 times            |
+| 4xx error     | No (fix request)              |
+| Timeout       | Yes, once                     |
 
 ---
 
@@ -4505,7 +4731,6 @@ find_orphan_organizations() RETURNS TABLE(id UUID, name TEXT)
 - [INTEGRATIONS.md](#integrations) - Third-party service configuration
 - [DATA_MODEL.md](#data_model) - Database schema
 - [FLOWCHARTS.md](#charts-flowcharts) - Visual process flows
-
 
 ---
 
@@ -4595,20 +4820,21 @@ organizations (tenant)
 
 **Purpose**: Top-level tenant entity
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `name` | TEXT | Organization name |
-| `slug` | TEXT | URL-safe identifier (unique) |
-| `compliance_mode` | ENUM | `HACCP`, `FDA`, `GENERAL` |
-| `timezone` | TEXT | IANA timezone |
-| `temp_unit` | TEXT | `fahrenheit` or `celsius` |
-| `created_at` | TIMESTAMP | |
-| `updated_at` | TIMESTAMP | |
-| `deleted_at` | TIMESTAMP | Soft delete marker |
-| `deleted_by` | UUID | User who deleted |
+| Column            | Type      | Description                  |
+| ----------------- | --------- | ---------------------------- |
+| `id`              | UUID      | Primary key                  |
+| `name`            | TEXT      | Organization name            |
+| `slug`            | TEXT      | URL-safe identifier (unique) |
+| `compliance_mode` | ENUM      | `HACCP`, `FDA`, `GENERAL`    |
+| `timezone`        | TEXT      | IANA timezone                |
+| `temp_unit`       | TEXT      | `fahrenheit` or `celsius`    |
+| `created_at`      | TIMESTAMP |                              |
+| `updated_at`      | TIMESTAMP |                              |
+| `deleted_at`      | TIMESTAMP | Soft delete marker           |
+| `deleted_by`      | UUID      | User who deleted             |
 
 **Indexes**:
+
 - `organizations_slug_key` (unique)
 
 ---
@@ -4617,21 +4843,22 @@ organizations (tenant)
 
 **Purpose**: Physical location within organization
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | FK to organizations |
-| `name` | TEXT | Site name |
-| `address` | TEXT | Physical address |
-| `timezone` | TEXT | Site timezone override |
-| `is_active` | BOOLEAN | Active status |
-| `sort_order` | INTEGER | Display order |
-| `created_at` | TIMESTAMP | |
-| `updated_at` | TIMESTAMP | |
-| `deleted_at` | TIMESTAMP | Soft delete |
-| `deleted_by` | UUID | |
+| Column            | Type      | Description            |
+| ----------------- | --------- | ---------------------- |
+| `id`              | UUID      | Primary key            |
+| `organization_id` | UUID      | FK to organizations    |
+| `name`            | TEXT      | Site name              |
+| `address`         | TEXT      | Physical address       |
+| `timezone`        | TEXT      | Site timezone override |
+| `is_active`       | BOOLEAN   | Active status          |
+| `sort_order`      | INTEGER   | Display order          |
+| `created_at`      | TIMESTAMP |                        |
+| `updated_at`      | TIMESTAMP |                        |
+| `deleted_at`      | TIMESTAMP | Soft delete            |
+| `deleted_by`      | UUID      |                        |
 
 **Relationships**:
+
 - `organization_id` → `organizations.id`
 
 ---
@@ -4640,20 +4867,21 @@ organizations (tenant)
 
 **Purpose**: Logical zone within a site
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `site_id` | UUID | FK to sites |
-| `name` | TEXT | Area name |
-| `description` | TEXT | Optional description |
-| `is_active` | BOOLEAN | Active status |
-| `sort_order` | INTEGER | Display order |
-| `created_at` | TIMESTAMP | |
-| `updated_at` | TIMESTAMP | |
-| `deleted_at` | TIMESTAMP | |
-| `deleted_by` | UUID | |
+| Column        | Type      | Description          |
+| ------------- | --------- | -------------------- |
+| `id`          | UUID      | Primary key          |
+| `site_id`     | UUID      | FK to sites          |
+| `name`        | TEXT      | Area name            |
+| `description` | TEXT      | Optional description |
+| `is_active`   | BOOLEAN   | Active status        |
+| `sort_order`  | INTEGER   | Display order        |
+| `created_at`  | TIMESTAMP |                      |
+| `updated_at`  | TIMESTAMP |                      |
+| `deleted_at`  | TIMESTAMP |                      |
+| `deleted_by`  | UUID      |                      |
 
 **Relationships**:
+
 - `site_id` → `sites.id`
 
 ---
@@ -4662,38 +4890,40 @@ organizations (tenant)
 
 **Purpose**: Monitored refrigeration unit
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `area_id` | UUID | FK to areas |
-| `name` | TEXT | Unit name |
-| `status` | TEXT | Current status (ok, excursion, etc.) |
-| `temp_limit_high` | NUMERIC | High temperature threshold |
-| `temp_limit_low` | NUMERIC | Low temperature threshold (optional) |
-| `temp_hysteresis` | NUMERIC | Hysteresis buffer |
-| `last_temp_reading` | NUMERIC | Cached last temperature |
-| `last_reading_at` | TIMESTAMP | Last sensor reading time |
-| `last_checkin_at` | TIMESTAMP | Last check-in time |
-| `checkin_interval_minutes` | INTEGER | Expected reading interval |
-| `last_manual_log_at` | TIMESTAMP | Last manual log time |
-| `manual_log_cadence` | INTEGER | Manual log interval (seconds) |
-| `door_state` | TEXT | `open`, `closed`, `unknown` |
-| `door_last_changed_at` | TIMESTAMP | Door state change time |
-| `door_open_grace_minutes` | INTEGER | Door open grace period |
-| `confirm_time_door_closed` | INTEGER | Confirm time (door closed) |
-| `confirm_time_door_open` | INTEGER | Confirm time (door open) |
-| `last_status_change` | TIMESTAMP | Status change time |
-| `sensor_reliable` | BOOLEAN | Sensor reliability flag |
-| `is_active` | BOOLEAN | Active status |
-| `created_at` | TIMESTAMP | |
-| `updated_at` | TIMESTAMP | |
-| `deleted_at` | TIMESTAMP | |
-| `deleted_by` | UUID | |
+| Column                     | Type      | Description                          |
+| -------------------------- | --------- | ------------------------------------ |
+| `id`                       | UUID      | Primary key                          |
+| `area_id`                  | UUID      | FK to areas                          |
+| `name`                     | TEXT      | Unit name                            |
+| `status`                   | TEXT      | Current status (ok, excursion, etc.) |
+| `temp_limit_high`          | NUMERIC   | High temperature threshold           |
+| `temp_limit_low`           | NUMERIC   | Low temperature threshold (optional) |
+| `temp_hysteresis`          | NUMERIC   | Hysteresis buffer                    |
+| `last_temp_reading`        | NUMERIC   | Cached last temperature              |
+| `last_reading_at`          | TIMESTAMP | Last sensor reading time             |
+| `last_checkin_at`          | TIMESTAMP | Last check-in time                   |
+| `checkin_interval_minutes` | INTEGER   | Expected reading interval            |
+| `last_manual_log_at`       | TIMESTAMP | Last manual log time                 |
+| `manual_log_cadence`       | INTEGER   | Manual log interval (seconds)        |
+| `door_state`               | TEXT      | `open`, `closed`, `unknown`          |
+| `door_last_changed_at`     | TIMESTAMP | Door state change time               |
+| `door_open_grace_minutes`  | INTEGER   | Door open grace period               |
+| `confirm_time_door_closed` | INTEGER   | Confirm time (door closed)           |
+| `confirm_time_door_open`   | INTEGER   | Confirm time (door open)             |
+| `last_status_change`       | TIMESTAMP | Status change time                   |
+| `sensor_reliable`          | BOOLEAN   | Sensor reliability flag              |
+| `is_active`                | BOOLEAN   | Active status                        |
+| `created_at`               | TIMESTAMP |                                      |
+| `updated_at`               | TIMESTAMP |                                      |
+| `deleted_at`               | TIMESTAMP |                                      |
+| `deleted_by`               | UUID      |                                      |
 
 **Relationships**:
+
 - `area_id` → `areas.id`
 
 **Indexes**:
+
 - `units_area_id_idx`
 - `units_status_idx`
 
@@ -4705,32 +4935,34 @@ organizations (tenant)
 
 **Purpose**: LoRa sensor inventory and assignment
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | Owner organization |
-| `site_id` | UUID | Assigned site (optional) |
-| `unit_id` | UUID | Assigned unit (optional) |
-| `name` | TEXT | Sensor name |
-| `dev_eui` | TEXT | Device EUI (normalized) |
-| `ttn_device_id` | TEXT | TTN device ID |
-| `ttn_application_id` | TEXT | TTN application |
-| `sensor_type` | ENUM | Sensor type |
-| `status` | ENUM | `pending`, `joining`, `active`, `offline`, `fault` |
-| `is_primary` | BOOLEAN | Primary sensor for unit |
-| `battery_level` | NUMERIC | Battery percentage |
-| `signal_strength` | INTEGER | RSSI |
-| `last_seen_at` | TIMESTAMP | Last data received |
-| `last_join_at` | TIMESTAMP | Last TTN join |
-| `created_at` | TIMESTAMP | |
-| `updated_at` | TIMESTAMP | |
+| Column               | Type      | Description                                        |
+| -------------------- | --------- | -------------------------------------------------- |
+| `id`                 | UUID      | Primary key                                        |
+| `organization_id`    | UUID      | Owner organization                                 |
+| `site_id`            | UUID      | Assigned site (optional)                           |
+| `unit_id`            | UUID      | Assigned unit (optional)                           |
+| `name`               | TEXT      | Sensor name                                        |
+| `dev_eui`            | TEXT      | Device EUI (normalized)                            |
+| `ttn_device_id`      | TEXT      | TTN device ID                                      |
+| `ttn_application_id` | TEXT      | TTN application                                    |
+| `sensor_type`        | ENUM      | Sensor type                                        |
+| `status`             | ENUM      | `pending`, `joining`, `active`, `offline`, `fault` |
+| `is_primary`         | BOOLEAN   | Primary sensor for unit                            |
+| `battery_level`      | NUMERIC   | Battery percentage                                 |
+| `signal_strength`    | INTEGER   | RSSI                                               |
+| `last_seen_at`       | TIMESTAMP | Last data received                                 |
+| `last_join_at`       | TIMESTAMP | Last TTN join                                      |
+| `created_at`         | TIMESTAMP |                                                    |
+| `updated_at`         | TIMESTAMP |                                                    |
 
 **Relationships**:
+
 - `organization_id` → `organizations.id`
 - `site_id` → `sites.id`
 - `unit_id` → `units.id`
 
 **Indexes**:
+
 - `lora_sensors_dev_eui_idx`
 - `lora_sensors_organization_id_idx`
 - `lora_sensors_unit_id_idx`
@@ -4741,21 +4973,22 @@ organizations (tenant)
 
 **Purpose**: LoRa gateway inventory
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | Owner organization |
-| `site_id` | UUID | Assigned site |
-| `name` | TEXT | Gateway name |
-| `eui` | TEXT | Gateway EUI |
-| `status` | ENUM | `pending`, `online`, `offline`, `maintenance` |
-| `ttn_gateway_id` | TEXT | TTN gateway ID |
-| `frequency_plan` | TEXT | Frequency plan |
-| `last_seen_at` | TIMESTAMP | Last seen |
-| `created_at` | TIMESTAMP | |
-| `updated_at` | TIMESTAMP | |
+| Column            | Type      | Description                                   |
+| ----------------- | --------- | --------------------------------------------- |
+| `id`              | UUID      | Primary key                                   |
+| `organization_id` | UUID      | Owner organization                            |
+| `site_id`         | UUID      | Assigned site                                 |
+| `name`            | TEXT      | Gateway name                                  |
+| `eui`             | TEXT      | Gateway EUI                                   |
+| `status`          | ENUM      | `pending`, `online`, `offline`, `maintenance` |
+| `ttn_gateway_id`  | TEXT      | TTN gateway ID                                |
+| `frequency_plan`  | TEXT      | Frequency plan                                |
+| `last_seen_at`    | TIMESTAMP | Last seen                                     |
+| `created_at`      | TIMESTAMP |                                               |
+| `updated_at`      | TIMESTAMP |                                               |
 
 **Relationships**:
+
 - `organization_id` → `organizations.id`
 - `site_id` → `sites.id`
 
@@ -4765,26 +4998,28 @@ organizations (tenant)
 
 **Purpose**: Raw sensor data
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `unit_id` | UUID | FK to units |
-| `lora_sensor_id` | UUID | FK to lora_sensors |
-| `device_id` | UUID | FK to devices (legacy) |
-| `temperature` | NUMERIC | Temperature reading |
-| `humidity` | NUMERIC | Humidity reading |
-| `battery_level` | NUMERIC | Battery at time of reading |
-| `signal_strength` | INTEGER | Signal strength |
-| `door_open` | BOOLEAN | Door state |
-| `source` | TEXT | `ttn`, `simulator`, `manual` |
-| `recorded_at` | TIMESTAMP | Reading timestamp |
-| `created_at` | TIMESTAMP | Insert time |
+| Column            | Type      | Description                  |
+| ----------------- | --------- | ---------------------------- |
+| `id`              | UUID      | Primary key                  |
+| `unit_id`         | UUID      | FK to units                  |
+| `lora_sensor_id`  | UUID      | FK to lora_sensors           |
+| `device_id`       | UUID      | FK to devices (legacy)       |
+| `temperature`     | NUMERIC   | Temperature reading          |
+| `humidity`        | NUMERIC   | Humidity reading             |
+| `battery_level`   | NUMERIC   | Battery at time of reading   |
+| `signal_strength` | INTEGER   | Signal strength              |
+| `door_open`       | BOOLEAN   | Door state                   |
+| `source`          | TEXT      | `ttn`, `simulator`, `manual` |
+| `recorded_at`     | TIMESTAMP | Reading timestamp            |
+| `created_at`      | TIMESTAMP | Insert time                  |
 
 **Relationships**:
+
 - `unit_id` → `units.id`
 - `lora_sensor_id` → `lora_sensors.id`
 
 **Indexes**:
+
 - `sensor_readings_unit_id_recorded_at_idx`
 - `sensor_readings_lora_sensor_id_idx`
 
@@ -4794,17 +5029,18 @@ organizations (tenant)
 
 **Purpose**: User-entered temperature readings
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `unit_id` | UUID | FK to units |
-| `temperature` | NUMERIC | Logged temperature |
-| `notes` | TEXT | Optional notes |
-| `logged_by` | UUID | User who logged |
-| `logged_at` | TIMESTAMP | Log timestamp |
-| `created_at` | TIMESTAMP | |
+| Column        | Type      | Description        |
+| ------------- | --------- | ------------------ |
+| `id`          | UUID      | Primary key        |
+| `unit_id`     | UUID      | FK to units        |
+| `temperature` | NUMERIC   | Logged temperature |
+| `notes`       | TEXT      | Optional notes     |
+| `logged_by`   | UUID      | User who logged    |
+| `logged_at`   | TIMESTAMP | Log timestamp      |
+| `created_at`  | TIMESTAMP |                    |
 
 **Relationships**:
+
 - `unit_id` → `units.id`
 - `logged_by` → `profiles.id`
 
@@ -4814,15 +5050,15 @@ organizations (tenant)
 
 **Purpose**: Door open/close events
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `unit_id` | UUID | FK to units |
-| `state` | TEXT | `open` or `closed` |
-| `occurred_at` | TIMESTAMP | Event time |
-| `source` | TEXT | Event source |
-| `metadata` | JSONB | Additional data |
-| `created_at` | TIMESTAMP | |
+| Column        | Type      | Description        |
+| ------------- | --------- | ------------------ |
+| `id`          | UUID      | Primary key        |
+| `unit_id`     | UUID      | FK to units        |
+| `state`       | TEXT      | `open` or `closed` |
+| `occurred_at` | TIMESTAMP | Event time         |
+| `source`      | TEXT      | Event source       |
+| `metadata`    | JSONB     | Additional data    |
+| `created_at`  | TIMESTAMP |                    |
 
 ---
 
@@ -4832,40 +5068,42 @@ organizations (tenant)
 
 **Purpose**: Active and historical alerts
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | FK |
-| `site_id` | UUID | FK |
-| `area_id` | UUID | FK |
-| `unit_id` | UUID | FK |
-| `alert_type` | ENUM | Alert type |
-| `severity` | ENUM | `warning`, `critical` |
-| `status` | ENUM | `triggered`, `acknowledged`, `resolved` |
-| `title` | TEXT | Alert title |
-| `message` | TEXT | Alert message |
-| `temp_reading` | NUMERIC | Temperature at trigger |
-| `temp_limit` | NUMERIC | Threshold that was exceeded |
-| `source` | TEXT | `sensor`, `system` |
-| `triggered_at` | TIMESTAMP | Trigger time |
-| `first_active_at` | TIMESTAMP | First active time |
-| `acknowledged_at` | TIMESTAMP | Acknowledgment time |
-| `acknowledged_by` | UUID | User who acknowledged |
-| `acknowledgment_notes` | TEXT | Acknowledgment notes |
-| `resolved_at` | TIMESTAMP | Resolution time |
-| `resolved_by` | UUID | User or `system` |
-| `escalation_level` | INTEGER | Current escalation level |
-| `last_notified_at` | TIMESTAMP | Last notification time |
-| `next_escalation_at` | TIMESTAMP | Next escalation time |
-| `escalation_steps_sent` | JSONB | Sent escalation steps |
-| `metadata` | JSONB | Additional data |
-| `ack_required` | BOOLEAN | Requires acknowledgment |
-| `created_at` | TIMESTAMP | |
+| Column                  | Type      | Description                             |
+| ----------------------- | --------- | --------------------------------------- |
+| `id`                    | UUID      | Primary key                             |
+| `organization_id`       | UUID      | FK                                      |
+| `site_id`               | UUID      | FK                                      |
+| `area_id`               | UUID      | FK                                      |
+| `unit_id`               | UUID      | FK                                      |
+| `alert_type`            | ENUM      | Alert type                              |
+| `severity`              | ENUM      | `warning`, `critical`                   |
+| `status`                | ENUM      | `triggered`, `acknowledged`, `resolved` |
+| `title`                 | TEXT      | Alert title                             |
+| `message`               | TEXT      | Alert message                           |
+| `temp_reading`          | NUMERIC   | Temperature at trigger                  |
+| `temp_limit`            | NUMERIC   | Threshold that was exceeded             |
+| `source`                | TEXT      | `sensor`, `system`                      |
+| `triggered_at`          | TIMESTAMP | Trigger time                            |
+| `first_active_at`       | TIMESTAMP | First active time                       |
+| `acknowledged_at`       | TIMESTAMP | Acknowledgment time                     |
+| `acknowledged_by`       | UUID      | User who acknowledged                   |
+| `acknowledgment_notes`  | TEXT      | Acknowledgment notes                    |
+| `resolved_at`           | TIMESTAMP | Resolution time                         |
+| `resolved_by`           | UUID      | User or `system`                        |
+| `escalation_level`      | INTEGER   | Current escalation level                |
+| `last_notified_at`      | TIMESTAMP | Last notification time                  |
+| `next_escalation_at`    | TIMESTAMP | Next escalation time                    |
+| `escalation_steps_sent` | JSONB     | Sent escalation steps                   |
+| `metadata`              | JSONB     | Additional data                         |
+| `ack_required`          | BOOLEAN   | Requires acknowledgment                 |
+| `created_at`            | TIMESTAMP |                                         |
 
 **Relationships**:
+
 - All hierarchy FKs
 
 **Indexes**:
+
 - `alerts_unit_id_status_idx`
 - `alerts_organization_id_status_idx`
 - `alerts_triggered_at_idx`
@@ -4876,30 +5114,31 @@ organizations (tenant)
 
 **Purpose**: Configurable alert thresholds
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | Org-level rule |
-| `site_id` | UUID | Site-level rule |
-| `unit_id` | UUID | Unit-level rule |
-| `offline_warning_missed_checkins` | INTEGER | Warning threshold |
-| `offline_critical_missed_checkins` | INTEGER | Critical threshold |
-| `offline_trigger_multiplier` | NUMERIC | Multiplier |
-| `offline_trigger_additional_minutes` | INTEGER | Additional minutes |
-| `manual_interval_minutes` | INTEGER | Manual log interval |
-| `manual_grace_minutes` | INTEGER | Grace period |
-| `manual_log_missed_checkins_threshold` | INTEGER | Threshold |
-| `door_open_warning_minutes` | INTEGER | Door warning |
-| `door_open_critical_minutes` | INTEGER | Door critical |
-| `door_open_max_mask_minutes_per_day` | INTEGER | Max mask time |
-| `excursion_confirm_minutes_door_closed` | INTEGER | Confirm time |
-| `excursion_confirm_minutes_door_open` | INTEGER | Confirm time |
-| `max_excursion_minutes` | INTEGER | Max excursion |
-| `expected_reading_interval_seconds` | INTEGER | Expected interval |
-| `created_at` | TIMESTAMP | |
-| `updated_at` | TIMESTAMP | |
+| Column                                  | Type      | Description         |
+| --------------------------------------- | --------- | ------------------- |
+| `id`                                    | UUID      | Primary key         |
+| `organization_id`                       | UUID      | Org-level rule      |
+| `site_id`                               | UUID      | Site-level rule     |
+| `unit_id`                               | UUID      | Unit-level rule     |
+| `offline_warning_missed_checkins`       | INTEGER   | Warning threshold   |
+| `offline_critical_missed_checkins`      | INTEGER   | Critical threshold  |
+| `offline_trigger_multiplier`            | NUMERIC   | Multiplier          |
+| `offline_trigger_additional_minutes`    | INTEGER   | Additional minutes  |
+| `manual_interval_minutes`               | INTEGER   | Manual log interval |
+| `manual_grace_minutes`                  | INTEGER   | Grace period        |
+| `manual_log_missed_checkins_threshold`  | INTEGER   | Threshold           |
+| `door_open_warning_minutes`             | INTEGER   | Door warning        |
+| `door_open_critical_minutes`            | INTEGER   | Door critical       |
+| `door_open_max_mask_minutes_per_day`    | INTEGER   | Max mask time       |
+| `excursion_confirm_minutes_door_closed` | INTEGER   | Confirm time        |
+| `excursion_confirm_minutes_door_open`   | INTEGER   | Confirm time        |
+| `max_excursion_minutes`                 | INTEGER   | Max excursion       |
+| `expected_reading_interval_seconds`     | INTEGER   | Expected interval   |
+| `created_at`                            | TIMESTAMP |                     |
+| `updated_at`                            | TIMESTAMP |                     |
 
 **Notes**:
+
 - Only one of `organization_id`, `site_id`, `unit_id` should be set
 - Use `get_effective_alert_rules()` RPC for cascade resolution
 
@@ -4909,19 +5148,19 @@ organizations (tenant)
 
 **Purpose**: Audit trail for alert rule changes
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `alert_rules_id` | UUID | FK to alert_rules |
-| `organization_id` | UUID | Scope |
-| `site_id` | UUID | Scope |
-| `unit_id` | UUID | Scope |
-| `action` | TEXT | `create`, `update`, `delete` |
-| `changes` | JSONB | Changed fields |
-| `changed_by` | UUID | User |
-| `changed_at` | TIMESTAMP | |
-| `note` | TEXT | Optional note |
-| `created_at` | TIMESTAMP | |
+| Column            | Type      | Description                  |
+| ----------------- | --------- | ---------------------------- |
+| `id`              | UUID      | Primary key                  |
+| `alert_rules_id`  | UUID      | FK to alert_rules            |
+| `organization_id` | UUID      | Scope                        |
+| `site_id`         | UUID      | Scope                        |
+| `unit_id`         | UUID      | Scope                        |
+| `action`          | TEXT      | `create`, `update`, `delete` |
+| `changes`         | JSONB     | Changed fields               |
+| `changed_by`      | UUID      | User                         |
+| `changed_at`      | TIMESTAMP |                              |
+| `note`            | TEXT      | Optional note                |
+| `created_at`      | TIMESTAMP |                              |
 
 ---
 
@@ -4931,20 +5170,20 @@ organizations (tenant)
 
 **Purpose**: Per-alert-type notification configuration
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | Scope |
-| `site_id` | UUID | Scope |
-| `unit_id` | UUID | Scope |
-| `alert_type` | ENUM | Alert type |
-| `enabled` | BOOLEAN | Policy enabled |
-| `channels` | JSONB | `{email: true, sms: false, push: true}` |
-| `escalation_minutes` | INTEGER[] | Escalation intervals |
-| `quiet_start` | TIME | Quiet hours start |
-| `quiet_end` | TIME | Quiet hours end |
-| `created_at` | TIMESTAMP | |
-| `updated_at` | TIMESTAMP | |
+| Column               | Type      | Description                             |
+| -------------------- | --------- | --------------------------------------- |
+| `id`                 | UUID      | Primary key                             |
+| `organization_id`    | UUID      | Scope                                   |
+| `site_id`            | UUID      | Scope                                   |
+| `unit_id`            | UUID      | Scope                                   |
+| `alert_type`         | ENUM      | Alert type                              |
+| `enabled`            | BOOLEAN   | Policy enabled                          |
+| `channels`           | JSONB     | `{email: true, sms: false, push: true}` |
+| `escalation_minutes` | INTEGER[] | Escalation intervals                    |
+| `quiet_start`        | TIME      | Quiet hours start                       |
+| `quiet_end`          | TIME      | Quiet hours end                         |
+| `created_at`         | TIMESTAMP |                                         |
+| `updated_at`         | TIMESTAMP |                                         |
 
 ---
 
@@ -4952,18 +5191,18 @@ organizations (tenant)
 
 **Purpose**: Contacts for alert escalation
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | FK |
-| `site_id` | UUID | FK (optional) |
-| `name` | TEXT | Contact name |
-| `email` | TEXT | Email address |
-| `phone` | TEXT | Phone (E.164) |
-| `escalation_level` | INTEGER | Level (1, 2, 3...) |
-| `is_active` | BOOLEAN | Active status |
-| `created_at` | TIMESTAMP | |
-| `updated_at` | TIMESTAMP | |
+| Column             | Type      | Description        |
+| ------------------ | --------- | ------------------ |
+| `id`               | UUID      | Primary key        |
+| `organization_id`  | UUID      | FK                 |
+| `site_id`          | UUID      | FK (optional)      |
+| `name`             | TEXT      | Contact name       |
+| `email`            | TEXT      | Email address      |
+| `phone`            | TEXT      | Phone (E.164)      |
+| `escalation_level` | INTEGER   | Level (1, 2, 3...) |
+| `is_active`        | BOOLEAN   | Active status      |
+| `created_at`       | TIMESTAMP |                    |
+| `updated_at`       | TIMESTAMP |                    |
 
 ---
 
@@ -4971,17 +5210,17 @@ organizations (tenant)
 
 **Purpose**: Record of notification attempts
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `alert_id` | UUID | FK to alerts |
-| `channel` | TEXT | `email`, `sms`, `push` |
-| `recipient` | TEXT | Email/phone |
-| `status` | TEXT | `pending`, `sent`, `failed` |
-| `sent_at` | TIMESTAMP | Send time |
-| `error_message` | TEXT | Error if failed |
-| `metadata` | JSONB | Additional data |
-| `created_at` | TIMESTAMP | |
+| Column          | Type      | Description                 |
+| --------------- | --------- | --------------------------- |
+| `id`            | UUID      | Primary key                 |
+| `alert_id`      | UUID      | FK to alerts                |
+| `channel`       | TEXT      | `email`, `sms`, `push`      |
+| `recipient`     | TEXT      | Email/phone                 |
+| `status`        | TEXT      | `pending`, `sent`, `failed` |
+| `sent_at`       | TIMESTAMP | Send time                   |
+| `error_message` | TEXT      | Error if failed             |
+| `metadata`      | JSONB     | Additional data             |
+| `created_at`    | TIMESTAMP |                             |
 
 ---
 
@@ -4989,15 +5228,15 @@ organizations (tenant)
 
 **Purpose**: SMS delivery log
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `alert_id` | UUID | FK to alerts |
-| `phone_number` | TEXT | Recipient (masked) |
-| `message` | TEXT | Message content |
-| `twilio_sid` | TEXT | Twilio message SID |
-| `status` | TEXT | Delivery status |
-| `created_at` | TIMESTAMP | |
+| Column         | Type      | Description        |
+| -------------- | --------- | ------------------ |
+| `id`           | UUID      | Primary key        |
+| `alert_id`     | UUID      | FK to alerts       |
+| `phone_number` | TEXT      | Recipient (masked) |
+| `message`      | TEXT      | Message content    |
+| `twilio_sid`   | TEXT      | Twilio message SID |
+| `status`       | TEXT      | Delivery status    |
+| `created_at`   | TIMESTAMP |                    |
 
 ---
 
@@ -5007,18 +5246,18 @@ organizations (tenant)
 
 **Purpose**: HACCP corrective action documentation
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `unit_id` | UUID | FK to units |
-| `alert_id` | UUID | FK to alerts (optional) |
-| `action_taken` | TEXT | Description of action |
-| `root_cause` | TEXT | Root cause analysis |
-| `preventive_measures` | TEXT | Future prevention |
-| `photo_urls` | TEXT[] | Photo evidence |
-| `created_by` | UUID | User |
-| `completed_at` | TIMESTAMP | Completion time |
-| `created_at` | TIMESTAMP | |
+| Column                | Type      | Description             |
+| --------------------- | --------- | ----------------------- |
+| `id`                  | UUID      | Primary key             |
+| `unit_id`             | UUID      | FK to units             |
+| `alert_id`            | UUID      | FK to alerts (optional) |
+| `action_taken`        | TEXT      | Description of action   |
+| `root_cause`          | TEXT      | Root cause analysis     |
+| `preventive_measures` | TEXT      | Future prevention       |
+| `photo_urls`          | TEXT[]    | Photo evidence          |
+| `created_by`          | UUID      | User                    |
+| `completed_at`        | TIMESTAMP | Completion time         |
+| `created_at`          | TIMESTAMP |                         |
 
 ---
 
@@ -5026,18 +5265,18 @@ organizations (tenant)
 
 **Purpose**: Sensor calibration history
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `device_id` | UUID | FK to devices |
-| `reference_temp` | NUMERIC | Reference thermometer |
-| `measured_temp` | NUMERIC | Sensor reading |
-| `offset_applied` | NUMERIC | Calibration offset |
-| `performed_by` | UUID | User |
-| `calibrated_at` | TIMESTAMP | |
-| `next_calibration_due` | TIMESTAMP | |
-| `notes` | TEXT | |
-| `created_at` | TIMESTAMP | |
+| Column                 | Type      | Description           |
+| ---------------------- | --------- | --------------------- |
+| `id`                   | UUID      | Primary key           |
+| `device_id`            | UUID      | FK to devices         |
+| `reference_temp`       | NUMERIC   | Reference thermometer |
+| `measured_temp`        | NUMERIC   | Sensor reading        |
+| `offset_applied`       | NUMERIC   | Calibration offset    |
+| `performed_by`         | UUID      | User                  |
+| `calibrated_at`        | TIMESTAMP |                       |
+| `next_calibration_due` | TIMESTAMP |                       |
+| `notes`                | TEXT      |                       |
+| `created_at`           | TIMESTAMP |                       |
 
 ---
 
@@ -5045,22 +5284,23 @@ organizations (tenant)
 
 **Purpose**: Comprehensive audit trail
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | FK |
-| `site_id` | UUID | FK (optional) |
-| `unit_id` | UUID | FK (optional) |
-| `event_type` | TEXT | Event type code |
-| `category` | TEXT | `alert`, `temperature`, `configuration`, `user` |
-| `severity` | TEXT | `info`, `warning`, `error` |
-| `title` | TEXT | Human-readable title |
-| `event_data` | JSONB | Event details |
-| `actor_id` | UUID | User or system |
-| `actor_type` | TEXT | `user`, `system` |
-| `created_at` | TIMESTAMP | |
+| Column            | Type      | Description                                     |
+| ----------------- | --------- | ----------------------------------------------- |
+| `id`              | UUID      | Primary key                                     |
+| `organization_id` | UUID      | FK                                              |
+| `site_id`         | UUID      | FK (optional)                                   |
+| `unit_id`         | UUID      | FK (optional)                                   |
+| `event_type`      | TEXT      | Event type code                                 |
+| `category`        | TEXT      | `alert`, `temperature`, `configuration`, `user` |
+| `severity`        | TEXT      | `info`, `warning`, `error`                      |
+| `title`           | TEXT      | Human-readable title                            |
+| `event_data`      | JSONB     | Event details                                   |
+| `actor_id`        | UUID      | User or system                                  |
+| `actor_type`      | TEXT      | `user`, `system`                                |
+| `created_at`      | TIMESTAMP |                                                 |
 
 **Indexes**:
+
 - `event_logs_organization_id_created_at_idx`
 - `event_logs_unit_id_idx`
 - `event_logs_event_type_idx`
@@ -5073,19 +5313,19 @@ organizations (tenant)
 
 **Purpose**: Per-organization TTN credentials
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | FK (unique) |
-| `application_id` | TEXT | TTN application ID |
-| `api_key` | TEXT | Encrypted API key |
-| `webhook_secret` | TEXT | Webhook secret (hashed) |
-| `cluster` | TEXT | TTN cluster (e.g., `eu1`) |
-| `webhook_url` | TEXT | Configured webhook URL |
-| `is_configured` | BOOLEAN | Setup complete |
-| `last_sync_at` | TIMESTAMP | Last sync |
-| `created_at` | TIMESTAMP | |
-| `updated_at` | TIMESTAMP | |
+| Column            | Type      | Description               |
+| ----------------- | --------- | ------------------------- |
+| `id`              | UUID      | Primary key               |
+| `organization_id` | UUID      | FK (unique)               |
+| `application_id`  | TEXT      | TTN application ID        |
+| `api_key`         | TEXT      | Encrypted API key         |
+| `webhook_secret`  | TEXT      | Webhook secret (hashed)   |
+| `cluster`         | TEXT      | TTN cluster (e.g., `eu1`) |
+| `webhook_url`     | TEXT      | Configured webhook URL    |
+| `is_configured`   | BOOLEAN   | Setup complete            |
+| `last_sync_at`    | TIMESTAMP | Last sync                 |
+| `created_at`      | TIMESTAMP |                           |
+| `updated_at`      | TIMESTAMP |                           |
 
 ---
 
@@ -5093,18 +5333,18 @@ organizations (tenant)
 
 **Purpose**: Device provisioning job queue
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | FK |
-| `sensor_id` | UUID | FK to lora_sensors |
-| `gateway_id` | UUID | FK to gateways |
-| `action` | TEXT | `provision`, `deprovision` |
-| `status` | TEXT | `pending`, `processing`, `complete`, `failed` |
-| `attempts` | INTEGER | Retry count |
-| `last_error` | TEXT | Error message |
-| `processed_at` | TIMESTAMP | |
-| `created_at` | TIMESTAMP | |
+| Column            | Type      | Description                                   |
+| ----------------- | --------- | --------------------------------------------- |
+| `id`              | UUID      | Primary key                                   |
+| `organization_id` | UUID      | FK                                            |
+| `sensor_id`       | UUID      | FK to lora_sensors                            |
+| `gateway_id`      | UUID      | FK to gateways                                |
+| `action`          | TEXT      | `provision`, `deprovision`                    |
+| `status`          | TEXT      | `pending`, `processing`, `complete`, `failed` |
+| `attempts`        | INTEGER   | Retry count                                   |
+| `last_error`      | TEXT      | Error message                                 |
+| `processed_at`    | TIMESTAMP |                                               |
+| `created_at`      | TIMESTAMP |                                               |
 
 ---
 
@@ -5112,16 +5352,16 @@ organizations (tenant)
 
 **Purpose**: Provisioning history
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `queue_id` | UUID | FK to queue |
-| `organization_id` | UUID | FK |
-| `action` | TEXT | Action performed |
-| `success` | BOOLEAN | Success flag |
-| `response` | JSONB | API response |
-| `error` | TEXT | Error if failed |
-| `created_at` | TIMESTAMP | |
+| Column            | Type      | Description      |
+| ----------------- | --------- | ---------------- |
+| `id`              | UUID      | Primary key      |
+| `queue_id`        | UUID      | FK to queue      |
+| `organization_id` | UUID      | FK               |
+| `action`          | TEXT      | Action performed |
+| `success`         | BOOLEAN   | Success flag     |
+| `response`        | JSONB     | API response     |
+| `error`           | TEXT      | Error if failed  |
+| `created_at`      | TIMESTAMP |                  |
 
 ---
 
@@ -5129,15 +5369,15 @@ organizations (tenant)
 
 **Purpose**: Deprovisioning job tracking
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | FK |
-| `sensor_id` | UUID | FK |
-| `dev_eui` | TEXT | Device EUI |
-| `status` | TEXT | Job status |
-| `created_at` | TIMESTAMP | |
-| `processed_at` | TIMESTAMP | |
+| Column            | Type      | Description |
+| ----------------- | --------- | ----------- |
+| `id`              | UUID      | Primary key |
+| `organization_id` | UUID      | FK          |
+| `sensor_id`       | UUID      | FK          |
+| `dev_eui`         | TEXT      | Device EUI  |
+| `status`          | TEXT      | Job status  |
+| `created_at`      | TIMESTAMP |             |
+| `processed_at`    | TIMESTAMP |             |
 
 ---
 
@@ -5147,15 +5387,15 @@ organizations (tenant)
 
 **Purpose**: User account information
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key (= auth.users.id) |
-| `email` | TEXT | Email address |
-| `full_name` | TEXT | Display name |
-| `phone` | TEXT | Phone number |
-| `avatar_url` | TEXT | Profile picture |
-| `created_at` | TIMESTAMP | |
-| `updated_at` | TIMESTAMP | |
+| Column       | Type      | Description                   |
+| ------------ | --------- | ----------------------------- |
+| `id`         | UUID      | Primary key (= auth.users.id) |
+| `email`      | TEXT      | Email address                 |
+| `full_name`  | TEXT      | Display name                  |
+| `phone`      | TEXT      | Phone number                  |
+| `avatar_url` | TEXT      | Profile picture               |
+| `created_at` | TIMESTAMP |                               |
+| `updated_at` | TIMESTAMP |                               |
 
 ---
 
@@ -5163,14 +5403,14 @@ organizations (tenant)
 
 **Purpose**: Role-based access control
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `user_id` | UUID | FK to profiles |
-| `organization_id` | UUID | FK to organizations |
-| `role` | ENUM | `owner`, `manager`, `operator`, `viewer` |
-| `created_at` | TIMESTAMP | |
-| `updated_at` | TIMESTAMP | |
+| Column            | Type      | Description                              |
+| ----------------- | --------- | ---------------------------------------- |
+| `id`              | UUID      | Primary key                              |
+| `user_id`         | UUID      | FK to profiles                           |
+| `organization_id` | UUID      | FK to organizations                      |
+| `role`            | ENUM      | `owner`, `manager`, `operator`, `viewer` |
+| `created_at`      | TIMESTAMP |                                          |
+| `updated_at`      | TIMESTAMP |                                          |
 
 **Unique**: `(user_id, organization_id)`
 
@@ -5182,19 +5422,19 @@ organizations (tenant)
 
 **Purpose**: Stripe subscription records
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | FK |
-| `stripe_subscription_id` | TEXT | Stripe ID |
-| `stripe_customer_id` | TEXT | Stripe customer |
-| `plan_id` | TEXT | Plan identifier |
-| `status` | TEXT | Subscription status |
-| `current_period_start` | TIMESTAMP | |
-| `current_period_end` | TIMESTAMP | |
-| `cancel_at` | TIMESTAMP | |
-| `created_at` | TIMESTAMP | |
-| `updated_at` | TIMESTAMP | |
+| Column                   | Type      | Description         |
+| ------------------------ | --------- | ------------------- |
+| `id`                     | UUID      | Primary key         |
+| `organization_id`        | UUID      | FK                  |
+| `stripe_subscription_id` | TEXT      | Stripe ID           |
+| `stripe_customer_id`     | TEXT      | Stripe customer     |
+| `plan_id`                | TEXT      | Plan identifier     |
+| `status`                 | TEXT      | Subscription status |
+| `current_period_start`   | TIMESTAMP |                     |
+| `current_period_end`     | TIMESTAMP |                     |
+| `cancel_at`              | TIMESTAMP |                     |
+| `created_at`             | TIMESTAMP |                     |
+| `updated_at`             | TIMESTAMP |                     |
 
 ---
 
@@ -5202,15 +5442,15 @@ organizations (tenant)
 
 **Purpose**: Billing invoice records
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | FK |
-| `stripe_invoice_id` | TEXT | Stripe ID |
-| `amount` | INTEGER | Amount in cents |
-| `status` | TEXT | Invoice status |
-| `paid_at` | TIMESTAMP | |
-| `created_at` | TIMESTAMP | |
+| Column              | Type      | Description     |
+| ------------------- | --------- | --------------- |
+| `id`                | UUID      | Primary key     |
+| `organization_id`   | UUID      | FK              |
+| `stripe_invoice_id` | TEXT      | Stripe ID       |
+| `amount`            | INTEGER   | Amount in cents |
+| `status`            | TEXT      | Invoice status  |
+| `paid_at`           | TIMESTAMP |                 |
+| `created_at`        | TIMESTAMP |                 |
 
 ---
 
@@ -5220,15 +5460,15 @@ organizations (tenant)
 
 **Purpose**: Emulator sync state tracking
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | FK |
-| `last_sync_at` | TIMESTAMP | |
-| `sync_version` | INTEGER | |
-| `state_hash` | TEXT | |
-| `created_at` | TIMESTAMP | |
-| `updated_at` | TIMESTAMP | |
+| Column            | Type      | Description |
+| ----------------- | --------- | ----------- |
+| `id`              | UUID      | Primary key |
+| `organization_id` | UUID      | FK          |
+| `last_sync_at`    | TIMESTAMP |             |
+| `sync_version`    | INTEGER   |             |
+| `state_hash`      | TEXT      |             |
+| `created_at`      | TIMESTAMP |             |
+| `updated_at`      | TIMESTAMP |             |
 
 ---
 
@@ -5236,17 +5476,17 @@ organizations (tenant)
 
 **Purpose**: GDPR deletion job tracking
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `user_id` | UUID | User to delete |
-| `organization_id` | UUID | |
-| `status` | TEXT | Job status |
-| `current_step` | TEXT | Current step |
-| `steps_completed` | JSONB | Completed steps |
-| `error_message` | TEXT | |
-| `completed_at` | TIMESTAMP | |
-| `created_at` | TIMESTAMP | |
+| Column            | Type      | Description     |
+| ----------------- | --------- | --------------- |
+| `id`              | UUID      | Primary key     |
+| `user_id`         | UUID      | User to delete  |
+| `organization_id` | UUID      |                 |
+| `status`          | TEXT      | Job status      |
+| `current_step`    | TEXT      | Current step    |
+| `steps_completed` | JSONB     | Completed steps |
+| `error_message`   | TEXT      |                 |
+| `completed_at`    | TIMESTAMP |                 |
+| `created_at`      | TIMESTAMP |                 |
 
 ---
 
@@ -5362,15 +5602,15 @@ CREATE POLICY "Organization members can view" ON table_name
 
 ### Table-Specific Policies
 
-| Table | Policy | Description |
-|-------|--------|-------------|
-| `organizations` | org_member | User in org via user_roles |
-| `sites` | org_member | Org owns site |
-| `areas` | site_member | Site → Org chain |
-| `units` | area_member | Area → Site → Org chain |
-| `alerts` | org_member | Org owns alert |
+| Table             | Policy      | Description                    |
+| ----------------- | ----------- | ------------------------------ |
+| `organizations`   | org_member  | User in org via user_roles     |
+| `sites`           | org_member  | Org owns site                  |
+| `areas`           | site_member | Site → Org chain               |
+| `units`           | area_member | Area → Site → Org chain        |
+| `alerts`          | org_member  | Org owns alert                 |
 | `sensor_readings` | unit_member | Unit → Area → Site → Org chain |
-| `lora_sensors` | org_member | Org owns sensor |
+| `lora_sensors`    | org_member  | Org owns sensor                |
 
 ### Role-Based Policies
 
@@ -5400,7 +5640,6 @@ CREATE POLICY "Managers can update" ON units
 - [API.md](#api) - RPC function documentation
 - [ARCHITECTURE.md](#architecture-architecture) - Database architecture
 
-
 ---
 
 \newpage
@@ -5428,6 +5667,7 @@ CREATE POLICY "Managers can update" ON units
 ### Overview
 
 The Things Network provides LoRaWAN infrastructure for sensor connectivity. FreshTrack Pro integrates with TTN for:
+
 - Device registration and provisioning
 - Webhook-based data ingestion
 - Gateway management
@@ -5450,11 +5690,13 @@ The Things Network provides LoRaWAN infrastructure for sensor connectivity. Fres
 ### Per-Organization Model
 
 Each organization has its own:
+
 - TTN Application
 - API Key
 - Webhook Secret
 
 Stored in `ttn_connections` table with:
+
 - Encrypted API key
 - Hashed webhook secret
 
@@ -5470,14 +5712,14 @@ Stored in `ttn_connections` table with:
 
 The TTN API key must have:
 
-| Permission | Purpose |
-|------------|---------|
-| `applications:read` | Read application info |
-| `applications:write` | Update application |
-| `devices:read` | List devices |
-| `devices:write` | Create/update devices |
-| `gateways:read` | List gateways |
-| `gateways:write` | Create/update gateways (if managing gateways) |
+| Permission           | Purpose                                       |
+| -------------------- | --------------------------------------------- |
+| `applications:read`  | Read application info                         |
+| `applications:write` | Update application                            |
+| `devices:read`       | List devices                                  |
+| `devices:write`      | Create/update devices                         |
+| `gateways:read`      | List gateways                                 |
+| `gateways:write`     | Create/update gateways (if managing gateways) |
 
 #### 3. Configuration Steps
 
@@ -5505,6 +5747,7 @@ The TTN API key must have:
 | `Content-Type` | `application/json` |
 
 **Enabled Messages**:
+
 - Uplink message
 - Join accept (optional)
 
@@ -5521,9 +5764,9 @@ The TTN API key must have:
 
 The system normalizes DevEUI to lowercase hex without separators:
 
-| Input Format | Normalized |
-|--------------|------------|
-| `0004A30B001C1234` | `0004a30b001c1234` |
+| Input Format              | Normalized         |
+| ------------------------- | ------------------ |
+| `0004A30B001C1234`        | `0004a30b001c1234` |
 | `00:04:A3:0B:00:1C:12:34` | `0004a30b001c1234` |
 | `00-04-A3-0B-00-1C-12-34` | `0004a30b001c1234` |
 | `00 04 A3 0B 00 1C 12 34` | `0004a30b001c1234` |
@@ -5533,18 +5776,19 @@ The system normalizes DevEUI to lowercase hex without separators:
 Default cluster: `eu1` (Europe)
 
 Configure via `ttn_connections.cluster`:
+
 - `eu1` - Europe (default)
 - `nam1` - North America
 - `au1` - Australia
 
 ### Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Webhook not receiving data | Secret mismatch | Regenerate secret, update TTN |
-| Device stuck in "joining" | Wrong AppKey | Verify AppKey matches TTN |
-| 401 from TTN API | Invalid API key | Generate new key with correct permissions |
-| Sensor not in dashboard | DevEUI mismatch | Check DevEUI format/normalization |
+| Issue                      | Cause           | Solution                                  |
+| -------------------------- | --------------- | ----------------------------------------- |
+| Webhook not receiving data | Secret mismatch | Regenerate secret, update TTN             |
+| Device stuck in "joining"  | Wrong AppKey    | Verify AppKey matches TTN                 |
+| 401 from TTN API           | Invalid API key | Generate new key with correct permissions |
+| Sensor not in dashboard    | DevEUI mismatch | Check DevEUI format/normalization         |
 
 ### Related Files
 
@@ -5563,18 +5807,19 @@ Configure via `ttn_connections.cluster`:
 ### Overview
 
 Stripe handles subscription billing with:
+
 - Checkout sessions for new subscriptions
 - Customer portal for management
 - Webhook for event processing
 
 ### Subscription Plans
 
-| Plan | Price ID | Monthly | Sensors | Features |
-|------|----------|---------|---------|----------|
-| Starter | `price_starter` | $29 | 5 | Basic monitoring |
-| Pro | `price_pro` | $79 | 25 | + SMS alerts |
-| HACCP | `price_haccp` | $199 | 100 | + Compliance reports |
-| Enterprise | Custom | Custom | Unlimited | Custom features |
+| Plan       | Price ID        | Monthly | Sensors   | Features             |
+| ---------- | --------------- | ------- | --------- | -------------------- |
+| Starter    | `price_starter` | $29     | 5         | Basic monitoring     |
+| Pro        | `price_pro`     | $79     | 25        | + SMS alerts         |
+| HACCP      | `price_haccp`   | $199    | 100       | + Compliance reports |
+| Enterprise | Custom          | Custom  | Unlimited | Custom features      |
 
 ### Integration Flow
 
@@ -5601,14 +5846,14 @@ sequenceDiagram
 
 ### Webhook Events
 
-| Event | Handler Action |
-|-------|----------------|
-| `checkout.session.completed` | Create subscription, update org |
-| `customer.subscription.created` | Log subscription start |
-| `customer.subscription.updated` | Update plan, sensor limit |
-| `customer.subscription.deleted` | Downgrade to free tier |
-| `invoice.paid` | Record invoice |
-| `invoice.payment_failed` | Send payment failure notification |
+| Event                           | Handler Action                    |
+| ------------------------------- | --------------------------------- |
+| `checkout.session.completed`    | Create subscription, update org   |
+| `customer.subscription.created` | Log subscription start            |
+| `customer.subscription.updated` | Update plan, sensor limit         |
+| `customer.subscription.deleted` | Downgrade to free tier            |
+| `invoice.paid`                  | Record invoice                    |
+| `invoice.payment_failed`        | Send payment failure notification |
 
 ### Setup
 
@@ -5653,10 +5898,12 @@ SMS sent via `process-escalations` → `send-sms-alert`
 ### Phone Number Format
 
 All phone numbers must be in E.164 format:
+
 - `+15551234567` (US)
 - `+447911123456` (UK)
 
 Validation in `src/lib/validation.ts`:
+
 ```typescript
 const phoneSchema = z.string().regex(/^\+[1-9]\d{1,14}$/);
 ```
@@ -5686,11 +5933,11 @@ TWILIO_PHONE_NUMBER=+15551234567
 
 ### Troubleshooting
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| SMS not delivered | Invalid phone format | Ensure E.164 format |
-| Delivery failed | Twilio account issue | Check Twilio console |
-| Rate limited | Too many SMS | Check escalation policy |
+| Issue             | Cause                | Solution                |
+| ----------------- | -------------------- | ----------------------- |
+| SMS not delivered | Invalid phone format | Ensure E.164 format     |
+| Delivery failed   | Twilio account issue | Check Twilio console    |
+| Rate limited      | Too many SMS         | Check escalation policy |
 
 ### Related Files
 
@@ -5705,6 +5952,7 @@ TWILIO_PHONE_NUMBER=+15551234567
 ### Overview
 
 Supabase Auth provides:
+
 - Email/password authentication
 - Session management with JWT
 - Password reset flow
@@ -5720,14 +5968,14 @@ Supabase Auth provides:
 
 ### Password Requirements
 
-| Requirement | Validation |
-|-------------|------------|
-| Minimum length | 8 characters |
-| Uppercase | At least 1 |
-| Lowercase | At least 1 |
-| Number | At least 1 |
-| Special character | At least 1 |
-| Breach check | `check-password-breach` function |
+| Requirement       | Validation                       |
+| ----------------- | -------------------------------- |
+| Minimum length    | 8 characters                     |
+| Uppercase         | At least 1                       |
+| Lowercase         | At least 1                       |
+| Number            | At least 1                       |
+| Special character | At least 1                       |
+| Breach check      | `check-password-breach` function |
 
 ### Session Configuration
 
@@ -5767,25 +6015,25 @@ CREATE TRIGGER on_auth_user_created
 
 ### Required for Production
 
-| Variable | Service | Location |
-|----------|---------|----------|
-| `VITE_SUPABASE_URL` | Supabase | Frontend |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase | Frontend |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase | Edge Functions (auto) |
-| `INTERNAL_API_KEY` | Internal | Edge Functions |
-| `STRIPE_SECRET_KEY` | Stripe | Edge Functions |
-| `STRIPE_WEBHOOK_SECRET` | Stripe | Edge Functions |
-| `TWILIO_ACCOUNT_SID` | Twilio | Edge Functions |
-| `TWILIO_AUTH_TOKEN` | Twilio | Edge Functions |
-| `TWILIO_PHONE_NUMBER` | Twilio | Edge Functions |
+| Variable                        | Service  | Location              |
+| ------------------------------- | -------- | --------------------- |
+| `VITE_SUPABASE_URL`             | Supabase | Frontend              |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase | Frontend              |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Supabase | Edge Functions (auto) |
+| `INTERNAL_API_KEY`              | Internal | Edge Functions        |
+| `STRIPE_SECRET_KEY`             | Stripe   | Edge Functions        |
+| `STRIPE_WEBHOOK_SECRET`         | Stripe   | Edge Functions        |
+| `TWILIO_ACCOUNT_SID`            | Twilio   | Edge Functions        |
+| `TWILIO_AUTH_TOKEN`             | Twilio   | Edge Functions        |
+| `TWILIO_PHONE_NUMBER`           | Twilio   | Edge Functions        |
 
 ### Per-Organization (Database)
 
-| Variable | Table | Column |
-|----------|-------|--------|
-| TTN API Key | `ttn_connections` | `api_key` (encrypted) |
+| Variable           | Table             | Column                    |
+| ------------------ | ----------------- | ------------------------- |
+| TTN API Key        | `ttn_connections` | `api_key` (encrypted)     |
 | TTN Webhook Secret | `ttn_connections` | `webhook_secret` (hashed) |
-| TTN Application ID | `ttn_connections` | `application_id` |
+| TTN Application ID | `ttn_connections` | `application_id`          |
 
 ### Setting Supabase Secrets
 
@@ -5811,12 +6059,11 @@ supabase secrets list
 
 ## TBD Items
 
-| Integration | TBD | File to Verify |
-|-------------|-----|----------------|
-| TTN | Cluster configuration options | `supabase/functions/_shared/ttnConfig.ts` |
-| Stripe | Enterprise plan setup | `src/lib/stripe.ts` |
-| Twilio | Rate limit configuration | `supabase/functions/process-escalations/index.ts` |
-
+| Integration | TBD                           | File to Verify                                    |
+| ----------- | ----------------------------- | ------------------------------------------------- |
+| TTN         | Cluster configuration options | `supabase/functions/_shared/ttnConfig.ts`         |
+| Stripe      | Enterprise plan setup         | `src/lib/stripe.ts`                               |
+| Twilio      | Rate limit configuration      | `supabase/functions/process-escalations/index.ts` |
 
 ---
 
@@ -5860,10 +6107,10 @@ debugLog('Component', 'Action description', { data });
 
 #### Console Patterns
 
-| Level | Usage |
-|-------|-------|
-| `console.log` | General information |
-| `console.warn` | Non-critical issues |
+| Level           | Usage                      |
+| --------------- | -------------------------- |
+| `console.log`   | General information        |
+| `console.warn`  | Non-critical issues        |
 | `console.error` | Errors requiring attention |
 
 #### Route Logging
@@ -5895,6 +6142,7 @@ console.error(`[FUNCTION-NAME] ${requestId} | Error:`, error);
 ```
 
 Example:
+
 ```
 [TTN-WEBHOOK] a1b2c3d4 | Uplink: device=sensor-001, dev_eui=0004a30b001c1234, app=freshtrack-org
 [TTN-WEBHOOK] a1b2c3d4 | Found sensor by ttn_device_id: Walk-in Cooler
@@ -5904,15 +6152,16 @@ Example:
 ### Sensitive Data Handling
 
 **Never log**:
+
 - Full phone numbers (mask: `+1555***4567`)
 - API keys
 - Passwords
 - Full webhook secrets
 
 **Masking pattern**:
+
 ```typescript
-const maskPhone = (phone: string) =>
-  phone.slice(0, 5) + '***' + phone.slice(-4);
+const maskPhone = (phone: string) => phone.slice(0, 5) + '***' + phone.slice(-4);
 ```
 
 ---
@@ -5961,16 +6210,16 @@ try {
 
 ```typescript
 // Success
-return new Response(
-  JSON.stringify({ success: true, data }),
-  { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-);
+return new Response(JSON.stringify({ success: true, data }), {
+  status: 200,
+  headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+});
 
 // Error
-return new Response(
-  JSON.stringify({ error: errorMessage, code: 'ERROR_CODE' }),
-  { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-);
+return new Response(JSON.stringify({ error: errorMessage, code: 'ERROR_CODE' }), {
+  status: 500,
+  headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+});
 ```
 
 #### Webhook Error Handling
@@ -5981,7 +6230,7 @@ For TTN webhooks, always return 2xx to prevent retries:
 // Unknown device - accept but don't process
 return new Response(
   JSON.stringify({ accepted: true, processed: false, reason: 'Unknown device' }),
-  { status: 202, headers: corsHeaders }
+  { status: 202, headers: corsHeaders },
 );
 ```
 
@@ -5994,6 +6243,7 @@ return new Response(
 **Enable**: Settings → Debug toggle (or `localStorage.setItem('debug', 'true')`)
 
 **Features**:
+
 - Route logging
 - API call logging
 - Component state display
@@ -6004,6 +6254,7 @@ return new Response(
 **File**: `src/components/debug/DebugTerminal.tsx`
 
 Access via debug mode. Shows:
+
 - Recent API calls
 - Route changes
 - Error logs
@@ -6014,6 +6265,7 @@ Access via debug mode. Shows:
 **Route**: `/inspector`
 
 Features:
+
 - View raw database records
 - Examine sensor states
 - Check TTN configuration
@@ -6024,6 +6276,7 @@ Features:
 **File**: `src/components/debug/EdgeFunctionDiagnostics.tsx`
 
 Shows:
+
 - Function health status
 - Recent invocation logs
 - Error counts
@@ -6033,6 +6286,7 @@ Shows:
 **File**: `src/components/ttn/TTNDiagnosticsDownload.tsx`
 
 Downloads diagnostic bundle containing:
+
 - TTN connection status
 - Sensor inventory
 - Recent webhook logs
@@ -6072,6 +6326,7 @@ Downloads diagnostic bundle containing:
 **Route**: `/admin/health`
 
 Checks:
+
 - Database connectivity
 - Edge function availability
 - TTN webhook status
@@ -6102,6 +6357,7 @@ Displays:
 ### Automated Checks
 
 **TBD**: Configure Supabase cron jobs for:
+
 - Periodic health checks
 - Alert on failures
 - Metrics collection
@@ -6112,35 +6368,35 @@ Displays:
 
 ### TTN Webhook Failures
 
-| Scenario | Symptoms | Resolution |
-|----------|----------|------------|
-| Invalid secret | 401 responses | Regenerate secret, update TTN |
+| Scenario         | Symptoms              | Resolution                    |
+| ---------------- | --------------------- | ----------------------------- |
+| Invalid secret   | 401 responses         | Regenerate secret, update TTN |
 | Function timeout | Incomplete processing | Check function logs, optimize |
-| Database error | 202 responses | Check Supabase status |
+| Database error   | 202 responses         | Check Supabase status         |
 
 ### Alert Processing Failures
 
-| Scenario | Symptoms | Resolution |
-|----------|----------|------------|
-| Function not triggered | No state changes | Check cron/trigger setup |
-| RPC error | Cascade not working | Check `get_effective_alert_rules` |
-| Missing org_id | Alert creation fails | Verify unit hierarchy |
+| Scenario               | Symptoms             | Resolution                        |
+| ---------------------- | -------------------- | --------------------------------- |
+| Function not triggered | No state changes     | Check cron/trigger setup          |
+| RPC error              | Cascade not working  | Check `get_effective_alert_rules` |
+| Missing org_id         | Alert creation fails | Verify unit hierarchy             |
 
 ### Notification Failures
 
-| Scenario | Symptoms | Resolution |
-|----------|----------|------------|
-| SMS delivery failed | `notification_events.status = 'failed'` | Check Twilio console |
-| Email bounced | Delivery log shows bounce | Verify email address |
-| Rate limited | Notifications delayed | Check escalation timing |
+| Scenario            | Symptoms                                | Resolution              |
+| ------------------- | --------------------------------------- | ----------------------- |
+| SMS delivery failed | `notification_events.status = 'failed'` | Check Twilio console    |
+| Email bounced       | Delivery log shows bounce               | Verify email address    |
+| Rate limited        | Notifications delayed                   | Check escalation timing |
 
 ### Sensor Offline
 
-| Scenario | Symptoms | Resolution |
-|----------|----------|------------|
-| Gateway offline | All sensors show offline | Check gateway power/network |
-| Sensor battery | Single sensor offline | Replace battery |
-| TTN issue | Multiple sensors affected | Check TTN status page |
+| Scenario        | Symptoms                  | Resolution                  |
+| --------------- | ------------------------- | --------------------------- |
+| Gateway offline | All sensors show offline  | Check gateway power/network |
+| Sensor battery  | Single sensor offline     | Replace battery             |
+| TTN issue       | Multiple sensors affected | Check TTN status page       |
 
 ---
 
@@ -6151,6 +6407,7 @@ Displays:
 **Symptoms**: All sensors in an organization show offline status
 
 **Steps**:
+
 1. Check `/admin/health` for system status
 2. Verify TTN webhook status
 3. Check TTN console for gateway status
@@ -6158,6 +6415,7 @@ Displays:
 5. Verify `ttn_connections.webhook_secret` is correct
 
 **Resolution**:
+
 - If webhook issue: Regenerate secret, update TTN
 - If gateway issue: Power cycle gateway
 - If TTN outage: Wait for TTN recovery
@@ -6167,6 +6425,7 @@ Displays:
 **Symptoms**: Temperature excursions not creating alerts
 
 **Steps**:
+
 1. Check unit has sensor assigned
 2. Verify sensor is receiving data (check `sensor_readings`)
 3. Check `process-unit-states` function logs
@@ -6174,6 +6433,7 @@ Displays:
 5. Check unit `temp_limit_high` and `temp_limit_low`
 
 **Resolution**:
+
 - If no readings: Debug sensor connection
 - If function error: Check function deployment
 - If rules missing: Create default rules
@@ -6183,6 +6443,7 @@ Displays:
 **Symptoms**: Alerts created but no notifications received
 
 **Steps**:
+
 1. Check `notification_policies` for alert type
 2. Verify `escalation_contacts` exist
 3. Check `notification_events` for delivery status
@@ -6190,6 +6451,7 @@ Displays:
 5. Verify Twilio/email credentials
 
 **Resolution**:
+
 - If policy disabled: Enable notification policy
 - If no contacts: Add escalation contacts
 - If delivery failed: Check credential configuration
@@ -6199,6 +6461,7 @@ Displays:
 **Symptoms**: Slow queries, timeouts
 
 **Steps**:
+
 1. Check Supabase dashboard for metrics
 2. Review recent migrations
 3. Check for missing indexes
@@ -6206,6 +6469,7 @@ Displays:
 5. Check for runaway queries
 
 **Resolution**:
+
 - Add missing indexes
 - Implement data archival
 - Optimize slow queries
@@ -6215,12 +6479,14 @@ Displays:
 **Symptoms**: Subscriptions not updating after payment
 
 **Steps**:
+
 1. Check Stripe dashboard for webhook deliveries
 2. Verify `stripe-webhook` function logs
 3. Check `subscriptions` table for updates
 4. Verify webhook secret is correct
 
 **Resolution**:
+
 - Resend failed webhooks from Stripe
 - Update webhook secret if needed
 - Manually sync subscription status
@@ -6235,16 +6501,16 @@ Displays:
 
 All significant events are logged:
 
-| Event Type | Category | Description |
-|------------|----------|-------------|
-| `unit_state_change` | unit | Status transitions |
-| `alert_created` | alert | New alert |
-| `alert_acknowledged` | alert | Alert acknowledged |
-| `alert_resolved` | alert | Alert resolved |
-| `temperature_logged` | temperature | Manual log |
-| `sensor_reading` | temperature | Auto reading |
-| `setting_changed` | configuration | Config update |
-| `user_login` | user | Auth event |
+| Event Type           | Category      | Description        |
+| -------------------- | ------------- | ------------------ |
+| `unit_state_change`  | unit          | Status transitions |
+| `alert_created`      | alert         | New alert          |
+| `alert_acknowledged` | alert         | Alert acknowledged |
+| `alert_resolved`     | alert         | Alert resolved     |
+| `temperature_logged` | temperature   | Manual log         |
+| `sensor_reading`     | temperature   | Auto reading       |
+| `setting_changed`    | configuration | Config update      |
+| `user_login`         | user          | Auth event         |
 
 ### Event Structure
 
@@ -6275,6 +6541,7 @@ All significant events are logged:
 **Route**: `/events`
 
 Features:
+
 - Filterable by event type, category, severity
 - Date range selection
 - Export functionality
@@ -6282,6 +6549,7 @@ Features:
 ### Log Retention
 
 **TBD**: Configure retention policy:
+
 - Temperature readings: [configurable]
 - Event logs: 2 years (compliance)
 - Alert history: Indefinite
@@ -6289,6 +6557,7 @@ Features:
 ### Compliance Requirements
 
 For HACCP compliance:
+
 - All temperature logs retained
 - Alert history with acknowledgment
 - Corrective action documentation
@@ -6300,17 +6569,18 @@ For HACCP compliance:
 
 ### Key Metrics
 
-| Metric | Source | Alert Threshold |
-|--------|--------|-----------------|
-| Sensor uptime | `lora_sensors.last_seen_at` | < 95% |
-| Alert response time | `alerts.acknowledged_at - triggered_at` | > 30 min |
-| Webhook latency | Edge function logs | > 5 sec |
-| Failed notifications | `notification_events` | > 10% |
-| Database response time | Supabase metrics | > 1 sec |
+| Metric                 | Source                                  | Alert Threshold |
+| ---------------------- | --------------------------------------- | --------------- |
+| Sensor uptime          | `lora_sensors.last_seen_at`             | < 95%           |
+| Alert response time    | `alerts.acknowledged_at - triggered_at` | > 30 min        |
+| Webhook latency        | Edge function logs                      | > 5 sec         |
+| Failed notifications   | `notification_events`                   | > 10%           |
+| Database response time | Supabase metrics                        | > 1 sec         |
 
 ### Dashboard Recommendations
 
 **TBD**: Implement metrics dashboard showing:
+
 - Active alerts by severity
 - Sensor health overview
 - Response time trends
@@ -6323,7 +6593,6 @@ For HACCP compliance:
 - [API.md](#api) - Edge function details
 - [DATA_MODEL.md](#data_model) - Event log schema
 - [INTEGRATIONS.md](#integrations) - Third-party service status
-
 
 ---
 
@@ -6380,17 +6649,18 @@ Organization (tenant/customer)
 ```
 
 **Why this matters:**
+
 - Settings cascade down (org defaults → site overrides → unit overrides)
 - Users see only their organization's data (multi-tenancy via RLS)
 - Reports can roll up at any level
 
 ### The Three Pillars
 
-| Pillar | What It Does | Key Files |
-|--------|--------------|-----------|
-| **Frontend** | React SPA for user interaction | `src/` |
-| **Edge Functions** | Deno serverless backend logic | `supabase/functions/` |
-| **Database** | PostgreSQL with RLS | `supabase/migrations/` |
+| Pillar             | What It Does                   | Key Files              |
+| ------------------ | ------------------------------ | ---------------------- |
+| **Frontend**       | React SPA for user interaction | `src/`                 |
+| **Edge Functions** | Deno serverless backend logic  | `supabase/functions/`  |
+| **Database**       | PostgreSQL with RLS            | `supabase/migrations/` |
 
 ---
 
@@ -6420,11 +6690,11 @@ The system reacts to events, not user clicks:
 
 Critical operations have ONE place that does them:
 
-| Operation | SSOT |
-|-----------|------|
+| Operation                 | SSOT                                |
+| ------------------------- | ----------------------------------- |
 | Creating/resolving alerts | `process-unit-states` edge function |
-| Sending notifications | `process-escalations` edge function |
-| Alert rule resolution | `get_effective_alert_rules` RPC |
+| Sending notifications     | `process-escalations` edge function |
+| Alert rule resolution     | `get_effective_alert_rules` RPC     |
 
 **Implication**: Never duplicate this logic. Always call the SSOT.
 
@@ -6449,15 +6719,15 @@ Org sets: "Alert if temp > 40°F"
 
 Units have a status that reflects their current state:
 
-| Status | Meaning | Priority |
-|--------|---------|----------|
-| `ok` | Normal operation | 5 |
-| `excursion` | Temp out of range (unconfirmed) | 2 |
-| `alarm_active` | Confirmed temp alarm | 1 (highest) |
-| `restoring` | Recovering from issue | 4 |
-| `offline` | Warning-level offline | 6 |
-| `monitoring_interrupted` | Critical offline | 3 |
-| `manual_required` | Manual logging needed | 4 |
+| Status                   | Meaning                         | Priority    |
+| ------------------------ | ------------------------------- | ----------- |
+| `ok`                     | Normal operation                | 5           |
+| `excursion`              | Temp out of range (unconfirmed) | 2           |
+| `alarm_active`           | Confirmed temp alarm            | 1 (highest) |
+| `restoring`              | Recovering from issue           | 4           |
+| `offline`                | Warning-level offline           | 6           |
+| `monitoring_interrupted` | Critical offline                | 3           |
+| `manual_required`        | Manual logging needed           | 4           |
 
 Status is computed by `process-unit-states` (backend) and mirrored in `useUnitStatus` (frontend).
 
@@ -6515,33 +6785,33 @@ Wireless sensors using LoRa radio technology via The Things Network:
 
 ## Key Files to Bookmark
 
-| Purpose | File |
-|---------|------|
-| Coding conventions | `/KNOWLEDGE.md` |
-| All routes | `/src/App.tsx` |
-| Supabase client | `/src/integrations/supabase/client.ts` |
-| Database types | `/src/integrations/supabase/types.ts` |
-| Alert configuration | `/src/lib/alertConfig.ts` |
-| Status configuration | `/src/lib/statusConfig.ts` |
-| Unit status computation | `/src/hooks/useUnitStatus.ts` |
+| Purpose                    | File                                               |
+| -------------------------- | -------------------------------------------------- |
+| Coding conventions         | `/KNOWLEDGE.md`                                    |
+| All routes                 | `/src/App.tsx`                                     |
+| Supabase client            | `/src/integrations/supabase/client.ts`             |
+| Database types             | `/src/integrations/supabase/types.ts`              |
+| Alert configuration        | `/src/lib/alertConfig.ts`                          |
+| Status configuration       | `/src/lib/statusConfig.ts`                         |
+| Unit status computation    | `/src/hooks/useUnitStatus.ts`                      |
 | Alert processing (backend) | `/supabase/functions/process-unit-states/index.ts` |
-| TTN webhook | `/supabase/functions/ttn-webhook/index.ts` |
+| TTN webhook                | `/supabase/functions/ttn-webhook/index.ts`         |
 
 ---
 
 ## Terminology Quick Reference
 
-| Term | Meaning |
-|------|---------|
-| **Unit** | A refrigerator/freezer being monitored |
-| **Excursion** | Temperature outside safe limits |
-| **Alarm** | Confirmed excursion (beyond confirm time) |
-| **Escalation** | Notifying higher-level contacts |
-| **TTN** | The Things Network (LoRa infrastructure) |
-| **DevEUI** | Device Extended Unique Identifier |
-| **RLS** | Row-Level Security (Postgres access control) |
-| **SSOT** | Single Source of Truth |
-| **HACCP** | Hazard Analysis Critical Control Point (food safety) |
+| Term           | Meaning                                              |
+| -------------- | ---------------------------------------------------- |
+| **Unit**       | A refrigerator/freezer being monitored               |
+| **Excursion**  | Temperature outside safe limits                      |
+| **Alarm**      | Confirmed excursion (beyond confirm time)            |
+| **Escalation** | Notifying higher-level contacts                      |
+| **TTN**        | The Things Network (LoRa infrastructure)             |
+| **DevEUI**     | Device Extended Unique Identifier                    |
+| **RLS**        | Row-Level Security (Postgres access control)         |
+| **SSOT**       | Single Source of Truth                               |
+| **HACCP**      | Hazard Analysis Critical Control Point (food safety) |
 
 See the full glossary: `/docs/GLOSSARY.md`
 
@@ -6553,7 +6823,6 @@ See the full glossary: `/docs/GLOSSARY.md`
 2. [LOCAL_DEV.md](#local_dev) — Set up your environment
 3. [COMMON_TASKS.md](#common_tasks) — Learn common development patterns
 4. [DEBUGGING_GUIDE.md](#debugging_guide) — Troubleshooting tips
-
 
 ---
 
@@ -6593,6 +6862,7 @@ The React single-page application.
 ### `/src/App.tsx`
 
 **The entry point.** This file defines:
+
 - All routes (23 pages)
 - Provider hierarchy (QueryClient, Tooltip, Debug, TTN contexts)
 - Global components (Toasters, Debug terminal)
@@ -6610,19 +6880,19 @@ The React single-page application.
 
 **Route-level components.** One file per page:
 
-| File | Route | Purpose |
-|------|-------|---------|
-| `Index.tsx` | `/` | Landing page |
-| `Auth.tsx` | `/auth` | Sign in/sign up |
-| `Dashboard.tsx` | `/dashboard` | Main monitoring view |
-| `Settings.tsx` | `/settings` | Multi-tab settings |
-| `UnitDetail.tsx` | `/units/:unitId` | Unit monitoring detail |
-| `Alerts.tsx` | `/alerts` | Alert management |
-| `Reports.tsx` | `/reports` | Compliance reporting |
-| `ManualLog.tsx` | `/manual-log` | Manual temp logging |
-| `SiteDetail.tsx` | `/sites/:siteId` | Site view |
-| `AreaDetail.tsx` | `/sites/:siteId/areas/:areaId` | Area view |
-| `HealthDashboard.tsx` | `/admin/health` | System health |
+| File                  | Route                          | Purpose                |
+| --------------------- | ------------------------------ | ---------------------- |
+| `Index.tsx`           | `/`                            | Landing page           |
+| `Auth.tsx`            | `/auth`                        | Sign in/sign up        |
+| `Dashboard.tsx`       | `/dashboard`                   | Main monitoring view   |
+| `Settings.tsx`        | `/settings`                    | Multi-tab settings     |
+| `UnitDetail.tsx`      | `/units/:unitId`               | Unit monitoring detail |
+| `Alerts.tsx`          | `/alerts`                      | Alert management       |
+| `Reports.tsx`         | `/reports`                     | Compliance reporting   |
+| `ManualLog.tsx`       | `/manual-log`                  | Manual temp logging    |
+| `SiteDetail.tsx`      | `/sites/:siteId`               | Site view              |
+| `AreaDetail.tsx`      | `/sites/:siteId/areas/:areaId` | Area view              |
+| `HealthDashboard.tsx` | `/admin/health`                | System health          |
 
 **Pattern:** Pages compose components from `/src/components/`.
 
@@ -6654,6 +6924,7 @@ components/
 **`/src/components/ui/`** — shadcn/ui base components. **Do not modify these directly.** They're generated from the shadcn CLI.
 
 **`/src/components/settings/`** — Most of the application complexity:
+
 - `SensorManager.tsx` — LoRa sensor CRUD
 - `GatewayManager.tsx` — Gateway CRUD
 - `TTNConnectionSettings.tsx` — TTN configuration
@@ -6661,6 +6932,7 @@ components/
 - `NotificationPolicyEditor.tsx` — Notification settings
 
 **`/src/components/unit/`** — Unit detail page components:
+
 - `UnitAlertsBanner.tsx` — Active alerts display
 - `UnitSensorsCard.tsx` — Assigned sensors
 - `BatteryHealthCard.tsx` — Battery status
@@ -6672,23 +6944,23 @@ components/
 
 **Custom React hooks** (25 files). These encapsulate data fetching and business logic:
 
-| Hook | Purpose |
-|------|---------|
-| `useUnitStatus.ts` | Compute unit status (mirrors backend logic) |
-| `useAlertRules.ts` | Fetch/update alert rules |
-| `useNotificationPolicies.ts` | Notification policy CRUD |
-| `useLoraSensors.ts` | LoRa sensor data |
-| `useGateways.ts` | Gateway data |
-| `useAuthAndOnboarding.ts` | Auth state + onboarding flow |
-| `useUserRole.ts` | Role-based access checking |
-| `useTTNSetupWizard.ts` | TTN onboarding flow |
-| `useOfflineSync.ts` | Offline data sync |
-| `useHealthCheck.ts` | System health monitoring |
+| Hook                         | Purpose                                     |
+| ---------------------------- | ------------------------------------------- |
+| `useUnitStatus.ts`           | Compute unit status (mirrors backend logic) |
+| `useAlertRules.ts`           | Fetch/update alert rules                    |
+| `useNotificationPolicies.ts` | Notification policy CRUD                    |
+| `useLoraSensors.ts`          | LoRa sensor data                            |
+| `useGateways.ts`             | Gateway data                                |
+| `useAuthAndOnboarding.ts`    | Auth state + onboarding flow                |
+| `useUserRole.ts`             | Role-based access checking                  |
+| `useTTNSetupWizard.ts`       | TTN onboarding flow                         |
+| `useOfflineSync.ts`          | Offline data sync                           |
+| `useHealthCheck.ts`          | System health monitoring                    |
 
 **Pattern:** Hooks use TanStack Query for caching. Query keys follow pattern:
+
 ```typescript
-['units', unitId]
-['alerts', { organizationId, status: 'active' }]
+['units', unitId][('alerts', { organizationId, status: 'active' })];
 ```
 
 ---
@@ -6697,16 +6969,16 @@ components/
 
 **Utilities and configuration:**
 
-| File | Purpose |
-|------|---------|
-| `alertConfig.ts` | Alert type definitions, icons, colors |
-| `statusConfig.ts` | Unit status definitions, priorities |
-| `entityStatusConfig.ts` | Entity-level status config |
-| `validation.ts` | Zod validation schemas |
-| `eventLogger.ts` | Event logging utility |
-| `offlineStorage.ts` | IndexedDB for offline sync |
-| `utils.ts` | General utilities (cn, etc.) |
-| `stripe.ts` | Stripe plan configuration |
+| File                    | Purpose                               |
+| ----------------------- | ------------------------------------- |
+| `alertConfig.ts`        | Alert type definitions, icons, colors |
+| `statusConfig.ts`       | Unit status definitions, priorities   |
+| `entityStatusConfig.ts` | Entity-level status config            |
+| `validation.ts`         | Zod validation schemas                |
+| `eventLogger.ts`        | Event logging utility                 |
+| `offlineStorage.ts`     | IndexedDB for offline sync            |
+| `utils.ts`              | General utilities (cn, etc.)          |
+| `stripe.ts`             | Stripe plan configuration             |
 
 **Key file: `alertConfig.ts`** — Defines all alert types, their icons, colors, and clear conditions. Reference this when working with alerts.
 
@@ -6718,10 +6990,10 @@ components/
 
 **TypeScript type definitions:**
 
-| File | Purpose |
-|------|---------|
-| `ttn.ts` | TTN/LoRa types (Gateway, LoraSensor, permissions) |
-| `ttnState.ts` | TTN config state machine types |
+| File          | Purpose                                           |
+| ------------- | ------------------------------------------------- |
+| `ttn.ts`      | TTN/LoRa types (Gateway, LoraSensor, permissions) |
+| `ttnState.ts` | TTN config state machine types                    |
 
 Most types are auto-generated in `/src/integrations/supabase/types.ts`.
 
@@ -6731,9 +7003,9 @@ Most types are auto-generated in `/src/integrations/supabase/types.ts`.
 
 **React context providers:**
 
-| Context | Purpose |
-|---------|---------|
-| `DebugContext.tsx` | Debug mode global state |
+| Context                | Purpose                 |
+| ---------------------- | ----------------------- |
+| `DebugContext.tsx`     | Debug mode global state |
 | `TTNConfigContext.tsx` | TTN configuration state |
 
 ---
@@ -6805,13 +7077,13 @@ functions/
 
 Shared utilities used across functions:
 
-| File | Purpose |
-|------|---------|
-| `ttnConfig.ts` | DevEUI normalization, TTN helpers |
-| `ttnPermissions.ts` | API key permission validation |
-| `validation.ts` | Request validation, auth helpers |
-| `response.ts` | Standardized response helpers |
-| `cors.ts` | CORS headers |
+| File                | Purpose                           |
+| ------------------- | --------------------------------- |
+| `ttnConfig.ts`      | DevEUI normalization, TTN helpers |
+| `ttnPermissions.ts` | API key permission validation     |
+| `validation.ts`     | Request validation, auth helpers  |
+| `response.ts`       | Standardized response helpers     |
+| `cors.ts`           | CORS headers                      |
 
 ---
 
@@ -6828,6 +7100,7 @@ Files are named with timestamps: `20260112001512_name.sql`
 ### `/supabase/config.toml`
 
 **Supabase configuration.** Defines:
+
 - Edge function settings
 - JWT verification requirements
 - CORS configuration
@@ -6868,38 +7141,38 @@ public/
 
 ### Configuration Files
 
-| File | Purpose |
-|------|---------|
-| `package.json` | NPM dependencies and scripts |
-| `vite.config.ts` | Vite build config, PWA plugin, test setup |
-| `tailwind.config.ts` | Tailwind CSS customization |
-| `tsconfig.json` | TypeScript compiler options |
-| `components.json` | shadcn/ui configuration |
-| `.env` | Environment variables (not in git) |
+| File                 | Purpose                                   |
+| -------------------- | ----------------------------------------- |
+| `package.json`       | NPM dependencies and scripts              |
+| `vite.config.ts`     | Vite build config, PWA plugin, test setup |
+| `tailwind.config.ts` | Tailwind CSS customization                |
+| `tsconfig.json`      | TypeScript compiler options               |
+| `components.json`    | shadcn/ui configuration                   |
+| `.env`               | Environment variables (not in git)        |
 
 ### Critical Logic Files
 
-| File | What It Does |
-|------|--------------|
+| File                                              | What It Does                                   |
+| ------------------------------------------------- | ---------------------------------------------- |
 | `supabase/functions/process-unit-states/index.ts` | THE alert engine. Creates/resolves all alerts. |
-| `supabase/functions/ttn-webhook/index.ts` | Receives all sensor data from TTN. |
-| `src/hooks/useUnitStatus.ts` | Frontend status computation (mirrors backend). |
-| `src/lib/alertConfig.ts` | Alert type definitions and display config. |
+| `supabase/functions/ttn-webhook/index.ts`         | Receives all sensor data from TTN.             |
+| `src/hooks/useUnitStatus.ts`                      | Frontend status computation (mirrors backend). |
+| `src/lib/alertConfig.ts`                          | Alert type definitions and display config.     |
 
 ---
 
 ## Where to Find Things
 
-| I need to... | Look in... |
-|--------------|------------|
-| Add a new page | `src/pages/` + `src/App.tsx` |
-| Add a component | `src/components/{feature}/` |
-| Add a data hook | `src/hooks/` |
-| Change alert logic | `supabase/functions/process-unit-states/` |
-| Change TTN handling | `supabase/functions/ttn-webhook/` |
-| Add a database table | `supabase/migrations/` |
-| Change validation | `src/lib/validation.ts` |
-| Add an edge function | `supabase/functions/{new-function}/` |
+| I need to...         | Look in...                                |
+| -------------------- | ----------------------------------------- |
+| Add a new page       | `src/pages/` + `src/App.tsx`              |
+| Add a component      | `src/components/{feature}/`               |
+| Add a data hook      | `src/hooks/`                              |
+| Change alert logic   | `supabase/functions/process-unit-states/` |
+| Change TTN handling  | `supabase/functions/ttn-webhook/`         |
+| Add a database table | `supabase/migrations/`                    |
+| Change validation    | `src/lib/validation.ts`                   |
+| Add an edge function | `supabase/functions/{new-function}/`      |
 
 ---
 
@@ -6908,7 +7181,6 @@ public/
 - [LOCAL_DEV.md](#local_dev) — Set up your development environment
 - [COMMON_TASKS.md](#common_tasks) — How to do common development tasks
 - [DEBUGGING_GUIDE.md](#debugging_guide) — Troubleshooting and debugging
-
 
 ---
 
@@ -6926,15 +7198,16 @@ public/
 
 Before you begin, install these tools:
 
-| Tool | Version | Purpose | Install |
-|------|---------|---------|---------|
-| **Node.js** | 18+ | JavaScript runtime | [nodejs.org](https://nodejs.org) |
-| **npm** | 9+ | Package manager | Included with Node |
-| **Git** | 2.30+ | Version control | [git-scm.com](https://git-scm.com) |
-| **Supabase CLI** | Latest | Local backend | `npm install -g supabase` |
-| **Deno** | 1.40+ | Edge function runtime | [deno.land](https://deno.land) |
+| Tool             | Version | Purpose               | Install                            |
+| ---------------- | ------- | --------------------- | ---------------------------------- |
+| **Node.js**      | 18+     | JavaScript runtime    | [nodejs.org](https://nodejs.org)   |
+| **npm**          | 9+      | Package manager       | Included with Node                 |
+| **Git**          | 2.30+   | Version control       | [git-scm.com](https://git-scm.com) |
+| **Supabase CLI** | Latest  | Local backend         | `npm install -g supabase`          |
+| **Deno**         | 1.40+   | Edge function runtime | [deno.land](https://deno.land)     |
 
 **Optional but recommended:**
+
 - VS Code with extensions: ESLint, Prettier, Tailwind CSS IntelliSense
 - Docker (for running Supabase locally)
 
@@ -7132,6 +7405,7 @@ freshtrack-pro/
 ### VS Code (Recommended)
 
 Install these extensions:
+
 - **ESLint** — Linting
 - **Prettier** — Code formatting
 - **Tailwind CSS IntelliSense** — Autocomplete for Tailwind classes
@@ -7162,6 +7436,7 @@ Add to `.vscode/settings.json`:
 **Cause**: Dependencies not installed or outdated.
 
 **Solution**:
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
@@ -7172,6 +7447,7 @@ npm install
 **Cause**: Wrong environment variables or Supabase not running.
 
 **Solutions**:
+
 1. Check `.env` file has correct values
 2. Ensure no quotes around values in some shells
 3. Restart the dev server after changing `.env`
@@ -7187,6 +7463,7 @@ npm run dev
 **Cause**: Another process using the port.
 
 **Solution**:
+
 ```bash
 # Find and kill the process
 lsof -i :8080
@@ -7201,6 +7478,7 @@ npm run dev -- --port 3000
 **Cause**: Deno not installed or functions not served.
 
 **Solutions**:
+
 1. Install Deno: `curl -fsSL https://deno.land/install.sh | sh`
 2. Start function server: `supabase functions serve`
 3. Check function logs in terminal
@@ -7210,6 +7488,7 @@ npm run dev -- --port 3000
 **Cause**: Generated types may be stale.
 
 **Solution**:
+
 ```bash
 # Regenerate Supabase types
 supabase gen types typescript --local > src/integrations/supabase/types.ts
@@ -7220,6 +7499,7 @@ supabase gen types typescript --local > src/integrations/supabase/types.ts
 **Cause**: File watcher limits or Vite cache issues.
 
 **Solutions**:
+
 ```bash
 # Increase file watcher limit (Linux)
 echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
@@ -7235,6 +7515,7 @@ npm run dev
 **Cause**: Frontend calling wrong backend URL.
 
 **Solution**: Check `VITE_SUPABASE_URL` matches your running backend:
+
 - Local: `http://localhost:54321`
 - Remote: `https://your-project.supabase.co`
 
@@ -7245,12 +7526,14 @@ npm run dev
 ### Typical Day
 
 1. **Pull latest changes**
+
    ```bash
    git pull origin main
    npm install  # If package.json changed
    ```
 
 2. **Start the dev server**
+
    ```bash
    npm run dev
    ```
@@ -7258,6 +7541,7 @@ npm run dev
 3. **Make changes** — Hot reload will update the browser
 
 4. **Check for errors**
+
    ```bash
    npm run lint
    ```
@@ -7271,11 +7555,13 @@ npm run dev
 ### Working on Backend
 
 1. **Start Supabase locally**
+
    ```bash
    supabase start
    ```
 
 2. **Make database changes** via migration:
+
    ```bash
    supabase migration new my_change_name
    # Edit the generated SQL file
@@ -7346,7 +7632,6 @@ If something isn't working, check these in order:
 - [COMMON_TASKS.md](#common_tasks) — How to do common development tasks
 - [DEBUGGING_GUIDE.md](#debugging_guide) — Troubleshooting and debugging
 - [REPO_TOUR.md](#repo_tour) — Understand the codebase structure
-
 
 ---
 
@@ -7482,10 +7767,10 @@ export function MyWidget({ title, data }: MyWidgetProps) {
 Always use existing shadcn/ui components from `/src/components/ui/`:
 
 ```typescript
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "@/hooks/use-toast";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/hooks/use-toast';
 ```
 
 **Adding a new shadcn component:**
@@ -7504,17 +7789,17 @@ Create a custom hook in `/src/hooks/`:
 
 ```typescript
 // src/hooks/useMyData.ts
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useMyData(organizationId: string) {
   return useQuery({
-    queryKey: ["my-data", organizationId],
+    queryKey: ['my-data', organizationId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("my_table")
-        .select("*")
-        .eq("organization_id", organizationId);
+        .from('my_table')
+        .select('*')
+        .eq('organization_id', organizationId);
 
       if (error) throw error;
       return data;
@@ -7528,17 +7813,13 @@ export function useCreateMyData() {
 
   return useMutation({
     mutationFn: async (newData: MyDataInsert) => {
-      const { data, error } = await supabase
-        .from("my_table")
-        .insert(newData)
-        .select()
-        .single();
+      const { data, error } = await supabase.from('my_table').insert(newData).select().single();
 
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-data"] });
+      queryClient.invalidateQueries({ queryKey: ['my-data'] });
     },
   });
 }
@@ -7576,17 +7857,15 @@ Follow these patterns for consistent cache invalidation:
 
 ```typescript
 // Entity lists
-["units", organizationId]
-["alerts", { organizationId, status: "active" }]
-["sensors", { unitId }]
-
-// Single entities
-["unit", unitId]
-["alert", alertId]
-
-// Related data
-["unit-sensors", unitId]
-["unit-readings", unitId, { period: "24h" }]
+['units', organizationId][('alerts', { organizationId, status: 'active' })][
+  ('sensors', { unitId })
+][
+  // Single entities
+  ('unit', unitId)
+][('alert', alertId)][
+  // Related data
+  ('unit-sensors', unitId)
+][('unit-readings', unitId, { period: '24h' })];
 ```
 
 ---
@@ -7604,35 +7883,38 @@ touch supabase/functions/my-new-function/index.ts
 
 ```typescript
 // supabase/functions/my-new-function/index.ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders } from "../_shared/cors.ts";
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { corsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
     // Create Supabase client with auth context
     const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get("Authorization")! },
+          headers: { Authorization: req.headers.get('Authorization')! },
         },
-      }
+      },
     );
 
     // Get the authenticated user
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseClient.auth.getUser();
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Parse request body
@@ -7641,15 +7923,14 @@ serve(async (req) => {
     // Your business logic here
     const result = await processData(body, supabaseClient);
 
-    return new Response(
-      JSON.stringify(result),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
 ```
@@ -7658,8 +7939,8 @@ serve(async (req) => {
 
 ```typescript
 // In a hook or component
-const { data, error } = await supabase.functions.invoke("my-new-function", {
-  body: { key: "value" },
+const { data, error } = await supabase.functions.invoke('my-new-function', {
+  body: { key: 'value' },
 });
 ```
 
@@ -7750,11 +8031,11 @@ Edit `/src/lib/alertConfig.ts`:
 export const ALERT_TYPES = {
   // ... existing types
   my_new_alert: {
-    label: "My New Alert",
+    label: 'My New Alert',
     icon: AlertCircle,
-    color: "warning", // or "critical"
-    description: "Description of when this triggers",
-    clearCondition: "When the condition is resolved",
+    color: 'warning', // or "critical"
+    description: 'Description of when this triggers',
+    clearCondition: 'When the condition is resolved',
   },
 } as const;
 ```
@@ -7773,8 +8054,8 @@ function evaluateAlerts(unit: Unit, reading: Reading, rules: AlertRules) {
   // Add your new alert check
   if (shouldTriggerMyNewAlert(unit, reading, rules)) {
     alerts.push({
-      type: "my_new_alert",
-      severity: "warning",
+      type: 'my_new_alert',
+      severity: 'warning',
       unit_id: unit.id,
       message: `My new alert triggered for ${unit.name}`,
     });
@@ -7827,12 +8108,12 @@ async function processUplink(payload: TTNUplink) {
 
 ### Key Files for TTN Work
 
-| File | Purpose |
-|------|---------|
-| `/supabase/functions/_shared/ttnConfig.ts` | DevEUI normalization, TTN helpers |
-| `/supabase/functions/_shared/ttnPermissions.ts` | API key permission validation |
-| `/src/types/ttn.ts` | TypeScript types for TTN entities |
-| `/src/hooks/useTTNSetupWizard.ts` | TTN onboarding flow logic |
+| File                                            | Purpose                           |
+| ----------------------------------------------- | --------------------------------- |
+| `/supabase/functions/_shared/ttnConfig.ts`      | DevEUI normalization, TTN helpers |
+| `/supabase/functions/_shared/ttnPermissions.ts` | API key permission validation     |
+| `/src/types/ttn.ts`                             | TypeScript types for TTN entities |
+| `/src/hooks/useTTNSetupWizard.ts`               | TTN onboarding flow logic         |
 
 ---
 
@@ -7878,7 +8159,7 @@ Settings cascade: Organization → Site → Unit. Use the `get_effective_*` RPCs
 
 ```typescript
 // Get effective settings for a unit (includes org/site defaults)
-const { data } = await supabase.rpc("get_effective_alert_rules", {
+const { data } = await supabase.rpc('get_effective_alert_rules', {
   p_unit_id: unitId,
 });
 ```
@@ -7910,26 +8191,22 @@ function MyComponent() {
 
 ### Role Hierarchy
 
-| Role | Can Do |
-|------|--------|
-| `owner` | Everything, including billing and user management |
-| `admin` | All operations except billing |
-| `manager` | View and manage assigned locations |
-| `staff` | Log temperatures, acknowledge alerts |
+| Role      | Can Do                                            |
+| --------- | ------------------------------------------------- |
+| `owner`   | Everything, including billing and user management |
+| `admin`   | All operations except billing                     |
+| `manager` | View and manage assigned locations                |
+| `staff`   | Log temperatures, acknowledge alerts              |
 
 ### Backend Role Checks
 
 In edge functions, check roles via the profiles table:
 
 ```typescript
-const { data: profile } = await supabase
-  .from("profiles")
-  .select("role")
-  .eq("id", user.id)
-  .single();
+const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
 
-if (!["owner", "admin"].includes(profile.role)) {
-  return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+if (!['owner', 'admin'].includes(profile.role)) {
+  return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
 }
 ```
 
@@ -7991,42 +8268,42 @@ supabase db reset
 ### Import Aliases
 
 ```typescript
-import { something } from "@/components/...";  // src/components
-import { something } from "@/hooks/...";       // src/hooks
-import { something } from "@/lib/...";         // src/lib
-import { something } from "@/pages/...";       // src/pages
+import { something } from '@/components/...'; // src/components
+import { something } from '@/hooks/...'; // src/hooks
+import { something } from '@/lib/...'; // src/lib
+import { something } from '@/pages/...'; // src/pages
 ```
 
 ### Supabase Client
 
 ```typescript
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/integrations/supabase/client';
 ```
 
 ### Toast Notifications
 
 ```typescript
-import { toast } from "@/hooks/use-toast";
+import { toast } from '@/hooks/use-toast';
 
 toast({
-  title: "Success",
-  description: "Your changes have been saved.",
+  title: 'Success',
+  description: 'Your changes have been saved.',
 });
 
 toast({
-  title: "Error",
-  description: "Something went wrong.",
-  variant: "destructive",
+  title: 'Error',
+  description: 'Something went wrong.',
+  variant: 'destructive',
 });
 ```
 
 ### Common Hooks
 
 ```typescript
-import { useNavigate, useParams } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useUserRole } from "@/hooks/useUserRole";
-import { useUnitStatus } from "@/hooks/useUnitStatus";
+import { useNavigate, useParams } from 'react-router-dom';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useUnitStatus } from '@/hooks/useUnitStatus';
 ```
 
 ---
@@ -8036,7 +8313,6 @@ import { useUnitStatus } from "@/hooks/useUnitStatus";
 - [DEBUGGING_GUIDE.md](#debugging_guide) — Troubleshooting common issues
 - [REPO_TOUR.md](#repo_tour) — Understand the codebase structure
 - [GETTING_STARTED.md](#getting_started) — Mental model for the system
-
 
 ---
 
@@ -8076,6 +8352,7 @@ User Action → React State → Supabase Query → Database → Response → Rea
 ```
 
 **Ask yourself:**
+
 1. Where does the data enter the system?
 2. Where does it transform?
 3. Where does it render?
@@ -8125,6 +8402,7 @@ psql "postgresql://postgres:postgres@localhost:54322/postgres" -c "SELECT 1"
 ### React DevTools
 
 Install the React DevTools browser extension. It lets you:
+
 - Inspect component hierarchy
 - View props and state
 - See what triggered re-renders
@@ -8132,6 +8410,7 @@ Install the React DevTools browser extension. It lets you:
 ### TanStack Query DevTools
 
 The app includes TanStack Query DevTools (in development mode):
+
 - See all cached queries
 - Inspect query states (loading, error, success)
 - Manually invalidate queries
@@ -8156,6 +8435,7 @@ FreshTrack Pro has a built-in debug mode:
 **Cause:** Query cache not invalidated.
 
 **Solution:**
+
 ```typescript
 // In your mutation
 onSuccess: () => {
@@ -8170,10 +8450,11 @@ onSuccess: () => {
 **Cause:** Dependency array issue in useEffect or useMemo.
 
 **Debug:**
+
 ```typescript
 // Add logging to see what's changing
 useEffect(() => {
-  console.log("Effect ran", { dep1, dep2 });
+  console.log('Effect ran', { dep1, dep2 });
 }, [dep1, dep2]);
 ```
 
@@ -8186,6 +8467,7 @@ useEffect(() => {
 **Cause:** Data not loaded yet, or null check missing.
 
 **Solution:**
+
 ```typescript
 // Add loading state check
 if (isLoading) return <Spinner />;
@@ -8200,12 +8482,13 @@ const value = data?.nested?.property;
 **Symptom:** Action completes but no feedback.
 
 **Solution:**
+
 ```typescript
-import { toast } from "@/hooks/use-toast";
+import { toast } from '@/hooks/use-toast';
 
 toast({
-  title: "Success",
-  description: "Your action completed.",
+  title: 'Success',
+  description: 'Your action completed.',
 });
 ```
 
@@ -8227,7 +8510,7 @@ supabase functions serve
 
 ```typescript
 // In edge functions
-console.log("Debug:", JSON.stringify({ variable, anotherVariable }));
+console.log('Debug:', JSON.stringify({ variable, anotherVariable }));
 
 // These appear in:
 // - Terminal (local development)
@@ -8254,13 +8537,18 @@ curl -X POST http://localhost:54321/functions/v1/my-function \
 **Cause:** Missing or invalid auth token.
 
 **Debug:**
+
 ```typescript
 // Log the auth state
-const { data: { user }, error } = await supabase.auth.getUser();
-console.log("Auth:", { user: user?.id, error });
+const {
+  data: { user },
+  error,
+} = await supabase.auth.getUser();
+console.log('Auth:', { user: user?.id, error });
 ```
 
 **Solutions:**
+
 - Ensure frontend passes auth header
 - Check if user is logged in
 - Verify JWT hasn't expired
@@ -8268,15 +8556,15 @@ console.log("Auth:", { user: user?.id, error });
 #### Issue: Function returns 500 Internal Server Error
 
 **Debug:**
+
 ```typescript
 try {
   // Your code
 } catch (error) {
-  console.error("Function error:", error);
-  return new Response(
-    JSON.stringify({ error: error.message, stack: error.stack }),
-    { status: 500 }
-  );
+  console.error('Function error:', error);
+  return new Response(JSON.stringify({ error: error.message, stack: error.stack }), {
+    status: 500,
+  });
 }
 ```
 
@@ -8285,17 +8573,18 @@ try {
 **Symptom:** "Access-Control-Allow-Origin" error in console.
 
 **Solution:** Ensure you return CORS headers:
+
 ```typescript
-import { corsHeaders } from "../_shared/cors.ts";
+import { corsHeaders } from '../_shared/cors.ts';
 
 // For preflight
-if (req.method === "OPTIONS") {
-  return new Response("ok", { headers: corsHeaders });
+if (req.method === 'OPTIONS') {
+  return new Response('ok', { headers: corsHeaders });
 }
 
 // For all responses
 return new Response(JSON.stringify(data), {
-  headers: { ...corsHeaders, "Content-Type": "application/json" }
+  headers: { ...corsHeaders, 'Content-Type': 'application/json' },
 });
 ```
 
@@ -8320,12 +8609,14 @@ RLS issues are silent — you get empty results, not errors.
 **Debug approach:**
 
 1. **Test as service role (bypasses RLS):**
+
 ```sql
 -- In Supabase Studio SQL editor
 SELECT * FROM units;  -- Service role bypasses RLS
 ```
 
 2. **Test as user:**
+
 ```sql
 -- Simulate RLS as a specific user
 SET request.jwt.claim.sub = 'user-uuid-here';
@@ -8333,6 +8624,7 @@ SELECT * FROM units;
 ```
 
 3. **Check the policy:**
+
 ```sql
 -- View policies on a table
 SELECT * FROM pg_policies WHERE tablename = 'units';
@@ -8345,6 +8637,7 @@ SELECT * FROM pg_policies WHERE tablename = 'units';
 **Cause:** RLS policy blocks the operation.
 
 **Debug:**
+
 ```sql
 -- Check if user has organization access
 SELECT organization_id FROM profiles WHERE id = 'user-uuid';
@@ -8358,8 +8651,9 @@ SELECT organization_id FROM units WHERE id = 'unit-uuid';
 **Cause:** `get_effective_*` RPC not being used.
 
 **Solution:** Always use the RPC for settings that cascade:
+
 ```typescript
-const { data } = await supabase.rpc("get_effective_alert_rules", {
+const { data } = await supabase.rpc('get_effective_alert_rules', {
   p_unit_id: unitId,
 });
 ```
@@ -8367,6 +8661,7 @@ const { data } = await supabase.rpc("get_effective_alert_rules", {
 #### Issue: Migration fails
 
 **Debug:**
+
 ```bash
 # See migration status
 supabase migration list
@@ -8388,18 +8683,19 @@ DevEUIs must be normalized (uppercase, no separators):
 
 ```typescript
 // Correct
-const devEUI = "70B3D57ED005A123";
+const devEUI = '70B3D57ED005A123';
 
 // Incorrect (will fail to match)
-const devEUI = "70:B3:D5:7E:D0:05:A1:23";  // Has colons
-const devEUI = "70b3d57ed005a123";          // Lowercase
+const devEUI = '70:B3:D5:7E:D0:05:A1:23'; // Has colons
+const devEUI = '70b3d57ed005a123'; // Lowercase
 ```
 
 **Debug:**
+
 ```typescript
 // In ttn-webhook
-console.log("Raw DevEUI:", payload.end_device_ids.dev_eui);
-console.log("Normalized:", normalizeDevEUI(payload.end_device_ids.dev_eui));
+console.log('Raw DevEUI:', payload.end_device_ids.dev_eui);
+console.log('Normalized:', normalizeDevEUI(payload.end_device_ids.dev_eui));
 ```
 
 ### Webhook Not Receiving Data
@@ -8414,6 +8710,7 @@ console.log("Normalized:", normalizeDevEUI(payload.end_device_ids.dev_eui));
    - Must match what's configured in our database
 
 3. **Check function logs:**
+
 ```bash
 supabase functions logs ttn-webhook --follow
 ```
@@ -8432,12 +8729,14 @@ supabase functions logs ttn-webhook --follow
 ### Sensor Shows "Offline"
 
 **Possible causes:**
+
 - Device battery dead
 - Device out of range
 - Gateway offline
 - Webhook not processing
 
 **Debug path:**
+
 1. Check TTN Console for recent uplinks
 2. Check `sensor_readings` table for recent data
 3. Check `lora_sensors` table for `last_seen_at`
@@ -8463,6 +8762,7 @@ curl -X POST http://localhost:54321/functions/v1/process-unit-states \
 ```
 
 **Common causes:**
+
 - Confirm time not elapsed (needs X minutes of excursion)
 - Alert rule not applied (check `get_effective_alert_rules`)
 - Unit status already in alarm state
@@ -8470,6 +8770,7 @@ curl -X POST http://localhost:54321/functions/v1/process-unit-states \
 ### Alerts Not Resolving
 
 **Check:**
+
 1. Temperature returned to safe range?
 2. Clear condition met (in `alertConfig.ts`)?
 3. `process-unit-states` running on schedule?
@@ -8479,6 +8780,7 @@ curl -X POST http://localhost:54321/functions/v1/process-unit-states \
 The SSOT for notifications is `process-escalations`.
 
 **Check:**
+
 1. Notification policy configured?
 2. User has valid contact (email/phone)?
 3. Escalation delay elapsed?
@@ -8494,6 +8796,7 @@ supabase functions logs process-escalations --follow
 ### "TypeError: Cannot read properties of null"
 
 **Pattern:**
+
 ```
 TypeError: Cannot read properties of null (reading 'map')
 ```
@@ -8501,6 +8804,7 @@ TypeError: Cannot read properties of null (reading 'map')
 **Cause:** Trying to iterate over null/undefined data.
 
 **Fix:**
+
 ```typescript
 // Before
 {data.map(item => ...)}
@@ -8514,13 +8818,14 @@ TypeError: Cannot read properties of null (reading 'map')
 **Pattern:** Async operation fails without being caught.
 
 **Fix:**
+
 ```typescript
 // Add error handling
 try {
   await someAsyncOperation();
 } catch (error) {
-  console.error("Operation failed:", error);
-  toast({ title: "Error", description: error.message, variant: "destructive" });
+  console.error('Operation failed:', error);
+  toast({ title: 'Error', description: error.message, variant: 'destructive' });
 }
 ```
 
@@ -8535,6 +8840,7 @@ try {
 **Cause:** Edge function not running or network issue.
 
 **Check:**
+
 1. Function is deployed/serving
 2. URL is correct
 3. No CORS issues
@@ -8546,11 +8852,13 @@ try {
 ### Slow Initial Load
 
 **Diagnose:**
+
 1. Check Network tab for slow requests
 2. Look for large bundle sizes
 3. Check for unnecessary data fetching
 
 **Solutions:**
+
 - Use React.lazy for code splitting
 - Limit initial data fetch (pagination)
 - Check for N+1 query patterns
@@ -8558,12 +8866,14 @@ try {
 ### Slow Database Queries
 
 **Diagnose:**
+
 ```sql
 -- Find slow queries
 SELECT * FROM pg_stat_statements ORDER BY total_time DESC LIMIT 10;
 ```
 
 **Solutions:**
+
 - Add indexes for frequently filtered columns
 - Use `.select()` to limit returned columns
 - Add pagination
@@ -8573,17 +8883,19 @@ SELECT * FROM pg_stat_statements ORDER BY total_time DESC LIMIT 10;
 **Symptoms:** App slows down over time.
 
 **Common causes:**
+
 - Subscriptions not cleaned up
 - Timers not cleared
 - Event listeners not removed
 
 **Fix:**
+
 ```typescript
 useEffect(() => {
   const subscription = supabase.channel('...').subscribe();
 
   return () => {
-    subscription.unsubscribe();  // Cleanup!
+    subscription.unsubscribe(); // Cleanup!
   };
 }, []);
 ```
@@ -8597,7 +8909,7 @@ useEffect(() => {
 DevEUIs from different sources may have different cases. Always normalize:
 
 ```typescript
-import { normalizeDevEUI } from "@/lib/ttnConfig";
+import { normalizeDevEUI } from '@/lib/ttnConfig';
 const normalized = normalizeDevEUI(rawDevEUI);
 ```
 
@@ -8607,10 +8919,10 @@ All timestamps are stored in UTC. Display conversion happens on frontend:
 
 ```typescript
 // Database stores UTC
-created_at: "2026-01-12T10:00:00Z"
+created_at: '2026-01-12T10:00:00Z';
 
 // Display in user's timezone
-new Date(created_at).toLocaleString()
+new Date(created_at).toLocaleString();
 ```
 
 ### 3. RLS Doesn't Error, It Filters
@@ -8645,8 +8957,8 @@ If query keys don't match between fetch and invalidation, cache updates won't wo
 
 ```typescript
 // These must match!
-useQuery({ queryKey: ["units", orgId] })  // Fetch
-queryClient.invalidateQueries({ queryKey: ["units", orgId] })  // Invalidate
+useQuery({ queryKey: ['units', orgId] }); // Fetch
+queryClient.invalidateQueries({ queryKey: ['units', orgId] }); // Invalidate
 ```
 
 ---
@@ -8723,7 +9035,6 @@ SELECT * FROM pg_policies WHERE tablename = 'your_table';
 - [REPO_TOUR.md](#repo_tour) — Codebase structure
 - [GETTING_STARTED.md](#getting_started) — System mental model
 
-
 ---
 
 \newpage
@@ -8746,22 +9057,22 @@ FreshTrack Pro is a **safety-critical refrigeration monitoring platform**. A mis
 
 ### Core Principles
 
-| Principle | Description |
-|-----------|-------------|
-| **Safety First** | Test alert paths, escalations, and data integrity above all else |
-| **Follow the Data** | Trace data from sensor → webhook → database → UI → notification |
-| **SSOT Validation** | Verify single-source-of-truth components (process-unit-states, process-escalations) |
-| **Regression Prevention** | Every bug fix should include a test that would have caught it |
-| **Test at Boundaries** | Most bugs occur at integration points—focus testing there |
+| Principle                 | Description                                                                         |
+| ------------------------- | ----------------------------------------------------------------------------------- |
+| **Safety First**          | Test alert paths, escalations, and data integrity above all else                    |
+| **Follow the Data**       | Trace data from sensor → webhook → database → UI → notification                     |
+| **SSOT Validation**       | Verify single-source-of-truth components (process-unit-states, process-escalations) |
+| **Regression Prevention** | Every bug fix should include a test that would have caught it                       |
+| **Test at Boundaries**    | Most bugs occur at integration points—focus testing there                           |
 
 ### Risk-Based Prioritization
 
-| Risk Level | Feature Category | Testing Approach |
-|------------|------------------|------------------|
-| **Critical** | Alerts, notifications, data ingestion | Automated + Manual + E2E |
-| **High** | Device provisioning, TTN integration, auth | Automated + Manual |
-| **Medium** | Dashboard, reports, settings | Automated unit + Manual |
-| **Low** | UI polish, branding, theming | Manual only |
+| Risk Level   | Feature Category                           | Testing Approach         |
+| ------------ | ------------------------------------------ | ------------------------ |
+| **Critical** | Alerts, notifications, data ingestion      | Automated + Manual + E2E |
+| **High**     | Device provisioning, TTN integration, auth | Automated + Manual       |
+| **Medium**   | Dashboard, reports, settings               | Automated unit + Manual  |
+| **Low**      | UI polish, branding, theming               | Manual only              |
 
 ---
 
@@ -8791,24 +9102,28 @@ FreshTrack Pro is a **safety-critical refrigeration monitoring platform**. A mis
 **Scope:** Individual functions, hooks, and components in isolation.
 
 **Current Framework:**
+
 - Frontend: Vitest + React Testing Library
 - Edge Functions: Deno standard library testing
 
 **What to Test:**
+
 - Pure functions (eligibility checks, data transformations)
 - Validation logic
 - State computations (e.g., unit status)
 - Utility functions
 
 **What NOT to Test:**
+
 - UI styling
 - Third-party library internals
 - Generated types
 
 **Example:**
+
 ```typescript
-describe("canProvisionGateway", () => {
-  it("returns ALLOWED when all conditions are met", () => {
+describe('canProvisionGateway', () => {
+  it('returns ALLOWED when all conditions are met', () => {
     const result = canProvisionGateway(validGateway, validTtnConfig);
     expect(result.allowed).toBe(true);
   });
@@ -8820,12 +9135,14 @@ describe("canProvisionGateway", () => {
 **Scope:** Multiple components/services working together.
 
 **What to Test:**
+
 - API calls → Database → Response chain
 - Hook + Supabase client interactions
 - Edge function + Database operations
 - RLS policy enforcement
 
 **Approaches:**
+
 - Mock Supabase client for deterministic testing
 - Use local Supabase for realistic integration tests
 - Test RLS policies with different user roles
@@ -8835,12 +9152,14 @@ describe("canProvisionGateway", () => {
 **Scope:** Complete user journeys through the application.
 
 **What to Test:**
+
 - Onboarding flow (signup → org setup → device provisioning)
 - Alert lifecycle (trigger → acknowledge → resolve)
 - Escalation chain (primary → secondary → manager notification)
 - Report generation
 
 **Execution:**
+
 - Manual testing with documented checklists
 - Consider Playwright for critical paths in future
 
@@ -8850,22 +9169,22 @@ describe("canProvisionGateway", () => {
 
 ### What is Automated
 
-| Category | What's Tested | Framework |
-|----------|--------------|-----------|
-| **Eligibility Logic** | Gateway/sensor provisioning rules | Vitest |
-| **TTN Permissions** | API key permission validation | Deno |
-| **Data Transformations** | DevEUI normalization, temperature conversion | Vitest |
-| **Validation Schemas** | Input validation (Zod schemas) | Vitest |
+| Category                 | What's Tested                                | Framework |
+| ------------------------ | -------------------------------------------- | --------- |
+| **Eligibility Logic**    | Gateway/sensor provisioning rules            | Vitest    |
+| **TTN Permissions**      | API key permission validation                | Deno      |
+| **Data Transformations** | DevEUI normalization, temperature conversion | Vitest    |
+| **Validation Schemas**   | Input validation (Zod schemas)               | Vitest    |
 
 ### What is Manual
 
-| Category | Why Manual | Documentation |
-|----------|-----------|---------------|
-| **Device Provisioning** | Requires TTN account, real hardware | [MANUAL_TESTING.md](#manual_testing) |
-| **Alert Flow** | Complex timing, escalation chains | [E2E_SCENARIOS.md](#e2e_scenarios) |
-| **Onboarding Wizard** | Multi-step UI with external dependencies | [MANUAL_TESTING.md](#manual_testing) |
-| **Mobile Responsiveness** | Visual verification required | [MANUAL_TESTING.md](#manual_testing) |
-| **Stripe Integration** | Payment flows, webhooks | [MANUAL_TESTING.md](#manual_testing) |
+| Category                  | Why Manual                               | Documentation                        |
+| ------------------------- | ---------------------------------------- | ------------------------------------ |
+| **Device Provisioning**   | Requires TTN account, real hardware      | [MANUAL_TESTING.md](#manual_testing) |
+| **Alert Flow**            | Complex timing, escalation chains        | [E2E_SCENARIOS.md](#e2e_scenarios)   |
+| **Onboarding Wizard**     | Multi-step UI with external dependencies | [MANUAL_TESTING.md](#manual_testing) |
+| **Mobile Responsiveness** | Visual verification required             | [MANUAL_TESTING.md](#manual_testing) |
+| **Stripe Integration**    | Payment flows, webhooks                  | [MANUAL_TESTING.md](#manual_testing) |
 
 ---
 
@@ -8916,16 +9235,16 @@ export function createTestTTNConfig(overrides = {}): TTNConfigState {
   return {
     isEnabled: true,
     hasApiKey: true,
-    applicationId: "test-app-id",
+    applicationId: 'test-app-id',
     ...overrides,
   };
 }
 
 export function createTestGateway(overrides = {}): GatewayForEligibility {
   return {
-    gateway_eui: "AABBCCDDEEFF0011",
+    gateway_eui: 'AABBCCDDEEFF0011',
     ttn_gateway_id: null,
-    status: "pending",
+    status: 'pending',
     ...overrides,
   };
 }
@@ -8943,12 +9262,12 @@ These paths MUST have both automated and manual testing:
 Sensor → TTN → ttn-webhook → sensor_readings table → process-unit-states
 ```
 
-| Step | Test Type | Coverage |
-|------|-----------|----------|
-| TTN webhook receives data | Integration | Manual |
-| DevEUI normalization | Unit | Automated |
-| Reading stored in database | Integration | Manual |
-| Unit status computed | Unit | Automated (planned) |
+| Step                       | Test Type   | Coverage            |
+| -------------------------- | ----------- | ------------------- |
+| TTN webhook receives data  | Integration | Manual              |
+| DevEUI normalization       | Unit        | Automated           |
+| Reading stored in database | Integration | Manual              |
+| Unit status computed       | Unit        | Automated (planned) |
 
 ### 2. Alert Lifecycle
 
@@ -8956,12 +9275,12 @@ Sensor → TTN → ttn-webhook → sensor_readings table → process-unit-states
 Excursion detected → Alert created → Notification sent → Acknowledged → Resolved
 ```
 
-| Step | Test Type | Coverage |
-|------|-----------|----------|
-| Temperature threshold breach | Unit | Automated (planned) |
-| Confirm time elapsed | Integration | Manual |
-| Alert record created | Integration | Manual |
-| Escalation triggered | E2E | Manual |
+| Step                         | Test Type   | Coverage            |
+| ---------------------------- | ----------- | ------------------- |
+| Temperature threshold breach | Unit        | Automated (planned) |
+| Confirm time elapsed         | Integration | Manual              |
+| Alert record created         | Integration | Manual              |
+| Escalation triggered         | E2E         | Manual              |
 
 ### 3. Device Provisioning
 
@@ -8969,12 +9288,12 @@ Excursion detected → Alert created → Notification sent → Acknowledged → 
 User enters DevEUI → Validate → Register with TTN → Save to database → Status: Active
 ```
 
-| Step | Test Type | Coverage |
-|------|-----------|----------|
-| DevEUI validation | Unit | Automated |
-| Permission check | Unit | Automated |
-| TTN API call | Integration | Manual |
-| Database update | Integration | Manual |
+| Step              | Test Type   | Coverage  |
+| ----------------- | ----------- | --------- |
+| DevEUI validation | Unit        | Automated |
+| Permission check  | Unit        | Automated |
+| TTN API call      | Integration | Manual    |
+| Database update   | Integration | Manual    |
 
 ---
 
@@ -9002,24 +9321,24 @@ User enters DevEUI → Validate → Register with TTN → Save to database → S
 
 ### Current State (Baseline)
 
-| Metric | Value |
-|--------|-------|
-| Test files | 3 |
-| Lines of test code | 476 |
-| Components with tests | 0/112 (0%) |
-| Hooks with tests | 0/26 (0%) |
-| Edge functions with tests | 1/32 (3%) |
-| Pages with tests | 0/23 (0%) |
+| Metric                    | Value      |
+| ------------------------- | ---------- |
+| Test files                | 3          |
+| Lines of test code        | 476        |
+| Components with tests     | 0/112 (0%) |
+| Hooks with tests          | 0/26 (0%)  |
+| Edge functions with tests | 1/32 (3%)  |
+| Pages with tests          | 0/23 (0%)  |
 
 ### Target State (6-Month Goal)
 
-| Metric | Target |
-|--------|--------|
-| Test files | 50+ |
-| Lines of test code | 5,000+ |
-| Critical path unit coverage | 80% |
-| Edge function coverage | 50% |
-| Manual test documentation | Complete |
+| Metric                      | Target   |
+| --------------------------- | -------- |
+| Test files                  | 50+      |
+| Lines of test code          | 5,000+   |
+| Critical path unit coverage | 80%      |
+| Edge function coverage      | 50%      |
+| Manual test documentation   | Complete |
 
 ---
 
@@ -9093,7 +9412,6 @@ supabase/functions/_shared/ttnPermissions.test.ts
 - [E2E_SCENARIOS.md](#e2e_scenarios) — Critical user flow testing
 - [KNOWN_GAPS.md](#known_gaps) — Missing coverage and risks
 
-
 ---
 
 \newpage
@@ -9112,35 +9430,35 @@ This document maps every major feature and component to its test coverage status
 
 ### Legend
 
-| Symbol | Meaning |
-|--------|---------|
-| :white_check_mark: | Automated tests exist |
-| :large_orange_diamond: | Partial coverage |
-| :red_circle: | No automated tests |
-| **M** | Manual testing required |
-| **U** | Unit test |
-| **I** | Integration test |
-| **E** | E2E test |
+| Symbol                 | Meaning                 |
+| ---------------------- | ----------------------- |
+| :white_check_mark:     | Automated tests exist   |
+| :large_orange_diamond: | Partial coverage        |
+| :red_circle:           | No automated tests      |
+| **M**                  | Manual testing required |
+| **U**                  | Unit test               |
+| **I**                  | Integration test        |
+| **E**                  | E2E test                |
 
 ---
 
 ## Pages
 
-| Page | Route | Test Status | Test Type | Notes |
-|------|-------|-------------|-----------|-------|
-| Landing | `/` | :red_circle: | M | Visual verification only |
-| Auth | `/auth` | :red_circle: | M | Supabase Auth dependency |
-| Onboarding | `/onboarding` | :red_circle: | M | Multi-step wizard |
-| Dashboard | `/dashboard` | :red_circle: | M | Complex state management |
-| Settings | `/settings` | :red_circle: | M | Tabs, forms, permissions |
-| Unit Detail | `/units/:unitId` | :red_circle: | M | Real-time data, sensors |
-| Site Detail | `/sites/:siteId` | :red_circle: | M | Hierarchy display |
-| Area Detail | `/sites/:siteId/areas/:areaId` | :red_circle: | M | Unit listing |
-| Alerts | `/alerts` | :red_circle: | M | Alert CRUD, acknowledgment |
-| Reports | `/reports` | :red_circle: | M | Report generation |
-| Manual Log | `/manual-log` | :red_circle: | M | Offline capability |
-| Admin Health | `/admin/health` | :red_circle: | M | System diagnostics |
-| Inspector | `/inspector` | :red_circle: | M | Debug tools |
+| Page         | Route                          | Test Status  | Test Type | Notes                      |
+| ------------ | ------------------------------ | ------------ | --------- | -------------------------- |
+| Landing      | `/`                            | :red_circle: | M         | Visual verification only   |
+| Auth         | `/auth`                        | :red_circle: | M         | Supabase Auth dependency   |
+| Onboarding   | `/onboarding`                  | :red_circle: | M         | Multi-step wizard          |
+| Dashboard    | `/dashboard`                   | :red_circle: | M         | Complex state management   |
+| Settings     | `/settings`                    | :red_circle: | M         | Tabs, forms, permissions   |
+| Unit Detail  | `/units/:unitId`               | :red_circle: | M         | Real-time data, sensors    |
+| Site Detail  | `/sites/:siteId`               | :red_circle: | M         | Hierarchy display          |
+| Area Detail  | `/sites/:siteId/areas/:areaId` | :red_circle: | M         | Unit listing               |
+| Alerts       | `/alerts`                      | :red_circle: | M         | Alert CRUD, acknowledgment |
+| Reports      | `/reports`                     | :red_circle: | M         | Report generation          |
+| Manual Log   | `/manual-log`                  | :red_circle: | M         | Offline capability         |
+| Admin Health | `/admin/health`                | :red_circle: | M         | System diagnostics         |
+| Inspector    | `/inspector`                   | :red_circle: | M         | Debug tools                |
 
 **Coverage: 0/23 pages have automated tests**
 
@@ -9150,70 +9468,70 @@ This document maps every major feature and component to its test coverage status
 
 ### Settings Components
 
-| Component | File | Test Status | Priority |
-|-----------|------|-------------|----------|
-| TTN Connection Settings | `TTNConnectionSettings.tsx` | :red_circle: | Critical |
-| Sensor Manager | `SensorManager.tsx` | :red_circle: | Critical |
-| Gateway Manager | `GatewayManager.tsx` | :red_circle: | Critical |
-| Alert Rules Editor | `AlertRulesEditor.tsx` | :red_circle: | High |
-| Notification Policy Editor | `NotificationPolicyEditor.tsx` | :red_circle: | High |
-| Organization Settings | `OrganizationSettings.tsx` | :red_circle: | Medium |
-| Escalation Contacts | `EscalationContactsManager.tsx` | :red_circle: | High |
-| Branding Settings | `BrandingSettings.tsx` | :red_circle: | Low |
+| Component                  | File                            | Test Status  | Priority |
+| -------------------------- | ------------------------------- | ------------ | -------- |
+| TTN Connection Settings    | `TTNConnectionSettings.tsx`     | :red_circle: | Critical |
+| Sensor Manager             | `SensorManager.tsx`             | :red_circle: | Critical |
+| Gateway Manager            | `GatewayManager.tsx`            | :red_circle: | Critical |
+| Alert Rules Editor         | `AlertRulesEditor.tsx`          | :red_circle: | High     |
+| Notification Policy Editor | `NotificationPolicyEditor.tsx`  | :red_circle: | High     |
+| Organization Settings      | `OrganizationSettings.tsx`      | :red_circle: | Medium   |
+| Escalation Contacts        | `EscalationContactsManager.tsx` | :red_circle: | High     |
+| Branding Settings          | `BrandingSettings.tsx`          | :red_circle: | Low      |
 
 ### Dashboard Components
 
-| Component | File | Test Status | Priority |
-|-----------|------|-------------|----------|
-| Low Battery Widget | `LowBatteryWidget.tsx` | :red_circle: | Medium |
-| Dashboard Layout | `DashboardLayout.tsx` | :red_circle: | Medium |
-| Site Overview | `SiteOverview.tsx` | :red_circle: | Medium |
-| Unit Status Card | `UnitStatusCard.tsx` | :red_circle: | High |
+| Component          | File                   | Test Status  | Priority |
+| ------------------ | ---------------------- | ------------ | -------- |
+| Low Battery Widget | `LowBatteryWidget.tsx` | :red_circle: | Medium   |
+| Dashboard Layout   | `DashboardLayout.tsx`  | :red_circle: | Medium   |
+| Site Overview      | `SiteOverview.tsx`     | :red_circle: | Medium   |
+| Unit Status Card   | `UnitStatusCard.tsx`   | :red_circle: | High     |
 
 ### Unit Components
 
-| Component | File | Test Status | Priority |
-|-----------|------|-------------|----------|
-| Unit Alerts Banner | `UnitAlertsBanner.tsx` | :red_circle: | High |
-| Unit Sensors Card | `UnitSensorsCard.tsx` | :red_circle: | High |
-| Battery Health Card | `BatteryHealthCard.tsx` | :red_circle: | Medium |
-| Temperature Graph | `TemperatureGraph.tsx` | :red_circle: | Medium |
-| Unit Settings Section | `UnitSettingsSection.tsx` | :red_circle: | Medium |
+| Component             | File                      | Test Status  | Priority |
+| --------------------- | ------------------------- | ------------ | -------- |
+| Unit Alerts Banner    | `UnitAlertsBanner.tsx`    | :red_circle: | High     |
+| Unit Sensors Card     | `UnitSensorsCard.tsx`     | :red_circle: | High     |
+| Battery Health Card   | `BatteryHealthCard.tsx`   | :red_circle: | Medium   |
+| Temperature Graph     | `TemperatureGraph.tsx`    | :red_circle: | Medium   |
+| Unit Settings Section | `UnitSettingsSection.tsx` | :red_circle: | Medium   |
 
 ### Alert Components
 
-| Component | File | Test Status | Priority |
-|-----------|------|-------------|----------|
-| Alert Row | `AlertRow.tsx` | :red_circle: | High |
-| Alert Detail Modal | `AlertDetailModal.tsx` | :red_circle: | High |
-| Notification Dropdown | `NotificationDropdown.tsx` | :red_circle: | Medium |
+| Component             | File                       | Test Status  | Priority |
+| --------------------- | -------------------------- | ------------ | -------- |
+| Alert Row             | `AlertRow.tsx`             | :red_circle: | High     |
+| Alert Detail Modal    | `AlertDetailModal.tsx`     | :red_circle: | High     |
+| Notification Dropdown | `NotificationDropdown.tsx` | :red_circle: | Medium   |
 
 ### UI Components (shadcn/ui)
 
-| Component | Test Status | Notes |
-|-----------|-------------|-------|
+| Component                | Test Status            | Notes                        |
+| ------------------------ | ---------------------- | ---------------------------- |
 | All 43 shadcn components | :large_orange_diamond: | Third-party, tested upstream |
 
 ---
 
 ## Hooks
 
-| Hook | File | Test Status | Priority | Notes |
-|------|------|-------------|----------|-------|
-| useUnitStatus | `useUnitStatus.ts` | :red_circle: | Critical | Mirrors backend logic |
-| useAlertRules | `useAlertRules.ts` | :red_circle: | Critical | CRUD operations |
-| useLoraSensors | `useLoraSensors.ts` | :red_circle: | Critical | Sensor management |
-| useGateways | `useGateways.ts` | :red_circle: | Critical | Gateway management |
-| useNotificationPolicies | `useNotificationPolicies.ts` | :red_circle: | High | Notification config |
-| useAuthAndOnboarding | `useAuthAndOnboarding.ts` | :red_circle: | High | Auth state |
-| useUserRole | `useUserRole.ts` | :red_circle: | High | RBAC |
-| useTTNSetupWizard | `useTTNSetupWizard.ts` | :red_circle: | High | Multi-step flow |
-| useGatewayProvisioningPreflight | `useGatewayProvisioningPreflight.ts` | :red_circle: | High | TTN validation |
-| useHealthCheck | `useHealthCheck.ts` | :red_circle: | Medium | System health |
-| useOfflineSync | `useOfflineSync.ts` | :red_circle: | High | Offline capability |
-| useBatteryForecast | `useBatteryForecast.ts` | :red_circle: | Medium | Predictions |
-| useSoftDelete | `useSoftDelete.ts` | :red_circle: | Medium | Soft delete logic |
-| useTTNDeprovision | `useTTNDeprovision.ts` | :red_circle: | Medium | Cleanup operations |
+| Hook                            | File                                 | Test Status  | Priority | Notes                 |
+| ------------------------------- | ------------------------------------ | ------------ | -------- | --------------------- |
+| useUnitStatus                   | `useUnitStatus.ts`                   | :red_circle: | Critical | Mirrors backend logic |
+| useAlertRules                   | `useAlertRules.ts`                   | :red_circle: | Critical | CRUD operations       |
+| useLoraSensors                  | `useLoraSensors.ts`                  | :red_circle: | Critical | Sensor management     |
+| useGateways                     | `useGateways.ts`                     | :red_circle: | Critical | Gateway management    |
+| useNotificationPolicies         | `useNotificationPolicies.ts`         | :red_circle: | High     | Notification config   |
+| useAuthAndOnboarding            | `useAuthAndOnboarding.ts`            | :red_circle: | High     | Auth state            |
+| useUserRole                     | `useUserRole.ts`                     | :red_circle: | High     | RBAC                  |
+| useTTNSetupWizard               | `useTTNSetupWizard.ts`               | :red_circle: | High     | Multi-step flow       |
+| useGatewayProvisioningPreflight | `useGatewayProvisioningPreflight.ts` | :red_circle: | High     | TTN validation        |
+| useHealthCheck                  | `useHealthCheck.ts`                  | :red_circle: | Medium   | System health         |
+| useOfflineSync                  | `useOfflineSync.ts`                  | :red_circle: | High     | Offline capability    |
+| useBatteryForecast              | `useBatteryForecast.ts`              | :red_circle: | Medium   | Predictions           |
+| useSoftDelete                   | `useSoftDelete.ts`                   | :red_circle: | Medium   | Soft delete logic     |
+| useTTNDeprovision               | `useTTNDeprovision.ts`               | :red_circle: | Medium   | Cleanup operations    |
 
 **Coverage: 0/26 hooks have automated tests**
 
@@ -9223,25 +9541,25 @@ This document maps every major feature and component to its test coverage status
 
 ### Eligibility Logic (TESTED)
 
-| Function | File | Test Status | Tests |
-|----------|------|-------------|-------|
+| Function            | File                    | Test Status        | Tests   |
+| ------------------- | ----------------------- | ------------------ | ------- |
 | canProvisionGateway | `gatewayEligibility.ts` | :white_check_mark: | 9 cases |
-| canEditGateway | `gatewayEligibility.ts` | :white_check_mark: | 3 cases |
-| canDeleteGateway | `gatewayEligibility.ts` | :white_check_mark: | 3 cases |
-| canProvisionSensor | `sensorEligibility.ts` | :white_check_mark: | 9 cases |
-| canEditSensor | `sensorEligibility.ts` | :white_check_mark: | 3 cases |
-| canDeleteSensor | `sensorEligibility.ts` | :white_check_mark: | 3 cases |
+| canEditGateway      | `gatewayEligibility.ts` | :white_check_mark: | 3 cases |
+| canDeleteGateway    | `gatewayEligibility.ts` | :white_check_mark: | 3 cases |
+| canProvisionSensor  | `sensorEligibility.ts`  | :white_check_mark: | 9 cases |
+| canEditSensor       | `sensorEligibility.ts`  | :white_check_mark: | 3 cases |
+| canDeleteSensor     | `sensorEligibility.ts`  | :white_check_mark: | 3 cases |
 
 ### Configuration (NOT TESTED)
 
-| File | Test Status | Priority |
-|------|-------------|----------|
-| alertConfig.ts | :red_circle: | Medium |
-| statusConfig.ts | :red_circle: | Medium |
-| entityStatusConfig.ts | :red_circle: | Medium |
-| validation.ts | :red_circle: | High |
-| utils.ts | :red_circle: | Low |
-| stripe.ts | :red_circle: | Medium |
+| File                  | Test Status  | Priority |
+| --------------------- | ------------ | -------- |
+| alertConfig.ts        | :red_circle: | Medium   |
+| statusConfig.ts       | :red_circle: | Medium   |
+| entityStatusConfig.ts | :red_circle: | Medium   |
+| validation.ts         | :red_circle: | High     |
+| utils.ts              | :red_circle: | Low      |
+| stripe.ts             | :red_circle: | Medium   |
 
 ---
 
@@ -9249,50 +9567,50 @@ This document maps every major feature and component to its test coverage status
 
 ### Critical Functions
 
-| Function | Test Status | Priority | Risk |
-|----------|-------------|----------|------|
-| `process-unit-states` | :red_circle: | **Critical** | Alert SSOT - untested |
+| Function              | Test Status  | Priority     | Risk                         |
+| --------------------- | ------------ | ------------ | ---------------------------- |
+| `process-unit-states` | :red_circle: | **Critical** | Alert SSOT - untested        |
 | `process-escalations` | :red_circle: | **Critical** | Notification SSOT - untested |
-| `ttn-webhook` | :red_circle: | **Critical** | Data ingestion - untested |
-| `ingest-readings` | :red_circle: | **Critical** | Data pipeline - untested |
+| `ttn-webhook`         | :red_circle: | **Critical** | Data ingestion - untested    |
+| `ingest-readings`     | :red_circle: | **Critical** | Data pipeline - untested     |
 
 ### TTN Management
 
-| Function | Test Status | Priority |
-|----------|-------------|----------|
-| `ttn-bootstrap` | :red_circle: | High |
-| `ttn-provision-device` | :red_circle: | High |
-| `ttn-provision-gateway` | :red_circle: | High |
-| `ttn-gateway-preflight` | :red_circle: | High |
-| `ttn-list-devices` | :red_circle: | Medium |
-| `ttn-deprovision-worker` | :red_circle: | Medium |
+| Function                 | Test Status  | Priority |
+| ------------------------ | ------------ | -------- |
+| `ttn-bootstrap`          | :red_circle: | High     |
+| `ttn-provision-device`   | :red_circle: | High     |
+| `ttn-provision-gateway`  | :red_circle: | High     |
+| `ttn-gateway-preflight`  | :red_circle: | High     |
+| `ttn-list-devices`       | :red_circle: | Medium   |
+| `ttn-deprovision-worker` | :red_circle: | Medium   |
 
 ### Shared Utilities
 
-| File | Test Status | Tests |
-|------|-------------|-------|
+| File                | Test Status        | Tests   |
+| ------------------- | ------------------ | ------- |
 | `ttnPermissions.ts` | :white_check_mark: | 5 cases |
-| `ttnConfig.ts` | :red_circle: | - |
-| `validation.ts` | :red_circle: | - |
-| `response.ts` | :red_circle: | - |
-| `cors.ts` | :red_circle: | - |
+| `ttnConfig.ts`      | :red_circle:       | -       |
+| `validation.ts`     | :red_circle:       | -       |
+| `response.ts`       | :red_circle:       | -       |
+| `cors.ts`           | :red_circle:       | -       |
 
 ### Billing Functions
 
-| Function | Test Status | Priority |
-|----------|-------------|----------|
-| `stripe-checkout` | :red_circle: | High |
-| `stripe-portal` | :red_circle: | High |
-| `stripe-webhook` | :red_circle: | High |
+| Function          | Test Status  | Priority |
+| ----------------- | ------------ | -------- |
+| `stripe-checkout` | :red_circle: | High     |
+| `stripe-portal`   | :red_circle: | High     |
+| `stripe-webhook`  | :red_circle: | High     |
 
 ### Other Functions
 
-| Function | Test Status | Priority |
-|----------|-------------|----------|
-| `health-check` | :red_circle: | Medium |
-| `sensor-simulator` | :red_circle: | Low |
-| `create-organization` | :red_circle: | Medium |
-| `soft-delete-cleanup` | :red_circle: | Low |
+| Function              | Test Status  | Priority |
+| --------------------- | ------------ | -------- |
+| `health-check`        | :red_circle: | Medium   |
+| `sensor-simulator`    | :red_circle: | Low      |
+| `create-organization` | :red_circle: | Medium   |
+| `soft-delete-cleanup` | :red_circle: | Low      |
 
 **Coverage: 1/32 edge functions have tests (3%)**
 
@@ -9302,18 +9620,18 @@ This document maps every major feature and component to its test coverage status
 
 ### Tables with RLS Policies
 
-| Table | RLS Tested | Notes |
-|-------|------------|-------|
-| organizations | :red_circle: | Multi-tenant isolation |
-| profiles | :red_circle: | User access |
-| units | :red_circle: | Org-scoped access |
-| alerts | :red_circle: | Status filtering |
-| sensor_readings | :red_circle: | Time-series data |
-| lora_sensors | :red_circle: | Device management |
-| gateways | :red_circle: | Gateway management |
-| alert_rules | :red_circle: | Cascading settings |
-| notification_policies | :red_circle: | Notification config |
-| escalation_contacts | :red_circle: | Contact management |
+| Table                 | RLS Tested   | Notes                  |
+| --------------------- | ------------ | ---------------------- |
+| organizations         | :red_circle: | Multi-tenant isolation |
+| profiles              | :red_circle: | User access            |
+| units                 | :red_circle: | Org-scoped access      |
+| alerts                | :red_circle: | Status filtering       |
+| sensor_readings       | :red_circle: | Time-series data       |
+| lora_sensors          | :red_circle: | Device management      |
+| gateways              | :red_circle: | Gateway management     |
+| alert_rules           | :red_circle: | Cascading settings     |
+| notification_policies | :red_circle: | Notification config    |
+| escalation_contacts   | :red_circle: | Contact management     |
 
 **No automated RLS policy tests exist**
 
@@ -9321,35 +9639,35 @@ This document maps every major feature and component to its test coverage status
 
 ## External Integrations
 
-| Integration | Test Status | Testing Approach |
-|-------------|-------------|------------------|
-| Supabase Auth | :red_circle: | Manual testing |
-| Supabase Database | :red_circle: | Local instance for integration |
-| The Things Network (TTN) | :red_circle: | Test TTN application |
-| Stripe | :red_circle: | Test mode + webhooks |
-| Twilio (SMS) | :red_circle: | Manual testing |
-| Resend (Email) | :red_circle: | Manual testing |
+| Integration              | Test Status  | Testing Approach               |
+| ------------------------ | ------------ | ------------------------------ |
+| Supabase Auth            | :red_circle: | Manual testing                 |
+| Supabase Database        | :red_circle: | Local instance for integration |
+| The Things Network (TTN) | :red_circle: | Test TTN application           |
+| Stripe                   | :red_circle: | Test mode + webhooks           |
+| Twilio (SMS)             | :red_circle: | Manual testing                 |
+| Resend (Email)           | :red_circle: | Manual testing                 |
 
 ---
 
 ## Feature Coverage Summary
 
-| Feature Area | Files | Tested | Coverage |
-|--------------|-------|--------|----------|
-| **Pages** | 23 | 0 | 0% |
-| **Components** | 112 | 0 | 0% |
-| **Hooks** | 26 | 0 | 0% |
-| **Edge Functions** | 32 | 1 | 3% |
-| **Lib/Actions** | 6 functions | 6 | 100% |
-| **Lib/Config** | 6 files | 0 | 0% |
+| Feature Area       | Files       | Tested | Coverage |
+| ------------------ | ----------- | ------ | -------- |
+| **Pages**          | 23          | 0      | 0%       |
+| **Components**     | 112         | 0      | 0%       |
+| **Hooks**          | 26          | 0      | 0%       |
+| **Edge Functions** | 32          | 1      | 3%       |
+| **Lib/Actions**    | 6 functions | 6      | 100%     |
+| **Lib/Config**     | 6 files     | 0      | 0%       |
 
 ### Overall Automated Test Coverage
 
-| Metric | Count |
-|--------|-------|
-| Total test files | 3 |
-| Total test cases | ~35 |
-| Lines of test code | 476 |
+| Metric                      | Count    |
+| --------------------------- | -------- |
+| Total test files            | 3        |
+| Total test cases            | ~35      |
+| Lines of test code          | 476      |
 | **Estimated code coverage** | **< 5%** |
 
 ---
@@ -9378,28 +9696,28 @@ package.json                      # Dependencies (vitest, testing-library)
 
 ### Immediate Priority (Week 1-2)
 
-| What | Why | Type |
-|------|-----|------|
+| What                  | Why                         | Type               |
+| --------------------- | --------------------------- | ------------------ |
 | `process-unit-states` | Alert SSOT, safety-critical | Unit + Integration |
-| `ttn-webhook` | Data ingestion entry point | Integration |
-| `useUnitStatus` | Frontend status computation | Unit |
+| `ttn-webhook`         | Data ingestion entry point  | Integration        |
+| `useUnitStatus`       | Frontend status computation | Unit               |
 
 ### High Priority (Week 3-4)
 
-| What | Why | Type |
-|------|-----|------|
-| `process-escalations` | Notification SSOT | Unit + Integration |
-| `useAlertRules` | Alert configuration | Unit |
-| `useLoraSensors` | Device management | Unit |
-| Onboarding flow | Critical user journey | E2E Manual |
+| What                  | Why                   | Type               |
+| --------------------- | --------------------- | ------------------ |
+| `process-escalations` | Notification SSOT     | Unit + Integration |
+| `useAlertRules`       | Alert configuration   | Unit               |
+| `useLoraSensors`      | Device management     | Unit               |
+| Onboarding flow       | Critical user journey | E2E Manual         |
 
 ### Medium Priority (Month 2)
 
-| What | Why | Type |
-|------|-----|------|
-| RLS policy tests | Security validation | Integration |
-| Dashboard components | User-facing | Component |
-| Settings components | Configuration | Component |
+| What                 | Why                 | Type        |
+| -------------------- | ------------------- | ----------- |
+| RLS policy tests     | Security validation | Integration |
+| Dashboard components | User-facing         | Component   |
+| Settings components  | Configuration       | Component   |
 
 ---
 
@@ -9422,7 +9740,6 @@ package.json                      # Dependencies (vitest, testing-library)
 - [E2E_SCENARIOS.md](#e2e_scenarios) — Critical user flow testing
 - [KNOWN_GAPS.md](#known_gaps) — Missing coverage and risks
 
-
 ---
 
 \newpage
@@ -9444,13 +9761,13 @@ package.json                      # Dependencies (vitest, testing-library)
 
 ### Test Environment Requirements
 
-| Requirement | Details |
-|-------------|---------|
-| Browser | Chrome (latest), Firefox, Safari, Edge |
-| Mobile | iOS Safari, Android Chrome |
-| Test account | QA account with admin permissions |
-| TTN access | Test TTN application (not production) |
-| Stripe | Test mode API keys |
+| Requirement  | Details                                |
+| ------------ | -------------------------------------- |
+| Browser      | Chrome (latest), Firefox, Safari, Edge |
+| Mobile       | iOS Safari, Android Chrome             |
+| Test account | QA account with admin permissions      |
+| TTN access   | Test TTN application (not production)  |
+| Stripe       | Test mode API keys                     |
 
 ---
 
@@ -9460,63 +9777,63 @@ package.json                      # Dependencies (vitest, testing-library)
 
 **Preconditions:** Logged out, fresh browser session
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to `/auth` | Sign in form displays | [ ] |
-| 2 | Click "Sign Up" tab | Sign up form displays | [ ] |
-| 3 | Enter valid email | Email field accepts input | [ ] |
-| 4 | Enter password (< 6 chars) | Error: "Password must be at least 6 characters" | [ ] |
-| 5 | Enter valid password (6+ chars) | Password field accepts input | [ ] |
-| 6 | Click "Sign Up" | Loading indicator appears | [ ] |
-| 7 | Wait for completion | Redirects to onboarding page | [ ] |
-| 8 | Check email | Confirmation email received | [ ] |
+| Step | Action                          | Expected Result                                 | Pass/Fail |
+| ---- | ------------------------------- | ----------------------------------------------- | --------- |
+| 1    | Navigate to `/auth`             | Sign in form displays                           | [ ]       |
+| 2    | Click "Sign Up" tab             | Sign up form displays                           | [ ]       |
+| 3    | Enter valid email               | Email field accepts input                       | [ ]       |
+| 4    | Enter password (< 6 chars)      | Error: "Password must be at least 6 characters" | [ ]       |
+| 5    | Enter valid password (6+ chars) | Password field accepts input                    | [ ]       |
+| 6    | Click "Sign Up"                 | Loading indicator appears                       | [ ]       |
+| 7    | Wait for completion             | Redirects to onboarding page                    | [ ]       |
+| 8    | Check email                     | Confirmation email received                     | [ ]       |
 
 ### 1.2 User Login
 
 **Preconditions:** Registered account exists
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to `/auth` | Sign in form displays | [ ] |
-| 2 | Enter registered email | Email field accepts input | [ ] |
-| 3 | Enter wrong password | Error: "Invalid login credentials" | [ ] |
-| 4 | Enter correct password | Password field accepts input | [ ] |
-| 5 | Click "Sign In" | Loading indicator appears | [ ] |
-| 6 | Wait for completion | Redirects to dashboard | [ ] |
+| Step | Action                 | Expected Result                    | Pass/Fail |
+| ---- | ---------------------- | ---------------------------------- | --------- |
+| 1    | Navigate to `/auth`    | Sign in form displays              | [ ]       |
+| 2    | Enter registered email | Email field accepts input          | [ ]       |
+| 3    | Enter wrong password   | Error: "Invalid login credentials" | [ ]       |
+| 4    | Enter correct password | Password field accepts input       | [ ]       |
+| 5    | Click "Sign In"        | Loading indicator appears          | [ ]       |
+| 6    | Wait for completion    | Redirects to dashboard             | [ ]       |
 
 ### 1.3 Onboarding Wizard
 
 **Preconditions:** New user, first login
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | After first login | Onboarding wizard appears | [ ] |
-| 2 | Enter organization name | Field accepts input | [ ] |
-| 3 | Click "Next" | Moves to site creation step | [ ] |
-| 4 | Enter site name | Field accepts input | [ ] |
-| 5 | Enter site address (optional) | Address field works | [ ] |
-| 6 | Click "Next" | Moves to area creation step | [ ] |
-| 7 | Enter area name | Field accepts input | [ ] |
-| 8 | Click "Next" | Moves to unit creation step | [ ] |
-| 9 | Enter unit name | Field accepts input | [ ] |
-| 10 | Select unit type | Dropdown works | [ ] |
-| 11 | Set temperature range | Min/Max sliders work | [ ] |
-| 12 | Click "Complete Setup" | Wizard completes | [ ] |
-| 13 | Verify redirect | Dashboard displays with new unit | [ ] |
+| Step | Action                        | Expected Result                  | Pass/Fail |
+| ---- | ----------------------------- | -------------------------------- | --------- |
+| 1    | After first login             | Onboarding wizard appears        | [ ]       |
+| 2    | Enter organization name       | Field accepts input              | [ ]       |
+| 3    | Click "Next"                  | Moves to site creation step      | [ ]       |
+| 4    | Enter site name               | Field accepts input              | [ ]       |
+| 5    | Enter site address (optional) | Address field works              | [ ]       |
+| 6    | Click "Next"                  | Moves to area creation step      | [ ]       |
+| 7    | Enter area name               | Field accepts input              | [ ]       |
+| 8    | Click "Next"                  | Moves to unit creation step      | [ ]       |
+| 9    | Enter unit name               | Field accepts input              | [ ]       |
+| 10   | Select unit type              | Dropdown works                   | [ ]       |
+| 11   | Set temperature range         | Min/Max sliders work             | [ ]       |
+| 12   | Click "Complete Setup"        | Wizard completes                 | [ ]       |
+| 13   | Verify redirect               | Dashboard displays with new unit | [ ]       |
 
 ### 1.4 Password Reset
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to `/auth` | Sign in form displays | [ ] |
-| 2 | Click "Forgot Password" | Reset form appears | [ ] |
-| 3 | Enter registered email | Email field accepts input | [ ] |
-| 4 | Click "Send Reset Link" | Success message appears | [ ] |
-| 5 | Check email | Reset link received | [ ] |
-| 6 | Click reset link | Password reset form appears | [ ] |
-| 7 | Enter new password | Password accepted | [ ] |
-| 8 | Submit | Success message, redirect to login | [ ] |
-| 9 | Login with new password | Login successful | [ ] |
+| Step | Action                  | Expected Result                    | Pass/Fail |
+| ---- | ----------------------- | ---------------------------------- | --------- |
+| 1    | Navigate to `/auth`     | Sign in form displays              | [ ]       |
+| 2    | Click "Forgot Password" | Reset form appears                 | [ ]       |
+| 3    | Enter registered email  | Email field accepts input          | [ ]       |
+| 4    | Click "Send Reset Link" | Success message appears            | [ ]       |
+| 5    | Check email             | Reset link received                | [ ]       |
+| 6    | Click reset link        | Password reset form appears        | [ ]       |
+| 7    | Enter new password      | Password accepted                  | [ ]       |
+| 8    | Submit                  | Success message, redirect to login | [ ]       |
+| 9    | Login with new password | Login successful                   | [ ]       |
 
 ---
 
@@ -9526,31 +9843,31 @@ package.json                      # Dependencies (vitest, testing-library)
 
 **Preconditions:** Logged in as admin, TTN not configured
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to Settings → TTN | TTN settings page displays | [ ] |
-| 2 | Click "Connect to TTN" | Setup wizard opens | [ ] |
-| 3 | Enter TTN Application ID | Field accepts input | [ ] |
-| 4 | Enter TTN API Key | Field accepts input (masked) | [ ] |
-| 5 | Click "Validate" | Validation starts | [ ] |
-| 6 | Wait for validation | Permission report displays | [ ] |
-| 7 | If permissions valid | "Configuration Valid" message | [ ] |
-| 8 | If permissions invalid | Missing permissions listed | [ ] |
-| 9 | Click "Save Configuration" | Configuration saved | [ ] |
-| 10 | Verify webhook created | TTN console shows webhook | [ ] |
+| Step | Action                     | Expected Result               | Pass/Fail |
+| ---- | -------------------------- | ----------------------------- | --------- |
+| 1    | Navigate to Settings → TTN | TTN settings page displays    | [ ]       |
+| 2    | Click "Connect to TTN"     | Setup wizard opens            | [ ]       |
+| 3    | Enter TTN Application ID   | Field accepts input           | [ ]       |
+| 4    | Enter TTN API Key          | Field accepts input (masked)  | [ ]       |
+| 5    | Click "Validate"           | Validation starts             | [ ]       |
+| 6    | Wait for validation        | Permission report displays    | [ ]       |
+| 7    | If permissions valid       | "Configuration Valid" message | [ ]       |
+| 8    | If permissions invalid     | Missing permissions listed    | [ ]       |
+| 9    | Click "Save Configuration" | Configuration saved           | [ ]       |
+| 10   | Verify webhook created     | TTN console shows webhook     | [ ]       |
 
 ### 2.2 TTN Permission Validation
 
 **Preconditions:** Have TTN API key with known permissions
 
-| Permission | Required | Test Action | Pass/Fail |
-|------------|----------|-------------|-----------|
-| `RIGHT_APPLICATION_INFO` | Yes | Validate basic info read | [ ] |
-| `RIGHT_APPLICATION_TRAFFIC_READ` | Yes | Required for webhook data | [ ] |
-| `RIGHT_APPLICATION_SETTINGS_BASIC` | Yes | Webhook configuration | [ ] |
-| `RIGHT_APPLICATION_DEVICES_READ` | Yes | Device listing | [ ] |
-| `RIGHT_APPLICATION_DEVICES_WRITE` | Yes | Device provisioning | [ ] |
-| `RIGHT_APPLICATION_TRAFFIC_DOWN_WRITE` | No | Downlink (optional) | [ ] |
+| Permission                             | Required | Test Action               | Pass/Fail |
+| -------------------------------------- | -------- | ------------------------- | --------- |
+| `RIGHT_APPLICATION_INFO`               | Yes      | Validate basic info read  | [ ]       |
+| `RIGHT_APPLICATION_TRAFFIC_READ`       | Yes      | Required for webhook data | [ ]       |
+| `RIGHT_APPLICATION_SETTINGS_BASIC`     | Yes      | Webhook configuration     | [ ]       |
+| `RIGHT_APPLICATION_DEVICES_READ`       | Yes      | Device listing            | [ ]       |
+| `RIGHT_APPLICATION_DEVICES_WRITE`      | Yes      | Device provisioning       | [ ]       |
+| `RIGHT_APPLICATION_TRAFFIC_DOWN_WRITE` | No       | Downlink (optional)       | [ ]       |
 
 ---
 
@@ -9560,58 +9877,58 @@ package.json                      # Dependencies (vitest, testing-library)
 
 **Preconditions:** TTN configured, admin access
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to Settings → Gateways | Gateway list displays | [ ] |
-| 2 | Click "Add Gateway" | Add gateway form opens | [ ] |
-| 3 | Enter Gateway EUI (invalid format) | Error: "Invalid EUI format" | [ ] |
-| 4 | Enter Gateway EUI (16 hex chars) | Field accepts input | [ ] |
-| 5 | Enter Gateway name | Field accepts input | [ ] |
-| 6 | Select location | Location selector works | [ ] |
-| 7 | Click "Save" | Gateway saved (pending status) | [ ] |
-| 8 | Click "Provision" on gateway | Provisioning starts | [ ] |
-| 9 | Wait for completion | Status changes to "active" | [ ] |
-| 10 | Verify in TTN Console | Gateway appears in TTN | [ ] |
+| Step | Action                             | Expected Result                | Pass/Fail |
+| ---- | ---------------------------------- | ------------------------------ | --------- |
+| 1    | Navigate to Settings → Gateways    | Gateway list displays          | [ ]       |
+| 2    | Click "Add Gateway"                | Add gateway form opens         | [ ]       |
+| 3    | Enter Gateway EUI (invalid format) | Error: "Invalid EUI format"    | [ ]       |
+| 4    | Enter Gateway EUI (16 hex chars)   | Field accepts input            | [ ]       |
+| 5    | Enter Gateway name                 | Field accepts input            | [ ]       |
+| 6    | Select location                    | Location selector works        | [ ]       |
+| 7    | Click "Save"                       | Gateway saved (pending status) | [ ]       |
+| 8    | Click "Provision" on gateway       | Provisioning starts            | [ ]       |
+| 9    | Wait for completion                | Status changes to "active"     | [ ]       |
+| 10   | Verify in TTN Console              | Gateway appears in TTN         | [ ]       |
 
 ### 3.2 Sensor Registration
 
 **Preconditions:** TTN configured, admin access, unit exists
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to Settings → Sensors | Sensor list displays | [ ] |
-| 2 | Click "Add Sensor" | Add sensor form opens | [ ] |
-| 3 | Enter DevEUI (invalid format) | Error: "Invalid DevEUI format" | [ ] |
-| 4 | Enter DevEUI (16 hex chars) | Field accepts input | [ ] |
-| 5 | Enter AppKey (32 hex chars) | Field accepts input | [ ] |
-| 6 | Select unit to assign | Unit dropdown works | [ ] |
-| 7 | Click "Save" | Sensor saved (pending status) | [ ] |
-| 8 | Click "Provision" on sensor | Provisioning starts | [ ] |
-| 9 | Wait for completion | Status changes to "joining" | [ ] |
-| 10 | Verify in TTN Console | Device appears in TTN | [ ] |
-| 11 | Power on physical sensor | Wait for join | [ ] |
-| 12 | Verify sensor joins | Status changes to "active" | [ ] |
+| Step | Action                         | Expected Result                | Pass/Fail |
+| ---- | ------------------------------ | ------------------------------ | --------- |
+| 1    | Navigate to Settings → Sensors | Sensor list displays           | [ ]       |
+| 2    | Click "Add Sensor"             | Add sensor form opens          | [ ]       |
+| 3    | Enter DevEUI (invalid format)  | Error: "Invalid DevEUI format" | [ ]       |
+| 4    | Enter DevEUI (16 hex chars)    | Field accepts input            | [ ]       |
+| 5    | Enter AppKey (32 hex chars)    | Field accepts input            | [ ]       |
+| 6    | Select unit to assign          | Unit dropdown works            | [ ]       |
+| 7    | Click "Save"                   | Sensor saved (pending status)  | [ ]       |
+| 8    | Click "Provision" on sensor    | Provisioning starts            | [ ]       |
+| 9    | Wait for completion            | Status changes to "joining"    | [ ]       |
+| 10   | Verify in TTN Console          | Device appears in TTN          | [ ]       |
+| 11   | Power on physical sensor       | Wait for join                  | [ ]       |
+| 12   | Verify sensor joins            | Status changes to "active"     | [ ]       |
 
 ### 3.3 Sensor Assignment to Unit
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to unit detail page | Unit page displays | [ ] |
-| 2 | Click "Assign Sensor" | Sensor selector opens | [ ] |
-| 3 | Select available sensor | Sensor selected | [ ] |
-| 4 | Click "Assign" | Sensor assigned to unit | [ ] |
-| 5 | Verify sensor shows on unit | Sensor card displays | [ ] |
-| 6 | Verify readings flow | Temperature data appears | [ ] |
+| Step | Action                       | Expected Result          | Pass/Fail |
+| ---- | ---------------------------- | ------------------------ | --------- |
+| 1    | Navigate to unit detail page | Unit page displays       | [ ]       |
+| 2    | Click "Assign Sensor"        | Sensor selector opens    | [ ]       |
+| 3    | Select available sensor      | Sensor selected          | [ ]       |
+| 4    | Click "Assign"               | Sensor assigned to unit  | [ ]       |
+| 5    | Verify sensor shows on unit  | Sensor card displays     | [ ]       |
+| 6    | Verify readings flow         | Temperature data appears | [ ]       |
 
 ### 3.4 Device Deprovisioning
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Select provisioned device | Device selected | [ ] |
-| 2 | Click "Deprovision" | Confirmation dialog appears | [ ] |
-| 3 | Confirm deprovisioning | Deprovisioning starts | [ ] |
-| 4 | Wait for completion | Status changes to "pending" | [ ] |
-| 5 | Verify removed from TTN | Device gone from TTN console | [ ] |
+| Step | Action                    | Expected Result              | Pass/Fail |
+| ---- | ------------------------- | ---------------------------- | --------- |
+| 1    | Select provisioned device | Device selected              | [ ]       |
+| 2    | Click "Deprovision"       | Confirmation dialog appears  | [ ]       |
+| 3    | Confirm deprovisioning    | Deprovisioning starts        | [ ]       |
+| 4    | Wait for completion       | Status changes to "pending"  | [ ]       |
+| 5    | Verify removed from TTN   | Device gone from TTN console | [ ]       |
 
 ---
 
@@ -9621,42 +9938,42 @@ package.json                      # Dependencies (vitest, testing-library)
 
 **Preconditions:** Unit exists, admin access
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to Settings → Alert Rules | Alert rules list displays | [ ] |
-| 2 | Select a unit | Unit-specific rules show | [ ] |
-| 3 | Click "Add Rule" | Rule form opens | [ ] |
-| 4 | Set high temperature threshold | Slider/input works | [ ] |
-| 5 | Set low temperature threshold | Slider/input works | [ ] |
-| 6 | Set confirm time (minutes) | Input accepts number | [ ] |
-| 7 | Click "Save" | Rule saved | [ ] |
-| 8 | Verify rule appears in list | Rule displays correctly | [ ] |
+| Step | Action                             | Expected Result           | Pass/Fail |
+| ---- | ---------------------------------- | ------------------------- | --------- |
+| 1    | Navigate to Settings → Alert Rules | Alert rules list displays | [ ]       |
+| 2    | Select a unit                      | Unit-specific rules show  | [ ]       |
+| 3    | Click "Add Rule"                   | Rule form opens           | [ ]       |
+| 4    | Set high temperature threshold     | Slider/input works        | [ ]       |
+| 5    | Set low temperature threshold      | Slider/input works        | [ ]       |
+| 6    | Set confirm time (minutes)         | Input accepts number      | [ ]       |
+| 7    | Click "Save"                       | Rule saved                | [ ]       |
+| 8    | Verify rule appears in list        | Rule displays correctly   | [ ]       |
 
 ### 4.2 Notification Policy Setup
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to Settings → Notifications | Notification settings display | [ ] |
-| 2 | Click "Add Policy" | Policy form opens | [ ] |
-| 3 | Enter policy name | Field accepts input | [ ] |
-| 4 | Select alert types | Multi-select works | [ ] |
-| 5 | Select notification channels | Email/SMS/Push checkboxes | [ ] |
-| 6 | Set escalation delay | Time input works | [ ] |
-| 7 | Add escalation contacts | Contact selector works | [ ] |
-| 8 | Click "Save" | Policy saved | [ ] |
+| Step | Action                               | Expected Result               | Pass/Fail |
+| ---- | ------------------------------------ | ----------------------------- | --------- |
+| 1    | Navigate to Settings → Notifications | Notification settings display | [ ]       |
+| 2    | Click "Add Policy"                   | Policy form opens             | [ ]       |
+| 3    | Enter policy name                    | Field accepts input           | [ ]       |
+| 4    | Select alert types                   | Multi-select works            | [ ]       |
+| 5    | Select notification channels         | Email/SMS/Push checkboxes     | [ ]       |
+| 6    | Set escalation delay                 | Time input works              | [ ]       |
+| 7    | Add escalation contacts              | Contact selector works        | [ ]       |
+| 8    | Click "Save"                         | Policy saved                  | [ ]       |
 
 ### 4.3 Escalation Contact Management
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to Settings → Contacts | Contact list displays | [ ] |
-| 2 | Click "Add Contact" | Contact form opens | [ ] |
-| 3 | Enter contact name | Field accepts input | [ ] |
-| 4 | Enter email address | Email validation works | [ ] |
-| 5 | Enter phone number | Phone validation works | [ ] |
-| 6 | Set escalation level | Level selector works | [ ] |
-| 7 | Click "Save" | Contact saved | [ ] |
-| 8 | Verify in contact list | Contact appears | [ ] |
+| Step | Action                          | Expected Result        | Pass/Fail |
+| ---- | ------------------------------- | ---------------------- | --------- |
+| 1    | Navigate to Settings → Contacts | Contact list displays  | [ ]       |
+| 2    | Click "Add Contact"             | Contact form opens     | [ ]       |
+| 3    | Enter contact name              | Field accepts input    | [ ]       |
+| 4    | Enter email address             | Email validation works | [ ]       |
+| 5    | Enter phone number              | Phone validation works | [ ]       |
+| 6    | Set escalation level            | Level selector works   | [ ]       |
+| 7    | Click "Save"                    | Contact saved          | [ ]       |
+| 8    | Verify in contact list          | Contact appears        | [ ]       |
 
 ---
 
@@ -9666,35 +9983,35 @@ package.json                      # Dependencies (vitest, testing-library)
 
 **Preconditions:** Logged in, units configured
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to `/dashboard` | Dashboard loads | [ ] |
-| 2 | Verify unit cards display | All units show status | [ ] |
-| 3 | Verify color coding | Green/Yellow/Red correct | [ ] |
-| 4 | Click on a unit card | Navigates to unit detail | [ ] |
-| 5 | Verify battery indicators | Battery levels show | [ ] |
-| 6 | Verify last reading time | Timestamps accurate | [ ] |
+| Step | Action                    | Expected Result          | Pass/Fail |
+| ---- | ------------------------- | ------------------------ | --------- |
+| 1    | Navigate to `/dashboard`  | Dashboard loads          | [ ]       |
+| 2    | Verify unit cards display | All units show status    | [ ]       |
+| 3    | Verify color coding       | Green/Yellow/Red correct | [ ]       |
+| 4    | Click on a unit card      | Navigates to unit detail | [ ]       |
+| 5    | Verify battery indicators | Battery levels show      | [ ]       |
+| 6    | Verify last reading time  | Timestamps accurate      | [ ]       |
 
 ### 5.2 Unit Detail Page
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to unit detail | Unit page loads | [ ] |
-| 2 | Verify temperature graph | Graph displays readings | [ ] |
-| 3 | Change time range | Graph updates | [ ] |
-| 4 | Verify current temperature | Current reading displays | [ ] |
-| 5 | Verify status badge | Status correct | [ ] |
-| 6 | Verify sensor list | Assigned sensors show | [ ] |
-| 7 | Verify alert banner | Active alerts show (if any) | [ ] |
+| Step | Action                     | Expected Result             | Pass/Fail |
+| ---- | -------------------------- | --------------------------- | --------- |
+| 1    | Navigate to unit detail    | Unit page loads             | [ ]       |
+| 2    | Verify temperature graph   | Graph displays readings     | [ ]       |
+| 3    | Change time range          | Graph updates               | [ ]       |
+| 4    | Verify current temperature | Current reading displays    | [ ]       |
+| 5    | Verify status badge        | Status correct              | [ ]       |
+| 6    | Verify sensor list         | Assigned sensors show       | [ ]       |
+| 7    | Verify alert banner        | Active alerts show (if any) | [ ]       |
 
 ### 5.3 Real-Time Updates
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Open unit detail page | Page displays | [ ] |
-| 2 | Wait for new sensor reading | (5-minute interval) | [ ] |
-| 3 | Verify auto-update | New reading appears | [ ] |
-| 4 | Verify no page refresh needed | Data updates in place | [ ] |
+| Step | Action                        | Expected Result       | Pass/Fail |
+| ---- | ----------------------------- | --------------------- | --------- |
+| 1    | Open unit detail page         | Page displays         | [ ]       |
+| 2    | Wait for new sensor reading   | (5-minute interval)   | [ ]       |
+| 3    | Verify auto-update            | New reading appears   | [ ]       |
+| 4    | Verify no page refresh needed | Data updates in place | [ ]       |
 
 ---
 
@@ -9704,36 +10021,36 @@ package.json                      # Dependencies (vitest, testing-library)
 
 **Preconditions:** Active alert exists
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to `/alerts` | Alert list displays | [ ] |
-| 2 | Find active alert | Alert row visible | [ ] |
-| 3 | Click "Acknowledge" | Confirmation dialog appears | [ ] |
-| 4 | Enter acknowledgment note | Text field accepts input | [ ] |
-| 5 | Click "Confirm" | Alert status changes | [ ] |
-| 6 | Verify status update | Shows "acknowledged" | [ ] |
-| 7 | Verify timestamp | Acknowledgment time recorded | [ ] |
+| Step | Action                    | Expected Result              | Pass/Fail |
+| ---- | ------------------------- | ---------------------------- | --------- |
+| 1    | Navigate to `/alerts`     | Alert list displays          | [ ]       |
+| 2    | Find active alert         | Alert row visible            | [ ]       |
+| 3    | Click "Acknowledge"       | Confirmation dialog appears  | [ ]       |
+| 4    | Enter acknowledgment note | Text field accepts input     | [ ]       |
+| 5    | Click "Confirm"           | Alert status changes         | [ ]       |
+| 6    | Verify status update      | Shows "acknowledged"         | [ ]       |
+| 7    | Verify timestamp          | Acknowledgment time recorded | [ ]       |
 
 ### 6.2 Alert Resolution
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Temperature returns to normal | Condition resolves | [ ] |
-| 2 | Wait for processing | System processes state | [ ] |
-| 3 | Verify alert auto-resolves | Status changes to "resolved" | [ ] |
-| 4 | Check resolution time | Timestamp recorded | [ ] |
-| 5 | Alert moves to history | Not in active list | [ ] |
+| Step | Action                        | Expected Result              | Pass/Fail |
+| ---- | ----------------------------- | ---------------------------- | --------- |
+| 1    | Temperature returns to normal | Condition resolves           | [ ]       |
+| 2    | Wait for processing           | System processes state       | [ ]       |
+| 3    | Verify alert auto-resolves    | Status changes to "resolved" | [ ]       |
+| 4    | Check resolution time         | Timestamp recorded           | [ ]       |
+| 5    | Alert moves to history        | Not in active list           | [ ]       |
 
 ### 6.3 Alert Notification Delivery
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Trigger temperature excursion | (Simulator or real) | [ ] |
-| 2 | Wait for confirm time | Alert triggers | [ ] |
-| 3 | Check email | Email notification received | [ ] |
-| 4 | Check SMS (if configured) | SMS received | [ ] |
-| 5 | Check push notification | Push received | [ ] |
-| 6 | Verify notification content | Contains unit, temp, time | [ ] |
+| Step | Action                        | Expected Result             | Pass/Fail |
+| ---- | ----------------------------- | --------------------------- | --------- |
+| 1    | Trigger temperature excursion | (Simulator or real)         | [ ]       |
+| 2    | Wait for confirm time         | Alert triggers              | [ ]       |
+| 3    | Check email                   | Email notification received | [ ]       |
+| 4    | Check SMS (if configured)     | SMS received                | [ ]       |
+| 5    | Check push notification       | Push received               | [ ]       |
+| 6    | Verify notification content   | Contains unit, temp, time   | [ ]       |
 
 ---
 
@@ -9743,29 +10060,29 @@ package.json                      # Dependencies (vitest, testing-library)
 
 **Preconditions:** Logged in, unit exists
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to `/manual-log` | Manual log page displays | [ ] |
-| 2 | Select unit | Unit dropdown works | [ ] |
-| 3 | Enter temperature value | Number input works | [ ] |
-| 4 | Add optional note | Text field works | [ ] |
-| 5 | Click "Log Temperature" | Submission starts | [ ] |
-| 6 | Verify success message | "Temperature logged" shows | [ ] |
-| 7 | Check unit detail | Manual log appears in history | [ ] |
+| Step | Action                    | Expected Result               | Pass/Fail |
+| ---- | ------------------------- | ----------------------------- | --------- |
+| 1    | Navigate to `/manual-log` | Manual log page displays      | [ ]       |
+| 2    | Select unit               | Unit dropdown works           | [ ]       |
+| 3    | Enter temperature value   | Number input works            | [ ]       |
+| 4    | Add optional note         | Text field works              | [ ]       |
+| 5    | Click "Log Temperature"   | Submission starts             | [ ]       |
+| 6    | Verify success message    | "Temperature logged" shows    | [ ]       |
+| 7    | Check unit detail         | Manual log appears in history | [ ]       |
 
 ### 7.2 Offline Manual Log
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Enable airplane mode | Device offline | [ ] |
-| 2 | Navigate to `/manual-log` | Page loads from cache | [ ] |
-| 3 | Enter temperature | Input works offline | [ ] |
-| 4 | Click "Log Temperature" | Stored locally | [ ] |
-| 5 | Verify pending indicator | Shows "pending sync" | [ ] |
-| 6 | Disable airplane mode | Device online | [ ] |
-| 7 | Wait for sync | Data syncs to server | [ ] |
-| 8 | Verify synced | Pending indicator clears | [ ] |
-| 9 | Check unit detail | Entry appears in history | [ ] |
+| Step | Action                    | Expected Result          | Pass/Fail |
+| ---- | ------------------------- | ------------------------ | --------- |
+| 1    | Enable airplane mode      | Device offline           | [ ]       |
+| 2    | Navigate to `/manual-log` | Page loads from cache    | [ ]       |
+| 3    | Enter temperature         | Input works offline      | [ ]       |
+| 4    | Click "Log Temperature"   | Stored locally           | [ ]       |
+| 5    | Verify pending indicator  | Shows "pending sync"     | [ ]       |
+| 6    | Disable airplane mode     | Device online            | [ ]       |
+| 7    | Wait for sync             | Data syncs to server     | [ ]       |
+| 8    | Verify synced             | Pending indicator clears | [ ]       |
+| 9    | Check unit detail         | Entry appears in history | [ ]       |
 
 ---
 
@@ -9773,27 +10090,27 @@ package.json                      # Dependencies (vitest, testing-library)
 
 ### 8.1 Temperature Log Report
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Navigate to `/reports` | Reports page displays | [ ] |
-| 2 | Select "Temperature Log" | Report type selected | [ ] |
-| 3 | Select date range | Date picker works | [ ] |
-| 4 | Select units/sites | Multi-select works | [ ] |
-| 5 | Click "Generate" | Report generates | [ ] |
-| 6 | Verify data content | Readings display correctly | [ ] |
-| 7 | Click "Export PDF" | PDF downloads | [ ] |
-| 8 | Open PDF | Content matches on-screen | [ ] |
+| Step | Action                   | Expected Result            | Pass/Fail |
+| ---- | ------------------------ | -------------------------- | --------- |
+| 1    | Navigate to `/reports`   | Reports page displays      | [ ]       |
+| 2    | Select "Temperature Log" | Report type selected       | [ ]       |
+| 3    | Select date range        | Date picker works          | [ ]       |
+| 4    | Select units/sites       | Multi-select works         | [ ]       |
+| 5    | Click "Generate"         | Report generates           | [ ]       |
+| 6    | Verify data content      | Readings display correctly | [ ]       |
+| 7    | Click "Export PDF"       | PDF downloads              | [ ]       |
+| 8    | Open PDF                 | Content matches on-screen  | [ ]       |
 
 ### 8.2 Compliance Report
 
-| Step | Action | Expected Result | Pass/Fail |
-|------|--------|-----------------|-----------|
-| 1 | Select "Compliance Report" | Report type selected | [ ] |
-| 2 | Select time period | 30/60/90 days options | [ ] |
-| 3 | Click "Generate" | Report generates | [ ] |
-| 4 | Verify summary stats | Counts accurate | [ ] |
-| 5 | Verify alert history | Alerts listed | [ ] |
-| 6 | Verify corrective actions | Actions documented | [ ] |
+| Step | Action                     | Expected Result       | Pass/Fail |
+| ---- | -------------------------- | --------------------- | --------- |
+| 1    | Select "Compliance Report" | Report type selected  | [ ]       |
+| 2    | Select time period         | 30/60/90 days options | [ ]       |
+| 3    | Click "Generate"           | Report generates      | [ ]       |
+| 4    | Verify summary stats       | Counts accurate       | [ ]       |
+| 5    | Verify alert history       | Alerts listed         | [ ]       |
+| 6    | Verify corrective actions  | Actions documented    | [ ]       |
 
 ---
 
@@ -9803,23 +10120,23 @@ package.json                      # Dependencies (vitest, testing-library)
 
 **Test on:** iPhone SE (375px), iPhone 14 (390px), Android (360px)
 
-| Page | Test | Pass/Fail |
-|------|------|-----------|
-| Dashboard | Units readable, cards stack vertically | [ ] |
-| Unit Detail | Graph scrollable, data visible | [ ] |
-| Settings | Navigation accessible, forms usable | [ ] |
-| Manual Log | Form fields full width, easy to tap | [ ] |
-| Alerts | Alert rows readable, actions accessible | [ ] |
+| Page        | Test                                    | Pass/Fail |
+| ----------- | --------------------------------------- | --------- |
+| Dashboard   | Units readable, cards stack vertically  | [ ]       |
+| Unit Detail | Graph scrollable, data visible          | [ ]       |
+| Settings    | Navigation accessible, forms usable     | [ ]       |
+| Manual Log  | Form fields full width, easy to tap     | [ ]       |
+| Alerts      | Alert rows readable, actions accessible | [ ]       |
 
 ### 9.2 Touch Interactions
 
-| Interaction | Test | Pass/Fail |
-|-------------|------|-----------|
-| Buttons | Minimum 44px tap target | [ ] |
-| Dropdowns | Easy to select on mobile | [ ] |
-| Modals | Close button accessible | [ ] |
-| Scroll | Smooth, no jank | [ ] |
-| Pull to refresh | Works where expected | [ ] |
+| Interaction     | Test                     | Pass/Fail |
+| --------------- | ------------------------ | --------- |
+| Buttons         | Minimum 44px tap target  | [ ]       |
+| Dropdowns       | Easy to select on mobile | [ ]       |
+| Modals          | Close button accessible  | [ ]       |
+| Scroll          | Smooth, no jank          | [ ]       |
+| Pull to refresh | Works where expected     | [ ]       |
 
 ---
 
@@ -9829,38 +10146,38 @@ package.json                      # Dependencies (vitest, testing-library)
 
 **Preconditions:** Logged in as staff user
 
-| Action | Expected Result | Pass/Fail |
-|--------|-----------------|-----------|
-| View dashboard | Allowed | [ ] |
-| View unit details | Allowed | [ ] |
-| Log temperature manually | Allowed | [ ] |
-| Acknowledge alerts | Allowed | [ ] |
-| Add new sensor | **Denied** | [ ] |
-| Delete unit | **Denied** | [ ] |
-| Access billing | **Denied** | [ ] |
+| Action                   | Expected Result | Pass/Fail |
+| ------------------------ | --------------- | --------- |
+| View dashboard           | Allowed         | [ ]       |
+| View unit details        | Allowed         | [ ]       |
+| Log temperature manually | Allowed         | [ ]       |
+| Acknowledge alerts       | Allowed         | [ ]       |
+| Add new sensor           | **Denied**      | [ ]       |
+| Delete unit              | **Denied**      | [ ]       |
+| Access billing           | **Denied**      | [ ]       |
 
 ### 10.2 Manager Role Permissions
 
 **Preconditions:** Logged in as manager
 
-| Action | Expected Result | Pass/Fail |
-|--------|-----------------|-----------|
-| All staff permissions | Allowed | [ ] |
-| Create units | Allowed | [ ] |
-| Edit alert rules | Allowed | [ ] |
-| View reports | Allowed | [ ] |
-| Manage users | **Denied** | [ ] |
-| Access billing | **Denied** | [ ] |
+| Action                | Expected Result | Pass/Fail |
+| --------------------- | --------------- | --------- |
+| All staff permissions | Allowed         | [ ]       |
+| Create units          | Allowed         | [ ]       |
+| Edit alert rules      | Allowed         | [ ]       |
+| View reports          | Allowed         | [ ]       |
+| Manage users          | **Denied**      | [ ]       |
+| Access billing        | **Denied**      | [ ]       |
 
 ### 10.3 Admin/Owner Permissions
 
-| Action | Expected Result | Pass/Fail |
-|--------|-----------------|-----------|
-| All manager permissions | Allowed | [ ] |
-| Manage users | Allowed | [ ] |
-| Configure TTN | Allowed | [ ] |
-| Access billing | Allowed | [ ] |
-| Delete organization | Allowed (owner only) | [ ] |
+| Action                  | Expected Result      | Pass/Fail |
+| ----------------------- | -------------------- | --------- |
+| All manager permissions | Allowed              | [ ]       |
+| Manage users            | Allowed              | [ ]       |
+| Configure TTN           | Allowed              | [ ]       |
+| Access billing          | Allowed              | [ ]       |
+| Delete organization     | Allowed (owner only) | [ ]       |
 
 ---
 
@@ -9868,14 +10185,14 @@ package.json                      # Dependencies (vitest, testing-library)
 
 Test all major pages on:
 
-| Browser | Version | Dashboard | Settings | Alerts | Manual Log |
-|---------|---------|-----------|----------|--------|------------|
-| Chrome | Latest | [ ] | [ ] | [ ] | [ ] |
-| Firefox | Latest | [ ] | [ ] | [ ] | [ ] |
-| Safari | Latest | [ ] | [ ] | [ ] | [ ] |
-| Edge | Latest | [ ] | [ ] | [ ] | [ ] |
-| Safari iOS | Latest | [ ] | [ ] | [ ] | [ ] |
-| Chrome Android | Latest | [ ] | [ ] | [ ] | [ ] |
+| Browser        | Version | Dashboard | Settings | Alerts | Manual Log |
+| -------------- | ------- | --------- | -------- | ------ | ---------- |
+| Chrome         | Latest  | [ ]       | [ ]      | [ ]    | [ ]        |
+| Firefox        | Latest  | [ ]       | [ ]      | [ ]    | [ ]        |
+| Safari         | Latest  | [ ]       | [ ]      | [ ]    | [ ]        |
+| Edge           | Latest  | [ ]       | [ ]      | [ ]    | [ ]        |
+| Safari iOS     | Latest  | [ ]       | [ ]      | [ ]    | [ ]        |
+| Chrome Android | Latest  | [ ]       | [ ]      | [ ]    | [ ]        |
 
 ---
 
@@ -9883,21 +10200,21 @@ Test all major pages on:
 
 ### 12.1 Page Load Times
 
-| Page | Target | Actual | Pass/Fail |
-|------|--------|--------|-----------|
-| Dashboard | < 3s | ___s | [ ] |
-| Unit Detail | < 2s | ___s | [ ] |
-| Settings | < 2s | ___s | [ ] |
-| Reports | < 3s | ___s | [ ] |
+| Page        | Target | Actual  | Pass/Fail |
+| ----------- | ------ | ------- | --------- |
+| Dashboard   | < 3s   | \_\_\_s | [ ]       |
+| Unit Detail | < 2s   | \_\_\_s | [ ]       |
+| Settings    | < 2s   | \_\_\_s | [ ]       |
+| Reports     | < 3s   | \_\_\_s | [ ]       |
 
 ### 12.2 Data Operations
 
-| Operation | Target | Actual | Pass/Fail |
-|-----------|--------|--------|-----------|
-| Save alert rule | < 1s | ___s | [ ] |
-| Acknowledge alert | < 1s | ___s | [ ] |
-| Log temperature | < 1s | ___s | [ ] |
-| Generate report | < 5s | ___s | [ ] |
+| Operation         | Target | Actual  | Pass/Fail |
+| ----------------- | ------ | ------- | --------- |
+| Save alert rule   | < 1s   | \_\_\_s | [ ]       |
+| Acknowledge alert | < 1s   | \_\_\_s | [ ]       |
+| Log temperature   | < 1s   | \_\_\_s | [ ]       |
+| Generate report   | < 5s   | \_\_\_s | [ ]       |
 
 ---
 
@@ -9913,6 +10230,7 @@ Test all major pages on:
 **Device:** [Desktop/Mobile/Tablet]
 
 ### Sections Tested
+
 - [ ] Section 1: Authentication
 - [ ] Section 2: TTN Configuration
 - [ ] Section 3: Device Management
@@ -9927,11 +10245,13 @@ Test all major pages on:
 - [ ] Section 12: Performance
 
 ### Issues Found
-| ID | Section | Description | Severity | Screenshot |
-|----|---------|-------------|----------|------------|
-| 1  |         |             |          |            |
+
+| ID  | Section | Description | Severity | Screenshot |
+| --- | ------- | ----------- | -------- | ---------- |
+| 1   |         |             |          |            |
 
 ### Notes
+
 [Additional observations]
 ```
 
@@ -9943,7 +10263,6 @@ Test all major pages on:
 - [COVERAGE_MAP.md](#coverage_map) — Feature-to-test mapping
 - [E2E_SCENARIOS.md](#e2e_scenarios) — Critical user flow testing
 - [KNOWN_GAPS.md](#known_gaps) — Missing coverage and risks
-
 
 ---
 
@@ -9963,27 +10282,30 @@ These scenarios represent the most critical user journeys through FreshTrack Pro
 
 ### Scenario Priority Levels
 
-| Level | Description | Testing Frequency |
-|-------|-------------|-------------------|
-| **P0** | Business-critical, safety-impacting | Every release |
-| **P1** | Core functionality | Every release |
-| **P2** | Important features | Major releases |
-| **P3** | Nice-to-have | Quarterly |
+| Level  | Description                         | Testing Frequency |
+| ------ | ----------------------------------- | ----------------- |
+| **P0** | Business-critical, safety-impacting | Every release     |
+| **P1** | Core functionality                  | Every release     |
+| **P2** | Important features                  | Major releases    |
+| **P3** | Nice-to-have                        | Quarterly         |
 
 ---
 
 ## Scenario 1: New Customer Onboarding (P0)
 
 ### Description
+
 A new customer signs up, configures their organization, connects TTN, provisions their first device, and receives their first temperature reading.
 
 ### Preconditions
+
 - Fresh test account (not previously registered)
 - Valid TTN application with API key
 - Physical gateway and sensor (or simulator)
 - Email access for verification
 
 ### Test Data Required
+
 ```
 Email: test-{timestamp}@example.com
 TTN Application ID: test-freshtrack-app
@@ -9995,31 +10317,32 @@ Sensor AppKey: 00112233445566778899AABBCCDDEEFF
 
 ### Steps
 
-| # | Action | Expected Result | Actual Result |
-|---|--------|-----------------|---------------|
-| 1 | Navigate to `/auth` | Sign-up form displays | |
-| 2 | Create account with test email | Account created, redirect to onboarding | |
-| 3 | Complete onboarding wizard (org, site, area, unit) | Organization structure created | |
-| 4 | Navigate to Settings → TTN | TTN settings page shows "Not Connected" | |
-| 5 | Enter TTN Application ID | Field accepts input | |
-| 6 | Enter TTN API Key | Field accepts input (masked) | |
-| 7 | Click "Validate Connection" | Permission validation runs | |
-| 8 | Verify all permissions valid | Green checkmarks for all permissions | |
-| 9 | Click "Save Configuration" | Configuration saved, webhook created | |
-| 10 | Navigate to Settings → Gateways | Gateway list shows (empty) | |
-| 11 | Add gateway with test EUI | Gateway created in "pending" status | |
-| 12 | Click "Provision to TTN" | Provisioning starts | |
-| 13 | Wait for provisioning | Status changes to "active" | |
-| 14 | Navigate to Settings → Sensors | Sensor list shows (empty) | |
-| 15 | Add sensor with test DevEUI/AppKey | Sensor created in "pending" status | |
-| 16 | Assign sensor to unit | Sensor assigned | |
-| 17 | Click "Provision to TTN" | Provisioning starts | |
-| 18 | Wait for device to join | Status changes to "joining" then "active" | |
-| 19 | Navigate to Dashboard | Dashboard shows unit | |
-| 20 | Wait for first reading (~5 min) | Temperature value appears on unit card | |
-| 21 | Click on unit card | Unit detail page shows temperature graph | |
+| #   | Action                                             | Expected Result                           | Actual Result |
+| --- | -------------------------------------------------- | ----------------------------------------- | ------------- |
+| 1   | Navigate to `/auth`                                | Sign-up form displays                     |               |
+| 2   | Create account with test email                     | Account created, redirect to onboarding   |               |
+| 3   | Complete onboarding wizard (org, site, area, unit) | Organization structure created            |               |
+| 4   | Navigate to Settings → TTN                         | TTN settings page shows "Not Connected"   |               |
+| 5   | Enter TTN Application ID                           | Field accepts input                       |               |
+| 6   | Enter TTN API Key                                  | Field accepts input (masked)              |               |
+| 7   | Click "Validate Connection"                        | Permission validation runs                |               |
+| 8   | Verify all permissions valid                       | Green checkmarks for all permissions      |               |
+| 9   | Click "Save Configuration"                         | Configuration saved, webhook created      |               |
+| 10  | Navigate to Settings → Gateways                    | Gateway list shows (empty)                |               |
+| 11  | Add gateway with test EUI                          | Gateway created in "pending" status       |               |
+| 12  | Click "Provision to TTN"                           | Provisioning starts                       |               |
+| 13  | Wait for provisioning                              | Status changes to "active"                |               |
+| 14  | Navigate to Settings → Sensors                     | Sensor list shows (empty)                 |               |
+| 15  | Add sensor with test DevEUI/AppKey                 | Sensor created in "pending" status        |               |
+| 16  | Assign sensor to unit                              | Sensor assigned                           |               |
+| 17  | Click "Provision to TTN"                           | Provisioning starts                       |               |
+| 18  | Wait for device to join                            | Status changes to "joining" then "active" |               |
+| 19  | Navigate to Dashboard                              | Dashboard shows unit                      |               |
+| 20  | Wait for first reading (~5 min)                    | Temperature value appears on unit card    |               |
+| 21  | Click on unit card                                 | Unit detail page shows temperature graph  |               |
 
 ### Success Criteria
+
 - [ ] Account created successfully
 - [ ] Organization structure visible
 - [ ] TTN webhook verified in TTN Console
@@ -10030,27 +10353,30 @@ Sensor AppKey: 00112233445566778899AABBCCDDEEFF
 
 ### Failure Handling
 
-| Failure Point | Recovery Action |
-|---------------|-----------------|
-| TTN validation fails | Verify API key permissions in TTN Console |
+| Failure Point              | Recovery Action                                         |
+| -------------------------- | ------------------------------------------------------- |
+| TTN validation fails       | Verify API key permissions in TTN Console               |
 | Gateway provisioning fails | Check Gateway EUI format, verify not already registered |
-| Sensor won't join | Verify AppKey matches, check gateway is online |
-| No readings received | Check TTN Live Data tab, verify webhook URL |
+| Sensor won't join          | Verify AppKey matches, check gateway is online          |
+| No readings received       | Check TTN Live Data tab, verify webhook URL             |
 
 ---
 
 ## Scenario 2: Temperature Excursion Alert Lifecycle (P0)
 
 ### Description
+
 A refrigerator temperature rises above threshold, triggering an alert that is acknowledged and then resolves when temperature returns to normal.
 
 ### Preconditions
+
 - Unit with active sensor
 - Alert rule configured (e.g., max 40°F)
 - Notification policy with email enabled
 - Escalation contacts configured
 
 ### Test Data Required
+
 ```
 Unit: Test Cooler
 Max Temperature Threshold: 40°F (4.4°C)
@@ -10062,27 +10388,28 @@ Secondary Contact: secondary@test.com
 
 ### Steps
 
-| # | Action | Expected Result | Actual Result |
-|---|--------|-----------------|---------------|
-| 1 | Verify unit shows "OK" status | Dashboard shows green status | |
-| 2 | Cause temperature to rise above 40°F | (Use simulator or physical test) | |
-| 3 | Wait 1 minute | Unit status may show "excursion" | |
-| 4 | Wait for confirm time (5 min) | Alert status changes to "triggered" | |
-| 5 | Check primary contact email | Alert notification received | |
-| 6 | Verify notification content | Contains unit name, temperature, timestamp | |
-| 7 | Navigate to `/alerts` | Alert appears in active list | |
-| 8 | Click on alert row | Alert detail displays | |
-| 9 | Verify alert details | Type, severity, timestamps correct | |
-| 10 | Click "Acknowledge" | Acknowledgment dialog appears | |
-| 11 | Enter note: "Investigating issue" | Note field accepts input | |
-| 12 | Confirm acknowledgment | Alert status changes to "acknowledged" | |
-| 13 | Verify escalation stopped | Secondary contact NOT notified yet | |
-| 14 | Return temperature to normal | (Use simulator or physical test) | |
-| 15 | Wait for next processing cycle | Alert auto-resolves | |
-| 16 | Verify alert resolved | Status shows "resolved" in history | |
-| 17 | Verify unit status | Dashboard shows "OK" again | |
+| #   | Action                               | Expected Result                            | Actual Result |
+| --- | ------------------------------------ | ------------------------------------------ | ------------- |
+| 1   | Verify unit shows "OK" status        | Dashboard shows green status               |               |
+| 2   | Cause temperature to rise above 40°F | (Use simulator or physical test)           |               |
+| 3   | Wait 1 minute                        | Unit status may show "excursion"           |               |
+| 4   | Wait for confirm time (5 min)        | Alert status changes to "triggered"        |               |
+| 5   | Check primary contact email          | Alert notification received                |               |
+| 6   | Verify notification content          | Contains unit name, temperature, timestamp |               |
+| 7   | Navigate to `/alerts`                | Alert appears in active list               |               |
+| 8   | Click on alert row                   | Alert detail displays                      |               |
+| 9   | Verify alert details                 | Type, severity, timestamps correct         |               |
+| 10  | Click "Acknowledge"                  | Acknowledgment dialog appears              |               |
+| 11  | Enter note: "Investigating issue"    | Note field accepts input                   |               |
+| 12  | Confirm acknowledgment               | Alert status changes to "acknowledged"     |               |
+| 13  | Verify escalation stopped            | Secondary contact NOT notified yet         |               |
+| 14  | Return temperature to normal         | (Use simulator or physical test)           |               |
+| 15  | Wait for next processing cycle       | Alert auto-resolves                        |               |
+| 16  | Verify alert resolved                | Status shows "resolved" in history         |               |
+| 17  | Verify unit status                   | Dashboard shows "OK" again                 |               |
 
 ### Success Criteria
+
 - [ ] Alert triggered after confirm time
 - [ ] Email notification delivered within 2 minutes of trigger
 - [ ] Notification contains accurate information
@@ -10092,10 +10419,10 @@ Secondary Contact: secondary@test.com
 
 ### Failure Handling
 
-| Failure Point | Recovery Action |
-|---------------|-----------------|
-| Alert not triggered | Check `process-unit-states` logs, verify alert rules |
-| Email not received | Check spam, verify notification policy, check Resend logs |
+| Failure Point       | Recovery Action                                               |
+| ------------------- | ------------------------------------------------------------- |
+| Alert not triggered | Check `process-unit-states` logs, verify alert rules          |
+| Email not received  | Check spam, verify notification policy, check Resend logs     |
 | Alert won't resolve | Verify temperature actually below threshold, check processing |
 
 ---
@@ -10103,9 +10430,11 @@ Secondary Contact: secondary@test.com
 ## Scenario 3: Alert Escalation Chain (P0)
 
 ### Description
+
 An alert is triggered but not acknowledged, causing automatic escalation through the contact chain.
 
 ### Preconditions
+
 - Alert rule configured
 - Notification policy with escalation enabled
 - Multiple escalation levels configured:
@@ -10115,22 +10444,23 @@ An alert is triggered but not acknowledged, causing automatic escalation through
 
 ### Steps
 
-| # | Action | Expected Result | Actual Result |
-|---|--------|-----------------|---------------|
-| 1 | Trigger temperature excursion | Alert created | |
-| 2 | Wait for confirm time | Alert status: "triggered" | |
-| 3 | Check Level 1 email | Notification received | |
-| 4 | **Do NOT acknowledge** | Alert remains triggered | |
-| 5 | Wait 15 minutes | Escalation timer runs | |
-| 6 | Check Level 2 email | Escalation notification received | |
-| 7 | Verify escalation flag | Alert shows "escalated" | |
-| 8 | **Do NOT acknowledge** | Alert remains triggered | |
-| 9 | Wait 15 more minutes (30 total) | Second escalation | |
-| 10 | Check Level 3 email | Second escalation notification received | |
-| 11 | Acknowledge as Level 3 | Alert acknowledged | |
-| 12 | Verify acknowledgment record | Shows who acknowledged, timestamp | |
+| #   | Action                          | Expected Result                         | Actual Result |
+| --- | ------------------------------- | --------------------------------------- | ------------- |
+| 1   | Trigger temperature excursion   | Alert created                           |               |
+| 2   | Wait for confirm time           | Alert status: "triggered"               |               |
+| 3   | Check Level 1 email             | Notification received                   |               |
+| 4   | **Do NOT acknowledge**          | Alert remains triggered                 |               |
+| 5   | Wait 15 minutes                 | Escalation timer runs                   |               |
+| 6   | Check Level 2 email             | Escalation notification received        |               |
+| 7   | Verify escalation flag          | Alert shows "escalated"                 |               |
+| 8   | **Do NOT acknowledge**          | Alert remains triggered                 |               |
+| 9   | Wait 15 more minutes (30 total) | Second escalation                       |               |
+| 10  | Check Level 3 email             | Second escalation notification received |               |
+| 11  | Acknowledge as Level 3          | Alert acknowledged                      |               |
+| 12  | Verify acknowledgment record    | Shows who acknowledged, timestamp       |               |
 
 ### Success Criteria
+
 - [ ] Each escalation level notified at correct time
 - [ ] Escalation notifications include escalation context
 - [ ] Acknowledgment at any level stops further escalation
@@ -10155,33 +10485,36 @@ An alert is triggered but not acknowledged, causing automatic escalation through
 ## Scenario 4: Offline Manual Logging with Sync (P1)
 
 ### Description
+
 Staff logs temperature manually while offline, data syncs when connectivity returns.
 
 ### Preconditions
+
 - Unit exists with manual logging enabled
 - Staff user account
 - Mobile device with app access
 
 ### Steps
 
-| # | Action | Expected Result | Actual Result |
-|---|--------|-----------------|---------------|
-| 1 | Log in on mobile device | Dashboard loads | |
-| 2 | Navigate to Manual Log | Manual log page displays | |
-| 3 | Enable airplane mode | Device offline | |
-| 4 | Verify offline indicator | "Offline" badge appears | |
-| 5 | Select unit from dropdown | Unit selected (cached) | |
-| 6 | Enter temperature: 38°F | Input accepted | |
-| 7 | Add note: "Visual check" | Note accepted | |
-| 8 | Tap "Log Temperature" | Success with "pending sync" | |
-| 9 | Repeat for 2 more entries | All stored locally | |
-| 10 | Disable airplane mode | Device online | |
-| 11 | Wait for sync | Sync indicator appears | |
-| 12 | Verify sync complete | "Pending" badges clear | |
-| 13 | Check unit detail page | All 3 entries appear in history | |
-| 14 | Verify timestamps | Original entry times preserved | |
+| #   | Action                    | Expected Result                 | Actual Result |
+| --- | ------------------------- | ------------------------------- | ------------- |
+| 1   | Log in on mobile device   | Dashboard loads                 |               |
+| 2   | Navigate to Manual Log    | Manual log page displays        |               |
+| 3   | Enable airplane mode      | Device offline                  |               |
+| 4   | Verify offline indicator  | "Offline" badge appears         |               |
+| 5   | Select unit from dropdown | Unit selected (cached)          |               |
+| 6   | Enter temperature: 38°F   | Input accepted                  |               |
+| 7   | Add note: "Visual check"  | Note accepted                   |               |
+| 8   | Tap "Log Temperature"     | Success with "pending sync"     |               |
+| 9   | Repeat for 2 more entries | All stored locally              |               |
+| 10  | Disable airplane mode     | Device online                   |               |
+| 11  | Wait for sync             | Sync indicator appears          |               |
+| 12  | Verify sync complete      | "Pending" badges clear          |               |
+| 13  | Check unit detail page    | All 3 entries appear in history |               |
+| 14  | Verify timestamps         | Original entry times preserved  |               |
 
 ### Success Criteria
+
 - [ ] Offline logging works without errors
 - [ ] All entries synced without data loss
 - [ ] Original timestamps preserved
@@ -10189,20 +10522,22 @@ Staff logs temperature manually while offline, data syncs when connectivity retu
 
 ### Failure Handling
 
-| Failure Point | Recovery Action |
-|---------------|-----------------|
+| Failure Point            | Recovery Action                                |
+| ------------------------ | ---------------------------------------------- |
 | Offline mode not working | Check service worker registration, clear cache |
-| Sync fails | Check network, retry sync, examine IndexedDB |
-| Entries missing | Check local storage, check for sync conflicts |
+| Sync fails               | Check network, retry sync, examine IndexedDB   |
+| Entries missing          | Check local storage, check for sync conflicts  |
 
 ---
 
 ## Scenario 5: Multi-Location Monitoring (P1)
 
 ### Description
+
 Regional manager monitors multiple locations, receives alerts from different sites, and generates consolidated reports.
 
 ### Preconditions
+
 - Organization with 3+ sites configured
 - Units at each site with sensors
 - Regional manager account with access to all sites
@@ -10210,28 +10545,29 @@ Regional manager monitors multiple locations, receives alerts from different sit
 
 ### Steps
 
-| # | Action | Expected Result | Actual Result |
-|---|--------|-----------------|---------------|
-| 1 | Log in as regional manager | Dashboard loads | |
-| 2 | Verify all sites visible | 3+ sites displayed | |
-| 3 | Verify aggregate status | Overall org status shows | |
-| 4 | Click on Site A | Site detail page shows | |
-| 5 | Verify Site A units | Units list displays | |
-| 6 | Navigate back to dashboard | Dashboard displays | |
-| 7 | Click on Site B | Site B detail page shows | |
-| 8 | Trigger alert at Site A | (Background action) | |
-| 9 | Refresh dashboard | Alert indicator appears for Site A | |
-| 10 | Click alert notification | Navigate to alert | |
-| 11 | Acknowledge alert | Alert acknowledged | |
-| 12 | Navigate to Reports | Reports page displays | |
-| 13 | Select "All Sites" | Multi-site scope selected | |
-| 14 | Select last 7 days | Date range set | |
-| 15 | Generate compliance report | Report generates | |
-| 16 | Verify all sites in report | Data from all 3 sites included | |
-| 17 | Export PDF | PDF downloads | |
-| 18 | Verify PDF content | All site data in document | |
+| #   | Action                     | Expected Result                    | Actual Result |
+| --- | -------------------------- | ---------------------------------- | ------------- |
+| 1   | Log in as regional manager | Dashboard loads                    |               |
+| 2   | Verify all sites visible   | 3+ sites displayed                 |               |
+| 3   | Verify aggregate status    | Overall org status shows           |               |
+| 4   | Click on Site A            | Site detail page shows             |               |
+| 5   | Verify Site A units        | Units list displays                |               |
+| 6   | Navigate back to dashboard | Dashboard displays                 |               |
+| 7   | Click on Site B            | Site B detail page shows           |               |
+| 8   | Trigger alert at Site A    | (Background action)                |               |
+| 9   | Refresh dashboard          | Alert indicator appears for Site A |               |
+| 10  | Click alert notification   | Navigate to alert                  |               |
+| 11  | Acknowledge alert          | Alert acknowledged                 |               |
+| 12  | Navigate to Reports        | Reports page displays              |               |
+| 13  | Select "All Sites"         | Multi-site scope selected          |               |
+| 14  | Select last 7 days         | Date range set                     |               |
+| 15  | Generate compliance report | Report generates                   |               |
+| 16  | Verify all sites in report | Data from all 3 sites included     |               |
+| 17  | Export PDF                 | PDF downloads                      |               |
+| 18  | Verify PDF content         | All site data in document          |               |
 
 ### Success Criteria
+
 - [ ] All sites accessible from single dashboard
 - [ ] Aggregate status accurate
 - [ ] Alerts visible regardless of source site
@@ -10242,35 +10578,38 @@ Regional manager monitors multiple locations, receives alerts from different sit
 ## Scenario 6: Device Failure and Recovery (P1)
 
 ### Description
+
 A sensor goes offline, triggers monitoring interrupt alert, and then recovers when replaced.
 
 ### Preconditions
+
 - Unit with active sensor
 - Monitoring interrupt rule enabled (e.g., offline > 30 min)
 - Replacement sensor available
 
 ### Steps
 
-| # | Action | Expected Result | Actual Result |
-|---|--------|-----------------|---------------|
-| 1 | Verify sensor is "active" | Dashboard shows normal status | |
-| 2 | Simulate sensor failure | (Power off or remove battery) | |
-| 3 | Wait 30 minutes | Sensor goes offline | |
-| 4 | Verify sensor status | Status changes to "offline" | |
-| 5 | Verify unit status | Shows "monitoring_interrupted" | |
-| 6 | Check for alert | "Monitoring Interrupted" alert created | |
-| 7 | Check notification | Alert notification received | |
-| 8 | Navigate to Settings → Sensors | Sensor shows offline | |
-| 9 | Deprovision failed sensor | Sensor removed from TTN | |
-| 10 | Add replacement sensor | New sensor added | |
-| 11 | Provision replacement | Sensor provisioned to TTN | |
-| 12 | Assign to unit | Sensor assigned | |
-| 13 | Power on replacement sensor | Device joins network | |
-| 14 | Wait for first reading | Reading received | |
-| 15 | Verify unit status | Returns to "OK" | |
-| 16 | Verify original alert | Should auto-resolve | |
+| #   | Action                         | Expected Result                        | Actual Result |
+| --- | ------------------------------ | -------------------------------------- | ------------- |
+| 1   | Verify sensor is "active"      | Dashboard shows normal status          |               |
+| 2   | Simulate sensor failure        | (Power off or remove battery)          |               |
+| 3   | Wait 30 minutes                | Sensor goes offline                    |               |
+| 4   | Verify sensor status           | Status changes to "offline"            |               |
+| 5   | Verify unit status             | Shows "monitoring_interrupted"         |               |
+| 6   | Check for alert                | "Monitoring Interrupted" alert created |               |
+| 7   | Check notification             | Alert notification received            |               |
+| 8   | Navigate to Settings → Sensors | Sensor shows offline                   |               |
+| 9   | Deprovision failed sensor      | Sensor removed from TTN                |               |
+| 10  | Add replacement sensor         | New sensor added                       |               |
+| 11  | Provision replacement          | Sensor provisioned to TTN              |               |
+| 12  | Assign to unit                 | Sensor assigned                        |               |
+| 13  | Power on replacement sensor    | Device joins network                   |               |
+| 14  | Wait for first reading         | Reading received                       |               |
+| 15  | Verify unit status             | Returns to "OK"                        |               |
+| 16  | Verify original alert          | Should auto-resolve                    |               |
 
 ### Success Criteria
+
 - [ ] Offline detection works within expected timeframe
 - [ ] Monitoring interrupt alert triggers
 - [ ] Sensor replacement process works
@@ -10281,34 +10620,37 @@ A sensor goes offline, triggers monitoring interrupt alert, and then recovers wh
 ## Scenario 7: Health Inspection Report (P1)
 
 ### Description
+
 Generate compliance documentation for a health inspector requesting 90 days of temperature records.
 
 ### Preconditions
+
 - 90+ days of temperature data
 - Some alerts during period (for realistic testing)
 - Admin or manager account
 
 ### Steps
 
-| # | Action | Expected Result | Actual Result |
-|---|--------|-----------------|---------------|
-| 1 | Navigate to Reports | Reports page displays | |
-| 2 | Select "Compliance Report" | Report type selected | |
-| 3 | Set date range: last 90 days | Date range set | |
-| 4 | Select specific site | Site scope set | |
-| 5 | Click "Generate Report" | Report loading starts | |
-| 6 | Wait for completion | Report displays | |
-| 7 | Verify summary section | Total readings, alert count | |
-| 8 | Verify reading counts | Expected number present | |
-| 9 | Verify alert history | Alerts listed with resolution | |
-| 10 | Verify corrective actions | Actions documented | |
-| 11 | Click "Export PDF" | PDF generates | |
-| 12 | Download PDF | File downloads | |
-| 13 | Open PDF | Content renders correctly | |
-| 14 | Verify all sections present | Summary, data, alerts, actions | |
-| 15 | Verify timestamps | All in correct timezone | |
+| #   | Action                       | Expected Result                | Actual Result |
+| --- | ---------------------------- | ------------------------------ | ------------- |
+| 1   | Navigate to Reports          | Reports page displays          |               |
+| 2   | Select "Compliance Report"   | Report type selected           |               |
+| 3   | Set date range: last 90 days | Date range set                 |               |
+| 4   | Select specific site         | Site scope set                 |               |
+| 5   | Click "Generate Report"      | Report loading starts          |               |
+| 6   | Wait for completion          | Report displays                |               |
+| 7   | Verify summary section       | Total readings, alert count    |               |
+| 8   | Verify reading counts        | Expected number present        |               |
+| 9   | Verify alert history         | Alerts listed with resolution  |               |
+| 10  | Verify corrective actions    | Actions documented             |               |
+| 11  | Click "Export PDF"           | PDF generates                  |               |
+| 12  | Download PDF                 | File downloads                 |               |
+| 13  | Open PDF                     | Content renders correctly      |               |
+| 14  | Verify all sections present  | Summary, data, alerts, actions |               |
+| 15  | Verify timestamps            | All in correct timezone        |               |
 
 ### Success Criteria
+
 - [ ] Report generates within 30 seconds
 - [ ] All 90 days of data included
 - [ ] Alert history complete
@@ -10320,31 +10662,34 @@ Generate compliance documentation for a health inspector requesting 90 days of t
 ## Scenario 8: Billing and Plan Upgrade (P2)
 
 ### Description
+
 Customer upgrades from Starter to Pro plan to add more sensors.
 
 ### Preconditions
+
 - Account on Starter plan
 - Stripe test mode enabled
 - Test card numbers available
 
 ### Steps
 
-| # | Action | Expected Result | Actual Result |
-|---|--------|-----------------|---------------|
-| 1 | Navigate to Settings → Billing | Billing page displays | |
-| 2 | Verify current plan | Shows "Starter" | |
-| 3 | Click "Upgrade Plan" | Plan selection appears | |
-| 4 | Select "Pro" plan | Pro features highlighted | |
-| 5 | Click "Continue" | Stripe checkout opens | |
-| 6 | Enter test card: 4242... | Card accepted | |
-| 7 | Complete checkout | Payment processes | |
-| 8 | Return to app | Success message | |
-| 9 | Verify plan updated | Shows "Pro" | |
-| 10 | Verify sensor limit increased | Limit shows 25 | |
-| 11 | Add sensor beyond old limit | Sensor added successfully | |
-| 12 | Check Stripe dashboard | Subscription active | |
+| #   | Action                         | Expected Result           | Actual Result |
+| --- | ------------------------------ | ------------------------- | ------------- |
+| 1   | Navigate to Settings → Billing | Billing page displays     |               |
+| 2   | Verify current plan            | Shows "Starter"           |               |
+| 3   | Click "Upgrade Plan"           | Plan selection appears    |               |
+| 4   | Select "Pro" plan              | Pro features highlighted  |               |
+| 5   | Click "Continue"               | Stripe checkout opens     |               |
+| 6   | Enter test card: 4242...       | Card accepted             |               |
+| 7   | Complete checkout              | Payment processes         |               |
+| 8   | Return to app                  | Success message           |               |
+| 9   | Verify plan updated            | Shows "Pro"               |               |
+| 10  | Verify sensor limit increased  | Limit shows 25            |               |
+| 11  | Add sensor beyond old limit    | Sensor added successfully |               |
+| 12  | Check Stripe dashboard         | Subscription active       |               |
 
 ### Success Criteria
+
 - [ ] Checkout flow completes
 - [ ] Plan updates immediately
 - [ ] New limits take effect
@@ -10355,36 +10700,39 @@ Customer upgrades from Starter to Pro plan to add more sensors.
 ## Scenario 9: User Role and Permission Changes (P2)
 
 ### Description
+
 Admin invites new user, assigns role, and verifies permission enforcement.
 
 ### Preconditions
+
 - Admin account
 - New user email for invitation
 
 ### Steps
 
-| # | Action | Expected Result | Actual Result |
-|---|--------|-----------------|---------------|
-| 1 | Log in as admin | Dashboard displays | |
-| 2 | Navigate to Settings → Users | User list displays | |
-| 3 | Click "Invite User" | Invitation form opens | |
-| 4 | Enter new user email | Email accepted | |
-| 5 | Select role: "Staff" | Role selected | |
-| 6 | Send invitation | Invitation sent | |
-| 7 | Check new user email | Invitation received | |
-| 8 | Accept invitation (new session) | Account created | |
-| 9 | Log in as new staff user | Dashboard displays | |
-| 10 | Verify dashboard access | Units visible | |
-| 11 | Try to access Settings → TTN | Access denied | |
-| 12 | Try to delete a unit | Action blocked | |
-| 13 | Log temperature manually | Action succeeds | |
-| 14 | Acknowledge an alert | Action succeeds | |
-| 15 | Log back in as admin | Admin dashboard | |
-| 16 | Change user role to Manager | Role updated | |
-| 17 | Log back in as user | Role change reflected | |
-| 18 | Verify expanded permissions | Settings access granted | |
+| #   | Action                          | Expected Result         | Actual Result |
+| --- | ------------------------------- | ----------------------- | ------------- |
+| 1   | Log in as admin                 | Dashboard displays      |               |
+| 2   | Navigate to Settings → Users    | User list displays      |               |
+| 3   | Click "Invite User"             | Invitation form opens   |               |
+| 4   | Enter new user email            | Email accepted          |               |
+| 5   | Select role: "Staff"            | Role selected           |               |
+| 6   | Send invitation                 | Invitation sent         |               |
+| 7   | Check new user email            | Invitation received     |               |
+| 8   | Accept invitation (new session) | Account created         |               |
+| 9   | Log in as new staff user        | Dashboard displays      |               |
+| 10  | Verify dashboard access         | Units visible           |               |
+| 11  | Try to access Settings → TTN    | Access denied           |               |
+| 12  | Try to delete a unit            | Action blocked          |               |
+| 13  | Log temperature manually        | Action succeeds         |               |
+| 14  | Acknowledge an alert            | Action succeeds         |               |
+| 15  | Log back in as admin            | Admin dashboard         |               |
+| 16  | Change user role to Manager     | Role updated            |               |
+| 17  | Log back in as user             | Role change reflected   |               |
+| 18  | Verify expanded permissions     | Settings access granted |               |
 
 ### Success Criteria
+
 - [ ] Invitation flow works
 - [ ] Role restrictions enforced immediately
 - [ ] Role changes take effect without re-login
@@ -10395,28 +10743,31 @@ Admin invites new user, assigns role, and verifies permission enforcement.
 ## Scenario 10: Data Integrity Under Load (P2)
 
 ### Description
+
 Verify system handles high-frequency sensor readings without data loss.
 
 ### Preconditions
+
 - Sensor simulator available
 - Ability to send rapid readings
 
 ### Steps
 
-| # | Action | Expected Result | Actual Result |
-|---|--------|-----------------|---------------|
-| 1 | Configure simulator for 10 sensors | Simulator ready | |
-| 2 | Set reading frequency: 1 per minute | Fast mode enabled | |
-| 3 | Start simulator | Readings begin flowing | |
-| 4 | Run for 30 minutes | 300+ readings generated | |
-| 5 | Stop simulator | Readings stop | |
-| 6 | Query database: count readings | Should match sent count | |
-| 7 | Verify no duplicates | No duplicate timestamps | |
-| 8 | Verify no gaps | Sequential readings present | |
-| 9 | Check dashboard performance | Still responsive | |
-| 10 | Generate report for period | Report includes all data | |
+| #   | Action                              | Expected Result             | Actual Result |
+| --- | ----------------------------------- | --------------------------- | ------------- |
+| 1   | Configure simulator for 10 sensors  | Simulator ready             |               |
+| 2   | Set reading frequency: 1 per minute | Fast mode enabled           |               |
+| 3   | Start simulator                     | Readings begin flowing      |               |
+| 4   | Run for 30 minutes                  | 300+ readings generated     |               |
+| 5   | Stop simulator                      | Readings stop               |               |
+| 6   | Query database: count readings      | Should match sent count     |               |
+| 7   | Verify no duplicates                | No duplicate timestamps     |               |
+| 8   | Verify no gaps                      | Sequential readings present |               |
+| 9   | Check dashboard performance         | Still responsive            |               |
+| 10  | Generate report for period          | Report includes all data    |               |
 
 ### Success Criteria
+
 - [ ] 100% of sent readings stored
 - [ ] No duplicate entries
 - [ ] Dashboard remains responsive
@@ -10436,24 +10787,28 @@ Verify system handles high-frequency sensor readings without data loss.
 
 ### Execution Log
 
-| Step | Start Time | Status | Notes |
-|------|------------|--------|-------|
-| 1    | HH:MM      | Pass   |       |
-| 2    | HH:MM      | Pass   |       |
+| Step | Start Time | Status | Notes     |
+| ---- | ---------- | ------ | --------- |
+| 1    | HH:MM      | Pass   |           |
+| 2    | HH:MM      | Pass   |           |
 | 3    | HH:MM      | FAIL   | [Details] |
 
 ### Failure Details
+
 [Detailed description of any failures]
 
 ### Screenshots
+
 [Attach relevant screenshots]
 
 ### Environment Notes
+
 - Browser:
 - Device:
 - Network conditions:
 
 ### Sign-off
+
 - [ ] All steps completed
 - [ ] All success criteria verified
 - [ ] Issues documented and reported
@@ -10467,7 +10822,6 @@ Verify system handles high-frequency sensor readings without data loss.
 - [COVERAGE_MAP.md](#coverage_map) — Feature-to-test mapping
 - [MANUAL_TESTING.md](#manual_testing) — Step-by-step manual QA checklists
 - [KNOWN_GAPS.md](#known_gaps) — Missing coverage and risks
-
 
 ---
 
@@ -10487,14 +10841,14 @@ FreshTrack Pro has **minimal automated test coverage** (~5% estimated). The exis
 
 ### Current Coverage Statistics
 
-| Area | Files | Tested | Coverage |
-|------|-------|--------|----------|
-| Pages | 23 | 0 | 0% |
-| Components | 112 | 0 | 0% |
-| Hooks | 26 | 0 | 0% |
-| Edge Functions | 32 | 1 | 3% |
-| Lib/Actions | 6 | 6 | 100% |
-| **Total** | **199+** | **7** | **~3%** |
+| Area           | Files    | Tested | Coverage |
+| -------------- | -------- | ------ | -------- |
+| Pages          | 23       | 0      | 0%       |
+| Components     | 112      | 0      | 0%       |
+| Hooks          | 26       | 0      | 0%       |
+| Edge Functions | 32       | 1      | 3%       |
+| Lib/Actions    | 6        | 6      | 100%     |
+| **Total**      | **199+** | **7**  | **~3%**  |
 
 ---
 
@@ -10502,28 +10856,30 @@ FreshTrack Pro has **minimal automated test coverage** (~5% estimated). The exis
 
 ### Gap 1: Alert Processing Engine
 
-| Attribute | Value |
-|-----------|-------|
-| **File** | `supabase/functions/process-unit-states/index.ts` |
-| **Risk Level** | **CRITICAL** |
+| Attribute           | Value                                                        |
+| ------------------- | ------------------------------------------------------------ |
+| **File**            | `supabase/functions/process-unit-states/index.ts`            |
+| **Risk Level**      | **CRITICAL**                                                 |
 | **Business Impact** | Missed alerts → spoiled inventory ($10K+), health violations |
-| **Current Testing** | None |
+| **Current Testing** | None                                                         |
 
 **What Could Go Wrong:**
+
 - Temperature threshold comparisons fail
 - Confirm time logic broken
 - Alert state transitions incorrect
 - Database writes silently fail
 
 **Recommended Tests:**
+
 ```typescript
 // Unit tests for alert logic
-describe("process-unit-states", () => {
-  it("creates alert when temp exceeds threshold for confirm_time");
-  it("does not create alert for brief excursions");
-  it("resolves alert when temp returns to normal");
-  it("handles multiple simultaneous excursions");
-  it("respects unit-specific override rules");
+describe('process-unit-states', () => {
+  it('creates alert when temp exceeds threshold for confirm_time');
+  it('does not create alert for brief excursions');
+  it('resolves alert when temp returns to normal');
+  it('handles multiple simultaneous excursions');
+  it('respects unit-specific override rules');
 });
 ```
 
@@ -10533,27 +10889,29 @@ describe("process-unit-states", () => {
 
 ### Gap 2: Notification Dispatch
 
-| Attribute | Value |
-|-----------|-------|
-| **File** | `supabase/functions/process-escalations/index.ts` |
-| **Risk Level** | **CRITICAL** |
-| **Business Impact** | Alerts triggered but no one notified |
-| **Current Testing** | None |
+| Attribute           | Value                                             |
+| ------------------- | ------------------------------------------------- |
+| **File**            | `supabase/functions/process-escalations/index.ts` |
+| **Risk Level**      | **CRITICAL**                                      |
+| **Business Impact** | Alerts triggered but no one notified              |
+| **Current Testing** | None                                              |
 
 **What Could Go Wrong:**
+
 - Escalation timing incorrect
 - Wrong contacts notified
 - Email/SMS delivery fails silently
 - Duplicate notifications sent
 
 **Recommended Tests:**
+
 ```typescript
-describe("process-escalations", () => {
-  it("sends notification to level 1 contacts immediately");
-  it("escalates to level 2 after delay if unacknowledged");
-  it("stops escalation when alert acknowledged");
-  it("handles contact with no email gracefully");
-  it("respects notification policy channel settings");
+describe('process-escalations', () => {
+  it('sends notification to level 1 contacts immediately');
+  it('escalates to level 2 after delay if unacknowledged');
+  it('stops escalation when alert acknowledged');
+  it('handles contact with no email gracefully');
+  it('respects notification policy channel settings');
 });
 ```
 
@@ -10563,14 +10921,15 @@ describe("process-escalations", () => {
 
 ### Gap 3: TTN Webhook Data Ingestion
 
-| Attribute | Value |
-|-----------|-------|
-| **File** | `supabase/functions/ttn-webhook/index.ts` |
-| **Risk Level** | **CRITICAL** |
+| Attribute           | Value                                           |
+| ------------------- | ----------------------------------------------- |
+| **File**            | `supabase/functions/ttn-webhook/index.ts`       |
+| **Risk Level**      | **CRITICAL**                                    |
 | **Business Impact** | Temperature data not recorded → compliance gaps |
-| **Current Testing** | None |
+| **Current Testing** | None                                            |
 
 **What Could Go Wrong:**
+
 - DevEUI normalization fails
 - Webhook secret validation bypassed
 - Payload parsing errors
@@ -10578,14 +10937,15 @@ describe("process-escalations", () => {
 - Duplicate readings accepted
 
 **Recommended Tests:**
+
 ```typescript
-describe("ttn-webhook", () => {
-  it("accepts valid uplink with correct webhook secret");
-  it("rejects requests with invalid webhook secret");
-  it("normalizes DevEUI to uppercase no-separator format");
-  it("parses temperature from various payload formats");
-  it("stores reading with correct sensor association");
-  it("handles unknown DevEUI gracefully");
+describe('ttn-webhook', () => {
+  it('accepts valid uplink with correct webhook secret');
+  it('rejects requests with invalid webhook secret');
+  it('normalizes DevEUI to uppercase no-separator format');
+  it('parses temperature from various payload formats');
+  it('stores reading with correct sensor association');
+  it('handles unknown DevEUI gracefully');
 });
 ```
 
@@ -10595,27 +10955,29 @@ describe("ttn-webhook", () => {
 
 ### Gap 4: Frontend Unit Status Computation
 
-| Attribute | Value |
-|-----------|-------|
-| **File** | `src/hooks/useUnitStatus.ts` |
-| **Risk Level** | **HIGH** |
+| Attribute           | Value                                           |
+| ------------------- | ----------------------------------------------- |
+| **File**            | `src/hooks/useUnitStatus.ts`                    |
+| **Risk Level**      | **HIGH**                                        |
 | **Business Impact** | Dashboard shows wrong status → delayed response |
-| **Current Testing** | None |
+| **Current Testing** | None                                            |
 
 **What Could Go Wrong:**
+
 - Status priority ordering wrong
 - Excursion vs alarm distinction broken
 - Offline detection timing wrong
 - Status doesn't update when data changes
 
 **Recommended Tests:**
+
 ```typescript
-describe("useUnitStatus", () => {
+describe('useUnitStatus', () => {
   it("returns 'ok' when temperature in range");
   it("returns 'excursion' during unconfirmed excursion");
   it("returns 'alarm_active' after confirm time");
   it("returns 'offline' when sensor stops reporting");
-  it("priority: alarm_active > excursion > offline > ok");
+  it('priority: alarm_active > excursion > offline > ok');
 });
 ```
 
@@ -10627,20 +10989,22 @@ describe("useUnitStatus", () => {
 
 ### Gap 5: Row-Level Security Policies
 
-| Attribute | Value |
-|-----------|-------|
-| **Files** | All migrations with RLS policies |
-| **Risk Level** | **HIGH** |
+| Attribute           | Value                              |
+| ------------------- | ---------------------------------- |
+| **Files**           | All migrations with RLS policies   |
+| **Risk Level**      | **HIGH**                           |
 | **Business Impact** | Data leakage between organizations |
-| **Current Testing** | None |
+| **Current Testing** | None                               |
 
 **Risk Scenarios:**
+
 - User A can see User B's organization data
 - Deleted user retains access
 - Role changes not enforced
 - Cross-tenant data in reports
 
 **Recommended Tests:**
+
 ```sql
 -- Test RLS for units table
 SET request.jwt.claim.sub = 'user-org-a';
@@ -10653,14 +11017,15 @@ SELECT * FROM units WHERE organization_id = 'org-b'; -- Should return 0
 
 ### Gap 6: Device Provisioning Flow
 
-| Attribute | Value |
-|-----------|-------|
-| **Files** | `ttn-provision-device`, `ttn-provision-gateway` |
-| **Risk Level** | **HIGH** |
-| **Business Impact** | Devices not registered → no data collection |
-| **Current Testing** | Eligibility only (logic before API call) |
+| Attribute           | Value                                           |
+| ------------------- | ----------------------------------------------- |
+| **Files**           | `ttn-provision-device`, `ttn-provision-gateway` |
+| **Risk Level**      | **HIGH**                                        |
+| **Business Impact** | Devices not registered → no data collection     |
+| **Current Testing** | Eligibility only (logic before API call)        |
 
 **What Could Go Wrong:**
+
 - TTN API call format wrong
 - Error handling insufficient
 - Rollback on partial failure missing
@@ -10672,14 +11037,15 @@ SELECT * FROM units WHERE organization_id = 'org-b'; -- Should return 0
 
 ### Gap 7: Offline Sync Mechanism
 
-| Attribute | Value |
-|-----------|-------|
-| **File** | `src/hooks/useOfflineSync.ts` |
-| **Risk Level** | **HIGH** |
+| Attribute           | Value                              |
+| ------------------- | ---------------------------------- |
+| **File**            | `src/hooks/useOfflineSync.ts`      |
+| **Risk Level**      | **HIGH**                           |
 | **Business Impact** | Manual logs lost during field work |
-| **Current Testing** | None |
+| **Current Testing** | None                               |
 
 **What Could Go Wrong:**
+
 - IndexedDB writes fail
 - Sync conflicts not resolved
 - Data loss during sync
@@ -10691,14 +11057,15 @@ SELECT * FROM units WHERE organization_id = 'org-b'; -- Should return 0
 
 ### Gap 8: Alert Rules Cascading
 
-| Attribute | Value |
-|-----------|-------|
-| **Files** | `get_effective_alert_rules` RPC, `useAlertRules.ts` |
-| **Risk Level** | **MEDIUM-HIGH** |
+| Attribute           | Value                                                |
+| ------------------- | ---------------------------------------------------- |
+| **Files**           | `get_effective_alert_rules` RPC, `useAlertRules.ts`  |
+| **Risk Level**      | **MEDIUM-HIGH**                                      |
 | **Business Impact** | Wrong thresholds applied → false positives/negatives |
-| **Current Testing** | None |
+| **Current Testing** | None                                                 |
 
 **What Could Go Wrong:**
+
 - Unit override not applied
 - Site settings ignored
 - Inheritance chain broken
@@ -10712,13 +11079,14 @@ SELECT * FROM units WHERE organization_id = 'org-b'; -- Should return 0
 
 ### Gap 9: Component Testing
 
-| Files | Count | Risk |
-|-------|-------|------|
-| Settings components | 20+ | Forms may break silently |
-| Dashboard widgets | 10+ | Data display errors |
-| Alert components | 5+ | Status not reflected |
+| Files               | Count | Risk                     |
+| ------------------- | ----- | ------------------------ |
+| Settings components | 20+   | Forms may break silently |
+| Dashboard widgets   | 10+   | Data display errors      |
+| Alert components    | 5+    | Status not reflected     |
 
 **Recommended Approach:**
+
 - Use React Testing Library
 - Start with forms that save data
 - Test error states
@@ -10729,14 +11097,15 @@ SELECT * FROM units WHERE organization_id = 'org-b'; -- Should return 0
 
 ### Gap 10: Page-Level Integration
 
-| Pages | Risk |
-|-------|------|
-| Dashboard | Data loading, filtering, refresh |
-| Settings | Form submission, validation |
+| Pages       | Risk                               |
+| ----------- | ---------------------------------- |
+| Dashboard   | Data loading, filtering, refresh   |
+| Settings    | Form submission, validation        |
 | Unit Detail | Real-time updates, graph rendering |
-| Reports | Report generation, export |
+| Reports     | Report generation, export          |
 
 **Recommended Approach:**
+
 - Mock Supabase client
 - Test component composition
 - Verify data flow
@@ -10747,13 +11116,14 @@ SELECT * FROM units WHERE organization_id = 'org-b'; -- Should return 0
 
 ### Gap 11: Stripe Integration
 
-| Functions | Risk |
-|-----------|------|
-| `stripe-checkout` | Payment failures |
-| `stripe-portal` | Customer access issues |
-| `stripe-webhook` | Subscription state sync |
+| Functions         | Risk                    |
+| ----------------- | ----------------------- |
+| `stripe-checkout` | Payment failures        |
+| `stripe-portal`   | Customer access issues  |
+| `stripe-webhook`  | Subscription state sync |
 
 **Recommended Approach:**
+
 - Use Stripe test mode
 - Mock webhook events
 - Test state transitions
@@ -10766,14 +11136,15 @@ SELECT * FROM units WHERE organization_id = 'org-b'; -- Should return 0
 
 ### Gap 12: UI/Visual Testing
 
-| Area | Current State |
-|------|---------------|
-| Responsive design | Manual only |
-| Browser compatibility | Manual only |
-| Theme/branding | Manual only |
-| Accessibility | Not tested |
+| Area                  | Current State |
+| --------------------- | ------------- |
+| Responsive design     | Manual only   |
+| Browser compatibility | Manual only   |
+| Theme/branding        | Manual only   |
+| Accessibility         | Not tested    |
 
 **Recommended Approach:**
+
 - Consider Playwright for visual regression
 - Use axe-core for accessibility
 
@@ -10783,14 +11154,15 @@ SELECT * FROM units WHERE organization_id = 'org-b'; -- Should return 0
 
 ### Gap 13: Performance Testing
 
-| Metric | Current State |
-|--------|---------------|
-| Page load times | Not measured |
-| API response times | Not measured |
-| Database query performance | Not measured |
-| Concurrent user load | Not tested |
+| Metric                     | Current State |
+| -------------------------- | ------------- |
+| Page load times            | Not measured  |
+| API response times         | Not measured  |
+| Database query performance | Not measured  |
+| Concurrent user load       | Not tested    |
 
 **Recommended Approach:**
+
 - Lighthouse CI for page performance
 - k6 for API load testing
 - pg_stat_statements for query analysis
@@ -10801,21 +11173,21 @@ SELECT * FROM units WHERE organization_id = 'org-b'; -- Should return 0
 
 ## Risk Matrix
 
-| Gap | Likelihood | Impact | Risk Score | Priority |
-|-----|------------|--------|------------|----------|
-| Alert Processing | Medium | Critical | **P0** | Week 1 |
-| Notification Dispatch | Medium | Critical | **P0** | Week 1 |
-| TTN Webhook | Low | Critical | **P0** | Week 1 |
-| Unit Status | Medium | High | **P1** | Week 2 |
-| RLS Policies | Low | Critical | **P1** | Week 2 |
-| Device Provisioning | Medium | High | **P1** | Week 3 |
-| Offline Sync | Medium | High | **P1** | Week 3 |
-| Alert Cascading | Low | High | **P1** | Week 4 |
-| Components | High | Medium | **P2** | Month 2 |
-| Page Integration | High | Medium | **P2** | Month 2 |
-| Stripe | Low | Medium | **P2** | Month 2 |
-| UI/Visual | High | Low | **P3** | Quarterly |
-| Performance | Low | Medium | **P3** | Pre-scale |
+| Gap                   | Likelihood | Impact   | Risk Score | Priority  |
+| --------------------- | ---------- | -------- | ---------- | --------- |
+| Alert Processing      | Medium     | Critical | **P0**     | Week 1    |
+| Notification Dispatch | Medium     | Critical | **P0**     | Week 1    |
+| TTN Webhook           | Low        | Critical | **P0**     | Week 1    |
+| Unit Status           | Medium     | High     | **P1**     | Week 2    |
+| RLS Policies          | Low        | Critical | **P1**     | Week 2    |
+| Device Provisioning   | Medium     | High     | **P1**     | Week 3    |
+| Offline Sync          | Medium     | High     | **P1**     | Week 3    |
+| Alert Cascading       | Low        | High     | **P1**     | Week 4    |
+| Components            | High       | Medium   | **P2**     | Month 2   |
+| Page Integration      | High       | Medium   | **P2**     | Month 2   |
+| Stripe                | Low        | Medium   | **P2**     | Month 2   |
+| UI/Visual             | High       | Low      | **P3**     | Quarterly |
+| Performance           | Low        | Medium   | **P3**     | Pre-scale |
 
 ---
 
@@ -10824,6 +11196,7 @@ SELECT * FROM units WHERE organization_id = 'org-b'; -- Should return 0
 ### Week 1
 
 1. **Add npm test script to package.json**
+
    ```json
    "test": "vitest",
    "test:watch": "vitest --watch",
@@ -10831,6 +11204,7 @@ SELECT * FROM units WHERE organization_id = 'org-b'; -- Should return 0
    ```
 
 2. **Create test utilities file**
+
    ```typescript
    // src/test/utils.ts
    export function createMockSupabaseClient() { ... }
@@ -10856,6 +11230,7 @@ SELECT * FROM units WHERE organization_id = 'org-b'; -- Should return 0
 ### Definition of Done for Test Debt
 
 A gap is "closed" when:
+
 - [ ] Automated tests exist for happy path
 - [ ] Automated tests exist for error cases
 - [ ] Tests run in CI
@@ -10893,7 +11268,6 @@ A gap is "closed" when:
 - [MANUAL_TESTING.md](#manual_testing) — Step-by-step manual QA checklists
 - [E2E_SCENARIOS.md](#e2e_scenarios) — Critical user flow testing
 
-
 ---
 
 \newpage
@@ -10912,13 +11286,13 @@ FreshTrack Pro is a multi-tenant SaaS platform for refrigeration monitoring. Sec
 
 ### Security Classification
 
-| Data Type | Classification | Handling |
-|-----------|----------------|----------|
+| Data Type            | Classification     | Handling                            |
+| -------------------- | ------------------ | ----------------------------------- |
 | Temperature readings | Business Sensitive | Encrypted in transit, RLS protected |
-| TTN API keys | Secret | Encrypted at rest, never logged |
-| User credentials | Secret | Managed by Supabase Auth |
-| Organization data | Business Sensitive | Tenant-isolated via RLS |
-| Payment information | PCI Sensitive | Handled by Stripe (not stored) |
+| TTN API keys         | Secret             | Encrypted at rest, never logged     |
+| User credentials     | Secret             | Managed by Supabase Auth            |
+| Organization data    | Business Sensitive | Tenant-isolated via RLS             |
+| Payment information  | PCI Sensitive      | Handled by Stripe (not stored)      |
 
 ---
 
@@ -10955,13 +11329,13 @@ Every database query is scoped to the authenticated user's organization:
 
 ### 3. Least Privilege Access
 
-| Principal | Access Level | Justification |
-|-----------|-------------|---------------|
-| Anonymous users | Public pages only | No data access |
-| Authenticated users | Own organization only | RLS enforced |
-| Staff role | Read + limited write | Operational needs |
-| Admin role | Full org access | Management needs |
-| Service role | Cross-org (internal only) | Scheduled jobs |
+| Principal           | Access Level              | Justification     |
+| ------------------- | ------------------------- | ----------------- |
+| Anonymous users     | Public pages only         | No data access    |
+| Authenticated users | Own organization only     | RLS enforced      |
+| Staff role          | Read + limited write      | Operational needs |
+| Admin role          | Full org access           | Management needs  |
+| Service role        | Cross-org (internal only) | Scheduled jobs    |
 
 ### 4. Secure by Default
 
@@ -11009,14 +11383,14 @@ graph TB
 
 ### Boundary Definitions
 
-| Boundary | From | To | Validation |
-|----------|------|-----|------------|
-| **B1** | Browser | CDN | TLS, CORS |
-| **B2** | CDN | Edge Functions | JWT signature |
-| **B3** | TTN | Webhook | Per-org secret (constant-time compare) |
-| **B4** | Stripe | Webhook | HMAC signature |
-| **B5** | Edge Functions | Database | RLS policies + service role |
-| **B6** | Edge Functions | Secrets | Environment variables |
+| Boundary | From           | To             | Validation                             |
+| -------- | -------------- | -------------- | -------------------------------------- |
+| **B1**   | Browser        | CDN            | TLS, CORS                              |
+| **B2**   | CDN            | Edge Functions | JWT signature                          |
+| **B3**   | TTN            | Webhook        | Per-org secret (constant-time compare) |
+| **B4**   | Stripe         | Webhook        | HMAC signature                         |
+| **B5**   | Edge Functions | Database       | RLS policies + service role            |
+| **B6**   | Edge Functions | Secrets        | Environment variables                  |
 
 ---
 
@@ -11024,42 +11398,42 @@ graph TB
 
 ### Authentication Controls
 
-| Control | Implementation | Status |
-|---------|----------------|--------|
-| Password authentication | Supabase Auth | Active |
-| Session management | JWT with refresh tokens | Active |
-| Password strength | 8+ chars, complexity rules | Active |
-| Account lockout | Supabase rate limiting | Active |
-| Email verification | Supabase email confirmation | Active |
-| MFA/2FA | **TBD** - Not currently implemented | Planned |
+| Control                 | Implementation                      | Status  |
+| ----------------------- | ----------------------------------- | ------- |
+| Password authentication | Supabase Auth                       | Active  |
+| Session management      | JWT with refresh tokens             | Active  |
+| Password strength       | 8+ chars, complexity rules          | Active  |
+| Account lockout         | Supabase rate limiting              | Active  |
+| Email verification      | Supabase email confirmation         | Active  |
+| MFA/2FA                 | **TBD** - Not currently implemented | Planned |
 
 ### Authorization Controls
 
-| Control | Implementation | Status |
-|---------|----------------|--------|
-| Role-Based Access Control | 6 roles (owner → inspector) | Active |
-| Row-Level Security | PostgreSQL RLS policies | Active |
-| Organization isolation | `organization_id` on all tables | Active |
-| Permission functions | `has_role()`, `user_belongs_to_org()` | Active |
-| API endpoint protection | JWT verification per function | Active |
+| Control                   | Implementation                        | Status |
+| ------------------------- | ------------------------------------- | ------ |
+| Role-Based Access Control | 6 roles (owner → inspector)           | Active |
+| Row-Level Security        | PostgreSQL RLS policies               | Active |
+| Organization isolation    | `organization_id` on all tables       | Active |
+| Permission functions      | `has_role()`, `user_belongs_to_org()` | Active |
+| API endpoint protection   | JWT verification per function         | Active |
 
 ### Data Protection Controls
 
-| Control | Implementation | Status |
-|---------|----------------|--------|
-| Transport encryption | TLS 1.3 (Supabase managed) | Active |
-| Database encryption | Supabase managed encryption at rest | Active |
-| Sensitive field encryption | XOR-based obfuscation (v2 format) | Active |
-| Secret storage | Environment variables / Vault | Active |
-| Audit logging | `event_logs` table with hash chain | Active |
+| Control                    | Implementation                      | Status |
+| -------------------------- | ----------------------------------- | ------ |
+| Transport encryption       | TLS 1.3 (Supabase managed)          | Active |
+| Database encryption        | Supabase managed encryption at rest | Active |
+| Sensitive field encryption | XOR-based obfuscation (v2 format)   | Active |
+| Secret storage             | Environment variables / Vault       | Active |
+| Audit logging              | `event_logs` table with hash chain  | Active |
 
 ### Network Controls
 
-| Control | Implementation | Status |
-|---------|----------------|--------|
-| CORS | Configured per function | Active |
-| Rate limiting | Supabase platform level | Active |
-| DDoS protection | Supabase/Cloudflare | Active |
+| Control            | Implementation               | Status |
+| ------------------ | ---------------------------- | ------ |
+| CORS               | Configured per function      | Active |
+| Rate limiting      | Supabase platform level      | Active |
+| DDoS protection    | Supabase/Cloudflare          | Active |
 | Webhook validation | Per-integration verification | Active |
 
 ---
@@ -11092,12 +11466,12 @@ graph TB
 
 ### External Integrations
 
-| Integration | Auth Method | Data Flow |
-|-------------|-------------|-----------|
-| The Things Network | Per-org webhook secret | Inbound only |
-| Stripe | HMAC signature | Bidirectional |
-| Resend (Email) | API key | Outbound only |
-| Twilio (SMS) | API key | Outbound only |
+| Integration        | Auth Method            | Data Flow     |
+| ------------------ | ---------------------- | ------------- |
+| The Things Network | Per-org webhook secret | Inbound only  |
+| Stripe             | HMAC signature         | Bidirectional |
+| Resend (Email)     | API key                | Outbound only |
+| Twilio (SMS)       | API key                | Outbound only |
 
 ---
 
@@ -11111,13 +11485,13 @@ graph TB
 
 ### Regulatory Alignment
 
-| Requirement | Status | Notes |
-|-------------|--------|-------|
-| GDPR | Partial | Data deletion, audit logs implemented |
-| HACCP | Active | Temperature logging, tamper-evident records |
-| FDA 21 CFR Part 11 | Partial | Audit trail, electronic signatures TBD |
-| SOC 2 | TBD | Supabase platform certified |
-| PCI DSS | N/A | No card data stored (Stripe handles) |
+| Requirement        | Status  | Notes                                       |
+| ------------------ | ------- | ------------------------------------------- |
+| GDPR               | Partial | Data deletion, audit logs implemented       |
+| HACCP              | Active  | Temperature logging, tamper-evident records |
+| FDA 21 CFR Part 11 | Partial | Audit trail, electronic signatures TBD      |
+| SOC 2              | TBD     | Supabase platform certified                 |
+| PCI DSS            | N/A     | No card data stored (Stripe handles)        |
 
 ### Audit Capabilities
 
@@ -11160,12 +11534,12 @@ graph TB
 
 ### Acknowledged Risks
 
-| Risk | Mitigation | Status |
-|------|------------|--------|
-| CORS wildcard (*) | Protected by JWT/API key auth | Documented |
-| localStorage JWT | Refresh token rotation | Active |
-| API key in logs (last4) | Log access controls required | TBD |
-| Debug encryption mode | Temporary, requires reversion | In Progress |
+| Risk                    | Mitigation                    | Status      |
+| ----------------------- | ----------------------------- | ----------- |
+| CORS wildcard (\*)      | Protected by JWT/API key auth | Documented  |
+| localStorage JWT        | Refresh token rotation        | Active      |
+| API key in logs (last4) | Log access controls required  | TBD         |
+| Debug encryption mode   | Temporary, requires reversion | In Progress |
 
 ### Security Debt
 
@@ -11178,12 +11552,12 @@ graph TB
 
 ## Security Contacts
 
-| Role | Responsibility |
-|------|----------------|
-| Security Lead | Architecture, policy, incident response |
-| Platform Team | Infrastructure, Supabase configuration |
-| Development Team | Secure coding, vulnerability fixes |
-| Operations | Monitoring, log analysis |
+| Role             | Responsibility                          |
+| ---------------- | --------------------------------------- |
+| Security Lead    | Architecture, policy, incident response |
+| Platform Team    | Infrastructure, Supabase configuration  |
+| Development Team | Secure coding, vulnerability fixes      |
+| Operations       | Monitoring, log analysis                |
 
 ---
 
@@ -11193,7 +11567,6 @@ graph TB
 - [DATA_PROTECTION.md](#data_protection) — Encryption and secrets management
 - [THREAT_MODEL.md](#threat_model) — Threats, attack surfaces, mitigations
 - [INCIDENT_RESPONSE.md](#incident_response) — Security incident procedures
-
 
 ---
 
@@ -11213,13 +11586,13 @@ graph TB
 
 FreshTrack Pro uses **Supabase Auth** for all user authentication:
 
-| Component | Technology |
-|-----------|------------|
-| Identity Provider | Supabase Auth (GoTrue) |
-| Token Format | JWT (RS256 signed) |
-| Session Storage | Browser localStorage |
-| Token Refresh | Automatic refresh before expiry |
-| Password Hashing | bcrypt (Supabase managed) |
+| Component         | Technology                      |
+| ----------------- | ------------------------------- |
+| Identity Provider | Supabase Auth (GoTrue)          |
+| Token Format      | JWT (RS256 signed)              |
+| Session Storage   | Browser localStorage            |
+| Token Refresh     | Automatic refresh before expiry |
+| Password Hashing  | bcrypt (Supabase managed)       |
 
 ### Authentication Flow
 
@@ -11260,21 +11633,21 @@ sequenceDiagram
 
 ### Session Management
 
-| Aspect | Configuration |
-|--------|---------------|
-| Access token lifetime | 1 hour (Supabase default) |
-| Refresh token lifetime | 7 days |
-| Concurrent sessions | Unlimited |
-| Session invalidation | On password change, manual logout |
+| Aspect                 | Configuration                     |
+| ---------------------- | --------------------------------- |
+| Access token lifetime  | 1 hour (Supabase default)         |
+| Refresh token lifetime | 7 days                            |
+| Concurrent sessions    | Unlimited                         |
+| Session invalidation   | On password change, manual logout |
 
 ### Authentication Endpoints
 
-| Endpoint | Purpose | Rate Limited |
-|----------|---------|--------------|
-| `/auth/v1/signup` | User registration | Yes |
-| `/auth/v1/token` | Login, refresh | Yes |
-| `/auth/v1/logout` | Session termination | No |
-| `/auth/v1/recover` | Password reset | Yes |
+| Endpoint           | Purpose             | Rate Limited |
+| ------------------ | ------------------- | ------------ |
+| `/auth/v1/signup`  | User registration   | Yes          |
+| `/auth/v1/token`   | Login, refresh      | Yes          |
+| `/auth/v1/logout`  | Session termination | No           |
+| `/auth/v1/recover` | Password reset      | Yes          |
 
 ---
 
@@ -11354,20 +11727,20 @@ FreshTrack Pro implements a **role-based access control (RBAC)** model:
 
 ### Role Permissions Matrix
 
-| Permission | Owner | Admin | Manager | Staff | Viewer | Inspector |
-|------------|:-----:|:-----:|:-------:|:-----:|:------:|:---------:|
-| View dashboard | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| View alerts | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Acknowledge alerts | ✓ | ✓ | ✓ | - | - | - |
-| Log temperatures | ✓ | ✓ | ✓ | ✓ | - | - |
-| Edit temperature limits | ✓ | ✓ | ✓ | - | - | - |
-| Manage sites/areas/units | ✓ | ✓ | ✓ | - | - | - |
-| Configure TTN | ✓ | ✓ | - | - | - | - |
-| Manage sensors/gateways | ✓ | ✓ | - | - | - | - |
-| Manage users | ✓ | ✓ | - | - | - | - |
-| Export reports | ✓ | ✓ | ✓ | - | - | ✓ |
-| Access billing | ✓ | - | - | - | - | - |
-| Delete organization | ✓ | - | - | - | - | - |
+| Permission               | Owner | Admin | Manager | Staff | Viewer | Inspector |
+| ------------------------ | :---: | :---: | :-----: | :---: | :----: | :-------: |
+| View dashboard           |   ✓   |   ✓   |    ✓    |   ✓   |   ✓    |     ✓     |
+| View alerts              |   ✓   |   ✓   |    ✓    |   ✓   |   ✓    |     ✓     |
+| Acknowledge alerts       |   ✓   |   ✓   |    ✓    |   -   |   -    |     -     |
+| Log temperatures         |   ✓   |   ✓   |    ✓    |   ✓   |   -    |     -     |
+| Edit temperature limits  |   ✓   |   ✓   |    ✓    |   -   |   -    |     -     |
+| Manage sites/areas/units |   ✓   |   ✓   |    ✓    |   -   |   -    |     -     |
+| Configure TTN            |   ✓   |   ✓   |    -    |   -   |   -    |     -     |
+| Manage sensors/gateways  |   ✓   |   ✓   |    -    |   -   |   -    |     -     |
+| Manage users             |   ✓   |   ✓   |    -    |   -   |   -    |     -     |
+| Export reports           |   ✓   |   ✓   |    ✓    |   -   |   -    |     ✓     |
+| Access billing           |   ✓   |   -   |    -    |   -   |   -    |     -     |
+| Delete organization      |   ✓   |   -   |    -    |   -   |   -    |     -     |
 
 ### Role Assignment
 
@@ -11394,12 +11767,12 @@ const { role, permissions } = useUserRole();
 
 // Check specific permission
 if (permissions.canManageSites) {
-    // Show site management UI
+  // Show site management UI
 }
 
 // Check role directly
 if (role === 'owner' || role === 'admin') {
-    // Show admin features
+  // Show admin features
 }
 ```
 
@@ -11407,16 +11780,12 @@ if (role === 'owner' || role === 'admin') {
 
 ```typescript
 // Edge function pattern
-const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
+const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
 
 if (!['owner', 'admin'].includes(profile.role)) {
-    return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403
-    });
+  return new Response(JSON.stringify({ error: 'Forbidden' }), {
+    status: 403,
+  });
 }
 ```
 
@@ -11498,20 +11867,17 @@ $$ LANGUAGE sql SECURITY DEFINER;
 
 ```typescript
 // Every data query includes organization scope
-const { data } = await supabase
-    .from('units')
-    .select('*')
-    .eq('organization_id', organizationId);  // Explicit scope
+const { data } = await supabase.from('units').select('*').eq('organization_id', organizationId); // Explicit scope
 ```
 
 ### Cross-Organization Protection
 
-| Scenario | Protection Mechanism |
-|----------|---------------------|
-| User A queries Org B data | RLS returns empty result |
-| User A's token used with Org B ID | RLS blocks + function validation |
-| DevEUI registered in both orgs | `UNIQUE (organization_id, dev_eui)` constraint |
-| Webhook for wrong org | Webhook secret lookup isolates |
+| Scenario                          | Protection Mechanism                           |
+| --------------------------------- | ---------------------------------------------- |
+| User A queries Org B data         | RLS returns empty result                       |
+| User A's token used with Org B ID | RLS blocks + function validation               |
+| DevEUI registered in both orgs    | `UNIQUE (organization_id, dev_eui)` constraint |
+| Webhook for wrong org             | Webhook secret lookup isolates                 |
 
 ---
 
@@ -11519,10 +11885,10 @@ const { data } = await supabase
 
 ### Token Storage
 
-| Token Type | Storage Location | Security Consideration |
-|------------|-----------------|----------------------|
-| Access token | localStorage | XSS vulnerable, short-lived |
-| Refresh token | localStorage | Longer-lived, rotated on use |
+| Token Type    | Storage Location | Security Consideration       |
+| ------------- | ---------------- | ---------------------------- |
+| Access token  | localStorage     | XSS vulnerable, short-lived  |
+| Refresh token | localStorage     | Longer-lived, rotated on use |
 
 ### Token Refresh Flow
 
@@ -11538,12 +11904,12 @@ const { data, error } = await supabase.auth.refreshSession();
 
 ### Session Invalidation
 
-| Event | Action |
-|-------|--------|
-| User logout | Clear localStorage, server-side session invalidation |
-| Password change | All sessions invalidated |
-| Account deletion | All sessions and data deleted |
-| Admin revocation | Session invalidated on next request |
+| Event            | Action                                               |
+| ---------------- | ---------------------------------------------------- |
+| User logout      | Clear localStorage, server-side session invalidation |
+| Password change  | All sessions invalidated                             |
+| Account deletion | All sessions and data deleted                        |
+| Admin revocation | Session invalidated on next request                  |
 
 ---
 
@@ -11563,25 +11929,28 @@ verify_jwt = true  # Supabase verifies before function executes
 const authHeader = req.headers.get('Authorization');
 const token = authHeader?.replace('Bearer ', '');
 
-const { data: { user }, error } = await supabase.auth.getUser(token);
+const {
+  data: { user },
+  error,
+} = await supabase.auth.getUser(token);
 
 if (error || !user) {
-    return new Response('Unauthorized', { status: 401 });
+  return new Response('Unauthorized', { status: 401 });
 }
 ```
 
 ### Verification Matrix
 
-| Function | JWT Verification | Auth Method |
-|----------|-----------------|-------------|
-| `stripe-checkout` | Automatic | Supabase JWT |
-| `stripe-portal` | Automatic | Supabase JWT |
-| `sensor-simulator` | Automatic | Supabase JWT |
-| `ttn-webhook` | None | Webhook secret |
-| `stripe-webhook` | None | HMAC signature |
-| `manage-ttn-settings` | Manual | Bearer token |
-| `process-unit-states` | None | Internal API key |
-| `export-temperature-logs` | Manual | JWT or API key |
+| Function                  | JWT Verification | Auth Method      |
+| ------------------------- | ---------------- | ---------------- |
+| `stripe-checkout`         | Automatic        | Supabase JWT     |
+| `stripe-portal`           | Automatic        | Supabase JWT     |
+| `sensor-simulator`        | Automatic        | Supabase JWT     |
+| `ttn-webhook`             | None             | Webhook secret   |
+| `stripe-webhook`          | None             | HMAC signature   |
+| `manage-ttn-settings`     | Manual           | Bearer token     |
+| `process-unit-states`     | None             | Internal API key |
+| `export-temperature-logs` | Manual           | JWT or API key   |
 
 ---
 
@@ -11623,13 +11992,13 @@ Used by: Stripe webhooks
 
 ## Security Events Logged
 
-| Event | Logged Data | Table |
-|-------|-------------|-------|
-| Login success | user_id, IP, user_agent, timestamp | Supabase audit |
-| Login failure | email, IP, timestamp | Supabase audit |
-| Password change | user_id, timestamp | Supabase audit |
-| Role change | actor, target_user, old_role, new_role | event_logs |
-| Permission denied | user_id, resource, action, timestamp | Function logs |
+| Event             | Logged Data                            | Table          |
+| ----------------- | -------------------------------------- | -------------- |
+| Login success     | user_id, IP, user_agent, timestamp     | Supabase audit |
+| Login failure     | email, IP, timestamp                   | Supabase audit |
+| Password change   | user_id, timestamp                     | Supabase audit |
+| Role change       | actor, target_user, old_role, new_role | event_logs     |
+| Permission denied | user_id, resource, action, timestamp   | Function logs  |
 
 ---
 
@@ -11646,13 +12015,13 @@ Used by: Stripe webhooks
 
 ### Recommended Enhancements
 
-| Enhancement | Priority | Status |
-|-------------|----------|--------|
-| Multi-factor authentication (MFA) | High | TBD |
-| Session timeout configuration | Medium | TBD |
-| Login anomaly detection | Medium | TBD |
-| API key rotation workflow | Medium | TBD |
-| OAuth/SSO integration | Low | TBD |
+| Enhancement                       | Priority | Status |
+| --------------------------------- | -------- | ------ |
+| Multi-factor authentication (MFA) | High     | TBD    |
+| Session timeout configuration     | Medium   | TBD    |
+| Login anomaly detection           | Medium   | TBD    |
+| API key rotation workflow         | Medium   | TBD    |
+| OAuth/SSO integration             | Low      | TBD    |
 
 ---
 
@@ -11662,7 +12031,6 @@ Used by: Stripe webhooks
 - [DATA_PROTECTION.md](#data_protection) — Encryption and secrets management
 - [THREAT_MODEL.md](#threat_model) — Threats and mitigations
 - [INCIDENT_RESPONSE.md](#incident_response) — Security incident procedures
-
 
 ---
 
@@ -11680,24 +12048,24 @@ Used by: Stripe webhooks
 
 ### Classification Scheme
 
-| Level | Description | Examples | Controls |
-|-------|-------------|----------|----------|
-| **Secret** | Credentials, keys | API keys, passwords | Encrypted, never logged |
+| Level            | Description             | Examples               | Controls                     |
+| ---------------- | ----------------------- | ---------------------- | ---------------------------- |
+| **Secret**       | Credentials, keys       | API keys, passwords    | Encrypted, never logged      |
 | **Confidential** | Sensitive business data | Customer data, configs | Encrypted, access controlled |
-| **Internal** | Operational data | Temperature readings | RLS protected |
-| **Public** | Non-sensitive | Marketing content | Standard controls |
+| **Internal**     | Operational data        | Temperature readings   | RLS protected                |
+| **Public**       | Non-sensitive           | Marketing content      | Standard controls            |
 
 ### Data Inventory
 
-| Data Type | Classification | Storage | Encryption |
-|-----------|---------------|---------|------------|
-| User passwords | Secret | Supabase Auth | bcrypt hashed |
-| TTN API keys | Secret | `ttn_connections` | Application-level |
-| Webhook secrets | Secret | `ttn_connections` | Application-level |
-| Stripe keys | Secret | Environment only | Not stored in DB |
-| Temperature readings | Internal | `sensor_readings` | At rest (platform) |
-| Organization info | Confidential | `organizations` | At rest (platform) |
-| User profiles | Confidential | `profiles` | At rest (platform) |
+| Data Type            | Classification | Storage           | Encryption         |
+| -------------------- | -------------- | ----------------- | ------------------ |
+| User passwords       | Secret         | Supabase Auth     | bcrypt hashed      |
+| TTN API keys         | Secret         | `ttn_connections` | Application-level  |
+| Webhook secrets      | Secret         | `ttn_connections` | Application-level  |
+| Stripe keys          | Secret         | Environment only  | Not stored in DB   |
+| Temperature readings | Internal       | `sensor_readings` | At rest (platform) |
+| Organization info    | Confidential   | `organizations`   | At rest (platform) |
+| User profiles        | Confidential   | `profiles`        | At rest (platform) |
 
 ---
 
@@ -11707,12 +12075,12 @@ Used by: Stripe webhooks
 
 Supabase provides transparent encryption for all database storage:
 
-| Component | Encryption | Key Management |
-|-----------|------------|----------------|
-| PostgreSQL data files | AES-256 | Supabase managed |
-| PostgreSQL WAL | AES-256 | Supabase managed |
-| Backups | AES-256 | Supabase managed |
-| Blob storage | AES-256 | Supabase managed |
+| Component             | Encryption | Key Management   |
+| --------------------- | ---------- | ---------------- |
+| PostgreSQL data files | AES-256    | Supabase managed |
+| PostgreSQL WAL        | AES-256    | Supabase managed |
+| Backups               | AES-256    | Supabase managed |
+| Blob storage          | AES-256    | Supabase managed |
 
 ### Application-Level Encryption
 
@@ -11720,12 +12088,12 @@ Sensitive fields receive additional application-level encryption:
 
 #### Encrypted Fields
 
-| Table | Field | Encryption Method |
-|-------|-------|-------------------|
-| `ttn_connections` | `ttn_api_key_encrypted` | XOR v2 |
-| `ttn_connections` | `ttn_webhook_secret_encrypted` | XOR v2 |
-| `ttn_connections` | `ttn_gateway_api_key_encrypted` | XOR v2 |
-| `ttn_connections` | `ttn_org_api_key_encrypted` | XOR v2 |
+| Table             | Field                           | Encryption Method |
+| ----------------- | ------------------------------- | ----------------- |
+| `ttn_connections` | `ttn_api_key_encrypted`         | XOR v2            |
+| `ttn_connections` | `ttn_webhook_secret_encrypted`  | XOR v2            |
+| `ttn_connections` | `ttn_gateway_api_key_encrypted` | XOR v2            |
+| `ttn_connections` | `ttn_org_api_key_encrypted`     | XOR v2            |
 
 #### Encryption Algorithm (v2 Format)
 
@@ -11733,20 +12101,21 @@ Sensitive fields receive additional application-level encryption:
 // Location: supabase/functions/_shared/ttnConfig.ts
 
 function obfuscateKey(key: string, salt: string): string {
-    const encoder = new TextEncoder();
-    const keyBytes = encoder.encode(key);
-    const saltBytes = encoder.encode(salt);
+  const encoder = new TextEncoder();
+  const keyBytes = encoder.encode(key);
+  const saltBytes = encoder.encode(salt);
 
-    const obfuscated = new Uint8Array(keyBytes.length);
-    for (let i = 0; i < keyBytes.length; i++) {
-        obfuscated[i] = keyBytes[i] ^ saltBytes[i % saltBytes.length];
-    }
+  const obfuscated = new Uint8Array(keyBytes.length);
+  for (let i = 0; i < keyBytes.length; i++) {
+    obfuscated[i] = keyBytes[i] ^ saltBytes[i % saltBytes.length];
+  }
 
-    return "v2:" + btoa(String.fromCharCode(...obfuscated));
+  return 'v2:' + btoa(String.fromCharCode(...obfuscated));
 }
 ```
 
 **Key Derivation:**
+
 - Salt source: `TTN_ENCRYPTION_SALT` environment variable
 - Fallback: First 32 characters of `SUPABASE_SERVICE_ROLE_KEY`
 - Format prefix: `v2:` for version identification
@@ -11755,14 +12124,14 @@ function obfuscateKey(key: string, salt: string): string {
 
 ```typescript
 function deobfuscateKey(encoded: string, salt: string): string {
-    // Handle v2 format
-    if (encoded.startsWith("v2:")) {
-        const decoded = atob(encoded.slice(3));
-        // XOR with salt to recover original
-        // ...
-    }
-    // Legacy format fallback
+  // Handle v2 format
+  if (encoded.startsWith('v2:')) {
+    const decoded = atob(encoded.slice(3));
+    // XOR with salt to recover original
     // ...
+  }
+  // Legacy format fallback
+  // ...
 }
 ```
 
@@ -11770,10 +12139,10 @@ function deobfuscateKey(encoded: string, salt: string): string {
 
 For user interface display, only the last 4 characters are shown:
 
-| Stored Field | Display Field | Example |
-|--------------|--------------|---------|
-| `ttn_api_key_encrypted` | `ttn_api_key_last4` | `•••••A1B2` |
-| `ttn_webhook_secret_encrypted` | (computed) | `•••••X9Y8` |
+| Stored Field                   | Display Field       | Example     |
+| ------------------------------ | ------------------- | ----------- |
+| `ttn_api_key_encrypted`        | `ttn_api_key_last4` | `•••••A1B2` |
+| `ttn_webhook_secret_encrypted` | (computed)          | `•••••X9Y8` |
 
 ---
 
@@ -11783,13 +12152,13 @@ For user interface display, only the last 4 characters are shown:
 
 All communications use TLS 1.3:
 
-| Connection | TLS Version | Certificate |
-|------------|-------------|-------------|
-| Browser → CDN | TLS 1.3 | Supabase managed |
-| CDN → Edge Functions | TLS 1.3 | Internal |
-| Edge Functions → Database | TLS 1.3 | Internal |
-| Application → TTN | TLS 1.3 | TTN certificate |
-| Application → Stripe | TLS 1.3 | Stripe certificate |
+| Connection                | TLS Version | Certificate        |
+| ------------------------- | ----------- | ------------------ |
+| Browser → CDN             | TLS 1.3     | Supabase managed   |
+| CDN → Edge Functions      | TLS 1.3     | Internal           |
+| Edge Functions → Database | TLS 1.3     | Internal           |
+| Application → TTN         | TLS 1.3     | TTN certificate    |
+| Application → Stripe      | TLS 1.3     | Stripe certificate |
 
 ### API Security Headers
 
@@ -11808,12 +12177,12 @@ All communications use TLS 1.3:
 
 ### Secret Categories
 
-| Category | Examples | Storage Location |
-|----------|----------|------------------|
-| **Platform secrets** | Database password, JWT secret | Supabase Vault |
-| **Integration secrets** | TTN admin key, Stripe secret | Environment variables |
-| **Per-org secrets** | TTN app keys, webhook secrets | Database (encrypted) |
-| **User secrets** | Passwords | Supabase Auth |
+| Category                | Examples                      | Storage Location      |
+| ----------------------- | ----------------------------- | --------------------- |
+| **Platform secrets**    | Database password, JWT secret | Supabase Vault        |
+| **Integration secrets** | TTN admin key, Stripe secret  | Environment variables |
+| **Per-org secrets**     | TTN app keys, webhook secrets | Database (encrypted)  |
+| **User secrets**        | Passwords                     | Supabase Auth         |
 
 ### Environment Variables
 
@@ -11843,25 +12212,25 @@ DEVICE_INGEST_API_KEY=xxxxx               # Device data ingestion
 
 ### Secret Rotation
 
-| Secret Type | Rotation Method | Frequency |
-|-------------|-----------------|-----------|
-| Database password | Supabase dashboard | On compromise |
-| JWT secret | Supabase dashboard | On compromise |
-| TTN API keys | Manual re-provisioning | On compromise |
-| Stripe keys | Stripe dashboard | On compromise |
-| Webhook secrets | Regenerate + update DB | On compromise |
+| Secret Type       | Rotation Method        | Frequency     |
+| ----------------- | ---------------------- | ------------- |
+| Database password | Supabase dashboard     | On compromise |
+| JWT secret        | Supabase dashboard     | On compromise |
+| TTN API keys      | Manual re-provisioning | On compromise |
+| Stripe keys       | Stripe dashboard       | On compromise |
+| Webhook secrets   | Regenerate + update DB | On compromise |
 
 ### Secret Access Patterns
 
 ```typescript
 // Correct: Server-side secret access
-const apiKey = Deno.env.get("TTN_ADMIN_API_KEY");
+const apiKey = Deno.env.get('TTN_ADMIN_API_KEY');
 
 // Incorrect: Never log secrets
-console.log("API Key:", apiKey);  // NEVER DO THIS
+console.log('API Key:', apiKey); // NEVER DO THIS
 
 // Acceptable: Log last 4 for debugging
-console.log("Using key ending in:", apiKey.slice(-4));
+console.log('Using key ending in:', apiKey.slice(-4));
 ```
 
 ---
@@ -11870,20 +12239,20 @@ console.log("Using key ending in:", apiKey.slice(-4));
 
 ### Build-Time Security
 
-| Check | Tool | Stage |
-|-------|------|-------|
-| Secret scanning | **TBD** | Pre-commit |
-| Dependency audit | `npm audit` | Build |
-| Type checking | TypeScript | Build |
-| Linting | ESLint | Build |
+| Check            | Tool        | Stage      |
+| ---------------- | ----------- | ---------- |
+| Secret scanning  | **TBD**     | Pre-commit |
+| Dependency audit | `npm audit` | Build      |
+| Type checking    | TypeScript  | Build      |
+| Linting          | ESLint      | Build      |
 
 ### Deployment Security
 
-| Environment | Secret Injection | Method |
-|-------------|-----------------|--------|
-| Development | `.env` file | Local only, gitignored |
-| Staging | Supabase Secrets | Dashboard/CLI |
-| Production | Supabase Secrets | Dashboard/CLI |
+| Environment | Secret Injection | Method                 |
+| ----------- | ---------------- | ---------------------- |
+| Development | `.env` file      | Local only, gitignored |
+| Staging     | Supabase Secrets | Dashboard/CLI          |
+| Production  | Supabase Secrets | Dashboard/CLI          |
 
 ### Gitignore Rules
 
@@ -11903,12 +12272,12 @@ supabase/.temp
 
 ### Secret Exposure Prevention
 
-| Control | Implementation |
-|---------|----------------|
-| Pre-commit hooks | **TBD** - Recommend git-secrets |
+| Control           | Implementation                    |
+| ----------------- | --------------------------------- |
+| Pre-commit hooks  | **TBD** - Recommend git-secrets   |
 | Branch protection | **TBD** - Configure in repository |
-| Secret scanning | **TBD** - GitHub secret scanning |
-| Audit logging | Supabase audit logs |
+| Secret scanning   | **TBD** - GitHub secret scanning  |
+| Audit logging     | Supabase audit logs               |
 
 ---
 
@@ -11916,12 +12285,12 @@ supabase/.temp
 
 ### PII (Personally Identifiable Information)
 
-| Data Type | Collected | Storage | Retention |
-|-----------|-----------|---------|-----------|
-| Email | Yes | `auth.users` | Account lifetime |
-| Name | Optional | `profiles` | Account lifetime |
-| Phone | Optional | `escalation_contacts` | Account lifetime |
-| IP Address | Logged | `event_logs` | Configurable |
+| Data Type  | Collected | Storage               | Retention        |
+| ---------- | --------- | --------------------- | ---------------- |
+| Email      | Yes       | `auth.users`          | Account lifetime |
+| Name       | Optional  | `profiles`            | Account lifetime |
+| Phone      | Optional  | `escalation_contacts` | Account lifetime |
+| IP Address | Logged    | `event_logs`          | Configurable     |
 
 ### Data Minimization
 
@@ -11931,13 +12300,13 @@ supabase/.temp
 
 ### Data Retention
 
-| Data Type | Retention Period | Deletion Method |
-|-----------|------------------|-----------------|
-| Temperature readings | Permanent | N/A (compliance) |
-| Alert history | Permanent | N/A (compliance) |
-| Audit logs | Permanent | N/A (compliance) |
-| Session data | 7 days | Automatic |
-| Deleted user data | Immediate cascade | Referential delete |
+| Data Type            | Retention Period  | Deletion Method    |
+| -------------------- | ----------------- | ------------------ |
+| Temperature readings | Permanent         | N/A (compliance)   |
+| Alert history        | Permanent         | N/A (compliance)   |
+| Audit logs           | Permanent         | N/A (compliance)   |
+| Session data         | 7 days            | Automatic          |
+| Deleted user data    | Immediate cascade | Referential delete |
 
 ### Right to Deletion
 
@@ -11958,12 +12327,12 @@ DELETE FROM organizations WHERE id = ?;
 
 ### Connection Security
 
-| Aspect | Configuration |
-|--------|---------------|
-| Connection encryption | TLS required |
-| Connection pooling | Supabase managed |
-| Prepared statements | Yes (SQL injection prevention) |
-| Query timeouts | Configured |
+| Aspect                | Configuration                  |
+| --------------------- | ------------------------------ |
+| Connection encryption | TLS required                   |
+| Connection pooling    | Supabase managed               |
+| Prepared statements   | Yes (SQL injection prevention) |
+| Query timeouts        | Configured                     |
 
 ### RLS as Data Protection
 
@@ -11983,13 +12352,14 @@ CREATE POLICY "org_isolation" ON sensor_readings
 
 ### Privileged Access
 
-| Role | Access Level | Use Case |
-|------|-------------|----------|
-| `anon` | RLS enforced, limited | Public/unauthenticated |
-| `authenticated` | RLS enforced, user context | Normal users |
-| `service_role` | Bypasses RLS | Backend services |
+| Role            | Access Level               | Use Case               |
+| --------------- | -------------------------- | ---------------------- |
+| `anon`          | RLS enforced, limited      | Public/unauthenticated |
+| `authenticated` | RLS enforced, user context | Normal users           |
+| `service_role`  | Bypasses RLS               | Backend services       |
 
 **Service Role Protection:**
+
 - Never expose service role key to frontend
 - Use only in edge functions for internal operations
 - Audit all service role usage
@@ -12000,20 +12370,20 @@ CREATE POLICY "org_isolation" ON sensor_readings
 
 ### Backup Configuration
 
-| Aspect | Configuration |
-|--------|---------------|
-| Frequency | Daily (Supabase managed) |
-| Retention | 7 days (configurable) |
-| Encryption | AES-256 |
-| Location | Same region as database |
+| Aspect     | Configuration            |
+| ---------- | ------------------------ |
+| Frequency  | Daily (Supabase managed) |
+| Retention  | 7 days (configurable)    |
+| Encryption | AES-256                  |
+| Location   | Same region as database  |
 
 ### Recovery Procedures
 
-| Scenario | Recovery Method | RTO |
-|----------|-----------------|-----|
+| Scenario            | Recovery Method        | RTO   |
+| ------------------- | ---------------------- | ----- |
 | Accidental deletion | Point-in-time recovery | Hours |
-| Database corruption | Restore from backup | Hours |
-| Region failure | Cross-region restore | Hours |
+| Database corruption | Restore from backup    | Hours |
+| Region failure      | Cross-region restore   | Hours |
 
 ---
 
@@ -12042,14 +12412,14 @@ CREATE TABLE event_logs (
 
 ### Logged Events
 
-| Event Type | Logged Details |
-|------------|----------------|
-| `user.login` | IP, user agent, success/failure |
-| `user.logout` | Session ID |
-| `role.change` | Old role, new role, actor |
-| `data.export` | Export type, date range |
-| `settings.change` | Field changed, old/new values |
-| `alert.acknowledge` | Alert ID, actor, note |
+| Event Type          | Logged Details                  |
+| ------------------- | ------------------------------- |
+| `user.login`        | IP, user agent, success/failure |
+| `user.logout`       | Session ID                      |
+| `role.change`       | Old role, new role, actor       |
+| `data.export`       | Export type, date range         |
+| `settings.change`   | Field changed, old/new values   |
+| `alert.acknowledge` | Alert ID, actor, note           |
 
 ### Tamper Detection
 
@@ -12066,20 +12436,20 @@ const eventHash = hash(event.id + event.data + previousHash);
 
 ### Log Analysis
 
-| Log Source | Contains | Access |
-|------------|----------|--------|
-| Supabase logs | Database queries, auth events | Supabase dashboard |
-| Edge function logs | Application events | Supabase dashboard |
-| Event logs table | Business events | Application |
+| Log Source         | Contains                      | Access             |
+| ------------------ | ----------------------------- | ------------------ |
+| Supabase logs      | Database queries, auth events | Supabase dashboard |
+| Edge function logs | Application events            | Supabase dashboard |
+| Event logs table   | Business events               | Application        |
 
 ### Alerting (TBD)
 
-| Condition | Alert | Priority |
-|-----------|-------|----------|
-| Failed login spike | **TBD** | High |
-| Service role access anomaly | **TBD** | High |
-| RLS policy bypass attempt | **TBD** | Critical |
-| Secret access from new IP | **TBD** | Medium |
+| Condition                   | Alert   | Priority |
+| --------------------------- | ------- | -------- |
+| Failed login spike          | **TBD** | High     |
+| Service role access anomaly | **TBD** | High     |
+| RLS policy bypass attempt   | **TBD** | Critical |
+| Secret access from new IP   | **TBD** | Medium   |
 
 ---
 
@@ -12097,13 +12467,13 @@ const eventHash = hash(event.id + event.data + previousHash);
 
 ### Recommended Enhancements
 
-| Enhancement | Priority | Status |
-|-------------|----------|--------|
-| Secret scanning in CI | High | TBD |
-| Automated key rotation | Medium | TBD |
-| Enhanced audit alerting | Medium | TBD |
-| Field-level encryption expansion | Low | TBD |
-| Hardware security module (HSM) | Low | TBD |
+| Enhancement                      | Priority | Status |
+| -------------------------------- | -------- | ------ |
+| Secret scanning in CI            | High     | TBD    |
+| Automated key rotation           | Medium   | TBD    |
+| Enhanced audit alerting          | Medium   | TBD    |
+| Field-level encryption expansion | Low      | TBD    |
+| Hardware security module (HSM)   | Low      | TBD    |
 
 ---
 
@@ -12113,7 +12483,6 @@ const eventHash = hash(event.id + event.data + previousHash);
 - [AUTH_MODEL.md](#auth_model) — Authentication and authorization
 - [THREAT_MODEL.md](#threat_model) — Threats and mitigations
 - [INCIDENT_RESPONSE.md](#incident_response) — Security incident procedures
-
 
 ---
 
@@ -12129,12 +12498,12 @@ const eventHash = hash(event.id + event.data + previousHash);
 
 ## Document Information
 
-| Attribute | Value |
-|-----------|-------|
-| Last Updated | 2026-01-12 |
-| Review Frequency | Quarterly |
-| Methodology | STRIDE + DREAD |
-| Scope | FreshTrack Pro application and infrastructure |
+| Attribute        | Value                                         |
+| ---------------- | --------------------------------------------- |
+| Last Updated     | 2026-01-12                                    |
+| Review Frequency | Quarterly                                     |
+| Methodology      | STRIDE + DREAD                                |
+| Scope            | FreshTrack Pro application and infrastructure |
 
 ---
 
@@ -12142,30 +12511,30 @@ const eventHash = hash(event.id + event.data + previousHash);
 
 ### Critical Assets
 
-| Asset | Description | Confidentiality | Integrity | Availability |
-|-------|-------------|-----------------|-----------|--------------|
-| **Temperature Data** | Historical sensor readings | Medium | Critical | High |
-| **Alert Records** | Alert history, acknowledgments | Medium | Critical | High |
-| **TTN Credentials** | API keys for IoT infrastructure | Critical | Critical | High |
-| **User Credentials** | Passwords, sessions | Critical | Critical | High |
-| **Organization Data** | Customer configurations | High | High | High |
+| Asset                 | Description                     | Confidentiality | Integrity | Availability |
+| --------------------- | ------------------------------- | --------------- | --------- | ------------ |
+| **Temperature Data**  | Historical sensor readings      | Medium          | Critical  | High         |
+| **Alert Records**     | Alert history, acknowledgments  | Medium          | Critical  | High         |
+| **TTN Credentials**   | API keys for IoT infrastructure | Critical        | Critical  | High         |
+| **User Credentials**  | Passwords, sessions             | Critical        | Critical  | High         |
+| **Organization Data** | Customer configurations         | High            | High      | High         |
 
 ### High-Value Assets
 
-| Asset | Description | CIA Rating |
-|-------|-------------|------------|
-| Stripe credentials | Payment processing | C: Critical, I: Critical, A: High |
-| Webhook secrets | External integration auth | C: Critical, I: High, A: Medium |
-| Service role key | Database bypass access | C: Critical, I: Critical, A: Critical |
-| Audit logs | Compliance records | C: Medium, I: Critical, A: High |
+| Asset              | Description               | CIA Rating                            |
+| ------------------ | ------------------------- | ------------------------------------- |
+| Stripe credentials | Payment processing        | C: Critical, I: Critical, A: High     |
+| Webhook secrets    | External integration auth | C: Critical, I: High, A: Medium       |
+| Service role key   | Database bypass access    | C: Critical, I: Critical, A: Critical |
+| Audit logs         | Compliance records        | C: Medium, I: Critical, A: High       |
 
 ### Supporting Assets
 
-| Asset | Description | CIA Rating |
-|-------|-------------|------------|
-| Source code | Application logic | C: Medium, I: High, A: Medium |
-| Infrastructure config | Deployment settings | C: Medium, I: High, A: High |
-| Documentation | Technical/business docs | C: Low, I: Medium, A: Low |
+| Asset                 | Description             | CIA Rating                    |
+| --------------------- | ----------------------- | ----------------------------- |
+| Source code           | Application logic       | C: Medium, I: High, A: Medium |
+| Infrastructure config | Deployment settings     | C: Medium, I: High, A: High   |
+| Documentation         | Technical/business docs | C: Low, I: Medium, A: Low     |
 
 ---
 
@@ -12173,14 +12542,14 @@ const eventHash = hash(event.id + event.data + previousHash);
 
 ### Actor Profiles
 
-| Actor | Motivation | Capability | Likelihood |
-|-------|------------|------------|------------|
-| **Competitor** | Data theft, sabotage | Medium | Low |
-| **Cybercriminal** | Financial gain, ransomware | Medium-High | Medium |
-| **Disgruntled Employee** | Revenge, data theft | High (insider) | Low |
-| **Script Kiddie** | Curiosity, reputation | Low | Medium |
-| **Nation State** | Espionage, disruption | Very High | Very Low |
-| **Malicious Customer** | Cross-tenant access | Medium | Medium |
+| Actor                    | Motivation                 | Capability     | Likelihood |
+| ------------------------ | -------------------------- | -------------- | ---------- |
+| **Competitor**           | Data theft, sabotage       | Medium         | Low        |
+| **Cybercriminal**        | Financial gain, ransomware | Medium-High    | Medium     |
+| **Disgruntled Employee** | Revenge, data theft        | High (insider) | Low        |
+| **Script Kiddie**        | Curiosity, reputation      | Low            | Medium     |
+| **Nation State**         | Espionage, disruption      | Very High      | Very Low   |
+| **Malicious Customer**   | Cross-tenant access        | Medium         | Medium     |
 
 ### Most Likely Threat Actors
 
@@ -12245,14 +12614,14 @@ graph TB
 
 ### Attack Surface Inventory
 
-| Surface | Entry Point | Authentication | Risk Level |
-|---------|-------------|----------------|------------|
-| Web Application | `/*` routes | JWT session | Medium |
-| REST API | `/functions/*` | JWT/API key | High |
-| TTN Webhook | `/functions/ttn-webhook` | Webhook secret | High |
-| Stripe Webhook | `/functions/stripe-webhook` | HMAC signature | Medium |
-| Auth Endpoints | `/auth/v1/*` | None (public) | High |
-| Database | PostgreSQL port | Service role | Critical |
+| Surface         | Entry Point                 | Authentication | Risk Level |
+| --------------- | --------------------------- | -------------- | ---------- |
+| Web Application | `/*` routes                 | JWT session    | Medium     |
+| REST API        | `/functions/*`              | JWT/API key    | High       |
+| TTN Webhook     | `/functions/ttn-webhook`    | Webhook secret | High       |
+| Stripe Webhook  | `/functions/stripe-webhook` | HMAC signature | Medium     |
+| Auth Endpoints  | `/auth/v1/*`                | None (public)  | High       |
+| Database        | PostgreSQL port             | Service role   | Critical   |
 
 ---
 
@@ -12260,56 +12629,56 @@ graph TB
 
 ### Spoofing
 
-| Threat | Target | Mitigation | Status |
-|--------|--------|------------|--------|
-| **S1** Session hijacking | User sessions | JWT with expiry, HTTPS only | Active |
-| **S2** Credential stuffing | Auth endpoint | Rate limiting, complexity rules | Active |
-| **S3** Forged webhook calls | TTN/Stripe | Secret/signature verification | Active |
-| **S4** API key theft | Service endpoints | Encrypted storage, rotation | Partial |
+| Threat                      | Target            | Mitigation                      | Status  |
+| --------------------------- | ----------------- | ------------------------------- | ------- |
+| **S1** Session hijacking    | User sessions     | JWT with expiry, HTTPS only     | Active  |
+| **S2** Credential stuffing  | Auth endpoint     | Rate limiting, complexity rules | Active  |
+| **S3** Forged webhook calls | TTN/Stripe        | Secret/signature verification   | Active  |
+| **S4** API key theft        | Service endpoints | Encrypted storage, rotation     | Partial |
 
 ### Tampering
 
-| Threat | Target | Mitigation | Status |
-|--------|--------|------------|--------|
+| Threat                               | Target          | Mitigation                  | Status |
+| ------------------------------------ | --------------- | --------------------------- | ------ |
 | **T1** Temperature data modification | Sensor readings | RLS, audit logs, hash chain | Active |
-| **T2** Alert state manipulation | Alert records | RLS, role checks | Active |
-| **T3** Configuration tampering | Org settings | RLS, admin-only access | Active |
-| **T4** Log tampering | Audit logs | Hash chain, append-only | Active |
+| **T2** Alert state manipulation      | Alert records   | RLS, role checks            | Active |
+| **T3** Configuration tampering       | Org settings    | RLS, admin-only access      | Active |
+| **T4** Log tampering                 | Audit logs      | Hash chain, append-only     | Active |
 
 ### Repudiation
 
-| Threat | Target | Mitigation | Status |
-|--------|--------|------------|--------|
-| **R1** Deny alert acknowledgment | Alert actions | Actor ID, timestamp, IP logged | Active |
-| **R2** Deny temperature logs | Manual entries | Actor ID, timestamp logged | Active |
-| **R3** Deny configuration changes | Settings | Event log with actor | Active |
+| Threat                            | Target         | Mitigation                     | Status |
+| --------------------------------- | -------------- | ------------------------------ | ------ |
+| **R1** Deny alert acknowledgment  | Alert actions  | Actor ID, timestamp, IP logged | Active |
+| **R2** Deny temperature logs      | Manual entries | Actor ID, timestamp logged     | Active |
+| **R3** Deny configuration changes | Settings       | Event log with actor           | Active |
 
 ### Information Disclosure
 
-| Threat | Target | Mitigation | Status |
-|--------|--------|------------|--------|
-| **I1** Cross-tenant data access | All data | RLS policies, org scope | Active |
-| **I2** API key exposure | TTN keys | Encryption, last4 display | Active |
-| **I3** Log leakage | Audit data | Access control, RLS | Partial |
-| **I4** Error message disclosure | Stack traces | Production error handling | Active |
+| Threat                          | Target       | Mitigation                | Status  |
+| ------------------------------- | ------------ | ------------------------- | ------- |
+| **I1** Cross-tenant data access | All data     | RLS policies, org scope   | Active  |
+| **I2** API key exposure         | TTN keys     | Encryption, last4 display | Active  |
+| **I3** Log leakage              | Audit data   | Access control, RLS       | Partial |
+| **I4** Error message disclosure | Stack traces | Production error handling | Active  |
 
 ### Denial of Service
 
-| Threat | Target | Mitigation | Status |
-|--------|--------|------------|--------|
-| **D1** API flooding | Edge functions | Rate limiting (platform) | Active |
-| **D2** Auth endpoint abuse | Login | Rate limiting | Active |
-| **D3** Webhook flooding | TTN webhook | Secret validation first | Active |
-| **D4** Database exhaustion | PostgreSQL | Connection pooling | Active |
+| Threat                     | Target         | Mitigation               | Status |
+| -------------------------- | -------------- | ------------------------ | ------ |
+| **D1** API flooding        | Edge functions | Rate limiting (platform) | Active |
+| **D2** Auth endpoint abuse | Login          | Rate limiting            | Active |
+| **D3** Webhook flooding    | TTN webhook    | Secret validation first  | Active |
+| **D4** Database exhaustion | PostgreSQL     | Connection pooling       | Active |
 
 ### Elevation of Privilege
 
-| Threat | Target | Mitigation | Status |
-|--------|--------|------------|--------|
-| **E1** Tenant escape | Cross-org access | RLS, org_id validation | Active |
-| **E2** Role escalation | User roles | DB constraints, RLS | Active |
-| **E3** Service role access | Privileged ops | Server-side only | Active |
-| **E4** Webhook to admin | Internal systems | Scoped permissions | Active |
+| Threat                     | Target           | Mitigation             | Status |
+| -------------------------- | ---------------- | ---------------------- | ------ |
+| **E1** Tenant escape       | Cross-org access | RLS, org_id validation | Active |
+| **E2** Role escalation     | User roles       | DB constraints, RLS    | Active |
+| **E3** Service role access | Privileged ops   | Server-side only       | Active |
+| **E4** Webhook to admin    | Internal systems | Scoped permissions     | Active |
 
 ---
 
@@ -12329,6 +12698,7 @@ graph TB
 ```
 
 **Mitigations:**
+
 - RLS policy checks `auth.uid()` against `profiles.organization_id`
 - Returns empty result, not error (prevents enumeration)
 - Function-level org validation as defense in depth
@@ -12351,6 +12721,7 @@ graph TB
 ```
 
 **Mitigations:**
+
 - Per-org webhook secret required in header
 - Constant-time secret comparison (timing attack prevention)
 - Org lookup via secret isolates scope
@@ -12374,6 +12745,7 @@ graph TB
 ```
 
 **Mitigations:**
+
 - Supabase rate limiting on auth endpoints
 - Password complexity requirements
 - **TBD:** Account lockout after failures
@@ -12398,6 +12770,7 @@ graph TB
 ```
 
 **Mitigations:**
+
 - Keys encrypted in database
 - Full key never returned to frontend (only last4)
 - Decryption requires server-side salt
@@ -12421,6 +12794,7 @@ graph TB
 ```
 
 **Mitigations:**
+
 - Role table protected by RLS
 - Only owner/admin can modify roles
 - `has_role()` function validates permissions
@@ -12432,15 +12806,15 @@ graph TB
 
 ## Risk Assessment (DREAD)
 
-| Threat | Damage | Reproducibility | Exploitability | Affected Users | Discoverability | Score |
-|--------|--------|-----------------|----------------|----------------|-----------------|-------|
-| S1 Session hijacking | 3 | 2 | 2 | 3 | 2 | **2.4** |
-| S2 Credential stuffing | 4 | 4 | 3 | 3 | 4 | **3.6** |
-| S3 Webhook forgery | 4 | 3 | 2 | 4 | 2 | **3.0** |
-| I1 Cross-tenant access | 5 | 2 | 2 | 5 | 3 | **3.4** |
-| I2 API key exposure | 4 | 2 | 2 | 4 | 2 | **2.8** |
-| E1 Tenant escape | 5 | 2 | 2 | 5 | 3 | **3.4** |
-| D1 API flooding | 2 | 4 | 4 | 4 | 4 | **3.6** |
+| Threat                 | Damage | Reproducibility | Exploitability | Affected Users | Discoverability | Score   |
+| ---------------------- | ------ | --------------- | -------------- | -------------- | --------------- | ------- |
+| S1 Session hijacking   | 3      | 2               | 2              | 3              | 2               | **2.4** |
+| S2 Credential stuffing | 4      | 4               | 3              | 3              | 4               | **3.6** |
+| S3 Webhook forgery     | 4      | 3               | 2              | 4              | 2               | **3.0** |
+| I1 Cross-tenant access | 5      | 2               | 2              | 5              | 3               | **3.4** |
+| I2 API key exposure    | 4      | 2               | 2              | 4              | 2               | **2.8** |
+| E1 Tenant escape       | 5      | 2               | 2              | 5              | 3               | **3.4** |
+| D1 API flooding        | 2      | 4               | 4              | 4              | 4               | **3.6** |
 
 **Score interpretation:** 1-2 (Low), 2-3 (Medium), 3-4 (High), 4-5 (Critical)
 
@@ -12458,40 +12832,40 @@ graph TB
 
 ### Authentication Controls
 
-| Control | Threat Addressed | Implementation |
-|---------|-----------------|----------------|
-| JWT verification | S1 Spoofing | Supabase Auth |
-| Password complexity | S2 Stuffing | Frontend validation |
-| Rate limiting | S2, D1 | Platform level |
-| Webhook secrets | S3 Forgery | Per-org secrets |
-| **MFA (TBD)** | S2 Stuffing | Not implemented |
+| Control             | Threat Addressed | Implementation      |
+| ------------------- | ---------------- | ------------------- |
+| JWT verification    | S1 Spoofing      | Supabase Auth       |
+| Password complexity | S2 Stuffing      | Frontend validation |
+| Rate limiting       | S2, D1           | Platform level      |
+| Webhook secrets     | S3 Forgery       | Per-org secrets     |
+| **MFA (TBD)**       | S2 Stuffing      | Not implemented     |
 
 ### Authorization Controls
 
-| Control | Threat Addressed | Implementation |
-|---------|-----------------|----------------|
-| RLS policies | E1, I1 | PostgreSQL |
-| Role validation | E2 | `has_role()` function |
-| Org scope checks | E1, I1 | Function-level |
-| Service role isolation | E3 | Server-side only |
+| Control                | Threat Addressed | Implementation        |
+| ---------------------- | ---------------- | --------------------- |
+| RLS policies           | E1, I1           | PostgreSQL            |
+| Role validation        | E2               | `has_role()` function |
+| Org scope checks       | E1, I1           | Function-level        |
+| Service role isolation | E3               | Server-side only      |
 
 ### Data Protection Controls
 
-| Control | Threat Addressed | Implementation |
-|---------|-----------------|----------------|
-| TLS | T1, I2 | Platform |
-| Encryption at rest | I2, I4 | Platform + app |
-| Audit logging | R1, R2, R3 | Event logs table |
-| Hash chain | T4 | Append-only logs |
+| Control            | Threat Addressed | Implementation   |
+| ------------------ | ---------------- | ---------------- |
+| TLS                | T1, I2           | Platform         |
+| Encryption at rest | I2, I4           | Platform + app   |
+| Audit logging      | R1, R2, R3       | Event logs table |
+| Hash chain         | T4               | Append-only logs |
 
 ### Monitoring Controls
 
-| Control | Threat Addressed | Status |
-|---------|-----------------|--------|
-| Failed login monitoring | S2 | **TBD** |
-| Unusual access patterns | E1, I1 | **TBD** |
-| API abuse detection | D1 | **TBD** |
-| Secret access logging | I2 | **TBD** |
+| Control                 | Threat Addressed | Status  |
+| ----------------------- | ---------------- | ------- |
+| Failed login monitoring | S2               | **TBD** |
+| Unusual access patterns | E1, I1           | **TBD** |
+| API abuse detection     | D1               | **TBD** |
+| Secret access logging   | I2               | **TBD** |
 
 ---
 
@@ -12499,21 +12873,21 @@ graph TB
 
 ### Penetration Testing Scope
 
-| Area | Test Type | Frequency |
-|------|-----------|-----------|
-| Authentication | Credential attacks, session | Annual |
-| Authorization | Tenant isolation, RBAC | Annual |
-| API security | Injection, rate limiting | Annual |
-| Webhook security | Forgery, replay | Annual |
+| Area             | Test Type                   | Frequency |
+| ---------------- | --------------------------- | --------- |
+| Authentication   | Credential attacks, session | Annual    |
+| Authorization    | Tenant isolation, RBAC      | Annual    |
+| API security     | Injection, rate limiting    | Annual    |
+| Webhook security | Forgery, replay             | Annual    |
 
 ### Automated Testing
 
-| Tool | Purpose | Integration |
-|------|---------|-------------|
-| Dependency scanner | Known vulnerabilities | CI/CD |
-| SAST | Code vulnerabilities | CI/CD |
-| DAST | Runtime vulnerabilities | Staging |
-| Secret scanner | Credential leakage | Pre-commit |
+| Tool               | Purpose                 | Integration |
+| ------------------ | ----------------------- | ----------- |
+| Dependency scanner | Known vulnerabilities   | CI/CD       |
+| SAST               | Code vulnerabilities    | CI/CD       |
+| DAST               | Runtime vulnerabilities | Staging     |
+| Secret scanner     | Credential leakage      | Pre-commit  |
 
 ---
 
@@ -12521,20 +12895,20 @@ graph TB
 
 ### Accepted Risks
 
-| Risk | Justification | Monitoring |
-|------|---------------|------------|
-| CORS wildcard | Multi-tenant SaaS, protected by auth | Auth logs |
-| localStorage JWT | Browser standard, short-lived | Session audit |
-| XOR encryption | Defense in depth, not sole protection | Key rotation |
+| Risk             | Justification                         | Monitoring    |
+| ---------------- | ------------------------------------- | ------------- |
+| CORS wildcard    | Multi-tenant SaaS, protected by auth  | Auth logs     |
+| localStorage JWT | Browser standard, short-lived         | Session audit |
+| XOR encryption   | Defense in depth, not sole protection | Key rotation  |
 
 ### Risks Requiring Attention
 
-| Risk | Current State | Recommendation | Priority |
-|------|---------------|----------------|----------|
-| No MFA | Single factor | Implement TOTP | High |
-| Limited rate visibility | Platform only | Add app-level | Medium |
-| No breach detection | Manual review | Automated alerting | Medium |
-| Key rotation manual | On-demand | Automated rotation | Low |
+| Risk                    | Current State | Recommendation     | Priority |
+| ----------------------- | ------------- | ------------------ | -------- |
+| No MFA                  | Single factor | Implement TOTP     | High     |
+| Limited rate visibility | Platform only | Add app-level      | Medium   |
+| No breach detection     | Manual review | Automated alerting | Medium   |
+| Key rotation manual     | On-demand     | Automated rotation | Low      |
 
 ---
 
@@ -12565,7 +12939,6 @@ graph TB
 - [DATA_PROTECTION.md](#data_protection) — Encryption and secrets
 - [INCIDENT_RESPONSE.md](#incident_response) — Security incident procedures
 
-
 ---
 
 \newpage
@@ -12580,12 +12953,12 @@ graph TB
 
 ## Document Information
 
-| Attribute | Value |
-|-----------|-------|
-| Document Owner | Security Lead |
-| Last Updated | 2026-01-12 |
-| Review Frequency | Semi-annual |
-| Test Frequency | Annual tabletop exercise |
+| Attribute        | Value                    |
+| ---------------- | ------------------------ |
+| Document Owner   | Security Lead            |
+| Last Updated     | 2026-01-12               |
+| Review Frequency | Semi-annual              |
+| Test Frequency   | Annual tabletop exercise |
 
 ---
 
@@ -12593,22 +12966,22 @@ graph TB
 
 ### Severity Levels
 
-| Level | Description | Response Time | Examples |
-|-------|-------------|---------------|----------|
-| **P1 - Critical** | Active breach, data exfiltration | Immediate (< 15 min) | Credential theft, RLS bypass |
-| **P2 - High** | Potential breach, service impact | < 1 hour | Suspicious access, DoS attack |
-| **P3 - Medium** | Security weakness, limited impact | < 4 hours | Vulnerability discovered, failed attacks |
-| **P4 - Low** | Minor issue, informational | < 24 hours | Policy violation, audit finding |
+| Level             | Description                       | Response Time        | Examples                                 |
+| ----------------- | --------------------------------- | -------------------- | ---------------------------------------- |
+| **P1 - Critical** | Active breach, data exfiltration  | Immediate (< 15 min) | Credential theft, RLS bypass             |
+| **P2 - High**     | Potential breach, service impact  | < 1 hour             | Suspicious access, DoS attack            |
+| **P3 - Medium**   | Security weakness, limited impact | < 4 hours            | Vulnerability discovered, failed attacks |
+| **P4 - Low**      | Minor issue, informational        | < 24 hours           | Policy violation, audit finding          |
 
 ### Incident Categories
 
-| Category | Description | Examples |
-|----------|-------------|----------|
-| **Unauthorized Access** | Access beyond permissions | Tenant escape, privilege escalation |
-| **Data Breach** | Data exposure or theft | Customer data leak, API key exposure |
-| **Service Disruption** | Availability impact | DoS, infrastructure failure |
-| **Malware/Compromise** | System infection | Compromised credentials, malicious code |
-| **Policy Violation** | Non-compliance | Improper access, audit failure |
+| Category                | Description               | Examples                                |
+| ----------------------- | ------------------------- | --------------------------------------- |
+| **Unauthorized Access** | Access beyond permissions | Tenant escape, privilege escalation     |
+| **Data Breach**         | Data exposure or theft    | Customer data leak, API key exposure    |
+| **Service Disruption**  | Availability impact       | DoS, infrastructure failure             |
+| **Malware/Compromise**  | System infection          | Compromised credentials, malicious code |
+| **Policy Violation**    | Non-compliance            | Improper access, audit failure          |
 
 ---
 
@@ -12616,13 +12989,13 @@ graph TB
 
 ### Roles and Responsibilities
 
-| Role | Primary Responsibility | Backup |
-|------|----------------------|--------|
-| **Incident Commander** | Overall coordination, decisions | Engineering Lead |
-| **Security Lead** | Technical investigation, containment | Senior Developer |
-| **Communications Lead** | Customer/stakeholder updates | Product Manager |
-| **Engineering Lead** | Technical remediation | On-call Engineer |
-| **Legal Counsel** | Regulatory compliance | External Counsel |
+| Role                    | Primary Responsibility               | Backup           |
+| ----------------------- | ------------------------------------ | ---------------- |
+| **Incident Commander**  | Overall coordination, decisions      | Engineering Lead |
+| **Security Lead**       | Technical investigation, containment | Senior Developer |
+| **Communications Lead** | Customer/stakeholder updates         | Product Manager  |
+| **Engineering Lead**    | Technical remediation                | On-call Engineer |
+| **Legal Counsel**       | Regulatory compliance                | External Counsel |
 
 ### Escalation Path
 
@@ -12635,11 +13008,11 @@ P1 → Full Response Team (all hands)
 
 ### Contact Information
 
-| Role | Contact Method | Availability |
-|------|---------------|--------------|
-| Security Lead | **[TBD - Add contact]** | 24/7 for P1/P2 |
-| On-call Engineer | **[TBD - PagerDuty/Opsgenie]** | 24/7 |
-| Incident Commander | **[TBD - Add contact]** | Business hours + P1 |
+| Role               | Contact Method                 | Availability        |
+| ------------------ | ------------------------------ | ------------------- |
+| Security Lead      | **[TBD - Add contact]**        | 24/7 for P1/P2      |
+| On-call Engineer   | **[TBD - PagerDuty/Opsgenie]** | 24/7                |
+| Incident Commander | **[TBD - Add contact]**        | Business hours + P1 |
 
 ---
 
@@ -12647,34 +13020,34 @@ P1 → Full Response Team (all hands)
 
 ### Detection Sources
 
-| Source | What It Detects | Alert Mechanism |
-|--------|-----------------|-----------------|
-| Supabase Logs | Auth failures, errors | Dashboard monitoring |
-| Edge Function Logs | Application errors | Log aggregation |
-| Event Logs Table | Business anomalies | Periodic review |
-| Customer Reports | Visible issues | Support channel |
-| External Scanners | Vulnerabilities | Scheduled scans |
-| Platform Alerts | Infrastructure issues | Supabase status |
+| Source             | What It Detects       | Alert Mechanism      |
+| ------------------ | --------------------- | -------------------- |
+| Supabase Logs      | Auth failures, errors | Dashboard monitoring |
+| Edge Function Logs | Application errors    | Log aggregation      |
+| Event Logs Table   | Business anomalies    | Periodic review      |
+| Customer Reports   | Visible issues        | Support channel      |
+| External Scanners  | Vulnerabilities       | Scheduled scans      |
+| Platform Alerts    | Infrastructure issues | Supabase status      |
 
 ### Detection Indicators
 
 #### High Confidence Indicators
 
-| Indicator | Likely Incident | Action |
-|-----------|-----------------|--------|
-| Multiple failed logins from one IP | Brute force attack | Block IP, investigate |
-| Cross-org data in logs | RLS bypass | Escalate immediately |
-| Unexpected service role usage | Credential theft | Rotate keys, investigate |
-| Webhook failures spike | Attack or misconfiguration | Validate secrets |
+| Indicator                          | Likely Incident            | Action                   |
+| ---------------------------------- | -------------------------- | ------------------------ |
+| Multiple failed logins from one IP | Brute force attack         | Block IP, investigate    |
+| Cross-org data in logs             | RLS bypass                 | Escalate immediately     |
+| Unexpected service role usage      | Credential theft           | Rotate keys, investigate |
+| Webhook failures spike             | Attack or misconfiguration | Validate secrets         |
 
 #### Medium Confidence Indicators
 
-| Indicator | Possible Incident | Action |
-|-----------|-------------------|--------|
-| Unusual login times/locations | Account compromise | Verify with user |
-| High API request volume | DoS or scraping | Review rate limits |
-| New admin user created | Privilege escalation | Audit user creation |
-| Configuration changes | Unauthorized change | Verify with admins |
+| Indicator                     | Possible Incident    | Action              |
+| ----------------------------- | -------------------- | ------------------- |
+| Unusual login times/locations | Account compromise   | Verify with user    |
+| High API request volume       | DoS or scraping      | Review rate limits  |
+| New admin user created        | Privilege escalation | Audit user creation |
+| Configuration changes         | Unauthorized change  | Verify with admins  |
 
 ### Initial Triage Checklist
 
@@ -12784,13 +13157,13 @@ USING (false);
 
 ### Evidence Preservation
 
-| Evidence | Collection Method | Retention |
-|----------|------------------|-----------|
-| Database logs | Supabase export | 90 days minimum |
-| Edge function logs | Supabase export | 90 days minimum |
-| Event logs table | Database backup | Permanent |
-| Network logs | Supabase/CDN logs | As available |
-| Timeline of actions | Incident document | Permanent |
+| Evidence            | Collection Method | Retention       |
+| ------------------- | ----------------- | --------------- |
+| Database logs       | Supabase export   | 90 days minimum |
+| Edge function logs  | Supabase export   | 90 days minimum |
+| Event logs table    | Database backup   | Permanent       |
+| Network logs        | Supabase/CDN logs | As available    |
+| Timeline of actions | Incident document | Permanent       |
 
 ---
 
@@ -12839,13 +13212,13 @@ USING (false);
 
 ### Common Remediation Actions
 
-| Issue | Remediation |
-|-------|-------------|
-| Weak RLS policy | Rewrite policy, audit similar |
-| Missing input validation | Add validation, review endpoints |
-| Exposed credentials | Rotate all affected, add scanning |
-| Missing rate limiting | Implement application-level limits |
-| Insufficient logging | Add logging for blind spots |
+| Issue                    | Remediation                        |
+| ------------------------ | ---------------------------------- |
+| Weak RLS policy          | Rewrite policy, audit similar      |
+| Missing input validation | Add validation, review endpoints   |
+| Exposed credentials      | Rotate all affected, add scanning  |
+| Missing rate limiting    | Implement application-level limits |
+| Insufficient logging     | Add logging for blind spots        |
 
 ---
 
@@ -12865,20 +13238,20 @@ USING (false);
 
 #### Customer Communication
 
-| Scenario | Communication |
-|----------|---------------|
-| No customer impact | Internal documentation only |
-| Service disruption | Status page update |
-| Data exposure (specific users) | Direct notification to affected |
-| Data breach (broad) | Public notification + regulatory |
+| Scenario                       | Communication                    |
+| ------------------------------ | -------------------------------- |
+| No customer impact             | Internal documentation only      |
+| Service disruption             | Status page update               |
+| Data exposure (specific users) | Direct notification to affected  |
+| Data breach (broad)            | Public notification + regulatory |
 
 #### Regulatory Notification
 
-| Regulation | Notification Requirement | Timeline |
-|------------|-------------------------|----------|
-| GDPR | Data breach to supervisory authority | 72 hours |
-| State laws (varies) | Consumer notification | Varies by state |
-| Industry specific | Per contractual requirements | Per contract |
+| Regulation          | Notification Requirement             | Timeline        |
+| ------------------- | ------------------------------------ | --------------- |
+| GDPR                | Data breach to supervisory authority | 72 hours        |
+| State laws (varies) | Consumer notification                | Varies by state |
+| Industry specific   | Per contractual requirements         | Per contract    |
 
 ### Recovery Verification
 
@@ -12915,55 +13288,64 @@ USING (false);
 # Security Incident Postmortem
 
 ## Incident Summary
+
 - **Date/Time:**
 - **Duration:**
 - **Severity:**
 - **Incident Commander:**
 
 ## What Happened
+
 [Factual description]
 
 ## Timeline
-| Time | Event |
-|------|-------|
-| | Detection |
-| | Containment began |
-| | Root cause identified |
-| | Fix deployed |
-| | Incident closed |
+
+| Time | Event                 |
+| ---- | --------------------- |
+|      | Detection             |
+|      | Containment began     |
+|      | Root cause identified |
+|      | Fix deployed          |
+|      | Incident closed       |
 
 ## Impact
+
 - **Users Affected:**
 - **Data Exposed:**
 - **Service Downtime:**
 - **Financial Impact:**
 
 ## Root Cause
+
 [Technical explanation]
 
 ## What Went Well
+
 - [List positives]
 
 ## What Went Poorly
+
 - [List improvements needed]
 
 ## Action Items
+
 | Action | Owner | Due Date | Status |
-|--------|-------|----------|--------|
-| | | | |
+| ------ | ----- | -------- | ------ |
+|        |       |          |        |
 
 ## Lessons Learned
+
 [Key takeaways]
 ```
 
 ### Action Item Tracking
 
-| Priority | Timeline | Example Actions |
-|----------|----------|-----------------|
-| Critical | 24 hours | Emergency patches, key rotation |
-| High | 1 week | Security control additions |
-| Medium | 1 month | Process improvements |
-| Low | 1 quarter | Documentation updates |
+| Priority | Timeline  | Example Actions                 |
+| -------- | --------- | ------------------------------- |
+| Critical | 24 hours  | Emergency patches, key rotation |
+| High     | 1 week    | Security control additions      |
+| Medium   | 1 month   | Process improvements            |
+| Low      | 1 quarter | Documentation updates           |
 
 ---
 
@@ -13034,11 +13416,11 @@ FreshTrack Pro Security Team
 
 ### Exercise Schedule
 
-| Exercise Type | Frequency | Participants |
-|---------------|-----------|--------------|
-| Tabletop scenario | Quarterly | Response team |
-| Technical drill | Semi-annual | Engineering |
-| Full simulation | Annual | All stakeholders |
+| Exercise Type     | Frequency   | Participants     |
+| ----------------- | ----------- | ---------------- |
+| Tabletop scenario | Quarterly   | Response team    |
+| Technical drill   | Semi-annual | Engineering      |
+| Full simulation   | Annual      | All stakeholders |
 
 ### Sample Scenarios
 
@@ -13065,17 +13447,18 @@ FreshTrack Pro Security Team
 
 ### Key Metrics
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| Mean Time to Detect (MTTD) | < 1 hour (P1) | Detection time - incident start |
-| Mean Time to Contain (MTTC) | < 4 hours (P1) | Containment time - detection |
-| Mean Time to Recover (MTTR) | < 24 hours (P1) | Recovery time - detection |
-| Postmortem completion | 100% (P1-P2) | Days to complete |
-| Action item closure | 90% on time | Per due date |
+| Metric                      | Target          | Measurement                     |
+| --------------------------- | --------------- | ------------------------------- |
+| Mean Time to Detect (MTTD)  | < 1 hour (P1)   | Detection time - incident start |
+| Mean Time to Contain (MTTC) | < 4 hours (P1)  | Containment time - detection    |
+| Mean Time to Recover (MTTR) | < 24 hours (P1) | Recovery time - detection       |
+| Postmortem completion       | 100% (P1-P2)    | Days to complete                |
+| Action item closure         | 90% on time     | Per due date                    |
 
 ### Continuous Improvement
 
 After each incident:
+
 1. Update runbooks with lessons learned
 2. Improve detection for similar incidents
 3. Enhance automated response where possible
@@ -13090,7 +13473,6 @@ After each incident:
 - [AUTH_MODEL.md](#auth_model) — Authentication and authorization
 - [DATA_PROTECTION.md](#data_protection) — Encryption and secrets
 - [THREAT_MODEL.md](#threat_model) — Threats and mitigations
-
 
 ---
 
@@ -13108,12 +13490,12 @@ After each incident:
 
 ### Overview
 
-| Category | What It Measures | Priority |
-|----------|------------------|----------|
-| **System Health** | Database, edge functions, infrastructure | Critical |
-| **Application Health** | User operations, data processing | High |
-| **Integration Health** | TTN, Stripe, notification delivery | High |
-| **Business Metrics** | Sensors, alerts, readings | Medium |
+| Category               | What It Measures                         | Priority |
+| ---------------------- | ---------------------------------------- | -------- |
+| **System Health**      | Database, edge functions, infrastructure | Critical |
+| **Application Health** | User operations, data processing         | High     |
+| **Integration Health** | TTN, Stripe, notification delivery       | High     |
+| **Business Metrics**   | Sensors, alerts, readings                | Medium   |
 
 ---
 
@@ -13121,12 +13503,12 @@ After each incident:
 
 ### Database Metrics
 
-| Metric | Description | Healthy | Degraded | Unhealthy |
-|--------|-------------|---------|----------|-----------|
-| **Query Latency** | Time for standard queries | < 300ms | 300-500ms | > 500ms |
-| **RPC Latency** | Time for function calls | < 500ms | 500-1000ms | > 1000ms |
-| **Connection Status** | Database reachability | Connected | - | Unreachable |
-| **Table Availability** | Critical tables accessible | All OK | Some degraded | Tables missing |
+| Metric                 | Description                | Healthy   | Degraded      | Unhealthy      |
+| ---------------------- | -------------------------- | --------- | ------------- | -------------- |
+| **Query Latency**      | Time for standard queries  | < 300ms   | 300-500ms     | > 500ms        |
+| **RPC Latency**        | Time for function calls    | < 500ms   | 500-1000ms    | > 1000ms       |
+| **Connection Status**  | Database reachability      | Connected | -             | Unreachable    |
+| **Table Availability** | Critical tables accessible | All OK    | Some degraded | Tables missing |
 
 #### Critical Tables
 
@@ -13164,45 +13546,45 @@ curl https://your-project.supabase.co/functions/v1/health-check
 
 ### Edge Function Metrics
 
-| Metric | Description | Source |
-|--------|-------------|--------|
-| **Invocation Count** | Number of function calls | Supabase Dashboard |
-| **Success Rate** | Percentage of 2xx responses | Supabase Dashboard |
-| **Average Latency** | Mean execution time | Supabase Dashboard |
-| **Error Rate** | Percentage of 4xx/5xx | Supabase Dashboard |
-| **Cold Start Rate** | First invocations after idle | Supabase Dashboard |
+| Metric               | Description                  | Source             |
+| -------------------- | ---------------------------- | ------------------ |
+| **Invocation Count** | Number of function calls     | Supabase Dashboard |
+| **Success Rate**     | Percentage of 2xx responses  | Supabase Dashboard |
+| **Average Latency**  | Mean execution time          | Supabase Dashboard |
+| **Error Rate**       | Percentage of 4xx/5xx        | Supabase Dashboard |
+| **Cold Start Rate**  | First invocations after idle | Supabase Dashboard |
 
 #### Critical Functions to Monitor
 
-| Function | Criticality | Expected Latency | Notes |
-|----------|-------------|------------------|-------|
-| `ttn-webhook` | Critical | < 500ms | Data ingestion path |
-| `process-unit-states` | Critical | < 2000ms | Alert processing |
-| `process-escalations` | Critical | < 3000ms | Notification dispatch |
-| `ingest-readings` | High | < 500ms | Sensor data processing |
-| `health-check` | High | < 200ms | Monitoring endpoint |
-| `stripe-webhook` | High | < 1000ms | Payment processing |
+| Function              | Criticality | Expected Latency | Notes                  |
+| --------------------- | ----------- | ---------------- | ---------------------- |
+| `ttn-webhook`         | Critical    | < 500ms          | Data ingestion path    |
+| `process-unit-states` | Critical    | < 2000ms         | Alert processing       |
+| `process-escalations` | Critical    | < 3000ms         | Notification dispatch  |
+| `ingest-readings`     | High        | < 500ms          | Sensor data processing |
+| `health-check`        | High        | < 200ms          | Monitoring endpoint    |
+| `stripe-webhook`      | High        | < 1000ms         | Payment processing     |
 
 #### Function Health Check Status
 
 The application checks 34 edge functions with these methods:
 
-| Check Type | Description |
-|------------|-------------|
-| `GET` | Simple availability check |
-| `POST` | Functions requiring request body |
-| `skip` | Functions with side effects (webhooks, SMS) |
+| Check Type | Description                                 |
+| ---------- | ------------------------------------------- |
+| `GET`      | Simple availability check                   |
+| `POST`     | Functions requiring request body            |
+| `skip`     | Functions with side effects (webhooks, SMS) |
 
 ---
 
 ### Infrastructure Metrics
 
-| Metric | Description | Where to Find |
-|--------|-------------|---------------|
+| Metric                 | Description           | Where to Find          |
+| ---------------------- | --------------------- | ---------------------- |
 | **CDN Cache Hit Rate** | Edge cache efficiency | Supabase/CDN dashboard |
-| **Bandwidth Usage** | Data transfer volume | Supabase dashboard |
-| **Storage Usage** | Database size | Supabase dashboard |
-| **Connection Pool** | Active DB connections | Supabase dashboard |
+| **Bandwidth Usage**    | Data transfer volume  | Supabase dashboard     |
+| **Storage Usage**      | Database size         | Supabase dashboard     |
+| **Connection Pool**    | Active DB connections | Supabase dashboard     |
 
 ---
 
@@ -13210,12 +13592,12 @@ The application checks 34 edge functions with these methods:
 
 ### Data Processing Metrics
 
-| Metric | Description | Healthy State |
-|--------|-------------|---------------|
-| **Readings/Hour** | Sensor data ingestion rate | Consistent with sensor count |
-| **Processing Lag** | Time from reading to storage | < 30 seconds |
-| **Alert Creation Rate** | New alerts per hour | Within normal variance |
-| **Alert Resolution Rate** | Resolved alerts per hour | Matches creation rate |
+| Metric                    | Description                  | Healthy State                |
+| ------------------------- | ---------------------------- | ---------------------------- |
+| **Readings/Hour**         | Sensor data ingestion rate   | Consistent with sensor count |
+| **Processing Lag**        | Time from reading to storage | < 30 seconds                 |
+| **Alert Creation Rate**   | New alerts per hour          | Within normal variance       |
+| **Alert Resolution Rate** | Resolved alerts per hour     | Matches creation rate        |
 
 #### Sensor Reading Flow
 
@@ -13231,24 +13613,24 @@ Sensor → TTN → ttn-webhook → sensor_readings table
 
 Track the distribution of unit statuses:
 
-| Status | Meaning | Normal Distribution |
-|--------|---------|---------------------|
-| `ok` | Normal operation | 85-95% |
-| `excursion` | Unconfirmed temp issue | 0-5% |
-| `alarm_active` | Confirmed alarm | 0-2% |
-| `monitoring_interrupted` | No data received | 0-3% |
-| `offline` | Extended no data | 0-5% |
-| `manual_required` | Needs manual log | 0-10% |
-| `restoring` | Recovering | 0-2% |
+| Status                   | Meaning                | Normal Distribution |
+| ------------------------ | ---------------------- | ------------------- |
+| `ok`                     | Normal operation       | 85-95%              |
+| `excursion`              | Unconfirmed temp issue | 0-5%                |
+| `alarm_active`           | Confirmed alarm        | 0-2%                |
+| `monitoring_interrupted` | No data received       | 0-3%                |
+| `offline`                | Extended no data       | 0-5%                |
+| `manual_required`        | Needs manual log       | 0-10%               |
+| `restoring`              | Recovering             | 0-2%                |
 
 ### Alert Metrics
 
-| Metric | Description | Target |
-|--------|-------------|--------|
-| **Active Alerts** | Currently unresolved | Minimize |
-| **MTTR** | Mean time to resolution | < 30 min |
-| **Acknowledgment Rate** | % acknowledged before escalation | > 80% |
-| **Escalation Rate** | % requiring escalation | < 20% |
+| Metric                  | Description                      | Target   |
+| ----------------------- | -------------------------------- | -------- |
+| **Active Alerts**       | Currently unresolved             | Minimize |
+| **MTTR**                | Mean time to resolution          | < 30 min |
+| **Acknowledgment Rate** | % acknowledged before escalation | > 80%    |
+| **Escalation Rate**     | % requiring escalation           | < 20%    |
 
 ---
 
@@ -13256,12 +13638,12 @@ Track the distribution of unit statuses:
 
 ### TTN Integration
 
-| Metric | Description | Healthy State |
-|--------|-------------|---------------|
-| **Webhook Success Rate** | Valid payloads processed | > 99% |
-| **Device Match Rate** | DevEUI matched to sensor | > 99% |
-| **Unknown Device Rate** | Unmatched DevEUIs | < 1% |
-| **Provisioning Success** | Devices registered to TTN | > 95% |
+| Metric                   | Description               | Healthy State |
+| ------------------------ | ------------------------- | ------------- |
+| **Webhook Success Rate** | Valid payloads processed  | > 99%         |
+| **Device Match Rate**    | DevEUI matched to sensor  | > 99%         |
+| **Unknown Device Rate**  | Unmatched DevEUIs         | < 1%          |
+| **Provisioning Success** | Devices registered to TTN | > 95%         |
 
 #### TTN Connection Status
 
@@ -13279,20 +13661,20 @@ FROM ttn_connections
 WHERE is_enabled = true;
 ```
 
-| Status | Description |
-|--------|-------------|
-| `healthy` | Enabled + complete + has app ID |
-| `degraded` | Enabled but incomplete config |
+| Status      | Description                         |
+| ----------- | ----------------------------------- |
+| `healthy`   | Enabled + complete + has app ID     |
+| `degraded`  | Enabled but incomplete config       |
 | `unhealthy` | Disabled or missing critical fields |
 
 ### Stripe Integration
 
-| Metric | Description | Healthy State |
-|--------|-------------|---------------|
-| **Webhook Delivery** | Stripe events received | 100% |
-| **Signature Validation** | Valid signatures | 100% |
-| **Event Processing** | Events handled successfully | > 99% |
-| **Subscription Sync** | DB matches Stripe state | 100% |
+| Metric                   | Description                 | Healthy State |
+| ------------------------ | --------------------------- | ------------- |
+| **Webhook Delivery**     | Stripe events received      | 100%          |
+| **Signature Validation** | Valid signatures            | 100%          |
+| **Event Processing**     | Events handled successfully | > 99%         |
+| **Subscription Sync**    | DB matches Stripe state     | 100%          |
 
 #### Webhook Events Monitored
 
@@ -13305,12 +13687,12 @@ invoice.payment_failed         - Failed payment
 
 ### Notification Delivery
 
-| Metric | Description | Target |
-|--------|-------------|--------|
-| **Email Delivery Rate** | Emails successfully sent | > 99% |
-| **SMS Delivery Rate** | SMS messages delivered | > 98% |
-| **Push Notification Rate** | Push notifications sent | > 99% |
-| **Notification Latency** | Time from trigger to delivery | < 60s |
+| Metric                     | Description                   | Target |
+| -------------------------- | ----------------------------- | ------ |
+| **Email Delivery Rate**    | Emails successfully sent      | > 99%  |
+| **SMS Delivery Rate**      | SMS messages delivered        | > 98%  |
+| **Push Notification Rate** | Push notifications sent       | > 99%  |
+| **Notification Latency**   | Time from trigger to delivery | < 60s  |
 
 ---
 
@@ -13318,12 +13700,12 @@ invoice.payment_failed         - Failed payment
 
 ### Sensor Health
 
-| Metric | Description | Warning Threshold |
-|--------|-------------|-------------------|
-| **Active Sensors** | Status = 'active' | Compare to expected |
-| **Offline Sensors** | No reading > check-in interval | > 5% of total |
-| **Low Battery** | Battery < 20% | Any sensors |
-| **Weak Signal** | Signal < -100 dBm | > 10% of sensors |
+| Metric              | Description                    | Warning Threshold   |
+| ------------------- | ------------------------------ | ------------------- |
+| **Active Sensors**  | Status = 'active'              | Compare to expected |
+| **Offline Sensors** | No reading > check-in interval | > 5% of total       |
+| **Low Battery**     | Battery < 20%                  | Any sensors         |
+| **Weak Signal**     | Signal < -100 dBm              | > 10% of sensors    |
 
 #### Sensor Status Query
 
@@ -13336,21 +13718,21 @@ FROM lora_sensors
 GROUP BY status;
 ```
 
-| Status | Meaning |
-|--------|---------|
-| `pending` | Created, not provisioned |
+| Status    | Meaning                   |
+| --------- | ------------------------- |
+| `pending` | Created, not provisioned  |
 | `joining` | Registered, awaiting join |
-| `active` | Operating normally |
-| `offline` | No recent data |
-| `fault` | Hardware issue detected |
+| `active`  | Operating normally        |
+| `offline` | No recent data            |
+| `fault`   | Hardware issue detected   |
 
 ### Gateway Health
 
-| Metric | Description | Warning Threshold |
-|--------|-------------|-------------------|
-| **Online Gateways** | Status = 'online' | All expected online |
-| **Offline Gateways** | No recent activity | Any offline |
-| **Coverage Gaps** | Areas without gateway | Site-specific |
+| Metric               | Description           | Warning Threshold   |
+| -------------------- | --------------------- | ------------------- |
+| **Online Gateways**  | Status = 'online'     | All expected online |
+| **Offline Gateways** | No recent activity    | Any offline         |
+| **Coverage Gaps**    | Areas without gateway | Site-specific       |
 
 ---
 
@@ -13358,22 +13740,22 @@ GROUP BY status;
 
 ### Operational KPIs
 
-| KPI | Description | How to Calculate |
-|-----|-------------|------------------|
-| **Monitoring Uptime** | % time sensors reporting | `(readings_received / expected_readings) * 100` |
-| **Alert Response Time** | Time to acknowledge | `AVG(acknowledged_at - created_at)` |
-| **Compliance Rate** | % readings in range | `(in_range_readings / total_readings) * 100` |
-| **Coverage** | Units with active sensors | `(units_with_sensor / total_units) * 100` |
+| KPI                     | Description               | How to Calculate                                |
+| ----------------------- | ------------------------- | ----------------------------------------------- |
+| **Monitoring Uptime**   | % time sensors reporting  | `(readings_received / expected_readings) * 100` |
+| **Alert Response Time** | Time to acknowledge       | `AVG(acknowledged_at - created_at)`             |
+| **Compliance Rate**     | % readings in range       | `(in_range_readings / total_readings) * 100`    |
+| **Coverage**            | Units with active sensors | `(units_with_sensor / total_units) * 100`       |
 
 ### Usage Metrics
 
-| Metric | Description |
-|--------|-------------|
-| **Active Organizations** | Orgs with recent activity |
-| **Active Users** | Users logged in last 30 days |
-| **Total Sensors** | Deployed sensor count |
-| **Daily Readings** | Readings per day |
-| **Report Exports** | Reports generated |
+| Metric                   | Description                  |
+| ------------------------ | ---------------------------- |
+| **Active Organizations** | Orgs with recent activity    |
+| **Active Users**         | Users logged in last 30 days |
+| **Total Sensors**        | Deployed sensor count        |
+| **Daily Readings**       | Readings per day             |
+| **Report Exports**       | Reports generated            |
 
 ---
 
@@ -13381,20 +13763,20 @@ GROUP BY status;
 
 ### Current Implementation
 
-| Collection Point | Method | Data Captured |
-|------------------|--------|---------------|
-| Health Check Endpoint | `/functions/v1/health-check` | System status, latencies |
-| Debug Logger | Client-side ring buffer | Operations, errors, timing |
-| Event Logs Table | Database insert | Business events |
-| Supabase Dashboard | Platform metrics | Function stats, errors |
+| Collection Point      | Method                       | Data Captured              |
+| --------------------- | ---------------------------- | -------------------------- |
+| Health Check Endpoint | `/functions/v1/health-check` | System status, latencies   |
+| Debug Logger          | Client-side ring buffer      | Operations, errors, timing |
+| Event Logs Table      | Database insert              | Business events            |
+| Supabase Dashboard    | Platform metrics             | Function stats, errors     |
 
 ### Recommended Additions
 
-| Metric | Recommended Tool | Purpose |
-|--------|------------------|---------|
-| APM traces | Sentry/DataDog | End-to-end timing |
-| Custom metrics | Prometheus/Grafana | Business KPIs |
-| Log aggregation | LogTail/Papertrail | Centralized logging |
+| Metric            | Recommended Tool    | Purpose               |
+| ----------------- | ------------------- | --------------------- |
+| APM traces        | Sentry/DataDog      | End-to-end timing     |
+| Custom metrics    | Prometheus/Grafana  | Business KPIs         |
+| Log aggregation   | LogTail/Papertrail  | Centralized logging   |
 | Uptime monitoring | BetterStack/Pingdom | External availability |
 
 ---
@@ -13403,30 +13785,30 @@ GROUP BY status;
 
 ### System Thresholds
 
-| Metric | Warning | Critical |
-|--------|---------|----------|
-| DB Query Latency | > 300ms | > 500ms |
-| RPC Latency | > 500ms | > 1000ms |
-| Edge Function Error Rate | > 1% | > 5% |
-| Cold Start Rate | > 10% | > 25% |
+| Metric                   | Warning | Critical |
+| ------------------------ | ------- | -------- |
+| DB Query Latency         | > 300ms | > 500ms  |
+| RPC Latency              | > 500ms | > 1000ms |
+| Edge Function Error Rate | > 1%    | > 5%     |
+| Cold Start Rate          | > 10%   | > 25%    |
 
 ### Integration Thresholds
 
-| Metric | Warning | Critical |
-|--------|---------|----------|
-| Webhook Success Rate | < 99% | < 95% |
-| Device Match Rate | < 99% | < 95% |
-| Notification Delivery | < 99% | < 95% |
-| TTN Provisioning | < 95% | < 90% |
+| Metric                | Warning | Critical |
+| --------------------- | ------- | -------- |
+| Webhook Success Rate  | < 99%   | < 95%    |
+| Device Match Rate     | < 99%   | < 95%    |
+| Notification Delivery | < 99%   | < 95%    |
+| TTN Provisioning      | < 95%   | < 90%    |
 
 ### Operational Thresholds
 
-| Metric | Warning | Critical |
-|--------|---------|----------|
-| Units in Alarm | > 5% | > 10% |
-| Sensors Offline | > 5% | > 15% |
+| Metric               | Warning  | Critical |
+| -------------------- | -------- | -------- |
+| Units in Alarm       | > 5%     | > 10%    |
+| Sensors Offline      | > 5%     | > 15%    |
 | Alert Acknowledgment | > 30 min | > 60 min |
-| Processing Lag | > 30s | > 60s |
+| Processing Lag       | > 30s    | > 60s    |
 
 ---
 
@@ -13436,7 +13818,6 @@ GROUP BY status;
 - [ALERTING.md](#alerting) — Alert conditions and escalation
 - [LOGGING.md](#logging) — Log sources and debugging
 - [RUNBOOKS.md](#runbooks) — Operational procedures
-
 
 ---
 
@@ -13521,12 +13902,12 @@ graph TB
 
 #### What It Shows
 
-| Section | Information | Update Frequency |
-|---------|-------------|------------------|
-| Overall Status | System health summary | 1 minute (auto-refresh) |
-| Category Breakdown | Database, Edge Functions, TTN, Overall | 1 minute |
-| Check List | Individual check results | 1 minute |
-| Latency Display | Response times per check | Per check |
+| Section            | Information                            | Update Frequency        |
+| ------------------ | -------------------------------------- | ----------------------- |
+| Overall Status     | System health summary                  | 1 minute (auto-refresh) |
+| Category Breakdown | Database, Edge Functions, TTN, Overall | 1 minute                |
+| Check List         | Individual check results               | 1 minute                |
+| Latency Display    | Response times per check               | Per check               |
 
 #### Visual Elements
 
@@ -13555,11 +13936,11 @@ TTN Integration
 
 #### Refresh Controls
 
-| Control | Behavior |
-|---------|----------|
-| Auto-refresh | 1-minute interval (toggle) |
-| Quick check | 5-minute interval for header badge |
-| Manual refresh | Click to run all checks |
+| Control        | Behavior                           |
+| -------------- | ---------------------------------- |
+| Auto-refresh   | 1-minute interval (toggle)         |
+| Quick check    | 5-minute interval for header badge |
+| Manual refresh | Click to run all checks            |
 
 ---
 
@@ -13571,14 +13952,14 @@ TTN Integration
 
 #### What It Shows
 
-| Tab | Contents |
-|-----|----------|
-| **Events** | All logged events |
-| **CRUD** | Database operations |
-| **Network** | Edge function calls |
-| **Sync** | Data synchronization |
-| **TTN** | TTN-related operations |
-| **Errors** | Error-level logs only |
+| Tab         | Contents               |
+| ----------- | ---------------------- |
+| **Events**  | All logged events      |
+| **CRUD**    | Database operations    |
+| **Network** | Edge function calls    |
+| **Sync**    | Data synchronization   |
+| **TTN**     | TTN-related operations |
+| **Errors**  | Error-level logs only  |
 
 #### Log Entry Details
 
@@ -13592,14 +13973,14 @@ TTN Integration
 
 #### Controls
 
-| Control | Function |
-|---------|----------|
-| Pause/Resume | Stop/start log collection |
-| Clear | Empty the log buffer |
-| Auto-scroll | Follow new entries |
-| Export JSON | Download full log |
+| Control          | Function                    |
+| ---------------- | --------------------------- |
+| Pause/Resume     | Stop/start log collection   |
+| Clear            | Empty the log buffer        |
+| Auto-scroll      | Follow new entries          |
+| Export JSON      | Download full log           |
 | Support Snapshot | Redacted export for support |
-| Filter | By level, category, search |
+| Filter           | By level, category, search  |
 
 ---
 
@@ -13611,12 +13992,12 @@ TTN Integration
 
 #### What It Shows
 
-| Section | Information |
-|---------|-------------|
-| Temperature Logs | Manual and sensor readings |
-| Exception Logs | Alerts, violations, issues |
-| Corrective Actions | Responses to exceptions |
-| Monitoring Gaps | Periods without data |
+| Section            | Information                |
+| ------------------ | -------------------------- |
+| Temperature Logs   | Manual and sensor readings |
+| Exception Logs     | Alerts, violations, issues |
+| Corrective Actions | Responses to exceptions    |
+| Monitoring Gaps    | Periods without data       |
 
 #### Filters Available
 
@@ -13642,15 +14023,15 @@ TTN Integration
 
 All business events from `event_logs` table:
 
-| Event Category | Examples |
-|----------------|----------|
-| Device | sensor_paired, reading_received, device_offline |
-| Alert | created, activated, acknowledged, resolved |
-| Compliance | manual_temp_logged, excursion_started |
-| Settings | unit_settings_updated, alert_rules_updated |
-| Notification | sent, failed, delivered |
-| TTN | settings.updated, .enabled, .tested |
-| System | user_login, report_exported |
+| Event Category | Examples                                        |
+| -------------- | ----------------------------------------------- |
+| Device         | sensor_paired, reading_received, device_offline |
+| Alert          | created, activated, acknowledged, resolved      |
+| Compliance     | manual_temp_logged, excursion_started           |
+| Settings       | unit_settings_updated, alert_rules_updated      |
+| Notification   | sent, failed, delivered                         |
+| TTN            | settings.updated, .enabled, .tested             |
+| System         | user_login, report_exported                     |
 
 #### Display Features
 
@@ -13670,11 +14051,11 @@ All business events from `event_logs` table:
 
 #### What It Shows
 
-| Section | Information |
-|---------|-------------|
-| Orphan Organizations | Orgs with no active users |
-| Cleanup Jobs | Background job status |
-| Data Integrity | Referential integrity checks |
+| Section              | Information                  |
+| -------------------- | ---------------------------- |
+| Orphan Organizations | Orgs with no active users    |
+| Cleanup Jobs         | Background job status        |
+| Data Integrity       | Referential integrity checks |
 
 #### Actions Available
 
@@ -13694,34 +14075,34 @@ Access via: https://supabase.com/dashboard/project/{project-id}
 
 #### Database
 
-| View | Information |
-|------|-------------|
-| Table Editor | Browse/edit data |
-| SQL Editor | Run queries |
+| View            | Information      |
+| --------------- | ---------------- |
+| Table Editor    | Browse/edit data |
+| SQL Editor      | Run queries      |
 | Database Health | Connection stats |
 
 #### Edge Functions
 
-| View | Information |
-|------|-------------|
-| Function List | All deployed functions |
-| Logs | Real-time function logs |
-| Metrics | Invocations, latency, errors |
+| View          | Information                  |
+| ------------- | ---------------------------- |
+| Function List | All deployed functions       |
+| Logs          | Real-time function logs      |
+| Metrics       | Invocations, latency, errors |
 
 #### Authentication
 
-| View | Information |
-|------|-------------|
-| Users | Registered users |
-| Sessions | Active sessions |
-| Logs | Auth events |
+| View     | Information      |
+| -------- | ---------------- |
+| Users    | Registered users |
+| Sessions | Active sessions  |
+| Logs     | Auth events      |
 
 #### Storage
 
-| View | Information |
-|------|-------------|
-| Buckets | File storage |
-| Usage | Storage metrics |
+| View    | Information     |
+| ------- | --------------- |
+| Buckets | File storage    |
+| Usage   | Storage metrics |
 
 ---
 
@@ -13752,13 +14133,13 @@ Access via: https://supabase.com/dashboard/project/{project-id}
 
 #### Recommended Implementation
 
-| Component | Tool | Data Source |
-|-----------|------|-------------|
-| System Health | Health check API | `/functions/v1/health-check` |
-| Alert Summary | Database query | `alerts` table |
-| Integration Status | Health checks | TTN, Stripe checks |
-| Key Metrics | Database queries | Aggregated data |
-| Recent Events | Event logs | `event_logs` table |
+| Component          | Tool             | Data Source                  |
+| ------------------ | ---------------- | ---------------------------- |
+| System Health      | Health check API | `/functions/v1/health-check` |
+| Alert Summary      | Database query   | `alerts` table               |
+| Integration Status | Health checks    | TTN, Stripe checks           |
+| Key Metrics        | Database queries | Aggregated data              |
+| Recent Events      | Event logs       | `event_logs` table           |
 
 ---
 
@@ -13818,14 +14199,14 @@ Access via: https://supabase.com/dashboard/project/{project-id}
 
 ## Dashboard Access Matrix
 
-| Dashboard | Owner | Admin | Manager | Staff | Viewer |
-|-----------|:-----:|:-----:|:-------:|:-----:|:------:|
-| Health Dashboard | ✓ | ✓ | - | - | - |
-| Debug Terminal | ✓ | ✓ | ✓ | - | - |
-| Inspector | ✓ | ✓ | - | - | ✓ |
-| Event History | ✓ | ✓ | - | - | - |
-| Data Maintenance | ✓ | ✓ | - | - | - |
-| Supabase Dashboard | Infra team only | - | - | - | - |
+| Dashboard          |      Owner      | Admin | Manager | Staff | Viewer |
+| ------------------ | :-------------: | :---: | :-----: | :---: | :----: |
+| Health Dashboard   |        ✓        |   ✓   |    -    |   -   |   -    |
+| Debug Terminal     |        ✓        |   ✓   |    ✓    |   -   |   -    |
+| Inspector          |        ✓        |   ✓   |    -    |   -   |   ✓    |
+| Event History      |        ✓        |   ✓   |    -    |   -   |   -    |
+| Data Maintenance   |        ✓        |   ✓   |    -    |   -   |   -    |
+| Supabase Dashboard | Infra team only |   -   |    -    |   -   |   -    |
 
 ---
 
@@ -13833,21 +14214,21 @@ Access via: https://supabase.com/dashboard/project/{project-id}
 
 ### Application Dashboards
 
-| Dashboard | URL Path |
-|-----------|----------|
-| Health Dashboard | `/admin/health` |
-| Inspector | `/inspector` |
-| Event History | `/event-history` |
+| Dashboard        | URL Path             |
+| ---------------- | -------------------- |
+| Health Dashboard | `/admin/health`      |
+| Inspector        | `/inspector`         |
+| Event History    | `/event-history`     |
 | Data Maintenance | `/admin/maintenance` |
 
 ### External Dashboards
 
-| Dashboard | URL |
-|-----------|-----|
-| Supabase | `https://supabase.com/dashboard/project/{id}` |
+| Dashboard   | URL                                           |
+| ----------- | --------------------------------------------- |
+| Supabase    | `https://supabase.com/dashboard/project/{id}` |
 | TTN Console | `https://eu1.cloud.thethings.network/console` |
-| Stripe | `https://dashboard.stripe.com` |
-| Resend | `https://resend.com/emails` |
+| Stripe      | `https://dashboard.stripe.com`                |
+| Resend      | `https://resend.com/emails`                   |
 
 ---
 
@@ -13883,7 +14264,6 @@ Access via: https://supabase.com/dashboard/project/{project-id}
 - [LOGGING.md](#logging) — Log sources and debugging
 - [RUNBOOKS.md](#runbooks) — Operational procedures
 
-
 ---
 
 \newpage
@@ -13902,28 +14282,28 @@ Access via: https://supabase.com/dashboard/project/{project-id}
 
 These are alerts visible to customers in the FreshTrack Pro application:
 
-| Alert Type | Description | Severity |
-|------------|-------------|----------|
-| `temp_excursion` | Temperature outside safe range | Warning → Critical |
-| `temp_high` | Temperature above max threshold | Warning → Critical |
-| `temp_low` | Temperature below min threshold | Warning → Critical |
-| `monitoring_interrupted` | No readings received | Warning → Critical |
-| `door_open` | Door open too long | Warning |
-| `low_battery` | Sensor battery low | Warning |
-| `sensor_offline` | Sensor not reporting | Warning |
-| `gateway_offline` | Gateway not reporting | Warning |
+| Alert Type               | Description                     | Severity           |
+| ------------------------ | ------------------------------- | ------------------ |
+| `temp_excursion`         | Temperature outside safe range  | Warning → Critical |
+| `temp_high`              | Temperature above max threshold | Warning → Critical |
+| `temp_low`               | Temperature below min threshold | Warning → Critical |
+| `monitoring_interrupted` | No readings received            | Warning → Critical |
+| `door_open`              | Door open too long              | Warning            |
+| `low_battery`            | Sensor battery low              | Warning            |
+| `sensor_offline`         | Sensor not reporting            | Warning            |
+| `gateway_offline`        | Gateway not reporting           | Warning            |
 
 ### System Alerts (Operations)
 
 These require operational attention:
 
-| Alert Type | Description | Severity |
-|------------|-------------|----------|
-| Health check failure | System component unhealthy | Critical |
-| High error rate | Edge function errors > threshold | High |
-| Integration failure | TTN/Stripe/notification failure | High |
-| Database latency | Query time > threshold | Medium |
-| Capacity warning | Storage/connections nearing limit | Medium |
+| Alert Type           | Description                       | Severity |
+| -------------------- | --------------------------------- | -------- |
+| Health check failure | System component unhealthy        | Critical |
+| High error rate      | Edge function errors > threshold  | High     |
+| Integration failure  | TTN/Stripe/notification failure   | High     |
+| Database latency     | Query time > threshold            | Medium   |
+| Capacity warning     | Storage/connections nearing limit | Medium   |
 
 ---
 
@@ -13945,13 +14325,13 @@ stateDiagram-v2
 
 ### State Definitions
 
-| State | Description | Actions Available |
-|-------|-------------|-------------------|
-| **Triggered** | Condition detected, waiting confirm time | Auto-resolve if clears |
-| **Activated** | Confirmed, notifications sent | Acknowledge, auto-resolve |
-| **Escalated** | Escalation level increased | Acknowledge |
-| **Acknowledged** | User has responded | Wait for resolution |
-| **Resolved** | Condition cleared | View history |
+| State            | Description                              | Actions Available         |
+| ---------------- | ---------------------------------------- | ------------------------- |
+| **Triggered**    | Condition detected, waiting confirm time | Auto-resolve if clears    |
+| **Activated**    | Confirmed, notifications sent            | Acknowledge, auto-resolve |
+| **Escalated**    | Escalation level increased               | Acknowledge               |
+| **Acknowledged** | User has responded                       | Wait for resolution       |
+| **Resolved**     | Condition cleared                        | View history              |
 
 ---
 
@@ -13959,20 +14339,20 @@ stateDiagram-v2
 
 ### Application Severity
 
-| Level | Color | Description | Example |
-|-------|-------|-------------|---------|
-| **Critical** | Red | Immediate action required | Temp > 45°F for >15min |
-| **Warning** | Orange | Attention needed | Temp slightly out of range |
-| **Info** | Blue | Informational | System status update |
+| Level        | Color  | Description               | Example                    |
+| ------------ | ------ | ------------------------- | -------------------------- |
+| **Critical** | Red    | Immediate action required | Temp > 45°F for >15min     |
+| **Warning**  | Orange | Attention needed          | Temp slightly out of range |
+| **Info**     | Blue   | Informational             | System status update       |
 
 ### Operational Severity
 
-| Level | Response Time | Description |
-|-------|---------------|-------------|
-| **P1 - Critical** | < 15 minutes | Service down, data at risk |
-| **P2 - High** | < 1 hour | Significant degradation |
-| **P3 - Medium** | < 4 hours | Minor impact |
-| **P4 - Low** | < 24 hours | Informational |
+| Level             | Response Time | Description                |
+| ----------------- | ------------- | -------------------------- |
+| **P1 - Critical** | < 15 minutes  | Service down, data at risk |
+| **P2 - High**     | < 1 hour      | Significant degradation    |
+| **P3 - Medium**   | < 4 hours     | Minor impact               |
+| **P4 - Low**      | < 24 hours    | Informational              |
 
 ---
 
@@ -14084,21 +14464,21 @@ Level 3 (After 2x delay)
 
 Stored in `notification_policies` table:
 
-| Field | Description |
-|-------|-------------|
-| `escalation_delay_minutes` | Time before escalation |
-| `escalation_contacts` | Contact IDs per level |
-| `quiet_hours_start/end` | Suppress non-critical during hours |
-| `channels` | email, sms, push |
+| Field                      | Description                        |
+| -------------------------- | ---------------------------------- |
+| `escalation_delay_minutes` | Time before escalation             |
+| `escalation_contacts`      | Contact IDs per level              |
+| `quiet_hours_start/end`    | Suppress non-critical during hours |
+| `channels`                 | email, sms, push                   |
 
 ### Operational Escalation
 
-| Level | Time | Contacts | Actions |
-|-------|------|----------|---------|
-| L1 | 0 min | On-call engineer | Investigate |
-| L2 | 15 min | Engineering lead | Join investigation |
-| L3 | 30 min | Engineering manager | Incident command |
-| L4 | 60 min | CTO/Leadership | Executive awareness |
+| Level | Time   | Contacts            | Actions             |
+| ----- | ------ | ------------------- | ------------------- |
+| L1    | 0 min  | On-call engineer    | Investigate         |
+| L2    | 15 min | Engineering lead    | Join investigation  |
+| L3    | 30 min | Engineering manager | Incident command    |
+| L4    | 60 min | CTO/Leadership      | Executive awareness |
 
 ---
 
@@ -14127,12 +14507,12 @@ Stored in `notification_policies` table:
 
 ### Notification Status
 
-| Status | Description |
-|--------|-------------|
-| `queued` | Waiting to send |
-| `sent` | Successfully dispatched |
-| `delivered` | Confirmed delivery |
-| `failed` | Delivery failed |
+| Status       | Description             |
+| ------------ | ----------------------- |
+| `queued`     | Waiting to send         |
+| `sent`       | Successfully dispatched |
+| `delivered`  | Confirmed delivery      |
+| `failed`     | Delivery failed         |
 | `suppressed` | Quiet hours or disabled |
 
 ---
@@ -14169,10 +14549,10 @@ sequenceDiagram
 
 ### Processing Functions
 
-| Function | Purpose | Trigger |
-|----------|---------|---------|
+| Function              | Purpose                        | Trigger                 |
+| --------------------- | ------------------------------ | ----------------------- |
 | `process-unit-states` | Evaluate alerts, update status | After reading ingestion |
-| `process-escalations` | Send notifications, escalate | Alert state changes |
+| `process-escalations` | Send notifications, escalate   | Alert state changes     |
 
 ---
 
@@ -14181,6 +14561,7 @@ sequenceDiagram
 ### Current State
 
 FreshTrack Pro does not currently have automated operational alerting. Monitoring is through:
+
 - Health Dashboard (manual check)
 - Supabase Dashboard (platform metrics)
 - Debug Terminal (application logs)
@@ -14189,23 +14570,23 @@ FreshTrack Pro does not currently have automated operational alerting. Monitorin
 
 #### Integration with External Service
 
-| Service | Use Case | Integration Method |
-|---------|----------|-------------------|
-| PagerDuty | On-call management | Webhook from health check |
-| Opsgenie | Incident management | API integration |
-| Slack | Team notifications | Webhook |
-| Email | Backup notifications | SMTP |
+| Service   | Use Case             | Integration Method        |
+| --------- | -------------------- | ------------------------- |
+| PagerDuty | On-call management   | Webhook from health check |
+| Opsgenie  | Incident management  | API integration           |
+| Slack     | Team notifications   | Webhook                   |
+| Email     | Backup notifications | SMTP                      |
 
 #### Recommended Alert Rules
 
-| Condition | Threshold | Severity |
-|-----------|-----------|----------|
-| Health check returns error | Any check failed | P2 |
-| Health check returns degraded | >3 checks degraded | P3 |
-| Edge function error rate | >5% in 5 minutes | P2 |
-| Database latency | >500ms avg | P3 |
-| TTN webhook failures | >10% in 1 hour | P2 |
-| No readings received | 0 in 15 minutes | P1 |
+| Condition                     | Threshold          | Severity |
+| ----------------------------- | ------------------ | -------- |
+| Health check returns error    | Any check failed   | P2       |
+| Health check returns degraded | >3 checks degraded | P3       |
+| Edge function error rate      | >5% in 5 minutes   | P2       |
+| Database latency              | >500ms avg         | P3       |
+| TTN webhook failures          | >10% in 1 hour     | P2       |
+| No readings received          | 0 in 15 minutes    | P1       |
 
 #### Implementation Approach
 
@@ -14221,9 +14602,9 @@ if (overallStatus === 'error') {
         summary: 'FreshTrack Pro health check failed',
         severity: 'critical',
         source: 'health-check',
-        custom_details: checkResults
-      }
-    })
+        custom_details: checkResults,
+      },
+    }),
   });
 }
 ```
@@ -14234,21 +14615,21 @@ if (overallStatus === 'error') {
 
 ### Per-Organization Settings
 
-| Setting | Location | Description |
-|---------|----------|-------------|
-| Alert rules | `alert_rules` table | Thresholds per unit/site |
-| Notification policy | `notification_policies` | Channels, contacts |
-| Escalation contacts | `escalation_contacts` | Contact hierarchy |
-| Quiet hours | `notification_policies` | Suppress timing |
+| Setting             | Location                | Description              |
+| ------------------- | ----------------------- | ------------------------ |
+| Alert rules         | `alert_rules` table     | Thresholds per unit/site |
+| Notification policy | `notification_policies` | Channels, contacts       |
+| Escalation contacts | `escalation_contacts`   | Contact hierarchy        |
+| Quiet hours         | `notification_policies` | Suppress timing          |
 
 ### Default Thresholds
 
-| Unit Type | Min Temp | Max Temp | Confirm Time |
-|-----------|----------|----------|--------------|
-| Cooler | 33°F | 40°F | 5 min |
-| Freezer | -10°F | 0°F | 5 min |
-| Walk-in Cooler | 35°F | 41°F | 10 min |
-| Prep Station | 35°F | 40°F | 5 min |
+| Unit Type      | Min Temp | Max Temp | Confirm Time |
+| -------------- | -------- | -------- | ------------ |
+| Cooler         | 33°F     | 40°F     | 5 min        |
+| Freezer        | -10°F    | 0°F      | 5 min        |
+| Walk-in Cooler | 35°F     | 41°F     | 10 min       |
+| Prep Station   | 35°F     | 40°F     | 5 min        |
 
 ### Alert Rule Cascade
 
@@ -14275,11 +14656,11 @@ Resolved via `get_effective_alert_rules` RPC.
 
 ### Manual Suppression
 
-| Action | Effect | Duration |
-|--------|--------|----------|
-| Acknowledge alert | Stops escalation | Until resolved |
-| Disable unit monitoring | No alerts | Until re-enabled |
-| Contact opt-out | Skip contact | Permanent |
+| Action                  | Effect           | Duration         |
+| ----------------------- | ---------------- | ---------------- |
+| Acknowledge alert       | Stops escalation | Until resolved   |
+| Disable unit monitoring | No alerts        | Until re-enabled |
+| Contact opt-out         | Skip contact     | Permanent        |
 
 ### Maintenance Windows
 
@@ -14292,13 +14673,13 @@ Recommended: Scheduled suppression windows (to implement)
 
 ### What's Logged
 
-| Event | Logged Data |
-|-------|-------------|
-| Alert created | Type, severity, unit, timestamp |
-| Alert acknowledged | User, timestamp, note |
-| Alert resolved | Timestamp, auto/manual |
-| Notification sent | Channel, recipient, status |
-| Escalation triggered | Level, contacts notified |
+| Event                | Logged Data                     |
+| -------------------- | ------------------------------- |
+| Alert created        | Type, severity, unit, timestamp |
+| Alert acknowledged   | User, timestamp, note           |
+| Alert resolved       | Timestamp, auto/manual          |
+| Notification sent    | Channel, recipient, status      |
+| Escalation triggered | Level, contacts notified        |
 
 ### Audit Queries
 
@@ -14360,7 +14741,6 @@ ORDER BY created_at DESC;
 - [DASHBOARDS.md](#dashboards) — Dashboard configuration
 - [LOGGING.md](#logging) — Log sources and debugging
 - [RUNBOOKS.md](#runbooks) — Operational procedures
-
 
 ---
 
@@ -14424,30 +14804,30 @@ graph TB
 
 #### Log Levels
 
-| Level | Color | Use Case |
-|-------|-------|----------|
-| `debug` | Gray | Verbose debugging |
-| `info` | Blue | Normal operations |
-| `warn` | Orange | Potential issues |
-| `error` | Red | Errors and failures |
+| Level   | Color  | Use Case            |
+| ------- | ------ | ------------------- |
+| `debug` | Gray   | Verbose debugging   |
+| `info`  | Blue   | Normal operations   |
+| `warn`  | Orange | Potential issues    |
+| `error` | Red    | Errors and failures |
 
 #### Log Categories
 
-| Category | Description | Examples |
-|----------|-------------|----------|
-| `ui` | User interface events | Button clicks, navigation |
-| `routing` | Route changes | Page transitions |
-| `db` | Database operations | Queries, mutations |
-| `sync` | Data synchronization | Offline sync, refresh |
-| `ttn` | TTN operations | Provisioning, webhooks |
-| `provisioning` | Device provisioning | Sensor/gateway setup |
-| `edge` | Edge function calls | API requests |
-| `network` | Network activity | Fetch, WebSocket |
-| `auth` | Authentication | Login, logout, token |
-| `crud` | CRUD operations | Create, update, delete |
-| `realtime` | Real-time updates | Subscriptions |
-| `mutation` | Data mutations | Form submissions |
-| `query` | Data queries | Data fetching |
+| Category       | Description           | Examples                  |
+| -------------- | --------------------- | ------------------------- |
+| `ui`           | User interface events | Button clicks, navigation |
+| `routing`      | Route changes         | Page transitions          |
+| `db`           | Database operations   | Queries, mutations        |
+| `sync`         | Data synchronization  | Offline sync, refresh     |
+| `ttn`          | TTN operations        | Provisioning, webhooks    |
+| `provisioning` | Device provisioning   | Sensor/gateway setup      |
+| `edge`         | Edge function calls   | API requests              |
+| `network`      | Network activity      | Fetch, WebSocket          |
+| `auth`         | Authentication        | Login, logout, token      |
+| `crud`         | CRUD operations       | Create, update, delete    |
+| `realtime`     | Real-time updates     | Subscriptions             |
+| `mutation`     | Data mutations        | Form submissions          |
+| `query`        | Data queries          | Data fetching             |
 
 #### Using the Debug Logger
 
@@ -14468,7 +14848,7 @@ try {
 
 // With correlation ID (for tracing related operations)
 debugLog.info('ttn', 'Starting TTN sync', {
-  correlationId: 'abc-123'
+  correlationId: 'abc-123',
 });
 ```
 
@@ -14476,14 +14856,14 @@ debugLog.info('ttn', 'Starting TTN sync', {
 
 The debug logger automatically redacts sensitive data:
 
-| Field Pattern | Redaction |
-|---------------|-----------|
-| `api_key`, `apiKey` | `[REDACTED]` |
-| `secret`, `password` | `[REDACTED]` |
-| `token`, `authorization` | `[REDACTED]` |
-| `private_key`, `credential` | `[REDACTED]` |
-| `ttn_api_key_last4` | Shows last 4 only |
-| `dev_eui`, `gateway_eui` | Shows last 4 only |
+| Field Pattern               | Redaction         |
+| --------------------------- | ----------------- |
+| `api_key`, `apiKey`         | `[REDACTED]`      |
+| `secret`, `password`        | `[REDACTED]`      |
+| `token`, `authorization`    | `[REDACTED]`      |
+| `private_key`, `credential` | `[REDACTED]`      |
+| `ttn_api_key_last4`         | Shows last 4 only |
+| `dev_eui`, `gateway_eui`    | Shows last 4 only |
 
 #### Exporting Logs
 
@@ -14497,7 +14877,7 @@ const jsonLogs = exportLogs();
 const snapshot = generateSnapshot({
   focusTimestamp: errorTime,
   includeNetwork: true,
-  maxLogs: 500
+  maxLogs: 500,
 });
 ```
 
@@ -14519,7 +14899,7 @@ logEvent({
   title: 'Unit settings changed',
   site_id: unit.site_id,
   unit_id: unit.id,
-  event_data: { changes: diff }
+  event_data: { changes: diff },
 });
 
 // Alert-specific logging
@@ -14531,21 +14911,21 @@ logManualTempEvent(unit, temperature, userId, { note: 'Visual check' });
 // Settings change logging
 logSettingsEvent('alert_rules', 'updated', userId, {
   before: oldRules,
-  after: newRules
+  after: newRules,
 });
 ```
 
 #### Event Types
 
-| Type Pattern | Description |
-|--------------|-------------|
-| `sensor.*` | Sensor events (paired, reading, offline) |
-| `alert.*` | Alert lifecycle (created, acknowledged, resolved) |
-| `compliance.*` | Compliance events (excursion, gap) |
-| `settings.*` | Configuration changes |
-| `notification.*` | Notification delivery |
-| `ttn.*` | TTN integration events |
-| `system.*` | System events (login, export) |
+| Type Pattern     | Description                                       |
+| ---------------- | ------------------------------------------------- |
+| `sensor.*`       | Sensor events (paired, reading, offline)          |
+| `alert.*`        | Alert lifecycle (created, acknowledged, resolved) |
+| `compliance.*`   | Compliance events (excursion, gap)                |
+| `settings.*`     | Configuration changes                             |
+| `notification.*` | Notification delivery                             |
+| `ttn.*`          | TTN integration events                            |
+| `system.*`       | System events (login, export)                     |
 
 ---
 
@@ -14558,12 +14938,12 @@ All edge functions use `console.log` with prefixes:
 ```typescript
 // Standard pattern
 console.log('[ttn-webhook] Received uplink', {
-  dev_eui: payload.end_device_ids.dev_eui
+  dev_eui: payload.end_device_ids.dev_eui,
 });
 
 // Error logging
 console.error('[ttn-webhook] Device not found', {
-  dev_eui: normalizedEui
+  dev_eui: normalizedEui,
 });
 
 // Timing
@@ -14571,20 +14951,20 @@ const startTime = Date.now();
 // ... operation ...
 console.log('[process-unit-states] Completed', {
   duration_ms: Date.now() - startTime,
-  units_processed: count
+  units_processed: count,
 });
 ```
 
 ### Function Log Prefixes
 
-| Function | Prefix |
-|----------|--------|
-| `ttn-webhook` | `[ttn-webhook]` |
-| `stripe-webhook` | `[stripe-webhook]` |
+| Function              | Prefix                  |
+| --------------------- | ----------------------- |
+| `ttn-webhook`         | `[ttn-webhook]`         |
+| `stripe-webhook`      | `[stripe-webhook]`      |
 | `process-unit-states` | `[process-unit-states]` |
 | `process-escalations` | `[process-escalations]` |
-| `ingest-readings` | `[ingest-readings]` |
-| `health-check` | `[health-check]` |
+| `ingest-readings`     | `[ingest-readings]`     |
+| `health-check`        | `[health-check]`        |
 
 ### Viewing Server Logs
 
@@ -14613,25 +14993,25 @@ supabase functions logs ttn-webhook --limit 100
 
 **Table:** `event_logs`
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | Tenant scope |
-| `event_type` | TEXT | Event identifier |
-| `category` | TEXT | Event category |
-| `severity` | TEXT | info/warning/critical |
-| `title` | TEXT | Human-readable title |
-| `actor_id` | UUID | User who triggered |
-| `actor_type` | TEXT | user/system |
-| `site_id` | UUID | Related site |
-| `area_id` | UUID | Related area |
-| `unit_id` | UUID | Related unit |
-| `event_data` | JSONB | Additional data |
-| `ip_address` | INET | Client IP |
-| `user_agent` | TEXT | Browser info |
-| `previous_hash` | TEXT | Hash chain |
-| `event_hash` | TEXT | Event hash |
-| `created_at` | TIMESTAMPTZ | Timestamp |
+| Column            | Type        | Description           |
+| ----------------- | ----------- | --------------------- |
+| `id`              | UUID        | Primary key           |
+| `organization_id` | UUID        | Tenant scope          |
+| `event_type`      | TEXT        | Event identifier      |
+| `category`        | TEXT        | Event category        |
+| `severity`        | TEXT        | info/warning/critical |
+| `title`           | TEXT        | Human-readable title  |
+| `actor_id`        | UUID        | User who triggered    |
+| `actor_type`      | TEXT        | user/system           |
+| `site_id`         | UUID        | Related site          |
+| `area_id`         | UUID        | Related area          |
+| `unit_id`         | UUID        | Related unit          |
+| `event_data`      | JSONB       | Additional data       |
+| `ip_address`      | INET        | Client IP             |
+| `user_agent`      | TEXT        | Browser info          |
+| `previous_hash`   | TEXT        | Hash chain            |
+| `event_hash`      | TEXT        | Event hash            |
+| `created_at`      | TIMESTAMPTZ | Timestamp             |
 
 ### Query Examples
 
@@ -14665,20 +15045,20 @@ ORDER BY created_at DESC;
 
 ### Current Retention
 
-| Log Type | Retention | Location |
-|----------|-----------|----------|
-| Debug logs | Session only | Browser memory |
-| Event logs | Permanent | Database |
-| Edge function logs | 7 days | Supabase |
-| Auth logs | 7 days | Supabase |
+| Log Type           | Retention    | Location       |
+| ------------------ | ------------ | -------------- |
+| Debug logs         | Session only | Browser memory |
+| Event logs         | Permanent    | Database       |
+| Edge function logs | 7 days       | Supabase       |
+| Auth logs          | 7 days       | Supabase       |
 
 ### Recommendations
 
-| Log Type | Recommended Retention | Reason |
-|----------|----------------------|--------|
-| Event logs | 2+ years | Compliance (HACCP) |
-| Edge function logs | 30 days | Debugging |
-| Auth logs | 90 days | Security |
+| Log Type           | Recommended Retention | Reason             |
+| ------------------ | --------------------- | ------------------ |
+| Event logs         | 2+ years              | Compliance (HACCP) |
+| Edge function logs | 30 days               | Debugging          |
+| Auth logs          | 90 days               | Security           |
 
 ---
 
@@ -14827,7 +15207,7 @@ const snapshot = generateSnapshot({
   focusTimestamp: errorTimestamp,
   includeNetwork: true,
   maxLogs: 500,
-  surroundingSeconds: 30
+  surroundingSeconds: 30,
 });
 ```
 
@@ -14839,14 +15219,10 @@ const snapshot = generateSnapshot({
 
 ```typescript
 // Find slow operations
-const slowOps = logs.filter(log =>
-  log.duration && log.duration > 1000
-);
+const slowOps = logs.filter((log) => log.duration && log.duration > 1000);
 
 // Find error patterns
-const errors = logs.filter(log =>
-  log.level === 'error'
-);
+const errors = logs.filter((log) => log.level === 'error');
 
 // Group by category
 const byCategory = logs.reduce((acc, log) => {
@@ -14857,13 +15233,13 @@ const byCategory = logs.reduce((acc, log) => {
 
 ### Common Patterns to Watch
 
-| Pattern | Indicates |
-|---------|-----------|
-| Repeated `401` errors | Auth issues |
+| Pattern                   | Indicates            |
+| ------------------------- | -------------------- |
+| Repeated `401` errors     | Auth issues          |
 | High `duration_ms` values | Performance problems |
-| `Device not found` | DevEUI mismatch |
-| `RLS policy violation` | Permission issue |
-| `Connection timeout` | Network problems |
+| `Device not found`        | DevEUI mismatch      |
+| `RLS policy violation`    | Permission issue     |
+| `Connection timeout`      | Network problems     |
 
 ---
 
@@ -14872,6 +15248,7 @@ const byCategory = logs.reduce((acc, log) => {
 ### Logging Guidelines
 
 1. **Always use structured logging**
+
    ```typescript
    // Good
    console.log('[function] Event', { key: value });
@@ -14881,12 +15258,13 @@ const byCategory = logs.reduce((acc, log) => {
    ```
 
 2. **Include context**
+
    ```typescript
    // Good
    console.log('[process] Completed', {
      duration_ms: Date.now() - start,
      items_processed: count,
-     errors: errorCount
+     errors: errorCount,
    });
    ```
 
@@ -14897,6 +15275,7 @@ const byCategory = logs.reduce((acc, log) => {
    - `error`: Failures
 
 4. **Never log secrets**
+
    ```typescript
    // Good
    console.log('Using key ending in', key.slice(-4));
@@ -14921,7 +15300,6 @@ const byCategory = logs.reduce((acc, log) => {
 - [ALERTING.md](#alerting) — Alert conditions and escalation
 - [RUNBOOKS.md](#runbooks) — Operational procedures
 
-
 ---
 
 \newpage
@@ -14936,31 +15314,33 @@ const byCategory = logs.reduce((acc, log) => {
 
 ## Runbook Index
 
-| ID | Runbook | Severity | Trigger |
-|----|---------|----------|---------|
-| RB-001 | [Health Check Failure](#rb-001-health-check-failure) | P2 | Health dashboard red |
-| RB-002 | [TTN Webhook Not Receiving](#rb-002-ttn-webhook-not-receiving) | P1 | No sensor readings |
-| RB-003 | [Sensor Offline](#rb-003-sensor-offline) | P3 | Sensor status offline |
-| RB-004 | [Gateway Offline](#rb-004-gateway-offline) | P2 | Gateway not reporting |
-| RB-005 | [Alert Processing Failure](#rb-005-alert-processing-failure) | P1 | Alerts not triggering |
-| RB-006 | [Notification Delivery Failure](#rb-006-notification-delivery-failure) | P2 | Notifications not sent |
-| RB-007 | [Database Latency High](#rb-007-database-latency-high) | P3 | Slow queries |
-| RB-008 | [Stripe Webhook Failure](#rb-008-stripe-webhook-failure) | P2 | Payment issues |
-| RB-009 | [Simulator Not Running](#rb-009-simulator-not-running) | P4 | Test data not generating |
-| RB-010 | [User Cannot Login](#rb-010-user-cannot-login) | P3 | Auth failures |
-| RB-011 | [TTN Provisioning Failure](#rb-011-ttn-provisioning-failure) | P3 | Device registration fails |
-| RB-012 | [Data Ingestion Backlog](#rb-012-data-ingestion-backlog) | P2 | Processing delays |
+| ID     | Runbook                                                                | Severity | Trigger                   |
+| ------ | ---------------------------------------------------------------------- | -------- | ------------------------- |
+| RB-001 | [Health Check Failure](#rb-001-health-check-failure)                   | P2       | Health dashboard red      |
+| RB-002 | [TTN Webhook Not Receiving](#rb-002-ttn-webhook-not-receiving)         | P1       | No sensor readings        |
+| RB-003 | [Sensor Offline](#rb-003-sensor-offline)                               | P3       | Sensor status offline     |
+| RB-004 | [Gateway Offline](#rb-004-gateway-offline)                             | P2       | Gateway not reporting     |
+| RB-005 | [Alert Processing Failure](#rb-005-alert-processing-failure)           | P1       | Alerts not triggering     |
+| RB-006 | [Notification Delivery Failure](#rb-006-notification-delivery-failure) | P2       | Notifications not sent    |
+| RB-007 | [Database Latency High](#rb-007-database-latency-high)                 | P3       | Slow queries              |
+| RB-008 | [Stripe Webhook Failure](#rb-008-stripe-webhook-failure)               | P2       | Payment issues            |
+| RB-009 | [Simulator Not Running](#rb-009-simulator-not-running)                 | P4       | Test data not generating  |
+| RB-010 | [User Cannot Login](#rb-010-user-cannot-login)                         | P3       | Auth failures             |
+| RB-011 | [TTN Provisioning Failure](#rb-011-ttn-provisioning-failure)           | P3       | Device registration fails |
+| RB-012 | [Data Ingestion Backlog](#rb-012-data-ingestion-backlog)               | P2       | Processing delays         |
 
 ---
 
 ## RB-001: Health Check Failure
 
 ### Symptoms
+
 - Health Dashboard shows red status
 - `/functions/v1/health-check` returns error status
 - One or more checks failing
 
 ### Severity
+
 P2 - High
 
 ### Initial Assessment
@@ -15009,6 +15389,7 @@ curl https://your-project.supabase.co/functions/v1/health-check
 4. See [RB-002](#rb-002-ttn-webhook-not-receiving)
 
 ### Escalation
+
 - If unresolved after 15 minutes: Escalate to Engineering Lead
 - If affecting customer data: Escalate immediately
 
@@ -15017,11 +15398,13 @@ curl https://your-project.supabase.co/functions/v1/health-check
 ## RB-002: TTN Webhook Not Receiving
 
 ### Symptoms
+
 - No new sensor readings appearing
 - `sensor_readings` table not updating
 - TTN Console shows uplinks but no delivery
 
 ### Severity
+
 P1 - Critical (data not being collected)
 
 ### Diagnosis
@@ -15094,11 +15477,13 @@ WHERE UPPER(REPLACE(dev_eui, ':', '')) = 'AABBCCDDEEFF0011';
 ```
 
 If not found:
+
 - DevEUI may be formatted differently
 - Sensor may not be registered
 - Check both `lora_sensors` and legacy `devices` table
 
 ### Escalation
+
 - Immediate if no data for >15 minutes across all orgs
 - Engineering Lead + on-call
 
@@ -15107,11 +15492,13 @@ If not found:
 ## RB-003: Sensor Offline
 
 ### Symptoms
+
 - Sensor status shows "offline"
 - No recent readings from sensor
 - Customer reports unit not updating
 
 ### Severity
+
 P3 - Medium
 
 ### Diagnosis
@@ -15184,11 +15571,13 @@ contact support with the sensor location details.
 ## RB-004: Gateway Offline
 
 ### Symptoms
+
 - Gateway status shows "offline"
 - Multiple sensors behind gateway not reporting
 - TTN Console shows gateway disconnected
 
 ### Severity
+
 P2 - High (affects multiple sensors)
 
 ### Diagnosis
@@ -15212,6 +15601,7 @@ GROUP BY g.id;
 #### Step 1: Verify Physical Gateway
 
 Contact customer to verify:
+
 - Gateway is powered on
 - Network cable connected (if ethernet)
 - LED status indicates online
@@ -15232,6 +15622,7 @@ Contact customer to verify:
 #### Step 4: Re-register if Needed
 
 If gateway won't reconnect:
+
 1. Delete from TTN Console
 2. Re-provision via FreshTrack Pro
 3. Factory reset physical gateway
@@ -15241,11 +15632,13 @@ If gateway won't reconnect:
 ## RB-005: Alert Processing Failure
 
 ### Symptoms
+
 - Temperature out of range but no alert
 - `process-unit-states` not updating unit status
 - Alerts not being created
 
 ### Severity
+
 P1 - Critical (safety-critical functionality)
 
 ### Diagnosis
@@ -15305,6 +15698,7 @@ WHERE id = 'unit-uuid';
 ```
 
 ### Escalation
+
 - Immediate to Engineering Lead
 - This is safety-critical functionality
 
@@ -15313,11 +15707,13 @@ WHERE id = 'unit-uuid';
 ## RB-006: Notification Delivery Failure
 
 ### Symptoms
+
 - Alerts triggered but no notifications sent
 - Customer reports not receiving emails/SMS
 - Notification status shows "failed"
 
 ### Severity
+
 P2 - High
 
 ### Diagnosis
@@ -15390,11 +15786,13 @@ curl -X POST https://api.resend.com/emails \
 ## RB-007: Database Latency High
 
 ### Symptoms
+
 - Health check shows degraded database
 - Slow page loads
 - Query timeouts
 
 ### Severity
+
 P3 - Medium
 
 ### Diagnosis
@@ -15444,11 +15842,13 @@ WHERE pid = <pid-from-above>;
 ## RB-008: Stripe Webhook Failure
 
 ### Symptoms
+
 - Payments not reflected in app
 - Subscription changes not syncing
 - Stripe Dashboard shows webhook failures
 
 ### Severity
+
 P2 - High
 
 ### Diagnosis
@@ -15500,11 +15900,13 @@ WHERE stripe_customer_id = 'cus_xxx';
 ## RB-009: Simulator Not Running
 
 ### Symptoms
+
 - Test sensors not generating data
 - Simulator status shows inactive
 - No synthetic readings
 
 ### Severity
+
 P4 - Low (development/testing only)
 
 ### Resolution Steps
@@ -15522,6 +15924,7 @@ AND organization_id = 'org-uuid';
 #### Step 2: Verify Scheduler
 
 Check if `run-simulator-heartbeats` is scheduled:
+
 1. Check pg_cron configuration
 2. Or verify external scheduler (if used)
 
@@ -15550,11 +15953,13 @@ WHERE id = 'simulation-uuid';
 ## RB-010: User Cannot Login
 
 ### Symptoms
+
 - User reports login failure
 - "Invalid credentials" error
 - Account locked
 
 ### Severity
+
 P3 - Medium
 
 ### Resolution Steps
@@ -15576,6 +15981,7 @@ WHERE email = 'user@example.com';
 #### Step 2: Check for Ban
 
 If `banned_until` is set:
+
 ```sql
 -- Remove ban
 UPDATE auth.users
@@ -15613,11 +16019,13 @@ WHERE user_id = 'user-uuid';
 ## RB-011: TTN Provisioning Failure
 
 ### Symptoms
+
 - Device/gateway provisioning fails
 - Error in provisioning UI
 - Device not appearing in TTN Console
 
 ### Severity
+
 P3 - Medium
 
 ### Diagnosis
@@ -15647,6 +16055,7 @@ WHERE organization_id = 'org-uuid';
 #### Step 2: Validate API Key
 
 Run preflight check:
+
 ```bash
 curl -X POST \
   https://your-project.supabase.co/functions/v1/ttn-gateway-preflight \
@@ -15664,6 +16073,7 @@ curl -X POST \
 #### Step 4: Manual Registration
 
 If automated fails:
+
 1. Register device manually in TTN Console
 2. Update local database to match
 3. Investigate automation failure
@@ -15673,11 +16083,13 @@ If automated fails:
 ## RB-012: Data Ingestion Backlog
 
 ### Symptoms
+
 - Readings delayed
 - Processing queue growing
 - Dashboard showing stale data
 
 ### Severity
+
 P2 - High
 
 ### Diagnosis
@@ -15708,6 +16120,7 @@ supabase functions logs process-unit-states --limit 50
 #### Step 2: Scale if Possible
 
 Contact Supabase support for:
+
 - Increased function concurrency
 - Database performance tier
 
@@ -15723,6 +16136,7 @@ WHERE status = 'alarm_active';
 #### Step 4: Clear Backlog
 
 May need to:
+
 - Temporarily skip non-critical processing
 - Increase batch sizes
 - Add processing capacity
@@ -15731,13 +16145,13 @@ May need to:
 
 ## Emergency Contacts
 
-| Role | Contact | When to Use |
-|------|---------|-------------|
-| On-Call Engineer | See PagerDuty/Opsgenie | P1-P2 incidents |
-| Engineering Lead | See team directory | Escalation |
-| Supabase Support | support@supabase.io | Platform issues |
-| TTN Support | support@thethings.network | TTN issues |
-| Stripe Support | Stripe Dashboard | Payment issues |
+| Role             | Contact                   | When to Use     |
+| ---------------- | ------------------------- | --------------- |
+| On-Call Engineer | See PagerDuty/Opsgenie    | P1-P2 incidents |
+| Engineering Lead | See team directory        | Escalation      |
+| Supabase Support | support@supabase.io       | Platform issues |
+| TTN Support      | support@thethings.network | TTN issues      |
+| Stripe Support   | Stripe Dashboard          | Payment issues  |
 
 ---
 
@@ -15747,7 +16161,6 @@ May need to:
 - [DASHBOARDS.md](#dashboards) — Dashboard configuration
 - [ALERTING.md](#alerting) — Alert conditions and escalation
 - [LOGGING.md](#logging) — Log sources and debugging
-
 
 ---
 
@@ -15809,23 +16222,23 @@ graph TB
 
 ## Actor Descriptions
 
-| Actor | Description | Key Interactions |
-|-------|-------------|------------------|
-| Food Safety Manager | Strategic oversight of food safety | Dashboard, reports, policy configuration |
-| Operations Manager | Facilities and equipment management | Trends, escalations, equipment health |
-| Kitchen Staff | Day-to-day operations | Manual logging, alert acknowledgment |
-| IT Administrator | Technical setup and maintenance | Sensor provisioning, TTN configuration |
+| Actor               | Description                         | Key Interactions                         |
+| ------------------- | ----------------------------------- | ---------------------------------------- |
+| Food Safety Manager | Strategic oversight of food safety  | Dashboard, reports, policy configuration |
+| Operations Manager  | Facilities and equipment management | Trends, escalations, equipment health    |
+| Kitchen Staff       | Day-to-day operations               | Manual logging, alert acknowledgment     |
+| IT Administrator    | Technical setup and maintenance     | Sensor provisioning, TTN configuration   |
 
 ---
 
 ## External System Descriptions
 
-| System | Purpose | Integration Type |
-|--------|---------|------------------|
+| System             | Purpose                | Integration Type            |
+| ------------------ | ---------------------- | --------------------------- |
 | The Things Network | LoRaWAN sensor network | Bidirectional API + Webhook |
-| Stripe | Subscription billing | API + Webhook |
-| Twilio | SMS alert delivery | Outbound API |
-| Email (Supabase) | Email notifications | SMTP |
+| Stripe             | Subscription billing   | API + Webhook               |
+| Twilio             | SMS alert delivery     | Outbound API                |
+| Email (Supabase)   | Email notifications    | SMTP                        |
 
 ---
 
@@ -15890,7 +16303,6 @@ graph TB
 
 - [CONTAINER_DIAGRAM.md](#container_diagram) - Internal container architecture
 - [ARCHITECTURE.md](#architecture-architecture) - Detailed architecture documentation
-
 
 ---
 
@@ -15994,14 +16406,15 @@ graph TB
 
 ### Frontend Container
 
-| Property | Value |
-|----------|-------|
+| Property   | Value                          |
+| ---------- | ------------------------------ |
 | Technology | React 18.3.1, TypeScript, Vite |
-| Build | `npm run build` → `dist/` |
-| Hosting | Lovable platform (CDN) |
-| Port | 8080 (development) |
+| Build      | `npm run build` → `dist/`      |
+| Hosting    | Lovable platform (CDN)         |
+| Port       | 8080 (development)             |
 
 **Responsibilities**:
+
 - User interface rendering
 - Client-side routing
 - Form handling and validation
@@ -16010,13 +16423,14 @@ graph TB
 
 ### Auth Container
 
-| Property | Value |
-|----------|-------|
+| Property   | Value                  |
+| ---------- | ---------------------- |
 | Technology | Supabase Auth (GoTrue) |
-| Protocol | JWT (HS256) |
-| Session | localStorage |
+| Protocol   | JWT (HS256)            |
+| Session    | localStorage           |
 
 **Responsibilities**:
+
 - User authentication
 - Session management
 - Password reset
@@ -16024,13 +16438,14 @@ graph TB
 
 ### Database Container
 
-| Property | Value |
-|----------|-------|
-| Technology | PostgreSQL 14.1 |
-| Tables | 60+ |
+| Property       | Value              |
+| -------------- | ------------------ |
+| Technology     | PostgreSQL 14.1    |
+| Tables         | 60+                |
 | Access Control | Row-Level Security |
 
 **Key Features**:
+
 - RLS policies for multi-tenancy
 - Database functions (RPC)
 - Triggers for event handling
@@ -16038,10 +16453,10 @@ graph TB
 
 ### Edge Functions Container
 
-| Property | Value |
-|----------|-------|
-| Runtime | Deno |
-| Functions | 33 |
+| Property   | Value           |
+| ---------- | --------------- |
+| Runtime    | Deno            |
+| Functions  | 33              |
 | Invocation | HTTP, Scheduled |
 
 **Function Categories**:
@@ -16112,15 +16527,15 @@ sequenceDiagram
 
 ### Protocols
 
-| From | To | Protocol | Auth |
-|------|----|---------|----- |
-| SPA | Gateway | HTTPS | JWT |
-| SPA | Auth | HTTPS | API Key |
-| TTN | ttn-webhook | HTTPS | Webhook Secret |
-| Stripe | stripe-webhook | HTTPS | Signature |
-| Edge → Database | TCP | Service Role Key |
-| Edge → Twilio | HTTPS | API Credentials |
-| Edge → TTN | HTTPS | Org API Key |
+| From            | To             | Protocol         | Auth           |
+| --------------- | -------------- | ---------------- | -------------- |
+| SPA             | Gateway        | HTTPS            | JWT            |
+| SPA             | Auth           | HTTPS            | API Key        |
+| TTN             | ttn-webhook    | HTTPS            | Webhook Secret |
+| Stripe          | stripe-webhook | HTTPS            | Signature      |
+| Edge → Database | TCP            | Service Role Key |
+| Edge → Twilio   | HTTPS          | API Credentials  |
+| Edge → TTN      | HTTPS          | Org API Key      |
 
 ### Internal Communication
 
@@ -16167,12 +16582,12 @@ graph TB
 
 ## Scalability Considerations
 
-| Component | Scaling Method |
-|-----------|----------------|
-| SPA | CDN distribution |
-| Edge Functions | Auto-scaling workers |
-| Database | Vertical scaling, read replicas |
-| Auth | Managed by Supabase |
+| Component      | Scaling Method                  |
+| -------------- | ------------------------------- |
+| SPA            | CDN distribution                |
+| Edge Functions | Auto-scaling workers            |
+| Database       | Vertical scaling, read replicas |
+| Auth           | Managed by Supabase             |
 
 ---
 
@@ -16181,7 +16596,6 @@ graph TB
 - [SYSTEM_CONTEXT.md](#system_context) - External context
 - [FLOWCHARTS.md](#charts-flowcharts) - Process flows
 - [ARCHITECTURE.md](#architecture-architecture) - Full documentation
-
 
 ---
 
@@ -16918,7 +17332,6 @@ stateDiagram-v2
 - [USER_FLOWS.md](#product-user_flows) - User flow documentation
 - [STATE_MACHINES.md](#state_machines) - State machine details
 
-
 ---
 
 \newpage
@@ -17357,7 +17770,6 @@ sequenceDiagram
 - [PAGE_DIAGRAMS.md](#page_diagrams) - Page component diagrams
 - [STATE_MACHINES.md](#state_machines) - State machine diagrams
 
-
 ---
 
 \newpage
@@ -17420,28 +17832,28 @@ stateDiagram-v2
 
 ### State Descriptions
 
-| Status | Description | Priority | Color |
-|--------|-------------|----------|-------|
-| `ok` | Normal operation | 5 | Green |
-| `excursion` | Temp out of range (unconfirmed) | 2 | Orange-red |
-| `alarm_active` | Confirmed temp alarm | 1 (highest) | Red |
-| `restoring` | Recovering from issue | 4 | Blue |
-| `offline` | Warning-level offline (1-4 missed) | 6 | Gray |
-| `monitoring_interrupted` | Critical offline (5+ missed) | 3 | Gray |
-| `manual_required` | Manual logging needed | 4 | Orange |
+| Status                   | Description                        | Priority    | Color      |
+| ------------------------ | ---------------------------------- | ----------- | ---------- |
+| `ok`                     | Normal operation                   | 5           | Green      |
+| `excursion`              | Temp out of range (unconfirmed)    | 2           | Orange-red |
+| `alarm_active`           | Confirmed temp alarm               | 1 (highest) | Red        |
+| `restoring`              | Recovering from issue              | 4           | Blue       |
+| `offline`                | Warning-level offline (1-4 missed) | 6           | Gray       |
+| `monitoring_interrupted` | Critical offline (5+ missed)       | 3           | Gray       |
+| `manual_required`        | Manual logging needed              | 4           | Orange     |
 
 ### Transitions
 
-| From | To | Trigger |
-|------|----|---------|
-| `ok` → `excursion` | Temperature exceeds threshold |
-| `excursion` → `alarm_active` | Confirm time (10-20 min) passed |
-| `alarm_active` → `restoring` | Temperature returns to safe range |
-| `restoring` → `ok` | 2 consecutive in-range readings |
-| `ok` → `offline` | 1-4 missed check-ins |
-| `offline` → `monitoring_interrupted` | 5+ missed check-ins |
-| `monitoring_interrupted` → `manual_required` | 4+ hours since last reading |
-| `*` → `restoring` | Sensor data received |
+| From                                         | To                                | Trigger |
+| -------------------------------------------- | --------------------------------- | ------- |
+| `ok` → `excursion`                           | Temperature exceeds threshold     |
+| `excursion` → `alarm_active`                 | Confirm time (10-20 min) passed   |
+| `alarm_active` → `restoring`                 | Temperature returns to safe range |
+| `restoring` → `ok`                           | 2 consecutive in-range readings   |
+| `ok` → `offline`                             | 1-4 missed check-ins              |
+| `offline` → `monitoring_interrupted`         | 5+ missed check-ins               |
+| `monitoring_interrupted` → `manual_required` | 4+ hours since last reading       |
+| `*` → `restoring`                            | Sensor data received              |
 
 ---
 
@@ -17470,11 +17882,11 @@ stateDiagram-v2
 
 ### State Descriptions
 
-| Status | Description | Actions Available |
-|--------|-------------|-------------------|
-| `triggered` | Active alert, not yet acknowledged | Acknowledge, Resolve |
-| `acknowledged` | User has seen and is handling | Resolve |
-| `resolved` | Alert closed (auto or manual) | None (archived) |
+| Status         | Description                        | Actions Available    |
+| -------------- | ---------------------------------- | -------------------- |
+| `triggered`    | Active alert, not yet acknowledged | Acknowledge, Resolve |
+| `acknowledged` | User has seen and is handling      | Resolve              |
+| `resolved`     | Alert closed (auto or manual)      | None (archived)      |
 
 ### Escalation Behavior
 
@@ -17530,13 +17942,13 @@ stateDiagram-v2
 
 ### State Descriptions
 
-| Status | Description | Next Actions |
-|--------|-------------|--------------|
-| `pending` | Registered in FreshTrack, not in TTN | Provision |
+| Status    | Description                          | Next Actions    |
+| --------- | ------------------------------------ | --------------- |
+| `pending` | Registered in FreshTrack, not in TTN | Provision       |
 | `joining` | Provisioned in TTN, waiting for join | Wait for uplink |
-| `active` | Receiving data normally | Monitor |
-| `offline` | No recent data | Investigate |
-| `fault` | Error condition | Troubleshoot |
+| `active`  | Receiving data normally              | Monitor         |
+| `offline` | No recent data                       | Investigate     |
+| `fault`   | Error condition                      | Troubleshoot    |
 
 ---
 
@@ -17712,7 +18124,6 @@ stateDiagram-v2
 - [SEQUENCES.md](#sequences) - Sequence diagrams
 - [PAGES.md](#product-pages) - Page documentation
 - [API.md](#engineering-api) - Alert processing details
-
 
 ---
 
@@ -18249,7 +18660,6 @@ erDiagram
 - [DATA_MODEL.md](#engineering-data_model) - Complete schema documentation
 - [ARCHITECTURE.md](#architecture-architecture) - Database architecture
 
-
 ---
 
 \newpage
@@ -18703,7 +19113,6 @@ flowchart TD
 - [SEQUENCES.md](#diagrams-sequences) - Sequence diagrams
 - [STATE_MACHINES.md](#diagrams-state_machines) - State machines
 
-
 ---
 
 \newpage
@@ -18736,251 +19145,251 @@ flowchart TD
 
 ## Architecture
 
-| Term | Definition |
-|------|------------|
-| **Anon Key** | Public API key with restricted access, safe for client-side use |
-| **Edge Function** | Serverless function deployed on Supabase's edge network for low-latency API endpoints |
-| **JWT** | JSON Web Token - compact, URL-safe token format used for authentication and authorization |
-| **Multi-tenant** | Architecture where a single application instance serves multiple isolated organizations |
-| **RLS** | Row Level Security - PostgreSQL feature that restricts data access at the row level based on user context |
-| **Service Role Key** | Privileged API key that bypasses RLS policies, used only in server-side contexts |
+| Term                 | Definition                                                                                                |
+| -------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Anon Key**         | Public API key with restricted access, safe for client-side use                                           |
+| **Edge Function**    | Serverless function deployed on Supabase's edge network for low-latency API endpoints                     |
+| **JWT**              | JSON Web Token - compact, URL-safe token format used for authentication and authorization                 |
+| **Multi-tenant**     | Architecture where a single application instance serves multiple isolated organizations                   |
+| **RLS**              | Row Level Security - PostgreSQL feature that restricts data access at the row level based on user context |
+| **Service Role Key** | Privileged API key that bypasses RLS policies, used only in server-side contexts                          |
 
 ## Product
 
-| Term | Definition |
-|------|------------|
-| **Alert Rule** | Configuration defining temperature thresholds and timing for generating alerts |
-| **Check-in Interval** | The configured frequency at which a sensor should report temperature readings |
-| **Confirm Time** | Delay before a temperature excursion triggers an active alarm (prevents false positives) |
-| **Excursion** | A temperature reading outside the configured safe range for a unit |
-| **Site** | A physical location containing one or more units under an organization |
-| **Unit** | A refrigeration unit (cooler, freezer, walk-in) being monitored for temperature compliance |
+| Term                  | Definition                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| **Alert Rule**        | Configuration defining temperature thresholds and timing for generating alerts             |
+| **Check-in Interval** | The configured frequency at which a sensor should report temperature readings              |
+| **Confirm Time**      | Delay before a temperature excursion triggers an active alarm (prevents false positives)   |
+| **Excursion**         | A temperature reading outside the configured safe range for a unit                         |
+| **Site**              | A physical location containing one or more units under an organization                     |
+| **Unit**              | A refrigeration unit (cooler, freezer, walk-in) being monitored for temperature compliance |
 
 ## IoT/Hardware
 
-| Term | Definition |
-|------|------------|
-| **DevEUI** | Device Extended Unique Identifier - globally unique 64-bit identifier for LoRa devices |
-| **Downlink** | Data transmission from network to sensor (configuration, commands) |
-| **Gateway** | LoRaWAN gateway that receives sensor transmissions and forwards to TTN |
-| **Join Request** | LoRaWAN procedure where a device authenticates and joins the network |
-| **LoRa** | Long Range - low-power wireless protocol for IoT sensor communication |
-| **TTN** | The Things Network - community and enterprise LoRaWAN network infrastructure |
-| **Uplink** | Data transmission from sensor to network (readings, status) |
+| Term             | Definition                                                                             |
+| ---------------- | -------------------------------------------------------------------------------------- |
+| **DevEUI**       | Device Extended Unique Identifier - globally unique 64-bit identifier for LoRa devices |
+| **Downlink**     | Data transmission from network to sensor (configuration, commands)                     |
+| **Gateway**      | LoRaWAN gateway that receives sensor transmissions and forwards to TTN                 |
+| **Join Request** | LoRaWAN procedure where a device authenticates and joins the network                   |
+| **LoRa**         | Long Range - low-power wireless protocol for IoT sensor communication                  |
+| **TTN**          | The Things Network - community and enterprise LoRaWAN network infrastructure           |
+| **Uplink**       | Data transmission from sensor to network (readings, status)                            |
 
 ## Alert System
 
-| Term | Definition |
-|------|------------|
-| **Escalation** | Process of notifying additional contacts when an alert is not acknowledged |
-| **MTTR** | Mean Time To Resolution - average time from alert creation to resolution |
-| **Notification Policy** | Configuration for how and when to send alert notifications |
-| **Quiet Hours** | Time periods when non-critical notifications are suppressed |
+| Term                    | Definition                                                                 |
+| ----------------------- | -------------------------------------------------------------------------- |
+| **Escalation**          | Process of notifying additional contacts when an alert is not acknowledged |
+| **MTTR**                | Mean Time To Resolution - average time from alert creation to resolution   |
+| **Notification Policy** | Configuration for how and when to send alert notifications                 |
+| **Quiet Hours**         | Time periods when non-critical notifications are suppressed                |
 
 ## Monitoring
 
-| Term | Definition |
-|------|------------|
-| **Debug Terminal** | Developer tool displaying real-time application logs and events |
-| **Degraded** | System state where functionality is impaired but not completely failed |
-| **Event Log** | Timestamped record of system and business events for auditing |
-| **Health Check** | Automated system status verification across all components |
+| Term               | Definition                                                             |
+| ------------------ | ---------------------------------------------------------------------- |
+| **Debug Terminal** | Developer tool displaying real-time application logs and events        |
+| **Degraded**       | System state where functionality is impaired but not completely failed |
+| **Event Log**      | Timestamped record of system and business events for auditing          |
+| **Health Check**   | Automated system status verification across all components             |
 
 ## Security
 
-| Term | Definition |
-|------|------------|
-| **MFA** | Multi-Factor Authentication - requiring multiple verification methods for login |
-| **Organization Context** | The tenant boundary that determines data access scope |
-| **RBAC** | Role-Based Access Control - permission system based on user roles within organizations |
-| **Session Token** | Time-limited authentication credential stored after user login |
+| Term                     | Definition                                                                             |
+| ------------------------ | -------------------------------------------------------------------------------------- |
+| **MFA**                  | Multi-Factor Authentication - requiring multiple verification methods for login        |
+| **Organization Context** | The tenant boundary that determines data access scope                                  |
+| **RBAC**                 | Role-Based Access Control - permission system based on user roles within organizations |
+| **Session Token**        | Time-limited authentication credential stored after user login                         |
 
 ## Data
 
-| Term | Definition |
-|------|------------|
-| **Cascade** | Automatic propagation of database operations to related records |
-| **Reading Buffer** | Temporary storage for sensor readings before database persistence |
-| **Sensor Reading** | Individual temperature measurement with timestamp and metadata |
-| **Soft Delete** | Marking records as deleted without physical removal (preserves audit trail) |
+| Term               | Definition                                                                  |
+| ------------------ | --------------------------------------------------------------------------- |
+| **Cascade**        | Automatic propagation of database operations to related records             |
+| **Reading Buffer** | Temporary storage for sensor readings before database persistence           |
+| **Sensor Reading** | Individual temperature measurement with timestamp and metadata              |
+| **Soft Delete**    | Marking records as deleted without physical removal (preserves audit trail) |
 
 ## Integration
 
-| Term | Definition |
-|------|------------|
-| **API Endpoint** | URL path that accepts requests and returns responses |
-| **Idempotency** | Property where repeated operations produce the same result |
-| **Rate Limiting** | Restricting the number of requests within a time window |
-| **Webhook** | HTTP callback triggered by external events (TTN data, Stripe payments) |
+| Term              | Definition                                                             |
+| ----------------- | ---------------------------------------------------------------------- |
+| **API Endpoint**  | URL path that accepts requests and returns responses                   |
+| **Idempotency**   | Property where repeated operations produce the same result             |
+| **Rate Limiting** | Restricting the number of requests within a time window                |
+| **Webhook**       | HTTP callback triggered by external events (TTN data, Stripe payments) |
 
 ## Development
 
-| Term | Definition |
-|------|------------|
-| **React Query** | Data fetching and caching library for React applications |
-| **Supabase** | Backend-as-a-service platform providing PostgreSQL, Auth, and Edge Functions |
-| **Vite** | Modern frontend build tool for development and production bundling |
-| **Zustand** | Lightweight state management library for React |
+| Term            | Definition                                                                   |
+| --------------- | ---------------------------------------------------------------------------- |
+| **React Query** | Data fetching and caching library for React applications                     |
+| **Supabase**    | Backend-as-a-service platform providing PostgreSQL, Auth, and Edge Functions |
+| **Vite**        | Modern frontend build tool for development and production bundling           |
+| **Zustand**     | Lightweight state management library for React                               |
 
 ## General
 
-| Term | Definition |
-|------|------------|
-| **Actions** | \| Action \| Description \| Side Effects \| |
-| **Actors** | - Primary: New User (Food Safety Manager) |
-| **Add Sensors** | Register your LoRaWAN sensors in the TTN Console |
-| **Alert Creation** | Only `process-unit-states` creates alerts in the database |
-| **Alert Resolution** | Only `process-unit-states` resolves alerts automatically |
-| **Alert Types Created** | - `temp_excursion` - Temperature out of range |
-| **API Calls** | - `supabase |
-| **API key rotation UI** | Manual process currently |
-| **APIs and Data Touched** | - `supabase |
-| **Application ID** | `freshtracker-{org-slug}` |
-| **Application Name** | `FreshTracker - {Org Name}` |
-| **Architecture** | - Per-organization TTN Application |
-| **Audit Trail** | `event_logs` for significant changes |
-| **Auth** | Verify login/logout works |
-| **Authentication** | Unique webhook secret per organization |
-| **Backend** | Zod validation in edge functions |
-| **Cause** | API key is invalid or expired |
-| **Causes** | - Secrets may take a few seconds to propagate |
-| **Check** | API key is valid |
-| **Compliance Documentation** | Immutable audit trails for health inspections |
-| **Component** | `AlertRulesEditor |
-| **Component Composition** | Use shadcn components as building blocks |
-| **Components** | - `HealthCheckList |
-| **Config Objects** | Centralized status/alert configuration in `lib/` |
-| **Configuration** | Stored in `ttn_connections` table per organization |
-| **Configure Devices** | Add device EUIs and keys |
-| **Continuous Monitoring** | Automated temperature readings every 5 minutes (configurable) |
-| **Copy the generated API key** | you won't be able to see it again! |
-| **Credential Stuffing Attack** | Large volume of failed logins detected |
-| **Data Dependencies** | - None (creates new session) |
-| **Database** | Organization-specific settings (TTN credentials) |
-| **Dedicated API Key** | Application-scoped with minimal required permissions |
-| **Dedicated Webhook** | Points to FreshTrack with unique secret for authentication |
-| **Diagram Reference** | [Landing Page Diagram]( |
-| **Enable** | Settings → Debug toggle (or `localStorage |
-| **Enable Debug Mode** | Press `Ctrl+Shift+D` or toggle in settings |
-| **Enabled Messages** | - Uplink message |
-| **Encrypted Storage** | All API keys and secrets are encrypted in the database |
-| **Endpoint** | `https://<project> |
-| **Engine** | PostgreSQL 14 |
-| **Equipment Health** | Battery forecasting, calibration tracking, and connectivity monitoring |
-| **Error States** | - Invalid credentials |
-| **Event Logging** | All significant state changes logged via `logEvent()` or edge function logging |
-| **Event logs** | All significant actions logged with actor, timestamp, IP |
-| **Events** | Uplink messages, join accepts |
-| **Events Handled** | - `checkout |
-| **Excursion Detection** | Immediate alerts when temperatures exceed safe thresholds |
-| **Export for Support** | Click "Support Snapshot" button |
-| **Failure Modes** | \| Failure \| Cause \| Recovery \| |
-| **Features** | - Route logging |
-| **File** | `supabase/functions/user-sync/index |
-| **Files** | `src/components/health/* |
-| **Files Involved** | - `src/pages/Auth |
-| **Filter Logs** | Use tabs: Events, CRUD, Network, Sync, TTN, Errors |
-| **Filters** | - Event type (alert, temperature, configuration, user) |
-| **Fix** | Ensure user is synced and `ttn |
-| **Foreign Key Constraints** | Data relationships maintain org scope |
-| **FreshTrack Pro subscription** | A few hundred dollars per month |
-| **Frontend** | Zod schemas in `lib/validation |
-| **Function** | `health-check` |
-| **Goal** | New user creates account and sets up their organization |
-| **HACCP Compliance** | Audit trails, corrective action tracking, and compliance reporting |
-| **Hash chaining** | Events include `previous_hash` for tamper detection |
-| **Hashing** | bcrypt with cost factor (Supabase managed) |
-| **Headers** | \| Header \| Value \| |
-| **Hierarchical Configuration** | Settings cascade: Organization → Site → Area → Unit |
-| **Immutable design** | Append-only logging tables |
-| **Implication** | Always consider failure modes |
-| **Important** | `ready` must be `true`! |
-| **Indexes** | - `organizations_slug_key` (unique) |
-| **Key Features** | - RLS policies for multi-tenancy |
-| **Layout** | - Hero section with value proposition |
-| **Location configuration** | 15-30 minutes per site |
-| **Manual Logging** | UI → Supabase direct → `manual_temperature_logs` table |
-| **Manual Temperature Logging** | Offline-capable manual entry with automatic sync |
-| **Masking pattern** | ```typescript |
-| **MFA not implemented** | Planned for future release |
-| **Migrations** | 100+ files in `supabase/migrations/` |
-| **Minimal Permissions** | Application API keys only have rights needed for sensor management |
-| **Monitor** | Check FreshTrack's sensor data to see incoming readings |
-| **Name** | `FreshTrack Admin Key` |
-| **Never log** | - Full phone numbers (mask: `+1555***4567`) |
-| **Notes** | - Returns 202 for unknown devices to prevent TTN retries |
-| **Notifications** | `process-unit-states` → `process-escalations` → email/SMS/push |
-| **Offline Behavior** | - Logs stored in IndexedDB |
-| **Outcome** | In less than an hour, FreshTrack Pro is monitoring all refrigeration units and the whole team has access |
-| **Plans** | \| Plan \| Price \| Sensors \| Features \| |
-| **Preconditions** | User is not authenticated |
-| **Predictive Maintenance** | Battery forecasts and calibration reminders |
-| **Provisioning** | Registered in both our DB and TTN |
-| **Purpose** | LoRa sensor network connectivity |
-| **Query Keys** | Structured for cache invalidation |
-| **Query Parameters** | - `organization_id` (required) |
-| **Quick Setup** | If your credentials are already configured, see [TTN_PRODUCTION_SETUP |
-| **Ransomware Scenario** | Supabase account access compromised |
-| **Rate limiting visibility** | Platform-level, not application-configurable |
-| **Recovery** | - Retry button for failed queries |
-| **Relationships** | - `organization_id` → `organizations |
-| **Report Types** | \| Report \| Description \| |
-| **Request Body** | None (processes all active units) |
-| **Resolution** | - If webhook issue: Regenerate secret, update TTN |
-| **Response** | CSV or JSON data |
-| **Responsibilities** | - User interface rendering |
-| **Result** | Faster inspections |
-| **Retention** | Configurable per compliance requirements |
-| **Returns** | Merged alert rules with cascade priority (Unit > Site > Org) |
-| **Rights** | Select the following: |
-| **RLS Policy Bypass** | Customer reports seeing another org's data |
-| **ROI Example** | One prevented incident = 12–24 months of subscription cost avoided |
-| **Route** | `/dashboard` |
-| **Salt** | Unique per password (bcrypt built-in) |
-| **Savings** | 5–10 hours per week in staff time across a typical multi-unit operation |
-| **Secrets** | Managed via Supabase dashboard |
-| **Sensor Data Ingestion** | TTN → `ttn-webhook` → `sensor_readings` table |
-| **Sensor installation** | 5-10 minutes per unit (just stick to wall) |
-| **Sequence Diagram** | [See SEQUENCES |
-| **Severity** | `warning` or `critical` |
-| **Shift Handoff** | Staff can acknowledge and hand off alerts with notes |
-| **Solution** | Install the Supabase CLI: |
-| **Source** | `src/lib/statusConfig |
-| **Staff training** | 15-30 minutes |
-| **State Processing** | `ingest-readings` → `process-unit-states` → creates/resolves alerts |
-| **Status** | `triggered` → `acknowledged` → `resolved` |
-| **Status Codes** | \| Code \| Meaning \| |
-| **Status Computation** | Frontend uses `computeUnitStatus()` for consistency with backend logic |
-| **Steps** | \| Step \| Actor \| Action \| System Response \| |
-| **Stripe** | Check Settings → Billing tab loads plans |
-| **Supabase Dashboard** | Go to Project Settings → API |
-| **Symptoms** | All sensors in an organization show offline status |
-| **System automatically** | - Validates API key permissions (`ttn-gateway-preflight`) |
-| **Table** | `event_logs` |
-| **TBD** | Configure Supabase cron jobs for: |
-| **Tenant Isolation** | Each org's TTN traffic is isolated via unique webhook secrets |
-| **Test Data Flow** | Send test uplinks to verify webhook delivery |
-| **Timeline of events** | Detection time |
-| **Timestamps** | `created_at`, `updated_at` on most tables |
-| **Trace Operations** | Click correlation ID link to filter related |
-| **Trigger** | Scheduled (cron) or manual |
-| **TTN User ID** | `frostguard` |
-| **Twilio** | Check SMS delivery in Settings → Notification History |
-| **Types** | `temp_excursion`, `monitoring_interrupted`, `door_open`, `low_battery`, etc |
-| **Unique** | `(user_id, organization_id)` |
-| **Unique Constraints** | Scoped to organization (e |
-| **URL** | `https://YOUR_PROJECT |
-| **URL Parameters** | `siteId` (UUID) |
-| **Usage** | Called by `process-escalations` for critical alerts |
-| **Use appropriate levels** | `debug`: Verbose, development only |
-| **UUID Primary Keys** | All tables use UUID `id` columns |
-| **Value** | (paste your TTN admin API key from Step 1) |
-| **Verify webhook** | - TTN Application → Webhooks → Should show `freshtrack-webhook` |
-| **Webhook Secret Exposure** | TTN webhook secret found in public log |
-| **Webhook secret rotation** | No automated rotation |
-| **What happened** | Freezer door was propped open for cleaning |
-| **Who responded** | Kitchen manager acknowledged within 8 minutes |
-| **Write first critical path tests** | `process-unit-states` alert logic |
+| Term                                | Definition                                                                                               |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Actions**                         | \| Action \| Description \| Side Effects \|                                                              |
+| **Actors**                          | - Primary: New User (Food Safety Manager)                                                                |
+| **Add Sensors**                     | Register your LoRaWAN sensors in the TTN Console                                                         |
+| **Alert Creation**                  | Only `process-unit-states` creates alerts in the database                                                |
+| **Alert Resolution**                | Only `process-unit-states` resolves alerts automatically                                                 |
+| **Alert Types Created**             | - `temp_excursion` - Temperature out of range                                                            |
+| **API Calls**                       | - `supabase                                                                                              |
+| **API key rotation UI**             | Manual process currently                                                                                 |
+| **APIs and Data Touched**           | - `supabase                                                                                              |
+| **Application ID**                  | `freshtracker-{org-slug}`                                                                                |
+| **Application Name**                | `FreshTracker - {Org Name}`                                                                              |
+| **Architecture**                    | - Per-organization TTN Application                                                                       |
+| **Audit Trail**                     | `event_logs` for significant changes                                                                     |
+| **Auth**                            | Verify login/logout works                                                                                |
+| **Authentication**                  | Unique webhook secret per organization                                                                   |
+| **Backend**                         | Zod validation in edge functions                                                                         |
+| **Cause**                           | API key is invalid or expired                                                                            |
+| **Causes**                          | - Secrets may take a few seconds to propagate                                                            |
+| **Check**                           | API key is valid                                                                                         |
+| **Compliance Documentation**        | Immutable audit trails for health inspections                                                            |
+| **Component**                       | `AlertRulesEditor                                                                                        |
+| **Component Composition**           | Use shadcn components as building blocks                                                                 |
+| **Components**                      | - `HealthCheckList                                                                                       |
+| **Config Objects**                  | Centralized status/alert configuration in `lib/`                                                         |
+| **Configuration**                   | Stored in `ttn_connections` table per organization                                                       |
+| **Configure Devices**               | Add device EUIs and keys                                                                                 |
+| **Continuous Monitoring**           | Automated temperature readings every 5 minutes (configurable)                                            |
+| **Copy the generated API key**      | you won't be able to see it again!                                                                       |
+| **Credential Stuffing Attack**      | Large volume of failed logins detected                                                                   |
+| **Data Dependencies**               | - None (creates new session)                                                                             |
+| **Database**                        | Organization-specific settings (TTN credentials)                                                         |
+| **Dedicated API Key**               | Application-scoped with minimal required permissions                                                     |
+| **Dedicated Webhook**               | Points to FreshTrack with unique secret for authentication                                               |
+| **Diagram Reference**               | [Landing Page Diagram](                                                                                  |
+| **Enable**                          | Settings → Debug toggle (or `localStorage                                                                |
+| **Enable Debug Mode**               | Press `Ctrl+Shift+D` or toggle in settings                                                               |
+| **Enabled Messages**                | - Uplink message                                                                                         |
+| **Encrypted Storage**               | All API keys and secrets are encrypted in the database                                                   |
+| **Endpoint**                        | `https://<project>                                                                                       |
+| **Engine**                          | PostgreSQL 14                                                                                            |
+| **Equipment Health**                | Battery forecasting, calibration tracking, and connectivity monitoring                                   |
+| **Error States**                    | - Invalid credentials                                                                                    |
+| **Event Logging**                   | All significant state changes logged via `logEvent()` or edge function logging                           |
+| **Event logs**                      | All significant actions logged with actor, timestamp, IP                                                 |
+| **Events**                          | Uplink messages, join accepts                                                                            |
+| **Events Handled**                  | - `checkout                                                                                              |
+| **Excursion Detection**             | Immediate alerts when temperatures exceed safe thresholds                                                |
+| **Export for Support**              | Click "Support Snapshot" button                                                                          |
+| **Failure Modes**                   | \| Failure \| Cause \| Recovery \|                                                                       |
+| **Features**                        | - Route logging                                                                                          |
+| **File**                            | `supabase/functions/user-sync/index                                                                      |
+| **Files**                           | `src/components/health/\*                                                                                |
+| **Files Involved**                  | - `src/pages/Auth                                                                                        |
+| **Filter Logs**                     | Use tabs: Events, CRUD, Network, Sync, TTN, Errors                                                       |
+| **Filters**                         | - Event type (alert, temperature, configuration, user)                                                   |
+| **Fix**                             | Ensure user is synced and `ttn                                                                           |
+| **Foreign Key Constraints**         | Data relationships maintain org scope                                                                    |
+| **FreshTrack Pro subscription**     | A few hundred dollars per month                                                                          |
+| **Frontend**                        | Zod schemas in `lib/validation                                                                           |
+| **Function**                        | `health-check`                                                                                           |
+| **Goal**                            | New user creates account and sets up their organization                                                  |
+| **HACCP Compliance**                | Audit trails, corrective action tracking, and compliance reporting                                       |
+| **Hash chaining**                   | Events include `previous_hash` for tamper detection                                                      |
+| **Hashing**                         | bcrypt with cost factor (Supabase managed)                                                               |
+| **Headers**                         | \| Header \| Value \|                                                                                    |
+| **Hierarchical Configuration**      | Settings cascade: Organization → Site → Area → Unit                                                      |
+| **Immutable design**                | Append-only logging tables                                                                               |
+| **Implication**                     | Always consider failure modes                                                                            |
+| **Important**                       | `ready` must be `true`!                                                                                  |
+| **Indexes**                         | - `organizations_slug_key` (unique)                                                                      |
+| **Key Features**                    | - RLS policies for multi-tenancy                                                                         |
+| **Layout**                          | - Hero section with value proposition                                                                    |
+| **Location configuration**          | 15-30 minutes per site                                                                                   |
+| **Manual Logging**                  | UI → Supabase direct → `manual_temperature_logs` table                                                   |
+| **Manual Temperature Logging**      | Offline-capable manual entry with automatic sync                                                         |
+| **Masking pattern**                 | ```typescript                                                                                            |
+| **MFA not implemented**             | Planned for future release                                                                               |
+| **Migrations**                      | 100+ files in `supabase/migrations/`                                                                     |
+| **Minimal Permissions**             | Application API keys only have rights needed for sensor management                                       |
+| **Monitor**                         | Check FreshTrack's sensor data to see incoming readings                                                  |
+| **Name**                            | `FreshTrack Admin Key`                                                                                   |
+| **Never log**                       | - Full phone numbers (mask: `+1555***4567`)                                                              |
+| **Notes**                           | - Returns 202 for unknown devices to prevent TTN retries                                                 |
+| **Notifications**                   | `process-unit-states` → `process-escalations` → email/SMS/push                                           |
+| **Offline Behavior**                | - Logs stored in IndexedDB                                                                               |
+| **Outcome**                         | In less than an hour, FreshTrack Pro is monitoring all refrigeration units and the whole team has access |
+| **Plans**                           | \| Plan \| Price \| Sensors \| Features \|                                                               |
+| **Preconditions**                   | User is not authenticated                                                                                |
+| **Predictive Maintenance**          | Battery forecasts and calibration reminders                                                              |
+| **Provisioning**                    | Registered in both our DB and TTN                                                                        |
+| **Purpose**                         | LoRa sensor network connectivity                                                                         |
+| **Query Keys**                      | Structured for cache invalidation                                                                        |
+| **Query Parameters**                | - `organization_id` (required)                                                                           |
+| **Quick Setup**                     | If your credentials are already configured, see [TTN_PRODUCTION_SETUP                                    |
+| **Ransomware Scenario**             | Supabase account access compromised                                                                      |
+| **Rate limiting visibility**        | Platform-level, not application-configurable                                                             |
+| **Recovery**                        | - Retry button for failed queries                                                                        |
+| **Relationships**                   | - `organization_id` → `organizations                                                                     |
+| **Report Types**                    | \| Report \| Description \|                                                                              |
+| **Request Body**                    | None (processes all active units)                                                                        |
+| **Resolution**                      | - If webhook issue: Regenerate secret, update TTN                                                        |
+| **Response**                        | CSV or JSON data                                                                                         |
+| **Responsibilities**                | - User interface rendering                                                                               |
+| **Result**                          | Faster inspections                                                                                       |
+| **Retention**                       | Configurable per compliance requirements                                                                 |
+| **Returns**                         | Merged alert rules with cascade priority (Unit > Site > Org)                                             |
+| **Rights**                          | Select the following:                                                                                    |
+| **RLS Policy Bypass**               | Customer reports seeing another org's data                                                               |
+| **ROI Example**                     | One prevented incident = 12–24 months of subscription cost avoided                                       |
+| **Route**                           | `/dashboard`                                                                                             |
+| **Salt**                            | Unique per password (bcrypt built-in)                                                                    |
+| **Savings**                         | 5–10 hours per week in staff time across a typical multi-unit operation                                  |
+| **Secrets**                         | Managed via Supabase dashboard                                                                           |
+| **Sensor Data Ingestion**           | TTN → `ttn-webhook` → `sensor_readings` table                                                            |
+| **Sensor installation**             | 5-10 minutes per unit (just stick to wall)                                                               |
+| **Sequence Diagram**                | [See SEQUENCES                                                                                           |
+| **Severity**                        | `warning` or `critical`                                                                                  |
+| **Shift Handoff**                   | Staff can acknowledge and hand off alerts with notes                                                     |
+| **Solution**                        | Install the Supabase CLI:                                                                                |
+| **Source**                          | `src/lib/statusConfig                                                                                    |
+| **Staff training**                  | 15-30 minutes                                                                                            |
+| **State Processing**                | `ingest-readings` → `process-unit-states` → creates/resolves alerts                                      |
+| **Status**                          | `triggered` → `acknowledged` → `resolved`                                                                |
+| **Status Codes**                    | \| Code \| Meaning \|                                                                                    |
+| **Status Computation**              | Frontend uses `computeUnitStatus()` for consistency with backend logic                                   |
+| **Steps**                           | \| Step \| Actor \| Action \| System Response \|                                                         |
+| **Stripe**                          | Check Settings → Billing tab loads plans                                                                 |
+| **Supabase Dashboard**              | Go to Project Settings → API                                                                             |
+| **Symptoms**                        | All sensors in an organization show offline status                                                       |
+| **System automatically**            | - Validates API key permissions (`ttn-gateway-preflight`)                                                |
+| **Table**                           | `event_logs`                                                                                             |
+| **TBD**                             | Configure Supabase cron jobs for:                                                                        |
+| **Tenant Isolation**                | Each org's TTN traffic is isolated via unique webhook secrets                                            |
+| **Test Data Flow**                  | Send test uplinks to verify webhook delivery                                                             |
+| **Timeline of events**              | Detection time                                                                                           |
+| **Timestamps**                      | `created_at`, `updated_at` on most tables                                                                |
+| **Trace Operations**                | Click correlation ID link to filter related                                                              |
+| **Trigger**                         | Scheduled (cron) or manual                                                                               |
+| **TTN User ID**                     | `frostguard`                                                                                             |
+| **Twilio**                          | Check SMS delivery in Settings → Notification History                                                    |
+| **Types**                           | `temp_excursion`, `monitoring_interrupted`, `door_open`, `low_battery`, etc                              |
+| **Unique**                          | `(user_id, organization_id)`                                                                             |
+| **Unique Constraints**              | Scoped to organization (e                                                                                |
+| **URL**                             | `https://YOUR_PROJECT                                                                                    |
+| **URL Parameters**                  | `siteId` (UUID)                                                                                          |
+| **Usage**                           | Called by `process-escalations` for critical alerts                                                      |
+| **Use appropriate levels**          | `debug`: Verbose, development only                                                                       |
+| **UUID Primary Keys**               | All tables use UUID `id` columns                                                                         |
+| **Value**                           | (paste your TTN admin API key from Step 1)                                                               |
+| **Verify webhook**                  | - TTN Application → Webhooks → Should show `freshtrack-webhook`                                          |
+| **Webhook Secret Exposure**         | TTN webhook secret found in public log                                                                   |
+| **Webhook secret rotation**         | No automated rotation                                                                                    |
+| **What happened**                   | Freezer door was propped open for cleaning                                                               |
+| **Who responded**                   | Kitchen manager acknowledged within 8 minutes                                                            |
+| **Write first critical path tests** | `process-unit-states` alert logic                                                                        |
 
 ---
 
@@ -18996,7 +19405,6 @@ To add new terms to this glossary:
 
 - [INDEX.md](#index) — Complete documentation index
 - [GETTING_STARTED.md](#onboarding-getting_started) — Onboarding guide
-
 
 ---
 
@@ -19020,48 +19428,48 @@ This document describes the automated checks run by `npm run docs:lint` and the 
 
 ### ✅ Structure Validation
 
-| Check | Severity | Description |
-|-------|----------|-------------|
-| **H1 Title Required** | Error | Every document must have exactly one H1 (`#`) title |
-| **Heading Hierarchy** | Warning | Heading levels should not skip (e.g., H2 → H4) |
-| **Description Block** | Warning | Documents should have a description blockquote after title |
-| **Related Documents** | Warning | Documents should link to related content |
+| Check                 | Severity | Description                                                |
+| --------------------- | -------- | ---------------------------------------------------------- |
+| **H1 Title Required** | Error    | Every document must have exactly one H1 (`#`) title        |
+| **Heading Hierarchy** | Warning  | Heading levels should not skip (e.g., H2 → H4)             |
+| **Description Block** | Warning  | Documents should have a description blockquote after title |
+| **Related Documents** | Warning  | Documents should link to related content                   |
 
 ### ✅ Link Validation
 
-| Check | Severity | Description |
-|-------|----------|-------------|
-| **Broken Internal Links** | Error | All `[text](#path)` links must resolve to existing files |
-| **Orphaned Documents** | Warning | All docs should be linked from INDEX.md |
-| **Anchor Links** | Info | Links to specific sections are validated |
+| Check                     | Severity | Description                                              |
+| ------------------------- | -------- | -------------------------------------------------------- |
+| **Broken Internal Links** | Error    | All `[text](#path)` links must resolve to existing files |
+| **Orphaned Documents**    | Warning  | All docs should be linked from INDEX.md                  |
+| **Anchor Links**          | Info     | Links to specific sections are validated                 |
 
 ### ✅ Content Validation
 
-| Check | Severity | Description |
-|-------|----------|-------------|
-| **Placeholder Text** | Error | No `[TBD]`, `[TODO]`, or `[PLACEHOLDER]` in content |
-| **TODO Markers** | Warning | `TODO`, `FIXME`, `XXX` should be resolved |
-| **Empty Code Blocks** | Warning | Code blocks should contain content |
-| **Minimum Length** | Warning | Documents should have meaningful content (>100 chars) |
-| **Table Formatting** | Warning | Table rows should have consistent column counts |
+| Check                 | Severity | Description                                           |
+| --------------------- | -------- | ----------------------------------------------------- |
+| **Placeholder Text**  | Error    | No `[TBD]`, `[TODO]`, or `[PLACEHOLDER]` in content   |
+| **TODO Markers**      | Warning  | `TODO`, `FIXME`, `XXX` should be resolved             |
+| **Empty Code Blocks** | Warning  | Code blocks should contain content                    |
+| **Minimum Length**    | Warning  | Documents should have meaningful content (>100 chars) |
+| **Table Formatting**  | Warning  | Table rows should have consistent column counts       |
 
 ### ✅ Diagram Validation
 
-| Check | Severity | Description |
-|-------|----------|-------------|
-| **Mermaid Syntax** | Error | Mermaid diagrams must have valid syntax |
-| **Diagram Type** | Error | Must start with valid diagram type (graph, flowchart, etc.) |
+| Check              | Severity | Description                                                 |
+| ------------------ | -------- | ----------------------------------------------------------- |
+| **Mermaid Syntax** | Error    | Mermaid diagrams must have valid syntax                     |
+| **Diagram Type**   | Error    | Must start with valid diagram type (graph, flowchart, etc.) |
 
 ### ✅ Required Files
 
-| File | Required | Purpose |
-|------|----------|---------|
-| `README.md` | Yes | Project overview |
-| `INDEX.md` | Yes | Documentation navigation |
-| `GLOSSARY.md` | Yes | Term definitions |
-| `architecture/ARCHITECTURE.md` | Yes | System architecture |
-| `engineering/API.md` | Yes | API documentation |
-| `engineering/DATA_MODEL.md` | Yes | Data model documentation |
+| File                           | Required | Purpose                  |
+| ------------------------------ | -------- | ------------------------ |
+| `README.md`                    | Yes      | Project overview         |
+| `INDEX.md`                     | Yes      | Documentation navigation |
+| `GLOSSARY.md`                  | Yes      | Term definitions         |
+| `architecture/ARCHITECTURE.md` | Yes      | System architecture      |
+| `engineering/API.md`           | Yes      | API documentation        |
+| `engineering/DATA_MODEL.md`    | Yes      | Data model documentation |
 
 ---
 
@@ -19070,7 +19478,8 @@ This document describes the automated checks run by `npm run docs:lint` and the 
 ### Trigger Conditions
 
 The documentation CI runs on:
-- Push to `main` or `develop` branches (docs/** changes)
+
+- Push to `main` or `develop` branches (docs/\*\* changes)
 - Pull requests touching `docs/**` files
 - Manual workflow dispatch
 
@@ -19088,10 +19497,10 @@ The documentation CI runs on:
 
 ### Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| 0 | All checks passed |
-| 1 | One or more errors found |
+| Code | Meaning                  |
+| ---- | ------------------------ |
+| 0    | All checks passed        |
+| 1    | One or more errors found |
 
 ---
 
@@ -19136,6 +19545,7 @@ fi
 # Error: Broken link: ./missing.md
 
 # Fix: Update the link to correct path
+
 [Text](#correct-path)
 ```
 
@@ -19145,6 +19555,7 @@ fi
 # Error: Document missing H1 title
 
 # Fix: Add title at top of document
+
 # My Document Title
 
 Content here...
@@ -19156,11 +19567,15 @@ Content here...
 # Warning: Heading level jumps from H2 to H4
 
 # Bad:
+
 ## Section
+
 #### Subsection
 
 # Good:
+
 ## Section
+
 ### Subsection
 ```
 
@@ -19170,6 +19585,7 @@ Content here...
 # Error: Contains placeholder text: [TBD]
 
 # Fix: Replace with actual content
+
 [TBD] → The actual implementation details...
 ```
 
@@ -19179,14 +19595,16 @@ Content here...
 # Error: Mermaid diagram: Missing diagram type
 
 # Bad:
+
 \`\`\`mermaid
 A --> B
 \`\`\`
 
 # Good:
+
 \`\`\`mermaid
 graph LR
-    A --> B
+A --> B
 \`\`\`
 ```
 
@@ -19194,11 +19612,11 @@ graph LR
 
 ## Severity Levels
 
-| Level | CI Impact | Action Required |
-|-------|-----------|-----------------|
-| **Error** | Fails CI | Must fix before merge |
+| Level       | CI Impact | Action Required          |
+| ----------- | --------- | ------------------------ |
+| **Error**   | Fails CI  | Must fix before merge    |
 | **Warning** | Passes CI | Should fix, not blocking |
-| **Info** | Passes CI | Optional improvement |
+| **Info**    | Passes CI | Optional improvement     |
 
 ---
 
@@ -19245,6 +19663,7 @@ Some warnings can be suppressed per-file:
 
 ```markdown
 <!-- docs-lint-disable missing-related -->
+
 # Document Without Related Section
 
 This document intentionally has no related documents section.
@@ -19256,12 +19675,12 @@ This document intentionally has no related documents section.
 
 Track documentation health over time:
 
-| Metric | Target | Current |
-|--------|--------|---------|
-| Broken links | 0 | - |
-| Orphaned docs | 0 | - |
-| TODO markers | 0 | - |
-| Coverage | 100% | - |
+| Metric        | Target | Current |
+| ------------- | ------ | ------- |
+| Broken links  | 0      | -       |
+| Orphaned docs | 0      | -       |
+| TODO markers  | 0      | -       |
+| Coverage      | 100%   | -       |
 
 Run `npm run docs:lint` to see current counts.
 
@@ -19273,8 +19692,6 @@ Run `npm run docs:lint` to see current counts.
 - [GLOSSARY.md](#glossary) — Term definitions
 - [README.md](#readme) — Project overview
 
-
 ---
 
 \newpage
-

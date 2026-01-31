@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUser } from "@stackframe/react";
-import { useQuery } from "@tanstack/react-query";
-import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '@stackframe/react';
+import { useQuery } from '@tanstack/react-query';
+import DashboardLayout from '@/components/DashboardLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Table,
   TableBody,
@@ -15,7 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,10 +25,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { useTRPC } from "@/lib/trpc";
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { useTRPC } from '@/lib/trpc';
 import {
   Loader2,
   Trash2,
@@ -41,8 +41,8 @@ import {
   FileText,
   RefreshCw,
   ShieldAlert,
-} from "lucide-react";
-import { format } from "date-fns";
+} from 'lucide-react';
+import { format } from 'date-fns';
 
 // TODO: These interfaces should come from tRPC when admin.orphans endpoint is added
 interface OrphanOrg {
@@ -73,7 +73,6 @@ interface CleanupJob {
 
 const DataMaintenance = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const user = useUser();
   const trpc = useTRPC();
   const { isInitialized: identityInitialized } = useEffectiveIdentity();
@@ -85,7 +84,7 @@ const DataMaintenance = () => {
   const [selectedOrg, setSelectedOrg] = useState<OrphanOrg | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [hardDeleteDialogOpen, setHardDeleteDialogOpen] = useState(false);
-  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -109,8 +108,8 @@ const DataMaintenance = () => {
 
   useEffect(() => {
     if (adminStatsQuery.isError) {
-      toast({ title: "Access Denied", description: "Admin access required", variant: "destructive" });
-      navigate("/dashboard");
+      toast.error('Access Denied', { description: 'Admin access required' });
+      navigate('/dashboard');
     }
   }, [adminStatsQuery.isError, navigate, toast]);
 
@@ -119,14 +118,13 @@ const DataMaintenance = () => {
     try {
       // TODO: Add trpc.admin.findOrphanOrganizations endpoint
       // For now, show placeholder message
-      toast({
-        title: "Feature migration in progress",
-        description: "Orphan organization scanning is being migrated to tRPC. Check back soon."
+      toast.success('Feature migration in progress', {
+        description: 'Orphan organization scanning is being migrated to tRPC. Check back soon.',
       });
       setOrphanOrgs([]);
     } catch (error: any) {
-      console.error("Error scanning orphans:", error);
-      toast({ title: "Scan Failed", description: error.message, variant: "destructive" });
+      console.error('Error scanning orphans:', error);
+      toast.error('Scan Failed', { description: error.message });
     } finally {
       setIsScanning(false);
     }
@@ -138,7 +136,7 @@ const DataMaintenance = () => {
       // For now, return empty
       setCleanupJobs([]);
     } catch (error: any) {
-      console.error("Error loading cleanup jobs:", error);
+      console.error('Error loading cleanup jobs:', error);
     }
   };
 
@@ -146,47 +144,52 @@ const DataMaintenance = () => {
     setIsDeleting(true);
     try {
       // TODO: Add trpc.admin.softDeleteOrganization endpoint
-      toast({
-        title: "Feature migration in progress",
-        description: "Organization soft delete is being migrated to tRPC."
+      toast.success('Feature migration in progress', {
+        description: 'Organization soft delete is being migrated to tRPC.',
       });
       setDeleteDialogOpen(false);
       setSelectedOrg(null);
     } catch (error: any) {
-      console.error("Error soft deleting org:", error);
-      toast({ title: "Delete Failed", description: error.message, variant: "destructive" });
+      console.error('Error soft deleting org:', error);
+      toast.error('Delete Failed', { description: error.message });
     } finally {
       setIsDeleting(false);
     }
   };
 
   const handleHardDelete = async (org: OrphanOrg) => {
-    if (deleteConfirmText !== "DELETE") {
-      toast({ title: "Confirmation Required", description: "Type DELETE to confirm", variant: "destructive" });
+    if (deleteConfirmText !== 'DELETE') {
+      toast.error('Confirmation Required', { description: 'Type DELETE to confirm' });
       return;
     }
 
     setIsDeleting(true);
     try {
       // TODO: Add trpc.admin.hardDeleteOrganization endpoint
-      toast({
-        title: "Feature migration in progress",
-        description: "Organization hard delete is being migrated to tRPC."
+      toast.success('Feature migration in progress', {
+        description: 'Organization hard delete is being migrated to tRPC.',
       });
       setHardDeleteDialogOpen(false);
       setSelectedOrg(null);
-      setDeleteConfirmText("");
+      setDeleteConfirmText('');
     } catch (error: any) {
-      console.error("Error hard deleting org:", error);
-      toast({ title: "Delete Failed", description: error.message, variant: "destructive" });
+      console.error('Error hard deleting org:', error);
+      toast.error('Delete Failed', { description: error.message });
     } finally {
       setIsDeleting(false);
     }
   };
 
   const getTotalDependents = (org: OrphanOrg) => {
-    return org.sites_count + org.areas_count + org.units_count +
-           org.sensors_count + org.gateways_count + org.alerts_count + org.event_logs_count;
+    return (
+      org.sites_count +
+      org.areas_count +
+      org.units_count +
+      org.sensors_count +
+      org.gateways_count +
+      org.alerts_count +
+      org.event_logs_count
+    );
   };
 
   if (isLoading || adminStatsQuery.isLoading) {
@@ -217,7 +220,7 @@ const DataMaintenance = () => {
               Find and clean up orphaned organizations and data
             </p>
           </div>
-          <Button onClick={() => navigate("/settings")} variant="outline">
+          <Button onClick={() => navigate('/settings')} variant="outline">
             Back to Settings
           </Button>
         </div>
@@ -248,7 +251,9 @@ const DataMaintenance = () => {
                   <p className="text-xs text-muted-foreground">Units</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold">{adminStatsQuery.data.readings.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">
+                    {adminStatsQuery.data.readings.toLocaleString()}
+                  </p>
                   <p className="text-xs text-muted-foreground">Readings</p>
                 </div>
                 <div className="text-center">
@@ -307,36 +312,43 @@ const DataMaintenance = () => {
                     <TableRow key={org.org_id}>
                       <TableCell className="font-medium">{org.org_name}</TableCell>
                       <TableCell>
-                        <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{org.org_slug}</code>
+                        <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                          {org.org_slug}
+                        </code>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {format(new Date(org.org_created_at), "MMM d, yyyy")}
+                        {format(new Date(org.org_created_at), 'MMM d, yyyy')}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2 flex-wrap">
                           {org.sites_count > 0 && (
                             <Badge variant="outline" className="text-xs">
-                              <MapPin className="w-3 h-3 mr-1" />{org.sites_count}
+                              <MapPin className="w-3 h-3 mr-1" />
+                              {org.sites_count}
                             </Badge>
                           )}
                           {org.units_count > 0 && (
                             <Badge variant="outline" className="text-xs">
-                              <Thermometer className="w-3 h-3 mr-1" />{org.units_count}
+                              <Thermometer className="w-3 h-3 mr-1" />
+                              {org.units_count}
                             </Badge>
                           )}
                           {org.sensors_count > 0 && (
                             <Badge variant="outline" className="text-xs">
-                              <Radio className="w-3 h-3 mr-1" />{org.sensors_count}
+                              <Radio className="w-3 h-3 mr-1" />
+                              {org.sensors_count}
                             </Badge>
                           )}
                           {org.alerts_count > 0 && (
                             <Badge variant="outline" className="text-xs">
-                              <Bell className="w-3 h-3 mr-1" />{org.alerts_count}
+                              <Bell className="w-3 h-3 mr-1" />
+                              {org.alerts_count}
                             </Badge>
                           )}
                           {org.event_logs_count > 0 && (
                             <Badge variant="outline" className="text-xs">
-                              <FileText className="w-3 h-3 mr-1" />{org.event_logs_count}
+                              <FileText className="w-3 h-3 mr-1" />
+                              {org.event_logs_count}
                             </Badge>
                           )}
                           {getTotalDependents(org) === 0 && (
@@ -390,9 +402,7 @@ const DataMaintenance = () => {
               <FileText className="w-5 h-5" />
               Recent Cleanup Jobs
             </CardTitle>
-            <CardDescription>
-              History of organization cleanup operations
-            </CardDescription>
+            <CardDescription>History of organization cleanup operations</CardDescription>
           </CardHeader>
           <CardContent>
             {cleanupJobs.length === 0 ? (
@@ -426,9 +436,11 @@ const DataMaintenance = () => {
                       <TableCell>
                         <Badge
                           variant={
-                            job.status === "SUCCEEDED" ? "default" :
-                            job.status === "FAILED" ? "destructive" :
-                            "secondary"
+                            job.status === 'SUCCEEDED'
+                              ? 'default'
+                              : job.status === 'FAILED'
+                                ? 'destructive'
+                                : 'secondary'
                           }
                         >
                           {job.status}
@@ -436,7 +448,7 @@ const DataMaintenance = () => {
                       </TableCell>
                       <TableCell>{job.attempts}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {format(new Date(job.created_at), "MMM d, HH:mm")}
+                        {format(new Date(job.created_at), 'MMM d, HH:mm')}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -454,12 +466,13 @@ const DataMaintenance = () => {
             <AlertDialogTitle>Soft Delete Organization?</AlertDialogTitle>
             <AlertDialogDescription className="space-y-3">
               <p>
-                This will mark <strong>{selectedOrg?.org_name}</strong> as deleted and free up the slug
-                "<code className="bg-muted px-1 py-0.5 rounded">{selectedOrg?.org_slug}</code>".
+                This will mark <strong>{selectedOrg?.org_name}</strong> as deleted and free up the
+                slug "<code className="bg-muted px-1 py-0.5 rounded">{selectedOrg?.org_slug}</code>
+                ".
               </p>
               <p>
-                The organization and its data will be hidden but can potentially be restored.
-                Any TTN devices will be queued for deprovisioning.
+                The organization and its data will be hidden but can potentially be restored. Any
+                TTN devices will be queued for deprovisioning.
               </p>
               {selectedOrg && getTotalDependents(selectedOrg) > 0 && (
                 <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 text-sm">
@@ -485,10 +498,13 @@ const DataMaintenance = () => {
       </AlertDialog>
 
       {/* Hard Delete Confirmation Dialog */}
-      <AlertDialog open={hardDeleteDialogOpen} onOpenChange={(open) => {
-        setHardDeleteDialogOpen(open);
-        if (!open) setDeleteConfirmText("");
-      }}>
+      <AlertDialog
+        open={hardDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setHardDeleteDialogOpen(open);
+          if (!open) setDeleteConfirmText('');
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-destructive flex items-center gap-2">
@@ -497,7 +513,8 @@ const DataMaintenance = () => {
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3">
               <p>
-                This will <strong>permanently delete</strong> <strong>{selectedOrg?.org_name}</strong>
+                This will <strong>permanently delete</strong>{' '}
+                <strong>{selectedOrg?.org_name}</strong>
                 and ALL its data. This action cannot be undone.
               </p>
               {selectedOrg && (
@@ -531,7 +548,7 @@ const DataMaintenance = () => {
             <Button
               variant="destructive"
               onClick={() => selectedOrg && handleHardDelete(selectedOrg)}
-              disabled={isDeleting || deleteConfirmText !== "DELETE"}
+              disabled={isDeleting || deleteConfirmText !== 'DELETE'}
             >
               {isDeleting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Permanently Delete

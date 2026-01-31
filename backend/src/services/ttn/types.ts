@@ -6,8 +6,8 @@
 export interface TtnConfig {
   region: string;
   apiKey: string;
-  applicationId: string;       // Per-org TTN application ID
-  clusterBaseUrl: string;      // THE ONLY TTN URL - all planes use this
+  applicationId: string; // Per-org TTN application ID
+  clusterBaseUrl: string; // THE ONLY TTN URL - all planes use this
   webhookSecret?: string;
   webhookUrl?: string;
   isEnabled: boolean;
@@ -84,7 +84,7 @@ export interface FetchRightsResult {
   error?: string;
   hint?: string;
   statusCode?: number;
-  method?: "direct" | "probe";
+  method?: 'direct' | 'probe';
 }
 
 export interface PreflightResult {

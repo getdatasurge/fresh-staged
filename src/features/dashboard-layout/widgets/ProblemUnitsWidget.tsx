@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle } from "lucide-react";
-import type { WidgetProps } from "../types";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertTriangle } from 'lucide-react';
+import type { WidgetProps } from '../types';
 
 export function ProblemUnitsWidget({ site }: WidgetProps) {
   return (

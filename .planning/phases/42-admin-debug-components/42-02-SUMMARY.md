@@ -75,11 +75,11 @@ Each task was committed atomically:
 
 ## Decisions Made
 
-| ID | Decision | Rationale |
-|----|----------|-----------|
+| ID          | Decision                               | Rationale                                                                                   |
+| ----------- | -------------------------------------- | ------------------------------------------------------------------------------------------- |
 | DEC-42-02-A | Remove realtime subscription with TODO | WebSocket subscription requires separate implementation; alerts refresh when dropdown opens |
-| DEC-42-02-B | Add logManualTemperature procedure | Full workflow in one mutation: insert log, create corrective action, resolve alerts |
-| DEC-42-02-C | Add searchUsers with ILIKE | Server-side search more efficient than client-side filtering of all users |
+| DEC-42-02-B | Add logManualTemperature procedure     | Full workflow in one mutation: insert log, create corrective action, resolve alerts         |
+| DEC-42-02-C | Add searchUsers with ILIKE             | Server-side search more efficient than client-side filtering of all users                   |
 
 ## Deviations from Plan
 

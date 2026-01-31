@@ -1,10 +1,10 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useUpdateLoraSensor } from "@/hooks/useLoraSensors";
-import { LoraSensor, LoraSensorType } from "@/types/ttn";
-import { SENSOR_TYPE_OPTIONS, SENSOR_TYPE_VALUES } from "@/lib/sensorTypeOptions";
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useUpdateLoraSensor } from '@/hooks/useLoraSensors';
+import { LoraSensor, LoraSensorType } from '@/types/ttn';
+import { SENSOR_TYPE_OPTIONS, SENSOR_TYPE_VALUES } from '@/lib/sensorTypeOptions';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -20,25 +20,25 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Loader2, Lock } from "lucide-react";
+} from '@/components/ui/select';
+import { Loader2, Lock } from 'lucide-react';
 
 const editSensorSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
   sensor_type: z.enum(SENSOR_TYPE_VALUES),
   site_id: z.string().optional(),
   unit_id: z.string().optional(),
-  description: z.string().max(500, "Description must be less than 500 characters").optional(),
+  description: z.string().max(500, 'Description must be less than 500 characters').optional(),
 });
 
 type EditSensorFormData = z.infer<typeof editSensorSchema>;
@@ -78,7 +78,7 @@ export function EditSensorDialog({
       sensor_type: sensor.sensor_type,
       site_id: sensor.site_id || undefined,
       unit_id: sensor.unit_id || undefined,
-      description: sensor.description || "",
+      description: sensor.description || '',
     },
   });
 
@@ -89,24 +89,27 @@ export function EditSensorDialog({
       sensor_type: sensor.sensor_type,
       site_id: sensor.site_id || undefined,
       unit_id: sensor.unit_id || undefined,
-      description: sensor.description || "",
+      description: sensor.description || '',
     });
   }, [sensor, form]);
 
-  const selectedSiteId = form.watch("site_id");
+  const selectedSiteId = form.watch('site_id');
 
   // Filter units based on selected site
-  const filteredUnits = selectedSiteId
-    ? units.filter((u) => u.site_id === selectedSiteId)
-    : [];
+  const filteredUnits = selectedSiteId ? units.filter((u) => u.site_id === selectedSiteId) : [];
 
   const formatEUI = (eui: string) => {
-    return eui.toUpperCase().match(/.{1,2}/g)?.join(":") || eui.toUpperCase();
+    return (
+      eui
+        .toUpperCase()
+        .match(/.{1,2}/g)
+        ?.join(':') || eui.toUpperCase()
+    );
   };
 
   const maskAppKey = (key: string | null) => {
-    if (!key || key.length < 4) return "••••••••••••••••••••••••••••";
-    return "••••••••••••••••••••••••••••" + key.slice(-4).toUpperCase();
+    if (!key || key.length < 4) return '••••••••••••••••••••••••••••';
+    return '••••••••••••••••••••••••••••' + key.slice(-4).toUpperCase();
   };
 
   const onSubmit = (data: EditSensorFormData) => {
@@ -125,22 +128,20 @@ export function EditSensorDialog({
         onSuccess: () => {
           onOpenChange(false);
         },
-      }
+      },
     );
   };
 
   // Reset unit when site changes
   const handleSiteChange = (value: string) => {
-    const newSiteId = value === "none" ? undefined : value;
-    form.setValue("site_id", newSiteId);
+    const newSiteId = value === 'none' ? undefined : value;
+    form.setValue('site_id', newSiteId);
     // Only reset unit if it's not in the new site
-    const currentUnitId = form.getValues("unit_id");
+    const currentUnitId = form.getValues('unit_id');
     if (currentUnitId) {
-      const unitInNewSite = units.find(
-        (u) => u.id === currentUnitId && u.site_id === newSiteId
-      );
+      const unitInNewSite = units.find((u) => u.id === currentUnitId && u.site_id === newSiteId);
       if (!unitInNewSite) {
-        form.setValue("unit_id", undefined);
+        form.setValue('unit_id', undefined);
       }
     }
   };
@@ -179,8 +180,11 @@ export function EditSensorDialog({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">DevEUI</label>
+                <label htmlFor="sensor-dev-eui" className="text-sm font-medium">
+                  DevEUI
+                </label>
                 <Input
+                  id="sensor-dev-eui"
                   value={formatEUI(sensor.dev_eui)}
                   disabled
                   className="font-mono text-xs bg-background"
@@ -188,17 +192,23 @@ export function EditSensorDialog({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">AppEUI</label>
+                <label htmlFor="sensor-app-eui" className="text-sm font-medium">
+                  AppEUI
+                </label>
                 <Input
-                  value={sensor.app_eui ? formatEUI(sensor.app_eui) : "—"}
+                  id="sensor-app-eui"
+                  value={sensor.app_eui ? formatEUI(sensor.app_eui) : '—'}
                   disabled
                   className="font-mono text-xs bg-background"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">AppKey</label>
+                <label htmlFor="sensor-app-key" className="text-sm font-medium">
+                  AppKey
+                </label>
                 <Input
+                  id="sensor-app-key"
                   value={maskAppKey(sensor.app_key)}
                   disabled
                   className="font-mono text-xs bg-background"
@@ -240,10 +250,7 @@ export function EditSensorDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Site (Optional)</FormLabel>
-                  <Select
-                    onValueChange={handleSiteChange}
-                    value={field.value || "none"}
-                  >
+                  <Select onValueChange={handleSiteChange} value={field.value || 'none'}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a site" />
@@ -270,19 +277,21 @@ export function EditSensorDialog({
                 <FormItem>
                   <FormLabel>Unit (Optional)</FormLabel>
                   <Select
-                    onValueChange={(v) => field.onChange(v === "none" ? undefined : v)}
-                    value={field.value || "none"}
+                    onValueChange={(v) => field.onChange(v === 'none' ? undefined : v)}
+                    value={field.value || 'none'}
                     disabled={!selectedSiteId || filteredUnits.length === 0}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={
-                          !selectedSiteId 
-                            ? "Select a site first" 
-                            : filteredUnits.length === 0 
-                              ? "No units in this site" 
-                              : "Select a unit"
-                        } />
+                        <SelectValue
+                          placeholder={
+                            !selectedSiteId
+                              ? 'Select a site first'
+                              : filteredUnits.length === 0
+                                ? 'No units in this site'
+                                : 'Select a unit'
+                          }
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -318,17 +327,11 @@ export function EditSensorDialog({
             />
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={updateSensor.isPending}>
-                {updateSensor.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {updateSensor.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes
               </Button>
             </DialogFooter>

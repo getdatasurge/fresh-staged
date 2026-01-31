@@ -245,18 +245,27 @@ export function useUpdateOrganization() {
   return useMutation({
     mutationFn: async (variables: {
       organizationId: string;
-      data: { name?: string; timezone?: string; complianceMode?: 'standard' | 'haccp'; logoUrl?: string };
+      data: {
+        name?: string;
+        timezone?: string;
+        complianceMode?: 'standard' | 'haccp';
+        logoUrl?: string;
+      };
     }) => {
       return client.organizations.update.mutate(variables);
     },
     onSuccess: (_data, variables) => {
       // Invalidate organization query to refetch updated data
-      const getOptions = trpc.organizations.get.queryOptions({ organizationId: variables.organizationId });
+      const getOptions = trpc.organizations.get.queryOptions({
+        organizationId: variables.organizationId,
+      });
       queryClient.invalidateQueries({
         queryKey: getOptions.queryKey,
       });
       // Also invalidate member list in case organization changes affect it
-      const membersOptions = trpc.organizations.listMembers.queryOptions({ organizationId: variables.organizationId });
+      const membersOptions = trpc.organizations.listMembers.queryOptions({
+        organizationId: variables.organizationId,
+      });
       queryClient.invalidateQueries({
         queryKey: membersOptions.queryKey,
       });

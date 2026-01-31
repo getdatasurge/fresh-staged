@@ -1,17 +1,17 @@
-import React, { useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Radio, Loader2, AlertTriangle, Info } from "lucide-react";
-import { useTTNConfig } from "@/contexts/TTNConfigContext";
-import { TTNConfigSourceBadge } from "@/components/ttn/TTNConfigSourceBadge";
-import { TTNDiagnosticsDownload } from "@/components/ttn/TTNDiagnosticsDownload";
+import React, { useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Radio, Loader2, AlertTriangle, Info } from 'lucide-react';
+import { useTTNConfig } from '@/contexts/TTNConfigContext';
+import { TTNConfigSourceBadge } from '@/components/ttn/TTNConfigSourceBadge';
+import { TTNDiagnosticsDownload } from '@/components/ttn/TTNDiagnosticsDownload';
 
 // Extracted hooks
-import { useTTNSettings } from "@/hooks/useTTNSettings";
-import { useTTNApiKey } from "@/hooks/useTTNApiKey";
-import { useTTNWebhook } from "@/hooks/useTTNWebhook";
-import { useTTNOperations } from "@/hooks/useTTNOperations";
+import { useTTNSettings } from '@/hooks/useTTNSettings';
+import { useTTNApiKey } from '@/hooks/useTTNApiKey';
+import { useTTNWebhook } from '@/hooks/useTTNWebhook';
+import { useTTNOperations } from '@/hooks/useTTNOperations';
 
 // Extracted sub-components
 import {
@@ -20,14 +20,17 @@ import {
   TTNConnectionTest,
   TTNApiKeyConfig,
   TTNWebhookConfig,
-} from "./ttn";
+} from './ttn';
 
 interface TTNConnectionSettingsProps {
   organizationId: string | null;
   readOnly?: boolean;
 }
 
-export function TTNConnectionSettings({ organizationId, readOnly = false }: TTNConnectionSettingsProps) {
+export function TTNConnectionSettings({
+  organizationId,
+  readOnly = false,
+}: TTNConnectionSettingsProps) {
   // Settings hook - manages loading, state, and health checks
   const {
     settings,
@@ -79,14 +82,15 @@ export function TTNConnectionSettings({ organizationId, readOnly = false }: TTNC
   const { context: ttnContext } = useTTNConfig();
 
   // Compute effective state for badge display
-  const effectiveState = (ttnContext.state === 'invalid' && apiKey.validationResult?.valid === true)
-    ? 'validated'
-    : ttnContext.state;
+  const effectiveState =
+    ttnContext.state === 'invalid' && apiKey.validationResult?.valid === true
+      ? 'validated'
+      : ttnContext.state;
 
   // Webhook permission issues - separate from overall validity
-  const webhookIssues = apiKey.validationResult?.permissions && (
-    !apiKey.validationResult.permissions.can_configure_webhook
-  );
+  const webhookIssues =
+    apiKey.validationResult?.permissions &&
+    !apiKey.validationResult.permissions.can_configure_webhook;
 
   // Early return states
   if (!organizationId) {
@@ -134,28 +138,32 @@ export function TTNConnectionSettings({ organizationId, readOnly = false }: TTNC
             <TTNDiagnosticsDownload
               context={{ ...ttnContext, state: effectiveState }}
               organizationId={organizationId}
-              settings={settings ? {
-                cluster: 'nam1',
-                application_id: settings.ttn_application_id || undefined,
-                api_key_last4: settings.api_key_last4 || undefined,
-                webhook_url: settings.webhook_url || undefined,
-                is_enabled: settings.is_enabled,
-              } : undefined}
+              settings={
+                settings
+                  ? {
+                      cluster: 'nam1',
+                      application_id: settings.ttn_application_id || undefined,
+                      api_key_last4: settings.api_key_last4 || undefined,
+                      webhook_url: settings.webhook_url || undefined,
+                      is_enabled: settings.is_enabled,
+                    }
+                  : undefined
+              }
               variant="ghost"
               size="sm"
             />
           </div>
         </div>
-        <CardDescription>
-          Connect your LoRaWAN sensors via The Things Network
-        </CardDescription>
+        <CardDescription>Connect your LoRaWAN sensors via The Things Network</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Read-only notice for managers */}
         {readOnly && (
           <div className="p-3 rounded-lg bg-muted border border-border/50 flex items-center gap-2">
             <Info className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">View-only access. Contact an admin to make changes.</span>
+            <span className="text-sm text-muted-foreground">
+              View-only access. Contact an admin to make changes.
+            </span>
           </div>
         )}
 
@@ -182,11 +190,12 @@ export function TTNConnectionSettings({ organizationId, readOnly = false }: TTNC
               <div>
                 <p className="text-sm font-medium text-warning">Webhook Not Configured</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  The API key lacks webhook permissions. Sensor data ingestion will not work until webhooks are configured.
+                  The API key lacks webhook permissions. Sensor data ingestion will not work until
+                  webhooks are configured.
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  <strong>Resolution:</strong> Re-provision with "Start Fresh" to get a new API key with full permissions,
-                  or manually configure the webhook in TTN Console.
+                  <strong>Resolution:</strong> Re-provision with "Start Fresh" to get a new API key
+                  with full permissions, or manually configure the webhook in TTN Console.
                 </p>
               </div>
             </div>
@@ -217,7 +226,7 @@ export function TTNConnectionSettings({ organizationId, readOnly = false }: TTNC
               <div className="space-y-0.5">
                 <Label>Integration Active</Label>
                 <p className="text-sm text-muted-foreground">
-                  {isEnabled ? "Receiving sensor data from TTN" : "Integration is disabled"}
+                  {isEnabled ? 'Receiving sensor data from TTN' : 'Integration is disabled'}
                 </p>
               </div>
               <Switch

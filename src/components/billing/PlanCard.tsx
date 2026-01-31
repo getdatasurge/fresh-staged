@@ -1,35 +1,35 @@
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Check, Loader2, ArrowUpRight } from "lucide-react";
-import { PlanKey, STRIPE_PLANS } from "@/lib/stripe";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Check, Loader2, ArrowUpRight } from 'lucide-react';
+import { PlanKey, STRIPE_PLANS } from '@/lib/stripe';
 
 interface PlanCardProps {
   planKey: PlanKey;
-  plan: typeof STRIPE_PLANS[PlanKey];
+  plan: (typeof STRIPE_PLANS)[PlanKey];
   isCurrentPlan: boolean;
   onUpgrade: () => void;
   isLoading: boolean;
   disabled: boolean;
 }
 
-export const PlanCard = ({ 
-  planKey, 
-  plan, 
-  isCurrentPlan, 
-  onUpgrade, 
+export const PlanCard = ({
+  planKey,
+  plan,
+  isCurrentPlan,
+  onUpgrade,
   isLoading,
-  disabled 
+  disabled,
 }: PlanCardProps) => {
-  const isPro = planKey === "pro";
-  
+  const isPro = planKey === 'pro';
+
   return (
-    <div 
+    <div
       className={`relative rounded-lg border p-4 flex flex-col ${
-        isCurrentPlan 
-          ? "border-accent bg-accent/5 ring-2 ring-accent/20" 
-          : isPro 
-            ? "border-primary/50 bg-primary/5" 
-            : "border-border"
+        isCurrentPlan
+          ? 'border-accent bg-accent/5 ring-2 ring-accent/20'
+          : isPro
+            ? 'border-primary/50 bg-primary/5'
+            : 'border-border'
       }`}
     >
       {isCurrentPlan && (
@@ -65,7 +65,7 @@ export const PlanCard = ({
       </ul>
 
       <Button
-        variant={isCurrentPlan ? "outline" : isPro ? "default" : "secondary"}
+        variant={isCurrentPlan ? 'outline' : isPro ? 'default' : 'secondary'}
         className="w-full"
         onClick={onUpgrade}
         disabled={disabled || isLoading}
@@ -73,14 +73,14 @@ export const PlanCard = ({
         {isLoading ? (
           <Loader2 className="w-4 h-4 animate-spin" />
         ) : isCurrentPlan ? (
-          "Current Plan"
+          'Current Plan'
         ) : plan.priceId ? (
           <>
             Upgrade
             <ArrowUpRight className="w-4 h-4 ml-1" />
           </>
         ) : (
-          "Contact Sales"
+          'Contact Sales'
         )}
       </Button>
     </div>

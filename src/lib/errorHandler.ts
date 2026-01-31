@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 // Supabase/Postgres error codes related to permissions
 const RLS_ERROR_CODES = [
   'PGRST301', // Row-level security violation
-  '42501',    // Insufficient privilege
+  '42501', // Insufficient privilege
   'PGRST204', // No rows returned (could be RLS filtering)
 ];
 
@@ -22,16 +22,16 @@ interface PostgrestError {
 }
 
 /**
- * Check if an error is a migration error (deprecated - always returns false)
+ * Check if an error is an app-level error (deprecated - always returns false)
  */
-export function isMigrationError(_error: unknown): boolean {
-  return false; // Migration complete
+export function isAppError(_error: unknown): boolean {
+  return false;
 }
 
 /**
- * Get user-friendly message for migration errors (deprecated)
+ * Get user-friendly message for app errors (deprecated)
  */
-export function getMigrationErrorMessage(_error: unknown): string {
+export function getAppErrorMessage(_error: unknown): string {
   return 'An unexpected error occurred.';
 }
 
@@ -88,11 +88,7 @@ export function getPermissionErrorMessage(error: unknown, action?: string): stri
  * @param action - Optional action description for context
  * @param fallbackMessage - Optional fallback message for non-permission errors
  */
-export function handleError(
-  error: unknown,
-  action?: string,
-  fallbackMessage?: string
-): void {
+export function handleError(error: unknown, action?: string, fallbackMessage?: string): void {
   console.error('Operation failed:', error);
 
   if (isPermissionError(error)) {
@@ -114,7 +110,7 @@ export function handleError(
 export function handleMutationResult(
   result: { error?: unknown },
   successMessage: string,
-  action?: string
+  action?: string,
 ): boolean {
   if (result.error) {
     handleError(result.error, action);

@@ -1,11 +1,11 @@
 /**
  * Weather Service
- * 
+ *
  * Uses Open-Meteo API (free, no API key required) for weather data.
  * API Docs: https://open-meteo.com/en/docs
  */
 
-const OPEN_METEO_BASE_URL = "https://api.open-meteo.com/v1";
+const OPEN_METEO_BASE_URL = 'https://api.open-meteo.com/v1';
 
 export interface CurrentWeather {
   temperature: number;
@@ -59,14 +59,14 @@ interface OpenMeteoHistoricalResponse {
 export async function getCurrentWeather(
   lat: number,
   lon: number,
-  timezone: string = "auto"
+  timezone: string = 'auto',
 ): Promise<WeatherData> {
   const params = new URLSearchParams({
     latitude: lat.toString(),
     longitude: lon.toString(),
-    current: "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m",
-    hourly: "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m",
-    forecast_hours: "24",
+    current: 'temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m',
+    hourly: 'temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m',
+    forecast_hours: '24',
     timezone,
   });
 
@@ -107,17 +107,17 @@ export async function getWeatherTimeseries(
   lon: number,
   timezone: string,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ): Promise<HourlyWeather[]> {
   // Open-Meteo historical API format: YYYY-MM-DD
-  const formatDate = (d: Date) => d.toISOString().split("T")[0];
+  const formatDate = (d: Date) => d.toISOString().split('T')[0];
 
   const params = new URLSearchParams({
     latitude: lat.toString(),
     longitude: lon.toString(),
     start_date: formatDate(startDate),
     end_date: formatDate(endDate),
-    hourly: "temperature_2m,relative_humidity_2m",
+    hourly: 'temperature_2m,relative_humidity_2m',
     timezone,
   });
 
@@ -126,7 +126,7 @@ export async function getWeatherTimeseries(
   today.setHours(0, 0, 0, 0);
   const isHistorical = endDate < today;
 
-  const apiPath = isHistorical ? "/archive" : "/forecast";
+  const apiPath = isHistorical ? '/archive' : '/forecast';
   const response = await fetch(`${OPEN_METEO_BASE_URL}${apiPath}?${params}`);
 
   if (!response.ok) {
@@ -147,7 +147,10 @@ export async function getWeatherTimeseries(
 /**
  * Check if location coordinates are valid
  */
-export function isValidLocation(lat: number | null | undefined, lon: number | null | undefined): boolean {
+export function isValidLocation(
+  lat: number | null | undefined,
+  lon: number | null | undefined,
+): boolean {
   if (lat == null || lon == null) return false;
   if (isNaN(lat) || isNaN(lon)) return false;
   if (lat < -90 || lat > 90) return false;

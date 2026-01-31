@@ -68,9 +68,7 @@ export const ttnGatewaysRouter = router({
     .input(OrgInput)
     .output(TTNGatewaysListSchema)
     .query(async ({ ctx }) => {
-      const gateways = await ttnGatewayService.listTTNGateways(
-        ctx.user.organizationId
-      );
+      const gateways = await ttnGatewayService.listTTNGateways(ctx.user.organizationId);
       return gateways;
     }),
 
@@ -86,7 +84,7 @@ export const ttnGatewaysRouter = router({
     .query(async ({ ctx, input }) => {
       const gateway = await ttnGatewayService.getTTNGateway(
         input.gatewayId,
-        ctx.user.organizationId
+        ctx.user.organizationId,
       );
 
       if (!gateway) {
@@ -121,7 +119,7 @@ export const ttnGatewaysRouter = router({
       try {
         const gateway = await ttnGatewayService.registerTTNGateway(
           ctx.user.organizationId,
-          input.data
+          input.data,
         );
         return gateway;
       } catch (error) {
@@ -160,7 +158,7 @@ export const ttnGatewaysRouter = router({
       const gateway = await ttnGatewayService.updateTTNGateway(
         input.gatewayId,
         ctx.user.organizationId,
-        input.data
+        input.data,
       );
 
       if (!gateway) {
@@ -194,7 +192,7 @@ export const ttnGatewaysRouter = router({
 
       const deleted = await ttnGatewayService.deregisterTTNGateway(
         input.gatewayId,
-        ctx.user.organizationId
+        ctx.user.organizationId,
       );
 
       if (!deleted) {
@@ -217,7 +215,7 @@ export const ttnGatewaysRouter = router({
     .mutation(async ({ ctx, input }) => {
       const gateway = await ttnGatewayService.updateGatewayStatus(
         input.gatewayId,
-        ctx.user.organizationId
+        ctx.user.organizationId,
       );
 
       if (!gateway) {

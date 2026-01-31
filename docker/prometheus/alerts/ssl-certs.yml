@@ -11,8 +11,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "SSL certificate expires in less than 30 days"
-          description: "Certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}. Renewal recommended."
+          summary: 'SSL certificate expires in less than 30 days'
+          description: 'Certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}. Renewal recommended.'
 
       # Critical: Certificate expires in less than 7 days
       - alert: SSLCertExpiring7Days
@@ -21,8 +21,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "SSL certificate expires in less than 7 days - URGENT"
-          description: "Certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}. Immediate renewal required."
+          summary: 'SSL certificate expires in less than 7 days - URGENT'
+          description: 'Certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}. Immediate renewal required.'
 
       # SSL probe failed - endpoint unreachable or SSL error
       - alert: SSLProbeFailure
@@ -31,5 +31,5 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "SSL probe failed for endpoint"
-          description: "SSL probe failed for {{ $labels.instance }}. Check if endpoint is reachable and certificate is valid."
+          summary: 'SSL probe failed for endpoint'
+          description: 'SSL probe failed for {{ $labels.instance }}. Check if endpoint is reachable and certificate is valid.'

@@ -11,6 +11,7 @@ Phase 23 installs all system prerequisites required for FreshTrack Pro deploymen
 The key architectural decision is **not to use the convenience script (`get.docker.com`) for idempotency**. While the existing `deploy-selfhosted.sh` uses it, the Docker documentation explicitly states it's "not designed to upgrade an existing Docker installation" and "can cause trouble if Docker is already installed." Instead, Phase 23 should use the official apt repository method with version pinning for predictable, idempotent behavior.
 
 All installation functions should:
+
 1. Check if the tool is already installed with correct version before attempting install
 2. Use `run_step()` from preflight-lib.sh for checkpoint-based resume
 3. Return success (0) if already installed (idempotent)
@@ -22,30 +23,30 @@ All installation functions should:
 
 ### Core
 
-| Tool | Version | Purpose | Why Standard |
-|------|---------|---------|--------------|
-| Docker Engine | 29.x | Container runtime | Required for all FreshTrack services |
-| Docker Compose v2 | 2.x+ (via plugin) | Multi-container orchestration | Bundled with Docker Engine, replaces v1 |
-| UFW | System default | Firewall management | Ubuntu's default firewall, simple interface |
-| fail2ban | System default | SSH brute-force protection | Standard Linux security hardening |
-| jq | 1.6+ | JSON parsing | Required for health check JSON responses |
+| Tool              | Version           | Purpose                       | Why Standard                                |
+| ----------------- | ----------------- | ----------------------------- | ------------------------------------------- |
+| Docker Engine     | 29.x              | Container runtime             | Required for all FreshTrack services        |
+| Docker Compose v2 | 2.x+ (via plugin) | Multi-container orchestration | Bundled with Docker Engine, replaces v1     |
+| UFW               | System default    | Firewall management           | Ubuntu's default firewall, simple interface |
+| fail2ban          | System default    | SSH brute-force protection    | Standard Linux security hardening           |
+| jq                | 1.6+              | JSON parsing                  | Required for health check JSON responses    |
 
 ### Supporting
 
-| Tool | Version | Purpose | When to Use |
-|------|---------|---------|-------------|
-| `dpkg-query` | System | Package status check | Verify if package installed before install |
-| `systemctl` | System | Service management | Enable/start Docker, fail2ban services |
-| `apt-get` | System | Package installation | Install all prerequisites |
-| `curl` | System | HTTP client | Download Docker GPG key |
+| Tool         | Version | Purpose              | When to Use                                |
+| ------------ | ------- | -------------------- | ------------------------------------------ |
+| `dpkg-query` | System  | Package status check | Verify if package installed before install |
+| `systemctl`  | System  | Service management   | Enable/start Docker, fail2ban services     |
+| `apt-get`    | System  | Package installation | Install all prerequisites                  |
+| `curl`       | System  | HTTP client          | Download Docker GPG key                    |
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| get.docker.com script | apt repository | Script is simpler but NOT idempotent; apt method is reliable for re-runs |
-| UFW | iptables directly | UFW is higher-level, easier to audit; iptables more flexible but complex |
-| fail2ban | firewalld/nftables | fail2ban is purpose-built for intrusion prevention; others are general-purpose |
+| Instead of            | Could Use          | Tradeoff                                                                       |
+| --------------------- | ------------------ | ------------------------------------------------------------------------------ |
+| get.docker.com script | apt repository     | Script is simpler but NOT idempotent; apt method is reliable for re-runs       |
+| UFW                   | iptables directly  | UFW is higher-level, easier to audit; iptables more flexible but complex       |
+| fail2ban              | firewalld/nftables | fail2ban is purpose-built for intrusion prevention; others are general-purpose |
 
 ## Architecture Patterns
 
@@ -64,6 +65,7 @@ scripts/
 **What:** Check if package is installed before attempting installation
 **When to use:** Every package installation
 **Example:**
+
 ```bash
 # Source: https://www.baeldung.com/linux/check-how-package-installed
 is_package_installed() {
@@ -91,6 +93,7 @@ ensure_package() {
 **What:** Install Docker using official apt repository instead of convenience script
 **When to use:** Fresh installation or ensuring Docker is installed
 **Example:**
+
 ```bash
 # Source: https://docs.docker.com/engine/install/ubuntu/
 install_docker() {
@@ -140,6 +143,7 @@ install_docker() {
 **What:** Configure firewall rules that can be safely re-applied
 **When to use:** Firewall setup
 **Example:**
+
 ```bash
 # Source: https://www.digitalocean.com/community/tutorials/ufw-essentials-common-firewall-rules-and-commands
 configure_firewall() {
@@ -176,6 +180,7 @@ configure_firewall() {
 **What:** Configure fail2ban to protect SSH from brute-force attacks
 **When to use:** After UFW is configured
 **Example:**
+
 ```bash
 # Source: https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-ubuntu-22-04
 install_fail2ban() {
@@ -216,6 +221,7 @@ EOF
 **What:** Install jq JSON processor
 **When to use:** Required for JSON health check parsing
 **Example:**
+
 ```bash
 # Source: https://www.cyberithub.com/how-to-install-jq-json-processor-on-ubuntu-22-04/
 install_jq() {
@@ -246,13 +252,13 @@ install_jq() {
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Docker installation | Custom download script | apt repository method | Docker's official method with version control |
-| Version checking | Parsing docker output | `dpkg-query` for packages | Standard package manager queries |
-| Service management | Manual process control | `systemctl enable/start` | Handles boot persistence, dependencies |
-| Firewall rules | Direct iptables | UFW commands | Simpler, more auditable, handles IPv4/IPv6 |
-| SSH protection | Custom log parsing | fail2ban | Battle-tested, handles log rotation, edge cases |
+| Problem             | Don't Build            | Use Instead               | Why                                             |
+| ------------------- | ---------------------- | ------------------------- | ----------------------------------------------- |
+| Docker installation | Custom download script | apt repository method     | Docker's official method with version control   |
+| Version checking    | Parsing docker output  | `dpkg-query` for packages | Standard package manager queries                |
+| Service management  | Manual process control | `systemctl enable/start`  | Handles boot persistence, dependencies          |
+| Firewall rules      | Direct iptables        | UFW commands              | Simpler, more auditable, handles IPv4/IPv6      |
+| SSH protection      | Custom log parsing     | fail2ban                  | Battle-tested, handles log rotation, edge cases |
 
 **Key insight:** The get.docker.com script, while convenient for first-time installs, is explicitly not recommended for production or for idempotent scripts. The apt repository method takes more lines but behaves predictably on re-runs.
 
@@ -411,14 +417,15 @@ install_all_prerequisites() {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| get.docker.com script | apt repository method | Always for production | Idempotent, version-controlled |
-| docker-compose (v1) | docker compose (v2) | July 2023 (v1 EOL) | Faster, Go-based, integrated |
-| Manual iptables | UFW | Ubuntu default since ~2008 | Simpler, portable rules |
-| Custom log monitoring | fail2ban | Standard practice | Battle-tested, configurable |
+| Old Approach          | Current Approach      | When Changed               | Impact                         |
+| --------------------- | --------------------- | -------------------------- | ------------------------------ |
+| get.docker.com script | apt repository method | Always for production      | Idempotent, version-controlled |
+| docker-compose (v1)   | docker compose (v2)   | July 2023 (v1 EOL)         | Faster, Go-based, integrated   |
+| Manual iptables       | UFW                   | Ubuntu default since ~2008 | Simpler, portable rules        |
+| Custom log monitoring | fail2ban              | Standard practice          | Battle-tested, configurable    |
 
 **Deprecated/outdated:**
+
 - **Docker Compose v1 (docker-compose):** End-of-life July 2023. Use v2 (`docker compose`)
 - **get.docker.com for production:** Docker docs explicitly state "not recommended for production"
 - **Standalone docker-compose binary:** Replaced by docker-compose-plugin package
@@ -465,6 +472,7 @@ Things that couldn't be fully resolved:
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - Official Docker documentation, DigitalOcean guides verified
 - Architecture: HIGH - Patterns align with Phase 22 and existing deploy-selfhosted.sh
 - Pitfalls: HIGH - Documented in official sources and community reports

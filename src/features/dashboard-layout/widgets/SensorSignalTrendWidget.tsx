@@ -4,10 +4,10 @@
  * Shows signal strength history chart.
  */
 
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Signal } from "lucide-react";
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Signal } from 'lucide-react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -17,10 +17,10 @@ import {
   Tooltip,
   CartesianGrid,
   ReferenceLine,
-} from "recharts";
-import { useTRPC } from "@/lib/trpc";
-import type { WidgetProps } from "../types";
-import { format } from "date-fns";
+} from 'recharts';
+import { useTRPC } from '@/lib/trpc';
+import type { WidgetProps } from '../types';
+import { format } from 'date-fns';
 
 interface SignalReading {
   recorded_at: string;
@@ -49,13 +49,14 @@ export function SensorSignalTrendWidget({ entityId, organizationId, sensor }: Wi
     return readingsData
       .filter((r) => r.signalStrength != null)
       .map((r) => ({
-        recorded_at: r.recordedAt instanceof Date ? r.recordedAt.toISOString() : String(r.recordedAt),
+        recorded_at:
+          r.recordedAt instanceof Date ? r.recordedAt.toISOString() : String(r.recordedAt),
         signal_strength: r.signalStrength!,
       }));
   }, [readingsData]);
 
-  const chartData = readings.map(r => ({
-    time: format(new Date(r.recorded_at), "HH:mm"),
+  const chartData = readings.map((r) => ({
+    time: format(new Date(r.recorded_at), 'HH:mm'),
     signal: r.signal_strength,
     timestamp: new Date(r.recorded_at).getTime(),
   }));
@@ -93,9 +94,13 @@ export function SensorSignalTrendWidget({ entityId, organizationId, sensor }: Wi
   }
 
   const currentSignal = sensor?.signal_strength;
-  const signalStatus = currentSignal 
-    ? currentSignal > -80 ? "Good" : currentSignal > -100 ? "Fair" : "Weak"
-    : "Unknown";
+  const signalStatus = currentSignal
+    ? currentSignal > -80
+      ? 'Good'
+      : currentSignal > -100
+        ? 'Fair'
+        : 'Weak'
+    : 'Unknown';
 
   return (
     <Card className="h-full flex flex-col">
@@ -106,7 +111,7 @@ export function SensorSignalTrendWidget({ entityId, organizationId, sensor }: Wi
             Sensor Signal Trend
           </span>
           <span className="text-xs font-normal text-muted-foreground">
-            {signalStatus} ({currentSignal ?? "—"} dBm)
+            {signalStatus} ({currentSignal ?? '—'} dBm)
           </span>
         </CardTitle>
       </CardHeader>
@@ -114,11 +119,7 @@ export function SensorSignalTrendWidget({ entityId, organizationId, sensor }: Wi
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis
-              dataKey="time"
-              tick={{ fontSize: 10 }}
-              className="text-muted-foreground"
-            />
+            <XAxis dataKey="time" tick={{ fontSize: 10 }} className="text-muted-foreground" />
             <YAxis
               domain={[-120, -40]}
               tick={{ fontSize: 10 }}
@@ -127,18 +128,18 @@ export function SensorSignalTrendWidget({ entityId, organizationId, sensor }: Wi
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "hsl(var(--popover))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "var(--radius)",
+                backgroundColor: 'hsl(var(--popover))',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: 'var(--radius)',
               }}
-              labelStyle={{ color: "hsl(var(--foreground))" }}
-              formatter={(value: number) => [`${value} dBm`, "Signal"]}
+              labelStyle={{ color: 'hsl(var(--foreground))' }}
+              formatter={(value: number) => [`${value} dBm`, 'Signal']}
             />
             <ReferenceLine
               y={-80}
               stroke="hsl(var(--muted-foreground))"
               strokeDasharray="3 3"
-              label={{ value: "Good", position: "right", fontSize: 10 }}
+              label={{ value: 'Good', position: 'right', fontSize: 10 }}
             />
             <Line
               type="monotone"

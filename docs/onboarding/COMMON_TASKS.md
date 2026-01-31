@@ -126,10 +126,10 @@ export function MyWidget({ title, data }: MyWidgetProps) {
 Always use existing shadcn/ui components from `/src/components/ui/`:
 
 ```typescript
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "@/hooks/use-toast";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/hooks/use-toast';
 ```
 
 **Adding a new shadcn component:**
@@ -148,17 +148,17 @@ Create a custom hook in `/src/hooks/`:
 
 ```typescript
 // src/hooks/useMyData.ts
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useMyData(organizationId: string) {
   return useQuery({
-    queryKey: ["my-data", organizationId],
+    queryKey: ['my-data', organizationId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("my_table")
-        .select("*")
-        .eq("organization_id", organizationId);
+        .from('my_table')
+        .select('*')
+        .eq('organization_id', organizationId);
 
       if (error) throw error;
       return data;
@@ -172,17 +172,13 @@ export function useCreateMyData() {
 
   return useMutation({
     mutationFn: async (newData: MyDataInsert) => {
-      const { data, error } = await supabase
-        .from("my_table")
-        .insert(newData)
-        .select()
-        .single();
+      const { data, error } = await supabase.from('my_table').insert(newData).select().single();
 
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-data"] });
+      queryClient.invalidateQueries({ queryKey: ['my-data'] });
     },
   });
 }
@@ -220,17 +216,15 @@ Follow these patterns for consistent cache invalidation:
 
 ```typescript
 // Entity lists
-["units", organizationId]
-["alerts", { organizationId, status: "active" }]
-["sensors", { unitId }]
-
-// Single entities
-["unit", unitId]
-["alert", alertId]
-
-// Related data
-["unit-sensors", unitId]
-["unit-readings", unitId, { period: "24h" }]
+['units', organizationId][('alerts', { organizationId, status: 'active' })][
+  ('sensors', { unitId })
+][
+  // Single entities
+  ('unit', unitId)
+][('alert', alertId)][
+  // Related data
+  ('unit-sensors', unitId)
+][('unit-readings', unitId, { period: '24h' })];
 ```
 
 ---
@@ -248,35 +242,38 @@ touch supabase/functions/my-new-function/index.ts
 
 ```typescript
 // supabase/functions/my-new-function/index.ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders } from "../_shared/cors.ts";
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { corsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
     // Create Supabase client with auth context
     const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get("Authorization")! },
+          headers: { Authorization: req.headers.get('Authorization')! },
         },
-      }
+      },
     );
 
     // Get the authenticated user
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseClient.auth.getUser();
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Parse request body
@@ -285,15 +282,14 @@ serve(async (req) => {
     // Your business logic here
     const result = await processData(body, supabaseClient);
 
-    return new Response(
-      JSON.stringify(result),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
 ```
@@ -302,8 +298,8 @@ serve(async (req) => {
 
 ```typescript
 // In a hook or component
-const { data, error } = await supabase.functions.invoke("my-new-function", {
-  body: { key: "value" },
+const { data, error } = await supabase.functions.invoke('my-new-function', {
+  body: { key: 'value' },
 });
 ```
 
@@ -394,11 +390,11 @@ Edit `/src/lib/alertConfig.ts`:
 export const ALERT_TYPES = {
   // ... existing types
   my_new_alert: {
-    label: "My New Alert",
+    label: 'My New Alert',
     icon: AlertCircle,
-    color: "warning", // or "critical"
-    description: "Description of when this triggers",
-    clearCondition: "When the condition is resolved",
+    color: 'warning', // or "critical"
+    description: 'Description of when this triggers',
+    clearCondition: 'When the condition is resolved',
   },
 } as const;
 ```
@@ -417,8 +413,8 @@ function evaluateAlerts(unit: Unit, reading: Reading, rules: AlertRules) {
   // Add your new alert check
   if (shouldTriggerMyNewAlert(unit, reading, rules)) {
     alerts.push({
-      type: "my_new_alert",
-      severity: "warning",
+      type: 'my_new_alert',
+      severity: 'warning',
       unit_id: unit.id,
       message: `My new alert triggered for ${unit.name}`,
     });
@@ -471,12 +467,12 @@ async function processUplink(payload: TTNUplink) {
 
 ### Key Files for TTN Work
 
-| File | Purpose |
-|------|---------|
-| `/supabase/functions/_shared/ttnConfig.ts` | DevEUI normalization, TTN helpers |
-| `/supabase/functions/_shared/ttnPermissions.ts` | API key permission validation |
-| `/src/types/ttn.ts` | TypeScript types for TTN entities |
-| `/src/hooks/useTTNSetupWizard.ts` | TTN onboarding flow logic |
+| File                                            | Purpose                           |
+| ----------------------------------------------- | --------------------------------- |
+| `/supabase/functions/_shared/ttnConfig.ts`      | DevEUI normalization, TTN helpers |
+| `/supabase/functions/_shared/ttnPermissions.ts` | API key permission validation     |
+| `/src/types/ttn.ts`                             | TypeScript types for TTN entities |
+| `/src/hooks/useTTNSetupWizard.ts`               | TTN onboarding flow logic         |
 
 ---
 
@@ -522,7 +518,7 @@ Settings cascade: Organization → Site → Unit. Use the `get_effective_*` RPCs
 
 ```typescript
 // Get effective settings for a unit (includes org/site defaults)
-const { data } = await supabase.rpc("get_effective_alert_rules", {
+const { data } = await supabase.rpc('get_effective_alert_rules', {
   p_unit_id: unitId,
 });
 ```
@@ -554,26 +550,22 @@ function MyComponent() {
 
 ### Role Hierarchy
 
-| Role | Can Do |
-|------|--------|
-| `owner` | Everything, including billing and user management |
-| `admin` | All operations except billing |
-| `manager` | View and manage assigned locations |
-| `staff` | Log temperatures, acknowledge alerts |
+| Role      | Can Do                                            |
+| --------- | ------------------------------------------------- |
+| `owner`   | Everything, including billing and user management |
+| `admin`   | All operations except billing                     |
+| `manager` | View and manage assigned locations                |
+| `staff`   | Log temperatures, acknowledge alerts              |
 
 ### Backend Role Checks
 
 In edge functions, check roles via the profiles table:
 
 ```typescript
-const { data: profile } = await supabase
-  .from("profiles")
-  .select("role")
-  .eq("id", user.id)
-  .single();
+const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
 
-if (!["owner", "admin"].includes(profile.role)) {
-  return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
+if (!['owner', 'admin'].includes(profile.role)) {
+  return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
 }
 ```
 
@@ -635,42 +627,42 @@ supabase db reset
 ### Import Aliases
 
 ```typescript
-import { something } from "@/components/...";  // src/components
-import { something } from "@/hooks/...";       // src/hooks
-import { something } from "@/lib/...";         // src/lib
-import { something } from "@/pages/...";       // src/pages
+import { something } from '@/components/...'; // src/components
+import { something } from '@/hooks/...'; // src/hooks
+import { something } from '@/lib/...'; // src/lib
+import { something } from '@/pages/...'; // src/pages
 ```
 
 ### Supabase Client
 
 ```typescript
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/integrations/supabase/client';
 ```
 
 ### Toast Notifications
 
 ```typescript
-import { toast } from "@/hooks/use-toast";
+import { toast } from '@/hooks/use-toast';
 
 toast({
-  title: "Success",
-  description: "Your changes have been saved.",
+  title: 'Success',
+  description: 'Your changes have been saved.',
 });
 
 toast({
-  title: "Error",
-  description: "Something went wrong.",
-  variant: "destructive",
+  title: 'Error',
+  description: 'Something went wrong.',
+  variant: 'destructive',
 });
 ```
 
 ### Common Hooks
 
 ```typescript
-import { useNavigate, useParams } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useUserRole } from "@/hooks/useUserRole";
-import { useUnitStatus } from "@/hooks/useUnitStatus";
+import { useNavigate, useParams } from 'react-router-dom';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useUnitStatus } from '@/hooks/useUnitStatus';
 ```
 
 ---

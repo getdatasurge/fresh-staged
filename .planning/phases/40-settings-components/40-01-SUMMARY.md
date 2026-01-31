@@ -29,11 +29,13 @@
 ## Files Created/Modified
 
 **Backend (3 files):**
+
 - `backend/src/routers/sms-config.router.ts` - Added listAlertHistory procedure
 - `backend/src/routers/ttn-settings.router.ts` - Added listProvisioningLogs procedure
 - `backend/src/routers/organizations.router.ts` - Added listEmulatorSyncHistory procedure
 
 **Frontend (3 files):**
+
 - `src/components/settings/SmsAlertHistory.tsx` - Migrated to tRPC
 - `src/components/settings/TTNProvisioningLogs.tsx` - Migrated to tRPC
 - `src/components/settings/EmulatorSyncHistory.tsx` - Migrated to tRPC
@@ -61,11 +63,11 @@ None - plan executed exactly as written.
 
 ## Commits
 
-| Task | Commit | Description |
-|------|--------|-------------|
-| 1 | 97e541e | feat(40-01): migrate SmsAlertHistory to tRPC |
-| 2 | cc89e82 | feat(40-01): migrate TTNProvisioningLogs to tRPC |
-| 3 | 5ce6cbd | feat(40-01): migrate EmulatorSyncHistory to tRPC |
+| Task | Commit  | Description                                      |
+| ---- | ------- | ------------------------------------------------ |
+| 1    | 97e541e | feat(40-01): migrate SmsAlertHistory to tRPC     |
+| 2    | cc89e82 | feat(40-01): migrate TTNProvisioningLogs to tRPC |
+| 3    | 5ce6cbd | feat(40-01): migrate EmulatorSyncHistory to tRPC |
 
 ## Next Step
 

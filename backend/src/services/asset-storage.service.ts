@@ -189,7 +189,7 @@ function generateAssetKey(
   organizationId: string,
   assetType: AssetType,
   entityId: string,
-  mimeType: string
+  mimeType: string,
 ): string {
   const extension = MIME_TO_EXTENSION[mimeType] || '';
   const timestamp = Date.now();
@@ -223,7 +223,7 @@ export async function uploadAsset(params: UploadParams): Promise<UploadResult> {
         Body: data,
         ContentType: mimeType,
         ContentLength: data.length,
-      })
+      }),
     );
 
     // Construct public URL
@@ -255,7 +255,7 @@ export async function deleteAsset(key: string): Promise<void> {
       new DeleteObjectCommand({
         Bucket: config.bucket,
         Key: key,
-      })
+      }),
     );
   } catch (error) {
     if (error instanceof Error) {
@@ -276,7 +276,7 @@ export async function checkStorageHealth(): Promise<boolean> {
     await client.send(
       new HeadBucketCommand({
         Bucket: config.bucket,
-      })
+      }),
     );
     return true;
   } catch {

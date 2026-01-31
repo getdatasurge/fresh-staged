@@ -19,9 +19,9 @@ affects: [14-05-streaming, dashboard, unit-detail, site-detail]
 tech-stack:
   added: [socket.io-client]
   patterns:
-    - "React context provider for Socket.io connection lifecycle"
-    - "TanStack Query cache updates from WebSocket events"
-    - "Room subscription hooks for site/unit filtering"
+    - 'React context provider for Socket.io connection lifecycle'
+    - 'TanStack Query cache updates from WebSocket events'
+    - 'Room subscription hooks for site/unit filtering'
 
 key-files:
   created:
@@ -33,16 +33,16 @@ key-files:
     - src/App.tsx
 
 key-decisions:
-  - "Use Stack Auth getAccessToken() for JWT retrieval"
-  - "TanStack Query cache updates via setQueryData"
-  - "RealtimeProvider placed after QueryClientProvider in component tree"
-  - "Automatic reconnection with exponential backoff configured"
+  - 'Use Stack Auth getAccessToken() for JWT retrieval'
+  - 'TanStack Query cache updates via setQueryData'
+  - 'RealtimeProvider placed after QueryClientProvider in component tree'
+  - 'Automatic reconnection with exponential backoff configured'
 
 patterns-established:
-  - "Socket.io client as singleton with typed event interfaces"
-  - "Connection state exposed via React context hook pattern"
-  - "Room subscriptions managed via useEffect with cleanup"
-  - "Multiple query cache keys updated per batch event"
+  - 'Socket.io client as singleton with typed event interfaces'
+  - 'Connection state exposed via React context hook pattern'
+  - 'Room subscriptions managed via useEffect with cleanup'
+  - 'Multiple query cache keys updated per batch event'
 
 # Metrics
 duration: 4min
@@ -62,6 +62,7 @@ completed: 2026-01-24
 - **Files modified:** 5
 
 ## Accomplishments
+
 - Socket.io-client installed and configured with typed event interfaces
 - RealtimeProvider manages WebSocket connection lifecycle with JWT authentication
 - Real-time sensor data updates TanStack Query cache without polling
@@ -87,21 +88,25 @@ Each task was committed atomically:
 ## Decisions Made
 
 **D1: Stack Auth token retrieval**
+
 - Used `user.getAccessToken()` async method for JWT retrieval
 - Wrapped in try/catch for error handling
 - Logs warning if no token available
 
 **D2: TanStack Query cache update strategy**
+
 - Update multiple cache keys per batch: unit-latest-reading, unit status, sensor-readings
 - Append to history arrays with 100-item limit to prevent memory growth
 - Use setQueryData with updater function to merge with existing cache
 
 **D3: RealtimeProvider placement**
+
 - Placed after QueryClientProvider (needs queryClient context)
 - Placed inside StackProvider (needs user context for auth)
 - Placed before BrowserRouter (connection state available to all routes)
 
 **D4: Connection lifecycle**
+
 - Event listeners registered outside connect event to prevent duplicates
 - Clean disconnect on user logout or unmount
 - Check socket.connected state on mount for reconnect scenarios
@@ -121,6 +126,7 @@ None - no external service configuration required.
 ## Next Phase Readiness
 
 **Ready for Phase 14-05 (Real-time Sensor Data Streaming):**
+
 - Socket.io client connects with JWT authentication
 - TanStack Query cache updates configured
 - Room subscription hooks ready for dashboard integration
@@ -129,10 +135,12 @@ None - no external service configuration required.
 **No blockers.**
 
 **Integration points:**
+
 - Dashboard components can call useRealtimeSensorData(organizationId)
 - Unit/Site detail pages can call useRealtimeSubscription('unit', unitId)
 - Connection status available via useRealtimeStatus() for UI badges
 
 ---
-*Phase: 14-real-time-foundation*
-*Completed: 2026-01-24*
+
+_Phase: 14-real-time-foundation_
+_Completed: 2026-01-24_

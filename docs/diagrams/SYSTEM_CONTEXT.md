@@ -52,23 +52,23 @@ graph TB
 
 ## Actor Descriptions
 
-| Actor | Description | Key Interactions |
-|-------|-------------|------------------|
-| Food Safety Manager | Strategic oversight of food safety | Dashboard, reports, policy configuration |
-| Operations Manager | Facilities and equipment management | Trends, escalations, equipment health |
-| Kitchen Staff | Day-to-day operations | Manual logging, alert acknowledgment |
-| IT Administrator | Technical setup and maintenance | Sensor provisioning, TTN configuration |
+| Actor               | Description                         | Key Interactions                         |
+| ------------------- | ----------------------------------- | ---------------------------------------- |
+| Food Safety Manager | Strategic oversight of food safety  | Dashboard, reports, policy configuration |
+| Operations Manager  | Facilities and equipment management | Trends, escalations, equipment health    |
+| Kitchen Staff       | Day-to-day operations               | Manual logging, alert acknowledgment     |
+| IT Administrator    | Technical setup and maintenance     | Sensor provisioning, TTN configuration   |
 
 ---
 
 ## External System Descriptions
 
-| System | Purpose | Integration Type |
-|--------|---------|------------------|
+| System             | Purpose                | Integration Type            |
+| ------------------ | ---------------------- | --------------------------- |
 | The Things Network | LoRaWAN sensor network | Bidirectional API + Webhook |
-| Stripe | Subscription billing | API + Webhook |
-| Telnyx | SMS alert delivery | Outbound API |
-| Email (Supabase) | Email notifications | SMTP |
+| Stripe             | Subscription billing   | API + Webhook               |
+| Telnyx             | SMS alert delivery     | Outbound API                |
+| Email (Supabase)   | Email notifications    | SMTP                        |
 
 ---
 

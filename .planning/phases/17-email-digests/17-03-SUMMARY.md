@@ -51,28 +51,28 @@ Secure unsubscribe via JWT tokens, processor uses grouped data with site filteri
 
 ## Completed Tasks
 
-| # | Task | Commit | Key Changes |
-|---|------|--------|-------------|
-| 1 | Create unsubscribe token utility | 0616800 | generateUnsubscribeToken, verifyUnsubscribeToken with 30-day expiry |
-| 2 | Create /unsubscribe endpoint | 2c0d3b9 | GET /unsubscribe?token=xxx, updates preferences, syncs schedulers |
-| 3 | Update digest processor | ae18704 | Generates JWT URLs, renders HTML+text, uses grouped data |
+| #   | Task                             | Commit  | Key Changes                                                         |
+| --- | -------------------------------- | ------- | ------------------------------------------------------------------- |
+| 1   | Create unsubscribe token utility | 0616800 | generateUnsubscribeToken, verifyUnsubscribeToken with 30-day expiry |
+| 2   | Create /unsubscribe endpoint     | 2c0d3b9 | GET /unsubscribe?token=xxx, updates preferences, syncs schedulers   |
+| 3   | Update digest processor          | ae18704 | Generates JWT URLs, renders HTML+text, uses grouped data            |
 
 ## Key Artifacts
 
 ### backend/src/utils/unsubscribe-token.ts
+
 ```typescript
 // JWT-based token generation and verification
 export async function generateUnsubscribeToken(
   userId: string,
-  type: 'daily' | 'weekly' | 'all'
-): Promise<string>
+  type: 'daily' | 'weekly' | 'all',
+): Promise<string>;
 
-export async function verifyUnsubscribeToken(
-  token: string
-): Promise<UnsubscribePayload | null>
+export async function verifyUnsubscribeToken(token: string): Promise<UnsubscribePayload | null>;
 ```
 
 ### backend/src/routes/unsubscribe.ts
+
 ```typescript
 // GET /unsubscribe?token=xxx
 // - Verifies JWT token
@@ -82,6 +82,7 @@ export async function verifyUnsubscribeToken(
 ```
 
 ### email-digest.processor.ts Changes
+
 ```typescript
 // Generate secure unsubscribe URL
 const unsubscribeToken = await generateUnsubscribeToken(userId, period);
@@ -97,23 +98,25 @@ await emailService.sendDigest({ to, subject, html, text });
 
 ## Decisions Made
 
-| ID | Decision | Rationale |
-|----|----------|-----------|
-| UNSUB-01 | JWT token with 30-day expiry | Secure, stateless, no DB lookup needed |
+| ID       | Decision                                    | Rationale                                            |
+| -------- | ------------------------------------------- | ---------------------------------------------------- |
+| UNSUB-01 | JWT token with 30-day expiry                | Secure, stateless, no DB lookup needed               |
 | UNSUB-02 | UNSUBSCRIBE_SECRET with JWT_SECRET fallback | Dedicated secret optional, works with existing setup |
-| UNSUB-03 | Endpoint at /unsubscribe (no /api prefix) | Public user-facing link from emails |
+| UNSUB-03 | Endpoint at /unsubscribe (no /api prefix)   | Public user-facing link from emails                  |
 
 ## Deviations from Plan
 
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Weekly digest template used old structure**
+
 - **Found during:** Task 2 TypeScript verification
 - **Issue:** weekly-digest.tsx still referenced `displayAlerts` instead of grouped `sites` structure
 - **Fix:** Template had already been auto-fixed (likely by previous plan execution or linter)
 - **Files:** backend/src/emails/weekly-digest.tsx
 
 **2. [Rule 3 - Blocking] EmailService missing text parameter**
+
 - **Found during:** Task 2
 - **Issue:** SendDigestParams interface didn't include optional `text` field for plain text emails
 - **Fix:** Added `text?: string` to interface and pass-through to Resend API
@@ -139,6 +142,7 @@ await emailService.sendDigest({ to, subject, html, text });
 ## Next Phase Readiness
 
 Phase 17 Email Digests is now complete with all three plans executed:
+
 - 17-01: Digest preferences in profiles table
 - 17-02: Grouped digest data builder and email templates (executed previously)
 - 17-03: Unsubscribe tokens and processor updates (this plan)

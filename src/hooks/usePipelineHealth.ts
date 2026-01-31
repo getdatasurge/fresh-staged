@@ -1,11 +1,11 @@
 /**
  * usePipelineHealth Hook
- * 
+ *
  * React hook for checking the health of the data pipeline
  * from sensor to database.
  */
 
-import { useMemo } from "react";
+import { useMemo } from 'react';
 import {
   checkSensorHealth,
   checkGatewayHealth,
@@ -13,8 +13,8 @@ import {
   buildPipelineReport,
   type PipelineHealthReport,
   type PipelineLayer,
-} from "@/lib/pipeline/pipelineHealth";
-import type { WidgetProps } from "@/features/dashboard-layout/types";
+} from '@/lib/pipeline/pipelineHealth';
+import type { WidgetProps } from '@/features/dashboard-layout/types';
 
 interface UsePipelineHealthOptions {
   /** Widget props containing entity data */
@@ -53,34 +53,38 @@ export function usePipelineHealth(options: UsePipelineHealthOptions): UsePipelin
     // Check sensor health
     const sensorData = sensor ?? loraSensors?.[0];
     if (sensorData) {
-      checks.push(checkSensorHealth({
-        last_seen_at: sensorData.last_seen_at,
-        battery_level: sensorData.battery_level,
-        signal_strength: sensorData.signal_strength,
-        status: sensorData.status,
-      }));
+      checks.push(
+        checkSensorHealth({
+          last_seen_at: sensorData.last_seen_at,
+          battery_level: sensorData.battery_level,
+          signal_strength: sensorData.signal_strength,
+          status: sensorData.status,
+        }),
+      );
     } else if (device) {
-      checks.push(checkSensorHealth({
-        last_seen_at: device.last_seen_at,
-        battery_level: device.battery_level,
-        signal_strength: device.signal_strength,
-        status: device.status,
-      }));
+      checks.push(
+        checkSensorHealth({
+          last_seen_at: device.last_seen_at,
+          battery_level: device.battery_level,
+          signal_strength: device.signal_strength,
+          status: device.status,
+        }),
+      );
     } else {
       checks.push(checkSensorHealth(null));
     }
 
     // Check gateway health (via site gateways if available)
     // Note: This is a simplified check - in production you'd query gateway data
-    const gatewayStatus = site && readings && readings.length > 0 
-      ? { last_seen_at: readings[0]?.recorded_at, status: 'online' }
-      : null;
+    const gatewayStatus =
+      site && readings && readings.length > 0
+        ? { last_seen_at: readings[0]?.recorded_at, status: 'online' }
+        : null;
     checks.push(checkGatewayHealth(gatewayStatus));
 
     // Check database ingestion health
-    const lastReading = readings && readings.length > 0 
-      ? { created_at: readings[0]?.recorded_at }
-      : null;
+    const lastReading =
+      readings && readings.length > 0 ? { created_at: readings[0]?.recorded_at } : null;
     checks.push(checkDatabaseHealth(lastReading));
 
     // Build the report

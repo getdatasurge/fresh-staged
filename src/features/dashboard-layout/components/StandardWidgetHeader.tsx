@@ -1,6 +1,6 @@
 /**
  * Standard Widget Header
- * 
+ *
  * Renders a consistent header for all dashboard widgets with:
  * - Icon and title
  * - Category badge (Sensor, Gateway, System, Calculated, Manual, External)
@@ -8,14 +8,14 @@
  * - Last updated timestamp
  */
 
-import { formatDistanceToNow } from "date-fns";
-import { Clock, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { WIDGET_REGISTRY } from "../registry/widgetRegistry";
-import type { WidgetStateInfo, WidgetDataCategory } from "../types/widgetState";
-import { STATUS_BADGE_CONFIG, CATEGORY_BADGE_CONFIG } from "../types/widgetState";
-import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from 'date-fns';
+import { Clock, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { WIDGET_REGISTRY } from '../registry/widgetRegistry';
+import type { WidgetStateInfo, WidgetDataCategory } from '../types/widgetState';
+import { STATUS_BADGE_CONFIG, CATEGORY_BADGE_CONFIG } from '../types/widgetState';
+import { cn } from '@/lib/utils';
 
 interface StandardWidgetHeaderProps {
   widgetId: string;
@@ -41,7 +41,7 @@ export function StandardWidgetHeader({
   hideTimestamp = false,
 }: StandardWidgetHeaderProps) {
   const widget = WIDGET_REGISTRY[widgetId];
-  
+
   if (!widget) {
     console.warn(`[StandardWidgetHeader] Unknown widget: ${widgetId}`);
     return null;
@@ -57,7 +57,7 @@ export function StandardWidgetHeader({
     : null;
 
   return (
-    <div className={cn("flex flex-col gap-1.5 pb-2 border-b border-border/50", className)}>
+    <div className={cn('flex flex-col gap-1.5 pb-2 border-b border-border/50', className)}>
       {/* Top row: Icon, Title, Badges */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -67,17 +67,17 @@ export function StandardWidgetHeader({
             </div>
           )}
           <span className="text-sm font-medium truncate">{widget.name}</span>
-          
+
           {/* Category Badge */}
           {!hideCategory && categoryConfig && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge 
-                  variant="outline" 
+                <Badge
+                  variant="outline"
                   className={cn(
-                    "text-[10px] px-1.5 py-0 h-4 font-normal border-0",
+                    'text-[10px] px-1.5 py-0 h-4 font-normal border-0',
                     categoryConfig.bgColor,
-                    categoryConfig.textColor
+                    categoryConfig.textColor,
                   )}
                 >
                   {categoryConfig.label}
@@ -97,14 +97,14 @@ export function StandardWidgetHeader({
               <Badge
                 variant="outline"
                 className={cn(
-                  "text-[10px] px-1.5 py-0 h-4 font-normal flex-shrink-0",
+                  'text-[10px] px-1.5 py-0 h-4 font-normal flex-shrink-0',
                   statusConfig.bgColor,
                   statusConfig.textColor,
                   statusConfig.borderColor,
-                  state.status === "loading" && "animate-pulse"
+                  state.status === 'loading' && 'animate-pulse',
                 )}
               >
-                {state.status === "loading" ? (
+                {state.status === 'loading' ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
                 ) : (
                   statusConfig.label
@@ -134,19 +134,19 @@ export function StandardWidgetHeader({
  */
 function getCategoryDescription(category: WidgetDataCategory | undefined): string {
   switch (category) {
-    case "sensor":
-      return "LoRa sensor readings";
-    case "gateway":
-      return "LoRa gateway metrics";
-    case "system":
-      return "System-generated events";
-    case "calculated":
-      return "Computed from other data";
-    case "manual":
-      return "User-entered data";
-    case "external":
-      return "External API (weather, etc.)";
+    case 'sensor':
+      return 'LoRa sensor readings';
+    case 'gateway':
+      return 'LoRa gateway metrics';
+    case 'system':
+      return 'System-generated events';
+    case 'calculated':
+      return 'Computed from other data';
+    case 'manual':
+      return 'User-entered data';
+    case 'external':
+      return 'External API (weather, etc.)';
     default:
-      return "Unknown source";
+      return 'Unknown source';
   }
 }

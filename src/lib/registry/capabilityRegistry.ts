@@ -1,6 +1,6 @@
 /**
  * Capability Registry
- * 
+ *
  * Defines device capabilities and provides utilities for capability-based
  * widget binding. Widgets declare requiredCapabilities instead of model lists.
  */
@@ -12,7 +12,7 @@
 /**
  * Standard device capabilities that sensors can provide.
  */
-export type DeviceCapability = 
+export type DeviceCapability =
   | 'temperature'
   | 'humidity'
   | 'door'
@@ -51,16 +51,16 @@ export const ALL_CAPABILITIES: DeviceCapability[] = [
  * This mirrors the manifests in supabase/functions/_shared/samples/
  */
 export const PAYLOAD_TYPE_CAPABILITIES: Record<string, DeviceCapability[]> = {
-  'door_v1': ['door', 'battery'],
-  'temp_rh_v1': ['temperature', 'humidity', 'battery'],
-  'temp_only_v1': ['temperature', 'battery'],
-  'air_quality_co2_v1': ['co2', 'temperature', 'humidity', 'battery'],
-  'air_quality_tvoc_v1': ['co2', 'tvoc', 'temperature', 'humidity', 'battery'],
-  'leak_v1': ['leak', 'battery'],
-  'motion_v1': ['motion', 'battery'],
-  'gps_v1': ['gps', 'battery'],
-  'metering_v1': ['pulse', 'battery'],
-  'multi_door_temp_v1': ['door', 'temperature', 'humidity', 'battery'],
+  door_v1: ['door', 'battery'],
+  temp_rh_v1: ['temperature', 'humidity', 'battery'],
+  temp_only_v1: ['temperature', 'battery'],
+  air_quality_co2_v1: ['co2', 'temperature', 'humidity', 'battery'],
+  air_quality_tvoc_v1: ['co2', 'tvoc', 'temperature', 'humidity', 'battery'],
+  leak_v1: ['leak', 'battery'],
+  motion_v1: ['motion', 'battery'],
+  gps_v1: ['gps', 'battery'],
+  metering_v1: ['pulse', 'battery'],
+  multi_door_temp_v1: ['door', 'temperature', 'humidity', 'battery'],
 };
 
 // ============================================================================
@@ -72,15 +72,15 @@ export const PAYLOAD_TYPE_CAPABILITIES: Record<string, DeviceCapability[]> = {
  * Used during transition period and for backward compatibility.
  */
 export const SENSOR_TYPE_CAPABILITIES: Record<string, DeviceCapability[]> = {
-  'temperature': ['temperature', 'humidity', 'battery'],
-  'door': ['door', 'battery'],
-  'air_quality': ['co2', 'temperature', 'humidity', 'battery'],
-  'leak': ['leak', 'battery'],
-  'motion': ['motion', 'battery'],
-  'gps': ['gps', 'battery'],
-  'metering': ['pulse', 'battery'],
-  'multi_sensor': ['door', 'temperature', 'humidity', 'battery'],
-  'unknown': ['battery'],
+  temperature: ['temperature', 'humidity', 'battery'],
+  door: ['door', 'battery'],
+  air_quality: ['co2', 'temperature', 'humidity', 'battery'],
+  leak: ['leak', 'battery'],
+  motion: ['motion', 'battery'],
+  gps: ['gps', 'battery'],
+  metering: ['pulse', 'battery'],
+  multi_sensor: ['door', 'temperature', 'humidity', 'battery'],
+  unknown: ['battery'],
 };
 
 // ============================================================================
@@ -106,10 +106,10 @@ export function getCapabilitiesForSensorType(sensorType: string): DeviceCapabili
  */
 export function payloadTypeHasCapabilities(
   payloadType: string,
-  required: DeviceCapability[]
+  required: DeviceCapability[],
 ): boolean {
   const available = getCapabilitiesForPayloadType(payloadType);
-  return required.every(cap => available.includes(cap));
+  return required.every((cap) => available.includes(cap));
 }
 
 /**
@@ -117,10 +117,10 @@ export function payloadTypeHasCapabilities(
  */
 export function sensorTypeHasCapabilities(
   sensorType: string,
-  required: DeviceCapability[]
+  required: DeviceCapability[],
 ): boolean {
   const available = getCapabilitiesForSensorType(sensorType);
-  return required.every(cap => available.includes(cap));
+  return required.every((cap) => available.includes(cap));
 }
 
 /**
@@ -128,34 +128,26 @@ export function sensorTypeHasCapabilities(
  */
 export function hasCapabilities(
   available: DeviceCapability[],
-  required: DeviceCapability[]
+  required: DeviceCapability[],
 ): boolean {
-  return required.every(cap => available.includes(cap));
+  return required.every((cap) => available.includes(cap));
 }
 
 /**
  * Get payload types that provide specific capabilities.
  */
-export function getPayloadTypesWithCapabilities(
-  required: DeviceCapability[]
-): string[] {
+export function getPayloadTypesWithCapabilities(required: DeviceCapability[]): string[] {
   return Object.entries(PAYLOAD_TYPE_CAPABILITIES)
-    .filter(([_, capabilities]) =>
-      required.every(cap => capabilities.includes(cap))
-    )
+    .filter(([_, capabilities]) => required.every((cap) => capabilities.includes(cap)))
     .map(([type]) => type);
 }
 
 /**
  * Get sensor types that provide specific capabilities.
  */
-export function getSensorTypesWithCapabilities(
-  required: DeviceCapability[]
-): string[] {
+export function getSensorTypesWithCapabilities(required: DeviceCapability[]): string[] {
   return Object.entries(SENSOR_TYPE_CAPABILITIES)
-    .filter(([_, capabilities]) =>
-      required.every(cap => capabilities.includes(cap))
-    )
+    .filter(([_, capabilities]) => required.every((cap) => capabilities.includes(cap)))
     .map(([type]) => type);
 }
 
@@ -261,5 +253,5 @@ export function getCapabilityInfo(capability: DeviceCapability): CapabilityInfo 
  * Get display names for multiple capabilities.
  */
 export function getCapabilityDisplayNames(capabilities: DeviceCapability[]): string[] {
-  return capabilities.map(cap => CAPABILITY_INFO[cap]?.displayName ?? cap);
+  return capabilities.map((cap) => CAPABILITY_INFO[cap]?.displayName ?? cap);
 }

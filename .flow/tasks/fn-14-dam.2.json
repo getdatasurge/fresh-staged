@@ -1,0 +1,16 @@
+{
+  "assignee": null,
+  "claim_note": "",
+  "claimed_at": null,
+  "created_at": "2026-01-30T17:21:29.047765Z",
+  "depends_on": [
+    "fn-14-dam.1"
+  ],
+  "epic": "fn-14-dam",
+  "id": "fn-14-dam.2",
+  "priority": null,
+  "spec_path": ".flow/tasks/fn-14-dam.2.md",
+  "status": "todo",
+  "title": "Configure Vite manualChunks and add rollup-plugin-visualizer",
+  "updated_at": "2026-01-30T17:21:48.370966Z"
+}

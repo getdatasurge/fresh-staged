@@ -1,12 +1,12 @@
 /**
  * Current Temperature Widget
- * 
+ *
  * Displays the current temperature with live/offline indicator.
  * Note: Card wrapper is provided by WidgetWrapper.
  */
 
-import { format } from "date-fns";
-import { Wifi, WifiOff } from "lucide-react";
+import { format } from 'date-fns';
+import { Wifi, WifiOff } from 'lucide-react';
 
 interface DerivedStatus {
   isOnline: boolean;
@@ -31,15 +31,15 @@ export function CurrentTempWidget({
   derivedStatus,
 }: CurrentTempWidgetProps) {
   const formatTemp = (temp: number | null) => {
-    if (temp === null) return "--";
+    if (temp === null) return '--';
     return `${temp.toFixed(1)}°F`;
   };
 
   const getTempColor = () => {
-    if (temperature === null) return "text-muted-foreground";
-    if (temperature > tempLimitHigh) return "text-alarm";
-    if (tempLimitLow !== null && temperature < tempLimitLow) return "text-accent";
-    return "text-safe";
+    if (temperature === null) return 'text-muted-foreground';
+    if (temperature > tempLimitHigh) return 'text-alarm';
+    if (tempLimitLow !== null && temperature < tempLimitLow) return 'text-accent';
+    return 'text-safe';
   };
 
   return (
@@ -53,16 +53,14 @@ export function CurrentTempWidget({
             <WifiOff className="w-4 h-4 text-muted-foreground" />
           )}
           <span className="text-xs text-muted-foreground">
-            {derivedStatus.isOnline ? "Live" : "Offline"}
+            {derivedStatus.isOnline ? 'Live' : 'Offline'}
           </span>
         </div>
       </div>
-      <p className={`text-5xl font-bold ${getTempColor()}`}>
-        {formatTemp(temperature)}
-      </p>
+      <p className={`text-5xl font-bold ${getTempColor()}`}>{formatTemp(temperature)}</p>
       {lastReadingAt && (
         <p className="text-xs text-muted-foreground mt-auto pt-2">
-          Last reading: {format(new Date(lastReadingAt), "MMM d, h:mm a")}
+          Last reading: {format(new Date(lastReadingAt), 'MMM d, h:mm a')}
         </p>
       )}
     </div>

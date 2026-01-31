@@ -132,9 +132,12 @@ describe('Alerts tRPC Router', () => {
       });
 
       expect(result).toEqual(activeAlerts);
-      expect(mockListAlerts).toHaveBeenCalledWith(orgId, expect.objectContaining({
-        status: 'active',
-      }));
+      expect(mockListAlerts).toHaveBeenCalledWith(
+        orgId,
+        expect.objectContaining({
+          status: 'active',
+        }),
+      );
     });
 
     it('should list alerts with unitId filter', async () => {
@@ -150,9 +153,12 @@ describe('Alerts tRPC Router', () => {
       });
 
       expect(result).toEqual(unitAlerts);
-      expect(mockListAlerts).toHaveBeenCalledWith(orgId, expect.objectContaining({
-        unitId,
-      }));
+      expect(mockListAlerts).toHaveBeenCalledWith(
+        orgId,
+        expect.objectContaining({
+          unitId,
+        }),
+      );
     });
 
     it('should list alerts with severity filter', async () => {
@@ -168,9 +174,12 @@ describe('Alerts tRPC Router', () => {
       });
 
       expect(result).toEqual(criticalAlerts);
-      expect(mockListAlerts).toHaveBeenCalledWith(orgId, expect.objectContaining({
-        severity: 'critical',
-      }));
+      expect(mockListAlerts).toHaveBeenCalledWith(
+        orgId,
+        expect.objectContaining({
+          severity: 'critical',
+        }),
+      );
     });
 
     it('should return empty array when no alerts', async () => {
@@ -196,10 +205,13 @@ describe('Alerts tRPC Router', () => {
         limit: 20,
       });
 
-      expect(mockListAlerts).toHaveBeenCalledWith(orgId, expect.objectContaining({
-        limit: 20,
-        offset: 40, // (3-1) * 20 = 40
-      }));
+      expect(mockListAlerts).toHaveBeenCalledWith(
+        orgId,
+        expect.objectContaining({
+          limit: 20,
+          offset: 40, // (3-1) * 20 = 40
+        }),
+      );
     });
   });
 
@@ -222,13 +234,9 @@ describe('Alerts tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.get({ organizationId: orgId, alertId })
-      ).rejects.toThrow(TRPCError);
+      await expect(caller.get({ organizationId: orgId, alertId })).rejects.toThrow(TRPCError);
 
-      await expect(
-        caller.get({ organizationId: orgId, alertId })
-      ).rejects.toMatchObject({
+      await expect(caller.get({ organizationId: orgId, alertId })).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Alert not found',
       });
@@ -260,7 +268,7 @@ describe('Alerts tRPC Router', () => {
         alertId,
         orgId,
         profileId,
-        'Investigating issue'
+        'Investigating issue',
       );
     });
 
@@ -318,13 +326,11 @@ describe('Alerts tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.acknowledge({ organizationId: orgId, alertId })
-      ).rejects.toThrow(TRPCError);
+      await expect(caller.acknowledge({ organizationId: orgId, alertId })).rejects.toThrow(
+        TRPCError,
+      );
 
-      await expect(
-        caller.acknowledge({ organizationId: orgId, alertId })
-      ).rejects.toMatchObject({
+      await expect(caller.acknowledge({ organizationId: orgId, alertId })).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
     });
@@ -336,9 +342,7 @@ describe('Alerts tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.acknowledge({ organizationId: orgId, alertId })
-      ).rejects.toMatchObject({
+      await expect(caller.acknowledge({ organizationId: orgId, alertId })).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Alert not found',
       });
@@ -351,13 +355,11 @@ describe('Alerts tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.acknowledge({ organizationId: orgId, alertId })
-      ).rejects.toThrow(TRPCError);
+      await expect(caller.acknowledge({ organizationId: orgId, alertId })).rejects.toThrow(
+        TRPCError,
+      );
 
-      await expect(
-        caller.acknowledge({ organizationId: orgId, alertId })
-      ).rejects.toMatchObject({
+      await expect(caller.acknowledge({ organizationId: orgId, alertId })).rejects.toMatchObject({
         code: 'CONFLICT',
         message: 'Alert is already acknowledged',
       });
@@ -391,7 +393,7 @@ describe('Alerts tRPC Router', () => {
         orgId,
         profileId,
         'Fixed temperature sensor',
-        'Replaced faulty sensor'
+        'Replaced faulty sensor',
       );
     });
 
@@ -423,7 +425,7 @@ describe('Alerts tRPC Router', () => {
           organizationId: orgId,
           alertId,
           resolution: 'Issue resolved',
-        })
+        }),
       ).rejects.toThrow(TRPCError);
 
       await expect(
@@ -431,7 +433,7 @@ describe('Alerts tRPC Router', () => {
           organizationId: orgId,
           alertId,
           resolution: 'Issue resolved',
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -449,7 +451,7 @@ describe('Alerts tRPC Router', () => {
           organizationId: orgId,
           alertId,
           resolution: 'Issue resolved',
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Alert not found',

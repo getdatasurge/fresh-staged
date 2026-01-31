@@ -19,11 +19,11 @@
  * ```
  */
 
-import { and, count, eq, gte, sql } from 'drizzle-orm'
-import type { UnitDashboardState } from '../config/unit-state.config.js'
-import { db } from '../db/client.js'
-import { alerts, areas, sensorReadings, sites, units } from '../db/schema/index.js'
-import type { UnitStateService } from './unit-state.service.js'
+import { and, count, eq, gte, sql } from 'drizzle-orm';
+import type { UnitDashboardState } from '../config/unit-state.config.js';
+import { db } from '../db/client.js';
+import { alerts, areas, sensorReadings, sites, units } from '../db/schema/index.js';
+import type { UnitStateService } from './unit-state.service.js';
 
 /**
  * Configuration for organization stats caching
@@ -108,13 +108,13 @@ export class OrganizationStatsService {
     // Start cache cleanup interval
     this.cleanupIntervalId = setInterval(
       () => this.cleanupExpiredCache(),
-      ORG_STATS_CACHE_CONFIG.CLEANUP_INTERVAL_MS
+      ORG_STATS_CACHE_CONFIG.CLEANUP_INTERVAL_MS,
     );
 
     console.log(
       '[OrganizationStatsService] Initialized with cache TTL:',
       ORG_STATS_CACHE_CONFIG.CACHE_TTL_MS,
-      'ms'
+      'ms',
     );
   }
 
@@ -127,7 +127,7 @@ export class OrganizationStatsService {
    */
   async getOrganizationStats(
     organizationId: string,
-    forceRefresh = false
+    forceRefresh = false,
   ): Promise<OrganizationStats> {
     // Check cache unless forcing refresh
     if (!forceRefresh) {
@@ -138,13 +138,14 @@ export class OrganizationStatsService {
     }
 
     // Fetch fresh data
-    const [unitCounts, alertCounts, compliancePercentage, memberCount, siteCount] = await Promise.all([
-      this.calculateUnitCounts(organizationId),
-      this.calculateAlertCounts(organizationId),
-      this.calculateCompliancePercentage(organizationId),
-      this.calculateMemberCount(organizationId),
-      this.calculateSiteCount(organizationId),
-    ]);
+    const [unitCounts, alertCounts, compliancePercentage, memberCount, siteCount] =
+      await Promise.all([
+        this.calculateUnitCounts(organizationId),
+        this.calculateAlertCounts(organizationId),
+        this.calculateCompliancePercentage(organizationId),
+        this.calculateMemberCount(organizationId),
+        this.calculateSiteCount(organizationId),
+      ]);
 
     const worstState = this.determineWorstState(unitCounts);
 
@@ -173,7 +174,7 @@ export class OrganizationStatsService {
       .select({ count: count() })
       .from(sql`sites`)
       .where(and(sql`organization_id = ${organizationId}`, sql`is_active = true`));
-    
+
     return Number(result?.count || 0);
   }
 
@@ -185,7 +186,7 @@ export class OrganizationStatsService {
       .select({ count: count() })
       .from(sql`user_roles`)
       .where(sql`organization_id = ${organizationId}`);
-    
+
     return Number(result?.count || 0);
   }
 
@@ -226,12 +227,7 @@ export class OrganizationStatsService {
       .from(units)
       .innerJoin(areas, eq(units.areaId, areas.id))
       .innerJoin(sites, eq(areas.siteId, sites.id))
-      .where(
-        and(
-          eq(sites.organizationId, organizationId),
-          eq(units.isActive, true)
-        )
-      )
+      .where(and(eq(sites.organizationId, organizationId), eq(units.isActive, true)))
       .groupBy(units.status);
 
     const counts: UnitStateCounts = {
@@ -337,10 +333,7 @@ export class OrganizationStatsService {
       .innerJoin(areas, eq(units.areaId, areas.id))
       .innerJoin(sites, eq(areas.siteId, sites.id))
       .where(
-        and(
-          eq(sites.organizationId, organizationId),
-          gte(sensorReadings.recordedAt, windowStart)
-        )
+        and(eq(sites.organizationId, organizationId), gte(sensorReadings.recordedAt, windowStart)),
       );
 
     if (!result || Number(result.totalReadings) === 0) {

@@ -116,7 +116,12 @@ describe('TTN Gateways API', () => {
       mockGetRole.mockResolvedValue('viewer');
       mockListGateways.mockResolvedValue([
         mockGatewayData,
-        { ...mockGatewayData, id: TEST_GATEWAY_2_ID, gatewayId: 'my-gateway-002', gatewayEui: '0011223344556688' },
+        {
+          ...mockGatewayData,
+          id: TEST_GATEWAY_2_ID,
+          gatewayId: 'my-gateway-002',
+          gatewayEui: '0011223344556688',
+        },
       ]);
 
       const response = await app.inject({
@@ -344,7 +349,7 @@ describe('TTN Gateways API', () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('manager');
       mockRegisterGateway.mockRejectedValue(
-        new ttnGatewayService.TTNConfigError('TTN connection not configured for organization')
+        new ttnGatewayService.TTNConfigError('TTN connection not configured for organization'),
       );
 
       const response = await app.inject({
@@ -362,7 +367,7 @@ describe('TTN Gateways API', () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('manager');
       mockRegisterGateway.mockRejectedValue(
-        new ttnGatewayService.TTNRegistrationError('Failed to register gateway in TTN')
+        new ttnGatewayService.TTNRegistrationError('Failed to register gateway in TTN'),
       );
 
       const response = await app.inject({

@@ -1,24 +1,14 @@
-import { useState } from "react";
-import {
-  Lock,
-  Copy,
-  Save,
-  MoreHorizontal,
-  Pencil,
-  Star,
-  RotateCcw,
-  Trash2,
-  X,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useState } from 'react';
+import { Lock, Copy, Save, MoreHorizontal, Pencil, Star, RotateCcw, Trash2, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -26,7 +16,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,16 +26,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import type { ActiveLayout } from "../types";
+} from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import type { ActiveLayout } from '../types';
 
 interface LayoutManagerProps {
   activeLayout: ActiveLayout;
@@ -78,13 +63,13 @@ export function LayoutManager({
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
-  const [newName, setNewName] = useState("");
+  const [newName, setNewName] = useState('');
 
   const handleRename = async () => {
     if (newName.trim()) {
       await onRename(newName.trim());
       setRenameDialogOpen(false);
-      setNewName("");
+      setNewName('');
     }
   };
 
@@ -92,7 +77,7 @@ export function LayoutManager({
     if (newName.trim()) {
       await onCreateFromDefault(newName.trim());
       setCreateDialogOpen(false);
-      setNewName("");
+      setNewName('');
     }
   };
 
@@ -121,7 +106,7 @@ export function LayoutManager({
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setNewName("My Layout");
+                  setNewName('My Layout');
                   setCreateDialogOpen(true);
                 }}
                 disabled={!canCreateNew}
@@ -131,9 +116,7 @@ export function LayoutManager({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {canCreateNew
-                ? "Create a custom layout based on Default"
-                : "Maximum layouts reached"}
+              {canCreateNew ? 'Create a custom layout based on Default' : 'Maximum layouts reached'}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -163,7 +146,7 @@ export function LayoutManager({
                 Cancel
               </Button>
               <Button onClick={handleCreate} disabled={!newName.trim() || isSaving}>
-                {isSaving ? "Creating..." : "Create Layout"}
+                {isSaving ? 'Creating...' : 'Create Layout'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -179,17 +162,13 @@ export function LayoutManager({
       {isDirty && (
         <Button size="sm" onClick={() => onSave()} disabled={isSaving}>
           <Save className="h-4 w-4 mr-1" />
-          {isSaving ? "Saving..." : "Save"}
+          {isSaving ? 'Saving...' : 'Save'}
         </Button>
       )}
 
       {/* Discard button (shows when dirty) */}
       {isDirty && (
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setDiscardDialogOpen(true)}
-        >
+        <Button size="sm" variant="ghost" onClick={() => setDiscardDialogOpen(true)}>
           <X className="h-4 w-4 mr-1" />
           Discard
         </Button>
@@ -269,7 +248,10 @@ export function LayoutManager({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -287,9 +269,7 @@ export function LayoutManager({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Keep Editing</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDiscard}>
-              Discard Changes
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleDiscard}>Discard Changes</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

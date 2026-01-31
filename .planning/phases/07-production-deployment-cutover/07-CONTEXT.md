@@ -14,12 +14,14 @@ Deploy the self-hosted FreshTrack Pro system to production infrastructure and ex
 ## Implementation Decisions
 
 ### Cutover Timing
+
 - Cutover immediately when ready — no scheduled maintenance window
 - Zero downtime goal — DNS switch with brief propagation window accepted
 - Brief gap in sensor data acceptable — sensors will resume, no queuing needed
 - Full rehearsal on staging first — practice complete cutover with production-like data before production
 
 ### Rollback Strategy
+
 - Keep Supabase available for 1 week after cutover
 - Rollback only triggered by critical data loss (readings/alerts not being captured)
 - User-facing errors or performance issues are not automatic rollback triggers
@@ -27,18 +29,21 @@ Deploy the self-hosted FreshTrack Pro system to production infrastructure and ex
 - Claude's Discretion: how to handle data created after cutover if rollback needed
 
 ### Infrastructure Target
+
 - Claude's Discretion: cloud provider choice (DigitalOcean, AWS, or other based on cost/complexity)
 - Hybrid database approach — managed PostgreSQL for data, self-hosted Redis/MinIO in Docker
 - Medium scale design (50-500 users) — some redundancy, consider load balancing
 - Full observability stack — metrics, logs, traces, dashboards (Grafana or equivalent)
 
 ### User Communication
+
 - Advance notice 24-48 hours before cutover with what to expect
 - Password reset prompted on first login (not pre-announced or emailed)
 - Both status page and support email for post-cutover issues
 - Changelog/release notes link explaining infrastructure changes
 
 ### Claude's Discretion
+
 - Cloud provider selection based on cost/complexity analysis
 - Post-cutover data handling during rollback scenarios
 - Specific observability tooling choices
@@ -65,5 +70,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 07-production-deployment-cutover*
-*Context gathered: 2026-01-23*
+_Phase: 07-production-deployment-cutover_
+_Context gathered: 2026-01-23_

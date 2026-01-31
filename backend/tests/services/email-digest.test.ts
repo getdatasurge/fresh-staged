@@ -41,7 +41,7 @@ describe('Email Digest', () => {
           'test-org-id',
           'daily',
           startDate,
-          endDate
+          endDate,
         );
 
         expect(result).toHaveProperty('alerts');
@@ -157,7 +157,7 @@ describe('Email Digest', () => {
           dailyEnabled: true,
           weeklyEnabled: false,
           timezone: 'America/New_York',
-        })
+        }),
       ).resolves.not.toThrow();
     });
 
@@ -181,7 +181,7 @@ describe('Email Digest', () => {
             dailyEnabled: true,
             weeklyEnabled: true,
             timezone: tz,
-          })
+          }),
         ).resolves.not.toThrow();
       }
     });
@@ -192,7 +192,7 @@ describe('Email Digest', () => {
           dailyEnabled: false,
           weeklyEnabled: false,
           timezone: 'UTC',
-        })
+        }),
       ).resolves.not.toThrow();
     });
   });

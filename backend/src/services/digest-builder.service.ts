@@ -1,12 +1,6 @@
 import { eq, and, gte, lte, desc, inArray } from 'drizzle-orm';
 import { db } from '../db/client.js';
-import {
-  alerts,
-  units,
-  areas,
-  sites,
-  organizations,
-} from '../db/schema/index.js';
+import { alerts, units, areas, sites, organizations } from '../db/schema/index.js';
 
 /**
  * Alert data for digest emails
@@ -79,7 +73,7 @@ export class DigestBuilderService {
     organizationId: string,
     period: 'daily' | 'weekly',
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<DigestData> {
     // Query alerts with joins to get unit and site names
     const alertResults = await db
@@ -100,8 +94,8 @@ export class DigestBuilderService {
         and(
           eq(sites.organizationId, organizationId),
           gte(alerts.triggeredAt, startDate),
-          lte(alerts.triggeredAt, endDate)
-        )
+          lte(alerts.triggeredAt, endDate),
+        ),
       )
       .orderBy(desc(alerts.triggeredAt))
       .limit(50);
@@ -163,7 +157,7 @@ export class DigestBuilderService {
     period: 'daily' | 'weekly',
     startDate: Date,
     endDate: Date,
-    siteIds: string[] | null = null
+    siteIds: string[] | null = null,
   ): Promise<GroupedDigestData> {
     // Build where conditions
     const conditions = [

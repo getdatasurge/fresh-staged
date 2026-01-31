@@ -59,7 +59,7 @@ interface CreateCheckoutSessionParams {
 export async function createCheckoutSession(
   organizationId: string,
   userId: string,
-  params: CreateCheckoutSessionParams
+  params: CreateCheckoutSessionParams,
 ): Promise<CheckoutSessionResponse> {
   const { plan, successUrl, cancelUrl } = params;
 
@@ -142,7 +142,7 @@ interface CreatePortalSessionParams {
  */
 export async function createPortalSession(
   organizationId: string,
-  params: CreatePortalSessionParams
+  params: CreatePortalSessionParams,
 ): Promise<PortalSessionResponse> {
   const { returnUrl } = params;
 
@@ -158,7 +158,9 @@ export async function createPortalSession(
   }
 
   if (!subscription.stripeCustomerId) {
-    throw new PortalError('No Stripe customer found for organization. Please complete a checkout first.');
+    throw new PortalError(
+      'No Stripe customer found for organization. Please complete a checkout first.',
+    );
   }
 
   const stripe = getStripeClient();
@@ -182,7 +184,7 @@ export async function createPortalSession(
  * Get subscription details for an organization
  */
 export async function getSubscription(
-  organizationId: string
+  organizationId: string,
 ): Promise<SubscriptionResponse | null> {
   // Get subscription with organization sensor limit
   const result = await db
@@ -220,10 +222,7 @@ export async function getSubscription(
     .innerJoin(units, eq(devices.unitId, units.id))
     .innerJoin(areas, eq(units.areaId, areas.id))
     .innerJoin(sites, eq(areas.siteId, sites.id))
-    .where(and(
-      eq(sites.organizationId, organizationId),
-      eq(devices.isActive, true)
-    ));
+    .where(and(eq(sites.organizationId, organizationId), eq(devices.isActive, true)));
 
   const currentSensorCount = Number(deviceCountResult[0]?.count ?? 0);
 

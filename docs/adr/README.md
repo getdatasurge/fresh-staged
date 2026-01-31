@@ -32,13 +32,13 @@ Architecture Decision Records (ADRs) are short documents that capture important 
 
 ### Status Definitions
 
-| Status | Description |
-|--------|-------------|
-| **Proposed** | Under discussion, not yet decided |
-| **Accepted** | Decision has been made and is in effect |
-| **Rejected** | Proposal was considered but not accepted |
-| **Deprecated** | Decision is being phased out |
-| **Superseded** | Replaced by a newer ADR (link included) |
+| Status         | Description                              |
+| -------------- | ---------------------------------------- |
+| **Proposed**   | Under discussion, not yet decided        |
+| **Accepted**   | Decision has been made and is in effect  |
+| **Rejected**   | Proposal was considered but not accepted |
+| **Deprecated** | Decision is being phased out             |
+| **Superseded** | Replaced by a newer ADR (link included)  |
 
 ## How to Create an ADR
 
@@ -49,6 +49,7 @@ npm run adr:new -- "Your ADR Title"
 ```
 
 This command will:
+
 1. Find the next available ADR number (0001, 0002, etc.)
 2. Create a new file with today's date and title slug
 3. Pre-fill the template with the title
@@ -70,6 +71,7 @@ NNNN-YYYY-MM-DD-title-in-kebab-case.md
 ```
 
 **Examples:**
+
 - `0001-2026-01-12-use-supabase-for-backend.md`
 - `0002-2026-01-15-adopt-react-query-for-data-fetching.md`
 - `0003-2026-02-01-switch-to-vitest.md`
@@ -93,6 +95,7 @@ See [template.md](./template.md) for the full template.
 ### When to Write an ADR
 
 Write an ADR when:
+
 - Choosing between competing technologies or approaches
 - Making decisions that are expensive to reverse
 - Establishing patterns the team should follow
@@ -115,11 +118,11 @@ Write an ADR when:
 
 ## Current ADRs
 
-| # | Date | Title | Status |
-|---|------|-------|--------|
-| - | - | No ADRs yet | - |
+| #   | Date | Title       | Status |
+| --- | ---- | ----------- | ------ |
+| -   | -    | No ADRs yet | -      |
 
-*This table is automatically updated when new ADRs are created.*
+_This table is automatically updated when new ADRs are created._
 
 ---
 

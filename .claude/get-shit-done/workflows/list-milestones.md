@@ -9,16 +9,19 @@ Reads milestone registry, parses table entries, and presents them in a readable 
 <philosophy>
 
 **Why milestone discovery matters:**
+
 - Visibility into what has been archived and when
 - Enables informed restore decisions
 - Historical context for project evolution
 - Transparency of milestone progression
 
 **Discovery vs restore:**
+
 - `list-milestones`: Read-only visibility into archive
 - `restore-milestone`: Brings archived planning back to active workspace
 
 **User-friendly approach:**
+
 - Graceful handling when no milestones exist yet
 - Clear table format for scanning multiple milestones
 - Helpful suggestions for next actions (restore, archive)
@@ -89,6 +92,7 @@ echo "Restore a milestone: /gsd:restore-milestone [name]"
 ```
 
 **Output structure:**
+
 1. Header: "Archived Milestones" with separator
 2. Table from MILESTONES.md (includes headers and data)
 3. Footer: Total count

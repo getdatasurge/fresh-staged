@@ -22,13 +22,9 @@ import * as stripeWebhookService from '../services/stripe-webhook.service.js';
 export default async function stripeWebhookRoutes(app: FastifyInstance) {
   // Add raw body parser for webhook signature verification
   // Stripe requires the raw request body for signature verification
-  app.addContentTypeParser(
-    'application/json',
-    { parseAs: 'buffer' },
-    (_req, body, done) => {
-      done(null, body);
-    }
-  );
+  app.addContentTypeParser('application/json', { parseAs: 'buffer' }, (_req, body, done) => {
+    done(null, body);
+  });
 
   /**
    * Receive Stripe webhook events
@@ -66,7 +62,10 @@ export default async function stripeWebhookRoutes(app: FastifyInstance) {
         event = stripeWebhookService.verifyWebhookSignature(rawBody, signature);
       } catch (error) {
         if (error instanceof stripeWebhookService.SignatureVerificationError) {
-          request.log.warn({ error: error.message }, 'Stripe webhook signature verification failed');
+          request.log.warn(
+            { error: error.message },
+            'Stripe webhook signature verification failed',
+          );
           return reply.code(400).send({
             error: {
               code: 'BAD_REQUEST',
@@ -83,7 +82,10 @@ export default async function stripeWebhookRoutes(app: FastifyInstance) {
         request.log.info({ eventType: event.type, eventId: event.id }, 'Stripe webhook processed');
       } catch (error) {
         if (error instanceof stripeWebhookService.WebhookError) {
-          request.log.error({ error: error.message, eventType: event.type }, 'Stripe webhook handler error');
+          request.log.error(
+            { error: error.message, eventType: event.type },
+            'Stripe webhook handler error',
+          );
           return reply.code(400).send({
             error: {
               code: 'BAD_REQUEST',

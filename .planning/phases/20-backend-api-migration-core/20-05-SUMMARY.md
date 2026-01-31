@@ -18,8 +18,8 @@ affects: [21-frontend-api-migration]
 tech-stack:
   added: []
   patterns:
-    - "Frontend type definitions must mirror backend Zod schemas exactly"
-    - "Required vs optional field alignment between frontend and backend"
+    - 'Frontend type definitions must mirror backend Zod schemas exactly'
+    - 'Required vs optional field alignment between frontend and backend'
 
 key-files:
   created: []
@@ -29,13 +29,13 @@ key-files:
 
 key-decisions:
   - "AlertStatusFilter uses 'active' not 'pending' to match backend AlertStatusSchema"
-  - "CreateUnit data requires unitType enum, tempMin, tempMax (not optional)"
-  - "UpdateUnit data has all fields optional matching backend UpdateUnitSchema"
-  - "Removed alertDelayMinutes (not present in backend schema)"
+  - 'CreateUnit data requires unitType enum, tempMin, tempMax (not optional)'
+  - 'UpdateUnit data has all fields optional matching backend UpdateUnitSchema'
+  - 'Removed alertDelayMinutes (not present in backend schema)'
 
 patterns-established:
-  - "Frontend hook types must be verified against backend Zod schemas"
-  - "Gap closure plans address verification failures post-implementation"
+  - 'Frontend hook types must be verified against backend Zod schemas'
+  - 'Gap closure plans address verification failures post-implementation'
 
 # Metrics
 duration: 3min
@@ -68,14 +68,14 @@ completed: 2026-01-25
 
 ## Type Alignment Summary
 
-| Frontend | Backend Schema | Field/Value |
-|----------|----------------|-------------|
-| AlertStatusFilter | AlertStatusSchema | 'active' (was 'pending') |
-| useCreateUnit.data.tempMin | CreateUnitSchema.tempMin | required number |
-| useCreateUnit.data.tempMax | CreateUnitSchema.tempMax | required number |
-| useCreateUnit.data.unitType | CreateUnitSchema.unitType | required enum |
-| useUpdateUnit.data.tempMin | UpdateUnitSchema.tempMin | optional number |
-| useUpdateUnit.data.tempMax | UpdateUnitSchema.tempMax | optional number |
+| Frontend                    | Backend Schema            | Field/Value              |
+| --------------------------- | ------------------------- | ------------------------ |
+| AlertStatusFilter           | AlertStatusSchema         | 'active' (was 'pending') |
+| useCreateUnit.data.tempMin  | CreateUnitSchema.tempMin  | required number          |
+| useCreateUnit.data.tempMax  | CreateUnitSchema.tempMax  | required number          |
+| useCreateUnit.data.unitType | CreateUnitSchema.unitType | required enum            |
+| useUpdateUnit.data.tempMin  | UpdateUnitSchema.tempMin  | optional number          |
+| useUpdateUnit.data.tempMax  | UpdateUnitSchema.tempMax  | optional number          |
 
 ## Deviations from Plan
 
@@ -112,6 +112,7 @@ This plan was created as a gap closure plan after Phase 20 plans 01-04 completed
 ## Next Phase Readiness
 
 Phase 20 (Backend API Migration - Core) is now complete. All verification criteria should pass:
+
 - All tRPC routers implemented and tested
 - Frontend hooks aligned with backend schemas
 - TypeScript compilation passes for both frontend and backend

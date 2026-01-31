@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { useTRPC } from "@/lib/trpc";
+import { useQuery } from '@tanstack/react-query';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { useTRPC } from '@/lib/trpc';
 
 export interface OrgBranding {
   name: string;
@@ -8,7 +8,7 @@ export interface OrgBranding {
   accentColor: string;
 }
 
-const DEFAULT_ACCENT = "#0097a7";
+const DEFAULT_ACCENT = '#0097a7';
 
 /**
  * Hook to fetch organization branding settings
@@ -26,7 +26,7 @@ export function useBranding() {
     {
       enabled: isInitialized && !!effectiveOrgId,
       staleTime: 1000 * 60 * 5, // 5 min cache for branding
-    }
+    },
   );
 
   const { data: org, isLoading: loading } = useQuery(queryOptions);
@@ -95,8 +95,8 @@ function applyAccentColor(hexColor: string) {
   const root = document.documentElement;
   const hslValue = `${hsl.h} ${hsl.s}% ${hsl.l}%`;
 
-  root.style.setProperty("--accent", hslValue);
-  root.style.setProperty("--ring", hslValue);
-  root.style.setProperty("--sidebar-primary", hslValue);
-  root.style.setProperty("--chart-1", hslValue);
+  root.style.setProperty('--accent', hslValue);
+  root.style.setProperty('--ring', hslValue);
+  root.style.setProperty('--sidebar-primary', hslValue);
+  root.style.setProperty('--chart-1', hslValue);
 }

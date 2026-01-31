@@ -48,6 +48,7 @@ DATABASE_URL=postgresql://frostguard:devpassword@localhost:5432/frostguard
 ```
 
 Development connects directly to PostgreSQL for:
+
 - Schema migrations (`drizzle-kit push`, `drizzle-kit migrate`)
 - Drizzle Studio (`drizzle-kit studio`)
 - Local debugging without pooling complexity
@@ -60,6 +61,7 @@ DATABASE_URL=postgresql://frostguard:${SECRET}@pgbouncer:6432/frostguard
 ```
 
 Production connects through PgBouncer for:
+
 - Connection pooling (100 clients → 20 database connections)
 - Query timeout enforcement (30s query, 120s wait)
 - Connection lifecycle management (1h max server lifetime)
@@ -70,12 +72,14 @@ Production connects through PgBouncer for:
 **Pooling mode:** `transaction`
 
 Transaction mode returns connections to the pool after each transaction completes. This provides:
+
 - **Connection reuse** - Reduces PostgreSQL connection overhead
 - **Prepared statement support** - Compatible with Drizzle ORM
 - **Transaction safety** - Each database transaction gets an isolated connection
 - **Scalability** - 100+ clients can share 20 database connections
 
 **Restrictions in transaction mode:**
+
 - ❌ No `SET SESSION` commands (session state resets between transactions)
 - ❌ No `LISTEN/NOTIFY` (requires persistent connection)
 - ❌ No advisory locks (connection-specific locks not available)
@@ -90,22 +94,23 @@ Transaction mode returns connections to the pool after each transaction complete
 
 ### Audit Results
 
-| Check                    | Pattern Searched               | Occurrences | Status |
-|--------------------------|--------------------------------|-------------|---------|
-| Prepared Statements      | `.prepare()`                   | 0           | ✅ PASS |
-| SET SESSION              | `SET SESSION`                  | 0           | ✅ PASS |
-| SET LOCAL                | `SET LOCAL`                    | 0           | ✅ PASS |
-| SET search_path          | `SET search_path`              | 0           | ✅ PASS |
-| SET timezone             | `SET timezone`                 | 0           | ✅ PASS |
-| LISTEN                   | `LISTEN`                       | 0           | ✅ PASS |
-| NOTIFY                   | `NOTIFY`                       | 0           | ✅ PASS |
-| Advisory Locks           | `pg_advisory_lock`             | 0           | ✅ PASS |
+| Check               | Pattern Searched   | Occurrences | Status  |
+| ------------------- | ------------------ | ----------- | ------- |
+| Prepared Statements | `.prepare()`       | 0           | ✅ PASS |
+| SET SESSION         | `SET SESSION`      | 0           | ✅ PASS |
+| SET LOCAL           | `SET LOCAL`        | 0           | ✅ PASS |
+| SET search_path     | `SET search_path`  | 0           | ✅ PASS |
+| SET timezone        | `SET timezone`     | 0           | ✅ PASS |
+| LISTEN              | `LISTEN`           | 0           | ✅ PASS |
+| NOTIFY              | `NOTIFY`           | 0           | ✅ PASS |
+| Advisory Locks      | `pg_advisory_lock` | 0           | ✅ PASS |
 
 **Result:** Backend is fully compatible with PgBouncer transaction mode.
 
 ### Drizzle ORM Compatibility
 
 Drizzle ORM uses prepared statements internally for:
+
 - Parameterized queries (all `eq()`, `and()`, `inArray()` operations)
 - Insert/Update/Delete operations with `.values()`
 - Transaction boundaries (`.transaction()` blocks)
@@ -115,6 +120,7 @@ Drizzle ORM uses prepared statements internally for:
 This allows PgBouncer to track up to 200 prepared statements per backend connection, providing full ORM compatibility while maintaining connection pooling benefits.
 
 **Verified patterns:**
+
 - ✅ `db.select().from(table).where(eq(column, value))` - Parameterized queries
 - ✅ `db.insert(table).values(data).returning()` - Insert with RETURNING
 - ✅ `db.update(table).set(data).where()` - Parameterized updates
@@ -125,6 +131,7 @@ This allows PgBouncer to track up to 200 prepared statements per backend connect
 ### Code Review Highlights
 
 **Transaction usage** (src/services/readings.service.ts):
+
 ```typescript
 return db.transaction(async (tx) => {
   // Insert readings in batches
@@ -142,17 +149,19 @@ return db.transaction(async (tx) => {
 ```
 
 This pattern is PgBouncer-safe because:
+
 - Each `db.transaction()` call gets a dedicated connection
 - Connection returns to pool after transaction commits/rolls back
 - No SET commands or session state required
 - Prepared statements cached per connection (up to 200)
 
 **Pool configuration** (src/db/client.ts):
+
 ```typescript
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: 20,                    // Match PgBouncer default_pool_size
-  idleTimeoutMillis: 30000,   // 30s idle timeout
+  max: 20, // Match PgBouncer default_pool_size
+  idleTimeoutMillis: 30000, // 30s idle timeout
   connectionTimeoutMillis: 5000, // 5s connection timeout
 });
 ```
@@ -168,6 +177,7 @@ Application pool size (20) matches PgBouncer pool size (20 default) to prevent c
 **Prometheus job:** `pgbouncer`
 
 **Key metrics:**
+
 - `pgbouncer_pools_server_active_connections` - Active database connections
 - `pgbouncer_pools_server_idle_connections` - Idle pool connections
 - `pgbouncer_pools_client_active_connections` - Active client connections
@@ -180,6 +190,7 @@ Application pool size (20) matches PgBouncer pool size (20 default) to prevent c
 **Recommended dashboard:** PgBouncer Overview (https://grafana.com/grafana/dashboards/12826)
 
 Monitors:
+
 - Connection pool utilization (active/idle ratio)
 - Client wait times (queue depth)
 - Query throughput (queries/sec)
@@ -188,11 +199,13 @@ Monitors:
 ### Alerting
 
 **Critical alerts:**
+
 - Client wait queue > 10 for 2+ minutes (pool saturation)
 - Query timeout rate > 1% (slow queries)
 - Connection errors > 5/min (authentication or network issues)
 
 **Warning alerts:**
+
 - Pool utilization > 80% for 5+ minutes (consider increasing pool size)
 - Average query wait time > 100ms (connection pressure)
 
@@ -201,23 +214,27 @@ Monitors:
 ### When to increase pool size
 
 Monitor `pgbouncer_pools_client_waiting_connections`:
+
 - Sustained wait queue (> 5 clients for > 1 minute) → Increase `default_pool_size`
 - High query latency with low database CPU → Connection bottleneck
 
 ### When to investigate queries
 
 Monitor `pgbouncer_stats_queries_duration_seconds`:
+
 - P99 query time > 1s → Check slow query log
 - Timeout errors increasing → Add indexes or optimize queries
 
 ### Connection lifecycle
 
 **Current settings:**
+
 - `server_lifetime = 3600` (1 hour max connection age)
 - `server_idle_timeout = 600` (10 min idle timeout)
 - `client_idle_timeout = 0` (no client timeout - application manages)
 
 These settings balance:
+
 - Connection reuse (reduce PostgreSQL fork overhead)
 - Memory cleanup (idle connections released)
 - Application flexibility (no forced disconnects)
@@ -272,6 +289,7 @@ These settings balance:
 ### Development Credentials
 
 File: `docker/pgbouncer/userlist.txt`
+
 ```
 "frostguard" "md5..." # Dev password (not for production)
 "pgbouncer_exporter" "md5..." # Metrics access
@@ -282,6 +300,7 @@ File: `docker/pgbouncer/userlist.txt`
 ### Production Credentials
 
 Production must use Infisical secret mounts:
+
 ```yaml
 # docker/compose.production.yaml
 pgbouncer:
@@ -290,6 +309,7 @@ pgbouncer:
 ```
 
 Infisical manages:
+
 - PostgreSQL user passwords
 - PgBouncer admin credentials
 - Metrics exporter authentication
@@ -298,10 +318,10 @@ Infisical manages:
 
 ### Backup Schedule
 
-| Frequency | Time (UTC) | Retention | Format | Storage |
-|-----------|------------|-----------|---------|---------|
-| Daily | 2:00 AM | 30 days | pg_dump custom (compressed) | MinIO (postgres-backups bucket) |
-| On-demand | Manual | 30 days | pg_dump custom (compressed) | MinIO (postgres-backups bucket) |
+| Frequency | Time (UTC) | Retention | Format                      | Storage                         |
+| --------- | ---------- | --------- | --------------------------- | ------------------------------- |
+| Daily     | 2:00 AM    | 30 days   | pg_dump custom (compressed) | MinIO (postgres-backups bucket) |
+| On-demand | Manual     | 30 days   | pg_dump custom (compressed) | MinIO (postgres-backups bucket) |
 
 **Backup service:** `freshtrack-postgres-backup` (runs via cron in Docker container)
 **Script:** `docker/scripts/backup-postgres.sh`
@@ -323,6 +343,7 @@ docker exec freshtrack-postgres-backup \
 ```
 
 **What it does:**
+
 1. Downloads backup from MinIO (most recent or specified)
 2. Validates backup file integrity with `pg_restore --list`
 3. Creates test database `freshtrack_restore_test`
@@ -331,6 +352,7 @@ docker exec freshtrack-postgres-backup \
 6. Cleans up (drops test database, removes temp files)
 
 **Expected output:**
+
 ```
 [2026-01-24 02:15:00 UTC] Starting backup restoration test
 [2026-01-24 02:15:01 UTC] Using most recent backup: freshtrack_2026-01-24_02-00-00.dump
@@ -446,6 +468,7 @@ curl http://localhost:3000/health  # Should return 200 OK
 #### Step 6: Verify Application
 
 **Critical checks:**
+
 - [ ] Backend API health endpoint responds
 - [ ] User login works
 - [ ] Sensor data displays in dashboard
@@ -466,6 +489,7 @@ docker exec freshtrack-postgres psql -U frostguard -d frostguard \
 Use this checklist during actual production recovery events.
 
 **Pre-Restoration:**
+
 - [ ] Identify root cause of data loss (prevent recurrence)
 - [ ] Document incident start time and scope
 - [ ] Notify stakeholders (downtime window)
@@ -473,6 +497,7 @@ Use this checklist during actual production recovery events.
 - [ ] Verify backup file integrity (`pg_restore --list`)
 
 **During Restoration:**
+
 - [ ] Stop backend API services
 - [ ] Verify no active database connections (`SELECT count(*) FROM pg_stat_activity`)
 - [ ] Download backup from MinIO
@@ -481,6 +506,7 @@ Use this checklist during actual production recovery events.
 - [ ] Check sample data from critical tables
 
 **Post-Restoration:**
+
 - [ ] Restart backend API services
 - [ ] Verify application health endpoint
 - [ ] Test critical user flows (login, dashboard, sensor data)
@@ -493,11 +519,11 @@ Use this checklist during actual production recovery events.
 
 **Prometheus alerts:** `docker/prometheus/alerts/backups.yml`
 
-| Alert | Condition | Severity | Action |
-|-------|-----------|----------|--------|
-| BackupAgeTooOld | No backup in 25+ hours | Critical | Check backup container logs, verify MinIO connectivity |
-| BackupContainerDown | Backup container stopped | Critical | Restart container, verify cron schedule |
-| BackupStorageLow | MinIO volume > 85% full | Warning | Review retention policy, expand storage |
+| Alert               | Condition                | Severity | Action                                                 |
+| ------------------- | ------------------------ | -------- | ------------------------------------------------------ |
+| BackupAgeTooOld     | No backup in 25+ hours   | Critical | Check backup container logs, verify MinIO connectivity |
+| BackupContainerDown | Backup container stopped | Critical | Restart container, verify cron schedule                |
+| BackupStorageLow    | MinIO volume > 85% full  | Warning  | Review retention policy, expand storage                |
 
 **Manual monitoring:**
 
@@ -518,16 +544,19 @@ docker exec freshtrack-minio mc ls --summarize minio/postgres-backups/
 ### Recovery Time Objectives (RTO/RPO)
 
 **RPO (Recovery Point Objective):** 24 hours
+
 - Daily backups at 2 AM UTC
 - Maximum data loss: up to 24 hours (since last backup)
 - Critical data: Sensor readings, alerts, user data
 
 **RTO (Recovery Time Objective):** 30 minutes
+
 - Backup download: ~5 minutes (125MB @ 25MB/s)
 - Database restore: ~15 minutes (varies with data volume)
 - Service restart + validation: ~10 minutes
 
 **To improve RPO/RTO:**
+
 - Enable WAL (Write-Ahead Log) archiving for point-in-time recovery (PITR)
 - Increase backup frequency to 6-hour intervals
 - Implement streaming replication for hot standby
@@ -546,6 +575,7 @@ docker exec freshtrack-minio mc ls minio/postgres-backups/ | grep $(date -u +"%Y
 ```
 
 **Use cases:**
+
 - Before database schema migrations
 - Before bulk data deletion
 - Before major application upgrades

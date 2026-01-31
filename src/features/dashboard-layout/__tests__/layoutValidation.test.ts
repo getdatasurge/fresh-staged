@@ -1,11 +1,14 @@
 /**
  * Layout Validation Tests
- * 
+ *
  * Tests for capability-based widget validation and layout validation.
  */
 
 import { describe, it, expect } from 'vitest';
-import { checkWidgetCompatibility, checkWidgetCompatibilityBySensorType } from '../utils/compatibilityMatrix';
+import {
+  checkWidgetCompatibility,
+  checkWidgetCompatibilityBySensorType,
+} from '../utils/compatibilityMatrix';
 import { WIDGET_REGISTRY } from '../registry/widgetRegistry';
 import type { DeviceCapability } from '@/lib/registry/capabilityRegistry';
 

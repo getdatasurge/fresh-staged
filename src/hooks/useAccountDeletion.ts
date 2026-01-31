@@ -2,17 +2,17 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser, useStackApp } from '@stackframe/react';
 import { debugLog } from '@/lib/debugLogger';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
-export type DeletionStatus = 
-  | 'idle' 
-  | 'preparing' 
-  | 'deleting_sensors' 
-  | 'deleting_gateways' 
-  | 'removing_membership' 
-  | 'anonymizing' 
+export type DeletionStatus =
+  | 'idle'
+  | 'preparing'
+  | 'deleting_sensors'
+  | 'deleting_gateways'
+  | 'removing_membership'
+  | 'anonymizing'
   | 'signing_out'
-  | 'complete' 
+  | 'complete'
   | 'error';
 
 export interface DeletionProgress {
@@ -41,12 +41,10 @@ export function useAccountDeletion() {
   const stackApp = useStackApp();
   const [progress, setProgress] = useState<DeletionProgress>({
     status: 'idle',
-    currentStep: ''
+    currentStep: '',
   });
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
-
   const deleteAccount = async (userId: string) => {
     if (!user) {
       throw new Error('Not authenticated');
@@ -58,13 +56,13 @@ export function useAccountDeletion() {
     debugLog.info('auth', 'Account deletion started', {
       step: 'started',
       requestId,
-      userId: userId.slice(-4) // Only log last 4 chars
+      userId: userId.slice(-4), // Only log last 4 chars
     });
 
     setProgress({
       status: 'preparing',
       currentStep: 'Preparing deletion...',
-      requestId
+      requestId,
     });
 
     try {
@@ -89,38 +87,33 @@ export function useAccountDeletion() {
       // Sign out the user via Stack Auth
       await stackApp.signOut();
 
-      setProgress({ 
-        status: 'complete', 
-        currentStep: 'Account deleted', 
+      setProgress({
+        status: 'complete',
+        currentStep: 'Account deleted',
         requestId,
-        jobId: result.job_id
+        jobId: result.job_id,
       });
 
       // Navigate to confirmation page
       navigate('/account-deleted', { replace: true });
       return true;
-
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
-      
-      debugLog.error('auth', 'Account deletion exception', { 
-        error: message, 
-        requestId 
+
+      debugLog.error('auth', 'Account deletion exception', {
+        error: message,
+        requestId,
       });
-      
-      setProgress({ 
-        status: 'error', 
-        currentStep: 'Deletion failed', 
-        error: message, 
-        requestId 
+
+      setProgress({
+        status: 'error',
+        currentStep: 'Deletion failed',
+        error: message,
+        requestId,
       });
-      
-      toast({
-        title: 'Deletion Failed',
-        description: message,
-        variant: 'destructive',
-      });
-      
+
+      toast.error('Deletion Failed', { description: message });
+
       setIsDeleting(false);
       return false;
     }
@@ -131,10 +124,10 @@ export function useAccountDeletion() {
     setIsDeleting(false);
   };
 
-  return { 
-    progress, 
-    isDeleting, 
-    deleteAccount, 
-    reset 
+  return {
+    progress,
+    isDeleting,
+    deleteAccount,
+    reset,
   };
 }

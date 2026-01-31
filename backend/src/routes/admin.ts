@@ -10,18 +10,19 @@
  */
 
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
-import { requireAuth } from '../middleware/index.js';
+import { requireAuth, requirePlatformAdmin } from '../middleware/index.js';
 
 /**
  * Admin routes plugin
  *
  * Registers admin-only routes with authentication guards.
  * Bull Board dashboard is mounted by queue.plugin.ts at /admin/queues.
- * All routes under /api/admin require authentication.
+ * All routes under /api/admin require platform admin role.
  */
 const adminRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-  // Add authentication requirement to ALL routes under /api/admin
+  // Add authentication and platform admin requirement to ALL routes under /api/admin
   fastify.addHook('onRequest', requireAuth);
+  fastify.addHook('onRequest', requirePlatformAdmin);
   /**
    * GET /admin/queues/health
    *
@@ -33,54 +34,54 @@ const adminRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
    * @requires Authentication (JWT via onRequest hook)
    */
   fastify.get('/queues/health', async (request, reply) => {
-      const queueService = fastify.queueService;
+    const queueService = fastify.queueService;
 
-      if (!queueService || !queueService.isRedisEnabled()) {
-        return reply.status(503).send({
-          error: 'Service Unavailable',
-          message: 'Queue service not available - Redis not configured',
-          redisEnabled: false,
+    if (!queueService || !queueService.isRedisEnabled()) {
+      return reply.status(503).send({
+        error: 'Service Unavailable',
+        message: 'Queue service not available - Redis not configured',
+        redisEnabled: false,
+      });
+    }
+
+    // Get all queues and their stats
+    const queues = queueService.getAllQueues();
+    const queueStats = [];
+
+    for (const [name, queue] of queues.entries()) {
+      try {
+        const [waiting, active, completed, failed, delayed] = await Promise.all([
+          queue.getWaitingCount(),
+          queue.getActiveCount(),
+          queue.getCompletedCount(),
+          queue.getFailedCount(),
+          queue.getDelayedCount(),
+        ]);
+
+        queueStats.push({
+          name,
+          counts: {
+            waiting,
+            active,
+            completed,
+            failed,
+            delayed,
+          },
+        });
+      } catch (error) {
+        queueStats.push({
+          name,
+          error: 'Failed to get queue stats',
         });
       }
+    }
 
-      // Get all queues and their stats
-      const queues = queueService.getAllQueues();
-      const queueStats = [];
-
-      for (const [name, queue] of queues.entries()) {
-        try {
-          const [waiting, active, completed, failed, delayed] = await Promise.all([
-            queue.getWaitingCount(),
-            queue.getActiveCount(),
-            queue.getCompletedCount(),
-            queue.getFailedCount(),
-            queue.getDelayedCount(),
-          ]);
-
-          queueStats.push({
-            name,
-            counts: {
-              waiting,
-              active,
-              completed,
-              failed,
-              delayed,
-            },
-          });
-        } catch (error) {
-          queueStats.push({
-            name,
-            error: 'Failed to get queue stats',
-          });
-        }
-      }
-
-      return reply.send({
-        redisEnabled: true,
-        queues: queueStats,
-        timestamp: new Date().toISOString(),
-      });
+    return reply.send({
+      redisEnabled: true,
+      queues: queueStats,
+      timestamp: new Date().toISOString(),
     });
+  });
 
   /**
    * GET /admin/status
@@ -93,16 +94,16 @@ const adminRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
    * @requires Authentication (JWT via onRequest hook)
    */
   fastify.get('/status', async (request, reply) => {
-      const queueService = fastify.queueService;
+    const queueService = fastify.queueService;
 
-      return reply.send({
-        queues: {
-          enabled: queueService?.isRedisEnabled() ?? false,
-          count: queueService?.getAllQueues().size ?? 0,
-        },
-        timestamp: new Date().toISOString(),
-      });
+    return reply.send({
+      queues: {
+        enabled: queueService?.isRedisEnabled() ?? false,
+        count: queueService?.getAllQueues().size ?? 0,
+      },
+      timestamp: new Date().toISOString(),
     });
+  });
 };
 
 export { adminRoutes };

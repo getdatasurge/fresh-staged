@@ -1,35 +1,35 @@
-import DashboardLayout from "@/components/DashboardLayout"
-import { HierarchyBreadcrumb } from "@/components/HierarchyBreadcrumb"
-import { LayoutHeaderDropdown } from "@/components/LayoutHeaderDropdown"
-import { SiteComplianceSettings } from "@/components/site/SiteComplianceSettings"
-import { SiteGatewaysCard } from "@/components/site/SiteGatewaysCard"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog"
+import DashboardLayout from '@/components/DashboardLayout';
+import { HierarchyBreadcrumb } from '@/components/HierarchyBreadcrumb';
+import { LayoutHeaderDropdown } from '@/components/LayoutHeaderDropdown';
+import { SiteComplianceSettings } from '@/components/site/SiteComplianceSettings';
+import { SiteGatewaysCard } from '@/components/site/SiteGatewaysCard';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
-import { EntityDashboard } from "@/features/dashboard-layout"
-import { useToast } from "@/hooks/use-toast"
-import { useOrgAlertRules, useSiteAlertRules } from "@/hooks/useAlertRules"
-import { useEntityDashboardUrl } from "@/hooks/useEntityDashboardUrl"
-import { usePermissions } from "@/hooks/useUserRole"
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
-import { useUser } from "@stackframe/react"
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { EntityDashboard } from '@/features/dashboard-layout';
+import { toast } from 'sonner';
+import { useOrgAlertRules, useSiteAlertRules } from '@/hooks/useAlertRules';
+import { useEntityDashboardUrl } from '@/hooks/useEntityDashboardUrl';
+import { usePermissions } from '@/hooks/useUserRole';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { useUser } from '@stackframe/react';
 import {
   AlertTriangle,
   Building2,
@@ -44,11 +44,11 @@ import {
   Plus,
   Settings,
   Thermometer,
-  Trash2
-} from "lucide-react"
-import { useQuery } from "@tanstack/react-query"
-import { useEffect, useMemo, useState } from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
+  Trash2,
+} from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 interface Area {
   id: string;
@@ -73,12 +73,11 @@ interface SiteData {
   longitude: number | null;
 }
 
-import { useTRPC, useTRPCClient } from "@/lib/trpc"
+import { useTRPC, useTRPCClient } from '@/lib/trpc';
 
 const SiteDetail = () => {
   const { siteId } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const user = useUser();
   const trpc = useTRPC();
   const trpcClient = useTRPCClient();
@@ -89,34 +88,34 @@ const SiteDetail = () => {
   const siteQuery = useQuery(
     trpc.sites.get.queryOptions(
       { siteId: siteId!, organizationId: effectiveOrgId! },
-      { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!siteId && !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   const areasQuery = useQuery(
     trpc.areas.listWithUnitCount.queryOptions(
       { siteId: siteId!, organizationId: effectiveOrgId! },
-      { enabled: !!siteId && !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!siteId && !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   const siblingSitesQuery = useQuery(
     trpc.sites.list.queryOptions(
       { organizationId: effectiveOrgId! },
-      { enabled: !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", description: "" });
+  const [formData, setFormData] = useState({ name: '', description: '' });
   const [editFormData, setEditFormData] = useState({
-    name: "",
-    address: "",
-    city: "",
-    state: "",
-    postal_code: "",
+    name: '',
+    address: '',
+    city: '',
+    state: '',
+    postal_code: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -132,11 +131,11 @@ const SiteDetail = () => {
     return {
       ...siteQuery.data,
       organization_id: siteQuery.data.organizationId,
-      address: siteQuery.data.address || "",
-      city: siteQuery.data.city || "",
-      state: siteQuery.data.state || "",
-      postal_code: siteQuery.data.postalCode || "",
-      compliance_mode: siteQuery.data.complianceMode || "fda_food_code",
+      address: siteQuery.data.address || '',
+      city: siteQuery.data.city || '',
+      state: siteQuery.data.state || '',
+      postal_code: siteQuery.data.postalCode || '',
+      compliance_mode: siteQuery.data.complianceMode || 'fda_food_code',
       manual_log_cadence_seconds: siteQuery.data.manualLogCadenceSeconds || 14400,
       corrective_action_required: siteQuery.data.correctiveActionRequired ?? true,
       latitude: siteQuery.data.latitude ? parseFloat(siteQuery.data.latitude) : null,
@@ -145,7 +144,7 @@ const SiteDetail = () => {
   }, [siteQuery.data]);
 
   const areas = useMemo(() => {
-    return (areasQuery.data || []).map(a => ({
+    return (areasQuery.data || []).map((a) => ({
       id: a.id,
       name: a.name,
       description: a.description,
@@ -160,8 +159,8 @@ const SiteDetail = () => {
   const siblingSites = useMemo(() => {
     if (!siblingSitesQuery.data) return [];
     return siblingSitesQuery.data
-      .filter(s => s.id !== siteId)
-      .map(s => ({
+      .filter((s) => s.id !== siteId)
+      .map((s) => ({
         id: s.id,
         name: s.name,
         href: `/sites/${s.id}`,
@@ -172,10 +171,10 @@ const SiteDetail = () => {
     if (site) {
       setEditFormData({
         name: site.name,
-        address: site.address || "",
-        city: site.city || "",
-        state: site.state || "",
-        postal_code: site.postal_code || "",
+        address: site.address || '',
+        city: site.city || '',
+        state: site.state || '',
+        postal_code: site.postal_code || '',
       });
     }
   }, [site]);
@@ -186,10 +185,9 @@ const SiteDetail = () => {
     siblingSitesQuery.refetch();
   };
 
-
   const handleCreateArea = async () => {
     if (!formData.name.trim()) {
-      toast({ title: "Area name is required", variant: "destructive" });
+      toast.error('Area name is required');
       return;
     }
 
@@ -201,22 +199,22 @@ const SiteDetail = () => {
         data: {
           name: formData.name,
           description: formData.description || null,
-        }
+        },
       });
-      toast({ title: "Area created successfully" });
-      setFormData({ name: "", description: "" });
+      toast.success('Area created successfully');
+      setFormData({ name: '', description: '' });
       setDialogOpen(false);
       refreshSiteData();
     } catch (err) {
-      console.error("Error creating area:", err);
-      toast({ title: "Failed to create area", variant: "destructive" });
+      console.error('Error creating area:', err);
+      toast.error('Failed to create area');
     }
     setIsSubmitting(false);
   };
 
   const handleUpdateSite = async () => {
     if (!editFormData.name.trim()) {
-      toast({ title: "Site name is required", variant: "destructive" });
+      toast.error('Site name is required');
       return;
     }
 
@@ -231,38 +229,36 @@ const SiteDetail = () => {
           city: editFormData.city || null,
           state: editFormData.state || null,
           postalCode: editFormData.postal_code || null,
-        }
+        },
       });
-      toast({ title: "Site updated successfully" });
+      toast.success('Site updated successfully');
       setEditDialogOpen(false);
       refreshSiteData();
     } catch (err) {
-      console.error("Error updating site:", err);
-      toast({ title: "Failed to update site", variant: "destructive" });
+      console.error('Error updating site:', err);
+      toast.error('Failed to update site');
     }
     setIsSubmitting(false);
   };
 
-
-  const handleExport = async (reportType: "daily" | "exceptions") => {
+  const handleExport = async (reportType: 'daily' | 'exceptions') => {
     if (!siteId) return;
     setIsExporting(true);
 
     try {
       if (!user) {
-        toast({ title: "Session expired. Please sign in again.", variant: "destructive" });
-        navigate("/auth");
+        toast.error('Session expired. Please sign in again.');
+        navigate('/auth');
         return;
       }
 
       // TODO: Migrate to tRPC export endpoint when available
-      toast({
-        title: "Export in progress",
-        description: "CSV exports are being migrated to the new backend. Please try again soon."
+      toast.success('Export in progress', {
+        description: 'CSV exports are being migrated to the new backend. Please try again soon.',
       });
     } catch (error) {
-      console.error("Export error:", error);
-      toast({ title: "Export failed", variant: "destructive" });
+      console.error('Export error:', error);
+      toast.error('Export failed');
     }
     setIsExporting(false);
   };
@@ -274,17 +270,17 @@ const SiteDetail = () => {
         organizationId: effectiveOrgId,
         siteId: siteId,
       });
-      toast({ title: "Site deleted" });
-      navigate("/sites");
+      toast.success('Site deleted');
+      navigate('/sites');
     } catch (err) {
-      console.error("Error deleting site:", err);
-      toast({ title: "Failed to delete site", variant: "destructive" });
+      console.error('Error deleting site:', err);
+      toast.error('Failed to delete site');
     }
   };
 
   const formatAddress = () => {
     const parts = [site?.address, site?.city, site?.state, site?.postal_code].filter(Boolean);
-    return parts.length > 0 ? parts.join(", ") : "No address set";
+    return parts.length > 0 ? parts.join(', ') : 'No address set';
   };
 
   if (isLoading) {
@@ -314,7 +310,7 @@ const SiteDetail = () => {
     <DashboardLayout>
       <HierarchyBreadcrumb
         items={[
-          { label: "All Equipment", href: "/sites" },
+          { label: 'All Equipment', href: '/sites' },
           { label: site.name, isCurrentPage: true, siblings: siblingSites },
         ]}
         actions={
@@ -338,11 +334,11 @@ const SiteDetail = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleExport("daily")}>
+                <DropdownMenuItem onClick={() => handleExport('daily')}>
                   <FileText className="w-4 h-4 mr-2" />
                   Daily Log (7 days)
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport("exceptions")}>
+                <DropdownMenuItem onClick={() => handleExport('exceptions')}>
                   <AlertTriangle className="w-4 h-4 mr-2" />
                   Exceptions (7 days)
                 </DropdownMenuItem>
@@ -373,7 +369,9 @@ const SiteDetail = () => {
                     <Input
                       id="edit-address"
                       value={editFormData.address}
-                      onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
+                      onChange={(e) =>
+                        setEditFormData({ ...editFormData, address: e.target.value })
+                      }
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -390,7 +388,9 @@ const SiteDetail = () => {
                       <Input
                         id="edit-state"
                         value={editFormData.state}
-                        onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })}
+                        onChange={(e) =>
+                          setEditFormData({ ...editFormData, state: e.target.value })
+                        }
                       />
                     </div>
                   </div>
@@ -399,7 +399,9 @@ const SiteDetail = () => {
                     <Input
                       id="edit-postal"
                       value={editFormData.postal_code}
-                      onChange={(e) => setEditFormData({ ...editFormData, postal_code: e.target.value })}
+                      onChange={(e) =>
+                        setEditFormData({ ...editFormData, postal_code: e.target.value })
+                      }
                     />
                   </div>
                   <div className="flex justify-end gap-2 pt-4">
@@ -415,8 +417,8 @@ const SiteDetail = () => {
               </DialogContent>
             </Dialog>
             {canDeleteEntities && !permissionsLoading && (
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 className="text-destructive hover:text-destructive hover:bg-destructive/10"
                 onClick={() => setDeleteDialogOpen(true)}
@@ -562,17 +564,16 @@ const SiteDetail = () => {
                           id="area-desc"
                           placeholder="Optional description"
                           value={formData.description}
-                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, description: e.target.value })
+                          }
                         />
                       </div>
                       <div className="flex justify-end gap-2 pt-4">
                         <Button variant="outline" onClick={() => setDialogOpen(false)}>
                           Cancel
                         </Button>
-                        <Button 
-                          onClick={handleCreateArea} 
-                          disabled={isSubmitting}
-                        >
+                        <Button onClick={handleCreateArea} disabled={isSubmitting}>
                           {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                           Create Area
                         </Button>
@@ -595,7 +596,7 @@ const SiteDetail = () => {
                           <div className="min-w-0">
                             <h3 className="font-medium text-foreground truncate">{area.name}</h3>
                             <p className="text-sm text-muted-foreground truncate">
-                              {area.description || "No description"}
+                              {area.description || 'No description'}
                             </p>
                           </div>
                         </div>
@@ -619,10 +620,7 @@ const SiteDetail = () => {
                   <p className="text-sm text-muted-foreground text-center max-w-sm mb-4">
                     Create areas within this site to organize your refrigeration units.
                   </p>
-                  <Button 
-                    size="sm"
-                    onClick={() => setDialogOpen(true)}
-                  >
+                  <Button size="sm" onClick={() => setDialogOpen(true)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add First Area
                   </Button>

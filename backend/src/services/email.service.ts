@@ -80,7 +80,7 @@ export class EmailService {
     if (!apiKey) {
       console.warn(
         '[EmailService] RESEND_API_KEY not configured - email sending disabled. ' +
-        'Set environment variable for email functionality.'
+          'Set environment variable for email functionality.',
       );
       this.enabled = false;
       return;
@@ -122,16 +122,14 @@ export class EmailService {
     if (!this.enabled || !this.client) {
       console.warn(
         '[EmailService] Service not configured - skipping email send. ' +
-        'Set RESEND_API_KEY environment variable to enable.'
+          'Set RESEND_API_KEY environment variable to enable.',
       );
       return null;
     }
 
     const { to, subject, html, text } = params;
 
-    console.log(
-      `[EmailService] Sending digest email from ${this.fromAddress} to ${to}`
-    );
+    console.log(`[EmailService] Sending digest email from ${this.fromAddress} to ${to}`);
 
     // Send via Resend SDK
     const { data, error } = await this.client.emails.send({
@@ -157,9 +155,7 @@ export class EmailService {
       throw new Error('[EmailService] No message ID returned from Resend API');
     }
 
-    console.log(
-      `[EmailService] Email sent successfully. MessageId: ${data.id}`
-    );
+    console.log(`[EmailService] Email sent successfully. MessageId: ${data.id}`);
 
     return {
       messageId: data.id,

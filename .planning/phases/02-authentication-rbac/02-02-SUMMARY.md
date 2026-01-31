@@ -28,14 +28,14 @@ key-files:
     - backend/package.json (added fastify dependency)
 
 key-decisions:
-  - "Use undefined for request.user decoration (not null) to match TypeScript augmentation"
-  - "Auth plugin decorates at startup, middleware populates on each request"
-  - "Middleware returns specific error messages based on jose error types"
+  - 'Use undefined for request.user decoration (not null) to match TypeScript augmentation'
+  - 'Auth plugin decorates at startup, middleware populates on each request'
+  - 'Middleware returns specific error messages based on jose error types'
 
 patterns-established:
-  - "Fastify plugins use fp wrapper for proper encapsulation"
-  - "Middleware uses preHandler hook signature for route protection"
-  - "Error responses use consistent { error, message } format"
+  - 'Fastify plugins use fp wrapper for proper encapsulation'
+  - 'Middleware uses preHandler hook signature for route protection'
+  - 'Error responses use consistent { error, message } format'
 
 # Metrics
 duration: 3min 7s
@@ -55,6 +55,7 @@ completed: 2026-01-23
 - **Files modified:** 4
 
 ## Accomplishments
+
 - Fastify dependency installed for backend framework
 - Auth plugin decorates request.user at app startup for V8 optimization
 - requireAuth middleware validates JWT tokens from Authorization header
@@ -70,6 +71,7 @@ Each task was committed atomically:
 3. **Task 3: Update middleware barrel export** - Completed via parallel Wave 2 execution (commits `6ec0a36` from 02-03 and `bbf3a71` from 02-04)
 
 ## Files Created/Modified
+
 - `backend/src/plugins/auth.plugin.ts` - Fastify plugin that decorates request with user property at startup
 - `backend/src/middleware/auth.ts` - requireAuth preHandler hook that validates Bearer tokens
 - `backend/package.json` - Added fastify@5.7.1 dependency
@@ -78,11 +80,13 @@ Each task was committed atomically:
 ## Decisions Made
 
 **Use undefined for decoration value**
+
 - Plan specified null, but TypeScript augmentation defines user?: AuthUser (meaning AuthUser | undefined)
 - Changed to undefined for type consistency with FastifyRequest augmentation
 - Maintains V8 object shape optimization as intended
 
 **Specific error messages based on jose error types**
+
 - JWTExpired: "Token expired"
 - JWTClaimValidationFailed: "Invalid token claims"
 - JWSSignatureVerificationFailed: "Invalid token signature"
@@ -90,6 +94,7 @@ Each task was committed atomically:
 - Enables client-side token refresh logic based on error type
 
 **Middleware only populates basic user info**
+
 - request.user contains id, email, name from JWT payload
 - profileId, organizationId, and role populated by separate middleware (02-03, 02-04)
 - Separation of concerns: auth validates identity, other middleware adds context
@@ -99,6 +104,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Installed missing fastify dependency**
+
 - **Found during:** Task 1 (Create auth plugin)
 - **Issue:** TypeScript couldn't find 'fastify' module - package not installed
 - **Fix:** Ran `pnpm add fastify` to install fastify@5.7.1 with built-in TypeScript types
@@ -107,6 +113,7 @@ Each task was committed atomically:
 - **Committed in:** 888ac69 (Task 1 commit)
 
 **2. [Rule 1 - Bug] Changed null to undefined for request decoration**
+
 - **Found during:** Task 1 (Create auth plugin)
 - **Issue:** TypeScript error - decorateRequest expects undefined, not null, because FastifyRequest augmentation defines user?: AuthUser
 - **Fix:** Changed `fastify.decorateRequest('user', null)` to `fastify.decorateRequest('user', undefined)`
@@ -122,6 +129,7 @@ Each task was committed atomically:
 ## Issues Encountered
 
 **Parallel Wave 2 execution and barrel export**
+
 - Task 3 intended to update middleware/index.ts to export requireAuth
 - Plans 02-03 and 02-04 (running in parallel) already updated the file
 - Current index.ts includes all three Wave 2 exports (auth, rbac, org-context)
@@ -135,22 +143,28 @@ None - no external service configuration required.
 ## Next Phase Readiness
 
 **Ready for integration (02-05):**
+
 - Auth plugin registers at app startup to decorate requests
 - requireAuth middleware protects routes requiring authentication
 - Middleware integrates with 02-03 (RBAC) and 02-04 (org-context) for complete auth stack
 
 **Usage pattern:**
+
 ```typescript
 // Register plugin at startup
 await fastify.register(authPlugin);
 
 // Protect routes with authentication
-fastify.get('/api/protected', {
-  preHandler: [requireAuth]
-}, async (request, reply) => {
-  const userId = request.user.id; // Guaranteed to exist after requireAuth
-  // ...
-});
+fastify.get(
+  '/api/protected',
+  {
+    preHandler: [requireAuth],
+  },
+  async (request, reply) => {
+    const userId = request.user.id; // Guaranteed to exist after requireAuth
+    // ...
+  },
+);
 ```
 
 **Blocker:** None
@@ -158,5 +172,6 @@ fastify.get('/api/protected', {
 **Concerns:** None - auth middleware is foundation for RBAC and org-context layers
 
 ---
-*Phase: 02-authentication-rbac*
-*Completed: 2026-01-23*
+
+_Phase: 02-authentication-rbac_
+_Completed: 2026-01-23_

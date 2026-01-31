@@ -19,28 +19,32 @@ The profiles table already has `digestDaily`, `digestWeekly`, `emailEnabled`, an
 The established libraries/tools for this domain (all already installed):
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| bullmq | ^5.67.0 | Job schedulers with repeatable jobs | Already installed, supports timezone-aware cron via upsertJobScheduler |
-| @react-email/components | ^0.0.34 | Email template components | Already installed, templates exist |
-| @react-email/render | ^1.0.5 | React to HTML rendering | Already installed, used by processors |
-| resend | ^4.2.0 | Email sending API | Already installed, EmailService implemented |
-| ioredis | ^5.9.2 | Redis client for BullMQ | Already installed, workers configured |
+
+| Library                 | Version | Purpose                             | Why Standard                                                           |
+| ----------------------- | ------- | ----------------------------------- | ---------------------------------------------------------------------- |
+| bullmq                  | ^5.67.0 | Job schedulers with repeatable jobs | Already installed, supports timezone-aware cron via upsertJobScheduler |
+| @react-email/components | ^0.0.34 | Email template components           | Already installed, templates exist                                     |
+| @react-email/render     | ^1.0.5  | React to HTML rendering             | Already installed, used by processors                                  |
+| resend                  | ^4.2.0  | Email sending API                   | Already installed, EmailService implemented                            |
+| ioredis                 | ^5.9.2  | Redis client for BullMQ             | Already installed, workers configured                                  |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| drizzle-orm | ^0.38.0 | Database queries | Already used by DigestBuilderService |
-| zod | ^4.3.6 | Request validation | Already installed, validate preferences |
+
+| Library     | Version | Purpose            | When to Use                             |
+| ----------- | ------- | ------------------ | --------------------------------------- |
+| drizzle-orm | ^0.38.0 | Database queries   | Already used by DigestBuilderService    |
+| zod         | ^4.3.6  | Request validation | Already installed, validate preferences |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
+
+| Instead of                | Could Use               | Tradeoff                                                              |
+| ------------------------- | ----------------------- | --------------------------------------------------------------------- |
 | BullMQ upsertJobScheduler | Node-cron + manual jobs | BullMQ scheduler is Redis-backed, survives restarts, handles timezone |
-| React Email | MJML | React Email already in use, consistent patterns |
-| JSON column for siteIds | Junction table | JSON simpler for array of UUIDs, fast enough for digest preferences |
+| React Email               | MJML                    | React Email already in use, consistent patterns                       |
+| JSON column for siteIds   | Junction table          | JSON simpler for array of UUIDs, fast enough for digest preferences   |
 
 **Installation:**
+
 ```bash
 # No new packages needed - all dependencies already installed
 ```
@@ -48,6 +52,7 @@ The established libraries/tools for this domain (all already installed):
 ## Architecture Patterns
 
 ### Recommended Project Structure (Existing)
+
 ```
 backend/src/
 ├── services/
@@ -75,9 +80,11 @@ backend/src/
 ```
 
 ### Pattern 1: BullMQ Job Scheduler with Timezone and Custom Time
+
 **What:** Use upsertJobScheduler for per-user scheduled jobs with timezone-aware cron
 **When to use:** Creating/updating user digest schedules
 **Example:**
+
 ```typescript
 // Source: Existing digest-schedulers.ts (verified in codebase)
 // Extended for user-configurable time
@@ -90,7 +97,7 @@ export async function syncUserDigestSchedulers(
     weeklyEnabled: boolean;
     timezone: string;
     dailyTime?: string; // "HH:MM" format, defaults to "09:00"
-  }
+  },
 ): Promise<void> {
   const queueService = getQueueService();
   if (!queueService || !queueService.isRedisEnabled()) {
@@ -122,7 +129,7 @@ export async function syncUserDigestSchedulers(
           removeOnComplete: 100,
           removeOnFail: 500,
         },
-      }
+      },
     );
   } else {
     await queue.removeJobScheduler(`digest-daily-${userId}`);
@@ -145,7 +152,7 @@ export async function syncUserDigestSchedulers(
           removeOnComplete: 100,
           removeOnFail: 500,
         },
-      }
+      },
     );
   } else {
     await queue.removeJobScheduler(`digest-weekly-${userId}`);
@@ -154,9 +161,11 @@ export async function syncUserDigestSchedulers(
 ```
 
 ### Pattern 2: Digest Data Grouped by Site then Unit
+
 **What:** Structure alert data hierarchically for email template
 **When to use:** DigestBuilderService.buildDigestData return type
 **Example:**
+
 ```typescript
 // Enhanced digest data structure for site -> unit grouping
 export interface GroupedDigestData {
@@ -220,18 +229,18 @@ async buildGroupedDigestData(
 ```
 
 ### Pattern 3: Profile Schema Extension
+
 **What:** Add digestDailyTime and digestSiteIds to profiles table
 **When to use:** Migration for user preferences
 **Example:**
+
 ```typescript
 // In db/schema/users.ts profiles table
 export const profiles = pgTable('profiles', {
   // ... existing fields
   digestDaily: boolean('digest_daily').notNull().default(false),
   digestWeekly: boolean('digest_weekly').notNull().default(false),
-  digestDailyTime: varchar('digest_daily_time', { length: 5 })
-    .notNull()
-    .default('09:00'), // "HH:MM" format
+  digestDailyTime: varchar('digest_daily_time', { length: 5 }).notNull().default('09:00'), // "HH:MM" format
   digestSiteIds: text('digest_site_ids'), // JSON array of site UUIDs, null = all sites
   timezone: varchar('timezone', { length: 64 }).notNull().default('UTC'),
   // ...
@@ -239,20 +248,22 @@ export const profiles = pgTable('profiles', {
 ```
 
 ### Pattern 4: One-Click Unsubscribe Token
+
 **What:** Generate secure token for email unsubscribe links
 **When to use:** Building unsubscribeUrl in processor
 **Example:**
+
 ```typescript
 // Simple approach: signed JWT with short expiry
 import { SignJWT, jwtVerify } from 'jose';
 
 const UNSUBSCRIBE_SECRET = new TextEncoder().encode(
-  process.env.UNSUBSCRIBE_SECRET || process.env.JWT_SECRET
+  process.env.UNSUBSCRIBE_SECRET || process.env.JWT_SECRET,
 );
 
 export async function generateUnsubscribeToken(
   userId: string,
-  type: 'daily' | 'weekly' | 'all'
+  type: 'daily' | 'weekly' | 'all',
 ): Promise<string> {
   return new SignJWT({ userId, type })
     .setProtectedHeader({ alg: 'HS256' })
@@ -261,7 +272,7 @@ export async function generateUnsubscribeToken(
 }
 
 export async function verifyUnsubscribeToken(
-  token: string
+  token: string,
 ): Promise<{ userId: string; type: string } | null> {
   try {
     const { payload } = await jwtVerify(token, UNSUBSCRIBE_SECRET);
@@ -277,6 +288,7 @@ const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${unsubscribeToken}`;
 ```
 
 ### Anti-Patterns to Avoid
+
 - **Computing date ranges in scheduler creation:** Already avoided - the existing processor calculates startDate/endDate at execution time, which is correct
 - **Hardcoded schedule times:** Current code uses 9 AM - needs to use user preference
 - **Sending empty digests:** Already handled - processor skips if alerts.length === 0
@@ -287,25 +299,27 @@ const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${unsubscribeToken}`;
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Timezone-aware scheduling | Date manipulation + setTimeout | BullMQ upsertJobScheduler with tz option | Handles DST transitions, survives restarts |
-| Email templates | String concatenation | React Email components | Type-safe, reusable components, responsive |
-| HTML to plain text | Custom stripping | React Email render() with plainText option | Handles edge cases, proper formatting |
-| Cron pattern generation | Manual string building | Standard cron syntax | BullMQ validates patterns, well-documented |
-| Alert grouping | Multiple queries | SQL GROUP BY with drizzle | Single query, efficient |
-| Unsubscribe tokens | Custom token format | JWT with expiry | Standard, secure, verifiable |
+| Problem                   | Don't Build                    | Use Instead                                | Why                                        |
+| ------------------------- | ------------------------------ | ------------------------------------------ | ------------------------------------------ |
+| Timezone-aware scheduling | Date manipulation + setTimeout | BullMQ upsertJobScheduler with tz option   | Handles DST transitions, survives restarts |
+| Email templates           | String concatenation           | React Email components                     | Type-safe, reusable components, responsive |
+| HTML to plain text        | Custom stripping               | React Email render() with plainText option | Handles edge cases, proper formatting      |
+| Cron pattern generation   | Manual string building         | Standard cron syntax                       | BullMQ validates patterns, well-documented |
+| Alert grouping            | Multiple queries               | SQL GROUP BY with drizzle                  | Single query, efficient                    |
+| Unsubscribe tokens        | Custom token format            | JWT with expiry                            | Standard, secure, verifiable               |
 
 **Key insight:** The codebase already has 90% of the implementation. The work is configuration and wiring, not new architecture.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Scheduler Not Updated When Preferences Change
+
 **What goes wrong:** User changes digest settings but old schedule continues
 **Why it happens:** Profile update endpoint doesn't call syncUserDigestSchedulers
 **How to avoid:** Add scheduler sync call in profile update route handler
 **Warning signs:** Jobs running at old times, disabled digests still sending
 **Fix:**
+
 ```typescript
 // In profile update handler
 await db.update(profiles).set(updatedData).where(eq(profiles.userId, userId));
@@ -327,6 +341,7 @@ if (
 ```
 
 ### Pitfall 2: Timezone Changes Not Reflected in Scheduler
+
 **What goes wrong:** User changes timezone, digest still sends at old time
 **Why it happens:** upsertJobScheduler uses old tz value from Redis
 **How to avoid:** Always upsert (not just create) scheduler on preference change
@@ -334,23 +349,27 @@ if (
 **Fix:** The existing upsertJobScheduler pattern handles this correctly - just ensure it's called on timezone changes
 
 ### Pitfall 3: Missing Site Filter in Digest Query
+
 **What goes wrong:** User selects specific sites but receives alerts from all sites
 **Why it happens:** DigestBuilderService ignores siteIds parameter
 **How to avoid:** Add site filtering to alert query
 **Warning signs:** Digest contains alerts from sites user didn't select
 
 ### Pitfall 4: Unsubscribe Link Not Working
+
 **What goes wrong:** Users click unsubscribe, nothing happens
 **Why it happens:** Missing unsubscribe endpoint, invalid token, token expired
 **How to avoid:** Implement /unsubscribe endpoint, use reasonable token expiry (30 days)
 **Warning signs:** Complaints about unsubscribe not working, spam reports
 
 ### Pitfall 5: Plain Text Fallback Missing
+
 **What goes wrong:** Email appears blank in text-only clients
 **Why it happens:** Only HTML rendered, no plain text version
 **How to avoid:** Use @react-email/render plainText option
 **Warning signs:** Emails appear empty on older email clients
 **Fix:**
+
 ```typescript
 import { render } from '@react-email/render';
 
@@ -366,6 +385,7 @@ await emailService.sendDigest({
 ```
 
 ### Pitfall 6: DST Transition Handling
+
 **What goes wrong:** Digest sends at wrong time during DST change
 **Why it happens:** Naive timezone handling doesn't account for offset changes
 **How to avoid:** BullMQ's tz option handles this correctly with IANA timezone names
@@ -377,6 +397,7 @@ await emailService.sendDigest({
 Verified patterns from existing codebase:
 
 ### Existing EmailService Usage
+
 ```typescript
 // Source: backend/src/services/email.service.ts (verified)
 const emailService = getEmailService();
@@ -392,6 +413,7 @@ const result = await emailService.sendDigest({
 ```
 
 ### Existing Scheduler Pattern
+
 ```typescript
 // Source: backend/src/jobs/schedulers/digest-schedulers.ts (verified)
 await queue.upsertJobScheduler(
@@ -409,11 +431,12 @@ await queue.upsertJobScheduler(
       removeOnComplete: 100,
       removeOnFail: 500,
     },
-  }
+  },
 );
 ```
 
 ### Existing Digest Processor Skip Logic
+
 ```typescript
 // Source: backend/src/workers/processors/email-digest.processor.ts (verified)
 // Skip if no alerts (don't send empty digests)
@@ -424,6 +447,7 @@ if (digestData.alerts.length === 0) {
 ```
 
 ### Existing Profile Preferences Check
+
 ```typescript
 // Source: backend/src/workers/processors/email-digest.processor.ts (verified)
 // Check if emails enabled globally
@@ -439,14 +463,15 @@ if (period === 'daily' && !user.digestDaily) {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Bull repeatableJobs | BullMQ upsertJobScheduler | BullMQ 4.0+ | Per-job scheduler with update capability |
-| HTML string templates | React Email components | 2023 | Type-safe, responsive, maintainable |
-| Moment.js timezones | IANA tz in cron patterns | BullMQ native | No extra dependency |
-| Fixed schedule times | User-configurable times | Best practice | User control, better engagement |
+| Old Approach          | Current Approach          | When Changed  | Impact                                   |
+| --------------------- | ------------------------- | ------------- | ---------------------------------------- |
+| Bull repeatableJobs   | BullMQ upsertJobScheduler | BullMQ 4.0+   | Per-job scheduler with update capability |
+| HTML string templates | React Email components    | 2023          | Type-safe, responsive, maintainable      |
+| Moment.js timezones   | IANA tz in cron patterns  | BullMQ native | No extra dependency                      |
+| Fixed schedule times  | User-configurable times   | Best practice | User control, better engagement          |
 
 **Deprecated/outdated:**
+
 - Bull (v4): Use BullMQ for new features like upsertJobScheduler
 - moment-timezone: IANA timezone names work natively with BullMQ
 
@@ -477,6 +502,7 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Codebase: backend/src/services/email.service.ts - Complete Resend integration
 - Codebase: backend/src/workers/processors/email-digest.processor.ts - Working processor
 - Codebase: backend/src/jobs/schedulers/digest-schedulers.ts - Scheduler sync utilities
@@ -484,15 +510,18 @@ Things that couldn't be fully resolved:
 - Codebase: backend/src/db/schema/users.ts - Profile schema with digest fields
 
 ### Secondary (MEDIUM confidence)
+
 - Phase 15 Research: BullMQ upsertJobScheduler patterns and timezone handling
 - Phase 16 Research: BullMQ worker patterns, error handling
 
 ### Tertiary (LOW confidence)
+
 - React Email plainText option - needs verification via testing
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - All libraries already installed and in use
 - Architecture: HIGH - Patterns verified in existing codebase, minimal changes needed
 - Pitfalls: HIGH - Based on existing implementation and Phase 15-16 research

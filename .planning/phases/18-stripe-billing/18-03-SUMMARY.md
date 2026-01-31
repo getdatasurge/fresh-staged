@@ -18,8 +18,8 @@ affects: [18-04, 18-05, any route needing subscription enforcement]
 tech-stack:
   added: []
   patterns:
-    - "Subscription middleware pattern matching rbac.ts"
-    - "Hierarchical device count via join chain"
+    - 'Subscription middleware pattern matching rbac.ts'
+    - 'Hierarchical device count via join chain'
 
 key-files:
   created:
@@ -29,11 +29,11 @@ key-files:
 
 key-decisions:
   - "ACTIVE_STATUSES includes only 'active' and 'trial'"
-  - "Sensor count traverses devices -> units -> areas -> sites hierarchy"
+  - 'Sensor count traverses devices -> units -> areas -> sites hierarchy'
 
 patterns-established:
-  - "Subscription enforcement via preHandler hooks"
-  - "Error response format with code, message, and diagnostic info"
+  - 'Subscription enforcement via preHandler hooks'
+  - 'Error response format with code, message, and diagnostic info'
 
 # Metrics
 duration: 2min
@@ -96,5 +96,6 @@ None - no external service configuration required.
 - requireActiveSubscription available for protecting additional routes as needed
 
 ---
-*Phase: 18-stripe-billing*
-*Completed: 2026-01-24*
+
+_Phase: 18-stripe-billing_
+_Completed: 2026-01-24_

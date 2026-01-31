@@ -18,7 +18,7 @@ export interface TTNGuardResult {
   warnings: string[];
 }
 
-export type TTNOperation = 
+export type TTNOperation =
   | 'simulate'
   | 'provision_gateway'
   | 'provision_sensor'
@@ -57,7 +57,7 @@ const OPERATION_LABELS: Record<TTNOperation, string> = {
  */
 export function checkTTNOperationAllowed(
   operation: TTNOperation,
-  context: TTNConfigContext | null
+  context: TTNConfigContext | null,
 ): TTNGuardResult {
   const blockers: TTNBlocker[] = [];
   const warnings: string[] = [];
@@ -193,11 +193,11 @@ export function getGuardSummary(result: TTNGuardResult): string {
     }
     return 'Ready';
   }
-  
+
   if (result.blockers.length === 1) {
     return result.blockers[0].message;
   }
-  
+
   return `${result.blockers.length} issue(s) must be resolved`;
 }
 

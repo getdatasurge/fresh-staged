@@ -1,21 +1,37 @@
-import { useState } from "react";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, RefreshCw, Trash2, AlertTriangle, CheckCircle2, Clock, XCircle } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import DashboardLayout from '@/components/DashboardLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+  Loader2,
+  RefreshCw,
+  Trash2,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  XCircle,
+} from 'lucide-react';
+import { toast } from 'sonner';
 import {
   useTTNDeprovisionJobs,
   useTTNJobStats,
   useScanTTNOrphans,
   useEnqueueOrphanCleanup,
   useRetryDeprovisionJob,
-  TTNDevice,
-} from "@/hooks/useTTNDeprovision";
+} from '@/hooks/useTTNDeprovision';
+
+type TTNDevice = { dev_eui: string; name?: string; [key: string]: any };
 
 export default function TTNCleanup() {
   const { effectiveOrgId: orgId, isInitialized } = useEffectiveIdentity();
@@ -35,12 +51,12 @@ export default function TTNCleanup() {
   const handleScan = async () => {
     if (!orgId) return;
     try {
-      const result = await scanMutation.mutateAsync(orgId);
+      const result = (await scanMutation.mutateAsync(orgId)) as any;
       setScanResult(result);
       setSelectedOrphans([]);
       toast.success(`Found ${result.orphans.length} orphaned devices`);
     } catch (error) {
-      toast.error(`Scan failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+      toast.error(`Scan failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -56,18 +72,23 @@ export default function TTNCleanup() {
       setSelectedOrphans([]);
       refetchJobs();
     } catch (error) {
-      toast.error(`Failed to queue cleanup: ${error instanceof Error ? error.message : "Unknown error"}`);
+      toast.error(
+        `Failed to queue cleanup: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ReactNode }> = {
-      PENDING: { variant: "secondary", icon: <Clock className="h-3 w-3" /> },
-      RUNNING: { variant: "default", icon: <Loader2 className="h-3 w-3 animate-spin" /> },
-      RETRYING: { variant: "outline", icon: <RefreshCw className="h-3 w-3" /> },
-      SUCCEEDED: { variant: "default", icon: <CheckCircle2 className="h-3 w-3" /> },
-      FAILED: { variant: "destructive", icon: <XCircle className="h-3 w-3" /> },
-      BLOCKED: { variant: "destructive", icon: <AlertTriangle className="h-3 w-3" /> },
+    const variants: Record<
+      string,
+      { variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ReactNode }
+    > = {
+      PENDING: { variant: 'secondary', icon: <Clock className="h-3 w-3" /> },
+      RUNNING: { variant: 'default', icon: <Loader2 className="h-3 w-3 animate-spin" /> },
+      RETRYING: { variant: 'outline', icon: <RefreshCw className="h-3 w-3" /> },
+      SUCCEEDED: { variant: 'default', icon: <CheckCircle2 className="h-3 w-3" /> },
+      FAILED: { variant: 'destructive', icon: <XCircle className="h-3 w-3" /> },
+      BLOCKED: { variant: 'destructive', icon: <AlertTriangle className="h-3 w-3" /> },
     };
     const config = variants[status] || variants.PENDING;
     return (
@@ -83,7 +104,9 @@ export default function TTNCleanup() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">TTN Cleanup</h1>
-          <p className="text-muted-foreground">Manage TTN device lifecycle and cleanup orphaned devices</p>
+          <p className="text-muted-foreground">
+            Manage TTN device lifecycle and cleanup orphaned devices
+          </p>
         </div>
 
         {/* Stats Banner */}
@@ -124,19 +147,25 @@ export default function TTNCleanup() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardDescription>Succeeded</CardDescription>
-                  <CardTitle className="text-2xl text-green-600">{jobStats?.succeeded || 0}</CardTitle>
+                  <CardTitle className="text-2xl text-green-600">
+                    {jobStats?.succeeded || 0}
+                  </CardTitle>
                 </CardHeader>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
                   <CardDescription>Failed</CardDescription>
-                  <CardTitle className="text-2xl text-destructive">{jobStats?.failed || 0}</CardTitle>
+                  <CardTitle className="text-2xl text-destructive">
+                    {jobStats?.failed || 0}
+                  </CardTitle>
                 </CardHeader>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
                   <CardDescription>Blocked</CardDescription>
-                  <CardTitle className="text-2xl text-destructive">{jobStats?.blocked || 0}</CardTitle>
+                  <CardTitle className="text-2xl text-destructive">
+                    {jobStats?.blocked || 0}
+                  </CardTitle>
                 </CardHeader>
               </Card>
             </>
@@ -151,16 +180,21 @@ export default function TTNCleanup() {
           </CardHeader>
           <CardContent className="space-y-4">
             <Button onClick={handleScan} disabled={scanMutation.isPending || !orgId}>
-              {scanMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+              {scanMutation.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
               Scan TTN Application
             </Button>
 
             {scanResult && (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Found {scanResult.devices.length} devices in TTN, {scanResult.orphans.length} orphans
+                  Found {scanResult.devices.length} devices in TTN, {scanResult.orphans.length}{' '}
+                  orphans
                 </p>
-                
+
                 {scanResult.orphans.length > 0 && (
                   <>
                     <div className="flex gap-2">
@@ -197,19 +231,25 @@ export default function TTNCleanup() {
                             <TableCell>
                               <input
                                 type="checkbox"
-                                checked={selectedOrphans.some(o => o.device_id === orphan.device_id)}
+                                checked={selectedOrphans.some(
+                                  (o) => o.device_id === orphan.device_id,
+                                )}
                                 onChange={(e) => {
                                   if (e.target.checked) {
                                     setSelectedOrphans([...selectedOrphans, orphan]);
                                   } else {
-                                    setSelectedOrphans(selectedOrphans.filter(o => o.device_id !== orphan.device_id));
+                                    setSelectedOrphans(
+                                      selectedOrphans.filter(
+                                        (o) => o.device_id !== orphan.device_id,
+                                      ),
+                                    );
                                   }
                                 }}
                               />
                             </TableCell>
                             <TableCell className="font-mono text-sm">{orphan.device_id}</TableCell>
                             <TableCell className="font-mono text-sm">{orphan.dev_eui}</TableCell>
-                            <TableCell>{orphan.name || "-"}</TableCell>
+                            <TableCell>{orphan.name || '-'}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -249,22 +289,28 @@ export default function TTNCleanup() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {jobs.slice(0, 20).map((job) => (
+                  {jobs.slice(0, 20).map((job: any) => (
                     <TableRow key={job.id}>
-                      <TableCell>{job.sensor_name || "-"}</TableCell>
+                      <TableCell>{job.sensor_name || '-'}</TableCell>
                       <TableCell className="font-mono text-xs">{job.dev_eui}</TableCell>
-                      <TableCell><Badge variant="outline">{job.reason}</Badge></TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{job.reason}</Badge>
+                      </TableCell>
                       <TableCell>{getStatusBadge(job.status)}</TableCell>
-                      <TableCell>{job.attempts}/{job.max_attempts}</TableCell>
+                      <TableCell>
+                        {job.attempts}/{job.max_attempts}
+                      </TableCell>
                       <TableCell className="max-w-xs truncate text-xs text-muted-foreground">
-                        {job.last_error_message || "-"}
+                        {job.last_error_message || '-'}
                       </TableCell>
                       <TableCell>
-                        {(job.status === "FAILED" || job.status === "BLOCKED") && (
+                        {(job.status === 'FAILED' || job.status === 'BLOCKED') && (
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => retryMutation.mutateAsync(job.id).then(() => refetchJobs())}
+                            onClick={() =>
+                              retryMutation.mutateAsync(job.id).then(() => refetchJobs())
+                            }
                             disabled={retryMutation.isPending}
                           >
                             <RefreshCw className="h-4 w-4" />

@@ -19,8 +19,8 @@ affects: [17-03-email-scheduling, 18-billing]
 tech-stack:
   added: []
   patterns:
-    - "Hierarchical data grouping with Map-based intermediate structure"
-    - "5-alert limit per unit for email readability"
+    - 'Hierarchical data grouping with Map-based intermediate structure'
+    - '5-alert limit per unit for email readability'
 
 key-files:
   created: []
@@ -32,12 +32,12 @@ key-files:
     - backend/src/workers/processors/email-digest.processor.ts
 
 key-decisions:
-  - "DIGEST-04: Use Map-based grouping for efficient site/unit organization"
-  - "DIGEST-05: 5-alert limit per unit prevents email bloat"
+  - 'DIGEST-04: Use Map-based grouping for efficient site/unit organization'
+  - 'DIGEST-05: 5-alert limit per unit prevents email bloat'
 
 patterns-established:
-  - "Grouped data pattern: Query flat, group in memory, emit nested structure"
-  - "Email hierarchy: Site header > Unit subheader > Alert rows"
+  - 'Grouped data pattern: Query flat, group in memory, emit nested structure'
+  - 'Email hierarchy: Site header > Unit subheader > Alert rows'
 
 # Metrics
 duration: 5min
@@ -57,6 +57,7 @@ completed: 2026-01-24
 - **Files modified:** 5
 
 ## Accomplishments
+
 - GroupedDigestData interface with nested site > unit > alert structure
 - buildGroupedDigestData method with optional siteIds filtering
 - Email templates render hierarchical alert organization
@@ -71,6 +72,7 @@ Each task was committed atomically:
 3. **Task 3: Add plain text support to EmailService** - Already complete (from 17-03 plan)
 
 ## Files Created/Modified
+
 - `backend/src/services/digest-builder.service.ts` - Added GroupedDigestData interface and buildGroupedDigestData method
 - `backend/src/emails/daily-digest.tsx` - Renders hierarchical site > unit > alert structure
 - `backend/src/emails/weekly-digest.tsx` - Same grouped structure with purple theme
@@ -79,16 +81,17 @@ Each task was committed atomically:
 
 ## Decisions Made
 
-| ID | Decision | Rationale |
-|----|----------|-----------|
+| ID        | Decision                        | Rationale                                                             |
+| --------- | ------------------------------- | --------------------------------------------------------------------- |
 | DIGEST-04 | Map-based intermediate grouping | Efficient O(n) pass to build nested structure, then convert to arrays |
-| DIGEST-05 | 5-alert limit per unit | Prevents email bloat while showing representative sample per unit |
+| DIGEST-05 | 5-alert limit per unit          | Prevents email bloat while showing representative sample per unit     |
 
 ## Deviations from Plan
 
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Updated email-digest.processor.ts to use buildGroupedDigestData**
+
 - **Found during:** Task 2 (TypeScript compilation check)
 - **Issue:** Processor was using old buildDigestData method, templates now expect GroupedDigestData
 - **Fix:** Changed processor to call buildGroupedDigestData with site filtering from user preferences
@@ -102,6 +105,7 @@ Each task was committed atomically:
 **Impact on plan:** Required for template/processor compatibility. No scope creep.
 
 ## Issues Encountered
+
 - Task 3 (plain text support) was already implemented in email.service.ts from 17-03 plan execution - no changes needed
 
 ## User Setup Required
@@ -109,11 +113,13 @@ Each task was committed atomically:
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Grouped digest data ready for scheduling system
 - Templates render hierarchical structure correctly
 - Site filtering respects user digestSiteIds preference
 - Ready for 17-03 scheduling and job worker implementation
 
 ---
-*Phase: 17-email-digests*
-*Completed: 2026-01-24*
+
+_Phase: 17-email-digests_
+_Completed: 2026-01-24_

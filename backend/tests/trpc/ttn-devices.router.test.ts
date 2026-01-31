@@ -159,7 +159,10 @@ describe('TTN Devices tRPC Router', () => {
 
   describe('list', () => {
     it('should list devices for organization', async () => {
-      const mockDevices = [mockDevice, { ...mockDevice, id: '423e4567-e89b-12d3-a456-426614174003', name: 'Device 2' }];
+      const mockDevices = [
+        mockDevice,
+        { ...mockDevice, id: '423e4567-e89b-12d3-a456-426614174003', name: 'Device 2' },
+      ];
       mockListTTNDevices.mockResolvedValue(mockDevices);
 
       const ctx = createOrgContext();
@@ -202,13 +205,9 @@ describe('TTN Devices tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.get({ organizationId: orgId, deviceId })
-      ).rejects.toThrow(TRPCError);
+      await expect(caller.get({ organizationId: orgId, deviceId })).rejects.toThrow(TRPCError);
 
-      await expect(
-        caller.get({ organizationId: orgId, deviceId })
-      ).rejects.toMatchObject({
+      await expect(caller.get({ organizationId: orgId, deviceId })).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Device not found',
       });
@@ -240,13 +239,16 @@ describe('TTN Devices tRPC Router', () => {
 
       expect(result).toEqual(mockDevice);
       // Zod adds default values, so use objectContaining for core fields
-      expect(mockProvisionTTNDevice).toHaveBeenCalledWith(orgId, expect.objectContaining({
-        deviceId: provisionData.deviceId,
-        devEui: provisionData.devEui,
-        joinEui: provisionData.joinEui,
-        appKey: provisionData.appKey,
-        name: provisionData.name,
-      }));
+      expect(mockProvisionTTNDevice).toHaveBeenCalledWith(
+        orgId,
+        expect.objectContaining({
+          deviceId: provisionData.deviceId,
+          devEui: provisionData.devEui,
+          joinEui: provisionData.joinEui,
+          appKey: provisionData.appKey,
+          name: provisionData.name,
+        }),
+      );
     });
 
     it('should provision device when user is admin with capacity', async () => {
@@ -292,7 +294,7 @@ describe('TTN Devices tRPC Router', () => {
         caller.provision({
           organizationId: orgId,
           data: provisionData,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -309,7 +311,7 @@ describe('TTN Devices tRPC Router', () => {
         caller.provision({
           organizationId: orgId,
           data: provisionData,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -326,7 +328,7 @@ describe('TTN Devices tRPC Router', () => {
         caller.provision({
           organizationId: orgId,
           data: provisionData,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
         message: 'Sensor capacity exceeded. Upgrade your plan to add more sensors.',
@@ -338,9 +340,7 @@ describe('TTN Devices tRPC Router', () => {
       mockGetActiveSensorCount.mockResolvedValue(5);
 
       const { TTNConfigError } = await import('../../src/services/ttn-device.service.js');
-      mockProvisionTTNDevice.mockRejectedValue(
-        new TTNConfigError('TTN connection not configured')
-      );
+      mockProvisionTTNDevice.mockRejectedValue(new TTNConfigError('TTN connection not configured'));
 
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
@@ -349,7 +349,7 @@ describe('TTN Devices tRPC Router', () => {
         caller.provision({
           organizationId: orgId,
           data: provisionData,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'BAD_REQUEST',
         message: 'TTN connection not configured',
@@ -362,7 +362,7 @@ describe('TTN Devices tRPC Router', () => {
 
       const { TTNProvisioningError } = await import('../../src/services/ttn-device.service.js');
       mockProvisionTTNDevice.mockRejectedValue(
-        new TTNProvisioningError('Failed to provision in TTN')
+        new TTNProvisioningError('Failed to provision in TTN'),
       );
 
       const ctx = createOrgContext();
@@ -372,7 +372,7 @@ describe('TTN Devices tRPC Router', () => {
         caller.provision({
           organizationId: orgId,
           data: provisionData,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'BAD_REQUEST',
         message: 'Failed to provision in TTN',
@@ -430,7 +430,7 @@ describe('TTN Devices tRPC Router', () => {
         caller.bootstrap({
           organizationId: orgId,
           data: bootstrapData,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -447,7 +447,7 @@ describe('TTN Devices tRPC Router', () => {
         caller.bootstrap({
           organizationId: orgId,
           data: bootstrapData,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
         message: 'Sensor capacity exceeded. Upgrade your plan to add more sensors.',
@@ -459,9 +459,7 @@ describe('TTN Devices tRPC Router', () => {
       mockGetActiveSensorCount.mockResolvedValue(5);
 
       const { TTNConfigError } = await import('../../src/services/ttn-device.service.js');
-      mockBootstrapTTNDevice.mockRejectedValue(
-        new TTNConfigError('TTN connection not configured')
-      );
+      mockBootstrapTTNDevice.mockRejectedValue(new TTNConfigError('TTN connection not configured'));
 
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
@@ -470,7 +468,7 @@ describe('TTN Devices tRPC Router', () => {
         caller.bootstrap({
           organizationId: orgId,
           data: bootstrapData,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'BAD_REQUEST',
         message: 'TTN connection not configured',
@@ -483,7 +481,7 @@ describe('TTN Devices tRPC Router', () => {
 
       const { TTNProvisioningError } = await import('../../src/services/ttn-device.service.js');
       mockBootstrapTTNDevice.mockRejectedValue(
-        new TTNProvisioningError('Failed to bootstrap in TTN')
+        new TTNProvisioningError('Failed to bootstrap in TTN'),
       );
 
       const ctx = createOrgContext();
@@ -493,7 +491,7 @@ describe('TTN Devices tRPC Router', () => {
         caller.bootstrap({
           organizationId: orgId,
           data: bootstrapData,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'BAD_REQUEST',
         message: 'Failed to bootstrap in TTN',
@@ -517,11 +515,7 @@ describe('TTN Devices tRPC Router', () => {
       });
 
       expect(result).toEqual(updatedDevice);
-      expect(mockUpdateTTNDevice).toHaveBeenCalledWith(
-        deviceId,
-        orgId,
-        { name: 'Updated Device' }
-      );
+      expect(mockUpdateTTNDevice).toHaveBeenCalledWith(deviceId, orgId, { name: 'Updated Device' });
     });
 
     it('should update device when user is admin', async () => {
@@ -552,7 +546,7 @@ describe('TTN Devices tRPC Router', () => {
           organizationId: orgId,
           deviceId,
           data: { name: 'Updated Device' },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -570,7 +564,7 @@ describe('TTN Devices tRPC Router', () => {
           organizationId: orgId,
           deviceId,
           data: { name: 'Updated Device' },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Device not found',
@@ -621,9 +615,7 @@ describe('TTN Devices tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.deprovision({ organizationId: orgId, deviceId })
-      ).rejects.toMatchObject({
+      await expect(caller.deprovision({ organizationId: orgId, deviceId })).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
     });
@@ -634,9 +626,7 @@ describe('TTN Devices tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.deprovision({ organizationId: orgId, deviceId })
-      ).rejects.toMatchObject({
+      await expect(caller.deprovision({ organizationId: orgId, deviceId })).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
     });
@@ -648,9 +638,7 @@ describe('TTN Devices tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.deprovision({ organizationId: orgId, deviceId })
-      ).rejects.toMatchObject({
+      await expect(caller.deprovision({ organizationId: orgId, deviceId })).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Device not found',
       });

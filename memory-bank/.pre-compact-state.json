@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-01-30 11:33:52",
+  "git": {
+    "branch": "ralph-20260130T111928Z-SWOOP-GAMEPC-you@example.com-71045-9e1e",
+    "uncommittedChanges": 338
+  },
+  "tasks": {
+    "pending": 0,
+    "completed": 0,
+    "list": []
+  },
+  "modifiedFiles": [
+    ".auto-claude/project_index.json",
+    ".beads/.gitignore",
+    ".beads/CLAUDE.md",
+    ".beads/README.md",
+    ".beads/config.yaml",
+    ".beads/interactions.jsonl",
+    ".beads/issues.jsonl",
+    ".beads/metadata.json",
+    ".codex/skills/get-shit-done/SKILL.md",
+    ".codex/skills/get-shit-done/VERSION",
+    ".codex/skills/get-shit-done/commands/gsd/add-phase.md",
+    ".codex/skills/get-shit-done/commands/gsd/add-todo.md",
+    ".codex/skills/get-shit-done/commands/gsd/archive-milestone.md",
+    ".codex/skills/get-shit-done/commands/gsd/audit-milestone.md",
+    ".codex/skills/get-shit-done/commands/gsd/check-todos.md",
+    ".codex/skills/get-shit-done/commands/gsd/complete-milestone.md",
+    ".codex/skills/get-shit-done/commands/gsd/debug.md",
+    ".codex/skills/get-shit-done/commands/gsd/discuss-phase.md",
+    ".codex/skills/get-shit-done/commands/gsd/execute-phase.md",
+    ".codex/skills/get-shit-done/commands/gsd/help.md"
+  ]
+}

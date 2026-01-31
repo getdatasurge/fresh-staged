@@ -9,16 +9,19 @@ Validates prerequisites, moves planning files from history back to active worksp
 <philosophy>
 
 **Why restore milestones:**
+
 - Safety valve for archiving operations
 - Recover from premature archiving
 - Resume work on milestone after interruption
 - Maintain full traceability through git history
 
 **Restore vs new-milestone:**
+
 - `restore-milestone`: Brings back archived milestone (continues existing work)
 - `new-milestone`: Creates fresh milestone (starts new work)
 
 **Safety first:**
+
 - Git validation prevents accidental data loss
 - Conflict detection warns about existing active planning
 - User confirmation required before overwriting
@@ -37,6 +40,7 @@ git status --porcelain
 ```
 
 **If not clean:**
+
 ```
 Git working directory is not clean. Please commit or stash changes before restoring.
 
@@ -61,6 +65,7 @@ ls .planning/history/[milestone-name]/ 2>/dev/null
 ```
 
 **If missing:**
+
 ```
 Archive not found: .planning/history/[milestone-name]/
 
@@ -82,6 +87,7 @@ ls .planning/ROADMAP.md .planning/STATE.md .planning/PROJECT.md 2>/dev/null
 ```
 
 **If files exist:**
+
 ```
 ⚠️  Active planning files exist in .planning/
 

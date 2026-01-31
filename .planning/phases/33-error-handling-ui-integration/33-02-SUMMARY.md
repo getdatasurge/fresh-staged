@@ -35,12 +35,12 @@ key-files:
     - src/components/admin/SensorSimulatorPanel.tsx
 
 key-decisions:
-  - "Background operations (notification loading) fail silently with console warning"
-  - "User-initiated operations (form submit) show toast with feature-specific message"
-  - "SuperAdminContext sets roleLoadError with migration-specific text"
+  - 'Background operations (notification loading) fail silently with console warning'
+  - 'User-initiated operations (form submit) show toast with feature-specific message'
+  - 'SuperAdminContext sets roleLoadError with migration-specific text'
 
 patterns-established:
-  - "Import isSupabaseMigrationError for migration error detection in catch blocks"
+  - 'Import isSupabaseMigrationError for migration error detection in catch blocks'
   - "Feature-specific messages: '[Feature] is being migrated' vs generic 'unavailable'"
 
 # Metrics
@@ -61,6 +61,7 @@ completed: 2026-01-29
 - **Files modified:** 6
 
 ## Accomplishments
+
 - LogTempModal shows migration toast on save failure, still saves offline as fallback
 - NotificationDropdown handles migration errors silently for background loading
 - SuperAdminContext shows "unavailable during migration" for role check errors
@@ -76,6 +77,7 @@ Each task was committed atomically:
 2. **Task 2: Human verification checkpoint** - No commit (verification only)
 
 ## Files Created/Modified
+
 - `src/components/LogTempModal.tsx` - Added handleError + isSupabaseMigrationError for migration-aware save
 - `src/components/NotificationDropdown.tsx` - Silent migration error handling for background loading
 - `src/contexts/SuperAdminContext.tsx` - Migration-specific error message for role check
@@ -84,31 +86,39 @@ Each task was committed atomically:
 - `src/components/admin/SensorSimulatorPanel.tsx` - Migration toast for simulator errors
 
 ## Decisions Made
+
 - **Background vs user-initiated operations:** Background operations (like notification loading) fail silently with console.warn. User-initiated operations (like form submit) show toast feedback.
 - **Feature-specific messages:** Each operation shows context-specific message (e.g., "Organization creation is being migrated") rather than generic "unavailable" to help users understand scope.
 - **Offline fallback preserved:** LogTempModal still saves to offline storage after showing migration toast - graceful degradation maintained.
 
 ## Deviations from Plan
+
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 None
 
 ## User Setup Required
+
 None - no external service configuration required.
 
 ## User Verification
+
 User tested on /settings page:
+
 - No crashes observed
 - `[supabase-placeholder] Supabase calls are disabled` message appeared in console
 - App remained functional (navigation working, rerenders happening)
 - tRPC connection errors due to backend not running (unrelated to migration handling)
 
 ## Next Phase Readiness
+
 - Migration error handling complete for key UI components
 - Ready for Plan 03: Per-feature error state with manual retry
 - MigrationErrorBoundary from Plan 01 available for wrapping additional components
 
 ---
-*Phase: 33-error-handling-ui-integration*
-*Completed: 2026-01-29*
+
+_Phase: 33-error-handling-ui-integration_
+_Completed: 2026-01-29_

@@ -10,18 +10,18 @@
  * All procedures use orgProcedure which enforces authentication and org membership.
  */
 
-import { TRPCError } from '@trpc/server'
-import { and, desc, eq, inArray } from 'drizzle-orm'
-import { z } from 'zod'
-import { db } from '../db/client.js'
-import { alerts, correctiveActions } from '../db/schema/alerts.js'
-import { eventLogs } from '../db/schema/audit.js'
-import { manualTemperatureLogs } from '../db/schema/telemetry.js'
-import { profiles } from '../db/schema/users.js'
-import { ReadingResponseSchema } from '../schemas/readings.js'
-import * as readingsService from '../services/readings.service.js'
-import { router } from '../trpc/index.js'
-import { orgProcedure } from '../trpc/procedures.js'
+import { TRPCError } from '@trpc/server';
+import { and, desc, eq, inArray } from 'drizzle-orm';
+import { z } from 'zod';
+import { db } from '../db/client.js';
+import { alerts, correctiveActions } from '../db/schema/alerts.js';
+import { eventLogs } from '../db/schema/audit.js';
+import { manualTemperatureLogs } from '../db/schema/telemetry.js';
+import { profiles } from '../db/schema/users.js';
+import { ReadingResponseSchema } from '../schemas/readings.js';
+import * as readingsService from '../services/readings.service.js';
+import { router } from '../trpc/index.js';
+import { orgProcedure } from '../trpc/procedures.js';
 
 /**
  * Input schema for readings list with optional filters
@@ -114,17 +114,22 @@ export const readingsRouter = router({
    * Create a manual temperature reading
    */
   createManual: orgProcedure
-    .input(z.object({
-      unitId: z.string().uuid(),
-      temperature: z.number(),
-      notes: z.string().optional(),
-      recordedAt: z.string().datetime(),
-    }))
+    .input(
+      z.object({
+        unitId: z.string().uuid(),
+        temperature: z.number(),
+        notes: z.string().optional(),
+        recordedAt: z.string().datetime(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       // Access check is handled inside service via validateUnitsInOrg usually,
       // but here we just need to ensure the unit belongs to org.
-      const validUnits = await readingsService.validateUnitsInOrg([input.unitId], ctx.user.organizationId);
-      
+      const validUnits = await readingsService.validateUnitsInOrg(
+        [input.unitId],
+        ctx.user.organizationId,
+      );
+
       if (validUnits.length === 0) {
         throw new TRPCError({
           code: 'FORBIDDEN',
@@ -145,14 +150,16 @@ export const readingsRouter = router({
    * List manual temperature logs
    */
   listManual: orgProcedure
-    .input(z.object({
-      organizationId: z.string().uuid(),
-      unitId: z.string().uuid().optional(),
-      page: z.number().int().min(1).optional(),
-      limit: z.number().int().min(1).max(1000).optional(),
-      start: z.string().datetime().optional(),
-      end: z.string().datetime().optional(),
-    }))
+    .input(
+      z.object({
+        organizationId: z.string().uuid(),
+        unitId: z.string().uuid().optional(),
+        page: z.number().int().min(1).optional(),
+        limit: z.number().int().min(1).max(1000).optional(),
+        start: z.string().datetime().optional(),
+        end: z.string().datetime().optional(),
+      }),
+    )
     .query(async ({ input, ctx }) => {
       const limit = input.limit ?? 50;
       const offset = input.page ? (input.page - 1) * limit : 0;
@@ -181,11 +188,13 @@ export const readingsRouter = router({
    * List door events for a unit
    */
   listDoorEvents: orgProcedure
-    .input(z.object({
-      organizationId: z.string().uuid(),
-      unitId: z.string().uuid().optional(),
-      limit: z.number().int().min(1).max(100).optional(),
-    }))
+    .input(
+      z.object({
+        organizationId: z.string().uuid(),
+        unitId: z.string().uuid().optional(),
+        limit: z.number().int().min(1).max(100).optional(),
+      }),
+    )
     .query(async ({ input, ctx }) => {
       return readingsService.queryDoorEvents({
         organizationId: ctx.user.organizationId,
@@ -199,15 +208,22 @@ export const readingsRouter = router({
    * Returns event logs with author profile info joined
    */
   listEventLogs: orgProcedure
-    .input(z.object({
-      organizationId: z.string().uuid(),
-      unitId: z.string().uuid(),
-      eventTypes: z.array(z.string()).optional(),
-      limit: z.number().int().min(1).max(100).optional(),
-    }))
+    .input(
+      z.object({
+        organizationId: z.string().uuid(),
+        unitId: z.string().uuid(),
+        eventTypes: z.array(z.string()).optional(),
+        limit: z.number().int().min(1).max(100).optional(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const limit = input.limit ?? 20;
-      const eventTypes = input.eventTypes ?? ['note_added', 'comment', 'shift_handoff', 'annotation'];
+      const eventTypes = input.eventTypes ?? [
+        'note_added',
+        'comment',
+        'shift_handoff',
+        'annotation',
+      ];
 
       const logs = await db
         .select({
@@ -225,8 +241,8 @@ export const readingsRouter = router({
           and(
             eq(eventLogs.unitId, input.unitId),
             eq(eventLogs.organizationId, ctx.user.organizationId),
-            inArray(eventLogs.eventType, eventTypes)
-          )
+            inArray(eventLogs.eventType, eventTypes),
+          ),
         )
         .orderBy(desc(eventLogs.recordedAt))
         .limit(limit);
@@ -238,13 +254,15 @@ export const readingsRouter = router({
    * Create an event log (annotation)
    */
   createEventLog: orgProcedure
-    .input(z.object({
-      organizationId: z.string().uuid(),
-      unitId: z.string().uuid(),
-      eventType: z.string(),
-      eventData: z.record(z.string(), z.unknown()),
-      title: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        organizationId: z.string().uuid(),
+        unitId: z.string().uuid(),
+        eventType: z.string(),
+        eventData: z.record(z.string(), z.unknown()),
+        title: z.string().optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const [log] = await db
         .insert(eventLogs)
@@ -268,10 +286,12 @@ export const readingsRouter = router({
    * Only managers, admins, and owners can delete
    */
   deleteEventLog: orgProcedure
-    .input(z.object({
-      organizationId: z.string().uuid(),
-      eventLogId: z.string().uuid(),
-    }))
+    .input(
+      z.object({
+        organizationId: z.string().uuid(),
+        eventLogId: z.string().uuid(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       // Role check - only managers and above can delete
       if (!['manager', 'admin', 'owner'].includes(ctx.user.role)) {
@@ -286,8 +306,8 @@ export const readingsRouter = router({
         .where(
           and(
             eq(eventLogs.id, input.eventLogId),
-            eq(eventLogs.organizationId, ctx.user.organizationId)
-          )
+            eq(eventLogs.organizationId, ctx.user.organizationId),
+          ),
         );
 
       return { success: true };
@@ -298,17 +318,22 @@ export const readingsRouter = router({
    * Used by LogTempModal for full temperature logging workflow
    */
   logManualTemperature: orgProcedure
-    .input(z.object({
-      organizationId: z.string().uuid(),
-      unitId: z.string().uuid(),
-      temperature: z.number(),
-      notes: z.string().nullable().optional(),
-      correctiveAction: z.string().nullable().optional(),
-      isInRange: z.boolean(),
-    }))
+    .input(
+      z.object({
+        organizationId: z.string().uuid(),
+        unitId: z.string().uuid(),
+        temperature: z.number(),
+        notes: z.string().nullable().optional(),
+        correctiveAction: z.string().nullable().optional(),
+        isInRange: z.boolean(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       // Validate unit belongs to org
-      const validUnits = await readingsService.validateUnitsInOrg([input.unitId], ctx.user.organizationId);
+      const validUnits = await readingsService.validateUnitsInOrg(
+        [input.unitId],
+        ctx.user.organizationId,
+      );
 
       if (validUnits.length === 0) {
         throw new TRPCError({
@@ -333,16 +358,14 @@ export const readingsRouter = router({
 
       // If out of range and corrective action provided, create corrective action record
       if (!input.isInRange && input.correctiveAction?.trim()) {
-        await db
-          .insert(correctiveActions)
-          .values({
-            alertId: log.id, // Reference the log as context
-            unitId: input.unitId,
-            profileId: ctx.user.profileId,
-            actionTaken: 'manual_temp_log',
-            description: input.correctiveAction.trim(),
-            actionAt: now,
-          });
+        await db.insert(correctiveActions).values({
+          alertId: log.id, // Reference the log as context
+          unitId: input.unitId,
+          profileId: ctx.user.profileId,
+          actionTaken: 'manual_temp_log',
+          description: input.correctiveAction.trim(),
+          actionAt: now,
+        });
       }
 
       // If in range, resolve any existing missed_manual_entry alerts for this unit
@@ -358,8 +381,8 @@ export const readingsRouter = router({
             and(
               eq(alerts.unitId, input.unitId),
               eq(alerts.alertType, 'missed_manual_entry'),
-              inArray(alerts.status, ['active', 'acknowledged'])
-            )
+              inArray(alerts.status, ['active', 'acknowledged']),
+            ),
           );
       }
 

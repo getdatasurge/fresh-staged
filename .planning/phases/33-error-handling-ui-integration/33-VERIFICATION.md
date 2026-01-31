@@ -7,9 +7,9 @@ re_verification:
   previous_status: gaps_found
   previous_score: 5/7
   gaps_closed:
-    - "MigrationErrorBoundary integrated into DashboardLayout.tsx"
-    - "tRPC pattern crash fixed (createTRPCContext from @trpc/tanstack-react-query)"
-    - "Human verified app loads without crashes"
+    - 'MigrationErrorBoundary integrated into DashboardLayout.tsx'
+    - 'tRPC pattern crash fixed (createTRPCContext from @trpc/tanstack-react-query)'
+    - 'Human verified app loads without crashes'
   gaps_remaining: []
   regressions: []
 ---
@@ -25,15 +25,15 @@ re_verification:
 
 ### Observable Truths
 
-| #   | Truth                                                               | Status      | Evidence                                                                                               |
-| --- | ------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------ |
-| 1   | Migration errors show specific toast message with feature name     | ✓ VERIFIED  | errorHandler.ts lines 111-120: calls toast.error with featureName when isSupabaseMigrationError       |
-| 2   | Migration errors caught by boundary show fallback UI card          | ✓ VERIFIED  | MigrationErrorBoundary wraps children in DashboardLayout.tsx (lines 3, 443-445)                       |
-| 3   | Non-migration errors pass through unchanged                         | ✓ VERIFIED  | MigrationErrorBoundary.tsx lines 65-68: re-throws non-migration errors to parent                      |
-| 4   | LogTempModal shows migration toast when Supabase insert fails      | ✓ VERIFIED  | LogTempModal.tsx lines 169-170: calls handleError on migration error                                  |
-| 5   | NotificationDropdown handles migration errors gracefully           | ✓ VERIFIED  | NotificationDropdown.tsx lines 165-168: silent failure with console.warn, sets empty array            |
-| 6   | SuperAdminContext shows migration-aware error state                | ✓ VERIFIED  | SuperAdminContext.tsx lines 208-209: sets roleLoadError to "unavailable during migration"             |
-| 7   | Components using placeholder display feature unavailable message   | ✓ VERIFIED  | Human verified: app loads without crashes, [supabase-placeholder] messages in console                 |
+| #   | Truth                                                            | Status     | Evidence                                                                                        |
+| --- | ---------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------- |
+| 1   | Migration errors show specific toast message with feature name   | ✓ VERIFIED | errorHandler.ts lines 111-120: calls toast.error with featureName when isSupabaseMigrationError |
+| 2   | Migration errors caught by boundary show fallback UI card        | ✓ VERIFIED | MigrationErrorBoundary wraps children in DashboardLayout.tsx (lines 3, 443-445)                 |
+| 3   | Non-migration errors pass through unchanged                      | ✓ VERIFIED | MigrationErrorBoundary.tsx lines 65-68: re-throws non-migration errors to parent                |
+| 4   | LogTempModal shows migration toast when Supabase insert fails    | ✓ VERIFIED | LogTempModal.tsx lines 169-170: calls handleError on migration error                            |
+| 5   | NotificationDropdown handles migration errors gracefully         | ✓ VERIFIED | NotificationDropdown.tsx lines 165-168: silent failure with console.warn, sets empty array      |
+| 6   | SuperAdminContext shows migration-aware error state              | ✓ VERIFIED | SuperAdminContext.tsx lines 208-209: sets roleLoadError to "unavailable during migration"       |
+| 7   | Components using placeholder display feature unavailable message | ✓ VERIFIED | Human verified: app loads without crashes, [supabase-placeholder] messages in console           |
 
 **Score:** 7/7 truths verified
 
@@ -63,29 +63,29 @@ re_verification:
 
 ### Required Artifacts
 
-| Artifact                                                      | Expected                                | Status       | Details                                                                        |
-| ------------------------------------------------------------- | --------------------------------------- | ------------ | ------------------------------------------------------------------------------ |
-| `src/lib/errorHandler.ts`                                    | Migration-aware error handling          | ✓ VERIFIED   | 160 lines, exports isMigrationError + getMigrationErrorMessage, no stubs      |
-| `src/components/errors/MigrationErrorBoundary.tsx`           | React error boundary                    | ✓ VERIFIED   | 72 lines, substantive implementation, integrated into DashboardLayout         |
-| `src/components/errors/MigrationErrorFallback.tsx`           | Fallback UI                             | ✓ VERIFIED   | 46 lines, substantive Card component, used by MigrationErrorBoundary          |
-| `src/components/DashboardLayout.tsx`                         | Error boundary integration              | ✓ VERIFIED   | Imports and uses MigrationErrorBoundary to wrap {children}                    |
-| `src/lib/trpc.ts`                                            | tRPC client with queryOptions pattern   | ✓ VERIFIED   | Uses createTRPCContext from @trpc/tanstack-react-query                        |
-| `src/components/LogTempModal.tsx`                            | Migration-aware temp logging            | ✓ VERIFIED   | 354 lines, imports handleError + isSupabaseMigrationError, calls in catch     |
-| `src/components/NotificationDropdown.tsx`                    | Migration-aware notifications           | ✓ VERIFIED   | 395 lines, imports isSupabaseMigrationError, silent failure in catch          |
-| `src/contexts/SuperAdminContext.tsx`                         | Migration-aware admin context           | ✓ VERIFIED   | 703 lines, imports isSupabaseMigrationError, sets migration-specific error    |
+| Artifact                                           | Expected                              | Status     | Details                                                                    |
+| -------------------------------------------------- | ------------------------------------- | ---------- | -------------------------------------------------------------------------- |
+| `src/lib/errorHandler.ts`                          | Migration-aware error handling        | ✓ VERIFIED | 160 lines, exports isMigrationError + getMigrationErrorMessage, no stubs   |
+| `src/components/errors/MigrationErrorBoundary.tsx` | React error boundary                  | ✓ VERIFIED | 72 lines, substantive implementation, integrated into DashboardLayout      |
+| `src/components/errors/MigrationErrorFallback.tsx` | Fallback UI                           | ✓ VERIFIED | 46 lines, substantive Card component, used by MigrationErrorBoundary       |
+| `src/components/DashboardLayout.tsx`               | Error boundary integration            | ✓ VERIFIED | Imports and uses MigrationErrorBoundary to wrap {children}                 |
+| `src/lib/trpc.ts`                                  | tRPC client with queryOptions pattern | ✓ VERIFIED | Uses createTRPCContext from @trpc/tanstack-react-query                     |
+| `src/components/LogTempModal.tsx`                  | Migration-aware temp logging          | ✓ VERIFIED | 354 lines, imports handleError + isSupabaseMigrationError, calls in catch  |
+| `src/components/NotificationDropdown.tsx`          | Migration-aware notifications         | ✓ VERIFIED | 395 lines, imports isSupabaseMigrationError, silent failure in catch       |
+| `src/contexts/SuperAdminContext.tsx`               | Migration-aware admin context         | ✓ VERIFIED | 703 lines, imports isSupabaseMigrationError, sets migration-specific error |
 
 ### Key Link Verification
 
-| From                                   | To                               | Via                                 | Status     | Details                                                       |
-| -------------------------------------- | -------------------------------- | ----------------------------------- | ---------- | ------------------------------------------------------------- |
-| errorHandler.ts                        | supabase-placeholder.ts          | import isSupabaseMigrationError     | ✓ WIRED    | Line 12: imports both isSupabaseMigrationError and class      |
-| MigrationErrorBoundary.tsx             | supabase-placeholder.ts          | import isSupabaseMigrationError     | ✓ WIRED    | Line 10: imports isSupabaseMigrationError                     |
-| MigrationErrorBoundary.tsx             | MigrationErrorFallback.tsx       | import MigrationErrorFallback       | ✓ WIRED    | Line 11: imports and uses in render (line 57)                 |
-| DashboardLayout.tsx                    | MigrationErrorBoundary.tsx       | import MigrationErrorBoundary       | ✓ WIRED    | Line 3: import, lines 443-445: JSX wrap                       |
-| LogTempModal.tsx                       | errorHandler.ts                  | import handleError                  | ✓ WIRED    | Line 3: imports handleError, called line 170                  |
-| LogTempModal.tsx                       | supabase-placeholder.ts          | import isSupabaseMigrationError     | ✓ WIRED    | Line 2: imports isSupabaseMigrationError, used line 169       |
-| NotificationDropdown.tsx               | supabase-placeholder.ts          | import isSupabaseMigrationError     | ✓ WIRED    | Line 4: imports isSupabaseMigrationError, used lines 165, 209 |
-| SuperAdminContext.tsx                  | supabase-placeholder.ts          | import isSupabaseMigrationError     | ✓ WIRED    | Line 3: imports isSupabaseMigrationError, used line 208       |
+| From                       | To                         | Via                             | Status  | Details                                                       |
+| -------------------------- | -------------------------- | ------------------------------- | ------- | ------------------------------------------------------------- |
+| errorHandler.ts            | supabase-placeholder.ts    | import isSupabaseMigrationError | ✓ WIRED | Line 12: imports both isSupabaseMigrationError and class      |
+| MigrationErrorBoundary.tsx | supabase-placeholder.ts    | import isSupabaseMigrationError | ✓ WIRED | Line 10: imports isSupabaseMigrationError                     |
+| MigrationErrorBoundary.tsx | MigrationErrorFallback.tsx | import MigrationErrorFallback   | ✓ WIRED | Line 11: imports and uses in render (line 57)                 |
+| DashboardLayout.tsx        | MigrationErrorBoundary.tsx | import MigrationErrorBoundary   | ✓ WIRED | Line 3: import, lines 443-445: JSX wrap                       |
+| LogTempModal.tsx           | errorHandler.ts            | import handleError              | ✓ WIRED | Line 3: imports handleError, called line 170                  |
+| LogTempModal.tsx           | supabase-placeholder.ts    | import isSupabaseMigrationError | ✓ WIRED | Line 2: imports isSupabaseMigrationError, used line 169       |
+| NotificationDropdown.tsx   | supabase-placeholder.ts    | import isSupabaseMigrationError | ✓ WIRED | Line 4: imports isSupabaseMigrationError, used lines 165, 209 |
+| SuperAdminContext.tsx      | supabase-placeholder.ts    | import isSupabaseMigrationError | ✓ WIRED | Line 3: imports isSupabaseMigrationError, used line 208       |
 
 ### Requirements Coverage
 
@@ -100,6 +100,7 @@ All previous anti-patterns (orphaned components) have been resolved.
 ### Human Verification
 
 User tested in browser:
+
 - App loads without crashes ✓
 - Navigation works ✓
 - Only expected errors: ERR_CONNECTION_REFUSED (backend not running) ✓

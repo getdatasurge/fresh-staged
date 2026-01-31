@@ -82,9 +82,9 @@ Each task was committed atomically:
 
 ## Decisions Made
 
-| ID | Decision | Rationale |
-|----|----------|-----------|
-| DEC-41-03-A | Inspector validateSession uses mutation (not query) | It writes last_used_at timestamp, so mutation is semantically correct |
+| ID          | Decision                                                  | Rationale                                                                            |
+| ----------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| DEC-41-03-A | Inspector validateSession uses mutation (not query)       | It writes last_used_at timestamp, so mutation is semantically correct                |
 | DEC-41-03-B | Onboarding createOrganization returns structured response | Maintains compatibility with existing error handling UI (code, message, suggestions) |
 
 ## Deviations from Plan

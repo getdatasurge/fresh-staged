@@ -43,6 +43,55 @@ jobs:
       - name: Test
         run: pnpm test
 
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install backend dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: backend
+
+      - name: Audit frontend dependencies
+        run: pnpm audit --audit-level=critical
+
+      - name: Audit backend dependencies
+        run: pnpm audit --audit-level=critical
+        working-directory: backend
+
+  gitleaks:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   frontend:
     name: Frontend
     runs-on: ubuntu-latest
@@ -74,3 +123,77 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+  bundle-size:
+    name: Bundle Size
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Report bundle size
+        run: |
+          echo "## Bundle Size Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| File | Size (raw) | Size (gzip) |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|------|-----------|-------------|" >> "$GITHUB_STEP_SUMMARY"
+
+          total_raw=0
+          total_gzip=0
+
+          for f in $(find dist/assets -type f \( -name '*.js' -o -name '*.css' \) | sort); do
+            name=$(basename "$f")
+            raw_bytes=$(wc -c < "$f")
+            gzip_bytes=$(gzip -c "$f" | wc -c)
+            total_raw=$((total_raw + raw_bytes))
+            total_gzip=$((total_gzip + gzip_bytes))
+
+            if [ "$raw_bytes" -ge 1048576 ]; then
+              raw_display=$(awk "BEGIN {printf \"%.2f MB\", $raw_bytes/1048576}")
+            else
+              raw_display=$(awk "BEGIN {printf \"%.2f kB\", $raw_bytes/1024}")
+            fi
+
+            if [ "$gzip_bytes" -ge 1048576 ]; then
+              gzip_display=$(awk "BEGIN {printf \"%.2f MB\", $gzip_bytes/1048576}")
+            else
+              gzip_display=$(awk "BEGIN {printf \"%.2f kB\", $gzip_bytes/1024}")
+            fi
+
+            echo "| \`$name\` | $raw_display | $gzip_display |" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$total_raw" -ge 1048576 ]; then
+            total_raw_display=$(awk "BEGIN {printf \"%.2f MB\", $total_raw/1048576}")
+          else
+            total_raw_display=$(awk "BEGIN {printf \"%.2f kB\", $total_raw/1024}")
+          fi
+
+          if [ "$total_gzip" -ge 1048576 ]; then
+            total_gzip_display=$(awk "BEGIN {printf \"%.2f MB\", $total_gzip/1048576}")
+          else
+            total_gzip_display=$(awk "BEGIN {printf \"%.2f kB\", $total_gzip/1024}")
+          fi
+
+          echo "**Total:** $total_raw_display raw / $total_gzip_display gzip" >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,13 @@
+{
+  "branch_name": "fn-7-bhy",
+  "created_at": "2026-01-30T11:38:23.115944Z",
+  "depends_on_epics": ["fn-5-mw0"],
+  "id": "fn-7-bhy",
+  "next_task": 1,
+  "plan_review_status": "unknown",
+  "plan_reviewed_at": null,
+  "spec_path": ".flow/specs/fn-7-bhy.md",
+  "status": "done",
+  "title": "Security Scaffolding",
+  "updated_at": "2026-01-30T14:03:05.245434Z"
+}

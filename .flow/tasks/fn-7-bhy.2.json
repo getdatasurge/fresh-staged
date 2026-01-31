@@ -1,0 +1,14 @@
+{
+  "assignee": null,
+  "claim_note": "",
+  "claimed_at": null,
+  "created_at": "2026-01-30T11:40:00.239908Z",
+  "depends_on": [],
+  "epic": "fn-7-bhy",
+  "id": "fn-7-bhy.2",
+  "priority": null,
+  "spec_path": ".flow/tasks/fn-7-bhy.2.md",
+  "status": "todo",
+  "title": "Configure Dependabot with grouped updates",
+  "updated_at": "2026-01-30T11:40:00.239919Z"
+}

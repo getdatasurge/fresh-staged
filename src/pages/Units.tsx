@@ -1,13 +1,13 @@
-import DashboardLayout from "@/components/DashboardLayout"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useSuperAdmin } from "@/contexts/SuperAdminContext"
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
-import { useTRPC } from "@/lib/trpc"
-import { formatDistanceToNow } from "date-fns"
+import DashboardLayout from '@/components/DashboardLayout';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useSuperAdmin } from '@/contexts/SuperAdminContext';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { useTRPC } from '@/lib/trpc';
+import { formatDistanceToNow } from 'date-fns';
 import {
   AlertTriangle,
   Boxes,
@@ -17,10 +17,10 @@ import {
   Thermometer,
   Wifi,
   WifiOff,
-} from "lucide-react"
-import { useQuery } from "@tanstack/react-query"
-import { useEffect, useMemo, useState } from "react"
-import { Link } from "react-router-dom"
+} from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 interface UnitWithHierarchy {
   id: string;
@@ -48,31 +48,31 @@ const Units = () => {
 
   const unitsQuery = useQuery(
     trpc.units.listByOrg.queryOptions(
-      { organizationId: effectiveOrgId || "" },
-      { enabled: !!effectiveOrgId }
-    )
+      { organizationId: effectiveOrgId || '' },
+      { enabled: !!effectiveOrgId },
+    ),
   );
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [lastViewedUnitId, setLastViewedUnitId] = useState<string | null>(null);
 
   useEffect(() => {
     // Check for last viewed unit
-    const stored = localStorage.getItem("lastViewedUnitId");
+    const stored = localStorage.getItem('lastViewedUnitId');
     if (stored) setLastViewedUnitId(stored);
   }, []);
 
   // Map tRPC units to local format
   const units = useMemo(() => {
     if (!unitsQuery.data) return [];
-    
-    return unitsQuery.data.map(u => ({
+
+    return unitsQuery.data.map((u) => ({
       id: u.id,
       name: u.name,
       unit_type: u.unitType,
       status: u.status,
       last_temp_reading: u.lastTemperature,
-      last_reading_at: u.lastReadingAt?.toISOString() || null,
+      last_reading_at: u.lastReadingAt || null,
       temp_limit_high: u.tempMax,
       temp_limit_low: u.tempMin,
       area: {
@@ -81,12 +81,13 @@ const Units = () => {
         site: {
           id: u.siteId,
           name: u.siteName,
-        }
-      }
+        },
+      },
     }));
   }, [unitsQuery.data]);
 
-  const isLoading = isInitialized && (unitsQuery.isLoading || (isSupportModeActive && !effectiveOrgId));
+  const isLoading =
+    isInitialized && (unitsQuery.isLoading || (isSupportModeActive && !effectiveOrgId));
   const loadError = unitsQuery.error ? unitsQuery.error.message : null;
 
   const handleRefetch = () => {
@@ -106,23 +107,27 @@ const Units = () => {
 
   // Group units by site
   const groupedBySite = useMemo(() => {
-    return filteredUnits.reduce((acc, unit) => {
-      const siteId = unit.area.site.id;
-      if (!acc[siteId]) {
-        acc[siteId] = {
-          siteName: unit.area.site.name,
-          units: [],
-        };
-      }
-      acc[siteId].units.push(unit);
-      return acc;
-    }, {} as Record<string, { siteName: string; units: UnitWithHierarchy[] }>);
+    return filteredUnits.reduce(
+      (acc, unit) => {
+        const siteId = unit.area.site.id;
+        if (!acc[siteId]) {
+          acc[siteId] = {
+            siteName: unit.area.site.name,
+            units: [],
+          };
+        }
+        acc[siteId].units.push(unit);
+        return acc;
+      },
+      {} as Record<string, { siteName: string; units: UnitWithHierarchy[] }>,
+    );
   }, [filteredUnits]);
 
   const getStatusBadge = (unit: UnitWithHierarchy) => {
-    const isOnline = unit.status === "online" || unit.status === "normal" || unit.status === "ok";
-    const isAlerting = unit.status === "alarm" || unit.status === "critical" || unit.status === "alarm_active";
-    const isWarning = unit.status === "warning" || unit.status === "excursion";
+    const isOnline = unit.status === 'online' || unit.status === 'normal' || unit.status === 'ok';
+    const isAlerting =
+      unit.status === 'alarm' || unit.status === 'critical' || unit.status === 'alarm_active';
+    const isWarning = unit.status === 'warning' || unit.status === 'excursion';
 
     if (isAlerting) {
       return (
@@ -156,9 +161,7 @@ const Units = () => {
     );
   };
 
-  const lastViewedUnit = lastViewedUnitId
-    ? units.find((u) => u.id === lastViewedUnitId)
-    : null;
+  const lastViewedUnit = lastViewedUnitId ? units.find((u) => u.id === lastViewedUnitId) : null;
 
   return (
     <DashboardLayout title="Units">
@@ -248,10 +251,8 @@ const Units = () => {
         <Card className="border-dashed">
           <CardContent className="py-8 text-center">
             <Search className="w-8 h-8 mx-auto text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">
-              No units match "{searchQuery}"
-            </p>
-            <Button variant="ghost" size="sm" onClick={() => setSearchQuery("")}>
+            <p className="text-muted-foreground">No units match "{searchQuery}"</p>
+            <Button variant="ghost" size="sm" onClick={() => setSearchQuery('')}>
               Clear search
             </Button>
           </CardContent>
@@ -268,7 +269,7 @@ const Units = () => {
                   <MapPin className="w-4 h-4 text-muted-foreground" />
                   {siteName}
                   <Badge variant="secondary" className="ml-auto">
-                    {siteUnits.length} unit{siteUnits.length !== 1 ? "s" : ""}
+                    {siteUnits.length} unit{siteUnits.length !== 1 ? 's' : ''}
                   </Badge>
                 </CardTitle>
               </CardHeader>

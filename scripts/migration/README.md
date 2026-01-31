@@ -4,12 +4,12 @@ Scripts to migrate data from Supabase to self-hosted PostgreSQL.
 
 ## Overview
 
-| Property | Value |
-|----------|-------|
-| **Strategy** | Freeze+Backfill (8+ hour maintenance window) |
-| **Data Volume** | <1GB total (estimated) |
-| **User ID Mapping** | Retained 90 days for customer support |
-| **Tables** | 23 tables across 8 dependency levels |
+| Property            | Value                                        |
+| ------------------- | -------------------------------------------- |
+| **Strategy**        | Freeze+Backfill (8+ hour maintenance window) |
+| **Data Volume**     | <1GB total (estimated)                       |
+| **User ID Mapping** | Retained 90 days for customer support        |
+| **Tables**          | 23 tables across 8 dependency levels         |
 
 ## Prerequisites
 
@@ -224,89 +224,89 @@ If issues are discovered after migration:
 
 ### export.ts
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-o, --output-dir <path>` | Output directory for JSON files | `./migration-data` |
-| `-t, --table <name>` | Export a single table only | - |
-| `--skip-large` | Skip large tables (sensor_readings, event_logs, alerts) | false |
-| `--skip-auth` | Skip auth.users export | false |
-| `--dry-run` | List tables without exporting | false |
+| Option                    | Description                                             | Default            |
+| ------------------------- | ------------------------------------------------------- | ------------------ |
+| `-o, --output-dir <path>` | Output directory for JSON files                         | `./migration-data` |
+| `-t, --table <name>`      | Export a single table only                              | -                  |
+| `--skip-large`            | Skip large tables (sensor_readings, event_logs, alerts) | false              |
+| `--skip-auth`             | Skip auth.users export                                  | false              |
+| `--dry-run`               | List tables without exporting                           | false              |
 
 ### import.ts
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-i, --input-dir <path>` | Input directory containing JSON files | `./migration-data` |
-| `-m, --mapping <path>` | Path to user mapping JSON file | `./migration-data/user-mapping.json` |
-| `-t, --table <name>` | Import a single table only | - |
-| `--truncate-first` | Truncate target tables before import (requires --yes) | false |
-| `--disable-fk` | Disable foreign key checks during import | false |
-| `--yes` | Skip confirmation prompts | false |
-| `--dry-run` | Validate export files exist without importing | false |
+| Option                   | Description                                           | Default                              |
+| ------------------------ | ----------------------------------------------------- | ------------------------------------ |
+| `-i, --input-dir <path>` | Input directory containing JSON files                 | `./migration-data`                   |
+| `-m, --mapping <path>`   | Path to user mapping JSON file                        | `./migration-data/user-mapping.json` |
+| `-t, --table <name>`     | Import a single table only                            | -                                    |
+| `--truncate-first`       | Truncate target tables before import (requires --yes) | false                                |
+| `--disable-fk`           | Disable foreign key checks during import              | false                                |
+| `--yes`                  | Skip confirmation prompts                             | false                                |
+| `--dry-run`              | Validate export files exist without importing         | false                                |
 
 ### migrate-users.ts
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-i, --input <path>` | Input JSON file with Supabase users | `./migration-data/auth_users.json` |
-| `-o, --output <path>` | Output mapping file path | `./migration-data/user-mapping.json` |
-| `-d, --dry-run` | Preview migration without creating users | false |
-| `-r, --rate-limit <ms>` | Milliseconds between API calls | `100` |
+| Option                  | Description                              | Default                              |
+| ----------------------- | ---------------------------------------- | ------------------------------------ |
+| `-i, --input <path>`    | Input JSON file with Supabase users      | `./migration-data/auth_users.json`   |
+| `-o, --output <path>`   | Output mapping file path                 | `./migration-data/user-mapping.json` |
+| `-d, --dry-run`         | Preview migration without creating users | false                                |
+| `-r, --rate-limit <ms>` | Milliseconds between API calls           | `100`                                |
 
 ### map-users.ts
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-s, --supabase-export <path>` | Supabase auth_users.json export file | `./migration-data/auth_users.json` |
-| `-o, --output <path>` | Output mapping file path | `./migration-data/user-mapping.json` |
-| `-m, --match-by <method>` | Matching method: email | `email` |
+| Option                         | Description                          | Default                              |
+| ------------------------------ | ------------------------------------ | ------------------------------------ |
+| `-s, --supabase-export <path>` | Supabase auth_users.json export file | `./migration-data/auth_users.json`   |
+| `-o, --output <path>`          | Output mapping file path             | `./migration-data/user-mapping.json` |
+| `-m, --match-by <method>`      | Matching method: email               | `email`                              |
 
 ## Files Reference
 
-| File | Purpose |
-|------|---------|
-| `src/export.ts` | Export all tables from Supabase to JSON |
-| `src/import.ts` | Import JSON files to new database |
-| `src/verify.ts` | Compare source and target databases (placeholder) |
-| `migrate-users.ts` | Create users in Stack Auth |
-| `map-users.ts` | Generate user ID mapping from existing users |
-| `test-connections.ts` | Verify database connectivity |
-| `lib/logger.ts` | Shared logging configuration (Pino with file + console) |
-| `lib/supabase-client.ts` | Supabase connection pool |
-| `lib/new-db-client.ts` | New database connection pool |
-| `lib/table-metadata.ts` | Table dependency order (23 tables, 8 levels) |
-| `lib/user-mapping.ts` | User ID mapping utilities |
-| `lib/stream-helpers.ts` | Streaming export utilities |
-| `lib/import-helpers.ts` | Import utilities with batching |
+| File                     | Purpose                                                 |
+| ------------------------ | ------------------------------------------------------- |
+| `src/export.ts`          | Export all tables from Supabase to JSON                 |
+| `src/import.ts`          | Import JSON files to new database                       |
+| `src/verify.ts`          | Compare source and target databases (placeholder)       |
+| `migrate-users.ts`       | Create users in Stack Auth                              |
+| `map-users.ts`           | Generate user ID mapping from existing users            |
+| `test-connections.ts`    | Verify database connectivity                            |
+| `lib/logger.ts`          | Shared logging configuration (Pino with file + console) |
+| `lib/supabase-client.ts` | Supabase connection pool                                |
+| `lib/new-db-client.ts`   | New database connection pool                            |
+| `lib/table-metadata.ts`  | Table dependency order (23 tables, 8 levels)            |
+| `lib/user-mapping.ts`    | User ID mapping utilities                               |
+| `lib/stream-helpers.ts`  | Streaming export utilities                              |
+| `lib/import-helpers.ts`  | Import utilities with batching                          |
 
 ## Table Import Order
 
 Tables are imported in dependency order to avoid foreign key violations:
 
-| Level | Tables |
-|-------|--------|
-| 0 | organizations |
-| 1 | subscriptions, profiles, sites, ttn_connections |
-| 2 | user_roles, escalation_contacts, areas, hubs, alert_rules |
-| 3 | units, devices |
-| 4 | lora_sensors, calibration_records, sensor_readings, manual_temperature_logs, door_events |
-| 5 | alerts, alert_rules_history |
-| 6 | corrective_actions, notification_deliveries |
-| 7 | event_logs, pairing_sessions |
+| Level | Tables                                                                                   |
+| ----- | ---------------------------------------------------------------------------------------- |
+| 0     | organizations                                                                            |
+| 1     | subscriptions, profiles, sites, ttn_connections                                          |
+| 2     | user_roles, escalation_contacts, areas, hubs, alert_rules                                |
+| 3     | units, devices                                                                           |
+| 4     | lora_sensors, calibration_records, sensor_readings, manual_temperature_logs, door_events |
+| 5     | alerts, alert_rules_history                                                              |
+| 6     | corrective_actions, notification_deliveries                                              |
+| 7     | event_logs, pairing_sessions                                                             |
 
 ## Tables with User ID Mapping
 
 These tables have columns that reference user IDs and require mapping from Supabase UUIDs to Stack Auth UUIDs:
 
-| Table | Columns |
-|-------|---------|
-| profiles | user_id |
-| user_roles | user_id |
-| escalation_contacts | profile_id |
+| Table                   | Columns    |
+| ----------------------- | ---------- |
+| profiles                | user_id    |
+| user_roles              | user_id    |
+| escalation_contacts     | profile_id |
 | manual_temperature_logs | profile_id |
-| corrective_actions | profile_id |
+| corrective_actions      | profile_id |
 | notification_deliveries | profile_id |
-| event_logs | actor_id |
+| event_logs              | actor_id   |
 
 ## User ID Mapping Retention
 
@@ -338,5 +338,5 @@ The `user-mapping.json` file maps Supabase UUIDs to Stack Auth UUIDs:
 
 ---
 
-*Migration scripts version: 1.0*
-*Created: 2026-01-23*
+_Migration scripts version: 1.0_
+_Created: 2026-01-23_

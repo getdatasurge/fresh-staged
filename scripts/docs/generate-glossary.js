@@ -13,7 +13,7 @@ import {
   formatTimestamp,
   logSuccess,
   logInfo,
-  logHeader
+  logHeader,
 } from './utils.js';
 
 /**
@@ -47,7 +47,7 @@ async function parseGlossarySeed() {
         const cleanTerm = term.trim();
         terms[cleanTerm] = {
           definition: definition.trim(),
-          category: currentCategory
+          category: currentCategory,
         };
       }
     }
@@ -87,7 +87,7 @@ async function extractTermsFromDocs() {
         if (!extractedTerms.has(term)) {
           extractedTerms.set(term, {
             definition,
-            source: path.relative(DOCS_ROOT, file)
+            source: path.relative(DOCS_ROOT, file),
           });
         }
       }
@@ -155,7 +155,7 @@ async function generateGlossary() {
     'Data',
     'Integration',
     'Development',
-    'General'
+    'General',
   ];
 
   // Normalize category names to canonical form (handles variations like IoT/Hardware -> IoT Hardware)
@@ -180,7 +180,7 @@ async function generateGlossary() {
   }
 
   // Replace categories with normalized version
-  Object.keys(categories).forEach(key => delete categories[key]);
+  Object.keys(categories).forEach((key) => delete categories[key]);
   Object.assign(categories, normalizedCategories);
 
   // Add navigation links
@@ -233,7 +233,9 @@ To add new terms to this glossary:
   await fs.writeFile(outputPath, content);
 
   logSuccess('Generated GLOSSARY.md');
-  logInfo(`Included ${Object.keys(allTerms).length} terms across ${Object.keys(categories).length} categories`);
+  logInfo(
+    `Included ${Object.keys(allTerms).length} terms across ${Object.keys(categories).length} categories`,
+  );
 
   return content;
 }

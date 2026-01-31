@@ -9,9 +9,9 @@ requires:
   - phase: 38-test-infrastructure
     provides: tRPC mock patterns and test utilities
 provides:
-  - "listEventLogs, createEventLog, deleteEventLog backend procedures"
-  - "AnnotationsWidget migrated to tRPC"
-  - "EventTimelineWidget migrated to tRPC"
+  - 'listEventLogs, createEventLog, deleteEventLog backend procedures'
+  - 'AnnotationsWidget migrated to tRPC'
+  - 'EventTimelineWidget migrated to tRPC'
 affects:
   - 43-cleanup-verification (supabase-placeholder removal check)
 
@@ -19,8 +19,8 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "Event log procedures with profile join in readings router"
-    - "Multi-query widget pattern combining alerts + logs + door events"
+    - 'Event log procedures with profile join in readings router'
+    - 'Multi-query widget pattern combining alerts + logs + door events'
 
 key-files:
   created: []
@@ -30,13 +30,13 @@ key-files:
     - src/features/dashboard-layout/widgets/EventTimelineWidget.tsx
 
 key-decisions:
-  - "Added event log procedures to readings router (already handles manual logs and door events)"
-  - "Use z.record(z.string(), z.unknown()) for eventData schema validation"
-  - "Removed load-more pagination from EventTimelineWidget in favor of react-query caching"
+  - 'Added event log procedures to readings router (already handles manual logs and door events)'
+  - 'Use z.record(z.string(), z.unknown()) for eventData schema validation'
+  - 'Removed load-more pagination from EventTimelineWidget in favor of react-query caching'
 
 patterns-established:
-  - "Event log procedures: listEventLogs with profile join, createEventLog with actorType, deleteEventLog with role check"
-  - "Multi-source timeline: combine multiple tRPC queries in useMemo for unified display"
+  - 'Event log procedures: listEventLogs with profile join, createEventLog with actorType, deleteEventLog with role check'
+  - 'Multi-source timeline: combine multiple tRPC queries in useMemo for unified display'
 
 # Metrics
 duration: 4min
@@ -90,6 +90,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Fixed ctx.db reference error**
+
 - **Found during:** Task 1 (Backend procedures)
 - **Issue:** Plan used `ctx.db` but orgProcedure context doesn't expose db directly
 - **Fix:** Imported `db` from `../db/client.js` and used directly
@@ -98,6 +99,7 @@ Each task was committed atomically:
 - **Committed in:** 7027b86 (Task 1 commit)
 
 **2. [Rule 3 - Blocking] Fixed z.record() signature**
+
 - **Found during:** Task 1 (Backend procedures)
 - **Issue:** Plan used `z.record(z.any())` but Zod requires `z.record(keySchema, valueSchema)`
 - **Fix:** Changed to `z.record(z.string(), z.unknown())`
@@ -125,5 +127,6 @@ None - no external service configuration required.
 - Ready for 39-04 (remaining widgets) or other phases
 
 ---
-*Phase: 39-dashboard-widgets*
-*Completed: 2026-01-29*
+
+_Phase: 39-dashboard-widgets_
+_Completed: 2026-01-29_

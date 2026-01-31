@@ -9,13 +9,13 @@
 
 The following fixes have been implemented based on this audit:
 
-| Fix | File(s) Modified | Status |
-|-----|------------------|--------|
-| Navigation race condition | `src/hooks/useImpersonateAndNavigate.ts` | ✅ Implemented |
-| Sidebar orgId sync | `src/components/DashboardLayout.tsx` | ✅ Implemented |
-| User count query | `supabase/migrations/20260116230950_*.sql` | ✅ Implemented |
-| Membership validation | `supabase/migrations/20260116231000_*.sql` | ✅ Implemented |
-| Route guards | `src/App.tsx` | ✅ Implemented |
+| Fix                       | File(s) Modified                           | Status         |
+| ------------------------- | ------------------------------------------ | -------------- |
+| Navigation race condition | `src/hooks/useImpersonateAndNavigate.ts`   | ✅ Implemented |
+| Sidebar orgId sync        | `src/components/DashboardLayout.tsx`       | ✅ Implemented |
+| User count query          | `supabase/migrations/20260116230950_*.sql` | ✅ Implemented |
+| Membership validation     | `supabase/migrations/20260116231000_*.sql` | ✅ Implemented |
+| Route guards              | `src/App.tsx`                              | ✅ Implemented |
 
 ---
 
@@ -23,14 +23,14 @@ The following fixes have been implemented based on this audit:
 
 ### 1.1 Framework & Stack
 
-| Component | Technology |
-|-----------|------------|
-| Frontend | Vite 5.x + React 18 + TypeScript |
-| Routing | React Router v6 (client-side SPA) |
-| State | TanStack React Query + React Context |
-| Backend | Supabase (PostgreSQL + Row-Level Security) |
-| Auth | Supabase Auth (JWT-based) |
-| UI | Radix UI + shadcn/ui + Tailwind CSS |
+| Component | Technology                                 |
+| --------- | ------------------------------------------ |
+| Frontend  | Vite 5.x + React 18 + TypeScript           |
+| Routing   | React Router v6 (client-side SPA)          |
+| State     | TanStack React Query + React Context       |
+| Backend   | Supabase (PostgreSQL + Row-Level Security) |
+| Auth      | Supabase Auth (JWT-based)                  |
+| UI        | Radix UI + shadcn/ui + Tailwind CSS        |
 
 **Key Insight**: This is a **client-side SPA** with no traditional server middleware. All route guards and auth checks happen in React components. Backend security is enforced via Supabase RLS policies and `SECURITY DEFINER` RPC functions.
 
@@ -76,19 +76,21 @@ supabase/migrations/
 ### 1.3 Role & Permission Model
 
 #### Platform-Level Roles (Cross-Org)
-| Table | Column | Description |
-|-------|--------|-------------|
-| `platform_roles` | `role` | ENUM: `'SUPER_ADMIN'` |
-| `platform_roles` | `user_id` | FK to `auth.users` |
+
+| Table            | Column    | Description           |
+| ---------------- | --------- | --------------------- |
+| `platform_roles` | `role`    | ENUM: `'SUPER_ADMIN'` |
+| `platform_roles` | `user_id` | FK to `auth.users`    |
 
 **Check Function**: `is_current_user_super_admin()` (SECURITY DEFINER)
 
 #### Organization-Level Roles
-| Table | Column | Description |
-|-------|--------|-------------|
-| `user_roles` | `role` | ENUM: `owner`, `admin`, `manager`, `staff`, `viewer`, `inspector` |
-| `user_roles` | `user_id` | FK to `auth.users` |
-| `user_roles` | `organization_id` | FK to `organizations` |
+
+| Table        | Column            | Description                                                       |
+| ------------ | ----------------- | ----------------------------------------------------------------- |
+| `user_roles` | `role`            | ENUM: `owner`, `admin`, `manager`, `staff`, `viewer`, `inspector` |
+| `user_roles` | `user_id`         | FK to `auth.users`                                                |
+| `user_roles` | `organization_id` | FK to `organizations`                                             |
 
 ### 1.4 Organization Model
 
@@ -105,10 +107,10 @@ user_roles (user_id, organization_id, role)  -- Multi-org membership
 
 ### 1.5 How "Current Org" is Derived
 
-| Scenario | Source | Code Location |
-|----------|--------|---------------|
-| Normal User | `profiles.organization_id` | `useUserRole.ts:155-159` |
-| Super Admin (Platform) | None (cross-org access) | N/A |
+| Scenario                    | Source                                                               | Code Location                     |
+| --------------------------- | -------------------------------------------------------------------- | --------------------------------- |
+| Normal User                 | `profiles.organization_id`                                           | `useUserRole.ts:155-159`          |
+| Super Admin (Platform)      | None (cross-org access)                                              | N/A                               |
 | Super Admin (Impersonating) | `impersonation_sessions.target_org_id` via `useEffectiveIdentity.ts` | `useEffectiveIdentity.ts:268-274` |
 
 ---
@@ -171,48 +173,48 @@ user_roles (user_id, organization_id, role)  -- Multi-org membership
 
 #### Phase 1: Initiate Impersonation Request
 
-| Step | File | Function | Line |
-|------|------|----------|------|
-| UI Trigger | `PlatformUsers.tsx` or `GlobalUserSearch.tsx` | Button click | Various |
-| Set pending target | `useImpersonateAndNavigate.ts` | `requestImpersonation()` | 43-64 |
-| Show modal | `ConfirmSpoofingModal.tsx` | Component render | 33-159 |
+| Step               | File                                          | Function                 | Line    |
+| ------------------ | --------------------------------------------- | ------------------------ | ------- |
+| UI Trigger         | `PlatformUsers.tsx` or `GlobalUserSearch.tsx` | Button click             | Various |
+| Set pending target | `useImpersonateAndNavigate.ts`                | `requestImpersonation()` | 43-64   |
+| Show modal         | `ConfirmSpoofingModal.tsx`                    | Component render         | 33-159  |
 
 #### Phase 2: Execute Impersonation
 
-| Step | File | Function | Line |
-|------|------|----------|------|
-| User confirms | `ConfirmSpoofingModal.tsx` | `handleConfirm()` | 43-56 |
-| Enter support mode | `SuperAdminContext.tsx` | `enterSupportMode()` | 348-372 |
-| Create server session | `SuperAdminContext.tsx` | `startImpersonation()` | 390-471 |
-| Supabase RPC | `20260116013110_*.sql` | `start_impersonation()` | 64-151 |
-| Persist to localStorage | `SuperAdminContext.tsx` | Lines 446-454 | - |
-| Invalidate caches | `useImpersonateAndNavigate.ts` | `queryClient.invalidateQueries()` | 106-112 |
-| Navigate | `useImpersonateAndNavigate.ts` | `navigate('/dashboard')` | 121 |
+| Step                    | File                           | Function                          | Line    |
+| ----------------------- | ------------------------------ | --------------------------------- | ------- |
+| User confirms           | `ConfirmSpoofingModal.tsx`     | `handleConfirm()`                 | 43-56   |
+| Enter support mode      | `SuperAdminContext.tsx`        | `enterSupportMode()`              | 348-372 |
+| Create server session   | `SuperAdminContext.tsx`        | `startImpersonation()`            | 390-471 |
+| Supabase RPC            | `20260116013110_*.sql`         | `start_impersonation()`           | 64-151  |
+| Persist to localStorage | `SuperAdminContext.tsx`        | Lines 446-454                     | -       |
+| Invalidate caches       | `useImpersonateAndNavigate.ts` | `queryClient.invalidateQueries()` | 106-112 |
+| Navigate                | `useImpersonateAndNavigate.ts` | `navigate('/dashboard')`          | 121     |
 
 #### Phase 3: Data Loading with Effective Identity
 
-| Step | File | Function | Line |
-|------|------|----------|------|
-| Check identity | `useEffectiveIdentity.ts` | Hook initialization | 82-303 |
-| Compute effective | `useEffectiveIdentity.ts` | Lines 261-286 | - |
-| Load sites | `Sites.tsx` | `loadSites()` | 84-123 |
-| Filter by org | `Sites.tsx` | `.eq("organization_id", effectiveOrgId)` | 102 |
+| Step              | File                      | Function                                 | Line   |
+| ----------------- | ------------------------- | ---------------------------------------- | ------ |
+| Check identity    | `useEffectiveIdentity.ts` | Hook initialization                      | 82-303 |
+| Compute effective | `useEffectiveIdentity.ts` | Lines 261-286                            | -      |
+| Load sites        | `Sites.tsx`               | `loadSites()`                            | 84-123 |
+| Filter by org     | `Sites.tsx`               | `.eq("organization_id", effectiveOrgId)` | 102    |
 
 #### Phase 4: Stop Impersonation
 
-| Step | File | Function | Line |
-|------|------|----------|------|
-| UI trigger | `SupportModeBanner.tsx` | "Exit Support Mode" button | 90-98 |
-| Stop impersonation | `SuperAdminContext.tsx` | `stopImpersonation()` | 474-505 |
-| Server cleanup | `20260116013110_*.sql` | `stop_impersonation()` | 154-190 |
+| Step               | File                    | Function                   | Line    |
+| ------------------ | ----------------------- | -------------------------- | ------- |
+| UI trigger         | `SupportModeBanner.tsx` | "Exit Support Mode" button | 90-98   |
+| Stop impersonation | `SuperAdminContext.tsx` | `stopImpersonation()`      | 474-505 |
+| Server cleanup     | `20260116013110_*.sql`  | `stop_impersonation()`     | 154-190 |
 
 ### 2.3 State Storage Locations
 
-| State | Storage | Key | TTL |
-|-------|---------|-----|-----|
-| Support Mode | localStorage | `ftp_support_mode` | 30 min |
-| Impersonation Session | localStorage | `ftp_impersonation_session` | Session expiry |
-| Server Session | PostgreSQL | `impersonation_sessions` table | `p_duration_minutes` (default 60) |
+| State                 | Storage      | Key                            | TTL                               |
+| --------------------- | ------------ | ------------------------------ | --------------------------------- |
+| Support Mode          | localStorage | `ftp_support_mode`             | 30 min                            |
+| Impersonation Session | localStorage | `ftp_impersonation_session`    | Session expiry                    |
+| Server Session        | PostgreSQL   | `impersonation_sessions` table | `p_duration_minutes` (default 60) |
 
 ---
 
@@ -221,22 +223,26 @@ user_roles (user_id, organization_id, role)  -- Multi-org membership
 ### Bug 1: Sites/Units/Dashboard May Show Empty During Impersonation
 
 **Reproduction**:
+
 1. Log in as Super Admin
 2. Go to Platform Admin > Users
 3. Click "Impersonate" on a user
 4. Navigate to /dashboard - sometimes shows no data
 
 **Observed Behavior**:
+
 - Intermittently, `effectiveOrgId` is `null` when data queries run
 - Shows "No Sites" or empty dashboard briefly or permanently
 
 **Evidence**:
+
 - `Sites.tsx:67-82`: Guards require `isInitialized && effectiveOrgId`
 - `useEffectiveIdentity.ts:124-137`: `isInitialized` has complex dependency chain
 - `useImpersonateAndNavigate.ts:115`: Only 150ms delay before navigation
 
 **Root Cause**:
 Race condition between:
+
 1. Navigation to `/dashboard` (line 121)
 2. localStorage sync completing
 3. `isInitialized` becoming true (depends on 5+ conditions)
@@ -251,10 +257,12 @@ The 150ms delay (line 115) may not be sufficient for all state to propagate thro
 ### Bug 2: Sidebar Shows Wrong/No Data During Impersonation
 
 **Reproduction**:
+
 1. After impersonating, look at sidebar Sites/Units accordions
 2. May show previous org's data or empty
 
 **Evidence**:
+
 - `DashboardLayout.tsx:308-311`: Sidebar receives `orgId` prop
 - `DashboardLayout.tsx:116-127`: `orgId` state is set via useEffect on `effectiveOrgId`
 - `useNavTree.ts:110-141`: Queries use `organizationId` prop
@@ -269,15 +277,18 @@ The 150ms delay (line 115) may not be sufficient for all state to propagate thro
 ### Bug 3: User Count Shows 0 for Organizations Without user_roles Entries
 
 **Reproduction**:
+
 1. Go to Platform Admin > Organizations
 2. Observe "Users" column shows 0 for some orgs that have users
 
 **Evidence**:
+
 - `20260116201606_*.sql:27`: `COUNT(DISTINCT ur.user_id) FROM user_roles ur WHERE ur.organization_id = o.id`
 - Users may exist in `profiles.organization_id` but not have `user_roles` entries
 
 **Root Cause**:
 The query counts from `user_roles` table, but:
+
 1. Legacy users may only have `profiles.organization_id`
 2. New users might fail role assignment silently
 
@@ -288,11 +299,13 @@ The query counts from `user_roles` table, but:
 ### Bug 4: DashboardLayout Redirect Race Condition
 
 **Reproduction**:
+
 1. As Super Admin, directly navigate to `/dashboard` (not through impersonation)
 2. May briefly render then redirect to `/platform`
 3. Sometimes gets stuck in redirect loop
 
 **Evidence**:
+
 - `DashboardLayout.tsx:69-90`: Redirect logic with timeout
 - Line 75: 50ms timeout added to "allow impersonation state to propagate"
 - Line 81: Complex condition `hasOrgContext = isImpersonating || impersonation.isImpersonating || isSupportModeActive || viewingOrg.orgId`
@@ -309,12 +322,14 @@ Multiple boolean flags from different sources (`useEffectiveIdentity`, `useSuper
 ### RC1: Client-Side State Synchronization
 
 **Problem**: Impersonation state lives in multiple places:
+
 1. `SuperAdminContext` state (React)
 2. `useEffectiveIdentity` state (React)
 3. localStorage (browser)
 4. Server session (PostgreSQL)
 
 These are synchronized via:
+
 - useEffect chains
 - localStorage read on mount
 - Server RPC validation
@@ -322,6 +337,7 @@ These are synchronized via:
 **Impact**: Race conditions during navigation when components read state at different points in the sync cycle.
 
 **File Pointers**:
+
 - `SuperAdminContext.tsx:198-227` (localStorage restore)
 - `useEffectiveIdentity.ts:96-115` (synchronous localStorage init)
 - `useEffectiveIdentity.ts:241-258` (async server validation)
@@ -333,6 +349,7 @@ These are synchronized via:
 **Problem**: Supabase JWT always contains the **real** user's identity. RLS policies use `auth.uid()`.
 
 **Mitigation in place**: Special RLS policies grant super admins cross-org access:
+
 ```sql
 CREATE POLICY "Super admins can view all sites"
   ON public.sites FOR SELECT
@@ -342,6 +359,7 @@ CREATE POLICY "Super admins can view all sites"
 **Remaining risk**: Client-side filtering by `effectiveOrgId` is the ONLY tenant scoping during impersonation. If `effectiveOrgId` is wrong, super admin sees wrong org's data.
 
 **File Pointers**:
+
 - `20260115222612_*.sql:166-171` (super admin RLS policies)
 - `Sites.tsx:102` (client-side org filter)
 
@@ -350,11 +368,13 @@ CREATE POLICY "Super admins can view all sites"
 ### RC3: Query Cache Invalidation Timing
 
 **Problem**: `useImpersonateAndNavigate.ts:106-112` invalidates queries, but:
+
 1. Invalidation is async
 2. Navigation happens before re-fetch completes
 3. Components may render with stale/empty cache
 
 **File Pointers**:
+
 - `useImpersonateAndNavigate.ts:106-112`
 - `useImpersonateAndNavigate.ts:121` (navigate before cache settles)
 
@@ -365,6 +385,7 @@ CREATE POLICY "Super admins can view all sites"
 **Problem**: `get_platform_organization_stats()` counts from `user_roles` but users can exist with only `profiles.organization_id`.
 
 **File Pointers**:
+
 - `20260116201606_*.sql:27`
 - `useUserRole.ts:155-174` (loads role from `user_roles`)
 
@@ -388,13 +409,14 @@ let waited = 0;
 while (waited < maxWait) {
   // Check if effective identity is ready
   // This requires refactoring to access the hook state
-  await new Promise(resolve => setTimeout(resolve, checkInterval));
+  await new Promise((resolve) => setTimeout(resolve, checkInterval));
   waited += checkInterval;
   // Break when ready
 }
 ```
 
 **Better approach**: Make navigation dependent on state, not timeouts:
+
 ```typescript
 // Create a promise that resolves when effectiveOrgId is set
 // Navigate only after promise resolves
@@ -409,17 +431,20 @@ while (waited < maxWait) {
 **File**: `src/components/DashboardLayout.tsx`
 
 **Current** (line 64):
+
 ```typescript
 const [orgId, setOrgId] = useState<string | null>(null);
 ```
 
 **Change**: Initialize from effectiveOrgId directly:
+
 ```typescript
 const { effectiveOrgId, ... } = useEffectiveIdentity();
 // Remove orgId state, use effectiveOrgId directly for sidebar
 ```
 
 Or ensure sidebar waits:
+
 ```typescript
 <SidebarSitesAccordion organizationId={isInitialized ? effectiveOrgId || orgId : null} />
 ```
@@ -433,6 +458,7 @@ Or ensure sidebar waits:
 **File**: Create new migration
 
 **Change**: Count from both `user_roles` AND `profiles`:
+
 ```sql
 CREATE OR REPLACE FUNCTION get_platform_organization_stats()
 RETURNS TABLE (org_id UUID, user_count BIGINT, site_count BIGINT)
@@ -468,13 +494,14 @@ $$;
 **File**: `src/contexts/SuperAdminContext.tsx`
 
 **Change**: Add explicit transition states:
+
 ```typescript
 type ImpersonationStatus =
-  | 'idle'           // Not impersonating
-  | 'starting'       // Server call in progress
-  | 'syncing'        // Waiting for state propagation
-  | 'active'         // Ready for data access
-  | 'stopping';      // Cleanup in progress
+  | 'idle' // Not impersonating
+  | 'starting' // Server call in progress
+  | 'syncing' // Waiting for state propagation
+  | 'active' // Ready for data access
+  | 'stopping'; // Cleanup in progress
 ```
 
 Use status to gate navigation and data queries.
@@ -490,12 +517,16 @@ Use status to gate navigation and data queries.
 **Current**: `RequireImpersonationGuard` exists but is not used in routes.
 
 **Change**: Wrap main app routes:
+
 ```tsx
-<Route path="/dashboard" element={
-  <RequireImpersonationGuard>
-    <Dashboard />
-  </RequireImpersonationGuard>
-} />
+<Route
+  path="/dashboard"
+  element={
+    <RequireImpersonationGuard>
+      <Dashboard />
+    </RequireImpersonationGuard>
+  }
+/>
 ```
 
 **Note**: This is defensive; DashboardLayout already has redirect logic.
@@ -508,33 +539,34 @@ Use status to gate navigation and data queries.
 
 ### 6.1 Authorization Checks
 
-| Check | Status | Evidence |
-|-------|--------|----------|
-| Super admin impersonation requires SUPER_ADMIN role | ✅ PASS | `start_impersonation()` calls `is_current_user_super_admin()` |
-| Cannot impersonate user not in target org | ⚠️ WARN | No validation that target_user_id belongs to target_org_id |
-| Impersonation sessions have TTL | ✅ PASS | `expires_at` column, auto-cleanup in `get_active_impersonation()` |
-| Actions logged with actor + target | ✅ PASS | `super_admin_audit_log` table, `log_super_admin_action()` |
+| Check                                               | Status  | Evidence                                                          |
+| --------------------------------------------------- | ------- | ----------------------------------------------------------------- |
+| Super admin impersonation requires SUPER_ADMIN role | ✅ PASS | `start_impersonation()` calls `is_current_user_super_admin()`     |
+| Cannot impersonate user not in target org           | ⚠️ WARN | No validation that target_user_id belongs to target_org_id        |
+| Impersonation sessions have TTL                     | ✅ PASS | `expires_at` column, auto-cleanup in `get_active_impersonation()` |
+| Actions logged with actor + target                  | ✅ PASS | `super_admin_audit_log` table, `log_super_admin_action()`         |
 
 ### 6.2 Data Access
 
-| Check | Status | Evidence |
-|-------|--------|----------|
-| RLS enforced on all tables | ✅ PASS | `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` |
-| Super admin bypass is explicit | ✅ PASS | Separate policies with `is_current_user_super_admin()` |
+| Check                                | Status  | Evidence                                                                  |
+| ------------------------------------ | ------- | ------------------------------------------------------------------------- |
+| RLS enforced on all tables           | ✅ PASS | `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`                               |
+| Super admin bypass is explicit       | ✅ PASS | Separate policies with `is_current_user_super_admin()`                    |
 | Client cannot override effective org | ⚠️ WARN | Client passes `effectiveOrgId` to queries; RLS allows all for super admin |
 
 ### 6.3 Session Security
 
-| Check | Status | Evidence |
-|-------|--------|----------|
-| Server-side session validation | ✅ PASS | `impersonation_sessions` table |
-| Session expiry enforced | ✅ PASS | `expires_at` checked in `get_active_impersonation()` |
-| localStorage can be tampered | ⚠️ INFO | Yes, but server validates via RPC on page load |
-| Support mode timeout | ✅ PASS | 30 min timeout, inactivity detection |
+| Check                          | Status  | Evidence                                             |
+| ------------------------------ | ------- | ---------------------------------------------------- |
+| Server-side session validation | ✅ PASS | `impersonation_sessions` table                       |
+| Session expiry enforced        | ✅ PASS | `expires_at` checked in `get_active_impersonation()` |
+| localStorage can be tampered   | ⚠️ INFO | Yes, but server validates via RPC on page load       |
+| Support mode timeout           | ✅ PASS | 30 min timeout, inactivity detection                 |
 
 ### 6.4 Security Recommendations
 
 1. **Add user-org membership validation** in `start_impersonation()`:
+
 ```sql
 -- Verify target user belongs to target org
 IF NOT EXISTS (
@@ -551,6 +583,7 @@ END IF;
 ```
 
 2. **Rate limit impersonation starts** to prevent abuse:
+
 ```sql
 -- Check for too many recent sessions
 IF (SELECT COUNT(*) FROM impersonation_sessions
@@ -561,6 +594,7 @@ END IF;
 ```
 
 3. **Add IP/User-Agent logging** (partially implemented but not populated):
+
 ```typescript
 // In startImpersonation(), pass request context to RPC
 ```
@@ -631,6 +665,7 @@ ROLLBACK;
 ### Feature Flag Approach
 
 Add to `SuperAdminContext.tsx`:
+
 ```typescript
 const IMPERSONATION_ENABLED = import.meta.env.VITE_IMPERSONATION_ENABLED !== 'false';
 
@@ -648,6 +683,7 @@ if (!IMPERSONATION_ENABLED) {
 1. Set environment variable: `VITE_IMPERSONATION_ENABLED=false`
 2. Redeploy frontend
 3. Optionally, revoke RLS super admin policies:
+
 ```sql
 DROP POLICY "Super admins can view all sites" ON sites;
 -- etc.
@@ -656,6 +692,7 @@ DROP POLICY "Super admins can view all sites" ON sites;
 ### Data Cleanup
 
 If sessions become corrupted:
+
 ```sql
 -- End all active impersonation sessions
 UPDATE impersonation_sessions
@@ -691,19 +728,23 @@ WHERE status = 'active';
 ## 10. Summary
 
 ### Critical Fixes (Do First)
+
 1. Fix navigation race condition in `useImpersonateAndNavigate.ts`
 2. Synchronize sidebar `orgId` with effective identity
 
 ### Medium Priority
+
 3. Fix user count query to include profiles-only users
 4. Add user-org membership validation to `start_impersonation()`
 
 ### Low Priority (Hardening)
+
 5. Add impersonation state machine
 6. Add `RequireImpersonationGuard` to routes
 7. Implement rate limiting on impersonation
 
 ### Security Status
+
 - Core impersonation is **server-enforced** via RLS and RPC functions
 - Audit logging is **comprehensive**
 - Client-side race conditions cause **UX issues** but not security vulnerabilities
@@ -711,4 +752,4 @@ WHERE status = 'active';
 
 ---
 
-*Report generated by Claude Code Security Audit*
+_Report generated by Claude Code Security Audit_

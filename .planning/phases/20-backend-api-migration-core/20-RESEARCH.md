@@ -19,27 +19,31 @@ Key findings: (1) All four domains follow identical CRUD patterns with org-scope
 The established libraries/tools for this domain:
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| @trpc/server | ^11.8.1 | Backend tRPC router/procedures | Already installed in Phase 19, proven pattern |
-| @trpc/client | ^11.8.1 | Frontend tRPC client | Already installed in Phase 19, type-safe calls |
-| @trpc/tanstack-react-query | ^11.8.1 | React Query integration | Already installed in Phase 19, hook-based API |
+
+| Library                    | Version | Purpose                        | Why Standard                                   |
+| -------------------------- | ------- | ------------------------------ | ---------------------------------------------- |
+| @trpc/server               | ^11.8.1 | Backend tRPC router/procedures | Already installed in Phase 19, proven pattern  |
+| @trpc/client               | ^11.8.1 | Frontend tRPC client           | Already installed in Phase 19, type-safe calls |
+| @trpc/tanstack-react-query | ^11.8.1 | React Query integration        | Already installed in Phase 19, hook-based API  |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| zod | ^4.3.6 (backend) | Input/output validation | Reuse existing schemas from backend/src/schemas/ |
-| Drizzle ORM | Current | Database layer | Service layer uses Drizzle, routers call services |
-| Fastify Type Provider Zod | Current | REST route typing | Keep existing REST routes during migration |
+
+| Library                   | Version          | Purpose                 | When to Use                                       |
+| ------------------------- | ---------------- | ----------------------- | ------------------------------------------------- |
+| zod                       | ^4.3.6 (backend) | Input/output validation | Reuse existing schemas from backend/src/schemas/  |
+| Drizzle ORM               | Current          | Database layer          | Service layer uses Drizzle, routers call services |
+| Fastify Type Provider Zod | Current          | REST route typing       | Keep existing REST routes during migration        |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Direct tRPC hooks | API wrapper pattern | Phase 19 deprecated wrapper pattern - direct hooks are preferred |
-| Service layer reuse | Inline database queries | Services already tested and validated, no reason to duplicate |
-| Cold cutover | Parallel run | Context specifies cold cutover - no parallel run complexity needed |
+
+| Instead of          | Could Use               | Tradeoff                                                           |
+| ------------------- | ----------------------- | ------------------------------------------------------------------ |
+| Direct tRPC hooks   | API wrapper pattern     | Phase 19 deprecated wrapper pattern - direct hooks are preferred   |
+| Service layer reuse | Inline database queries | Services already tested and validated, no reason to duplicate      |
+| Cold cutover        | Parallel run            | Context specifies cold cutover - no parallel run complexity needed |
 
 **Installation:**
+
 ```bash
 # No new packages needed - Phase 19 installed all dependencies
 # Verify versions:
@@ -50,6 +54,7 @@ cd ../frontend && npm list @trpc/client @trpc/tanstack-react-query
 ## Architecture Patterns
 
 ### Recommended Project Structure
+
 ```
 backend/src/
 ├── trpc/                    # tRPC infrastructure (from Phase 19)
@@ -83,9 +88,11 @@ frontend/src/
 ```
 
 ### Pattern 1: Domain Router Creation (Sites Example)
+
 **What:** Create tRPC router that mirrors existing REST endpoints
 **When to use:** All four domain routers (sites, units, readings, alerts)
 **Example:**
+
 ```typescript
 // backend/src/routers/sites.router.ts
 // Based on: backend/src/routers/organizations.router.ts
@@ -136,10 +143,7 @@ export const sitesRouter = router({
     .input(SiteInput)
     .output(SiteSchema)
     .query(async ({ ctx, input }) => {
-      const site = await siteService.getSite(
-        input.siteId,
-        ctx.user.organizationId
-      );
+      const site = await siteService.getSite(input.siteId, ctx.user.organizationId);
       if (!site) {
         throw new TRPCError({
           code: 'NOT_FOUND',
@@ -175,11 +179,7 @@ export const sitesRouter = router({
           message: 'Admin role required to update sites',
         });
       }
-      const site = await siteService.updateSite(
-        input.siteId,
-        ctx.user.organizationId,
-        input.data
-      );
+      const site = await siteService.updateSite(input.siteId, ctx.user.organizationId, input.data);
       if (!site) {
         throw new TRPCError({
           code: 'NOT_FOUND',
@@ -200,10 +200,7 @@ export const sitesRouter = router({
           message: 'Admin role required to delete sites',
         });
       }
-      const site = await siteService.deleteSite(
-        input.siteId,
-        ctx.user.organizationId
-      );
+      const site = await siteService.deleteSite(input.siteId, ctx.user.organizationId);
       if (!site) {
         throw new TRPCError({
           code: 'NOT_FOUND',
@@ -215,9 +212,11 @@ export const sitesRouter = router({
 ```
 
 ### Pattern 2: Router Registration in App Router
+
 **What:** Add domain routers to appRouter in trpc/router.ts
 **When to use:** After creating each domain router
 **Example:**
+
 ```typescript
 // backend/src/trpc/router.ts
 import { router, publicProcedure } from './index.js';
@@ -233,19 +232,21 @@ export const appRouter = router({
     .query(() => ({ status: 'ok', timestamp: new Date().toISOString() })),
 
   organizations: organizationsRouter,
-  sites: sitesRouter,           // ADD
-  units: unitsRouter,           // ADD
-  readings: readingsRouter,     // ADD
-  alerts: alertsRouter,         // ADD
+  sites: sitesRouter, // ADD
+  units: unitsRouter, // ADD
+  readings: readingsRouter, // ADD
+  alerts: alertsRouter, // ADD
 });
 
 export type AppRouter = typeof appRouter;
 ```
 
 ### Pattern 3: Frontend Direct tRPC Hook Usage
+
 **What:** Replace API wrapper calls with direct tRPC hooks in components
 **When to use:** All component migrations (do NOT create new wrapper functions)
 **Example:**
+
 ```typescript
 // BEFORE (REST API wrapper):
 import { sitesApi } from '@/lib/api/sites';
@@ -259,7 +260,7 @@ function SitesList() {
   const { data: sites } = useQuery({
     queryKey: ['sites', orgId],
     queryFn: async () => {
-      const token = await user?.getAuthJson().then(j => j.accessToken);
+      const token = await user?.getAuthJson().then((j) => j.accessToken);
       return sitesApi.listSites(orgId, token);
     },
     enabled: !!orgId && !!user,
@@ -278,34 +279,38 @@ function SitesList() {
 
   const { data: sites } = trpc.sites.list.useQuery(
     { organizationId: orgId! },
-    { enabled: !!orgId }
+    { enabled: !!orgId },
   );
   // ...
 }
 ```
 
 ### Pattern 4: Nested Resource Routing (Units Example)
+
 **What:** Handle deeply nested resources (units under areas under sites) in tRPC
 **When to use:** Units domain which has nested REST path but flat tRPC namespace
 **Example:**
+
 ```typescript
 // REST: GET /api/orgs/:orgId/sites/:siteId/areas/:areaId/units
 // tRPC: units.list({ organizationId, areaId })
 
 export const unitsRouter = router({
   list: orgProcedure
-    .input(z.object({
-      organizationId: z.string().uuid(),
-      areaId: z.string().uuid(),
-      // Note: siteId validation happens in service layer via hierarchy check
-    }))
+    .input(
+      z.object({
+        organizationId: z.string().uuid(),
+        areaId: z.string().uuid(),
+        // Note: siteId validation happens in service layer via hierarchy check
+      }),
+    )
     .output(UnitsListSchema)
     .query(async ({ ctx, input }) => {
       // Service validates area belongs to org via site hierarchy
       const units = await unitService.listUnits(
         input.areaId,
         undefined, // siteId not needed - service validates via hierarchy
-        ctx.user.organizationId
+        ctx.user.organizationId,
       );
       if (units === null) {
         throw new TRPCError({
@@ -325,9 +330,11 @@ export const unitsRouter = router({
 ```
 
 ### Pattern 5: Query Parameters and Filters (Alerts/Readings Example)
+
 **What:** Convert REST query params to tRPC input schemas
 **When to use:** Alerts (status filters) and Readings (pagination, date range)
 **Example:**
+
 ```typescript
 // REST: GET /api/orgs/:orgId/alerts?status=pending&unitId=xyz&page=1&limit=50
 // tRPC: alerts.list({ organizationId, status: 'pending', unitId: 'xyz', page: 1, limit: 50 })
@@ -361,9 +368,11 @@ export const alertsRouter = router({
 ```
 
 ### Pattern 6: Test Migration Pattern
+
 **What:** Convert existing REST endpoint tests to tRPC router tests
 **When to use:** All domain router testing
 **Example:**
+
 ```typescript
 // Based on: backend/tests/trpc/organizations.router.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -408,9 +417,7 @@ describe('Sites tRPC Router', () => {
 
   it('should list sites for organization', async () => {
     const siteService = await import('../../src/services/site.service.js');
-    siteService.listSites.mockResolvedValue([
-      { id: 'site-1', name: 'Site 1', /* ... */ },
-    ]);
+    siteService.listSites.mockResolvedValue([{ id: 'site-1', name: 'Site 1' /* ... */ }]);
 
     const caller = createCaller(createTestContext());
     const result = await caller.list({ organizationId: 'org-123' });
@@ -429,7 +436,7 @@ describe('Sites tRPC Router', () => {
       caller.create({
         organizationId: 'org-123',
         data: { name: 'New Site', timezone: 'UTC' },
-      })
+      }),
     ).rejects.toMatchObject({
       code: 'FORBIDDEN',
       message: 'Admin role required to create sites',
@@ -439,6 +446,7 @@ describe('Sites tRPC Router', () => {
 ```
 
 ### Anti-Patterns to Avoid
+
 - **Creating API wrapper functions:** Phase 19 deprecated this pattern - use direct tRPC hooks
 - **Duplicating service logic in routers:** Routers call services, don't reimplement logic
 - **Forgetting organizationId in input:** orgProcedure middleware requires it
@@ -451,35 +459,39 @@ describe('Sites tRPC Router', () => {
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| API wrapper layer | New API client abstraction | Direct useTRPC() hooks | Phase 19 deprecated wrapper pattern, direct hooks are standard |
-| Input validation | Custom validators | Existing Zod schemas from backend/src/schemas/ | Already validated in REST routes, reuse |
-| Service layer changes | New database queries | Existing service methods | Services are tested and working, no changes needed |
-| Role checking | Custom auth logic | Copy from existing REST routes | REST routes have correct role requirements |
-| Query key management | Manual cache keys | tRPC automatic keys | tRPC generates optimal cache keys |
-| Error handling | Custom error types | TRPCError codes | Standard codes map to HTTP status correctly |
-| Nested resource validation | Complex input schemas | Service layer hierarchy checks | Services already validate site→area→unit hierarchy |
+| Problem                    | Don't Build                | Use Instead                                    | Why                                                            |
+| -------------------------- | -------------------------- | ---------------------------------------------- | -------------------------------------------------------------- |
+| API wrapper layer          | New API client abstraction | Direct useTRPC() hooks                         | Phase 19 deprecated wrapper pattern, direct hooks are standard |
+| Input validation           | Custom validators          | Existing Zod schemas from backend/src/schemas/ | Already validated in REST routes, reuse                        |
+| Service layer changes      | New database queries       | Existing service methods                       | Services are tested and working, no changes needed             |
+| Role checking              | Custom auth logic          | Copy from existing REST routes                 | REST routes have correct role requirements                     |
+| Query key management       | Manual cache keys          | tRPC automatic keys                            | tRPC generates optimal cache keys                              |
+| Error handling             | Custom error types         | TRPCError codes                                | Standard codes map to HTTP status correctly                    |
+| Nested resource validation | Complex input schemas      | Service layer hierarchy checks                 | Services already validate site→area→unit hierarchy             |
 
 **Key insight:** This phase is primarily plumbing work - connect existing services to tRPC procedures using patterns from Phase 19. Don't rebuild, reuse.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Inconsistent Role Requirements
+
 **What goes wrong:** tRPC procedure allows operation that REST route blocked, or vice versa
 **Why it happens:** Copying wrong role check or forgetting to check at all
 **How to avoid:**
+
 1. For each procedure, find equivalent REST route in backend/src/routes/
 2. Copy exact role requirements from requireRole() middleware
 3. Map: requireRole('admin') → check for ['admin', 'owner'].includes(ctx.user.role)
 4. Map: requireRole('manager') → check for ['manager', 'admin', 'owner'].includes(ctx.user.role)
 5. Map: requireRole('staff') → check for ['staff', 'manager', 'admin', 'owner'].includes(ctx.user.role)
-**Warning signs:** Security tests fail, users can perform operations they shouldn't
+   **Warning signs:** Security tests fail, users can perform operations they shouldn't
 
 ### Pitfall 2: Forgetting to Handle Service null Returns
+
 **What goes wrong:** Procedure returns null instead of throwing NOT_FOUND error
 **Why it happens:** Service layer returns null for not found, REST routes use notFound() helper
 **How to avoid:**
+
 ```typescript
 // Service returns: Promise<Site | null>
 const site = await siteService.getSite(input.siteId, ctx.user.organizationId);
@@ -488,12 +500,15 @@ if (!site) {
 }
 return site;
 ```
+
 **Warning signs:** Frontend receives null instead of error, error handling breaks
 
 ### Pitfall 3: Missing organizationId in Input Schema
+
 **What goes wrong:** orgProcedure middleware throws BAD_REQUEST "organizationId is required"
 **Why it happens:** Input schema doesn't include organizationId field
 **How to avoid:** ALL procedures using orgProcedure must have organizationId in input:
+
 ```typescript
 // WRONG:
 .input(z.object({ siteId: z.string().uuid() }))
@@ -504,40 +519,48 @@ return site;
   siteId: z.string().uuid()
 }))
 ```
+
 **Warning signs:** Runtime error on first procedure call, middleware validation fails
 
 ### Pitfall 4: Not Updating Frontend Import Paths
+
 **What goes wrong:** Components still import from old API wrappers instead of using tRPC
 **Why it happens:** Search/replace misses some files, or developer adds wrapper functions
 **How to avoid:**
+
 1. Grep for `from '@/lib/api/sites'` after migration
 2. Replace all with `from '@/lib/trpc'` and use useTRPC()
 3. Don't create new wrapper functions - Phase 19 established direct hook pattern
-**Warning signs:** TypeScript errors about missing exports, runtime errors about undefined functions
+   **Warning signs:** TypeScript errors about missing exports, runtime errors about undefined functions
 
 ### Pitfall 5: Deleting Service Layer Methods
+
 **What goes wrong:** Router tries to call service method that was removed
 **Why it happens:** Misunderstanding phase scope - services stay unchanged
 **How to avoid:** Phase 20 is router creation only - zero changes to:
-- backend/src/services/*.service.ts
+
+- backend/src/services/\*.service.ts
 - backend/src/db/
 - backend/src/schemas/ (except exports if needed)
-**Warning signs:** Build errors about missing service methods
+  **Warning signs:** Build errors about missing service methods
 
 ### Pitfall 6: Breaking Existing REST Routes
+
 **What goes wrong:** REST endpoints stop working during migration
 **Why it happens:** Accidentally modifying service signatures or breaking imports
 **How to avoid:**
+
 1. Keep backend/src/routes/ completely unchanged
 2. Run existing REST endpoint tests after each router creation
 3. Both REST and tRPC should work simultaneously
-**Warning signs:** Existing API calls fail, integration tests break
+   **Warning signs:** Existing API calls fail, integration tests break
 
 ## Code Examples
 
 Verified patterns from Phase 19 and existing codebase:
 
 ### Complete Domain Router (Alerts Example)
+
 ```typescript
 // backend/src/routers/alerts.router.ts
 import { z } from 'zod';
@@ -598,10 +621,7 @@ export const alertsRouter = router({
     .input(AlertInput)
     .output(AlertSchema)
     .query(async ({ ctx, input }) => {
-      const alert = await alertService.getAlert(
-        input.alertId,
-        ctx.user.organizationId
-      );
+      const alert = await alertService.getAlert(input.alertId, ctx.user.organizationId);
       if (!alert) {
         throw new TRPCError({
           code: 'NOT_FOUND',
@@ -628,7 +648,7 @@ export const alertsRouter = router({
         input.alertId,
         ctx.user.organizationId,
         ctx.user.profileId,
-        input.notes
+        input.notes,
       );
 
       if (result === null) {
@@ -665,7 +685,7 @@ export const alertsRouter = router({
         ctx.user.organizationId,
         ctx.user.profileId,
         input.resolution,
-        input.correctiveAction
+        input.correctiveAction,
       );
 
       if (!alert) {
@@ -681,6 +701,7 @@ export const alertsRouter = router({
 ```
 
 ### Frontend Component Migration (Before/After)
+
 ```typescript
 // BEFORE: Using REST API wrapper
 // src/components/SiteManagement.tsx
@@ -697,7 +718,7 @@ function SiteManagement() {
   const { data: sites, isLoading } = useQuery({
     queryKey: ['sites', orgId],
     queryFn: async () => {
-      const token = await user?.getAuthJson().then(j => j.accessToken);
+      const token = await user?.getAuthJson().then((j) => j.accessToken);
       return sitesApi.listSites(orgId!, token);
     },
     enabled: !!orgId && !!user,
@@ -706,7 +727,7 @@ function SiteManagement() {
   // Mutation
   const createSite = useMutation({
     mutationFn: async (data: CreateSiteRequest) => {
-      const token = await user?.getAuthJson().then(j => j.accessToken);
+      const token = await user?.getAuthJson().then((j) => j.accessToken);
       return sitesApi.createSite(orgId!, data, token);
     },
     onSuccess: () => {
@@ -730,7 +751,7 @@ function SiteManagement() {
   // Query - automatic caching and type safety
   const { data: sites, isLoading } = trpc.sites.list.useQuery(
     { organizationId: orgId! },
-    { enabled: !!orgId }
+    { enabled: !!orgId },
   );
 
   // Mutation - automatic invalidation via tRPC
@@ -749,6 +770,7 @@ function SiteManagement() {
 ```
 
 ### Readings Router with Pagination
+
 ```typescript
 // backend/src/routers/readings.router.ts
 import { z } from 'zod';
@@ -823,14 +845,15 @@ export const readingsRouter = router({
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| REST endpoints with Ky client | tRPC procedures with type-safe hooks | Phase 19 (2026-01) | Type safety across full stack |
-| Manual query key management | tRPC automatic query keys | Phase 19 (2026-01) | Simpler cache invalidation |
-| API wrapper functions | Direct useTRPC() hooks | Phase 19 (2026-01) | Less boilerplate, better DX |
-| Duplicate type definitions | Single source of truth from router | Phase 19 (2026-01) | No type drift between frontend/backend |
+| Old Approach                  | Current Approach                     | When Changed       | Impact                                 |
+| ----------------------------- | ------------------------------------ | ------------------ | -------------------------------------- |
+| REST endpoints with Ky client | tRPC procedures with type-safe hooks | Phase 19 (2026-01) | Type safety across full stack          |
+| Manual query key management   | tRPC automatic query keys            | Phase 19 (2026-01) | Simpler cache invalidation             |
+| API wrapper functions         | Direct useTRPC() hooks               | Phase 19 (2026-01) | Less boilerplate, better DX            |
+| Duplicate type definitions    | Single source of truth from router   | Phase 19 (2026-01) | No type drift between frontend/backend |
 
 **Deprecated/outdated:**
+
 - `src/lib/api/*.ts` wrapper pattern: Phase 19 deprecated this for direct tRPC hooks
 - Manual TanStack Query setup: tRPC integration handles it automatically
 - Separate type files: Types now inferred from AppRouter
@@ -862,6 +885,7 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Phase 19 Research Document - tRPC infrastructure patterns
 - `backend/src/routers/organizations.router.ts` - Template for domain routers
 - `backend/src/trpc/procedures.ts` - orgProcedure middleware pattern
@@ -878,17 +902,20 @@ Things that couldn't be fully resolved:
 - `backend/tests/trpc/organizations.router.test.ts` - Test pattern to follow
 
 ### Secondary (MEDIUM confidence)
+
 - [From REST to tRPC: Type-Safe APIs with Node.js](https://betterstack.com/community/guides/scaling-nodejs/trpc-explained/) - Migration guidance
 - [Building Type-Safe APIs with tRPC: A Practical Migration Guide from REST](https://dev.to/eva_clari_289d85ecc68da48/building-type-safe-apis-with-trpc-a-practical-migration-guide-from-rest-3l4j) - Migration patterns
 - [REST vs GraphQL vs tRPC: The Ultimate API Design Guide for 2026](https://dev.to/dataformathub/rest-vs-graphql-vs-trpc-the-ultimate-api-design-guide-for-2026-8n3) - When to use tRPC
 - [Mastering tRPC with React Server Components: The Definitive 2026 Guide](https://dev.to/christadrian/mastering-trpc-with-react-server-components-the-definitive-2026-guide-1i2e) - Modern patterns
 
 ### Tertiary (LOW confidence)
+
 - None - all research based on verified codebase patterns and official docs
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - All packages installed in Phase 19, no new dependencies
 - Architecture: HIGH - Organizations router provides complete template, service layer proven
 - Pitfalls: HIGH - Based on Phase 19 learnings and existing REST route patterns

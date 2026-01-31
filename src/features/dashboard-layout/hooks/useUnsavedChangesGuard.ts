@@ -1,15 +1,15 @@
 /**
  * Unsaved Changes Guard Hook
- * 
+ *
  * Prevents navigation when there are unsaved changes.
  * Shows a prompt with Save/Discard/Cancel options.
- * 
+ *
  * NOTE: useBlocker from react-router-dom requires a Data Router (createBrowserRouter).
  * Since this app uses BrowserRouter, we disable in-app navigation blocking.
  * Browser tab close/refresh protection still works via beforeunload.
  */
 
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState } from 'react';
 
 // ============================================================================
 // Types
@@ -35,15 +35,15 @@ export interface UnsavedChangesGuardResult {
 export function useUnsavedChangesGuard(
   isDirty: boolean,
   onSave: () => Promise<void>,
-  onDiscard: () => void
+  onDiscard: () => void,
 ): UnsavedChangesGuardResult {
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // NOTE: useBlocker requires Data Router (createBrowserRouter + RouterProvider).
   // This app uses BrowserRouter, so in-app navigation blocking is disabled.
   // Browser beforeunload protection still works below.
   // TODO: Migrate App.tsx to createBrowserRouter to re-enable useBlocker.
-  const blockerState = "unblocked" as const;
+  const blockerState = 'unblocked' as const;
 
   // Browser beforeunload handler for tab close/refresh
   useEffect(() => {
@@ -52,11 +52,11 @@ export function useUnsavedChangesGuard(
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
       // Modern browsers ignore custom messages, but we still need to set returnValue
-      return "You have unsaved changes. Are you sure you want to leave?";
+      return 'You have unsaved changes. Are you sure you want to leave?';
     };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty]);
 
   // Handle Save action (no-op since blocker is disabled)
@@ -66,7 +66,7 @@ export function useUnsavedChangesGuard(
       setIsSaving(true);
       await onSave();
     } catch (error) {
-      console.error("[UnsavedChangesGuard] Save failed:", error);
+      console.error('[UnsavedChangesGuard] Save failed:', error);
     } finally {
       setIsSaving(false);
     }

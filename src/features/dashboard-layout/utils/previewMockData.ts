@@ -1,65 +1,65 @@
 /**
  * Preview Mock Data Generator
- * 
+ *
  * Generates mock widget props for different preview modes,
  * allowing users to see how the dashboard looks in various data states.
  */
 
-import { subHours, subMinutes } from "date-fns";
-import type { PreviewMode } from "../types";
-import type { EntityDashboardProps } from "../components/EntityDashboard";
+import { subHours, subMinutes } from 'date-fns';
+import type { PreviewMode } from '../types';
+import type { EntityDashboardProps } from '../components/EntityDashboard';
 
 type WidgetPropsMap = Record<string, Record<string, unknown>>;
 
 /**
  * Generate mock sensor data for a given preview mode
  */
-function getMockSensor(mode: PreviewMode): EntityDashboardProps["sensor"] | undefined {
+function getMockSensor(mode: PreviewMode): EntityDashboardProps['sensor'] | undefined {
   const now = new Date();
 
   switch (mode) {
-    case "normal":
+    case 'normal':
       return {
-        id: "mock-sensor-1",
-        name: "Temperature Sensor",
+        id: 'mock-sensor-1',
+        name: 'Temperature Sensor',
         last_seen_at: subMinutes(now, 5).toISOString(),
         battery_level: 85,
         signal_strength: -65,
-        status: "online",
-        sensor_type: "temperature",
+        status: 'online',
+        sensor_type: 'temperature',
       };
 
-    case "no_data":
+    case 'no_data':
       return {
-        id: "mock-sensor-1",
-        name: "Temperature Sensor",
+        id: 'mock-sensor-1',
+        name: 'Temperature Sensor',
         last_seen_at: null,
         battery_level: null,
         signal_strength: null,
-        status: "pending",
-        sensor_type: "temperature",
+        status: 'pending',
+        sensor_type: 'temperature',
       };
 
-    case "offline":
+    case 'offline':
       return {
-        id: "mock-sensor-1",
-        name: "Temperature Sensor",
+        id: 'mock-sensor-1',
+        name: 'Temperature Sensor',
         last_seen_at: subHours(now, 2).toISOString(),
         battery_level: 45,
         signal_strength: -85,
-        status: "offline",
-        sensor_type: "temperature",
+        status: 'offline',
+        sensor_type: 'temperature',
       };
 
-    case "alerting":
+    case 'alerting':
       return {
-        id: "mock-sensor-1",
-        name: "Temperature Sensor",
+        id: 'mock-sensor-1',
+        name: 'Temperature Sensor',
         last_seen_at: subMinutes(now, 3).toISOString(),
         battery_level: 72,
         signal_strength: -70,
-        status: "online",
-        sensor_type: "temperature",
+        status: 'online',
+        sensor_type: 'temperature',
       };
 
     default:
@@ -70,11 +70,11 @@ function getMockSensor(mode: PreviewMode): EntityDashboardProps["sensor"] | unde
 /**
  * Generate mock readings for a given preview mode
  */
-function getMockReadings(mode: PreviewMode): EntityDashboardProps["readings"] {
+function getMockReadings(mode: PreviewMode): EntityDashboardProps['readings'] {
   const now = new Date();
 
   switch (mode) {
-    case "normal":
+    case 'normal':
       // Generate 24 hours of normal readings
       return Array.from({ length: 48 }, (_, i) => ({
         id: `reading-${i}`,
@@ -83,10 +83,10 @@ function getMockReadings(mode: PreviewMode): EntityDashboardProps["readings"] {
         recorded_at: subMinutes(now, i * 30).toISOString(),
       }));
 
-    case "no_data":
+    case 'no_data':
       return [];
 
-    case "offline":
+    case 'offline':
       // Old readings, nothing recent
       return Array.from({ length: 24 }, (_, i) => ({
         id: `reading-${i}`,
@@ -95,7 +95,7 @@ function getMockReadings(mode: PreviewMode): EntityDashboardProps["readings"] {
         recorded_at: subHours(now, 2 + i * 0.5).toISOString(),
       }));
 
-    case "alerting":
+    case 'alerting':
       // Recent readings showing temperature excursion
       return Array.from({ length: 24 }, (_, i) => ({
         id: `reading-${i}`,
@@ -112,38 +112,38 @@ function getMockReadings(mode: PreviewMode): EntityDashboardProps["readings"] {
 /**
  * Generate mock derived status for a given preview mode
  */
-function getMockDerivedStatus(mode: PreviewMode): EntityDashboardProps["derivedStatus"] {
+function getMockDerivedStatus(mode: PreviewMode): EntityDashboardProps['derivedStatus'] {
   switch (mode) {
-    case "normal":
+    case 'normal':
       return {
         isOnline: true,
-        statusLabel: "Normal",
-        statusColor: "text-safe",
-        statusBgColor: "bg-safe/10",
+        statusLabel: 'Normal',
+        statusColor: 'text-safe',
+        statusBgColor: 'bg-safe/10',
       };
 
-    case "no_data":
+    case 'no_data':
       return {
         isOnline: false,
-        statusLabel: "Awaiting Data",
-        statusColor: "text-muted-foreground",
-        statusBgColor: "bg-muted",
+        statusLabel: 'Awaiting Data',
+        statusColor: 'text-muted-foreground',
+        statusBgColor: 'bg-muted',
       };
 
-    case "offline":
+    case 'offline':
       return {
         isOnline: false,
-        statusLabel: "Offline",
-        statusColor: "text-warning",
-        statusBgColor: "bg-warning/10",
+        statusLabel: 'Offline',
+        statusColor: 'text-warning',
+        statusBgColor: 'bg-warning/10',
       };
 
-    case "alerting":
+    case 'alerting':
       return {
         isOnline: true,
-        statusLabel: "Temperature Alert",
-        statusColor: "text-alarm",
-        statusBgColor: "bg-alarm/10",
+        statusLabel: 'Temperature Alert',
+        statusColor: 'text-alarm',
+        statusBgColor: 'bg-alarm/10',
       };
 
     default:
@@ -154,16 +154,16 @@ function getMockDerivedStatus(mode: PreviewMode): EntityDashboardProps["derivedS
 /**
  * Generate mock alerts for a given preview mode
  */
-function getMockAlerts(mode: PreviewMode): EntityDashboardProps["alerts"] {
-  if (mode === "alerting") {
+function getMockAlerts(mode: PreviewMode): EntityDashboardProps['alerts'] {
+  if (mode === 'alerting') {
     return [
       {
-        id: "mock-alert-1",
-        type: "temperature_excursion",
-        severity: "critical" as const,
-        title: "High Temperature Alert",
-        message: "Temperature has exceeded the upper limit of 8°C",
-        clearCondition: "Temperature must return below 8°C for 15 minutes",
+        id: 'mock-alert-1',
+        type: 'temperature_excursion',
+        severity: 'critical' as const,
+        title: 'High Temperature Alert',
+        message: 'Temperature has exceeded the upper limit of 8°C',
+        clearCondition: 'Temperature must return below 8°C for 15 minutes',
       },
     ];
   }
@@ -175,13 +175,13 @@ function getMockAlerts(mode: PreviewMode): EntityDashboardProps["alerts"] {
  */
 function getMockUnit(
   mode: PreviewMode,
-  baseUnit?: EntityDashboardProps["unit"]
-): EntityDashboardProps["unit"] {
+  baseUnit?: EntityDashboardProps['unit'],
+): EntityDashboardProps['unit'] {
   const now = new Date();
   const base = baseUnit || {
-    id: "mock-unit-1",
-    name: "Walk-in Cooler",
-    unit_type: "cooler",
+    id: 'mock-unit-1',
+    name: 'Walk-in Cooler',
+    unit_type: 'cooler',
     temp_limit_high: 8,
     temp_limit_low: 0,
     last_temp_reading: null,
@@ -189,28 +189,28 @@ function getMockUnit(
   };
 
   switch (mode) {
-    case "normal":
+    case 'normal':
       return {
         ...base,
         last_temp_reading: 3.5,
         last_reading_at: subMinutes(now, 5).toISOString(),
       };
 
-    case "no_data":
+    case 'no_data':
       return {
         ...base,
         last_temp_reading: null,
         last_reading_at: null,
       };
 
-    case "offline":
+    case 'offline':
       return {
         ...base,
         last_temp_reading: 4.2,
         last_reading_at: subHours(now, 2).toISOString(),
       };
 
-    case "alerting":
+    case 'alerting':
       return {
         ...base,
         last_temp_reading: 9.5,
@@ -225,37 +225,37 @@ function getMockUnit(
 /**
  * Generate mock last known good data for a given preview mode
  */
-function getMockLastKnownGood(mode: PreviewMode): EntityDashboardProps["lastKnownGood"] {
+function getMockLastKnownGood(mode: PreviewMode): EntityDashboardProps['lastKnownGood'] {
   const now = new Date();
 
   switch (mode) {
-    case "normal":
+    case 'normal':
       return {
         temp: 3.5,
         at: subMinutes(now, 5).toISOString(),
-        source: "sensor" as const,
+        source: 'sensor' as const,
       };
 
-    case "no_data":
+    case 'no_data':
       return {
         temp: null,
         at: null,
         source: null,
       };
 
-    case "offline":
+    case 'offline':
       return {
         temp: 4.2,
         at: subHours(now, 2).toISOString(),
-        source: "sensor" as const,
+        source: 'sensor' as const,
       };
 
-    case "alerting":
+    case 'alerting':
       // Last known GOOD reading was before the alert
       return {
         temp: 4.0,
         at: subHours(now, 1).toISOString(),
-        source: "sensor" as const,
+        source: 'sensor' as const,
       };
 
     default:
@@ -269,10 +269,10 @@ function getMockLastKnownGood(mode: PreviewMode): EntityDashboardProps["lastKnow
 export function generatePreviewMockProps(
   mode: PreviewMode,
   realProps: WidgetPropsMap,
-  baseEntityProps: Partial<EntityDashboardProps>
+  baseEntityProps: Partial<EntityDashboardProps>,
 ): WidgetPropsMap {
   // If live mode, return real props unchanged
-  if (mode === "live") {
+  if (mode === 'live') {
     return realProps;
   }
 
@@ -286,7 +286,7 @@ export function generatePreviewMockProps(
 
   // Override props for each widget
   const mockProps: WidgetPropsMap = {};
-  
+
   for (const widgetId of Object.keys(realProps)) {
     mockProps[widgetId] = {
       ...realProps[widgetId],
@@ -310,17 +310,17 @@ export function generatePreviewMockProps(
  */
 export function getPreviewModeDescription(mode: PreviewMode): string {
   switch (mode) {
-    case "live":
-      return "Showing real sensor data";
-    case "normal":
-      return "Simulating healthy sensors with normal readings";
-    case "no_data":
-      return "Simulating a sensor that has never reported data";
-    case "offline":
-      return "Simulating a sensor that stopped reporting 2 hours ago";
-    case "alerting":
-      return "Simulating an active temperature excursion alert";
+    case 'live':
+      return 'Showing real sensor data';
+    case 'normal':
+      return 'Simulating healthy sensors with normal readings';
+    case 'no_data':
+      return 'Simulating a sensor that has never reported data';
+    case 'offline':
+      return 'Simulating a sensor that stopped reporting 2 hours ago';
+    case 'alerting':
+      return 'Simulating an active temperature excursion alert';
     default:
-      return "";
+      return '';
   }
 }

@@ -30,15 +30,15 @@ key-files:
     - backend/src/services/stripe-webhook.service.ts
 
 key-decisions:
-  - "METER-01: Use lazy-initialized Stripe client singleton for meter events"
-  - "METER-02: Return {success, error} object instead of throwing for meter operations"
-  - "WEBHOOK-01: Check stripeEvents table before processing any webhook"
-  - "WEBHOOK-02: Record processed events after successful handler completion"
+  - 'METER-01: Use lazy-initialized Stripe client singleton for meter events'
+  - 'METER-02: Return {success, error} object instead of throwing for meter operations'
+  - 'WEBHOOK-01: Check stripeEvents table before processing any webhook'
+  - 'WEBHOOK-02: Record processed events after successful handler completion'
 
 patterns-established:
-  - "Meter service uses same Stripe API version as webhook service (2025-12-15.clover)"
-  - "Values converted to whole number strings via Math.max(0, Math.floor(n)).toString()"
-  - "Webhook idempotency uses onConflictDoNothing for race condition safety"
+  - 'Meter service uses same Stripe API version as webhook service (2025-12-15.clover)'
+  - 'Values converted to whole number strings via Math.max(0, Math.floor(n)).toString()'
+  - 'Webhook idempotency uses onConflictDoNothing for race condition safety'
 
 # Metrics
 duration: 8min
@@ -101,5 +101,6 @@ None - no external service configuration required. Meters must be created in Str
 - Ready for meter reporting worker implementation
 
 ---
-*Phase: 18-stripe-billing*
-*Completed: 2026-01-24*
+
+_Phase: 18-stripe-billing_
+_Completed: 2026-01-24_

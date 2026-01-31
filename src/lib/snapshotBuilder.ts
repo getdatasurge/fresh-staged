@@ -133,7 +133,7 @@ function getEmailDomain(email?: string): string {
  * Check if a key is sensitive
  */
 function isSensitiveKey(key: string): boolean {
-  return SENSITIVE_PATTERNS.some(pattern => pattern.test(key));
+  return SENSITIVE_PATTERNS.some((pattern) => pattern.test(key));
 }
 
 /**
@@ -181,7 +181,7 @@ function redactUrl(url?: string): string {
   if (!url) return '';
   try {
     const parsed = new URL(url, window.location.origin);
-    SENSITIVE_URL_PARAMS.forEach(param => {
+    SENSITIVE_URL_PARAMS.forEach((param) => {
       if (parsed.searchParams.has(param)) {
         parsed.searchParams.set(param, '[REDACTED]');
       }
@@ -202,7 +202,9 @@ function redactLogEntry(entry: DebugLogEntry): RedactedLogEntry {
     level: entry.level,
     category: entry.category,
     message: entry.message,
-    payload: entry.payload ? redactValue('payload', entry.payload) as Record<string, unknown> : undefined,
+    payload: entry.payload
+      ? (redactValue('payload', entry.payload) as Record<string, unknown>)
+      : undefined,
   };
 }
 
@@ -211,8 +213,8 @@ function redactLogEntry(entry: DebugLogEntry): RedactedLogEntry {
  */
 function extractNetworkCalls(logs: DebugLogEntry[]): SnapshotNetworkCall[] {
   return logs
-    .filter(log => log.category === 'edge' || log.category === 'network')
-    .map(log => ({
+    .filter((log) => log.category === 'edge' || log.category === 'network')
+    .map((log) => ({
       function_name: (log.payload?.function as string) || log.message.split(' ')[0] || 'unknown',
       method: log.payload?.method as string,
       status: log.payload?.status as number,
@@ -226,7 +228,9 @@ function extractNetworkCalls(logs: DebugLogEntry[]): SnapshotNetworkCall[] {
 /**
  * Build a support snapshot
  */
-export async function buildSupportSnapshot(options: BuildSnapshotOptions): Promise<SupportSnapshot> {
+export async function buildSupportSnapshot(
+  options: BuildSnapshotOptions,
+): Promise<SupportSnapshot> {
   const {
     logs,
     focusEntry,
@@ -272,19 +276,21 @@ export async function buildSupportSnapshot(options: BuildSnapshotOptions): Promi
   };
 
   // Build domain section (extract from logs where possible)
-  const ttnLogs = logs.filter(l => l.category === 'ttn');
-  const syncLogs = logs.filter(l => l.category === 'sync');
-  
+  const ttnLogs = logs.filter((l) => l.category === 'ttn');
+  const syncLogs = logs.filter((l) => l.category === 'sync');
+
   const domain: SnapshotDomain = {
     ttn: {
       enabled: ttnLogs.length > 0,
-      application_id_present: ttnLogs.some(l => l.payload?.application_id),
+      application_id_present: ttnLogs.some((l) => l.payload?.application_id),
       api_key_last4: undefined, // Never expose even last4 in snapshot
     },
     sync: {
-      last_sync_version: syncLogs.length > 0 ? 
-        (syncLogs[syncLogs.length - 1]?.payload?.sync_version as number) : undefined,
-      is_dirty: syncLogs.some(l => l.payload?.is_dirty === true),
+      last_sync_version:
+        syncLogs.length > 0
+          ? (syncLogs[syncLogs.length - 1]?.payload?.sync_version as number)
+          : undefined,
+      is_dirty: syncLogs.some((l) => l.payload?.is_dirty === true),
     },
   };
 
@@ -295,17 +301,17 @@ export async function buildSupportSnapshot(options: BuildSnapshotOptions): Promi
     const windowMs = 30 * 1000; // 30 seconds
 
     const surroundingLogs = logs
-      .filter(log => {
+      .filter((log) => {
         const logTime = log.timestamp.getTime();
         return Math.abs(logTime - targetTime) <= windowMs && log.id !== focusEntry.id;
       })
       .map(redactLogEntry);
 
     const correlatedNetwork = extractNetworkCalls(
-      logs.filter(log => {
+      logs.filter((log) => {
         const logTime = log.timestamp.getTime();
         return Math.abs(logTime - targetTime) <= windowMs;
-      })
+      }),
     );
 
     focus = {
@@ -333,7 +339,7 @@ export function downloadSnapshot(snapshot: SupportSnapshot): void {
   const content = JSON.stringify(snapshot, null, 2);
   const blob = new Blob([content], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  
+
   const link = document.createElement('a');
   link.href = url;
   link.download = filename;

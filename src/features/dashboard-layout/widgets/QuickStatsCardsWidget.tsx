@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LayoutGrid } from "lucide-react";
-import type { WidgetProps } from "../types";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { LayoutGrid } from 'lucide-react';
+import type { WidgetProps } from '../types';
 
 export function QuickStatsCardsWidget({ site, totalUnits }: WidgetProps) {
   return (
@@ -12,7 +12,9 @@ export function QuickStatsCardsWidget({ site, totalUnits }: WidgetProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex items-center justify-center text-muted-foreground text-sm py-4">
-        {totalUnits !== undefined ? `${totalUnits} units monitored` : "Customizable KPIs coming soon"}
+        {totalUnits !== undefined
+          ? `${totalUnits} units monitored`
+          : 'Customizable KPIs coming soon'}
       </CardContent>
     </Card>
   );

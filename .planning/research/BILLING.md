@@ -19,6 +19,7 @@ The integration requires webhook handling with raw body support (critical for Fa
 ### Core Library
 
 **stripe-node v19.1.0** (Context7 verified)
+
 - HIGH confidence - Official Stripe Node.js library
 - Full TypeScript support with generated types
 - V2 API support for high-throughput metering
@@ -61,7 +62,8 @@ const customer = await stripe.customers.create({
 });
 
 // Store stripe_customer_id on organizations table
-await db.update(organizations)
+await db
+  .update(organizations)
   .set({ stripeCustomerId: customer.id })
   .where(eq(organizations.id, organization.id));
 ```
@@ -74,11 +76,11 @@ FreshTrack Pro should offer tiered pricing with usage-based components.
 
 **Recommended Plan Structure:**
 
-| Plan | Base Price | Included | Overage |
-|------|-----------|----------|---------|
-| Starter | $49/month | 5 sensors, 10K readings/mo | $10/sensor, $5/10K readings |
-| Professional | $149/month | 25 sensors, 100K readings/mo | $8/sensor, $4/10K readings |
-| Enterprise | $499/month | 100 sensors, 1M readings/mo | $6/sensor, $3/10K readings |
+| Plan         | Base Price | Included                     | Overage                     |
+| ------------ | ---------- | ---------------------------- | --------------------------- |
+| Starter      | $49/month  | 5 sensors, 10K readings/mo   | $10/sensor, $5/10K readings |
+| Professional | $149/month | 25 sensors, 100K readings/mo | $8/sensor, $4/10K readings  |
+| Enterprise   | $499/month | 100 sensors, 1M readings/mo  | $6/sensor, $3/10K readings  |
 
 **Implementation:**
 
@@ -134,7 +136,7 @@ const readingsOveragePrice = await stripe.prices.create({
   tiers_mode: 'graduated',
   tiers: [
     { up_to: 10000, unit_amount: 400 }, // $4 per 10K
-    { up_to: 'inf', unit_amount: 300 },  // $3 per 10K at volume
+    { up_to: 'inf', unit_amount: 300 }, // $3 per 10K at volume
   ],
   metadata: {
     metric: 'readings_overage',
@@ -200,6 +202,7 @@ const subscription = await stripe.subscriptions.create({
 ```
 
 **Sources:**
+
 - [Create Hosted Checkout Sessions - Context7](https://context7.com/stripe/stripe-node)
 - [Create and Manage Subscriptions - Context7](https://context7.com/stripe/stripe-node)
 
@@ -212,9 +215,7 @@ Handle plan changes with proration.
 const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
 // Find subscription item for base plan
-const baseItem = subscription.items.data.find(
-  item => item.price.metadata.metric === undefined
-);
+const baseItem = subscription.items.data.find((item) => item.price.metadata.metric === undefined);
 
 // Update to new plan
 const updated = await stripe.subscriptions.update(subscriptionId, {
@@ -307,56 +308,54 @@ Use session-based streaming for high throughput:
 let meterEventSession: Stripe.V2.Billing.MeterEventSession | null = null;
 
 async function refreshMeterEventSession() {
-  if (!meterEventSession ||
-      new Date(meterEventSession.expires_at) <= new Date()) {
+  if (!meterEventSession || new Date(meterEventSession.expires_at) <= new Date()) {
     meterEventSession = await stripe.v2.billing.meterEventSession.create();
   }
 }
 
 // Report sensor usage (called daily or on sensor activation)
-async function reportActiveSensors(
-  customerId: string,
-  sensorCount: number
-) {
+async function reportActiveSensors(customerId: string, sensorCount: number) {
   await refreshMeterEventSession();
 
   const streamClient = new Stripe(meterEventSession!.authentication_token);
   await streamClient.v2.billing.meterEventStream.create({
-    events: [{
-      event_name: 'active_sensors',
-      payload: {
-        stripe_customer_id: customerId,
-        value: sensorCount.toString(),
+    events: [
+      {
+        event_name: 'active_sensors',
+        payload: {
+          stripe_customer_id: customerId,
+          value: sensorCount.toString(),
+        },
+        identifier: `${Date.now()}-${Math.random()}`, // Unique ID
+        timestamp: new Date().toISOString(),
       },
-      identifier: `${Date.now()}-${Math.random()}`, // Unique ID
-      timestamp: new Date().toISOString(),
-    }],
+    ],
   });
 }
 
 // Report readings volume (called on each batch ingest)
-async function reportReadings(
-  customerId: string,
-  readingCount: number
-) {
+async function reportReadings(customerId: string, readingCount: number) {
   await refreshMeterEventSession();
 
   const streamClient = new Stripe(meterEventSession!.authentication_token);
   await streamClient.v2.billing.meterEventStream.create({
-    events: [{
-      event_name: 'temperature_readings',
-      payload: {
-        stripe_customer_id: customerId,
-        value: readingCount.toString(),
+    events: [
+      {
+        event_name: 'temperature_readings',
+        payload: {
+          stripe_customer_id: customerId,
+          value: readingCount.toString(),
+        },
+        identifier: `${Date.now()}-${Math.random()}`,
+        timestamp: new Date().toISOString(),
       },
-      identifier: `${Date.now()}-${Math.random()}`,
-      timestamp: new Date().toISOString(),
-    }],
+    ],
   });
 }
 ```
 
 **Sources:**
+
 - [Stream Metered Billing Events via V2 API - Context7](https://context7.com/stripe/stripe-node)
 - [POST /v2/billing/meter_event_stream - Context7](https://context7.com/stripe/stripe-node)
 
@@ -386,25 +385,14 @@ async function dailySensorCountReport() {
     const activeSensors = await db
       .select({ count: count() })
       .from(units)
-      .where(
-        and(
-          eq(units.organizationId, org.id),
-          eq(units.isActive, true)
-        )
-      );
+      .where(and(eq(units.organizationId, org.id), eq(units.isActive, true)));
 
-    await reportActiveSensors(
-      org.stripeCustomerId!,
-      activeSensors[0].count
-    );
+    await reportActiveSensors(org.stripeCustomerId!, activeSensors[0].count);
   }
 }
 
 // After each bulk reading ingestion
-async function afterReadingsIngested(
-  organizationId: string,
-  batchSize: number
-) {
+async function afterReadingsIngested(organizationId: string, batchSize: number) {
   const org = await db.query.organizations.findFirst({
     where: eq(organizations.id, organizationId),
   });
@@ -416,12 +404,14 @@ async function afterReadingsIngested(
 ```
 
 **Best Practices:**
+
 - Store metering events locally for audit trail
 - Include `identifier` for idempotency (prevents double-billing on retries)
 - Use dimensions for granular analytics if needed (region, sensor type, etc.)
 - Monitor for metering failures and implement retry logic
 
 **Sources:**
+
 - [Usage metering: A guide for businesses](https://stripe.com/resources/more/usage-metering)
 - [Record usage for billing - Stripe Documentation](https://docs.stripe.com/billing/subscriptions/usage-based/recording-usage)
 
@@ -444,7 +434,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export default async function webhookRoutes(app: FastifyInstance) {
-  app.post('/webhooks/stripe',
+  app.post(
+    '/webhooks/stripe',
     {
       rawBody: true, // CRITICAL: Access raw body for signature verification
     },
@@ -463,7 +454,7 @@ export default async function webhookRoutes(app: FastifyInstance) {
           request.rawBody as Buffer, // Raw buffer
           sig,
           webhookSecret,
-          300 // tolerance in seconds
+          300, // tolerance in seconds
         );
       } catch (err) {
         const error = err as Error;
@@ -475,7 +466,7 @@ export default async function webhookRoutes(app: FastifyInstance) {
       await handleWebhookEvent(event);
 
       return reply.send({ received: true });
-    }
+    },
   );
 }
 ```
@@ -497,6 +488,7 @@ app.register(rawBody, {
 ```
 
 **Sources:**
+
 - [Issues creating Stripe webhooks - Fastify GitHub](https://github.com/fastify/help/issues/158)
 - [Documentation and example of webhook signature check - Fastify GitHub](https://github.com/fastify/fastify/issues/5491)
 - [Validating Stripe Webhooks using Fastify - Medium](https://voxelcoder.medium.com/validating-stripe-webhooks-using-fastify-passport-and-nestjs-b7cbf702b132)
@@ -565,17 +557,18 @@ async function handleWebhookEvent(event: Stripe.Event) {
 
 **Key Events for FreshTrack Pro:**
 
-| Event | When Fired | Action Required |
-|-------|-----------|-----------------|
-| `customer.subscription.created` | New subscription starts | Update local subscription status, provision access |
-| `customer.subscription.updated` | Plan change, cancellation scheduled | Update plan tier, handle cancellation flag |
-| `customer.subscription.deleted` | Subscription ends | Revoke access, archive data |
-| `customer.subscription.trial_will_end` | 3 days before trial ends | Send reminder email, verify payment method |
-| `invoice.paid` | Payment successful | Extend subscription period, send receipt |
-| `invoice.payment_failed` | Payment failed | Notify customer, trigger Smart Retries |
-| `invoice.payment_action_required` | 3DS authentication needed | Send authentication link to customer |
+| Event                                  | When Fired                          | Action Required                                    |
+| -------------------------------------- | ----------------------------------- | -------------------------------------------------- |
+| `customer.subscription.created`        | New subscription starts             | Update local subscription status, provision access |
+| `customer.subscription.updated`        | Plan change, cancellation scheduled | Update plan tier, handle cancellation flag         |
+| `customer.subscription.deleted`        | Subscription ends                   | Revoke access, archive data                        |
+| `customer.subscription.trial_will_end` | 3 days before trial ends            | Send reminder email, verify payment method         |
+| `invoice.paid`                         | Payment successful                  | Extend subscription period, send receipt           |
+| `invoice.payment_failed`               | Payment failed                      | Notify customer, trigger Smart Retries             |
+| `invoice.payment_action_required`      | 3DS authentication needed           | Send authentication link to customer               |
 
 **Sources:**
+
 - [Webhook Events for Subscription Lifecycle Management - Stripe Documentation](https://docs.stripe.com/billing/subscriptions/webhooks)
 - [Verify Webhook Signatures and Handle Events - Context7](https://context7.com/stripe/stripe-node)
 
@@ -607,6 +600,7 @@ webhookQueue.process('stripe-webhook', async (job) => {
 ```
 
 **Why this matters:**
+
 - Prevents webhook timeouts (Stripe expects response < 5s)
 - Enables retry logic for failed processing
 - Handles concurrent events safely
@@ -620,6 +614,7 @@ webhookQueue.process('stripe-webhook', async (job) => {
 Stripe Customer Portal provides self-service billing management without building custom UI.
 
 **Features:**
+
 - Update payment methods
 - View billing history and invoices
 - Upgrade/downgrade subscriptions
@@ -632,6 +627,7 @@ Stripe Customer Portal provides self-service billing management without building
 Configure portal in Stripe Dashboard or via API:
 
 **Dashboard Configuration:**
+
 1. Go to Settings > Customer Portal
 2. Enable features:
    - ✅ Update payment methods
@@ -644,10 +640,12 @@ Configure portal in Stripe Dashboard or via API:
    - Allow cancellation at period end or immediately
 
 **Product Catalog:**
+
 - Define which plans customers can upgrade/downgrade to
 - FreshTrack Pro example: Allow Professional ↔ Enterprise, block downgrades to Starter
 
 **Sources:**
+
 - [Configure the customer portal - Stripe Documentation](https://docs.stripe.com/customer-management/configure-portal)
 - [Customer self-service with a customer portal - Stripe Documentation](https://docs.stripe.com/customer-management)
 
@@ -657,7 +655,8 @@ Generate one-time access links:
 
 ```typescript
 // API route: POST /api/billing/portal
-app.post('/api/billing/portal',
+app.post(
+  '/api/billing/portal',
   { preHandler: [requireAuth, requireOrgContext] },
   async (request, reply) => {
     const org = await db.query.organizations.findFirst({
@@ -666,7 +665,7 @@ app.post('/api/billing/portal',
 
     if (!org?.stripeCustomerId) {
       return reply.status(400).send({
-        error: 'No billing account found'
+        error: 'No billing account found',
       });
     }
 
@@ -676,7 +675,7 @@ app.post('/api/billing/portal',
     });
 
     return { url: session.url };
-  }
+  },
 );
 ```
 
@@ -700,16 +699,17 @@ async function openBillingPortal() {
 
 ### Custom vs. Portal Trade-offs
 
-| Aspect | Stripe Portal | Custom UI |
-|--------|--------------|-----------|
-| **Development Time** | Minutes | Weeks |
-| **Maintenance** | None (Stripe handles) | Ongoing |
-| **Customization** | Limited (branding + config) | Full control |
-| **Mobile Support** | Built-in responsive | You build |
-| **Compliance** | PCI handled by Stripe | Your responsibility |
-| **Features** | Standard billing tasks | Any custom flow |
+| Aspect               | Stripe Portal               | Custom UI           |
+| -------------------- | --------------------------- | ------------------- |
+| **Development Time** | Minutes                     | Weeks               |
+| **Maintenance**      | None (Stripe handles)       | Ongoing             |
+| **Customization**    | Limited (branding + config) | Full control        |
+| **Mobile Support**   | Built-in responsive         | You build           |
+| **Compliance**       | PCI handled by Stripe       | Your responsibility |
+| **Features**         | Standard billing tasks      | Any custom flow     |
 
 **Recommendation for FreshTrack Pro:**
+
 - **Use Stripe Portal for v2.0** - Faster time to market, covers 90% of use cases
 - **Consider custom UI in v3.0+** - If you need:
   - Custom plan recommendation logic
@@ -727,14 +727,7 @@ While Stripe is the source of truth, store critical billing state locally for pe
 
 ```typescript
 // backend/src/db/schema/billing.ts
-import {
-  pgTable,
-  text,
-  timestamp,
-  integer,
-  jsonb,
-  pgEnum
-} from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, integer, jsonb, pgEnum } from 'drizzle-orm/pg-core';
 import { organizations } from './tenancy.js';
 
 // Subscription status enum
@@ -797,7 +790,9 @@ export const subscriptions = pgTable('subscriptions', {
 
 // Usage records table (for audit trail)
 export const usageRecords = pgTable('usage_records', {
-  id: text('id').primaryKey().default(sql`gen_random_uuid()`),
+  id: text('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   subscriptionId: text('subscription_id')
     .notNull()
     .references(() => subscriptions.id, { onDelete: 'cascade' }),
@@ -818,8 +813,9 @@ export const usageRecords = pgTable('usage_records', {
 // Invoices table (cache for quick access)
 export const invoices = pgTable('invoices', {
   id: text('id').primaryKey(), // Stripe invoice ID
-  subscriptionId: text('subscription_id')
-    .references(() => subscriptions.id, { onDelete: 'set null' }),
+  subscriptionId: text('subscription_id').references(() => subscriptions.id, {
+    onDelete: 'set null',
+  }),
   stripeCustomerId: text('stripe_customer_id').notNull(),
 
   // Invoice details
@@ -851,11 +847,10 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   const metadata = subscription.metadata;
 
   // Extract plan details from price metadata
-  const baseItem = subscription.items.data.find(
-    item => item.price.metadata.metric === undefined
-  );
+  const baseItem = subscription.items.data.find((item) => item.price.metadata.metric === undefined);
 
-  await db.insert(subscriptions)
+  await db
+    .insert(subscriptions)
     .values({
       id: subscription.id,
       organizationId: metadata.organization_id,
@@ -864,16 +859,10 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       status: subscription.status,
       currentPeriodStart: new Date(subscription.current_period_start * 1000),
       currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      trialStart: subscription.trial_start
-        ? new Date(subscription.trial_start * 1000)
-        : null,
-      trialEnd: subscription.trial_end
-        ? new Date(subscription.trial_end * 1000)
-        : null,
+      trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
+      trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      canceledAt: subscription.canceled_at
-        ? new Date(subscription.canceled_at * 1000)
-        : null,
+      canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
       basePriceId: baseItem!.price.id,
       currency: subscription.currency,
       includedSensors: parseInt(baseItem!.price.metadata.included_sensors),
@@ -895,6 +884,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 ```
 
 **Best Practices:**
+
 - Use Stripe IDs as primary keys (easier correlation)
 - Store full Stripe object in JSONB for debugging
 - Keep status in sync via webhooks
@@ -902,6 +892,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 - Never modify billing state directly - always via Stripe API + webhook sync
 
 **Sources:**
+
 - [A database model for SaaS subscriptions in Postgres](https://axellarsson.com/blog/modeling-saas-subscriptions-in-postgres/)
 - [Suggested database architecture for SaaS with Stripe - Indie Hackers](https://www.indiehackers.com/post/suggested-database-architecture-for-my-first-saas-with-stripe-7b6ff9927f)
 - [Best practices for SaaS billing - Stripe](https://stripe.com/resources/more/best-practices-for-saas-billing)
@@ -974,6 +965,7 @@ stripe trigger payment_intent.succeeded
 ```
 
 **Sources:**
+
 - [Test a webhooks integration with the Stripe CLI](https://docs.stripe.com/webhooks/test)
 - [Stripe - Setting up Webhook - Ultimate Member](https://docs.ultimatemember.com/article/1607-stripe-setting-up-webhook-and-test-public-keys)
 
@@ -1003,7 +995,7 @@ const subscription = await stripe.subscriptions.create({
 
 // Advance time by 14 days (trial end)
 await stripe.testHelpers.testClocks.advance(testClock.id, {
-  frozen_time: testClock.frozen_time + (14 * 24 * 60 * 60),
+  frozen_time: testClock.frozen_time + 14 * 24 * 60 * 60,
 });
 
 // Subscription will transition to active, webhooks fire
@@ -1011,13 +1003,14 @@ await stripe.testHelpers.testClocks.advance(testClock.id, {
 
 // Advance to end of billing period
 await stripe.testHelpers.testClocks.advance(testClock.id, {
-  frozen_time: testClock.frozen_time + (365 * 24 * 60 * 60),
+  frozen_time: testClock.frozen_time + 365 * 24 * 60 * 60,
 });
 
 // Renewal invoice created, payment attempted
 ```
 
 **Key Benefits:**
+
 - Test annual renewals without waiting a year
 - Test trial → active → renewal lifecycle
 - Test payment failures at specific points
@@ -1025,6 +1018,7 @@ await stripe.testHelpers.testClocks.advance(testClock.id, {
 - Webhooks fire as if time actually passed
 
 **Sources:**
+
 - [Test your integration with test clocks - Stripe Documentation](https://docs.stripe.com/billing/testing/test-clocks)
 - [Test clocks: How we made it easier to test Stripe Billing integrations](https://stripe.com/blog/test-clocks-how-we-made-it-easier-to-test-stripe-billing-integrations)
 
@@ -1069,7 +1063,7 @@ describe('Subscription Lifecycle', () => {
 
     // Advance to end of trial
     await stripe.testHelpers.testClocks.advance(testClock.id, {
-      frozen_time: testClock.frozen_time + (14 * 24 * 60 * 60),
+      frozen_time: testClock.frozen_time + 14 * 24 * 60 * 60,
     });
 
     // Fetch updated subscription
@@ -1120,11 +1114,7 @@ describe('Webhook Handling', () => {
       secret: WEBHOOK_SECRET,
     });
 
-    const event = stripe.webhooks.constructEvent(
-      payload,
-      header,
-      WEBHOOK_SECRET
-    );
+    const event = stripe.webhooks.constructEvent(payload, header, WEBHOOK_SECRET);
 
     expect(event.type).toBe('customer.subscription.created');
   });
@@ -1133,17 +1123,14 @@ describe('Webhook Handling', () => {
     const payload = JSON.stringify({ id: 'evt_test' });
 
     expect(() => {
-      stripe.webhooks.constructEvent(
-        payload,
-        'invalid_signature',
-        WEBHOOK_SECRET
-      );
+      stripe.webhooks.constructEvent(payload, 'invalid_signature', WEBHOOK_SECRET);
     }).toThrow('No signatures found');
   });
 });
 ```
 
 **Sources:**
+
 - [Generate Test Webhook Signatures - Context7](https://context7.com/stripe/stripe-node)
 - [Testing Stripe Billing - Stripe Documentation](https://docs.stripe.com/billing/testing)
 
@@ -1157,15 +1144,17 @@ describe('Usage Metering', () => {
     const streamClient = new Stripe(session.authentication_token);
 
     const result = await streamClient.v2.billing.meterEventStream.create({
-      events: [{
-        event_name: 'active_sensors',
-        payload: {
-          stripe_customer_id: customer.id,
-          value: '10',
+      events: [
+        {
+          event_name: 'active_sensors',
+          payload: {
+            stripe_customer_id: customer.id,
+            value: '10',
+          },
+          identifier: `test-${Date.now()}`,
+          timestamp: new Date().toISOString(),
         },
-        identifier: `test-${Date.now()}`,
-        timestamp: new Date().toISOString(),
-      }],
+      ],
     });
 
     expect(result.events_processed).toBe(1);
@@ -1231,6 +1220,7 @@ export const TEST_FIXTURES = {
 Each FreshTrack Pro organization = 1 Stripe Customer.
 
 **Mapping:**
+
 ```
 Organization (FreshTrack) ←→ Customer (Stripe)
    └── Subscription ←→ Subscription (Stripe)
@@ -1238,6 +1228,7 @@ Organization (FreshTrack) ←→ Customer (Stripe)
 ```
 
 **Implications:**
+
 - Organization owner manages billing
 - All users in org share subscription benefits
 - Usage metering aggregated per organization
@@ -1247,10 +1238,7 @@ Organization (FreshTrack) ←→ Customer (Stripe)
 
 ```typescript
 // When organization owner changes
-async function transferOwnership(
-  organizationId: string,
-  newOwnerId: string
-) {
+async function transferOwnership(organizationId: string, newOwnerId: string) {
   const org = await db.query.organizations.findFirst({
     where: eq(organizations.id, organizationId),
   });
@@ -1271,7 +1259,8 @@ async function transferOwnership(
   }
 
   // Update local organization
-  await db.update(organizations)
+  await db
+    .update(organizations)
     .set({ ownerId: newOwnerId })
     .where(eq(organizations.id, organizationId));
 }
@@ -1281,10 +1270,7 @@ async function transferOwnership(
 
 ```typescript
 // Middleware to check sensor limit
-async function enforceSensorLimit(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
+async function enforceSensorLimit(request: FastifyRequest, reply: FastifyReply) {
   const orgId = request.user!.organizationId;
 
   const subscription = await db.query.subscriptions.findFirst({
@@ -1300,12 +1286,7 @@ async function enforceSensorLimit(
   const activeSensors = await db
     .select({ count: count() })
     .from(units)
-    .where(
-      and(
-        eq(units.organizationId, orgId),
-        eq(units.isActive, true)
-      )
-    );
+    .where(and(eq(units.organizationId, orgId), eq(units.isActive, true)));
 
   if (activeSensors[0].count >= subscription.includedSensors) {
     // Check if overage is allowed (based on plan)
@@ -1322,14 +1303,19 @@ async function enforceSensorLimit(
 }
 
 // Apply to sensor creation endpoint
-app.post('/api/orgs/:organizationId/sensors', {
-  preHandler: [requireAuth, requireOrgContext, enforceSensorLimit],
-}, async (request, reply) => {
-  // Create sensor...
-});
+app.post(
+  '/api/orgs/:organizationId/sensors',
+  {
+    preHandler: [requireAuth, requireOrgContext, enforceSensorLimit],
+  },
+  async (request, reply) => {
+    // Create sensor...
+  },
+);
 ```
 
 **Sources:**
+
 - [Best practices for SaaS billing - Stripe](https://stripe.com/resources/more/best-practices-for-saas-billing)
 - [Multi-tenant SaaS model with PostgreSQL - Checkly](https://www.checklyhq.com/blog/building-a-multi-tenant-saas-data-model/)
 
@@ -1338,6 +1324,7 @@ app.post('/api/orgs/:organizationId/sensors', {
 ### Phase 1: Foundation (Week 1)
 
 1. **Install Dependencies**
+
    ```bash
    npm install stripe
    ```
@@ -1447,6 +1434,7 @@ app.post('/api/orgs/:organizationId/sensors', {
 **Pitfall:** Body parsing breaks signature verification.
 
 **Mitigation:**
+
 - Use Fastify's `rawBody: true` option
 - Never process unsigned webhooks
 - Log all verification failures
@@ -1458,6 +1446,7 @@ app.post('/api/orgs/:organizationId/sensors', {
 **Pitfall:** Webhooks can arrive out of order or simultaneously.
 
 **Mitigation:**
+
 - Use event timestamps to determine order
 - Implement idempotent handlers (check before update)
 - Use database transactions
@@ -1470,6 +1459,7 @@ app.post('/api/orgs/:organizationId/sensors', {
 **Pitfall:** Missed or duplicated metering events.
 
 **Mitigation:**
+
 - Use unique `identifier` field for idempotency
 - Store local audit trail of sent events
 - Implement retry logic with same identifier
@@ -1482,6 +1472,7 @@ app.post('/api/orgs/:organizationId/sensors', {
 **Pitfall:** Plan limits in code become stale as pricing changes.
 
 **Mitigation:**
+
 - Store limits in Stripe price metadata
 - Fetch limits from subscription object
 - Cache locally in subscriptions table
@@ -1492,6 +1483,7 @@ app.post('/api/orgs/:organizationId/sensors', {
 **Pitfall:** Accidentally charging real customers during testing.
 
 **Mitigation:**
+
 - Strict key separation (test vs live)
 - Environment-based configuration
 - Never commit API keys to git
@@ -1504,12 +1496,14 @@ app.post('/api/orgs/:organizationId/sensors', {
 **Pitfall:** Immediately revoking access on first payment failure.
 
 **Mitigation:**
+
 - Enable Smart Retries (8 retries over 2 weeks)
 - Maintain access during retry period
 - Send payment update reminders
 - Gracefully degrade service (read-only mode) before hard cutoff
 
 **Sources:**
+
 - [Best practices for SaaS billing - Stripe](https://stripe.com/resources/more/best-practices-for-saas-billing)
 - [Usage metering: A guide for businesses - Stripe](https://stripe.com/resources/more/usage-metering)
 
@@ -1518,6 +1512,7 @@ app.post('/api/orgs/:organizationId/sensors', {
 **Pitfall:** Users surprised by charges after trial.
 
 **Mitigation:**
+
 - Send reminder 3 days before trial ends (webhook: `customer.subscription.trial_will_end`)
 - Verify payment method exists before trial ends
 - Offer option to cancel before charge
@@ -1545,6 +1540,7 @@ Implementing SaaS billing with Stripe for FreshTrack Pro requires:
 ## Additional Resources
 
 ### Official Stripe Documentation
+
 - [SaaS Integrations Guide](https://docs.stripe.com/saas)
 - [Build a subscriptions integration](https://stripe.com/docs/billing/subscriptions/build-subscriptions)
 - [Usage-based billing implementation guide](https://docs.stripe.com/billing/subscriptions/usage-based/implementation-guide)
@@ -1552,10 +1548,12 @@ Implementing SaaS billing with Stripe for FreshTrack Pro requires:
 - [Customer Portal documentation](https://docs.stripe.com/customer-management)
 
 ### Community Resources
+
 - [Stripe Node GitHub](https://github.com/stripe/stripe-node)
 - [Migration guide for v18](https://github.com/stripe/stripe-node/wiki/Migration-guide-for-v18)
 
 ### Architecture Patterns
+
 - [A database model for SaaS subscriptions in Postgres](https://axellarsson.com/blog/modeling-saas-subscriptions-in-postgres/)
 - [Designing your SaaS Database for Scale with Postgres](https://www.citusdata.com/blog/2016/10/03/designing-your-saas-database-for-high-scalability/)
 

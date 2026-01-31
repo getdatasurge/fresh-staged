@@ -18,7 +18,7 @@ affects: [33-error-handling-ui]
 tech-stack:
   added: []
   patterns:
-    - "Diagnose procedure pattern with checks array and success/hint structure"
+    - 'Diagnose procedure pattern with checks array and success/hint structure'
 
 key-files:
   created: []
@@ -32,11 +32,11 @@ key-files:
     - src/components/debug/EdgeFunctionDiagnostics.tsx
 
 key-decisions:
-  - "Keep SensorSimulatorPanel edge function as-is - admin-only dev tool"
-  - "Map tRPC diagnose response to existing TtnDiagnoseResult format for modal compatibility"
+  - 'Keep SensorSimulatorPanel edge function as-is - admin-only dev tool'
+  - 'Map tRPC diagnose response to existing TtnDiagnoseResult format for modal compatibility'
 
 patterns-established:
-  - "Diagnose pattern: checks array with name/passed/message structure"
+  - 'Diagnose pattern: checks array with name/passed/message structure'
 
 # Metrics
 duration: 4min
@@ -56,6 +56,7 @@ completed: 2026-01-29
 - **Files modified:** 5 (1 deleted)
 
 ## Accomplishments
+
 - Added `ttnDevices.diagnose` procedure to check TTN configuration status (connection, app ID, credentials)
 - Migrated SensorManager from edge function to tRPC for diagnose operation
 - Deleted EdgeFunctionDiagnostics.tsx - dead code that checked health of removed edge functions
@@ -69,6 +70,7 @@ Each task was committed atomically:
 2. **Task 2: Migrate SensorManager and clean up dead code** - `45497a1` (feat)
 
 ## Files Created/Modified
+
 - `backend/src/routers/ttn-devices.router.ts` - Added diagnose procedure with checks for TTN config, app ID, and credentials
 - `src/components/settings/SensorManager.tsx` - Replaced supabase.functions.invoke with ttnDevices.diagnose tRPC call
 - `src/pages/Settings.tsx` - Removed EdgeFunctionDiagnostics import and usage
@@ -77,6 +79,7 @@ Each task was committed atomically:
 - `src/components/debug/EdgeFunctionDiagnostics.tsx` - DELETED (dead code)
 
 ## Decisions Made
+
 - **Keep SensorSimulatorPanel edge function:** The sensor-simulator edge function still exists and works. It's an admin-only dev tool for testing, so migration to tRPC is not required for internal tooling.
 - **Map tRPC response format:** The tRPC diagnose procedure returns a simpler check format than the original edge function. The SensorManager maps this to the existing TtnDiagnoseResult format for modal compatibility.
 
@@ -94,10 +97,12 @@ None - plan executed exactly as written.
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - All 3 remaining edge function calls handled (SensorManager migrated, EdgeFunctionDiagnostics deleted, SensorSimulatorPanel kept with comment)
 - Phase 32 is complete - ready for Phase 33 (Error Handling UI Integration)
 - No blockers
 
 ---
-*Phase: 32-remaining-edge-function-migration*
-*Completed: 2026-01-29*
+
+_Phase: 32-remaining-edge-function-migration_
+_Completed: 2026-01-29_

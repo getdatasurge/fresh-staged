@@ -5,12 +5,12 @@
  *
  * Current status: Stack Auth for identity, Supabase for data (Phase 5)
  */
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUser } from "@stackframe/react";
-import { LoraSensor, LoraSensorType } from "@/types/ttn";
-import { toast } from "sonner";
-import { qk } from "@/lib/queryKeys";
-import { invalidateSensorAssignment } from "@/lib/invalidation";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useUser } from '@stackframe/react';
+import { LoraSensor, LoraSensorType } from '@/types/ttn';
+import { toast } from 'sonner';
+import { qk } from '@/lib/queryKeys';
+import { invalidateSensorAssignment } from '@/lib/invalidation';
 
 /**
  * Get sensor types in the same "primary group" for mutual exclusivity
@@ -47,12 +47,7 @@ export function useSetPrimarySensor() {
     },
     onSuccess: async (data) => {
       // Use centralized invalidation for sensor assignment changes
-      await invalidateSensorAssignment(
-        queryClient,
-        data.id,
-        data.organization_id,
-        data.unit_id
-      );
+      await invalidateSensorAssignment(queryClient, data.id, data.organization_id, data.unit_id);
       toast.success(`${data.name} set as primary sensor`);
     },
     onError: (error: Error) => {

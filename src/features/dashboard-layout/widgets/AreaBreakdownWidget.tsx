@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users } from "lucide-react";
-import type { WidgetProps } from "../types";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users } from 'lucide-react';
+import type { WidgetProps } from '../types';
 
 export function AreaBreakdownWidget({ areas = [] }: WidgetProps) {
   return (
@@ -12,7 +12,7 @@ export function AreaBreakdownWidget({ areas = [] }: WidgetProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex items-center justify-center text-muted-foreground text-sm py-8">
-        {areas.length === 0 ? "No areas configured" : "Area breakdown coming soon"}
+        {areas.length === 0 ? 'No areas configured' : 'Area breakdown coming soon'}
       </CardContent>
     </Card>
   );

@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSuperAdmin } from '@/contexts/SuperAdminContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Shield, Loader2 } from 'lucide-react';
 
 interface PlatformGuardProps {
@@ -10,7 +10,7 @@ interface PlatformGuardProps {
 
 /**
  * PlatformGuard - Protects platform routes with Super Admin check
- * 
+ *
  * Flow:
  * 1. While roleLoadStatus === 'loading': Show loading spinner
  * 2. When rolesLoaded && !isSuperAdmin: Redirect to /dashboard with toast
@@ -18,7 +18,6 @@ interface PlatformGuardProps {
  */
 export function PlatformGuard({ children }: PlatformGuardProps) {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { isSuperAdmin, isLoadingSuperAdmin, rolesLoaded, roleLoadStatus } = useSuperAdmin();
   const [hasRedirected, setHasRedirected] = useState(false);
 
@@ -26,22 +25,20 @@ export function PlatformGuard({ children }: PlatformGuardProps) {
     // Only redirect once, when roles are loaded and user is not super admin
     if (rolesLoaded && !isSuperAdmin && !hasRedirected) {
       setHasRedirected(true);
-      
+
       console.log('[PlatformGuard] Access denied - redirecting to dashboard', {
         roleLoadStatus,
         isSuperAdmin,
         rolesLoaded,
       });
-      
-      toast({
-        title: "Access Denied",
-        description: "Platform Admin access requires Super Admin privileges.",
-        variant: "destructive",
+
+      toast.error('Access Denied', {
+        description: 'Platform Admin access requires Super Admin privileges.',
       });
-      
-      navigate("/dashboard", { replace: true });
+
+      navigate('/dashboard', { replace: true });
     }
-  }, [rolesLoaded, isSuperAdmin, hasRedirected, navigate, toast, roleLoadStatus]);
+  }, [rolesLoaded, isSuperAdmin, hasRedirected, navigate, roleLoadStatus]);
 
   // Show loading state while checking roles
   if (isLoadingSuperAdmin || roleLoadStatus === 'idle') {

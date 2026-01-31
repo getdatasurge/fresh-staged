@@ -1,0 +1,14 @@
+{
+  "assignee": null,
+  "claim_note": "",
+  "claimed_at": null,
+  "created_at": "2026-01-30T11:39:58.289191Z",
+  "depends_on": ["fn-6-28x.1"],
+  "epic": "fn-6-28x",
+  "id": "fn-6-28x.2",
+  "priority": null,
+  "spec_path": ".flow/tasks/fn-6-28x.2.md",
+  "status": "todo",
+  "title": "Fix critical a11y lint violations",
+  "updated_at": "2026-01-30T11:40:17.244197Z"
+}

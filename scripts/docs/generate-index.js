@@ -6,14 +6,7 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import {
-  DOCS_ROOT,
-  META_DIR,
-  formatTimestamp,
-  logSuccess,
-  logInfo,
-  logHeader
-} from './utils.js';
+import { DOCS_ROOT, META_DIR, formatTimestamp, logSuccess, logInfo, logHeader } from './utils.js';
 import { generateDocsMap } from './generate-docs-map.js';
 
 async function generateIndex() {
@@ -58,7 +51,7 @@ async function generateIndex() {
     'diagrams',
     'charts',
     'adr',
-    'root'
+    'root',
   ];
 
   for (const categoryKey of categoryOrder) {
@@ -72,18 +65,18 @@ async function generateIndex() {
 
     // Add description based on category
     const descriptions = {
-      'executive': 'High-level overviews for stakeholders and decision-makers.',
-      'architecture': 'System design, components, and technical decisions.',
-      'product': 'Pages, user flows, and product functionality.',
-      'engineering': 'API, data model, integrations, and technical details.',
-      'onboarding': 'Getting started guides for new team members.',
-      'qa': 'Testing strategy, coverage, and quality assurance.',
-      'security': 'Security model, threats, and incident response.',
-      'operations': 'Monitoring, alerting, and operational procedures.',
-      'diagrams': 'Visual representations and flowcharts.',
-      'charts': 'Data models and entity relationships.',
-      'adr': 'Architecture Decision Records documenting key technical decisions.',
-      'root': 'General documentation and guides.'
+      executive: 'High-level overviews for stakeholders and decision-makers.',
+      architecture: 'System design, components, and technical decisions.',
+      product: 'Pages, user flows, and product functionality.',
+      engineering: 'API, data model, integrations, and technical details.',
+      onboarding: 'Getting started guides for new team members.',
+      qa: 'Testing strategy, coverage, and quality assurance.',
+      security: 'Security model, threats, and incident response.',
+      operations: 'Monitoring, alerting, and operational procedures.',
+      diagrams: 'Visual representations and flowcharts.',
+      charts: 'Data models and entity relationships.',
+      adr: 'Architecture Decision Records documenting key technical decisions.',
+      root: 'General documentation and guides.',
     };
 
     if (descriptions[categoryKey]) {
@@ -95,7 +88,10 @@ async function generateIndex() {
 
     for (const file of files) {
       // Skip INDEX.md and GLOSSARY.md in root
-      if (categoryKey === 'root' && (file.path === 'INDEX.md' || file.path === 'GLOSSARY.md' || file.path === 'CI_CHECKLIST.md')) {
+      if (
+        categoryKey === 'root' &&
+        (file.path === 'INDEX.md' || file.path === 'GLOSSARY.md' || file.path === 'CI_CHECKLIST.md')
+      ) {
         continue;
       }
 
@@ -165,7 +161,9 @@ See [CI_CHECKLIST.md](./CI_CHECKLIST.md) for documentation standards and validat
   await fs.writeFile(outputPath, content);
 
   logSuccess('Generated INDEX.md');
-  logInfo(`Included ${docsMap.totalFiles} documents across ${Object.keys(docsMap.categories).length} categories`);
+  logInfo(
+    `Included ${docsMap.totalFiles} documents across ${Object.keys(docsMap.categories).length} categories`,
+  );
 
   return content;
 }
@@ -246,7 +244,7 @@ function getDocDescription(filePath, title) {
     'EMULATOR_QUICK_START.md': 'Emulator quick start',
     'EMULATOR_TTN_INTEGRATION.md': 'TTN emulator integration',
     'system-map.md': 'System component map',
-    'deprecations.md': 'Deprecated features'
+    'deprecations.md': 'Deprecated features',
   };
 
   return descriptions[filePath] || title;

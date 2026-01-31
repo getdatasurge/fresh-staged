@@ -224,7 +224,7 @@ describe('Areas API', () => {
         method: 'POST',
         url: `/api/orgs/${TEST_ORG_ID}/sites/${TEST_SITE_ID}/areas`,
         headers: { authorization: 'Bearer test-token' },
-        payload: {},  // Missing name
+        payload: {}, // Missing name
       });
 
       expect(response.statusCode).toBe(400);
@@ -233,7 +233,7 @@ describe('Areas API', () => {
     it('should return 404 when site is not found (hierarchy validation)', async () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('admin');
-      mockCreateArea.mockResolvedValue(null);  // Service returns null when site not in org
+      mockCreateArea.mockResolvedValue(null); // Service returns null when site not in org
 
       const response = await app.inject({
         method: 'POST',

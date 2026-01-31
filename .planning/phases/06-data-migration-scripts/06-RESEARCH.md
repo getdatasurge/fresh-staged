@@ -18,21 +18,21 @@ The research reveals that while pg_dump is standard for schema export, programma
 
 ### Core Libraries
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| node-postgres (pg) | Latest | PostgreSQL client for export/import | Official PostgreSQL client, mature, full feature support for connections and queries |
-| pg-copy-streams | Latest | Fast bulk data transfer | PostgreSQL native COPY FROM/TO commands, 10-20x faster than INSERT for bulk operations |
-| zod | Latest | Data validation during migration | Runtime type checking ensures data integrity, validates JSON exports before import |
-| pino | Latest | Structured logging | Low-overhead logging for progress tracking, both console and file output |
+| Library            | Version | Purpose                             | Why Standard                                                                           |
+| ------------------ | ------- | ----------------------------------- | -------------------------------------------------------------------------------------- |
+| node-postgres (pg) | Latest  | PostgreSQL client for export/import | Official PostgreSQL client, mature, full feature support for connections and queries   |
+| pg-copy-streams    | Latest  | Fast bulk data transfer             | PostgreSQL native COPY FROM/TO commands, 10-20x faster than INSERT for bulk operations |
+| zod                | Latest  | Data validation during migration    | Runtime type checking ensures data integrity, validates JSON exports before import     |
+| pino               | Latest  | Structured logging                  | Low-overhead logging for progress tracking, both console and file output               |
 
 ### Supporting Libraries
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| pg-query-stream | Latest | Memory-efficient streaming | When exporting large tables (sensor_readings) to avoid OOM |
-| fast-csv | Latest | CSV parsing/generation | If adding CSV export option alongside JSON |
-| commander | Latest | CLI argument parsing | For export/import/verify script options (--table, --verify-only, etc.) |
-| ora | Latest | Terminal spinners | Progress indication during long-running operations |
+| Library         | Version | Purpose                    | When to Use                                                            |
+| --------------- | ------- | -------------------------- | ---------------------------------------------------------------------- |
+| pg-query-stream | Latest  | Memory-efficient streaming | When exporting large tables (sensor_readings) to avoid OOM             |
+| fast-csv        | Latest  | CSV parsing/generation     | If adding CSV export option alongside JSON                             |
+| commander       | Latest  | CLI argument parsing       | For export/import/verify script options (--table, --verify-only, etc.) |
+| ora             | Latest  | Terminal spinners          | Progress indication during long-running operations                     |
 
 ### Installation
 
@@ -125,7 +125,7 @@ async function importTableWithMapping(
   pool: Pool,
   tableName: string,
   jsonPath: string,
-  userMapping: Map<string, string>
+  userMapping: Map<string, string>,
 ) {
   const data = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
   const client = await pool.connect();
@@ -150,7 +150,7 @@ async function importTableWithMapping(
 
       await client.query(
         `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`,
-        values
+        values,
       );
     }
 
@@ -225,18 +225,21 @@ async function computeTableChecksum(pool: Pool, tableName: string): Promise<stri
 async function verifyTableIntegrity(
   sourcePool: Pool,
   targetPool: Pool,
-  tableName: string
+  tableName: string,
 ): Promise<boolean> {
   const sourceChecksum = await computeTableChecksum(sourcePool, tableName);
   const targetChecksum = await computeTableChecksum(targetPool, tableName);
 
   const match = sourceChecksum === targetChecksum;
-  logger.info({
-    tableName,
-    sourceChecksum,
-    targetChecksum,
-    match
-  }, 'Table verification');
+  logger.info(
+    {
+      tableName,
+      sourceChecksum,
+      targetChecksum,
+      match,
+    },
+    'Table verification',
+  );
 
   return match;
 }
@@ -254,13 +257,13 @@ async function verifyTableIntegrity(
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Streaming large datasets | Custom pagination loop | pg-query-stream + node streams | Handles backpressure, memory-safe, battle-tested |
-| Bulk data import | Loop with individual INSERTs | pg-copy-streams (COPY FROM) | 10-20x faster, native PostgreSQL optimization |
-| Progress indicators | console.log with timers | ora (terminal spinners) | Professional UX, handles concurrent output |
-| Data validation | Manual JSON parsing | Zod schemas | Runtime type safety, clear error messages |
-| Database checksums | Custom hash functions | PostgreSQL md5() with sorted aggregation | Database-native, deterministic, handles NULL properly |
+| Problem                  | Don't Build                  | Use Instead                              | Why                                                   |
+| ------------------------ | ---------------------------- | ---------------------------------------- | ----------------------------------------------------- |
+| Streaming large datasets | Custom pagination loop       | pg-query-stream + node streams           | Handles backpressure, memory-safe, battle-tested      |
+| Bulk data import         | Loop with individual INSERTs | pg-copy-streams (COPY FROM)              | 10-20x faster, native PostgreSQL optimization         |
+| Progress indicators      | console.log with timers      | ora (terminal spinners)                  | Professional UX, handles concurrent output            |
+| Data validation          | Manual JSON parsing          | Zod schemas                              | Runtime type safety, clear error messages             |
+| Database checksums       | Custom hash functions        | PostgreSQL md5() with sorted aggregation | Database-native, deterministic, handles NULL properly |
 
 **Key insight:** PostgreSQL's native COPY command and streaming abstractions are dramatically faster and more reliable than application-level loops. The 10-20x performance difference matters when migrating 100K+ sensor readings.
 
@@ -278,30 +281,33 @@ Problems that look simple but have existing solutions:
 **What goes wrong:** Mapping Supabase UUIDs to Stack Auth UUIDs fails if Stack Auth IDs not created first
 **Why it happens:** Stack Auth user creation is async and generates IDs server-side
 **How to avoid:**
+
 1. Export Supabase auth.users first
 2. Create all users in Stack Auth (via API or UI)
 3. Generate mapping file (supabase_id → stack_auth_id)
 4. Use mapping during data import
-**Warning signs:** NULL user_id values after import, foreign key constraint violations
+   **Warning signs:** NULL user_id values after import, foreign key constraint violations
 
 ### Pitfall 3: Table Import Order Violations
 
 **What goes wrong:** Import fails with foreign key constraint errors (e.g., importing units before sites)
 **Why it happens:** PostgreSQL enforces referential integrity - child tables need parent rows first
 **How to avoid:** Define explicit import order in table-metadata.ts following dependency graph:
+
 ```typescript
 // Correct order
 const IMPORT_ORDER = [
-  'organizations',     // No dependencies
-  'profiles',          // → organizations
-  'user_roles',        // → profiles, organizations
-  'sites',             // → organizations
-  'areas',             // → sites
-  'units',             // → areas
-  'sensor_readings',   // → units, devices
+  'organizations', // No dependencies
+  'profiles', // → organizations
+  'user_roles', // → profiles, organizations
+  'sites', // → organizations
+  'areas', // → sites
+  'units', // → areas
+  'sensor_readings', // → units, devices
   // ... etc
 ];
 ```
+
 **Warning signs:** Errors like "violates foreign key constraint", "insert or update on table violates foreign key"
 
 ### Pitfall 4: JSON Number Precision Loss
@@ -309,29 +315,32 @@ const IMPORT_ORDER = [
 **What goes wrong:** High-precision numeric fields (temperature, GPS coordinates) lose precision through JSON
 **Why it happens:** JavaScript JSON.parse converts all numbers to IEEE 754 doubles (53-bit precision)
 **How to avoid:**
+
 - Export numeric columns as strings in JSON: `SELECT row_to_json(t)::text`
 - Or use PostgreSQL's COPY TO CSV for lossless export
 - Parse strings back to PG numeric type on import
-**Warning signs:** Temperature readings like 4.199999999 instead of 4.2, truncated decimal places
+  **Warning signs:** Temperature readings like 4.199999999 instead of 4.2, truncated decimal places
 
 ### Pitfall 5: Timestamp Timezone Confusion
 
 **What goes wrong:** Timestamps shift hours during migration, breaking time-series data
 **Why it happens:** Mixing TIMESTAMP vs TIMESTAMPTZ types, or client timezone affecting serialization
 **How to avoid:**
+
 - Export timestamps with explicit timezone: `recorded_at AT TIME ZONE 'UTC'`
 - Use ISO 8601 format in JSON: `to_json(recorded_at)::text`
 - Import with explicit timezone: `$1::timestamptz`
-**Warning signs:** All timestamps shifted by N hours, sensor readings appearing in wrong time buckets
+  **Warning signs:** All timestamps shifted by N hours, sensor readings appearing in wrong time buckets
 
 ### Pitfall 6: Idempotency Failures
 
 **What goes wrong:** Re-running import after partial failure creates duplicate rows
 **Why it happens:** No tracking of which tables/rows already imported
 **How to avoid:**
+
 - Option A (one-shot): Delete all data and restart from scratch (acceptable with 8hr window)
 - Option B (idempotent): Track migration state in metadata table, skip completed tables
-**Warning signs:** Constraint violations on unique keys, row count doubling after retry
+  **Warning signs:** Constraint violations on unique keys, row count doubling after retry
 
 ## Code Examples
 
@@ -359,7 +368,7 @@ interface SupabaseUser {
 async function exportSupabaseUsers(outputPath: string) {
   const pool = new Pool({
     connectionString: process.env.SUPABASE_DB_URL,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false },
   });
 
   const client = await pool.connect();
@@ -404,9 +413,7 @@ interface StackAuthUserCreate {
   profileImageUrl?: string;
 }
 
-async function createStackAuthUser(
-  userData: StackAuthUserCreate
-): Promise<string> {
+async function createStackAuthUser(userData: StackAuthUserCreate): Promise<string> {
   const response = await fetch('https://api.stack-auth.com/api/v1/users', {
     method: 'POST',
     headers: {
@@ -427,7 +434,7 @@ async function createStackAuthUser(
 }
 
 async function migrateUsersToStackAuth(
-  supabaseUsers: SupabaseUser[]
+  supabaseUsers: SupabaseUser[],
 ): Promise<Map<string, string>> {
   const mapping = new Map<string, string>();
 
@@ -440,14 +447,17 @@ async function migrateUsersToStackAuth(
       });
 
       mapping.set(supabaseUser.id, stackAuthId);
-      logger.info({
-        supabaseId: supabaseUser.id,
-        stackAuthId,
-        email: supabaseUser.email
-      }, 'User migrated');
+      logger.info(
+        {
+          supabaseId: supabaseUser.id,
+          stackAuthId,
+          email: supabaseUser.email,
+        },
+        'User migrated',
+      );
 
       // Rate limiting - Stack Auth may have limits
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     } catch (err) {
       logger.error({ err, user: supabaseUser.email }, 'User migration failed');
       throw err; // Fail fast
@@ -493,7 +503,7 @@ async function getTableStats(pool: Pool, tableName: string): Promise<TableStats>
 async function verifyMigration(
   supabasePool: Pool,
   newDbPool: Pool,
-  tables: string[]
+  tables: string[],
 ): Promise<void> {
   logger.info('Starting migration verification...');
 
@@ -502,8 +512,7 @@ async function verifyMigration(
     const source = await getTableStats(supabasePool, table);
     const target = await getTableStats(newDbPool, table);
 
-    const match = source.rowCount === target.rowCount &&
-                  source.checksum === target.checksum;
+    const match = source.rowCount === target.rowCount && source.checksum === target.checksum;
 
     results.push({
       table,
@@ -522,11 +531,11 @@ async function verifyMigration(
   }
 
   // Summary
-  const allMatch = results.every(r => r.match);
+  const allMatch = results.every((r) => r.match);
   if (allMatch) {
     logger.info('✓ All tables verified successfully');
   } else {
-    const failed = results.filter(r => !r.match).map(r => r.table);
+    const failed = results.filter((r) => !r.match).map((r) => r.table);
     logger.error({ failed }, 'Migration verification FAILED');
     throw new Error(`Verification failed for tables: ${failed.join(', ')}`);
   }
@@ -535,15 +544,16 @@ async function verifyMigration(
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| pg_dump for all data | Programmatic export with transformation | 2023+ | Enables user ID mapping, custom validation, progress tracking |
-| CSV export format | JSON export format | 2024+ | Human-readable, easier to inspect/debug, native JS handling |
-| Manual foreign key order | Dependency graph traversal | 2022+ | Automated ordering, prevents constraint errors |
-| Row-by-row INSERT | COPY FROM STDIN (pg-copy-streams) | Always preferred | 10-20x performance improvement for bulk data |
-| Manual verification | Automated checksum comparison | 2024+ | Deterministic, catches subtle data corruption |
+| Old Approach             | Current Approach                        | When Changed     | Impact                                                        |
+| ------------------------ | --------------------------------------- | ---------------- | ------------------------------------------------------------- |
+| pg_dump for all data     | Programmatic export with transformation | 2023+            | Enables user ID mapping, custom validation, progress tracking |
+| CSV export format        | JSON export format                      | 2024+            | Human-readable, easier to inspect/debug, native JS handling   |
+| Manual foreign key order | Dependency graph traversal              | 2022+            | Automated ordering, prevents constraint errors                |
+| Row-by-row INSERT        | COPY FROM STDIN (pg-copy-streams)       | Always preferred | 10-20x performance improvement for bulk data                  |
+| Manual verification      | Automated checksum comparison           | 2024+            | Deterministic, catches subtle data corruption                 |
 
 **Deprecated/outdated:**
+
 - pg_dump with --inserts flag: Generates individual INSERT statements (slow), prefer COPY or bulk insert
 - Exporting passwords from Supabase Auth: Not possible via API, must use direct PostgreSQL connection
 - Assuming idempotency: Modern migration scripts should be one-shot with proper transactions, not idempotent retries
@@ -555,6 +565,7 @@ async function verifyMigration(
 **What we know:** Stack Auth has REST API for individual user creation (`POST /api/v1/users`)
 **What's unclear:** Whether bulk import endpoint exists or if rate limits apply to sequential creation
 **Recommendation:**
+
 - Test creating 5-10 users via API to confirm approach works
 - If rate limits detected, add delay between requests (100-500ms)
 - Alternative: Check Stack Auth docs for CSV import or migration tooling
@@ -567,6 +578,7 @@ async function verifyMigration(
 **What we know:** Supabase uses bcrypt for password hashing in auth.users
 **What's unclear:** Whether Stack Auth accepts pre-hashed passwords during user creation
 **Recommendation:**
+
 - If Stack Auth doesn't accept bcrypt hashes: users must reset passwords post-migration
 - Send password reset emails to all users as part of cutover communication
 - Document this in migration runbook
@@ -578,6 +590,7 @@ async function verifyMigration(
 **What we know:** JSON is human-readable, CSV/TSV is faster with COPY
 **What's unclear:** Whether JSON overhead matters for 100K sensor_readings (estimated <1GB total)
 **Recommendation:**
+
 - Use JSON for small tables (<10K rows) for inspectability
 - Use CSV with COPY for sensor_readings (largest table)
 - Hybrid approach provides best of both worlds
@@ -589,6 +602,7 @@ async function verifyMigration(
 **What we know:** Keep Supabase untouched until verification passes
 **What's unclear:** Whether to automate rollback or rely on manual process
 **Recommendation:**
+
 - No automatic rollback (adds complexity)
 - Document manual rollback: restore new DB from pre-migration backup, revert DNS
 - 8+ hour window sufficient to detect issues and manually revert
@@ -622,6 +636,7 @@ async function verifyMigration(
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - node-postgres and pg-copy-streams are official PostgreSQL ecosystem tools with extensive documentation
 - Architecture: HIGH - Patterns verified from Context7 documentation and official PostgreSQL guides
 - User migration: LOW - Stack Auth bulk import not officially documented, requires validation/testing
@@ -631,11 +646,13 @@ async function verifyMigration(
 **Valid until:** 2026-02-23 (30 days - stable migration domain)
 
 **Research limitations:**
+
 - Stack Auth is a newer platform (2024-2025) with limited migration documentation
 - No hands-on testing of Stack Auth user import API
 - Supabase connection strings and auth schema access assumed based on standard Supabase architecture
 
 **Recommended next steps:**
+
 1. Test Stack Auth user creation API with sample data before planning
 2. Confirm Supabase direct PostgreSQL connection access (not just SDK)
 3. Validate table dependency order matches actual foreign key constraints

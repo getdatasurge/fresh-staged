@@ -1,0 +1,5 @@
+timestamp=2026-01-29T02:07:43-08:00
+script=/home/swoop/swoop-claude-projects/fresh-staged/scripts/deploy-orchestrated.sh
+line=98
+exit_code=1
+category=recoverable:permission

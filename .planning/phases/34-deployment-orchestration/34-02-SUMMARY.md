@@ -30,14 +30,14 @@ key-files:
     - scripts/deploy-orchestrated.sh
 
 key-decisions:
-  - "3 consecutive passes required by default (configurable via HEALTH_CONSECUTIVE_REQUIRED)"
-  - "Health counter resets to 0 on any single failure"
-  - "10-second initialization delay before health checks begin"
-  - "Individual service checks are informational only (main health endpoint is authoritative)"
+  - '3 consecutive passes required by default (configurable via HEALTH_CONSECUTIVE_REQUIRED)'
+  - 'Health counter resets to 0 on any single failure'
+  - '10-second initialization delay before health checks begin'
+  - 'Individual service checks are informational only (main health endpoint is authoritative)'
 
 patterns-established:
-  - "Consecutive-pass pattern for reliable health verification"
-  - "Environment-configurable deployment parameters"
+  - 'Consecutive-pass pattern for reliable health verification'
+  - 'Environment-configurable deployment parameters'
 
 # Metrics
 duration: 2min
@@ -78,11 +78,11 @@ Each task was committed atomically:
 
 ## Decisions Made
 
-| Decision | Rationale |
-|----------|-----------|
-| Default 3 consecutive passes | Prevents false positives from transient healthy responses |
-| Reset counter on any failure | Ensures sustained health, not just accumulated passes |
-| 10-second initialization delay | Gives services time to start before checking health |
+| Decision                                | Rationale                                                                |
+| --------------------------------------- | ------------------------------------------------------------------------ |
+| Default 3 consecutive passes            | Prevents false positives from transient healthy responses                |
+| Reset counter on any failure            | Ensures sustained health, not just accumulated passes                    |
+| 10-second initialization delay          | Gives services time to start before checking health                      |
 | Individual service checks informational | Main /health endpoint is authoritative; individual checks help debugging |
 
 ## Deviations from Plan
@@ -104,5 +104,6 @@ None - no external service configuration required.
 - Ready for phase 35 verification and testing
 
 ---
-*Phase: 34-deployment-orchestration*
-*Completed: 2026-01-29*
+
+_Phase: 34-deployment-orchestration_
+_Completed: 2026-01-29_

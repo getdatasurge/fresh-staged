@@ -13,6 +13,7 @@ FreshTrack Pro is a cloud-based system that automatically monitors temperatures 
 ### Who is FreshTrack Pro designed for?
 
 FreshTrack Pro is built for any organization that needs to maintain strict temperature control:
+
 - Restaurants and food service operations
 - Grocery stores and supermarkets
 - Healthcare facilities (vaccine storage, blood banks)
@@ -23,6 +24,7 @@ FreshTrack Pro is built for any organization that needs to maintain strict tempe
 ### How is this different from a simple thermometer?
 
 A thermometer tells you the temperature right now. FreshTrack Pro:
+
 - Monitors **continuously** (every 5 minutes, 24/7)
 - **Alerts you immediately** when something goes wrong
 - **Keeps permanent records** of all readings
@@ -37,17 +39,18 @@ A thermometer tells you the temperature right now. FreshTrack Pro:
 
 Yes. FreshTrack Pro employs enterprise-grade security:
 
-| Security Measure | Description |
-|------------------|-------------|
-| **Encryption** | All data encrypted in transit and at rest |
-| **Access Control** | Role-based permissions — users only see what they need |
-| **Cloud Infrastructure** | Hosted on enterprise-grade cloud platforms |
-| **Compliance** | Designed to meet HACCP, FDA, and industry standards |
-| **Audit Logging** | All access and changes are logged |
+| Security Measure         | Description                                            |
+| ------------------------ | ------------------------------------------------------ |
+| **Encryption**           | All data encrypted in transit and at rest              |
+| **Access Control**       | Role-based permissions — users only see what they need |
+| **Cloud Infrastructure** | Hosted on enterprise-grade cloud platforms             |
+| **Compliance**           | Designed to meet HACCP, FDA, and industry standards    |
+| **Audit Logging**        | All access and changes are logged                      |
 
 ### Who can see our data?
 
 Only people you authorize. FreshTrack Pro uses role-based access:
+
 - **Owners/Admins** — Full access to all data and settings
 - **Managers** — Access to their locations and reports
 - **Staff** — Access to log temperatures and acknowledge alerts
@@ -57,6 +60,7 @@ No one outside your organization can see your data.
 ### Where is our data stored?
 
 Data is stored in secure cloud infrastructure with:
+
 - Automatic backups
 - Geographic redundancy
 - 99.9%+ uptime guarantee
@@ -80,6 +84,7 @@ For compliance reasons, temperature data and audit logs are retained permanently
 ### What is your uptime guarantee?
 
 FreshTrack Pro is designed for 99.9%+ availability. Our cloud infrastructure is:
+
 - Distributed across multiple data centers
 - Automatically monitored 24/7
 - Designed with no single point of failure
@@ -87,6 +92,7 @@ FreshTrack Pro is designed for 99.9%+ availability. Our cloud infrastructure is:
 ### What if a sensor fails?
 
 Sensors are designed for years of reliable operation, but if one fails:
+
 - You'll receive a "sensor offline" alert
 - Manual logging can cover the gap
 - Replacement sensors are available for quick swap
@@ -98,6 +104,7 @@ Sensors are designed for years of reliable operation, but if one fails:
 ### How long does it take to get started?
 
 Most organizations are up and running in a single day:
+
 - **Account setup**: 10 minutes
 - **Location configuration**: 15-30 minutes per site
 - **Sensor installation**: 5-10 minutes per unit (just stick to wall)
@@ -106,6 +113,7 @@ Most organizations are up and running in a single day:
 ### Do we need to hire IT staff?
 
 No. FreshTrack Pro is fully managed:
+
 - No servers to maintain
 - No software to install or update
 - No database administration required
@@ -114,16 +122,19 @@ No. FreshTrack Pro is fully managed:
 ### What equipment do we need?
 
 **From FreshTrack Pro:**
+
 - Wireless temperature sensors (included or purchased)
 - Gateway device to connect sensors to internet (1 per location)
 
 **You provide:**
+
 - Internet connection at each location
 - Smartphones/tablets/computers for staff access
 
 ### Can we add more locations later?
 
 Yes. Adding a new location takes minutes:
+
 1. Create the location in the dashboard
 2. Install sensors
 3. Configure alert settings
@@ -135,14 +146,14 @@ Yes. Adding a new location takes minutes:
 
 ### How much does FreshTrack Pro cost?
 
-| Plan | Monthly Cost | Sensors Included | Best For |
-|------|--------------|------------------|----------|
-| **Starter** | $29 | Up to 5 | Single small location |
-| **Pro** | $79 | Up to 25 | Multi-unit locations |
-| **HACCP** | $199 | Up to 100 | Compliance-focused operations |
-| **Enterprise** | Custom | Unlimited | Large organizations |
+| Plan           | Monthly Cost | Sensors Included | Best For                      |
+| -------------- | ------------ | ---------------- | ----------------------------- |
+| **Starter**    | $29          | Up to 5          | Single small location         |
+| **Pro**        | $79          | Up to 25         | Multi-unit locations          |
+| **HACCP**      | $199         | Up to 100        | Compliance-focused operations |
+| **Enterprise** | Custom       | Unlimited        | Large organizations           |
 
-*Prices are per organization. Additional sensors available for purchase.*
+_Prices are per organization. Additional sensors available for purchase._
 
 ### Are there long-term contracts?
 
@@ -156,11 +167,12 @@ No long-term contracts required. Service is month-to-month, cancel anytime.
 - Email and in-app notifications
 - Standard support
 
-*SMS alerts and advanced features available in Pro plan and above.*
+_SMS alerts and advanced features available in Pro plan and above._
 
 ### What about hardware costs?
 
 Sensors can be:
+
 - **Purchased outright** — One-time cost, you own them
 - **Included in Enterprise plans** — Talk to sales
 
@@ -173,6 +185,7 @@ Gateway devices are typically one-time purchases per location.
 ### Does FreshTrack Pro meet HACCP requirements?
 
 Yes. FreshTrack Pro provides:
+
 - Continuous temperature monitoring
 - Automatic record-keeping with timestamps
 - Corrective action documentation
@@ -181,6 +194,7 @@ Yes. FreshTrack Pro provides:
 ### What about FDA requirements?
 
 FreshTrack Pro is designed to support FDA Food Safety Modernization Act (FSMA) compliance with:
+
 - Complete temperature history
 - Traceability of all records
 - Evidence of monitoring and response
@@ -188,6 +202,7 @@ FreshTrack Pro is designed to support FDA Food Safety Modernization Act (FSMA) c
 ### Can we generate reports for inspectors?
 
 Yes. One-click reports include:
+
 - Temperature logs for any time period
 - Alert history and response times
 - Corrective actions taken
@@ -198,6 +213,7 @@ Reports export as professional PDFs ready to share with inspectors.
 ### How long are records kept?
 
 All records are retained permanently:
+
 - Temperature readings
 - Alert history
 - Corrective actions
@@ -211,16 +227,17 @@ This ensures complete compliance documentation for any past period.
 
 ### What support is available?
 
-| Support Type | Availability |
-|--------------|--------------|
-| **Help documentation** | 24/7 online |
-| **Email support** | Business hours, typically 24-hour response |
-| **Phone support** | Available for Pro and above plans |
-| **Dedicated success manager** | Enterprise plans |
+| Support Type                  | Availability                               |
+| ----------------------------- | ------------------------------------------ |
+| **Help documentation**        | 24/7 online                                |
+| **Email support**             | Business hours, typically 24-hour response |
+| **Phone support**             | Available for Pro and above plans          |
+| **Dedicated success manager** | Enterprise plans                           |
 
 ### How are updates handled?
 
 FreshTrack Pro is cloud-based, so:
+
 - Updates are automatic
 - No downtime required
 - You always have the latest features
@@ -241,6 +258,7 @@ Enterprise customers have dedicated support contacts.
 ### How do the sensors communicate?
 
 Sensors use **LoRa wireless technology** — a long-range, low-power radio signal designed for sensors. Benefits:
+
 - Works through walls and across large facilities
 - Battery life of 2+ years
 - No need for WiFi in each refrigerator
@@ -252,6 +270,7 @@ The sensors themselves don't use WiFi. They communicate with a small gateway dev
 ### Can this work with our existing thermometers?
 
 FreshTrack Pro uses its own sensors for automated monitoring. However:
+
 - Staff can log readings from any thermometer manually
 - Existing sensors can sometimes be integrated (ask sales)
 
@@ -265,14 +284,14 @@ Standard FreshTrack Pro operates independently. Enterprise customers can discuss
 
 ### Why FreshTrack Pro over alternatives?
 
-| Feature | FreshTrack Pro | Traditional Solutions |
-|---------|----------------|----------------------|
-| Multi-location dashboard | ✅ Built-in | Often extra cost |
-| Escalating alerts | ✅ Automatic | Usually manual |
-| Offline capability | ✅ Yes | Rarely |
-| Modern interface | ✅ Mobile-first | Often dated |
-| HACCP reports | ✅ One-click | Manual work |
-| No servers needed | ✅ Cloud-native | Often on-premise |
+| Feature                  | FreshTrack Pro  | Traditional Solutions |
+| ------------------------ | --------------- | --------------------- |
+| Multi-location dashboard | ✅ Built-in     | Often extra cost      |
+| Escalating alerts        | ✅ Automatic    | Usually manual        |
+| Offline capability       | ✅ Yes          | Rarely                |
+| Modern interface         | ✅ Mobile-first | Often dated           |
+| HACCP reports            | ✅ One-click    | Manual work           |
+| No servers needed        | ✅ Cloud-native | Often on-premise      |
 
 ### Can I try before I buy?
 

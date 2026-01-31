@@ -1,37 +1,37 @@
-import DashboardLayout from "@/components/DashboardLayout"
-import { HierarchyBreadcrumb } from "@/components/HierarchyBreadcrumb"
-import { LayoutHeaderDropdown } from "@/components/LayoutHeaderDropdown"
-import LogTempModal from "@/components/LogTempModal"
-import { UnitDebugBanner } from "@/components/debug"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation-dialog"
+import DashboardLayout from '@/components/DashboardLayout';
+import { HierarchyBreadcrumb } from '@/components/HierarchyBreadcrumb';
+import { LayoutHeaderDropdown } from '@/components/LayoutHeaderDropdown';
+import LogTempModal from '@/components/LogTempModal';
+import { UnitDebugBanner } from '@/components/debug';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import BatteryHealthCard from "@/components/unit/BatteryHealthCard"
-import UnitAlertThresholdsSection from "@/components/unit/UnitAlertThresholdsSection"
-import UnitSensorsCard from "@/components/unit/UnitSensorsCard"
-import UnitSettingsSection from "@/components/unit/UnitSettingsSection"
-import { EntityDashboard } from "@/features/dashboard-layout"
-import { useToast } from "@/hooks/use-toast"
-import { DEFAULT_ALERT_RULES, useUnitAlertRules } from "@/hooks/useAlertRules"
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
-import { useEntityDashboardUrl } from "@/hooks/useEntityDashboardUrl"
-import { useLoraSensorsByUnit } from "@/hooks/useLoraSensors"
-import { computeUnitAlerts } from "@/hooks/useUnitAlerts"
-import { UnitStatusInfo, computeUnitStatus } from "@/hooks/useUnitStatus"
-import { usePermissions } from "@/hooks/useUserRole"
-import { useTRPC, useTRPCClient } from "@/lib/trpc"
-import { invalidateUnitCaches } from "@/lib/unitCacheInvalidation"
-import { useUser } from "@stackframe/react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { format, subDays, subHours } from "date-fns"
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import BatteryHealthCard from '@/components/unit/BatteryHealthCard';
+import UnitAlertThresholdsSection from '@/components/unit/UnitAlertThresholdsSection';
+import UnitSensorsCard from '@/components/unit/UnitSensorsCard';
+import UnitSettingsSection from '@/components/unit/UnitSettingsSection';
+import { EntityDashboard } from '@/features/dashboard-layout';
+import { toast } from 'sonner';
+import { DEFAULT_ALERT_RULES, useUnitAlertRules } from '@/hooks/useAlertRules';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { useEntityDashboardUrl } from '@/hooks/useEntityDashboardUrl';
+import { useLoraSensorsByUnit } from '@/hooks/useLoraSensors';
+import { computeUnitAlerts } from '@/hooks/useUnitAlerts';
+import { UnitStatusInfo, computeUnitStatus } from '@/hooks/useUnitStatus';
+import { usePermissions } from '@/hooks/useUserRole';
+import { useTRPC, useTRPCClient } from '@/lib/trpc';
+import { invalidateUnitCaches } from '@/lib/unitCacheInvalidation';
+import { useUser } from '@stackframe/react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { format, subDays, subHours } from 'date-fns';
 import {
   AlertTriangle,
   ClipboardEdit,
@@ -43,10 +43,10 @@ import {
   LayoutDashboard,
   Loader2,
   Settings,
-  Trash2
-} from "lucide-react"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+  Trash2,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface UnitData {
   id: string;
@@ -59,7 +59,7 @@ interface UnitData {
   last_reading_at: string | null;
   last_manual_log_at: string | null;
   manual_log_cadence: number;
-  door_state?: "open" | "closed" | "unknown" | null;
+  door_state?: 'open' | 'closed' | 'unknown' | null;
   door_last_changed_at?: string | null;
   door_sensor_enabled?: boolean;
   door_open_grace_minutes?: number;
@@ -91,18 +91,17 @@ interface EventLog {
 interface UnitAlert {
   id: string;
   type: string;
-  severity: "critical" | "warning" | "info";
+  severity: 'critical' | 'warning' | 'info';
   title: string;
   message: string;
   clearCondition: string;
 }
 
-import { getAlertClearCondition } from "@/lib/alertConfig"
+import { getAlertClearCondition } from '@/lib/alertConfig';
 
 const UnitDetail = () => {
   const { unitId } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const user = useUser();
   const trpc = useTRPC();
   const trpcClient = useTRPCClient();
@@ -110,7 +109,7 @@ const UnitDetail = () => {
   const { layoutKey } = useEntityDashboardUrl();
   const { canDeleteEntities, isLoading: permissionsLoading } = usePermissions();
 
-  const [timeRange, setTimeRange] = useState("24h");
+  const [timeRange, setTimeRange] = useState('24h');
   const [isExporting, setIsExporting] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -119,8 +118,8 @@ const UnitDetail = () => {
   const unitLookupQuery = useQuery(
     trpc.units.listByOrg.queryOptions(
       { organizationId: effectiveOrgId! },
-      { enabled: !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   const unitLookup = useMemo(() => {
@@ -128,8 +127,8 @@ const UnitDetail = () => {
     return unitLookupQuery.data.find((u) => u.id === unitId) || null;
   }, [unitLookupQuery.data, unitId]);
 
-  const unitLookupSiteId = unitLookup?.siteId ?? "";
-  const unitLookupAreaId = unitLookup?.areaId ?? "";
+  const unitLookupSiteId = unitLookup?.siteId ?? '';
+  const unitLookupAreaId = unitLookup?.areaId ?? '';
 
   const unitQuery = useQuery(
     trpc.units.get.queryOptions(
@@ -146,19 +145,25 @@ const UnitDetail = () => {
           !!unitLookupAreaId &&
           !!effectiveOrgId &&
           identityInitialized,
-      }
-    )
+      },
+    ),
   );
 
   const fromDate = useMemo(() => {
     const now = new Date();
     switch (timeRange) {
-      case "1h": return subHours(now, 1).toISOString();
-      case "6h": return subHours(now, 6).toISOString();
-      case "24h": return subHours(now, 24).toISOString();
-      case "7d": return subDays(now, 7).toISOString();
-      case "30d": return subDays(now, 30).toISOString();
-      default: return subHours(now, 24).toISOString();
+      case '1h':
+        return subHours(now, 1).toISOString();
+      case '6h':
+        return subHours(now, 6).toISOString();
+      case '24h':
+        return subHours(now, 24).toISOString();
+      case '7d':
+        return subDays(now, 7).toISOString();
+      case '30d':
+        return subDays(now, 30).toISOString();
+      default:
+        return subHours(now, 24).toISOString();
     }
   }, [timeRange]);
 
@@ -168,10 +173,10 @@ const UnitDetail = () => {
         unitId: unitId!,
         organizationId: effectiveOrgId!,
         start: fromDate,
-        limit: 500
+        limit: 500,
       },
-      { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!unitId && !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   const manualLogsQuery = useQuery(
@@ -180,10 +185,10 @@ const UnitDetail = () => {
         unitId: unitId!,
         organizationId: effectiveOrgId!,
         start: fromDate,
-        limit: 50
+        limit: 50,
       },
-      { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!unitId && !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   const latestManualLogQuery = useQuery(
@@ -193,8 +198,8 @@ const UnitDetail = () => {
         organizationId: effectiveOrgId!,
         limit: 1,
       },
-      { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!unitId && !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   const eventsQuery = useQuery(
@@ -203,20 +208,20 @@ const UnitDetail = () => {
         unitId: unitId!,
         organizationId: effectiveOrgId!,
         start: fromDate,
-        limit: 50
+        limit: 50,
       },
-      { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!unitId && !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   const deviceQuery = useQuery(
     trpc.ttnDevices.getByUnit.queryOptions(
       {
         unitId: unitId!,
-        organizationId: effectiveOrgId!
+        organizationId: effectiveOrgId!,
       },
-      { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!unitId && !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   // Sibling units query (needs a list units in area procedure, but we can filter listByOrg for now or I'll add listByArea)
@@ -228,11 +233,12 @@ const UnitDetail = () => {
         siteId: unitLookupSiteId,
         areaId: unitLookupAreaId,
       },
-      { enabled: !!unitLookupAreaId && !!effectiveOrgId }
-    )
+      { enabled: !!unitLookupAreaId && !!effectiveOrgId },
+    ),
   );
 
-  const isLoading = unitLookupQuery.isLoading || unitQuery.isLoading || identityInitialized === false;
+  const isLoading =
+    unitLookupQuery.isLoading || unitQuery.isLoading || identityInitialized === false;
   const { data: loraSensors } = useLoraSensorsByUnit(unitId || null);
   const { data: alertRules } = useUnitAlertRules(unitId || null);
   const [isTabVisible, setIsTabVisible] = useState(true);
@@ -250,11 +256,20 @@ const UnitDetail = () => {
       latestManualLogQuery.refetch();
       eventsQuery.refetch();
       deviceQuery.refetch();
-      setRefreshTick(prev => prev + 1);
+      setRefreshTick((prev) => prev + 1);
     }, 30000); // 30s polling
 
     return () => clearInterval(interval);
-  }, [unitId, isTabVisible, unitQuery, readingsQuery, manualLogsQuery, latestManualLogQuery, eventsQuery, deviceQuery]);
+  }, [
+    unitId,
+    isTabVisible,
+    unitQuery,
+    readingsQuery,
+    manualLogsQuery,
+    latestManualLogQuery,
+    eventsQuery,
+    deviceQuery,
+  ]);
 
   // Derived data from tRPC queries
   const unit = useMemo(() => {
@@ -268,8 +283,8 @@ const UnitDetail = () => {
       temp_limit_high: unitQuery.data.tempMax,
       temp_limit_low: unitQuery.data.tempMin,
       last_temp_reading: unitQuery.data.lastTemperature,
-      last_reading_at: unitQuery.data.lastReadingAt?.toISOString() || null,
-      last_manual_log_at: lastManualLogAt ? lastManualLogAt.toISOString() : null,
+      last_reading_at: unitQuery.data.lastReadingAt || null,
+      last_manual_log_at: lastManualLogAt || null,
       manual_log_cadence: unitQuery.data.manualMonitoringInterval || 240,
       area: {
         id: unitLookup.areaId,
@@ -278,16 +293,16 @@ const UnitDetail = () => {
           id: unitLookup.siteId,
           name: unitLookup.siteName,
           organization_id: effectiveOrgId!,
-        }
-      }
+        },
+      },
     } as UnitData;
   }, [unitQuery.data, unitLookup, latestManualLogQuery.data, effectiveOrgId]);
 
   const siblingUnits = useMemo(() => {
     if (!siblingsQuery.data) return [];
     return siblingsQuery.data
-      .filter(u => u.id !== unitId)
-      .map(u => ({
+      .filter((u) => u.id !== unitId)
+      .map((u) => ({
         id: u.id,
         name: u.name,
         href: `/units/${u.id}`,
@@ -295,31 +310,37 @@ const UnitDetail = () => {
   }, [siblingsQuery.data, unitId]);
 
   const readings = useMemo(() => {
-    return readingsQuery.data?.map(r => ({
-      id: r.id,
-      temperature: r.temperature,
-      humidity: r.humidity,
-      recorded_at: r.recordedAt.toISOString(),
-    })) || [];
+    return (
+      readingsQuery.data?.map((r) => ({
+        id: r.id,
+        temperature: r.temperature,
+        humidity: r.humidity,
+        recorded_at: r.recordedAt as unknown as string,
+      })) || []
+    );
   }, [readingsQuery.data]);
 
   const manualLogs = useMemo(() => {
-    return manualLogsQuery.data?.map(l => ({
-      id: l.id,
-      temperature: l.temperature,
-      notes: l.notes,
-      logged_at: l.recordedAt.toISOString(),
-      is_in_range: true, 
-    })) || [];
+    return (
+      manualLogsQuery.data?.map((l) => ({
+        id: l.id,
+        temperature: l.temperature,
+        notes: l.notes,
+        logged_at: l.recordedAt as unknown as string,
+        is_in_range: true,
+      })) || []
+    );
   }, [manualLogsQuery.data]);
 
   const events = useMemo(() => {
-    return eventsQuery.data?.map(e => ({
-      id: e.id,
-      event_type: e.eventType,
-      event_data: e.eventData,
-      recorded_at: e.recordedAt.toISOString(),
-    })) || [];
+    return (
+      eventsQuery.data?.map((e) => ({
+        id: e.id,
+        event_type: e.eventType,
+        event_data: e.eventData,
+        recorded_at: e.recordedAt as unknown as string,
+      })) || []
+    );
   }, [eventsQuery.data]);
 
   // Tab visibility
@@ -329,15 +350,14 @@ const UnitDetail = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-
   const device = useMemo(() => {
     if (!deviceQuery.data) return null;
     return {
       id: deviceQuery.data.id,
       unit_id: deviceQuery.data.unitId,
-      last_seen_at: deviceQuery.data.lastSeenAt?.toISOString() || null,
+      last_seen_at: deviceQuery.data.lastSeenAt || null,
       serial_number: deviceQuery.data.devEui,
-      battery_level: 100, 
+      battery_level: 100,
       signal_strength: -50,
       status: deviceQuery.data.status,
     } as any;
@@ -345,53 +365,59 @@ const UnitDetail = () => {
 
   const primaryLoraSensor = useMemo(() => {
     if (!loraSensors?.length) return null;
-    const primary = loraSensors.find(s => s.is_primary);
+    const primary = loraSensors.find((s) => (s as any).is_primary);
     if (primary) return primary;
-    const tempSensors = loraSensors.filter(s => 
-      ['temperature', 'temperature_humidity', 'combo'].includes(s.sensor_type || '')
+    const tempSensors = loraSensors.filter((s) =>
+      ['temperature', 'temperature_humidity', 'combo'].includes((s as any).sensor_type || ''),
     );
-    return tempSensors.sort((a, b) => 
-      new Date(b.last_seen_at || 0).getTime() - new Date(a.last_seen_at || 0).getTime()
-    )[0] || loraSensors[0];
+    return (
+      tempSensors.sort(
+        (a, b) =>
+          new Date((b as any).last_seen_at || 0).getTime() -
+          new Date((a as any).last_seen_at || 0).getTime(),
+      )[0] || loraSensors[0]
+    );
   }, [loraSensors]);
 
-  const doorSensor = useMemo(() => 
-    loraSensors?.find(s => s.sensor_type === 'door' || s.sensor_type === 'contact') || null,
-    [loraSensors]
+  const doorSensor = useMemo(
+    () =>
+      loraSensors?.find(
+        (s) => (s as any).sensor_type === 'door' || (s as any).sensor_type === 'contact',
+      ) || null,
+    [loraSensors],
   );
 
   const doorEventsQuery = useQuery(
     trpc.readings.listDoorEvents.queryOptions(
       { organizationId: effectiveOrgId!, unitId: unitId!, limit: 1 },
-      { enabled: !!unitId && !!effectiveOrgId && identityInitialized }
-    )
+      { enabled: !!unitId && !!effectiveOrgId && identityInitialized },
+    ),
   );
 
   const effectiveDoorState = useMemo(() => {
     const latestEvent = doorEventsQuery.data?.[0];
-    if (latestEvent && unitQuery.data?.doorLastChangedAt) {
+    if (latestEvent && (unitQuery.data as any)?.doorLastChangedAt) {
       const eventTime = new Date(latestEvent.occurredAt).getTime();
-      const unitTime = new Date(unitQuery.data.doorLastChangedAt).getTime();
+      const unitTime = new Date((unitQuery.data as any).doorLastChangedAt).getTime();
       if (eventTime >= unitTime) {
-        return { state: latestEvent.state, since: latestEvent.occurredAt.toISOString() };
+        return { state: latestEvent.state, since: latestEvent.occurredAt as unknown as string };
       }
     }
     return {
-      state: unitQuery.data?.doorState || "unknown",
-      since: unitQuery.data?.doorLastChangedAt?.toISOString() || null
+      state: (unitQuery.data as any)?.doorState || 'unknown',
+      since: (unitQuery.data as any)?.doorLastChangedAt || null,
     };
   }, [doorEventsQuery.data, unitQuery.data]);
 
   const [lastKnownGood, setLastKnownGood] = useState<{
     temp: number | null;
     at: null | string;
-    source: "sensor" | "manual" | null;
+    source: 'sensor' | 'manual' | null;
   }>({ temp: null, at: null, source: null });
-
 
   useEffect(() => {
     if (!readings.length && !manualLogs.length) return;
-    
+
     const lastSensor = readings[readings.length - 1];
     const lastManual = manualLogs[0];
 
@@ -399,15 +425,23 @@ const UnitDetail = () => {
     const manualTime = lastManual ? new Date(lastManual.logged_at).getTime() : 0;
 
     if (sensorTime > manualTime && lastSensor) {
-      setLastKnownGood({ temp: lastSensor.temperature, at: lastSensor.recorded_at, source: "sensor" });
+      setLastKnownGood({
+        temp: lastSensor.temperature,
+        at: lastSensor.recorded_at,
+        source: 'sensor',
+      });
     } else if (lastManual) {
-      setLastKnownGood({ temp: lastManual.temperature, at: lastManual.logged_at, source: "manual" });
+      setLastKnownGood({
+        temp: lastManual.temperature,
+        at: lastManual.logged_at,
+        source: 'manual',
+      });
     }
   }, [readings, manualLogs]);
 
   const unitAlerts = useMemo(() => {
     if (!unit) return [];
-    
+
     const unitStatusInfo: UnitStatusInfo = {
       id: unit.id,
       name: unit.name,
@@ -426,7 +460,7 @@ const UnitDetail = () => {
     };
 
     const computedSummary = computeUnitAlerts([unitStatusInfo]);
-    
+
     return computedSummary.alerts.map((a) => ({
       id: a.id,
       type: a.type,
@@ -449,8 +483,16 @@ const UnitDetail = () => {
     eventsQuery.refetch();
     deviceQuery.refetch();
     doorEventsQuery.refetch();
-    setRefreshTick(prev => prev + 1);
-  }, [unitQuery, readingsQuery, manualLogsQuery, latestManualLogQuery, eventsQuery, deviceQuery, doorEventsQuery]);
+    setRefreshTick((prev) => prev + 1);
+  }, [
+    unitQuery,
+    readingsQuery,
+    manualLogsQuery,
+    latestManualLogQuery,
+    eventsQuery,
+    deviceQuery,
+    doorEventsQuery,
+  ]);
 
   const derivedStatus = useMemo(() => {
     if (!unit) return null;
@@ -466,7 +508,7 @@ const UnitDetail = () => {
       last_manual_log_at: unit.last_manual_log_at,
       last_reading_at: unit.last_reading_at,
       last_temp_reading: unit.last_temp_reading,
-      last_checkin_at: primaryLoraSensor?.last_seen_at || unit.last_reading_at,
+      last_checkin_at: (primaryLoraSensor as any)?.last_seen_at || unit.last_reading_at,
       checkin_interval_minutes: effectiveRules.expected_reading_interval_seconds / 60,
       area: {
         name: unit.area.name,
@@ -477,43 +519,52 @@ const UnitDetail = () => {
     const computed = computeUnitStatus(unitStatusInfo, effectiveRules);
     const sensorId = primaryLoraSensor?.id || device?.id || null;
     const now = Date.now();
-    const lastSeenAt = primaryLoraSensor?.last_seen_at || null;
+    const lastSeenAt = (primaryLoraSensor as any)?.last_seen_at || null;
     const lastReadingAtVal = unit?.last_reading_at || null;
     const effectiveLastCheckin = lastSeenAt || lastReadingAtVal;
-    
+
     return {
       sensorId,
-      isOnline: computed.offlineSeverity === "none",
-      status: computed.offlineSeverity === "none" ? "online" : computed.offlineSeverity === "warning" ? "offline_warning" : "offline_critical",
-      statusLabel: computed.offlineSeverity === "none" ? (computed.statusLabel || "OK") : "Offline",
+      isOnline: computed.offlineSeverity === 'none',
+      status:
+        computed.offlineSeverity === 'none'
+          ? 'online'
+          : computed.offlineSeverity === 'warning'
+            ? 'offline_warning'
+            : 'offline_critical',
+      statusLabel: computed.offlineSeverity === 'none' ? computed.statusLabel || 'OK' : 'Offline',
       statusColor: computed.statusColor,
       statusBgColor: computed.statusBgColor,
       offlineSeverity: computed.offlineSeverity,
       missedCheckins: computed.missedCheckins,
       lastSeenAt,
-      lastSeenAgeSec: effectiveLastCheckin ? Math.floor((now - new Date(effectiveLastCheckin).getTime()) / 1000) : null,
+      lastSeenAgeSec: effectiveLastCheckin
+        ? Math.floor((now - new Date(effectiveLastCheckin).getTime()) / 1000)
+        : null,
       lastReadingAt: lastReadingAtVal,
-      lastReadingAgeSec: lastReadingAtVal ? Math.floor((now - new Date(lastReadingAtVal).getTime()) / 1000) : null,
+      lastReadingAgeSec: lastReadingAtVal
+        ? Math.floor((now - new Date(lastReadingAtVal).getTime()) / 1000)
+        : null,
       checkinIntervalMinutes: effectiveRules.expected_reading_interval_seconds / 60,
-      rawComputed: computed
+      rawComputed: computed,
     };
   }, [unit, alertRules, primaryLoraSensor, device]);
 
-  const exportToCSV = async (reportType: "daily" | "exceptions" = "daily") => {
+  const exportToCSV = async (reportType: 'daily' | 'exceptions' = 'daily') => {
     if (!unit) return;
     setIsExporting(true);
-    toast({ title: "Migration in progress", description: "CSV exports are moving to tRPC." });
+    toast.success('Migration in progress', { description: 'CSV exports are moving to tRPC.' });
     setIsExporting(false);
   };
 
   const formatTemp = (temp: number | null) => {
-    if (temp === null) return "--";
+    if (temp === null) return '--';
     return `${temp.toFixed(1)}°F`;
   };
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast({ title: "Link copied to clipboard" });
+    toast.success('Link copied to clipboard');
   };
 
   const handleDeleteUnit = async () => {
@@ -525,14 +576,13 @@ const UnitDetail = () => {
         areaId: unitLookup.areaId,
         unitId: unitId,
       });
-      toast({ title: "Unit deleted" });
+      toast.success('Unit deleted');
       navigate(`/sites/${unitLookup.siteId}/areas/${unitLookup.areaId}`);
     } catch (err) {
-      console.error("Error deleting unit:", err);
-      toast({ title: "Failed to delete unit", variant: "destructive" });
+      console.error('Error deleting unit:', err);
+      toast.error('Failed to delete unit');
     }
   };
-
 
   if (isLoading && !unit) {
     return (
@@ -554,7 +604,6 @@ const UnitDetail = () => {
     );
   }
 
-
   return (
     <DashboardLayout>
       {/* STEP 0: UnitDebugBanner - DEV ONLY diagnostic banner */}
@@ -573,13 +622,11 @@ const UnitDetail = () => {
       )}
       {/* Route indicator for debugging/verification */}
       <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
-        <span className="font-mono bg-muted px-2 py-0.5 rounded">/units/{unitId}{layoutKey !== 'default' ? `/layout/${layoutKey}` : ''}</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-5 px-1.5"
-          onClick={handleCopyLink}
-        >
+        <span className="font-mono bg-muted px-2 py-0.5 rounded">
+          /units/{unitId}
+          {layoutKey !== 'default' ? `/layout/${layoutKey}` : ''}
+        </span>
+        <Button variant="ghost" size="sm" className="h-5 px-1.5" onClick={handleCopyLink}>
           <Copy className="w-3 h-3" />
         </Button>
         {DEV && (
@@ -599,7 +646,7 @@ const UnitDetail = () => {
       </div>
       <HierarchyBreadcrumb
         items={[
-          { label: "All Equipment", href: "/units" },
+          { label: 'All Equipment', href: '/units' },
           { label: unit.area.site.name, href: `/sites/${unit.area.site.id}` },
           { label: unit.area.name, href: `/sites/${unit.area.site.id}/areas/${unit.area.id}` },
           { label: unit.name, isCurrentPage: true, siblings: siblingUnits },
@@ -621,11 +668,7 @@ const UnitDetail = () => {
               <ClipboardEdit className="w-4 h-4 mr-2" />
               Log Temp
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => exportToCSV("daily")} 
-              disabled={isExporting}
-            >
+            <Button variant="outline" onClick={() => exportToCSV('daily')} disabled={isExporting}>
               {isExporting ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
@@ -633,17 +676,17 @@ const UnitDetail = () => {
               )}
               Daily Log
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => exportToCSV("exceptions")} 
+            <Button
+              variant="outline"
+              onClick={() => exportToCSV('exceptions')}
               disabled={isExporting}
             >
               <AlertTriangle className="w-4 h-4 mr-2" />
               Exceptions
             </Button>
             {canDeleteEntities && !permissionsLoading && (
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 className="text-destructive hover:text-destructive hover:bg-destructive/10"
                 onClick={() => setDeleteDialogOpen(true)}
               >
@@ -691,26 +734,32 @@ const UnitDetail = () => {
               door_state: effectiveDoorState.state,
               door_last_changed_at: effectiveDoorState.since,
             }}
-            sensor={primaryLoraSensor ? {
-              id: primaryLoraSensor.id,
-              name: primaryLoraSensor.name,
-              last_seen_at: primaryLoraSensor.last_seen_at,
-              battery_level: primaryLoraSensor.battery_level,
-              signal_strength: primaryLoraSensor.signal_strength,
-              status: primaryLoraSensor.status,
-              sensor_type: primaryLoraSensor.sensor_type,
-            } : undefined}
+            sensor={
+              primaryLoraSensor
+                ? {
+                    id: primaryLoraSensor.id,
+                    name: (primaryLoraSensor as any).name,
+                    last_seen_at: (primaryLoraSensor as any).last_seen_at,
+                    battery_level: (primaryLoraSensor as any).battery_level,
+                    signal_strength: (primaryLoraSensor as any).signal_strength,
+                    status: (primaryLoraSensor as any).status,
+                    sensor_type: (primaryLoraSensor as any).sensor_type,
+                  }
+                : undefined
+            }
             readings={readings}
             derivedStatus={derivedStatus}
             alerts={unitAlerts}
-            loraSensors={loraSensors?.map(s => ({
-              id: s.id,
-              name: s.name,
-              battery_level: s.battery_level,
-              signal_strength: s.signal_strength,
-              last_seen_at: s.last_seen_at,
-              status: s.status,
-            })) || []}
+            loraSensors={
+              loraSensors?.map((s) => ({
+                id: s.id,
+                name: (s as any).name,
+                battery_level: (s as any).battery_level,
+                signal_strength: (s as any).signal_strength,
+                last_seen_at: (s as any).last_seen_at,
+                status: (s as any).status,
+              })) || []
+            }
             lastKnownGood={lastKnownGood}
             onLogTemp={() => setModalOpen(true)}
             refreshTick={refreshTick}
@@ -753,9 +802,7 @@ const UnitDetail = () => {
           )}
 
           {/* Battery Health */}
-          {device?.id && (
-            <BatteryHealthCard deviceId={device.id} />
-          )}
+          {device?.id && <BatteryHealthCard deviceId={device.id} />}
         </TabsContent>
 
         {/* History Tab */}
@@ -798,18 +845,22 @@ const UnitDetail = () => {
                       <CardContent className="p-4 flex items-center justify-between">
                         <div>
                           <p className="text-sm text-muted-foreground">
-                            {format(new Date(log.logged_at), "MMM d, yyyy · h:mm a")}
+                            {format(new Date(log.logged_at), 'MMM d, yyyy · h:mm a')}
                           </p>
                           {log.notes && <p className="text-sm mt-1">{log.notes}</p>}
                         </div>
                         <div className="text-right">
-                          <p className={`text-xl font-bold ${
-                            log.is_in_range === false ? "text-alarm" : "text-safe"
-                          }`}>
+                          <p
+                            className={`text-xl font-bold ${
+                              log.is_in_range === false ? 'text-alarm' : 'text-safe'
+                            }`}
+                          >
                             {log.temperature}°F
                           </p>
                           {log.is_in_range === false && (
-                            <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-destructive text-destructive-foreground">Out of range</div>
+                            <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-destructive text-destructive-foreground">
+                              Out of range
+                            </div>
                           )}
                         </div>
                       </CardContent>
@@ -821,9 +872,9 @@ const UnitDetail = () => {
                   <CardContent className="flex flex-col items-center justify-center py-8">
                     <FileText className="w-8 h-8 text-muted-foreground mb-2" />
                     <p className="text-muted-foreground">No manual logs in this time period</p>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="mt-2"
                       onClick={() => setModalOpen(true)}
                     >
@@ -846,10 +897,10 @@ const UnitDetail = () => {
                           </div>
                           <div>
                             <p className="font-medium text-foreground capitalize">
-                              {event.event_type.replace(/_/g, " ")}
+                              {event.event_type.replace(/_/g, ' ')}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {format(new Date(event.recorded_at), "MMM d, yyyy · h:mm a")}
+                              {format(new Date(event.recorded_at), 'MMM d, yyyy · h:mm a')}
                             </p>
                           </div>
                         </div>

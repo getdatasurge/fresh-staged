@@ -72,17 +72,18 @@ completed: 2026-01-29
 
 ## Decisions Made
 
-| ID | Decision | Rationale |
-|----|----------|-----------|
-| DEC-42-03-A | Remove settings history feature | units.router.ts has no getSettingsHistory procedure |
-| DEC-42-03-B | Simplify InvoiceHistory to billing portal link | payments.router.ts has no listInvoices procedure |
-| DEC-42-03-C | Remove migration-specific error handling | Migration to tRPC is complete, supabase errors no longer relevant |
+| ID          | Decision                                       | Rationale                                                         |
+| ----------- | ---------------------------------------------- | ----------------------------------------------------------------- |
+| DEC-42-03-A | Remove settings history feature                | units.router.ts has no getSettingsHistory procedure               |
+| DEC-42-03-B | Simplify InvoiceHistory to billing portal link | payments.router.ts has no listInvoices procedure                  |
+| DEC-42-03-C | Remove migration-specific error handling       | Migration to tRPC is complete, supabase errors no longer relevant |
 
 ## Deviations from Plan
 
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Door sensor/notes fields not in backend schema**
+
 - **Found during:** Task 1 (UnitSettingsSection migration)
 - **Issue:** The backend UpdateUnitSchema doesn't include door_sensor_enabled, door_open_grace_minutes, or notes fields
 - **Fix:** Removed door sensor and notes editing from the edit modal

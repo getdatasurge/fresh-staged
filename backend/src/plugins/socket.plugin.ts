@@ -35,7 +35,7 @@ export interface SocketPluginOptions {
 
 const socketPlugin: FastifyPluginAsync<SocketPluginOptions> = async (
   fastify: FastifyInstance,
-  opts: SocketPluginOptions
+  opts: SocketPluginOptions,
 ) => {
   // Get CORS configuration from options or use defaults matching app CORS
   const corsConfig = opts.cors ?? {

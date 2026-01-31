@@ -22,8 +22,8 @@ tech-stack:
   added: []
   patterns:
     - "Async SMS queueing - don't await to avoid blocking ingestion pipeline"
-    - "Rate limiting via notification_deliveries lookup"
-    - "Profile-based SMS recipients with smsEnabled flag"
+    - 'Rate limiting via notification_deliveries lookup'
+    - 'Profile-based SMS recipients with smsEnabled flag'
 
 key-files:
   created:
@@ -32,13 +32,13 @@ key-files:
     - backend/src/services/alert-evaluator.service.ts
 
 key-decisions:
-  - "SMS-06: Queue SMS async after escalation to avoid blocking reading pipeline"
-  - "SMS-07: Rate limit by user profile via notification_deliveries lookup"
-  - "SMS-08: Filter recipients by smsEnabled profile flag"
+  - 'SMS-06: Queue SMS async after escalation to avoid blocking reading pipeline'
+  - 'SMS-07: Rate limit by user profile via notification_deliveries lookup'
+  - 'SMS-08: Filter recipients by smsEnabled profile flag'
 
 patterns-established:
-  - "Alert SMS Pattern: queueAlertSms runs fire-and-forget with .catch() error handling"
-  - "Rate Limiting Pattern: Check sent/delivered deliveries in 15-minute window"
+  - 'Alert SMS Pattern: queueAlertSms runs fire-and-forget with .catch() error handling'
+  - 'Rate Limiting Pattern: Check sent/delivered deliveries in 15-minute window'
 
 # Metrics
 duration: 8min
@@ -58,6 +58,7 @@ completed: 2026-01-24
 - **Files modified:** 2
 
 ## Accomplishments
+
 - Alert evaluator queues SMS jobs when alerts escalate from excursion to alarm_active
 - Rate limiting prevents duplicate SMS within 15-minute window per user
 - notification_deliveries records created before queuing for tracking
@@ -72,6 +73,7 @@ Each task was committed atomically:
 3. **Task 3: Create integration tests for SMS processor** - `d0fe477` (test)
 
 ## Files Created/Modified
+
 - `backend/src/services/alert-evaluator.service.ts` - Added SMS queueing on alert escalation with rate limiting
 - `backend/tests/workers/sms-notification.test.ts` - Integration tests for SMS processor
 
@@ -94,10 +96,12 @@ None - implementation followed plan specifications.
 None - no external service configuration required. TELNYX_API_KEY and TELNYX_PHONE_NUMBER are existing requirements from 16-01.
 
 ## Next Phase Readiness
+
 - SMS pipeline complete: Alert escalation -> Queue -> Processor -> Telnyx
 - Ready for 16-04 (Delivery Webhooks) to handle delivery status updates
 - Integration tests provide confidence for production deployment
 
 ---
-*Phase: 16-sms-notifications*
-*Completed: 2026-01-24*
+
+_Phase: 16-sms-notifications_
+_Completed: 2026-01-24_

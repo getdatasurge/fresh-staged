@@ -1,383 +1,408 @@
-import { DebugTerminal, RouteLogger } from '@/components/debug'
-import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration'
-import { Toaster as Sonner } from '@/components/ui/sonner'
-import { Toaster } from '@/components/ui/toaster'
-import { TooltipProvider } from '@/components/ui/tooltip'
-import { DebugProvider } from '@/contexts/DebugContext'
-import { SuperAdminProvider } from '@/contexts/SuperAdminContext'
-import { TTNConfigProvider } from '@/contexts/TTNConfigContext'
-import { stackClientApp } from '@/lib/stack/client'
-import { TRPCProvider, createTRPCClientInstance } from '@/lib/trpc'
-import { RealtimeProvider } from '@/providers/RealtimeProvider'
-import { StackProvider, StackTheme, useUser } from '@stackframe/react'
-import {
-	QueryClient,
-	QueryClientProvider,
-	useQueryClient,
-} from '@tanstack/react-query'
-import { Suspense, useMemo } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { RequireImpersonationGuard } from './components/guards/RequireImpersonationGuard'
-import { ImpersonationCacheSync, PlatformGuard } from './components/platform'
-import AccountDeleted from './pages/AccountDeleted'
-import Alerts from './pages/Alerts'
-import AreaDetail from './pages/AreaDetail'
-import Areas from './pages/Areas'
-import Auth from './pages/Auth'
-import AuthCallback from './pages/AuthCallback'
-import Dashboard from './pages/Dashboard'
-import DataMaintenance from './pages/DataMaintenance'
-import EventHistory from './pages/EventHistory'
-import HealthDashboard from './pages/HealthDashboard'
-import Index from './pages/Index'
-import Inspector from './pages/Inspector'
-import ManualLog from './pages/ManualLog'
-import NotFound from './pages/NotFound'
-import Onboarding from './pages/Onboarding'
-import OrganizationDashboard from './pages/OrganizationDashboard'
-import PilotSetup from './pages/PilotSetup'
-import PlatformAuditLog from './pages/platform/PlatformAuditLog'
-import PlatformDeveloperTools from './pages/platform/PlatformDeveloperTools'
-import PlatformOrganizationDetail from './pages/platform/PlatformOrganizationDetail'
-import PlatformOrganizations from './pages/platform/PlatformOrganizations'
-import PlatformUserDetail from './pages/platform/PlatformUserDetail'
-import PlatformUsers from './pages/platform/PlatformUsers'
-import PrivacyPolicy from './pages/PrivacyPolicy'
-import RecentlyDeleted from './pages/RecentlyDeleted'
-import Reports from './pages/Reports'
-import Settings from './pages/Settings'
-import SiteDetail from './pages/SiteDetail'
-import Sites from './pages/Sites'
-import TermsConditions from './pages/TermsConditions'
-import TTNCleanup from './pages/TTNCleanup'
-import UnitDetail from './pages/UnitDetail'
-import Units from './pages/Units'
-import UploadTelnyxImage from './pages/UploadTelnyxImage'
+import { DebugTerminal, RouteLogger } from '@/components/debug';
+import { QueryErrorBoundary } from '@/components/errors/QueryErrorBoundary';
+import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { DebugProvider } from '@/contexts/DebugContext';
+import { SuperAdminProvider } from '@/contexts/SuperAdminContext';
+import { TTNConfigProvider } from '@/contexts/TTNConfigContext';
+import { stackClientApp } from '@/lib/stack/client';
+import { TRPCProvider, createTRPCClientInstance } from '@/lib/trpc';
+import { RealtimeProvider } from '@/providers/RealtimeProvider';
+import { StackProvider, StackTheme, useUser } from '@stackframe/react';
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
+import { lazy, Suspense, useMemo } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import PageSkeleton from './components/PageSkeleton';
+import { RequireImpersonationGuard } from './components/guards/RequireImpersonationGuard';
+import { ImpersonationCacheSync, PlatformGuard } from './components/platform';
+
+// Critical path - static imports (landing, auth flow)
+import Index from './pages/Index';
+import Auth from './pages/Auth';
+import AuthCallback from './pages/AuthCallback';
+
+// Route-level code splitting - lazy loaded
+const AccountDeleted = lazy(() => import('./pages/AccountDeleted'));
+const Alerts = lazy(() => import('./pages/Alerts'));
+const AreaDetail = lazy(() => import('./pages/AreaDetail'));
+const Areas = lazy(() => import('./pages/Areas'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const DataMaintenance = lazy(() => import('./pages/DataMaintenance'));
+const EventHistory = lazy(() => import('./pages/EventHistory'));
+const HealthDashboard = lazy(() => import('./pages/HealthDashboard'));
+const Inspector = lazy(() => import('./pages/Inspector'));
+const ManualLog = lazy(() => import('./pages/ManualLog'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const Onboarding = lazy(() => import('./pages/Onboarding'));
+const OrganizationDashboard = lazy(() => import('./pages/OrganizationDashboard'));
+const PilotSetup = lazy(() => import('./pages/PilotSetup'));
+const PlatformAuditLog = lazy(() => import('./pages/platform/PlatformAuditLog'));
+const PlatformDeveloperTools = lazy(() => import('./pages/platform/PlatformDeveloperTools'));
+const PlatformOrganizationDetail = lazy(
+  () => import('./pages/platform/PlatformOrganizationDetail'),
+);
+const PlatformOrganizations = lazy(() => import('./pages/platform/PlatformOrganizations'));
+const PlatformUserDetail = lazy(() => import('./pages/platform/PlatformUserDetail'));
+const PlatformUsers = lazy(() => import('./pages/platform/PlatformUsers'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const RecentlyDeleted = lazy(() => import('./pages/RecentlyDeleted'));
+const Reports = lazy(() => import('./pages/Reports'));
+const Settings = lazy(() => import('./pages/Settings'));
+const SiteDetail = lazy(() => import('./pages/SiteDetail'));
+const Sites = lazy(() => import('./pages/Sites'));
+const TermsConditions = lazy(() => import('./pages/TermsConditions'));
+const TTNCleanup = lazy(() => import('./pages/TTNCleanup'));
+const UnitDetail = lazy(() => import('./pages/UnitDetail'));
+const Units = lazy(() => import('./pages/Units'));
+const UploadTelnyxImage = lazy(() => import('./pages/UploadTelnyxImage'));
 
 const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			refetchOnWindowFocus: false,
-			staleTime: 5 * 60 * 1000, // 5 minutes
-			retry: 1,
-			retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-		},
-	},
-})
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    },
+  },
+});
 
 function TRPCWrapper({ children }: { children: React.ReactNode }) {
-	const user = useUser()
-	const queryClient = useQueryClient()
+  const user = useUser();
+  const queryClient = useQueryClient();
 
-	const trpcClient = useMemo(() => {
-		return createTRPCClientInstance(async () => {
-			if (!user) throw new Error('User not authenticated')
-			const { accessToken } = await user.getAuthJson()
-			return accessToken
-		})
-	}, [user])
+  const trpcClient = useMemo(() => {
+    return createTRPCClientInstance(async () => {
+      if (!user) throw new Error('User not authenticated');
+      const { accessToken } = await user.getAuthJson();
+      return accessToken;
+    });
+  }, [user]);
 
-	return (
-		<TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
-			{children}
-		</TRPCProvider>
-	)
+  return (
+    <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+      {children}
+    </TRPCProvider>
+  );
+}
+
+/**
+ * Per-route error boundary wrapper for dashboard routes.
+ * Uses QueryErrorBoundary so that "Try Again" also resets failed TanStack queries.
+ */
+function DashboardErrorBoundary({ children }: { children: React.ReactNode }) {
+  return (
+    <QueryErrorBoundary title="Dashboard Error">
+      <RequireImpersonationGuard>{children}</RequireImpersonationGuard>
+    </QueryErrorBoundary>
+  );
+}
+
+/**
+ * Per-route error boundary wrapper for admin routes.
+ * Uses QueryErrorBoundary so that "Try Again" also resets failed TanStack queries.
+ */
+function AdminErrorBoundary({ children }: { children: React.ReactNode }) {
+  return (
+    <QueryErrorBoundary title="Admin Page Error">
+      <RequireImpersonationGuard>{children}</RequireImpersonationGuard>
+    </QueryErrorBoundary>
+  );
+}
+
+/**
+ * Per-route error boundary wrapper for platform routes.
+ * Uses QueryErrorBoundary so that "Try Again" also resets failed TanStack queries.
+ */
+function PlatformErrorBoundary({ children }: { children: React.ReactNode }) {
+  return (
+    <QueryErrorBoundary title="Platform Error">
+      <PlatformGuard>{children}</PlatformGuard>
+    </QueryErrorBoundary>
+  );
 }
 
 const App = () => {
-	return (
-		<Suspense
-			fallback={
-				<div className='flex items-center justify-center h-screen'>
-					Loading...
-				</div>
-			}
-		>
-			<ServiceWorkerRegistration />
-			<StackProvider app={stackClientApp}>
-				<StackTheme>
-					<QueryClientProvider client={queryClient}>
-						<TRPCWrapper>
-							<TooltipProvider>
-								<DebugProvider>
-									<TTNConfigProvider>
-										<Toaster />
-										<Sonner />
-										<BrowserRouter>
-											<SuperAdminProvider>
-												<RealtimeProvider>
-													<ImpersonationCacheSync />
-													<RouteLogger />
-													<Routes>
-														<Route path='/' element={<Index />} />
-														<Route
-															path='/privacy'
-															element={<PrivacyPolicy />}
-														/>
-														<Route
-															path='/terms'
-															element={<TermsConditions />}
-														/>
-														<Route path='/auth' element={<Auth />} />
-														<Route
-															path='/auth/callback'
-															element={<AuthCallback />}
-														/>
-														<Route
-															path='/dashboard'
-															element={
-																<RequireImpersonationGuard>
-																	<Dashboard />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/organization'
-															element={
-																<RequireImpersonationGuard>
-																	<OrganizationDashboard />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/onboarding'
-															element={<Onboarding />}
-														/>
-														<Route
-															path='/sites'
-															element={
-																<RequireImpersonationGuard>
-																	<Sites />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/sites/:siteId/layout/:layoutKey'
-															element={
-																<RequireImpersonationGuard>
-																	<SiteDetail />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/sites/:siteId'
-															element={
-																<RequireImpersonationGuard>
-																	<SiteDetail />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/sites/:siteId/areas'
-															element={
-																<RequireImpersonationGuard>
-																	<Areas />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/sites/:siteId/areas/:areaId'
-															element={
-																<RequireImpersonationGuard>
-																	<AreaDetail />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/units'
-															element={
-																<RequireImpersonationGuard>
-																	<Units />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/units/:unitId/layout/:layoutKey'
-															element={
-																<RequireImpersonationGuard>
-																	<UnitDetail />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/units/:unitId'
-															element={
-																<RequireImpersonationGuard>
-																	<UnitDetail />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/manual-log'
-															element={
-																<RequireImpersonationGuard>
-																	<ManualLog />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/alerts'
-															element={
-																<RequireImpersonationGuard>
-																	<Alerts />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/reports'
-															element={
-																<RequireImpersonationGuard>
-																	<Reports />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/settings'
-															element={
-																<RequireImpersonationGuard>
-																	<Settings />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/inspector'
-															element={
-																<RequireImpersonationGuard>
-																	<Inspector />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/pilot-setup'
-															element={
-																<RequireImpersonationGuard>
-																	<PilotSetup />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/events'
-															element={
-																<RequireImpersonationGuard>
-																	<EventHistory />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/admin/recently-deleted'
-															element={
-																<RequireImpersonationGuard>
-																	<RecentlyDeleted />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/admin/ttn-cleanup'
-															element={
-																<RequireImpersonationGuard>
-																	<TTNCleanup />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/admin/data-maintenance'
-															element={
-																<RequireImpersonationGuard>
-																	<DataMaintenance />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/admin/health'
-															element={
-																<RequireImpersonationGuard>
-																	<HealthDashboard />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/admin/upload-telnyx-image'
-															element={
-																<RequireImpersonationGuard>
-																	<UploadTelnyxImage />
-																</RequireImpersonationGuard>
-															}
-														/>
-														<Route
-															path='/account-deleted'
-															element={<AccountDeleted />}
-														/>
-														<Route
-															path='/platform'
-															element={
-																<PlatformGuard>
-																	<PlatformOrganizations />
-																</PlatformGuard>
-															}
-														/>
-														<Route
-															path='/platform/organizations'
-															element={
-																<PlatformGuard>
-																	<PlatformOrganizations />
-																</PlatformGuard>
-															}
-														/>
-														<Route
-															path='/platform/organizations/:orgId'
-															element={
-																<PlatformGuard>
-																	<PlatformOrganizationDetail />
-																</PlatformGuard>
-															}
-														/>
-														<Route
-															path='/platform/users'
-															element={
-																<PlatformGuard>
-																	<PlatformUsers />
-																</PlatformGuard>
-															}
-														/>
-														<Route
-															path='/platform/users/:userId'
-															element={
-																<PlatformGuard>
-																	<PlatformUserDetail />
-																</PlatformGuard>
-															}
-														/>
-														<Route
-															path='/platform/audit'
-															element={
-																<PlatformGuard>
-																	<PlatformAuditLog />
-																</PlatformGuard>
-															}
-														/>
-														<Route
-															path='/platform/developer-tools'
-															element={
-																<PlatformGuard>
-																	<PlatformDeveloperTools />
-																</PlatformGuard>
-															}
-														/>
-														<Route path='*' element={<NotFound />} />
-													</Routes>
-													<DebugTerminal />
-												</RealtimeProvider>
-											</SuperAdminProvider>
-										</BrowserRouter>
-									</TTNConfigProvider>
-								</DebugProvider>
-							</TooltipProvider>
-						</TRPCWrapper>
-					</QueryClientProvider>
-				</StackTheme>
-			</StackProvider>
-		</Suspense>
-	)
-}
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <ServiceWorkerRegistration />
+      <StackProvider app={stackClientApp}>
+        <StackTheme>
+          <QueryClientProvider client={queryClient}>
+            <TRPCWrapper>
+              <TooltipProvider>
+                <DebugProvider>
+                  <TTNConfigProvider>
+                    <Sonner />
+                    <BrowserRouter>
+                      <SuperAdminProvider>
+                        <RealtimeProvider>
+                          <ImpersonationCacheSync />
+                          <RouteLogger />
+                          <Routes>
+                            {/* Public routes - no error boundary needed */}
+                            <Route path="/" element={<Index />} />
+                            <Route path="/privacy" element={<PrivacyPolicy />} />
+                            <Route path="/terms" element={<TermsConditions />} />
+                            <Route path="/auth" element={<Auth />} />
+                            <Route path="/auth/callback" element={<AuthCallback />} />
+                            <Route path="/onboarding" element={<Onboarding />} />
+                            <Route path="/account-deleted" element={<AccountDeleted />} />
 
-export default App
+                            {/* Dashboard routes - per-route error boundary */}
+                            <Route
+                              path="/dashboard"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <Dashboard />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/organization"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <OrganizationDashboard />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/sites"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <Sites />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/sites/:siteId/layout/:layoutKey"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <SiteDetail />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/sites/:siteId"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <SiteDetail />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/sites/:siteId/areas"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <Areas />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/sites/:siteId/areas/:areaId"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <AreaDetail />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/units"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <Units />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/units/:unitId/layout/:layoutKey"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <UnitDetail />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/units/:unitId"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <UnitDetail />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/manual-log"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <ManualLog />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/alerts"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <Alerts />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/reports"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <Reports />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/settings"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <Settings />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/inspector"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <Inspector />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/pilot-setup"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <PilotSetup />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/events"
+                              element={
+                                <DashboardErrorBoundary>
+                                  <EventHistory />
+                                </DashboardErrorBoundary>
+                              }
+                            />
+
+                            {/* Admin routes - per-route error boundary */}
+                            <Route
+                              path="/admin/recently-deleted"
+                              element={
+                                <AdminErrorBoundary>
+                                  <RecentlyDeleted />
+                                </AdminErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/admin/ttn-cleanup"
+                              element={
+                                <AdminErrorBoundary>
+                                  <TTNCleanup />
+                                </AdminErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/admin/data-maintenance"
+                              element={
+                                <AdminErrorBoundary>
+                                  <DataMaintenance />
+                                </AdminErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/admin/health"
+                              element={
+                                <AdminErrorBoundary>
+                                  <HealthDashboard />
+                                </AdminErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/admin/upload-telnyx-image"
+                              element={
+                                <AdminErrorBoundary>
+                                  <UploadTelnyxImage />
+                                </AdminErrorBoundary>
+                              }
+                            />
+
+                            {/* Platform routes - per-route error boundary */}
+                            <Route
+                              path="/platform"
+                              element={
+                                <PlatformErrorBoundary>
+                                  <PlatformOrganizations />
+                                </PlatformErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/platform/organizations"
+                              element={
+                                <PlatformErrorBoundary>
+                                  <PlatformOrganizations />
+                                </PlatformErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/platform/organizations/:orgId"
+                              element={
+                                <PlatformErrorBoundary>
+                                  <PlatformOrganizationDetail />
+                                </PlatformErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/platform/users"
+                              element={
+                                <PlatformErrorBoundary>
+                                  <PlatformUsers />
+                                </PlatformErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/platform/users/:userId"
+                              element={
+                                <PlatformErrorBoundary>
+                                  <PlatformUserDetail />
+                                </PlatformErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/platform/audit"
+                              element={
+                                <PlatformErrorBoundary>
+                                  <PlatformAuditLog />
+                                </PlatformErrorBoundary>
+                              }
+                            />
+                            <Route
+                              path="/platform/developer-tools"
+                              element={
+                                <PlatformErrorBoundary>
+                                  <PlatformDeveloperTools />
+                                </PlatformErrorBoundary>
+                              }
+                            />
+
+                            <Route path="*" element={<NotFound />} />
+                          </Routes>
+                          <DebugTerminal />
+                        </RealtimeProvider>
+                      </SuperAdminProvider>
+                    </BrowserRouter>
+                  </TTNConfigProvider>
+                </DebugProvider>
+              </TooltipProvider>
+            </TRPCWrapper>
+          </QueryClientProvider>
+        </StackTheme>
+      </StackProvider>
+    </Suspense>
+  );
+};
+
+export default App;

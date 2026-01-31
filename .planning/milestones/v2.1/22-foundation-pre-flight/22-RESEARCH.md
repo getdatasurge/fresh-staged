@@ -9,6 +9,7 @@
 Phase 22 establishes the foundational infrastructure for automated deployment: robust error handling with diagnostic context, pre-flight system validation (RAM/disk/CPU/OS/network), and checkpoint-based resume capability. The existing v1.1 scripts use basic `set -e` error handling but lack the advanced trap-based diagnostics, error categorization, and state persistence required by v2.1.
 
 The standard approach combines:
+
 1. `trap ERR` with comprehensive error handler capturing line number, command, and exit code
 2. Checkpoint files for idempotent resume (flag-based state tracking)
 3. Structured validation functions for each system resource
@@ -20,31 +21,31 @@ The standard approach combines:
 
 ### Core
 
-| Pattern | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| `set -euo pipefail` | Bash 4+ | Strict mode | Standard production-grade bash; catches errors, unset vars, pipe failures |
-| `trap error_handler ERR` | POSIX | Error capture | Only reliable way to capture failures with diagnostic context |
-| `set -o errtrace` | Bash 4+ | Inherit trap | Required for traps to work inside functions |
-| `/proc/meminfo` | Linux | System info | Universal Linux mechanism for memory/resource info |
-| `/etc/os-release` | Linux | OS detection | Standard LSB-compliant OS identification file |
+| Pattern                  | Version | Purpose       | Why Standard                                                              |
+| ------------------------ | ------- | ------------- | ------------------------------------------------------------------------- |
+| `set -euo pipefail`      | Bash 4+ | Strict mode   | Standard production-grade bash; catches errors, unset vars, pipe failures |
+| `trap error_handler ERR` | POSIX   | Error capture | Only reliable way to capture failures with diagnostic context             |
+| `set -o errtrace`        | Bash 4+ | Inherit trap  | Required for traps to work inside functions                               |
+| `/proc/meminfo`          | Linux   | System info   | Universal Linux mechanism for memory/resource info                        |
+| `/etc/os-release`        | Linux   | OS detection  | Standard LSB-compliant OS identification file                             |
 
 ### Supporting
 
-| Tool | Version | Purpose | When to Use |
-|------|---------|---------|-------------|
-| `curl` | Any | Network validation | Check connectivity to Docker Hub, GitHub |
-| `dig` / `nslookup` | Any | DNS validation | Verify domain resolution to server IP |
-| `free -m` | Any | Memory check | Human-readable RAM validation |
-| `df -BG` | Any | Disk check | Human-readable disk space validation |
-| `nproc` | Any | CPU check | CPU core count validation |
+| Tool               | Version | Purpose            | When to Use                              |
+| ------------------ | ------- | ------------------ | ---------------------------------------- |
+| `curl`             | Any     | Network validation | Check connectivity to Docker Hub, GitHub |
+| `dig` / `nslookup` | Any     | DNS validation     | Verify domain resolution to server IP    |
+| `free -m`          | Any     | Memory check       | Human-readable RAM validation            |
+| `df -BG`           | Any     | Disk check         | Human-readable disk space validation     |
+| `nproc`            | Any     | CPU check          | CPU core count validation                |
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| `/proc/meminfo` | `free -m` | `free` is human-readable but requires parsing; `/proc/meminfo` is machine-friendly |
-| `dig` | `host` or `nslookup` | `dig` provides most detailed output; `host` simpler but less info |
-| File-based checkpoints | SQLite | File flags are simpler, no dependencies; SQLite overkill for linear steps |
+| Instead of             | Could Use            | Tradeoff                                                                           |
+| ---------------------- | -------------------- | ---------------------------------------------------------------------------------- |
+| `/proc/meminfo`        | `free -m`            | `free` is human-readable but requires parsing; `/proc/meminfo` is machine-friendly |
+| `dig`                  | `host` or `nslookup` | `dig` provides most detailed output; `host` simpler but less info                  |
+| File-based checkpoints | SQLite               | File flags are simpler, no dependencies; SQLite overkill for linear steps          |
 
 ## Architecture Patterns
 
@@ -66,6 +67,7 @@ scripts/
 **What:** Standard bash header for production scripts
 **When to use:** Every bash script in deployment system
 **Example:**
+
 ```bash
 #!/usr/bin/env bash
 # Source: https://www.redhat.com/en/blog/bash-error-handling
@@ -83,6 +85,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 **What:** Trap handler that captures full diagnostic context
 **When to use:** Main deployment script entry point
 **Example:**
+
 ```bash
 # Source: https://linuxsimply.com/bash-scripting-tutorial/error-handling-and-debugging/error-handling/trap-err/
 error_handler() {
@@ -118,6 +121,7 @@ trap error_handler ERR
 **What:** File-based checkpoints marking completed steps
 **When to use:** Multi-step deployment where resume is needed
 **Example:**
+
 ```bash
 # Source: http://www.bashbooster.net/
 STATE_DIR="${STATE_DIR:-/var/lib/freshtrack-deploy}"
@@ -160,6 +164,7 @@ run_step() {
 **What:** Classify errors for appropriate recovery action
 **When to use:** Error handler and recovery guidance
 **Example:**
+
 ```bash
 # Source: journalofcloudcomputing.springeropen.com/articles/10.1186/s13677-018-0112-9
 categorize_error() {
@@ -221,6 +226,7 @@ recovery_guidance() {
 **What:** Idempotent system requirement validation
 **When to use:** Pre-flight checks before any modifications
 **Example:**
+
 ```bash
 # Source: https://www.baeldung.com/linux/total-physical-memory
 validate_ram() {
@@ -282,6 +288,7 @@ validate_cpu() {
 **What:** Validate supported OS versions
 **When to use:** Before attempting package installation
 **Example:**
+
 ```bash
 # Source: https://www.cyberciti.biz/faq/how-to-check-os-version-in-linux-command-line/
 validate_os() {
@@ -328,6 +335,7 @@ validate_os() {
 **What:** Check reachability of required external services
 **When to use:** Before attempting downloads or API calls
 **Example:**
+
 ```bash
 # Source: https://www.baeldung.com/linux/internet-connection-bash-test
 validate_network() {
@@ -372,6 +380,7 @@ validate_network() {
 **What:** Verify domain resolves to server IP
 **When to use:** Before attempting SSL certificate provisioning
 **Example:**
+
 ```bash
 # Source: https://www.baeldung.com/linux/bash-script-resolve-hostname
 validate_dns() {
@@ -427,13 +436,13 @@ validate_dns() {
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| RAM/disk/CPU detection | Custom parsing | Standard tools (`free`, `df`, `nproc`) | Parsing varies across distros |
-| OS detection | uname parsing | `/etc/os-release` sourcing | Standard LSB file across all modern Linux |
-| Network timeout | Background processes | `curl --connect-timeout` | Built-in timeout handling |
-| Credential masking | Regex per-secret | Generic sed pattern | Catches any secret=value pattern |
-| Process exit codes | Custom numbering | Standard Unix codes | Tools expect standard codes |
+| Problem                | Don't Build          | Use Instead                            | Why                                       |
+| ---------------------- | -------------------- | -------------------------------------- | ----------------------------------------- |
+| RAM/disk/CPU detection | Custom parsing       | Standard tools (`free`, `df`, `nproc`) | Parsing varies across distros             |
+| OS detection           | uname parsing        | `/etc/os-release` sourcing             | Standard LSB file across all modern Linux |
+| Network timeout        | Background processes | `curl --connect-timeout`               | Built-in timeout handling                 |
+| Credential masking     | Regex per-secret     | Generic sed pattern                    | Catches any secret=value pattern          |
+| Process exit codes     | Custom numbering     | Standard Unix codes                    | Tools expect standard codes               |
 
 **Key insight:** Bash error handling is surprisingly complex. The combination of `set -e`, `set -o errtrace`, `set -o pipefail`, and `trap ERR` must all be used together. Missing any one creates subtle failure modes.
 
@@ -605,14 +614,15 @@ The existing codebase provides patterns to follow:
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| `set -e` alone | `set -euo pipefail` + trap | Best practice since ~2019 | Catches more failure modes |
-| Parse `uname` for OS | Source `/etc/os-release` | systemd adoption | Standardized OS info |
-| `grep MemTotal` | `grep MemAvailable` | Linux 3.14+ | Accurate usable memory |
-| External state DB | File-based checkpoints | Always preferred for bash | Zero dependencies |
+| Old Approach         | Current Approach           | When Changed              | Impact                     |
+| -------------------- | -------------------------- | ------------------------- | -------------------------- |
+| `set -e` alone       | `set -euo pipefail` + trap | Best practice since ~2019 | Catches more failure modes |
+| Parse `uname` for OS | Source `/etc/os-release`   | systemd adoption          | Standardized OS info       |
+| `grep MemTotal`      | `grep MemAvailable`        | Linux 3.14+               | Accurate usable memory     |
+| External state DB    | File-based checkpoints     | Always preferred for bash | Zero dependencies          |
 
 **Deprecated/outdated:**
+
 - `lsb_release`: Not installed by default on minimal systems; prefer `/etc/os-release`
 - `ifconfig`: Deprecated in favor of `ip` command, though fine for simple IP detection
 
@@ -658,6 +668,7 @@ Things that couldn't be fully resolved:
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - Well-established bash patterns, verified against official documentation
 - Architecture: HIGH - Patterns observed in existing codebase and production scripts
 - Pitfalls: HIGH - Verified through multiple official sources and common failure modes

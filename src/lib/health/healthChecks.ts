@@ -1,18 +1,16 @@
-import { 
-  HealthCheckResult, 
-  SystemHealth, 
+import {
+  HealthCheckResult,
+  SystemHealth,
   EdgeFunctionInfo,
-  computeOverallStatus, 
-  computeSummary 
+  computeOverallStatus,
+  computeSummary,
 } from './types';
 import { EDGE_FUNCTIONS } from './edgeFunctionList';
 
 /**
  * Check a single edge function's health
  */
-export async function checkEdgeFunctionHealth(
-  fn: EdgeFunctionInfo
-): Promise<HealthCheckResult> {
+export async function checkEdgeFunctionHealth(fn: EdgeFunctionInfo): Promise<HealthCheckResult> {
   const id = `edge_${fn.name}`;
 
   if (fn.checkMethod === 'skip') {
@@ -97,7 +95,7 @@ export async function runAllHealthChecks(orgId: string | null): Promise<SystemHe
 
   // Run all checks in parallel
   const [edgeFunctionResults, databaseResults, ttnResults] = await Promise.all([
-    Promise.all(EDGE_FUNCTIONS.map(fn => checkEdgeFunctionHealth(fn))),
+    Promise.all(EDGE_FUNCTIONS.map((fn) => checkEdgeFunctionHealth(fn))),
     checkDatabaseHealth(),
     checkTTNHealth(orgId),
   ]);
@@ -118,10 +116,10 @@ export async function runAllHealthChecks(orgId: string | null): Promise<SystemHe
 export async function runQuickHealthCheck(orgId: string | null): Promise<SystemHealth> {
   const startTime = new Date();
 
-  const criticalFunctions = EDGE_FUNCTIONS.filter(f => f.critical);
+  const criticalFunctions = EDGE_FUNCTIONS.filter((f) => f.critical);
 
   const [edgeFunctionResults, databaseResults] = await Promise.all([
-    Promise.all(criticalFunctions.map(fn => checkEdgeFunctionHealth(fn))),
+    Promise.all(criticalFunctions.map((fn) => checkEdgeFunctionHealth(fn))),
     checkDatabaseHealth(),
   ]);
 

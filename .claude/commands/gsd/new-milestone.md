@@ -18,6 +18,7 @@ Start a new milestone through unified flow: questioning → research (optional) 
 This is the brownfield equivalent of new-project. The project exists, PROJECT.md has history. This command gathers "what's next" and takes you through the full cycle.
 
 **Creates/Updates:**
+
 - `.planning/PROJECT.md` — updated with new milestone goals
 - `.planning/research/` — domain research (optional)
 - `.planning/REQUIREMENTS.md` — scoped requirements
@@ -56,11 +57,13 @@ Milestone name: $ARGUMENTS (optional - will prompt if not provided)
 **MANDATORY FIRST STEP — Execute these checks before ANY user interaction:**
 
 1. **Verify project exists:**
+
    ```bash
    [ -f .planning/PROJECT.md ] || { echo "ERROR: No PROJECT.md. Run /gsd:new-project first."; exit 1; }
    ```
 
 2. **Check for active milestone (ROADMAP.md exists):**
+
    ```bash
    [ -f .planning/ROADMAP.md ] && echo "ACTIVE_MILESTONE" || echo "READY_FOR_NEW"
    ```
@@ -132,6 +135,7 @@ Wait for their response. This gives you the context needed to ask intelligent fo
 Based on what they said, ask follow-up questions that dig into their response. Use AskUserQuestion with options that probe what they mentioned — interpretations, clarifications, concrete examples.
 
 Keep following threads. Each answer opens new threads to explore. Ask about:
+
 - What excited them
 - What problem sparked this
 - What they mean by vague terms
@@ -139,6 +143,7 @@ Keep following threads. Each answer opens new threads to explore. Ask about:
 - What's already decided
 
 Consult `questioning.md` for techniques:
+
 - Challenge vagueness
 - Make abstract concrete
 - Surface assumptions
@@ -164,6 +169,7 @@ Loop until "Update PROJECT.md" selected.
 Parse last version from MILESTONES.md and suggest next:
 
 Use AskUserQuestion:
+
 - header: "Version"
 - question: "What version is this milestone?"
 - options:
@@ -181,6 +187,7 @@ Update `.planning/PROJECT.md` with new milestone section:
 **Goal:** [One sentence describing milestone focus]
 
 **Target features:**
+
 - [Feature 1]
 - [Feature 2]
 - [Feature 3]
@@ -205,6 +212,7 @@ EOF
 ## Phase 6: Research Decision
 
 Use AskUserQuestion:
+
 - header: "Research"
 - question: "Research the domain ecosystem before defining requirements?"
 - options:
@@ -214,6 +222,7 @@ Use AskUserQuestion:
 **If "Research first":**
 
 Display stage banner:
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  GSD ► RESEARCHING
@@ -223,6 +232,7 @@ Researching [domain] ecosystem...
 ```
 
 Create research directory:
+
 ```bash
 mkdir -p .planning/research
 ```
@@ -230,6 +240,7 @@ mkdir -p .planning/research
 **Milestone context is "subsequent"** — Research focuses on new features, not re-researching validated requirements.
 
 Display spawning indicator:
+
 ```
 ◆ Spawning 4 researchers in parallel...
   → Stack research
@@ -395,6 +406,7 @@ Commit after writing.
 ```
 
 Display research complete:
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  GSD ► RESEARCH COMPLETE ✓
@@ -414,6 +426,7 @@ Files: `.planning/research/`
 ## Phase 7: Define Requirements
 
 Display stage banner:
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  GSD ► DEFINING REQUIREMENTS
@@ -423,6 +436,7 @@ Display stage banner:
 **Load context:**
 
 Read PROJECT.md and extract:
+
 - Core value (the ONE thing that must work)
 - New milestone goals
 - Validated requirements (what already works)
@@ -456,6 +470,7 @@ Here are the features for [milestone focus]:
 Ask: "What are the main things users need to be able to do in this milestone?"
 
 For each capability mentioned:
+
 - Ask clarifying questions to make it specific
 - Probe for related capabilities
 - Group into categories
@@ -473,6 +488,7 @@ For each category, use AskUserQuestion:
   - "None for this milestone" — Defer
 
 Track responses:
+
 - Selected features → v1 requirements
 - Unselected table stakes → v2 (users expect these)
 - Unselected differentiators → out of scope
@@ -480,6 +496,7 @@ Track responses:
 **Identify gaps:**
 
 Use AskUserQuestion:
+
 - header: "Additions"
 - question: "Any requirements research missed? (Features specific to your vision)"
 - options:
@@ -493,6 +510,7 @@ Cross-check requirements against Core Value from PROJECT.md. If gaps detected, s
 **Generate REQUIREMENTS.md:**
 
 Create `.planning/REQUIREMENTS.md` with:
+
 - v1 Requirements grouped by category (checkboxes, REQ-IDs)
 - v2 Requirements (deferred)
 - Out of Scope (explicit exclusions with reasoning)
@@ -503,6 +521,7 @@ Create `.planning/REQUIREMENTS.md` with:
 **Requirement quality criteria:**
 
 Good requirements are:
+
 - **Specific and testable:** "User can reset password via email link" (not "Handle password reset")
 - **User-centric:** "User can X" (not "System does Y")
 - **Atomic:** One capability per requirement
@@ -544,6 +563,7 @@ EOF
 ## Phase 8: Create Roadmap
 
 Display stage banner:
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  GSD ► CREATING ROADMAP
@@ -601,6 +621,7 @@ Write files first, then return.
 **Handle roadmapper return:**
 
 **If `## ROADMAP BLOCKED`:**
+
 - Present blocker information
 - Work with user to resolve
 - Re-spawn when resolved
@@ -612,6 +633,7 @@ Read the created ROADMAP.md and present it inline.
 **Ask for approval:**
 
 Use AskUserQuestion:
+
 - header: "Roadmap"
 - question: "Does this roadmap structure work for you?"
 - options:
@@ -622,6 +644,7 @@ Use AskUserQuestion:
 **If "Approve":** Continue to commit.
 
 **If "Adjust phases":**
+
 - Get user's adjustment notes
 - Re-spawn roadmapper with revision context
 - Loop until approved

@@ -34,16 +34,16 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Use inferRouterInputs/inferRouterOutputs from @trpc/server for proper type inference"
-  - "Deprecated wrapper functions maintain backward compatibility during migration"
-  - "React Query hooks use queryOptions pattern for cache configuration"
-  - "E2E tests mock JWT verification to avoid Stack Auth API calls"
+  - 'Use inferRouterInputs/inferRouterOutputs from @trpc/server for proper type inference'
+  - 'Deprecated wrapper functions maintain backward compatibility during migration'
+  - 'React Query hooks use queryOptions pattern for cache configuration'
+  - 'E2E tests mock JWT verification to avoid Stack Auth API calls'
 
 patterns-established:
   - "Type inference: Exclude<RouterInput['namespace']['procedure'], void>['field'] for nested types"
-  - "Hook pattern: const options = trpc.procedure.queryOptions(input); return useQuery({ ...options, ...config })"
-  - "Mutation pattern: useMutation with trpcClient.procedure.mutate and query invalidation"
-  - "E2E test pattern: Mock env vars and JWT verification, use app.inject() without HTTP server"
+  - 'Hook pattern: const options = trpc.procedure.queryOptions(input); return useQuery({ ...options, ...config })'
+  - 'Mutation pattern: useMutation with trpcClient.procedure.mutate and query invalidation'
+  - 'E2E test pattern: Mock env vars and JWT verification, use app.inject() without HTTP server'
 
 # Metrics
 duration: 11min
@@ -109,21 +109,25 @@ None - all changes were new file creation
 ## Decisions Made
 
 **TRPC-10: Use inferRouterInputs/inferRouterOutputs for type inference**
+
 - Rationale: Official tRPC v11 pattern for extracting types from router
-- Impact: Proper type safety without accessing internal _def properties
+- Impact: Proper type safety without accessing internal \_def properties
 - Alternative considered: Manual type definitions (rejected - no single source of truth)
 
 **TRPC-11: Deprecated wrapper pattern for backward compatibility**
+
 - Rationale: Allow gradual component migration without breaking existing code
 - Impact: Components can continue using organizationsApi.getOrganization() during transition
 - Alternative considered: Breaking change with big-bang migration (rejected - too risky)
 
 **TRPC-12: queryOptions pattern for TanStack React Query**
+
 - Rationale: Allows custom cache configuration while maintaining type inference
 - Impact: Hooks can specify staleTime, refetchOnWindowFocus per use case
 - Alternative considered: Direct trpc.procedure.useQuery (rejected - less flexible)
 
 **TRPC-13: Mock JWT verification in E2E tests**
+
 - Rationale: Avoid Stack Auth API calls and environment setup in test environment
 - Impact: Tests run fast and don't require real auth credentials
 - Alternative considered: Real JWT tokens (rejected - brittle, slow)
@@ -133,14 +137,16 @@ None - all changes were new file creation
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Fixed type inference pattern**
+
 - **Found during:** Task 1 (Organizations API migration)
-- **Issue:** Initial attempt used AppRouter['_def']['_config']['$types'] which caused compilation errors
+- **Issue:** Initial attempt used AppRouter['\_def']['_config']['$types'] which caused compilation errors
 - **Fix:** Switched to inferRouterInputs/inferRouterOutputs from @trpc/server
 - **Files modified:** src/lib/api/organizations.ts
 - **Verification:** TypeScript compilation successful, full type inference working
 - **Committed in:** 0e0de56 (Task 1 commit)
 
 **2. [Rule 1 - Bug] Fixed nested input type extraction**
+
 - **Found during:** Task 1 (Organizations API migration)
 - **Issue:** RouterInput['organizations']['update']['data'] failed due to void union type
 - **Fix:** Used Exclude<RouterInput['organizations']['update'], void>['data']
@@ -149,6 +155,7 @@ None - all changes were new file creation
 - **Committed in:** 0e0de56 (Task 1 commit)
 
 **3. [Rule 1 - Bug] Fixed queryKey access pattern**
+
 - **Found during:** Task 2 (Organization hooks)
 - **Issue:** Attempted to call getQueryKey() as method, but it's a property on queryOptions
 - **Fix:** Changed to `const options = trpc.procedure.queryOptions(input); options.queryKey`
@@ -157,6 +164,7 @@ None - all changes were new file creation
 - **Committed in:** 76e32c7 (Task 2 commit)
 
 **4. [Rule 1 - Bug] Fixed app import in E2E tests**
+
 - **Found during:** Task 3 (E2E tests)
 - **Issue:** Attempted to import createApp but function is named buildApp (default export)
 - **Fix:** Changed import to `import buildApp from '../../src/app.js'`
@@ -165,6 +173,7 @@ None - all changes were new file creation
 - **Committed in:** 66764fa (Task 3 commit)
 
 **5. [Rule 3 - Blocking] Set environment variables for test execution**
+
 - **Found during:** Task 3 (E2E tests)
 - **Issue:** Tests failed with "STACK_AUTH_PROJECT_ID environment variable is required"
 - **Fix:** Set env vars before imports and mocked JWT verification
@@ -173,6 +182,7 @@ None - all changes were new file creation
 - **Committed in:** 66764fa (Task 3 commit)
 
 **6. [Rule 1 - Bug] Simplified batch request test**
+
 - **Found during:** Task 3 (E2E tests)
 - **Issue:** tRPC v11 batch request format different from expected, returned 405
 - **Fix:** Simplified to verify infrastructure via sequential calls instead of actual batching
@@ -188,14 +198,17 @@ None - all changes were new file creation
 ## Issues Encountered
 
 **tRPC v11 API changes**
+
 - Type inference pattern different from older examples found online
 - Solution: Used official @trpc/server type helpers (inferRouterInputs/inferRouterOutputs)
 
 **TanStack React Query integration**
+
 - queryOptions pattern not immediately obvious from tRPC docs
 - Solution: Examined DecoratedProcedure types, found queryOptions property returns proper object
 
 **E2E test environment setup**
+
 - Initial attempts to set env vars in beforeAll ran too late (imports happened first)
 - Solution: Set env vars at top level before any imports
 
@@ -206,6 +219,7 @@ None - tRPC client uses existing Stack Auth JWT authentication. No external serv
 ## Next Phase Readiness
 
 **Ready for Phase 20 (API Migration - Domains):**
+
 - Organizations domain fully migrated and verified
 - Pattern established for migrating other domains (sites, areas, units, readings, alerts)
 - E2E test infrastructure ready for additional procedure verification
@@ -213,21 +227,25 @@ None - tRPC client uses existing Stack Auth JWT authentication. No external serv
 - Type inference working end-to-end from backend to frontend
 
 **Migration checklist for other domains:**
+
 1. Create tRPC router with domain procedures (already established pattern)
 2. Update frontend API wrapper to use tRPC (follows organizations pattern)
 3. Create React Query hooks (follows useOrganization pattern)
 4. Add E2E tests for new procedures (follows e2e.test.ts pattern)
 
 **Test Coverage:**
+
 - E2E tests: 10 tests covering full tRPC stack
 - Backend tests: 726 passing (organizations router tests from plan 19-02)
 - Frontend TypeScript: Compiles successfully (backend pre-existing errors unrelated)
 
 **Known Limitations:**
+
 - Deprecated wrapper functions remain for backward compatibility (plan for removal in future phase)
 - Batch request E2E test simplified (actual batching tested via frontend integration)
 - Backend has pre-existing TypeScript errors (noted in plan context, unrelated to tRPC)
 
 ---
-*Phase: 19-backend-api-migration-foundation*
-*Completed: 2026-01-24*
+
+_Phase: 19-backend-api-migration-foundation_
+_Completed: 2026-01-24_

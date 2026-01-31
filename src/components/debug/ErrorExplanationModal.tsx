@@ -1,33 +1,28 @@
 import React, { useMemo } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Copy, 
-  Download, 
-  ExternalLink, 
-  AlertTriangle, 
+import {
+  Copy,
+  Download,
+  ExternalLink,
+  AlertTriangle,
   AlertCircle,
   Clock,
   Tag,
-  CheckCircle2
+  CheckCircle2,
 } from 'lucide-react';
 import { DebugLogEntry } from '@/lib/debugLogger';
-import { 
-  explainError, 
-  getRelatedLogs, 
+import {
+  explainError,
+  getRelatedLogs,
   formatExplanationAsMarkdown,
-  ErrorExplanation 
+  ErrorExplanation,
 } from '@/lib/errorExplainer';
 import { buildSupportSnapshot, downloadSnapshot } from '@/lib/snapshotBuilder';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 interface ErrorExplanationModalProps {
@@ -47,8 +42,6 @@ export function ErrorExplanationModal({
   userEmail,
   orgId,
 }: ErrorExplanationModalProps) {
-  const { toast } = useToast();
-
   const explanation = useMemo(() => {
     if (!entry) return null;
     return explainError(entry);
@@ -66,16 +59,9 @@ export function ErrorExplanationModal({
     const markdown = formatExplanationAsMarkdown(entry, explanation);
     try {
       await navigator.clipboard.writeText(markdown);
-      toast({
-        title: 'Copied to clipboard',
-        description: 'Explanation copied as Markdown',
-      });
+      toast.success('Copied to clipboard', { description: 'Explanation copied as Markdown' });
     } catch {
-      toast({
-        title: 'Copy failed',
-        description: 'Could not copy to clipboard',
-        variant: 'destructive',
-      });
+      toast.error('Copy failed', { description: 'Could not copy to clipboard' });
     }
   };
 
@@ -89,16 +75,11 @@ export function ErrorExplanationModal({
         currentRoute: window.location.pathname,
       });
       downloadSnapshot(snapshot);
-      toast({
-        title: 'Snapshot exported',
+      toast.success('Snapshot exported', {
         description: 'Redacted diagnostic file downloaded. Safe to share with support.',
       });
     } catch (error) {
-      toast({
-        title: 'Export failed',
-        description: 'Could not generate snapshot',
-        variant: 'destructive',
-      });
+      toast.error('Export failed', { description: 'Could not generate snapshot' });
     }
   };
 
@@ -128,8 +109,8 @@ export function ErrorExplanationModal({
                 <Badge variant="outline" className="text-xs">
                   {entry.category}
                 </Badge>
-                <Badge 
-                  variant={entry.level === 'error' ? 'destructive' : 'secondary'} 
+                <Badge
+                  variant={entry.level === 'error' ? 'destructive' : 'secondary'}
                   className="text-xs"
                 >
                   {entry.level}
@@ -207,8 +188,8 @@ export function ErrorExplanationModal({
                 </h4>
                 <div className="space-y-1 max-h-32 overflow-y-auto">
                   {relatedLogs.map((log) => (
-                    <div 
-                      key={log.id} 
+                    <div
+                      key={log.id}
                       className="flex items-center gap-2 text-xs bg-muted/30 rounded px-2 py-1"
                     >
                       <Badge variant="outline" className="text-[10px] px-1">
@@ -228,9 +209,9 @@ export function ErrorExplanationModal({
             {explanation.documentationUrl && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <ExternalLink className="h-4 w-4" />
-                <a 
-                  href={explanation.documentationUrl} 
-                  target="_blank" 
+                <a
+                  href={explanation.documentationUrl}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-primary underline"
                 >

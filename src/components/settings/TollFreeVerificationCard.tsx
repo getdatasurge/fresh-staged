@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useTRPC } from "@/lib/trpc";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useTRPC } from '@/lib/trpc';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Phone,
   CheckCircle2,
@@ -13,53 +13,56 @@ import {
   Loader2,
   HelpCircle,
   Copy,
-  Check
-} from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { toast } from "sonner";
+  Check,
+} from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { toast } from 'sonner';
 
 // Messaging Profile configuration - source of truth
 const MESSAGING_PROFILE = {
-  name: "frost guard",
-  id: "40019baa-aa62-463c-b254-463c66f4b2d3",
+  name: 'frost guard',
+  id: '40019baa-aa62-463c-b254-463c66f4b2d3',
 } as const;
 
-type VerificationStatus = "approved" | "pending" | "rejected" | "unknown";
+type VerificationStatus = 'approved' | 'pending' | 'rejected' | 'unknown';
 
-const statusConfig: Record<VerificationStatus, {
-  icon: React.ElementType;
-  label: string;
-  variant: "default" | "secondary" | "destructive" | "outline";
-  className: string;
-  description: string;
-}> = {
+const statusConfig: Record<
+  VerificationStatus,
+  {
+    icon: React.ElementType;
+    label: string;
+    variant: 'default' | 'secondary' | 'destructive' | 'outline';
+    className: string;
+    description: string;
+  }
+> = {
   approved: {
     icon: CheckCircle2,
-    label: "Verified",
-    variant: "default",
-    className: "bg-safe text-safe-foreground hover:bg-safe/90",
-    description: "Toll-free number is verified. SMS messages can be sent.",
+    label: 'Verified',
+    variant: 'default',
+    className: 'bg-safe text-safe-foreground hover:bg-safe/90',
+    description: 'Toll-free number is verified. SMS messages can be sent.',
   },
   pending: {
     icon: Clock,
-    label: "Pending",
-    variant: "secondary",
-    className: "bg-warning/15 text-warning border-warning/30",
-    description: "Verification in progress. SMS may have limited deliverability.",
+    label: 'Pending',
+    variant: 'secondary',
+    className: 'bg-warning/15 text-warning border-warning/30',
+    description: 'Verification in progress. SMS may have limited deliverability.',
   },
   rejected: {
     icon: AlertCircle,
-    label: "Rejected",
-    variant: "destructive",
-    className: "",
-    description: "Verification was rejected. SMS delivery may be blocked.",
+    label: 'Rejected',
+    variant: 'destructive',
+    className: '',
+    description: 'Verification was rejected. SMS delivery may be blocked.',
   },
   unknown: {
     icon: HelpCircle,
-    label: "Unknown",
-    variant: "outline",
-    className: "",
-    description: "Unable to determine verification status.",
+    label: 'Unknown',
+    variant: 'outline',
+    className: '',
+    description: 'Unable to determine verification status.',
   },
 };
 
@@ -72,19 +75,24 @@ export function TollFreeVerificationCard() {
     try {
       await navigator.clipboard.writeText(MESSAGING_PROFILE.id);
       setCopiedProfileId(true);
-      toast.success("Profile ID copied to clipboard");
+      toast.success('Profile ID copied to clipboard');
       setTimeout(() => setCopiedProfileId(false), 2000);
     } catch {
-      toast.error("Failed to copy");
+      toast.error('Failed to copy');
     }
   };
 
   // Use tRPC for verification status
-  const { data: verification, isLoading, error, refetch } = useQuery(
+  const {
+    data: verification,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery(
     trpc.telnyx.verificationStatus.queryOptions(undefined, {
       staleTime: 1000 * 60 * 5, // Cache for 5 minutes
       retry: 1,
-    })
+    }),
   );
 
   const handleRefresh = async () => {
@@ -98,7 +106,7 @@ export function TollFreeVerificationCard() {
 
   const formatPhoneNumber = (phone: string): string => {
     // Format +18889890560 as +1 (888) 989-0560
-    if (phone.startsWith("+1") && phone.length === 12) {
+    if (phone.startsWith('+1') && phone.length === 12) {
       const area = phone.slice(2, 5);
       const prefix = phone.slice(5, 8);
       const line = phone.slice(8);
@@ -107,7 +115,7 @@ export function TollFreeVerificationCard() {
     return phone;
   };
 
-  const status = verification?.status || "unknown";
+  const status = verification?.status || 'unknown';
   const config = statusConfig[status];
   const StatusIcon = config.icon;
 
@@ -132,9 +140,7 @@ export function TollFreeVerificationCard() {
             )}
           </Button>
         </div>
-        <CardDescription>
-          SMS alerts are sent from a verified toll-free number
-        </CardDescription>
+        <CardDescription>SMS alerts are sent from a verified toll-free number</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {isLoading ? (
@@ -184,24 +190,18 @@ export function TollFreeVerificationCard() {
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Toll-Free Number</span>
               <span className="text-sm font-mono text-muted-foreground">
-                {formatPhoneNumber(verification?.phoneNumber || "+18889890560")}
+                {formatPhoneNumber(verification?.phoneNumber || '+18889890560')}
               </span>
             </div>
 
             {/* Status Description */}
             <div className="rounded-lg border p-3 bg-muted/30">
-              <p className="text-sm text-muted-foreground">
-                {config.description}
-              </p>
-              {status === "pending" && verification?.details && (
-                <p className="text-sm text-warning mt-2">
-                  {verification.details}
-                </p>
+              <p className="text-sm text-muted-foreground">{config.description}</p>
+              {status === 'pending' && verification?.details && (
+                <p className="text-sm text-warning mt-2">{verification.details}</p>
               )}
-              {status === "rejected" && verification?.details && (
-                <p className="text-sm text-destructive mt-2">
-                  Reason: {verification.details}
-                </p>
+              {status === 'rejected' && verification?.details && (
+                <p className="text-sm text-destructive mt-2">Reason: {verification.details}</p>
               )}
             </div>
 
@@ -231,13 +231,14 @@ export function TollFreeVerificationCard() {
             )}
 
             {/* Warning banner for non-approved status */}
-            {status !== "approved" && status !== "unknown" && (
+            {status !== 'approved' && status !== 'unknown' && (
               <div className="rounded-lg border border-warning/50 bg-warning/10 p-3">
                 <p className="text-sm text-warning flex items-start gap-2">
                   <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                   <span>
                     SMS alerts may have limited deliverability until verification is complete.
-                    Critical alerts will still be sent, but some carriers may block unverified traffic.
+                    Critical alerts will still be sent, but some carriers may block unverified
+                    traffic.
                   </span>
                 </p>
               </div>

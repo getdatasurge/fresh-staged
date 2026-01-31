@@ -32,16 +32,16 @@ key-files:
     - scripts/lib/config-lib.sh
 
 key-decisions:
-  - "display_configuration_summary shows truncated Stack Auth values (first 20 chars)"
-  - "Secrets are shown as placeholders only, never actual values"
-  - "validate_dns_before_deploy calls existing validate_dns from preflight-lib.sh"
-  - "run_interactive_configuration uses 4-step flow: collect -> create -> summary -> DNS"
-  - "User can cancel configuration after summary review (returns 1)"
+  - 'display_configuration_summary shows truncated Stack Auth values (first 20 chars)'
+  - 'Secrets are shown as placeholders only, never actual values'
+  - 'validate_dns_before_deploy calls existing validate_dns from preflight-lib.sh'
+  - 'run_interactive_configuration uses 4-step flow: collect -> create -> summary -> DNS'
+  - 'User can cancel configuration after summary review (returns 1)'
 
 patterns-established:
-  - "Configuration confirmation prompt pattern: [Y/n] with default accept"
-  - "DNS validation wrapper pattern: validate domain before deployment"
-  - "Master orchestration pattern: step-by-step with error handling"
+  - 'Configuration confirmation prompt pattern: [Y/n] with default accept'
+  - 'DNS validation wrapper pattern: validate domain before deployment'
+  - 'Master orchestration pattern: step-by-step with error handling'
 
 # Metrics
 duration: 5min
@@ -111,10 +111,11 @@ None - no external service configuration required.
   - Secret generation (24-02)
   - Summary display and DNS validation (24-03)
 - Ready for Phase 25: Deployment Orchestration integration
-- All CONFIG-* requirements satisfied:
+- All CONFIG-\* requirements satisfied:
   - CONFIG-04: DNS validation
   - CONFIG-07: Configuration summary
 
 ---
-*Phase: 24-interactive-configuration*
-*Completed: 2026-01-25*
+
+_Phase: 24-interactive-configuration_
+_Completed: 2026-01-25_

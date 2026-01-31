@@ -190,10 +190,10 @@ export async function listNotificationPolicies(scope: {
   const query = scope.unitId
     ? sql`SELECT * FROM notification_policies WHERE unit_id = ${scope.unitId} ORDER BY alert_type`
     : scope.siteId
-    ? sql`SELECT * FROM notification_policies WHERE site_id = ${scope.siteId} AND unit_id IS NULL ORDER BY alert_type`
-    : scope.organizationId
-    ? sql`SELECT * FROM notification_policies WHERE organization_id = ${scope.organizationId} AND site_id IS NULL AND unit_id IS NULL ORDER BY alert_type`
-    : null;
+      ? sql`SELECT * FROM notification_policies WHERE site_id = ${scope.siteId} AND unit_id IS NULL ORDER BY alert_type`
+      : scope.organizationId
+        ? sql`SELECT * FROM notification_policies WHERE organization_id = ${scope.organizationId} AND site_id IS NULL AND unit_id IS NULL ORDER BY alert_type`
+        : null;
 
   if (!query) {
     return [];
@@ -208,7 +208,7 @@ export async function listNotificationPolicies(scope: {
  */
 export async function getNotificationPolicy(
   id: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<NotificationPolicy | null> {
   // Query with org verification through hierarchy
   const result = await db.execute<RawPolicyRow>(sql`
@@ -238,7 +238,7 @@ export async function getNotificationPolicy(
 export async function upsertNotificationPolicy(
   scope: PolicyScope,
   alertType: string,
-  policy: PolicyInput
+  policy: PolicyInput,
 ): Promise<NotificationPolicy> {
   // Determine the conflict clause based on scope
   let conflictClause: string;
@@ -258,6 +258,17 @@ export async function upsertNotificationPolicy(
     : '[]';
 
   const notifyRolesArray = policy.notify_roles || ['owner', 'admin'];
+  const initialChannelsArray = policy.initial_channels || ['IN_APP_CENTER'];
+
+  // Build parameterized array literals for PostgreSQL
+  const initialChannelsSql = sql`ARRAY[${sql.join(
+    initialChannelsArray.map((c) => sql`${c}`),
+    sql.raw(','),
+  )}]::text[]`;
+  const notifyRolesSql = sql`ARRAY[${sql.join(
+    notifyRolesArray.map((r) => sql`${r}`),
+    sql.raw(','),
+  )}]::text[]`;
 
   const result = await db.execute<RawPolicyRow>(sql`
     INSERT INTO notification_policies (
@@ -285,7 +296,7 @@ export async function upsertNotificationPolicy(
       ${scope.site_id ?? null},
       ${scope.unit_id ?? null},
       ${alertType},
-      ${sql.raw(`ARRAY[${(policy.initial_channels || ['IN_APP_CENTER']).map(c => `'${c}'`).join(',')}]::text[]`)},
+      ${initialChannelsSql},
       ${policy.requires_ack ?? false},
       ${policy.ack_deadline_minutes ?? null},
       ${escalationStepsJson}::jsonb,
@@ -297,7 +308,7 @@ export async function upsertNotificationPolicy(
       ${policy.quiet_hours_end_local ?? null},
       ${policy.severity_threshold ?? 'WARNING'},
       ${policy.allow_warning_notifications ?? false},
-      ${sql.raw(`ARRAY[${notifyRolesArray.map(r => `'${r}'`).join(',')}]::text[]`)},
+      ${notifyRolesSql},
       ${policy.notify_site_managers ?? true},
       ${policy.notify_assigned_users ?? false}
     )
@@ -331,7 +342,7 @@ export async function upsertNotificationPolicy(
  */
 export async function deleteNotificationPolicy(
   scope: PolicyScope,
-  alertType: string
+  alertType: string,
 ): Promise<boolean> {
   if (!scope.unit_id && !scope.site_id && !scope.organization_id) {
     return false;
@@ -339,10 +350,16 @@ export async function deleteNotificationPolicy(
 
   // Use parameterized query
   const result = scope.unit_id
-    ? await db.execute(sql`DELETE FROM notification_policies WHERE unit_id = ${scope.unit_id} AND alert_type = ${alertType}`)
+    ? await db.execute(
+        sql`DELETE FROM notification_policies WHERE unit_id = ${scope.unit_id} AND alert_type = ${alertType}`,
+      )
     : scope.site_id
-    ? await db.execute(sql`DELETE FROM notification_policies WHERE site_id = ${scope.site_id} AND alert_type = ${alertType}`)
-    : await db.execute(sql`DELETE FROM notification_policies WHERE organization_id = ${scope.organization_id} AND alert_type = ${alertType}`);
+      ? await db.execute(
+          sql`DELETE FROM notification_policies WHERE site_id = ${scope.site_id} AND alert_type = ${alertType}`,
+        )
+      : await db.execute(
+          sql`DELETE FROM notification_policies WHERE organization_id = ${scope.organization_id} AND alert_type = ${alertType}`,
+        );
 
   return (result.rowCount ?? 0) > 0;
 }
@@ -364,7 +381,7 @@ export async function deleteNotificationPolicy(
  */
 export async function getEffectiveNotificationPolicy(
   unitId: string,
-  alertType: string
+  alertType: string,
 ): Promise<EffectiveNotificationPolicy | null> {
   // First, resolve the hierarchy: unit -> area -> site -> org
   const hierarchyResult = await db

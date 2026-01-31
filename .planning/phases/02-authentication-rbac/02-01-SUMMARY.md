@@ -19,7 +19,8 @@ affects: [02-02-auth-middleware, 02-03-rbac-middleware, 02-04-org-context-middle
 # Tech tracking
 tech-stack:
   added: [jose@5.x, fastify-plugin]
-  patterns: [ESM .js extensions for imports, Stack Auth JWKS integration, Environment validation at startup]
+  patterns:
+    [ESM .js extensions for imports, Stack Auth JWKS integration, Environment validation at startup]
 
 key-files:
   created:
@@ -32,15 +33,15 @@ key-files:
     - backend/package.json
 
 key-decisions:
-  - "jose library for JWT verification instead of @fastify/jwt (direct control over Stack Auth JWKS integration)"
-  - "JWKS caching with 10-minute max age and 30-second cooldown for performance"
-  - "AuthUser interface separates Stack Auth identity (id) from local profile (profileId)"
-  - "Environment validation utility throws clear error messages for missing/invalid configuration"
+  - 'jose library for JWT verification instead of @fastify/jwt (direct control over Stack Auth JWKS integration)'
+  - 'JWKS caching with 10-minute max age and 30-second cooldown for performance'
+  - 'AuthUser interface separates Stack Auth identity (id) from local profile (profileId)'
+  - 'Environment validation utility throws clear error messages for missing/invalid configuration'
 
 patterns-established:
-  - "ESM .js extensions: All TypeScript imports use .js extensions for NodeNext compatibility"
-  - "Stack Auth JWKS pattern: JWKS URL constructed from STACK_AUTH_PROJECT_ID, cached by jose library"
-  - "Type augmentation pattern: FastifyRequest extended via declaration merging for auth context"
+  - 'ESM .js extensions: All TypeScript imports use .js extensions for NodeNext compatibility'
+  - 'Stack Auth JWKS pattern: JWKS URL constructed from STACK_AUTH_PROJECT_ID, cached by jose library'
+  - 'Type augmentation pattern: FastifyRequest extended via declaration merging for auth context'
 
 # Metrics
 duration: 15min
@@ -107,6 +108,7 @@ None - Stack Auth JWKS endpoint was reachable and returned valid keys as expecte
 ## User Setup Required
 
 **Stack Auth configuration completed.** User confirmed:
+
 - STACK_AUTH_PROJECT_ID environment variable is set in backend/.env
 - JWKS endpoint is reachable: `https://api.stack-auth.com/api/v1/projects/{PROJECT_ID}/.well-known/jwks.json`
 
@@ -115,11 +117,13 @@ No additional user setup required.
 ## Next Phase Readiness
 
 **Ready for Wave 2 parallel execution:**
+
 - 02-02: Auth middleware can use verifyAccessToken and AuthUser types
 - 02-03: RBAC middleware can extend AuthUser with role checks
 - 02-04: Organization context middleware can populate organizationId and role
 
 **Foundation complete:**
+
 - ✅ JWT verification utility with JWKS caching
 - ✅ TypeScript types for auth context
 - ✅ FastifyRequest augmentation
@@ -129,5 +133,6 @@ No additional user setup required.
 **No blockers or concerns.**
 
 ---
-*Phase: 02-authentication-rbac*
-*Completed: 2026-01-23*
+
+_Phase: 02-authentication-rbac_
+_Completed: 2026-01-23_

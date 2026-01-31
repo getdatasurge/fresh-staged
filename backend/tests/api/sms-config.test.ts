@@ -489,7 +489,7 @@ describe('SMS Config API', () => {
           telnyxPhoneNumber: '+15551234567',
           telnyxMessagingProfileId: 'msg_profile_123',
           isEnabled: true,
-        })
+        }),
       );
     });
   });

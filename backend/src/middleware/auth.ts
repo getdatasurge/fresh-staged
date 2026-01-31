@@ -35,10 +35,7 @@ import { verifyAccessToken } from '../utils/jwt.js';
  * });
  * ```
  */
-export async function requireAuth(
-  request: FastifyRequest,
-  reply: FastifyReply
-): Promise<void> {
+export async function requireAuth(request: FastifyRequest, reply: FastifyReply): Promise<void> {
   // Extract token from Authorization header OR x-stack-access-token header
   // Stack Auth React SDK sends tokens via x-stack-access-token
   const authHeader = request.headers.authorization;
@@ -88,6 +85,58 @@ export async function requireAuth(
     return reply.status(401).send({
       error: 'Unauthorized',
       message,
+    });
+  }
+}
+
+/**
+ * Require platform admin middleware
+ *
+ * Validates that the authenticated user has SUPER_ADMIN role in platform_roles table.
+ * Must be used AFTER requireAuth middleware.
+ *
+ * @param request - Fastify request object
+ * @param reply - Fastify reply object
+ * @throws Returns 401 if not authenticated, 403 if not a platform admin
+ *
+ * @example
+ * ```typescript
+ * // Protect an admin route
+ * fastify.get('/admin/data', {
+ *   preHandler: [requireAuth, requirePlatformAdmin]
+ * }, async (request, reply) => {
+ *   return { message: 'Admin only' };
+ * });
+ * ```
+ */
+export async function requirePlatformAdmin(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  // Check authentication first
+  if (!request.user) {
+    return reply.status(401).send({
+      error: 'Unauthorized',
+      message: 'Authentication required',
+    });
+  }
+
+  // Import dynamically to avoid circular dependencies
+  const { platformRoles } = await import('../db/schema/users.js');
+  const { db } = await import('../db/client.js');
+  const { and, eq } = await import('drizzle-orm');
+
+  // Check if user has SUPER_ADMIN role
+  const [adminRole] = await db
+    .select()
+    .from(platformRoles)
+    .where(and(eq(platformRoles.userId, request.user.id), eq(platformRoles.role, 'SUPER_ADMIN')))
+    .limit(1);
+
+  if (!adminRole) {
+    return reply.status(403).send({
+      error: 'Forbidden',
+      message: 'Platform admin access required',
     });
   }
 }

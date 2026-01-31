@@ -58,8 +58,7 @@ export default async function ttnWebhookRoutes(app: FastifyInstance) {
     handler: async (request, reply) => {
       // Extract API key from headers (TTN sends it in configured header)
       const apiKey =
-        (request.headers['x-api-key'] as string) ||
-        (request.headers['x-webhook-secret'] as string);
+        (request.headers['x-api-key'] as string) || (request.headers['x-webhook-secret'] as string);
 
       // Verify webhook authentication
       const verification = await ttnWebhookService.verifyWebhookApiKey(apiKey || '');
@@ -94,7 +93,7 @@ export default async function ttnWebhookRoutes(app: FastifyInstance) {
       if (!deviceLookup) {
         request.log.warn(
           { devEui, applicationId: end_device_ids.application_ids.application_id },
-          'Device not found for TTN uplink'
+          'Device not found for TTN uplink',
         );
         return reply.code(404).send({
           error: {
@@ -112,7 +111,7 @@ export default async function ttnWebhookRoutes(app: FastifyInstance) {
             deviceOrgId: deviceLookup.organizationId,
             authOrgId: verification.organizationId,
           },
-          'Device organization mismatch'
+          'Device organization mismatch',
         );
         return reply.code(401).send({
           error: {
@@ -129,7 +128,7 @@ export default async function ttnWebhookRoutes(app: FastifyInstance) {
       } catch (error: any) {
         request.log.error(
           { error: error.message, devEui, decoded_payload: uplink_message.decoded_payload },
-          'Failed to extract sensor data from TTN uplink'
+          'Failed to extract sensor data from TTN uplink',
         );
         return reply.code(422).send({
           error: {
@@ -140,18 +139,14 @@ export default async function ttnWebhookRoutes(app: FastifyInstance) {
       }
 
       // Convert to reading format
-      const reading = ttnWebhookService.convertToReading(
-        webhook,
-        deviceLookup,
-        sensorData
-      );
+      const reading = ttnWebhookService.convertToReading(webhook, deviceLookup, sensorData);
 
       // Store reading in database
       let readingId: string;
       try {
         const result = await readingsService.ingestBulkReadings(
           [reading],
-          verification.organizationId!
+          verification.organizationId!,
         );
 
         if (result.insertedCount === 0) {
@@ -162,7 +157,7 @@ export default async function ttnWebhookRoutes(app: FastifyInstance) {
       } catch (error: any) {
         request.log.error(
           { error: error.message, devEui, unitId: deviceLookup.unitId },
-          'Failed to store sensor reading'
+          'Failed to store sensor reading',
         );
         throw error;
       }
@@ -191,7 +186,7 @@ export default async function ttnWebhookRoutes(app: FastifyInstance) {
           deviceLookup.unitId,
           tempInt,
           new Date(reading.recordedAt),
-          request.server.socketService
+          request.server.socketService,
         );
 
         if (evaluation.alertCreated || evaluation.alertResolved) {
@@ -201,7 +196,7 @@ export default async function ttnWebhookRoutes(app: FastifyInstance) {
         // Log error but don't fail the webhook response
         request.log.error(
           { error: error.message, unitId: deviceLookup.unitId },
-          'Failed to evaluate alerts after TTN uplink'
+          'Failed to evaluate alerts after TTN uplink',
         );
       }
 
@@ -212,7 +207,7 @@ export default async function ttnWebhookRoutes(app: FastifyInstance) {
         // Log error but don't fail the webhook response
         request.log.error(
           { error: error.message, deviceId: deviceLookup.deviceId },
-          'Failed to update device metadata'
+          'Failed to update device metadata',
         );
       }
 
@@ -224,7 +219,7 @@ export default async function ttnWebhookRoutes(app: FastifyInstance) {
           readingId,
           alertsTriggered,
         },
-        'Processed TTN uplink successfully'
+        'Processed TTN uplink successfully',
       );
 
       return reply.code(200).send({

@@ -7,33 +7,33 @@ tags: [stack-auth, environment-config, vite, api-client]
 # Dependency graph
 requires:
   - phase: 05-04
-    provides: "useUserRole and useEffectiveIdentity migrated to Stack Auth"
+    provides: 'useUserRole and useEffectiveIdentity migrated to Stack Auth'
   - phase: 05-01
-    provides: "API client with VITE_API_URL configuration"
+    provides: 'API client with VITE_API_URL configuration'
 provides:
-  - "Environment variable documentation (.env.example)"
-  - "Stack Auth package installed and working"
-  - "Frontend configured to connect to local backend"
-  - "All permission hooks using Stack Auth"
-affects: ["phase-06", "local-development", "deployment"]
+  - 'Environment variable documentation (.env.example)'
+  - 'Stack Auth package installed and working'
+  - 'Frontend configured to connect to local backend'
+  - 'All permission hooks using Stack Auth'
+affects: ['phase-06', 'local-development', 'deployment']
 
 # Tech tracking
 tech-stack:
-  added: ["@stackframe/stack@2.8.60"]
-  patterns: ["Environment variable documentation pattern", "Direct backend connection (no proxy)"]
+  added: ['@stackframe/stack@2.8.60']
+  patterns: ['Environment variable documentation pattern', 'Direct backend connection (no proxy)']
 
 key-files:
-  created: [".env.example"]
-  modified: ["package.json", "pnpm-lock.yaml"]
+  created: ['.env.example']
+  modified: ['package.json', 'pnpm-lock.yaml']
 
 key-decisions:
-  - "No Vite proxy needed - direct connection via CORS"
-  - "Stack Auth package installed to unblock frontend startup"
-  - "Environment variables documented for local and production deployment"
+  - 'No Vite proxy needed - direct connection via CORS'
+  - 'Stack Auth package installed to unblock frontend startup'
+  - 'Environment variables documented for local and production deployment'
 
 patterns-established:
-  - "Environment documentation: .env.example with comprehensive comments explaining each variable"
-  - "Direct API connection: VITE_API_URL with localhost:3000 fallback, no proxy layer"
+  - 'Environment documentation: .env.example with comprehensive comments explaining each variable'
+  - 'Direct API connection: VITE_API_URL with localhost:3000 fallback, no proxy layer'
 
 # Metrics
 duration: 2m 39s
@@ -77,16 +77,19 @@ Each task was committed atomically:
 ## Decisions Made
 
 **No Vite proxy needed**
+
 - Rationale: Backend has CORS configured from Phase 2, API client already uses VITE_API_URL with fallback
 - Approach: Direct connection (Option 1 from plan) vs proxy configuration
 - Outcome: Frontend configured for direct backend connection, simpler architecture
 
 **Environment variable documentation pattern**
+
 - Rationale: .env.example serves as single source of truth for all required environment variables
 - Approach: Comprehensive inline comments explaining purpose, defaults, and migration notes
 - Outcome: Developers can set up local environment by copying .env.example to .env.local
 
 **Legacy Supabase variables retained**
+
 - Rationale: Phase 5 migrations are auth-only; data operations still use Supabase temporarily
 - Approach: Document legacy variables with "TODO Phase 6" markers for future removal
 - Outcome: Transparent migration path, no breaking changes during Phase 5
@@ -112,6 +115,7 @@ Each task was committed atomically:
 ## Issues Encountered
 
 **Peer dependency warnings for React 19**
+
 - Issue: @stackframe/stack@2.8.60 expects React 19, project uses React 18.3.1
 - Resolution: Warnings are non-blocking, app uses React 18 and Stack Auth still works (common in monorepo packages)
 - Impact: None - frontend starts and compiles successfully despite warnings
@@ -121,6 +125,7 @@ Each task was committed atomically:
 **Manual configuration needed:**
 
 1. **Copy environment template:**
+
    ```bash
    cp .env.example .env.local
    ```
@@ -142,12 +147,14 @@ See .env.example for detailed inline documentation of each variable.
 ## Next Phase Readiness
 
 **Frontend migration complete:**
+
 - All 27+ hooks migrated to Stack Auth (identity layer)
 - Environment variables documented
 - Frontend can connect to local backend
 - TypeScript compiles, frontend starts successfully
 
 **Ready for Phase 6:**
+
 - Backend CRUD endpoints needed for remaining data operations
 - Can remove Supabase data calls once backend API is complete
 - TODO markers placed throughout codebase for tracking
@@ -155,10 +162,12 @@ See .env.example for detailed inline documentation of each variable.
 **Blockers:** None
 
 **Notes:**
+
 - Frontend uses hybrid migration pattern: Stack Auth for identity, Supabase for data (temporary)
 - All Supabase data calls marked with "TODO Phase 6" for easy tracking
 - Console warnings help developers know which operations need backend endpoints
 
 ---
-*Phase: 05-frontend-migration*
-*Completed: 2026-01-23*
+
+_Phase: 05-frontend-migration_
+_Completed: 2026-01-23_

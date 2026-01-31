@@ -69,7 +69,7 @@ export class SocketService {
     if (!redisUrl && !process.env.REDIS_HOST) {
       console.log(
         '[SocketService] Redis not configured - running in single-instance mode. ' +
-        'Set REDIS_URL or REDIS_HOST for multi-instance support.'
+          'Set REDIS_URL or REDIS_HOST for multi-instance support.',
       );
       return;
     }
@@ -93,10 +93,7 @@ export class SocketService {
       });
 
       // Connect both clients
-      await Promise.all([
-        this.pubClient.connect(),
-        this.subClient.connect()
-      ]);
+      await Promise.all([this.pubClient.connect(), this.subClient.connect()]);
 
       // Configure Redis adapter for Socket.io
       this.io.adapter(createAdapter(this.pubClient, this.subClient));
@@ -253,7 +250,7 @@ export class SocketService {
       console.log('[SocketService] Disconnecting Redis clients...');
       await Promise.all([
         this.pubClient?.disconnect().catch(() => {}),
-        this.subClient?.disconnect().catch(() => {})
+        this.subClient?.disconnect().catch(() => {}),
       ]);
       console.log('[SocketService] Redis clients disconnected');
     }

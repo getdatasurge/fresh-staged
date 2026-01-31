@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
-import { useTRPC, useTRPCClient } from "@/lib/trpc";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from 'react';
+import { useTRPC, useTRPCClient } from '@/lib/trpc';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import {
   Save,
   Loader2,
@@ -17,8 +17,8 @@ import {
   Clock,
   Wifi,
   Battery,
-  X
-} from "lucide-react";
+  X,
+} from 'lucide-react';
 
 interface NotificationSettings {
   id?: string;
@@ -48,9 +48,12 @@ const defaultSettings: NotificationSettings = {
   notify_warnings: false,
 };
 
-export function NotificationSettingsCard({ organizationId, canEdit }: NotificationSettingsCardProps) {
+export function NotificationSettingsCard({
+  organizationId,
+  canEdit,
+}: NotificationSettingsCardProps) {
   const [settings, setSettings] = useState<NotificationSettings>(defaultSettings);
-  const [newRecipient, setNewRecipient] = useState("");
+  const [newRecipient, setNewRecipient] = useState('');
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -100,9 +103,9 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
       });
     },
     onSuccess: (result) => {
-      setSettings(prev => ({ ...prev, id: result.id }));
+      setSettings((prev) => ({ ...prev, id: result.id }));
       queryClient.invalidateQueries({ queryKey: settingsQueryOptions.queryKey });
-      toast.success("Notification settings saved");
+      toast.success('Notification settings saved');
     },
     onError: (error) => {
       toast.error(`Failed to save: ${error.message}`);
@@ -118,32 +121,32 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
     if (!email) return;
 
     // Basic email validation
-    if (!email.includes("@") || !email.includes(".")) {
-      toast.error("Please enter a valid email address");
+    if (!email.includes('@') || !email.includes('.')) {
+      toast.error('Please enter a valid email address');
       return;
     }
 
     if (settings.recipients.includes(email)) {
-      toast.error("This email is already in the list");
+      toast.error('This email is already in the list');
       return;
     }
 
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       recipients: [...prev.recipients, email],
     }));
-    setNewRecipient("");
+    setNewRecipient('');
   };
 
   const removeRecipient = (email: string) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
-      recipients: prev.recipients.filter(r => r !== email),
+      recipients: prev.recipients.filter((r) => r !== email),
     }));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
       addRecipient();
     }
@@ -167,7 +170,8 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
           Organization Email Notifications
         </CardTitle>
         <CardDescription>
-          Configure email alerts for your entire organization. These settings apply to all sites and units.
+          Configure email alerts for your entire organization. These settings apply to all sites and
+          units.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -186,7 +190,9 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
           </div>
           <Switch
             checked={settings.email_enabled}
-            onCheckedChange={(checked) => setSettings(prev => ({ ...prev, email_enabled: checked }))}
+            onCheckedChange={(checked) =>
+              setSettings((prev) => ({ ...prev, email_enabled: checked }))
+            }
             disabled={!canEdit}
           />
         </div>
@@ -244,12 +250,16 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
                 <Thermometer className="w-4 h-4 text-critical" />
                 <div>
                   <p className="text-sm font-medium">Temperature Excursion</p>
-                  <p className="text-xs text-muted-foreground">When temperature goes out of range</p>
+                  <p className="text-xs text-muted-foreground">
+                    When temperature goes out of range
+                  </p>
                 </div>
               </div>
               <Switch
                 checked={settings.notify_temp_excursion}
-                onCheckedChange={(checked) => setSettings(prev => ({ ...prev, notify_temp_excursion: checked }))}
+                onCheckedChange={(checked) =>
+                  setSettings((prev) => ({ ...prev, notify_temp_excursion: checked }))
+                }
                 disabled={!canEdit || !settings.email_enabled}
               />
             </div>
@@ -264,7 +274,9 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
               </div>
               <Switch
                 checked={settings.notify_alarm_active}
-                onCheckedChange={(checked) => setSettings(prev => ({ ...prev, notify_alarm_active: checked }))}
+                onCheckedChange={(checked) =>
+                  setSettings((prev) => ({ ...prev, notify_alarm_active: checked }))
+                }
                 disabled={!canEdit || !settings.email_enabled}
               />
             </div>
@@ -274,12 +286,16 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
                 <Clock className="w-4 h-4 text-warning" />
                 <div>
                   <p className="text-sm font-medium">Manual Logging Required</p>
-                  <p className="text-xs text-muted-foreground">When a unit needs a manual temperature log</p>
+                  <p className="text-xs text-muted-foreground">
+                    When a unit needs a manual temperature log
+                  </p>
                 </div>
               </div>
               <Switch
                 checked={settings.notify_manual_required}
-                onCheckedChange={(checked) => setSettings(prev => ({ ...prev, notify_manual_required: checked }))}
+                onCheckedChange={(checked) =>
+                  setSettings((prev) => ({ ...prev, notify_manual_required: checked }))
+                }
                 disabled={!canEdit || !settings.email_enabled}
               />
             </div>
@@ -294,7 +310,9 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
               </div>
               <Switch
                 checked={settings.notify_offline}
-                onCheckedChange={(checked) => setSettings(prev => ({ ...prev, notify_offline: checked }))}
+                onCheckedChange={(checked) =>
+                  setSettings((prev) => ({ ...prev, notify_offline: checked }))
+                }
                 disabled={!canEdit || !settings.email_enabled}
               />
             </div>
@@ -304,12 +322,16 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
                 <Battery className="w-4 h-4 text-warning" />
                 <div>
                   <p className="text-sm font-medium">Low Battery</p>
-                  <p className="text-xs text-muted-foreground">When sensor battery is running low</p>
+                  <p className="text-xs text-muted-foreground">
+                    When sensor battery is running low
+                  </p>
                 </div>
               </div>
               <Switch
                 checked={settings.notify_low_battery}
-                onCheckedChange={(checked) => setSettings(prev => ({ ...prev, notify_low_battery: checked }))}
+                onCheckedChange={(checked) =>
+                  setSettings((prev) => ({ ...prev, notify_low_battery: checked }))
+                }
                 disabled={!canEdit || !settings.email_enabled}
               />
             </div>
@@ -331,7 +353,9 @@ export function NotificationSettingsCard({ organizationId, canEdit }: Notificati
           </div>
           <Switch
             checked={settings.notify_warnings}
-            onCheckedChange={(checked) => setSettings(prev => ({ ...prev, notify_warnings: checked }))}
+            onCheckedChange={(checked) =>
+              setSettings((prev) => ({ ...prev, notify_warnings: checked }))
+            }
             disabled={!canEdit || !settings.email_enabled}
           />
         </div>

@@ -17,20 +17,18 @@ export const pilotFeedbackRouter = router({
   /**
    * Upsert pilot feedback for the current week
    */
-  upsert: orgProcedure
-    .input(PilotFeedbackInput)
-    .mutation(async ({ ctx, input }) => {
-      return feedbackService.upsertFeedback({
-        organizationId: ctx.user.organizationId,
-        siteId: input.siteId,
-        weekStart: input.weekStart,
-        loggingSpeedRating: input.loggingSpeedRating,
-        alertFatigueRating: input.alertFatigueRating,
-        reportUsefulnessRating: input.reportUsefulnessRating,
-        notes: input.notes,
-        submittedBy: ctx.user.profileId,
-      });
-    }),
+  upsert: orgProcedure.input(PilotFeedbackInput).mutation(async ({ ctx, input }) => {
+    return feedbackService.upsertFeedback({
+      organizationId: ctx.user.organizationId,
+      siteId: input.siteId,
+      weekStart: input.weekStart,
+      loggingSpeedRating: input.loggingSpeedRating,
+      alertFatigueRating: input.alertFatigueRating,
+      reportUsefulnessRating: input.reportUsefulnessRating,
+      notes: input.notes,
+      submittedBy: ctx.user.profileId,
+    });
+  }),
 
   /**
    * List feedback for organization

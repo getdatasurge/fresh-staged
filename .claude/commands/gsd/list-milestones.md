@@ -1,7 +1,7 @@
 ---
 name: gsd:list-milestones
 description: List all archived milestones with metadata
-argument-hint: ""
+argument-hint: ''
 allowed-tools:
   - Read
   - Bash
@@ -26,6 +26,7 @@ Provides visibility into what has been archived and enables milestone discovery 
 <context>
 
 **Check if milestones exist:**
+
 ```bash
 ls .planning/MILESTONES.md 2>/dev/null
 ```
@@ -84,11 +85,13 @@ Present workflow output showing all archived milestones in table format.
 ## Examples
 
 List all archived milestones:
+
 ```
 /gsd:list-milestones
 ```
 
 Expected output (when milestones exist):
+
 ```
 Archived Milestones
 ==================
@@ -104,6 +107,7 @@ Restore a milestone: /gsd:restore-milestone [name]
 ```
 
 Expected output (when no milestones):
+
 ```
 No milestones archived yet. Archive your first milestone with /gsd:archive-milestone
 ```

@@ -25,7 +25,7 @@ const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
  * @returns Array of { userId, phoneNumber } for users with valid E.164 phone numbers
  */
 async function getAlertRecipients(
-  organizationId: string
+  organizationId: string,
 ): Promise<Array<{ userId: string; phoneNumber: string }>> {
   // Get users with phone numbers who should receive alerts
   // For now, get all users in org with phone numbers and smsEnabled
@@ -36,17 +36,12 @@ async function getAlertRecipients(
       phoneNumber: profiles.phone,
     })
     .from(profiles)
-    .where(
-      and(
-        eq(profiles.organizationId, organizationId),
-        eq(profiles.smsEnabled, true)
-      )
-    );
+    .where(and(eq(profiles.organizationId, organizationId), eq(profiles.smsEnabled, true)));
 
   // Filter to only valid E.164 phone numbers
   return recipients.filter(
     (r): r is { userId: string; phoneNumber: string } =>
-      r.phoneNumber !== null && r.phoneNumber.startsWith('+')
+      r.phoneNumber !== null && r.phoneNumber.startsWith('+'),
   );
 }
 
@@ -67,8 +62,8 @@ async function isRateLimited(userId: string): Promise<boolean> {
         eq(notificationDeliveries.profileId, userId),
         eq(notificationDeliveries.channel, 'sms'),
         inArray(notificationDeliveries.status, ['sent', 'delivered']),
-        gte(notificationDeliveries.sentAt, rateLimitCutoff)
-      )
+        gte(notificationDeliveries.sentAt, rateLimitCutoff),
+      ),
     )
     .limit(1);
 
@@ -93,7 +88,7 @@ async function queueAlertSms(
   organizationId: string,
   alertId: string,
   message: string,
-  alertType: string
+  alertType: string,
 ): Promise<void> {
   const queueService = getQueueService();
   if (!queueService || !queueService.isRedisEnabled()) {
@@ -136,7 +131,7 @@ async function queueAlertSms(
 
     // Log with masked phone number for privacy
     console.log(
-      `[Alert SMS] Queued SMS for user ${recipient.userId} to ${recipient.phoneNumber.slice(0, 5)}***${recipient.phoneNumber.slice(-2)}`
+      `[Alert SMS] Queued SMS for user ${recipient.userId} to ${recipient.phoneNumber.slice(0, 5)}***${recipient.phoneNumber.slice(-2)}`,
     );
   }
 }
@@ -168,9 +163,7 @@ export interface EffectiveThresholds {
  * @returns Effective thresholds with hysteresis and confirmation time
  * @throws Error if unit not found or no thresholds configured
  */
-export async function resolveEffectiveThresholds(
-  unitId: string
-): Promise<EffectiveThresholds> {
+export async function resolveEffectiveThresholds(unitId: string): Promise<EffectiveThresholds> {
   // Fetch unit with area/site/org context
   const [unitData] = await db
     .select({
@@ -213,9 +206,9 @@ export async function resolveEffectiveThresholds(
         or(
           eq(alertRules.unitId, unitId),
           and(eq(alertRules.siteId, siteId), isNull(alertRules.unitId)),
-          and(isNull(alertRules.siteId), isNull(alertRules.unitId))
-        )
-      )
+          and(isNull(alertRules.siteId), isNull(alertRules.unitId)),
+        ),
+      ),
     );
 
   // Find most specific rule (unit > site > org)
@@ -239,7 +232,7 @@ export async function resolveEffectiveThresholds(
   // Validate we have thresholds
   if (tempMin === null || tempMax === null) {
     throw new Error(
-      `Unit ${unitId} has no temperature thresholds configured (neither on unit nor in alert rules)`
+      `Unit ${unitId} has no temperature thresholds configured (neither on unit nor in alert rules)`,
     );
   }
 
@@ -261,7 +254,7 @@ export async function resolveEffectiveThresholds(
  */
 export async function createAlertIfNotExists(
   tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
-  data: InsertAlert
+  data: InsertAlert,
 ): Promise<Alert | null> {
   // Check for existing active or acknowledged alert of same type for this unit
   const [existing] = await tx
@@ -271,8 +264,8 @@ export async function createAlertIfNotExists(
       and(
         eq(alerts.unitId, data.unitId),
         eq(alerts.alertType, data.alertType),
-        inArray(alerts.status, ['active', 'acknowledged'])
-      )
+        inArray(alerts.status, ['active', 'acknowledged']),
+      ),
     )
     .limit(1);
 
@@ -303,7 +296,7 @@ export async function evaluateUnitAfterReading(
   unitId: string,
   latestTemp: number,
   recordedAt: Date,
-  socketService?: SocketService
+  socketService?: SocketService,
 ): Promise<EvaluationResult> {
   return db.transaction(async (tx) => {
     // Fetch current unit state with organization context
@@ -423,8 +416,8 @@ export async function evaluateUnitAfterReading(
             and(
               eq(alerts.unitId, unitId),
               eq(alerts.alertType, 'alarm_active'),
-              inArray(alerts.status, ['active', 'acknowledged'])
-            )
+              inArray(alerts.status, ['active', 'acknowledged']),
+            ),
           )
           .returning();
 
@@ -445,17 +438,14 @@ export async function evaluateUnitAfterReading(
           queueAlertSms(organizationId, escalatedAlert.id, alertMessage, 'alarm_active').catch(
             (err) => {
               console.error('[Alert SMS] Failed to queue SMS:', err);
-            }
+            },
           );
         }
       }
     }
 
     // STATE TRANSITION 3: (excursion | alarm_active) -> restoring (temp returns to range)
-    if (
-      inRangeWithHysteresis &&
-      (unit.status === 'excursion' || unit.status === 'alarm_active')
-    ) {
+    if (inRangeWithHysteresis && (unit.status === 'excursion' || unit.status === 'alarm_active')) {
       result.stateChange = {
         from: unit.status,
         to: 'restoring',
@@ -482,8 +472,8 @@ export async function evaluateUnitAfterReading(
           and(
             eq(alerts.unitId, unitId),
             eq(alerts.alertType, 'alarm_active'),
-            inArray(alerts.status, ['active', 'acknowledged'])
-          )
+            inArray(alerts.status, ['active', 'acknowledged']),
+          ),
         )
         .returning();
 

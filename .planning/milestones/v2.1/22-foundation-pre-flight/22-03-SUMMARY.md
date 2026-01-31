@@ -12,9 +12,9 @@ dependency-graph:
 tech-stack:
   added: []
   patterns:
-    - checkpoint-files: "STATE_DIR/.checkpoint-{name} with ISO timestamps"
-    - error-state: "STATE_DIR/.last-error with script/line/exit_code/category"
-    - recovery-prompts: "Interactive prompts based on error category"
+    - checkpoint-files: 'STATE_DIR/.checkpoint-{name} with ISO timestamps'
+    - error-state: 'STATE_DIR/.last-error with script/line/exit_code/category'
+    - recovery-prompts: 'Interactive prompts based on error category'
 
 key-files:
   created: []
@@ -22,10 +22,10 @@ key-files:
     - scripts/lib/preflight-lib.sh
 
 decisions:
-  - "STATE_DIR fallback: /var/lib/freshtrack-deploy with SCRIPT_DIR/.deploy-state fallback"
-  - "Interactive recovery only when stdin is terminal ([[ -t 0 ]])"
-  - "Critical and fatal errors always abort without retry prompt"
-  - "Transient and recoverable errors default to retry (Y/n prompt)"
+  - 'STATE_DIR fallback: /var/lib/freshtrack-deploy with SCRIPT_DIR/.deploy-state fallback'
+  - 'Interactive recovery only when stdin is terminal ([[ -t 0 ]])'
+  - 'Critical and fatal errors always abort without retry prompt'
+  - 'Transient and recoverable errors default to retry (Y/n prompt)'
 
 metrics:
   duration: ~8 minutes
@@ -43,6 +43,7 @@ Checkpoint state management with error persistence and category-based interactiv
 ## What Was Built
 
 ### Checkpoint State Management
+
 - `STATE_DIR` configuration with `/var/lib/freshtrack-deploy` default
 - `ensure_state_dir()` with automatic fallback to local directory
 - `checkpoint_done()` checks if checkpoint file exists
@@ -53,11 +54,13 @@ Checkpoint state management with error persistence and category-based interactiv
 - `run_step()` orchestrates step execution with automatic skip/checkpoint
 
 ### Error State Persistence
+
 - `save_error_state()` writes timestamp, script, line, exit_code, category
 - `load_error_state()` sources error file to restore variables
 - Error state saved in `STATE_DIR/.last-error`
 
 ### Interactive Recovery Handler
+
 - `handle_recovery()` prompts user based on error category
 - Transient errors: "Retry now? [Y/n]" with auto-retry default
 - Recoverable permission: Shows sudo/ownership suggestions, retry prompt
@@ -67,25 +70,27 @@ Checkpoint state management with error persistence and category-based interactiv
 - Unknown errors: Conservative "Retry? [y/N]" prompt
 
 ### Updated Error Handler
+
 - `error_handler()` now calls `save_error_state()` after diagnostics
 - Calls `handle_recovery()` only in interactive mode (`[[ -t 0 ]]`)
 - On retry, executes `exec "$0" "$@"` to restart script
 
 ### Self-Tests Added
+
 - Test 4: Checkpoint functions (done, set, clear, time)
 - Test 5: Error state functions (save, load, verify values)
 
 ## Commits
 
-| Hash | Type | Description |
-|------|------|-------------|
-| 6a1f664 | feat | Add checkpoint functions for state tracking |
+| Hash    | Type | Description                                       |
+| ------- | ---- | ------------------------------------------------- |
+| 6a1f664 | feat | Add checkpoint functions for state tracking       |
 | 94d1233 | feat | Add error state persistence and recovery handling |
 
 ## Files Changed
 
-| File | Changes |
-|------|---------|
+| File                         | Changes                                               |
+| ---------------------------- | ----------------------------------------------------- |
 | scripts/lib/preflight-lib.sh | +211 lines (checkpoint, error state, recovery, tests) |
 
 ## Verification Results
@@ -111,6 +116,7 @@ None - plan executed exactly as written.
 ## Integration Notes
 
 ### For 22-04 (Pre-Flight Orchestrator)
+
 The orchestrator can now use `run_step` to wrap each validation:
 
 ```bash
@@ -120,13 +126,16 @@ run_step "install-docker" install_docker
 ```
 
 On failure, `handle_recovery` will:
+
 1. Save error state for diagnostics
 2. Prompt user with category-specific guidance
 3. Offer retry for transient/recoverable errors
 4. Show rollback commands for critical errors
 
 ### Resume Flow
+
 On script re-run:
+
 1. Each `run_step` checks `checkpoint_done`
 2. Completed steps show `[SKIP]` with timestamp
 3. Execution resumes from first incomplete step
@@ -135,6 +144,7 @@ On script re-run:
 ## Next Phase Readiness
 
 Phase 22-04 (Pre-Flight Orchestrator) is unblocked. The checkpoint system enables:
+
 - Idempotent pre-flight checks
 - Resume from failure point
 - Interactive recovery for operator-assisted deployments

@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target } from "lucide-react";
-import type { WidgetProps } from "../types";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Target } from 'lucide-react';
+import type { WidgetProps } from '../types';
 
 export function ComplianceScoreboardWidget({ site }: WidgetProps) {
   return (

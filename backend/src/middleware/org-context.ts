@@ -4,8 +4,7 @@ import { userService } from '../services/index.js';
 /**
  * UUID validation regex (RFC 4122 compliant)
  */
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Organization context middleware
@@ -37,7 +36,7 @@ const UUID_REGEX =
  */
 export async function requireOrgContext(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   // Check authentication
   if (!request.user) {
@@ -86,7 +85,7 @@ export async function requireOrgContext(
     request.user.id,
     organizationId,
     request.user.email,
-    request.user.name
+    request.user.name,
   );
 
   // Attach organization context to request.user

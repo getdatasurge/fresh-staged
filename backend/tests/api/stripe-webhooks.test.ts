@@ -208,7 +208,7 @@ describe('Stripe Webhooks API', () => {
       const event = createCheckoutCompletedEvent();
       mockVerifySignature.mockReturnValue(event);
       mockHandleEvent.mockRejectedValue(
-        new stripeWebhookService.WebhookError('Missing organizationId')
+        new stripeWebhookService.WebhookError('Missing organizationId'),
       );
 
       const response = await app.inject({

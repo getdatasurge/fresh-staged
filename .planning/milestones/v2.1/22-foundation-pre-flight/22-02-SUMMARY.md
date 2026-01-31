@@ -21,9 +21,9 @@ affects: [23-prerequisites-installation, 24-interactive-configuration, 25-deploy
 tech-stack:
   added: []
   patterns:
-    - "/proc/meminfo parsing for RAM detection"
-    - "df -BG for disk space checks"
-    - "curl HTTP status for connectivity validation"
+    - '/proc/meminfo parsing for RAM detection'
+    - 'df -BG for disk space checks'
+    - 'curl HTTP status for connectivity validation'
 
 key-files:
   created: []
@@ -31,13 +31,13 @@ key-files:
     - scripts/lib/preflight-lib.sh
 
 key-decisions:
-  - "MemAvailable fallback to MemFree+Buffers+Cached for older kernels"
-  - "CPU check is warning-only, not blocking"
-  - "Network check accepts HTTP 401 as success (Docker registry auth expected)"
+  - 'MemAvailable fallback to MemFree+Buffers+Cached for older kernels'
+  - 'CPU check is warning-only, not blocking'
+  - 'Network check accepts HTTP 401 as success (Docker registry auth expected)'
 
 patterns-established:
-  - "PREFLIGHT-XX: Function naming convention for validation functions"
-  - "Clear error messages with exact requirements and remediation steps"
+  - 'PREFLIGHT-XX: Function naming convention for validation functions'
+  - 'Clear error messages with exact requirements and remediation steps'
 
 # Metrics
 duration: 4min
@@ -57,6 +57,7 @@ completed: 2026-01-25
 - **Files modified:** 1
 
 ## Accomplishments
+
 - RAM validation with MemAvailable parsing and fallback for older kernels
 - Disk validation using df with configurable mount point
 - CPU validation (non-blocking warning for low core counts)
@@ -74,27 +75,34 @@ All tasks committed together as they form a cohesive unit:
 3. **Task 3: Update self-tests to cover validation functions** - `eea2d9c` (feat)
 
 ## Files Created/Modified
+
 - `scripts/lib/preflight-lib.sh` - Added 6 validation functions and updated self-tests (+306 lines)
 
 ## Decisions Made
+
 - **MemAvailable fallback:** For older kernels without MemAvailable, calculate from MemFree + Buffers + Cached
 - **CPU non-blocking:** Low CPU count shows warning but doesn't fail, allowing deployment on minimal VMs
 - **HTTP 401 acceptance:** Docker registry returns 401 for unauthenticated requests, which is expected and indicates reachability
 
 ## Deviations from Plan
+
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 None - all validations implemented as specified and tests pass.
 
 ## User Setup Required
+
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Validation functions ready for use in deployment scripts
 - Plan 22-03 can add checkpoint/rollback functions to the library
 - Plan 22-04 can create the main preflight.sh script using these validators
 
 ---
-*Phase: 22-foundation-pre-flight*
-*Completed: 2026-01-25*
+
+_Phase: 22-foundation-pre-flight_
+_Completed: 2026-01-25_

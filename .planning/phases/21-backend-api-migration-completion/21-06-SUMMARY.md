@@ -32,12 +32,12 @@ key-files:
     - backend/src/trpc/router.ts
 
 key-decisions:
-  - "TTN-SETTINGS-01: Raw SQL for ttn_settings table (not in Drizzle schema)"
-  - "TTN-SETTINGS-02: Mock connection test result (TTN API integration planned for future)"
-  - "TTN-SETTINGS-03: Admin/owner role for update, all roles for get/test"
+  - 'TTN-SETTINGS-01: Raw SQL for ttn_settings table (not in Drizzle schema)'
+  - 'TTN-SETTINGS-02: Mock connection test result (TTN API integration planned for future)'
+  - 'TTN-SETTINGS-03: Admin/owner role for update, all roles for get/test'
 
 patterns-established:
-  - "Raw SQL service pattern: Tables not in Drizzle schema use db.execute with sql template literal"
+  - 'Raw SQL service pattern: Tables not in Drizzle schema use db.execute with sql template literal'
 
 # Metrics
 duration: 5min
@@ -57,6 +57,7 @@ completed: 2026-01-25
 - **Files modified:** 5
 
 ## Accomplishments
+
 - Created TTN settings Zod schemas with provisioning status mapping
 - Implemented ttnSettingsRouter with get, update, test procedures
 - Created service layer using raw SQL for ttn_settings table
@@ -72,6 +73,7 @@ Each task was committed atomically:
 3. **Task 3: Register router and create tests** - `3e527fb` (test)
 
 ## Files Created/Modified
+
 - `backend/src/schemas/ttn-settings.ts` - Zod validation schemas for TTN settings
 - `backend/src/routers/ttn-settings.router.ts` - tRPC router with get, update, test procedures
 - `backend/src/services/ttn-settings.service.ts` - Database operations via raw SQL
@@ -79,6 +81,7 @@ Each task was committed atomically:
 - `backend/src/trpc/router.ts` - Added ttnSettings router registration
 
 ## Decisions Made
+
 - **TTN-SETTINGS-01:** Used raw SQL service pattern since ttn_settings table is not in Drizzle schema (same pattern as notification-policies.service.ts)
 - **TTN-SETTINGS-02:** Test procedure returns mock success result; actual TTN API integration planned for future work
 - **TTN-SETTINGS-03:** Admin/owner required for update mutations; all authenticated roles can use get/test
@@ -88,6 +91,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Added service layer for database access**
+
 - **Found during:** Task 2 (Router implementation)
 - **Issue:** Plan specified direct db access via ctx.db, but orgProcedure context doesn't include db
 - **Fix:** Created ttn-settings.service.ts with raw SQL queries following notification-policy.service.ts pattern
@@ -101,6 +105,7 @@ Each task was committed atomically:
 **Impact on plan:** Service layer extraction improves code organization and follows established patterns. No scope creep.
 
 ## Issues Encountered
+
 None - plan executed smoothly after adapting to service layer pattern.
 
 ## User Setup Required
@@ -108,10 +113,12 @@ None - plan executed smoothly after adapting to service layer pattern.
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - TTN settings router ready for frontend hook migration
 - useTTNSettings hook can now migrate from edge function to tRPC
 - Future work: Implement actual TTN API connection test (currently mock)
 
 ---
-*Phase: 21-backend-api-migration-completion*
-*Completed: 2026-01-25*
+
+_Phase: 21-backend-api-migration-completion_
+_Completed: 2026-01-25_

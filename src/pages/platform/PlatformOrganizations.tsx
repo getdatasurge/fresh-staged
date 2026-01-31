@@ -1,7 +1,7 @@
-import PlatformLayout from '@/components/platform/PlatformLayout'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import PlatformLayout from '@/components/platform/PlatformLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -9,29 +9,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { useSuperAdmin } from '@/contexts/SuperAdminContext'
-import { useTRPC } from '@/lib/trpc'
-import { useQuery } from '@tanstack/react-query'
-import {
-  Building2,
-  ChevronRight,
-  MapPin,
-  RefreshCw,
-  Search,
-  Users,
-} from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+} from '@/components/ui/table';
+import { useSuperAdmin } from '@/contexts/SuperAdminContext';
+import { useTRPC } from '@/lib/trpc';
+import { useQuery } from '@tanstack/react-query';
+import { Building2, ChevronRight, MapPin, RefreshCw, Search, Users } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function PlatformOrganizations() {
   const { logSuperAdminAction } = useSuperAdmin();
   const trpc = useTRPC();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const orgsQuery = useQuery(
-    trpc.admin.listOrganizations.queryOptions(undefined)
-  );
+  const orgsQuery = useQuery(trpc.admin.listOrganizations.queryOptions(undefined));
 
   // Handle side effect for logging
   useEffect(() => {
@@ -46,9 +37,8 @@ export default function PlatformOrganizations() {
   const filteredOrganizations = useMemo(() => {
     if (!searchQuery) return organizations;
     const query = searchQuery.toLowerCase();
-    return organizations.filter((org) =>
-      org.name.toLowerCase().includes(query) ||
-      org.slug.toLowerCase().includes(query)
+    return organizations.filter(
+      (org) => org.name.toLowerCase().includes(query) || org.slug.toLowerCase().includes(query),
     );
   }, [organizations, searchQuery]);
 
@@ -72,9 +62,7 @@ export default function PlatformOrganizations() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Users
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalUsers}</div>
@@ -82,9 +70,7 @@ export default function PlatformOrganizations() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Sites
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Sites</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalSites}</div>
@@ -147,9 +133,7 @@ export default function PlatformOrganizations() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                        {org.slug}
-                      </code>
+                      <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{org.slug}</code>
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1">
@@ -164,11 +148,13 @@ export default function PlatformOrganizations() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
-                        org.complianceMode === 'haccp' 
-                          ? 'border-transparent bg-primary text-primary-foreground' 
-                          : 'border-transparent bg-secondary text-secondary-foreground'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
+                          org.complianceMode === 'haccp'
+                            ? 'border-transparent bg-primary text-primary-foreground'
+                            : 'border-transparent bg-secondary text-secondary-foreground'
+                        }`}
+                      >
                         {org.complianceMode || 'standard'}
                       </span>
                     </TableCell>
@@ -194,5 +180,4 @@ export default function PlatformOrganizations() {
   );
 }
 
-export { PlatformOrganizations }
-
+export { PlatformOrganizations };

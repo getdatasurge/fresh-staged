@@ -1,60 +1,51 @@
 /**
  * External Weather Widget
- * 
+ *
  * Displays current weather conditions and hourly forecast for the site location.
  * Requires site latitude/longitude to be configured.
  * Includes auto-prompt for setting location and edit icon.
  */
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { CloudSun, MapPin, Wind, Droplets, RefreshCw, AlertCircle, Pencil } from 'lucide-react';
+import { useWeather } from '@/hooks/useWeather';
+import { usePermissions } from '@/hooks/useUserRole';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { CloudSun, MapPin, Wind, Droplets, RefreshCw, AlertCircle, Pencil } from "lucide-react";
-import { useWeather } from "@/hooks/useWeather";
-import { usePermissions } from "@/hooks/useUserRole";
-import { getWeatherCondition, getConditionBgClass, getConditionTextClass } from "@/lib/weather/weatherConditions";
-import { isValidLocation } from "@/lib/weather/weatherService";
-import { format } from "date-fns";
-import { SiteLocationModal } from "@/components/site/SiteLocationModal";
-import type { WidgetProps } from "../types";
+  getWeatherCondition,
+  getConditionBgClass,
+  getConditionTextClass,
+} from '@/lib/weather/weatherConditions';
+import { isValidLocation } from '@/lib/weather/weatherService';
+import { format } from 'date-fns';
+import { SiteLocationModal } from '@/components/site/SiteLocationModal';
+import type { WidgetProps } from '../types';
 
-export function ExternalWeatherWidget({ 
-  site, 
+export function ExternalWeatherWidget({
+  site,
   recentlyAddedWidgetId,
   onClearRecentlyAdded,
   onSiteLocationChange,
 }: WidgetProps & { onSiteLocationChange?: () => void }) {
   const [locationModalOpen, setLocationModalOpen] = useState(false);
   const { canManageSites } = usePermissions();
-  
+
   const hasLocation = isValidLocation(site?.latitude, site?.longitude);
-  
-  const { 
-    data: weather, 
-    isLoading, 
-    error, 
+
+  const {
+    data: weather,
+    isLoading,
+    error,
     refetch,
-    isRefetching 
-  } = useWeather(
-    site?.latitude,
-    site?.longitude,
-    site?.timezone
-  );
+    isRefetching,
+  } = useWeather(site?.latitude, site?.longitude, site?.timezone);
 
   // Auto-prompt when widget was just added and location is missing
   useEffect(() => {
-    if (
-      recentlyAddedWidgetId === "external-weather" &&
-      !hasLocation &&
-      canManageSites
-    ) {
+    if (recentlyAddedWidgetId === 'external-weather' && !hasLocation && canManageSites) {
       setLocationModalOpen(true);
       onClearRecentlyAdded?.();
     }
@@ -82,11 +73,7 @@ export function ExternalWeatherWidget({
               </p>
             </div>
             {canManageSites ? (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setLocationModalOpen(true)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setLocationModalOpen(true)}>
                 <MapPin className="h-3 w-3 mr-1" />
                 Set Location
               </Button>
@@ -97,14 +84,14 @@ export function ExternalWeatherWidget({
             )}
           </CardContent>
         </Card>
-        
+
         <SiteLocationModal
           open={locationModalOpen}
           onOpenChange={setLocationModalOpen}
-          siteId={site?.id || ""}
+          siteId={site?.id || ''}
           currentLatitude={site?.latitude ?? null}
           currentLongitude={site?.longitude ?? null}
-          currentTimezone={site?.timezone || "America/New_York"}
+          currentTimezone={site?.timezone || 'America/New_York'}
           canEdit={canManageSites}
           onSaved={() => {
             onSiteLocationChange?.();
@@ -178,7 +165,7 @@ export function ExternalWeatherWidget({
             <div>
               <p className="text-sm font-medium">Weather Unavailable</p>
               <p className="text-xs text-muted-foreground mt-1">
-                {error?.message || "Unable to fetch weather data"}
+                {error?.message || 'Unable to fetch weather data'}
               </p>
             </div>
             <Button variant="outline" size="sm" onClick={() => refetch()}>
@@ -187,14 +174,14 @@ export function ExternalWeatherWidget({
             </Button>
           </CardContent>
         </Card>
-        
+
         <SiteLocationModal
           open={locationModalOpen}
           onOpenChange={setLocationModalOpen}
-          siteId={site?.id || ""}
+          siteId={site?.id || ''}
           currentLatitude={site?.latitude ?? null}
           currentLongitude={site?.longitude ?? null}
-          currentTimezone={site?.timezone || "America/New_York"}
+          currentTimezone={site?.timezone || 'America/New_York'}
           canEdit={canManageSites}
           onSaved={() => {
             onSiteLocationChange?.();
@@ -210,9 +197,7 @@ export function ExternalWeatherWidget({
 
   // Get next 6 hours of forecast
   const now = new Date();
-  const hourlyForecast = weather.hourly
-    .filter((h) => new Date(h.time) > now)
-    .slice(0, 6);
+  const hourlyForecast = weather.hourly.filter((h) => new Date(h.time) > now).slice(0, 6);
 
   return (
     <>
@@ -239,9 +224,9 @@ export function ExternalWeatherWidget({
                   <TooltipContent>Edit site location</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 className="h-6 w-6"
                 onClick={() => refetch()}
                 disabled={isRefetching}
@@ -255,7 +240,9 @@ export function ExternalWeatherWidget({
           {/* Current conditions */}
           <div className="flex items-center gap-4">
             <div className={`p-3 rounded-full ${getConditionBgClass(currentCondition.category)}`}>
-              <ConditionIcon className={`h-10 w-10 ${getConditionTextClass(currentCondition.category)}`} />
+              <ConditionIcon
+                className={`h-10 w-10 ${getConditionTextClass(currentCondition.category)}`}
+              />
             </div>
             <div>
               <p className="text-3xl font-bold">{Math.round(weather.current.temperature)}°</p>
@@ -284,14 +271,16 @@ export function ExternalWeatherWidget({
                   const condition = getWeatherCondition(hour.conditionCode);
                   const HourIcon = condition.icon;
                   return (
-                    <div 
+                    <div
                       key={hour.time}
                       className="flex-1 flex flex-col items-center p-2 rounded bg-muted/50"
                     >
                       <span className="text-xs text-muted-foreground">
-                        {format(new Date(hour.time), "ha")}
+                        {format(new Date(hour.time), 'ha')}
                       </span>
-                      <HourIcon className={`h-4 w-4 my-1 ${getConditionTextClass(condition.category)}`} />
+                      <HourIcon
+                        className={`h-4 w-4 my-1 ${getConditionTextClass(condition.category)}`}
+                      />
                       <span className="text-sm font-medium">{Math.round(hour.temperature)}°</span>
                     </div>
                   );
@@ -302,18 +291,18 @@ export function ExternalWeatherWidget({
 
           {/* Last updated */}
           <p className="text-xs text-muted-foreground text-center">
-            Updated {format(new Date(weather.current.lastUpdated), "h:mm a")}
+            Updated {format(new Date(weather.current.lastUpdated), 'h:mm a')}
           </p>
         </CardContent>
       </Card>
-      
+
       <SiteLocationModal
         open={locationModalOpen}
         onOpenChange={setLocationModalOpen}
-        siteId={site?.id || ""}
+        siteId={site?.id || ''}
         currentLatitude={site?.latitude ?? null}
         currentLongitude={site?.longitude ?? null}
-        currentTimezone={site?.timezone || "America/New_York"}
+        currentTimezone={site?.timezone || 'America/New_York'}
         canEdit={canManageSites}
         onSaved={() => {
           onSiteLocationChange?.();

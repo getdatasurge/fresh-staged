@@ -42,12 +42,15 @@ metrics:
 ## What Was Built
 
 ### 1. Socket.io Dependencies (Task 1)
+
 - Installed `socket.io@4.8.3` for real-time WebSocket server
 - Added `bufferutil@4.1.0` and `utf-8-validate@6.0.6` as optional performance optimizations
 - Updated `package.json` with proper dependency placement
 
 ### 2. Socket.io Plugin & TypeScript Types (Task 2)
+
 Created custom Socket.io plugin (`backend/src/plugins/socket.plugin.ts`):
+
 - Direct Socket.io v4 integration with Fastify 5 (bypassing incompatible fastify-socket.io)
 - CORS configuration matching Fastify app settings (localhost:8080, localhost:5173, WSL IPs)
 - Connection lifecycle logging (connect/disconnect events)
@@ -55,6 +58,7 @@ Created custom Socket.io plugin (`backend/src/plugins/socket.plugin.ts`):
 - Room-based subscription handlers (placeholder for org/site/unit isolation)
 
 Created TypeScript type definitions (`backend/src/types/socket.d.ts`):
+
 - `SocketData` interface for user context (userId, organizationId, role, email)
 - `ServerToClientEvents` interface for typed server→client events
 - `ClientToServerEvents` interface for typed client→server events
@@ -64,17 +68,21 @@ Created TypeScript type definitions (`backend/src/types/socket.d.ts`):
 **TypeScript compilation**: ✅ No errors
 
 ### 3. Fastify Integration & Health Endpoint (Task 3)
+
 Updated `backend/src/app.ts`:
+
 - Imported and registered Socket.io plugin with CORS configuration
 - Added `app.ready()` callback to setup Socket.io handlers after server initialization
 - Log "Socket.io ready" on successful setup
 
 Updated `backend/src/routes/health.ts`:
+
 - Added `/health/realtime` endpoint
 - Returns `{"websocket":{"enabled":true,"connections":N}}`
 - Uses `fastify.io.engine.clientsCount` for active connection count
 
 **Verification**:
+
 - ✅ Backend starts without errors
 - ✅ "Socket.io plugin registered" message appears
 - ✅ "Socket.io ready" message appears
@@ -86,6 +94,7 @@ Updated `backend/src/routes/health.ts`:
 ### Auto-fixed Issues
 
 **[Rule 1 - Bug] Fixed npm installation failure**
+
 - **Found during:** Task 1
 - **Issue:** npm install failed with "Cannot read properties of null (reading 'matches')" error
 - **Root cause:** Corrupted node_modules directory
@@ -94,6 +103,7 @@ Updated `backend/src/routes/health.ts`:
 - **Commit:** Included in c2e76f0
 
 **[Rule 1 - Bug] Fixed TypeScript type error in socket.plugin.ts**
+
 - **Found during:** Task 2 TypeScript compilation
 - **Issue:** `socket.handshake.time` type mismatch - arithmetic operation on non-number type
 - **Fix:** Removed duration calculation from disconnect logging
@@ -101,6 +111,7 @@ Updated `backend/src/routes/health.ts`:
 - **Commit:** Included in 256c909
 
 **[Rule 1 - Bug] Fixed CORS type mismatch**
+
 - **Found during:** Task 3 TypeScript compilation
 - **Issue:** `(string | RegExp)[]` not assignable to `string | string[] | RegExp | RegExp[]`
 - **Fix:** Updated `SocketPluginOptions` interface to accept `(string | RegExp)[]` type
@@ -108,6 +119,7 @@ Updated `backend/src/routes/health.ts`:
 - **Commit:** Included in 3813820
 
 **[Rule 3 - Blocking] Used custom plugin instead of fastify-socket.io**
+
 - **Found during:** Task 1 dependency installation
 - **Issue:** `fastify-socket.io` peer dependency requires Fastify 4.x, project uses Fastify 5.x
 - **Fix:** Created custom Socket.io plugin with direct integration
@@ -156,6 +168,7 @@ Join corresponding rooms
 ## Testing
 
 **Manual verification (Task 3)**:
+
 ```bash
 # Start backend
 npm run dev
@@ -171,6 +184,7 @@ curl http://localhost:3000/health/realtime
 ```
 
 **TypeScript compilation**:
+
 ```bash
 npx tsc --noEmit
 # No errors ✓
@@ -179,14 +193,17 @@ npx tsc --noEmit
 ## Next Phase Readiness
 
 ### Blockers
+
 None - all functionality delivered as planned.
 
 ### Concerns
+
 1. **Authentication not implemented**: Socket.io accepts all connections (addressed in 14-02)
 2. **Redis adapter not configured**: Single-instance only (addressed in 14-03)
 3. **No real-time data streaming yet**: Events defined but not emitted (addressed in 14-04)
 
 ### Follow-up Work (Subsequent Plans)
+
 - **14-02**: JWT authentication middleware for Socket.io connections
 - **14-03**: Redis adapter for horizontal scaling
 - **14-04**: Real-time sensor data streaming

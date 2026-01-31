@@ -53,7 +53,7 @@ export const QueueNames = {
   METER_REPORTING: 'meter-reporting',
 } as const;
 
-export type QueueName = typeof QueueNames[keyof typeof QueueNames];
+export type QueueName = (typeof QueueNames)[keyof typeof QueueNames];
 
 // Job name constants
 export const JobNames = {
@@ -63,7 +63,7 @@ export const JobNames = {
   SENSOR_COUNT_SCHEDULER: 'meter:sensor-count-scheduler',
 } as const;
 
-export type JobName = typeof JobNames[keyof typeof JobNames];
+export type JobName = (typeof JobNames)[keyof typeof JobNames];
 
 // Type helpers for strongly-typed job handling
 export type SmsNotificationJob = Job<SmsNotificationJobData>;
@@ -78,7 +78,7 @@ export const defaultJobOptions: JobsOptions = {
     delay: 1000, // 1 second initial delay
   },
   removeOnComplete: 100, // Keep last 100 completed jobs
-  removeOnFail: 500,     // Keep last 500 failed jobs for debugging
+  removeOnFail: 500, // Keep last 500 failed jobs for debugging
 };
 
 /**

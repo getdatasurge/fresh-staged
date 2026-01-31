@@ -17,7 +17,12 @@ affects: [09-02-credential-migration, 09-03-environment-variable-hardening, prod
 # Tech tracking
 tech-stack:
   added: [infisical/infisical:latest-postgres, postgres:15-alpine, redis:7-alpine]
-  patterns: [separate Docker Compose stack pattern, health check orchestration, environment-driven configuration]
+  patterns:
+    [
+      separate Docker Compose stack pattern,
+      health check orchestration,
+      environment-driven configuration,
+    ]
 
 key-files:
   created:
@@ -27,15 +32,15 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Separate Docker Compose stack for Infisical (independent lifecycle from app)"
-  - "Named Docker volumes for database persistence (infisical_db_data, infisical_redis_data)"
-  - "Health check-based dependency orchestration (service_healthy conditions)"
-  - "Resource limits on all services for production stability"
+  - 'Separate Docker Compose stack for Infisical (independent lifecycle from app)'
+  - 'Named Docker volumes for database persistence (infisical_db_data, infisical_redis_data)'
+  - 'Health check-based dependency orchestration (service_healthy conditions)'
+  - 'Resource limits on all services for production stability'
 
 patterns-established:
-  - "Separate compose stack pattern: Isolated network, independent lifecycle, dedicated volumes"
-  - "Environment variable validation: Use :? syntax to fail fast on missing required vars"
-  - "Setup script automation: Generate secure keys, populate .env, health check verification"
+  - 'Separate compose stack pattern: Isolated network, independent lifecycle, dedicated volumes'
+  - 'Environment variable validation: Use :? syntax to fail fast on missing required vars'
+  - 'Setup script automation: Generate secure keys, populate .env, health check verification'
 
 # Metrics
 duration: 2min
@@ -101,6 +106,7 @@ None - all tasks completed successfully with validation passing.
 **Manual steps required after running setup script:**
 
 1. Run setup script:
+
    ```bash
    ./scripts/dev/setup-infisical.sh
    ```
@@ -116,6 +122,7 @@ None - all tasks completed successfully with validation passing.
 ## Next Phase Readiness
 
 **Ready for credential migration (09-02):**
+
 - Infisical stack deployable and validated
 - Environment template documents all required variables
 - Setup script automates secure key generation
@@ -124,5 +131,6 @@ None - all tasks completed successfully with validation passing.
 **No blockers** - Infisical infrastructure complete and ready for secrets migration.
 
 ---
-*Phase: 09-production-environment-hardening*
-*Completed: 2026-01-23*
+
+_Phase: 09-production-environment-hardening_
+_Completed: 2026-01-23_

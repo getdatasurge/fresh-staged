@@ -22,6 +22,7 @@ Added `/// <reference types="vite-plugin-pwa/client" />` so TypeScript recognize
 ### ServiceWorker Registration Component (`src/components/ServiceWorkerRegistration.tsx`)
 
 New component using `useRegisterSW` from `virtual:pwa-register/react`. Handles:
+
 - `onRegisteredSW`: Logs successful registration
 - `onRegisterError`: Logs registration failure as `console.info` (graceful degradation)
 
@@ -44,9 +45,9 @@ pnpm exec tsc --noEmit → 0 errors
 
 ## Files Modified
 
-| File | Action |
-|------|--------|
-| `vite.config.ts` | Added `injectRegister: false` |
-| `src/vite-env.d.ts` | Added PWA client type reference |
+| File                                           | Action                                                     |
+| ---------------------------------------------- | ---------------------------------------------------------- |
+| `vite.config.ts`                               | Added `injectRegister: false`                              |
+| `src/vite-env.d.ts`                            | Added PWA client type reference                            |
 | `src/components/ServiceWorkerRegistration.tsx` | NEW — React hook-based SW registration with error handling |
-| `src/App.tsx` | Added `<ServiceWorkerRegistration />` component |
+| `src/App.tsx`                                  | Added `<ServiceWorkerRegistration />` component            |

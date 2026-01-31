@@ -15,8 +15,8 @@ import {
   HelpCircle,
   Radio,
   Radar,
-} from "lucide-react";
-import type { DeviceDefinition, DeviceCategory } from "./types";
+} from 'lucide-react';
+import type { DeviceDefinition, DeviceCategory } from './types';
 import {
   TEMPERATURE_FIELD,
   HUMIDITY_FIELD,
@@ -37,21 +37,21 @@ import {
   PULSE_COUNT_FIELD,
   FLOW_RATE_FIELD,
   LAST_PULSE_FIELD,
-} from "./telemetryFields";
+} from './telemetryFields';
 
 // ============================================================================
 // Unknown/Fallback Device Definition
 // ============================================================================
 
 export const UNKNOWN_DEVICE: DeviceDefinition = {
-  model: "UNKNOWN",
-  displayName: "Unknown Device",
-  category: "unknown",
+  model: 'UNKNOWN',
+  displayName: 'Unknown Device',
+  category: 'unknown',
   modelIcon: HelpCircle,
   categoryIcon: Radio,
   telemetryFields: [BATTERY_FIELD, RSSI_FIELD],
   capabilities: {},
-  description: "Device model not recognized. Add to registry to enable full support.",
+  description: 'Device model not recognized. Add to registry to enable full support.',
 };
 
 // ============================================================================
@@ -59,15 +59,15 @@ export const UNKNOWN_DEVICE: DeviceDefinition = {
 // ============================================================================
 
 const TBMS100: DeviceDefinition = {
-  model: "TBMS100",
-  displayName: "Milesight TBMS100",
-  manufacturer: "Milesight",
-  category: "motion",
+  model: 'TBMS100',
+  displayName: 'Milesight TBMS100',
+  manufacturer: 'Milesight',
+  category: 'motion',
   modelIcon: Activity,
   categoryIcon: Radar,
   telemetryFields: [MOTION_FIELD, BATTERY_FIELD, RSSI_FIELD, SNR_FIELD],
   capabilities: { motion: true, battery: true },
-  description: "PIR Motion Sensor",
+  description: 'PIR Motion Sensor',
 };
 
 // ============================================================================
@@ -75,27 +75,27 @@ const TBMS100: DeviceDefinition = {
 // ============================================================================
 
 const EM300_TH: DeviceDefinition = {
-  model: "EM300-TH",
-  displayName: "Milesight EM300-TH",
-  manufacturer: "Milesight",
-  category: "temperature",
+  model: 'EM300-TH',
+  displayName: 'Milesight EM300-TH',
+  manufacturer: 'Milesight',
+  category: 'temperature',
   modelIcon: Thermometer,
   categoryIcon: Thermometer,
   telemetryFields: [TEMPERATURE_FIELD, HUMIDITY_FIELD, BATTERY_FIELD],
   capabilities: { temperature: true, humidity: true, battery: true },
-  description: "Temperature + Humidity Sensor",
+  description: 'Temperature + Humidity Sensor',
 };
 
 const ERS: DeviceDefinition = {
-  model: "ERS",
-  displayName: "Elsys ERS",
-  manufacturer: "Elsys",
-  category: "temperature",
+  model: 'ERS',
+  displayName: 'Elsys ERS',
+  manufacturer: 'Elsys',
+  category: 'temperature',
   modelIcon: Thermometer,
   categoryIcon: Thermometer,
   telemetryFields: [TEMPERATURE_FIELD, HUMIDITY_FIELD, BATTERY_FIELD],
   capabilities: { temperature: true, humidity: true, battery: true },
-  description: "Indoor Temperature + Humidity Sensor",
+  description: 'Indoor Temperature + Humidity Sensor',
 };
 
 // ============================================================================
@@ -103,27 +103,27 @@ const ERS: DeviceDefinition = {
 // ============================================================================
 
 const LDDS75: DeviceDefinition = {
-  model: "LDDS75",
-  displayName: "Dragino LDDS75",
-  manufacturer: "Dragino",
-  category: "leak",
+  model: 'LDDS75',
+  displayName: 'Dragino LDDS75',
+  manufacturer: 'Dragino',
+  category: 'leak',
   modelIcon: Droplets,
   categoryIcon: Droplets,
   telemetryFields: [WATER_LEVEL_FIELD, DISTANCE_FIELD, BATTERY_FIELD],
   capabilities: { leak: true, distance: true, battery: true },
-  description: "Distance Detection Sensor / Water Level",
+  description: 'Distance Detection Sensor / Water Level',
 };
 
 const R718WA2: DeviceDefinition = {
-  model: "R718WA2",
-  displayName: "Netvox R718WA2",
-  manufacturer: "Netvox",
-  category: "leak",
+  model: 'R718WA2',
+  displayName: 'Netvox R718WA2',
+  manufacturer: 'Netvox',
+  category: 'leak',
   modelIcon: Droplets,
   categoryIcon: Droplets,
   telemetryFields: [LEAK_DETECTED_FIELD, BATTERY_FIELD],
   capabilities: { leak: true, battery: true },
-  description: "Wireless Water Leak Detector",
+  description: 'Wireless Water Leak Detector',
 };
 
 // ============================================================================
@@ -131,15 +131,15 @@ const R718WA2: DeviceDefinition = {
 // ============================================================================
 
 const KONA_PULSE_COUNTER: DeviceDefinition = {
-  model: "KONA Pulse Counter",
-  displayName: "KONA Pulse Counter",
-  manufacturer: "KONA",
-  category: "metering",
+  model: 'KONA Pulse Counter',
+  displayName: 'KONA Pulse Counter',
+  manufacturer: 'KONA',
+  category: 'metering',
   modelIcon: Gauge,
   categoryIcon: Gauge,
   telemetryFields: [PULSE_COUNT_FIELD, FLOW_RATE_FIELD, LAST_PULSE_FIELD, BATTERY_FIELD],
   capabilities: { pulse: true, battery: true },
-  description: "Pulse Counter for Utility Metering",
+  description: 'Pulse Counter for Utility Metering',
 };
 
 // ============================================================================
@@ -147,27 +147,27 @@ const KONA_PULSE_COUNTER: DeviceDefinition = {
 // ============================================================================
 
 const LDS02: DeviceDefinition = {
-  model: "LDS02",
-  displayName: "Dragino LDS02",
-  manufacturer: "Dragino",
-  category: "door",
+  model: 'LDS02',
+  displayName: 'Dragino LDS02',
+  manufacturer: 'Dragino',
+  category: 'door',
   modelIcon: DoorClosed,
   categoryIcon: DoorClosed,
   telemetryFields: [DOOR_OPEN_FIELD, BATTERY_FIELD],
   capabilities: { door: true, battery: true },
-  description: "LoRaWAN Door Sensor",
+  description: 'LoRaWAN Door Sensor',
 };
 
 const R311A: DeviceDefinition = {
-  model: "R311A",
-  displayName: "Netvox R311A",
-  manufacturer: "Netvox",
-  category: "door",
+  model: 'R311A',
+  displayName: 'Netvox R311A',
+  manufacturer: 'Netvox',
+  category: 'door',
   modelIcon: DoorClosed,
   categoryIcon: DoorClosed,
   telemetryFields: [DOOR_OPEN_FIELD, TAMPER_FIELD, BATTERY_FIELD],
   capabilities: { door: true, tamper: true, battery: true },
-  description: "Wireless Door/Window Sensor",
+  description: 'Wireless Door/Window Sensor',
 };
 
 // ============================================================================
@@ -175,15 +175,15 @@ const R311A: DeviceDefinition = {
 // ============================================================================
 
 const LT_22222_L: DeviceDefinition = {
-  model: "LT-22222-L",
-  displayName: "Dragino LT-22222-L",
-  manufacturer: "Dragino",
-  category: "gps",
+  model: 'LT-22222-L',
+  displayName: 'Dragino LT-22222-L',
+  manufacturer: 'Dragino',
+  category: 'gps',
   modelIcon: MapPin,
   categoryIcon: MapPin,
   telemetryFields: [LATITUDE_FIELD, LONGITUDE_FIELD, SPEED_FIELD, BATTERY_FIELD],
   capabilities: { gps: true, battery: true },
-  description: "LoRaWAN Tracker with GPS",
+  description: 'LoRaWAN Tracker with GPS',
 };
 
 // ============================================================================
@@ -191,27 +191,27 @@ const LT_22222_L: DeviceDefinition = {
 // ============================================================================
 
 const AM319: DeviceDefinition = {
-  model: "AM319",
-  displayName: "Milesight AM319",
-  manufacturer: "Milesight",
-  category: "air_quality",
+  model: 'AM319',
+  displayName: 'Milesight AM319',
+  manufacturer: 'Milesight',
+  category: 'air_quality',
   modelIcon: Cloud,
   categoryIcon: Cloud,
   telemetryFields: [CO2_FIELD, TEMPERATURE_FIELD, HUMIDITY_FIELD, VOC_FIELD],
   capabilities: { co2: true, voc: true, temperature: true, humidity: true },
-  description: "3-in-1 Indoor Air Quality Sensor",
+  description: '3-in-1 Indoor Air Quality Sensor',
 };
 
 const ERS_CO2: DeviceDefinition = {
-  model: "ERS CO2",
-  displayName: "Elsys ERS CO2",
-  manufacturer: "Elsys",
-  category: "air_quality",
+  model: 'ERS CO2',
+  displayName: 'Elsys ERS CO2',
+  manufacturer: 'Elsys',
+  category: 'air_quality',
   modelIcon: Cloud,
   categoryIcon: Cloud,
   telemetryFields: [CO2_FIELD, TEMPERATURE_FIELD, HUMIDITY_FIELD],
   capabilities: { co2: true, temperature: true, humidity: true },
-  description: "Indoor CO₂ + Temperature + Humidity Sensor",
+  description: 'Indoor CO₂ + Temperature + Humidity Sensor',
 };
 
 // ============================================================================
@@ -219,15 +219,15 @@ const ERS_CO2: DeviceDefinition = {
 // ============================================================================
 
 const EM300_MCS: DeviceDefinition = {
-  model: "EM300-MCS",
-  displayName: "Milesight EM300-MCS",
-  manufacturer: "Milesight",
-  category: "multi_sensor",
+  model: 'EM300-MCS',
+  displayName: 'Milesight EM300-MCS',
+  manufacturer: 'Milesight',
+  category: 'multi_sensor',
   modelIcon: Layers,
   categoryIcon: Layers,
   telemetryFields: [DOOR_OPEN_FIELD, TEMPERATURE_FIELD, BATTERY_FIELD],
   capabilities: { door: true, temperature: true, battery: true },
-  description: "Magnetic Contact Switch with Temperature",
+  description: 'Magnetic Contact Switch with Temperature',
 };
 
 // ============================================================================
@@ -241,31 +241,31 @@ const EM300_MCS: DeviceDefinition = {
 export const DEVICE_REGISTRY: Record<string, DeviceDefinition> = {
   // Motion
   TBMS100,
-  
+
   // Temperature
-  "EM300-TH": EM300_TH,
+  'EM300-TH': EM300_TH,
   ERS,
-  
+
   // Leak Detection
   LDDS75,
   R718WA2,
-  
+
   // Metering
-  "KONA Pulse Counter": KONA_PULSE_COUNTER,
-  
+  'KONA Pulse Counter': KONA_PULSE_COUNTER,
+
   // Door/Contact
   LDS02,
   R311A,
-  
+
   // GPS/Location
-  "LT-22222-L": LT_22222_L,
-  
+  'LT-22222-L': LT_22222_L,
+
   // CO2 / Air Quality
   AM319,
-  "ERS CO2": ERS_CO2,
-  
+  'ERS CO2': ERS_CO2,
+
   // Multi-Sensor
-  "EM300-MCS": EM300_MCS,
+  'EM300-MCS': EM300_MCS,
 };
 
 // ============================================================================
@@ -311,11 +311,11 @@ export function getDevicesByCategory(): Record<DeviceCategory, DeviceDefinition[
     multi_sensor: [],
     unknown: [],
   };
-  
+
   for (const device of getAllDevices()) {
     grouped[device.category].push(device);
   }
-  
+
   return grouped;
 }
 
@@ -328,6 +328,6 @@ export function searchDevices(query: string): DeviceDefinition[] {
     (device) =>
       device.model.toLowerCase().includes(lowerQuery) ||
       device.displayName.toLowerCase().includes(lowerQuery) ||
-      device.manufacturer?.toLowerCase().includes(lowerQuery)
+      device.manufacturer?.toLowerCase().includes(lowerQuery),
   );
 }

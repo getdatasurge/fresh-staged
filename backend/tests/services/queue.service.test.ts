@@ -113,7 +113,7 @@ describe('QueueService', () => {
       const jobId = await queueService.addJob(
         QueueNames.SMS_NOTIFICATIONS,
         JobNames.SMS_SEND,
-        jobData
+        jobData,
       );
 
       expect(jobId).toBeDefined();
@@ -133,7 +133,7 @@ describe('QueueService', () => {
         QueueNames.SMS_NOTIFICATIONS,
         JobNames.SMS_SEND,
         jobData,
-        { delay: 5000 } // 5 second delay
+        { delay: 5000 }, // 5 second delay
       );
 
       expect(jobId).toBeDefined();

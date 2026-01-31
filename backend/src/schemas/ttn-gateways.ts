@@ -14,16 +14,11 @@ export const TTNGatewayIdSchema = z
   .max(36)
   .regex(
     /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/,
-    'Gateway ID must be lowercase alphanumeric with optional hyphens, cannot start or end with hyphen'
+    'Gateway ID must be lowercase alphanumeric with optional hyphens, cannot start or end with hyphen',
   );
 
 // Gateway status enum
-export const GatewayStatusSchema = z.enum([
-  'online',
-  'offline',
-  'disconnected',
-  'unknown',
-]);
+export const GatewayStatusSchema = z.enum(['online', 'offline', 'disconnected', 'unknown']);
 
 // TTN gateway params (for routes with :gatewayId)
 export const TTNGatewayParamsSchema = OrgParamsSchema.extend({

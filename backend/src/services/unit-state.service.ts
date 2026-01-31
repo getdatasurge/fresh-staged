@@ -88,10 +88,14 @@ export class UnitStateService {
     // Start cache cleanup interval
     this.cleanupIntervalId = setInterval(
       () => this.cleanupExpiredCache(),
-      STATE_CACHE_CONFIG.CLEANUP_INTERVAL_MS
+      STATE_CACHE_CONFIG.CLEANUP_INTERVAL_MS,
     );
 
-    console.log('[UnitStateService] Initialized with cache TTL:', STATE_CACHE_CONFIG.CACHE_TTL_MS, 'ms');
+    console.log(
+      '[UnitStateService] Initialized with cache TTL:',
+      STATE_CACHE_CONFIG.CACHE_TTL_MS,
+      'ms',
+    );
   }
 
   /**
@@ -105,7 +109,7 @@ export class UnitStateService {
   calculateState(
     dbStatus: string,
     lastReadingAt: Date | null,
-    createdAt?: Date
+    createdAt?: Date,
   ): UnitDashboardState {
     const now = Date.now();
 
@@ -178,11 +182,7 @@ export class UnitStateService {
       return null;
     }
 
-    const state = this.calculateState(
-      unitData.status,
-      unitData.lastReadingAt,
-      unitData.createdAt
-    );
+    const state = this.calculateState(unitData.status, unitData.lastReadingAt, unitData.createdAt);
 
     // Update cache
     this.setCacheEntry(unitId, {
@@ -210,10 +210,7 @@ export class UnitStateService {
    * @param organizationId - Organization UUID for access control
    * @returns Array of unit states
    */
-  async getSiteUnitStates(
-    siteId: string,
-    organizationId: string
-  ): Promise<UnitStateInfo[]> {
+  async getSiteUnitStates(siteId: string, organizationId: string): Promise<UnitStateInfo[]> {
     // Verify site belongs to organization and get all units
     const unitData = await db
       .select({
@@ -230,8 +227,8 @@ export class UnitStateService {
         and(
           eq(sites.id, siteId),
           eq(sites.organizationId, organizationId),
-          eq(units.isActive, true)
-        )
+          eq(units.isActive, true),
+        ),
       );
 
     return unitData.map((unit) => {
@@ -248,11 +245,7 @@ export class UnitStateService {
         };
       }
 
-      const state = this.calculateState(
-        unit.status,
-        unit.lastReadingAt,
-        unit.createdAt
-      );
+      const state = this.calculateState(unit.status, unit.lastReadingAt, unit.createdAt);
 
       // Update cache
       this.setCacheEntry(unit.id, {
@@ -280,9 +273,7 @@ export class UnitStateService {
    * @param organizationId - Organization UUID
    * @returns Array of unit states grouped by site
    */
-  async getOrganizationUnitStates(
-    organizationId: string
-  ): Promise<Map<string, UnitStateInfo[]>> {
+  async getOrganizationUnitStates(organizationId: string): Promise<Map<string, UnitStateInfo[]>> {
     const unitData = await db
       .select({
         id: units.id,
@@ -295,18 +286,12 @@ export class UnitStateService {
       .from(units)
       .innerJoin(areas, eq(units.areaId, areas.id))
       .innerJoin(sites, eq(areas.siteId, sites.id))
-      .where(
-        and(eq(sites.organizationId, organizationId), eq(units.isActive, true))
-      );
+      .where(and(eq(sites.organizationId, organizationId), eq(units.isActive, true)));
 
     const statesBySite = new Map<string, UnitStateInfo[]>();
 
     for (const unit of unitData) {
-      const state = this.calculateState(
-        unit.status,
-        unit.lastReadingAt,
-        unit.createdAt
-      );
+      const state = this.calculateState(unit.status, unit.lastReadingAt, unit.createdAt);
 
       // Update cache
       this.setCacheEntry(unit.id, {
@@ -342,10 +327,7 @@ export class UnitStateService {
    * @param organizationId - Organization UUID for Socket.IO room
    * @returns New state info
    */
-  async updateUnitState(
-    unitId: string,
-    organizationId: string
-  ): Promise<UnitStateInfo | null> {
+  async updateUnitState(unitId: string, organizationId: string): Promise<UnitStateInfo | null> {
     // Get previous cached state
     const previousCached = this.cache.get(unitId);
     const previousState = previousCached?.state || 'normal';
@@ -372,7 +354,7 @@ export class UnitStateService {
     const newState = this.calculateState(
       unitData.status,
       unitData.lastReadingAt,
-      unitData.createdAt
+      unitData.createdAt,
     );
 
     // Update cache
@@ -396,7 +378,7 @@ export class UnitStateService {
       this.socketService.emitToUnit(organizationId, unitId, 'unit:state:changed', changeEvent);
 
       console.log(
-        `[UnitStateService] State change for unit ${unitId}: ${previousState} -> ${newState}`
+        `[UnitStateService] State change for unit ${unitId}: ${previousState} -> ${newState}`,
       );
     }
 
@@ -421,7 +403,7 @@ export class UnitStateService {
    */
   async updateMultipleUnitStates(
     unitIds: string[],
-    organizationId: string
+    organizationId: string,
   ): Promise<UnitStateInfo[]> {
     if (unitIds.length === 0) {
       return [];
@@ -463,19 +445,13 @@ export class UnitStateService {
       .from(units)
       .innerJoin(areas, eq(units.areaId, areas.id))
       .innerJoin(sites, eq(areas.siteId, sites.id))
-      .where(
-        and(
-          eq(sites.organizationId, organizationId),
-          eq(units.isActive, true)
-        )
-      );
+      .where(and(eq(sites.organizationId, organizationId), eq(units.isActive, true)));
 
     let offlineCount = 0;
 
     for (const unit of staleUnits) {
       // Check if unit should be offline
-      const shouldBeOffline =
-        unit.lastReadingAt && unit.lastReadingAt < offlineCutoff;
+      const shouldBeOffline = unit.lastReadingAt && unit.lastReadingAt < offlineCutoff;
 
       if (!shouldBeOffline) {
         continue;
@@ -486,11 +462,7 @@ export class UnitStateService {
       const previousState = previousCached?.state;
 
       // Calculate new state (will be offline due to stale reading)
-      const newState = this.calculateState(
-        unit.status,
-        unit.lastReadingAt,
-        unit.createdAt
-      );
+      const newState = this.calculateState(unit.status, unit.lastReadingAt, unit.createdAt);
 
       if (newState === 'offline' && previousState !== 'offline') {
         offlineCount++;
@@ -513,19 +485,14 @@ export class UnitStateService {
           };
 
           this.socketService.emitToOrg(organizationId, 'unit:state:changed', changeEvent);
-          this.socketService.emitToUnit(
-            organizationId,
-            unit.id,
-            'unit:state:changed',
-            changeEvent
-          );
+          this.socketService.emitToUnit(organizationId, unit.id, 'unit:state:changed', changeEvent);
         }
       }
     }
 
     if (offlineCount > 0) {
       console.log(
-        `[UnitStateService] Detected ${offlineCount} unit(s) went offline for org ${organizationId}`
+        `[UnitStateService] Detected ${offlineCount} unit(s) went offline for org ${organizationId}`,
       );
     }
 
@@ -541,7 +508,7 @@ export class UnitStateService {
    */
   async getSiteStateSummary(
     siteId: string,
-    organizationId: string
+    organizationId: string,
   ): Promise<{
     total: number;
     normal: number;
@@ -582,7 +549,7 @@ export class UnitStateService {
   private getStateChangeReason(
     previousState: UnitDashboardState,
     newState: UnitDashboardState,
-    dbStatus: string
+    dbStatus: string,
   ): string {
     if (newState === 'offline') {
       return 'No readings received within timeout period';
@@ -614,15 +581,9 @@ export class UnitStateService {
   /**
    * Set cache entry with TTL
    */
-  private setCacheEntry(
-    unitId: string,
-    data: Omit<CachedState, 'updatedAt' | 'expiresAt'>
-  ): void {
+  private setCacheEntry(unitId: string, data: Omit<CachedState, 'updatedAt' | 'expiresAt'>): void {
     // Enforce max cache size
-    if (
-      this.cache.size >= STATE_CACHE_CONFIG.MAX_CACHED_UNITS &&
-      !this.cache.has(unitId)
-    ) {
+    if (this.cache.size >= STATE_CACHE_CONFIG.MAX_CACHED_UNITS && !this.cache.has(unitId)) {
       // Evict oldest entry
       const oldestKey = this.cache.keys().next().value;
       if (oldestKey) {

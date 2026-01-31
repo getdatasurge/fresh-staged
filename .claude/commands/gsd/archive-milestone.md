@@ -1,7 +1,7 @@
 ---
 name: gsd:archive-milestone
 description: Archive completed milestone with full metadata preservation and git traceability
-argument-hint: "[milestone-name]"
+argument-hint: '[milestone-name]'
 allowed-tools:
   - Read
   - Write
@@ -30,6 +30,7 @@ Provides safety valve: archived milestones can be restored with `/gsd:restore-mi
 Milestone name: $ARGUMENTS (optional - if not provided, prompts user for name)
 
 **Validate planning exists:**
+
 ```bash
 ls .planning/ROADMAP.md .planning/STATE.md .planning/PROJECT.md 2>/dev/null
 ```
@@ -43,10 +44,12 @@ If missing files, suggest `/gsd:new-project` first.
 ## 1. Determine milestone name
 
 If $ARGUMENTS provided:
+
 - Use as milestone name
 - Validate format (alphanumeric, dash, underscore only)
 
 If $ARGUMENTS not provided:
+
 - Prompt user: "What name for this milestone? (e.g., 'v1.0-mvp', 'sprint-1')"
 - Validate format
 
@@ -57,7 +60,7 @@ Call archive-milestone.md workflow with milestone name:
 ```bash
 # Workflow handles:
 # - Git validation
-# - User confirmation  
+# - User confirmation
 # - Create archive directory
 # - Move files atomically
 # - Update MILESTONES.md
@@ -67,6 +70,7 @@ Call archive-milestone.md workflow with milestone name:
 ## 3. Present results
 
 Display workflow output with:
+
 - Archive location
 - Git tag created
 - Files moved
@@ -88,16 +92,19 @@ Display workflow output with:
 ## Examples
 
 Preview what would be archived:
+
 ```
 /gsd:archive-milestone --dry-run
 ```
 
 Archive with confirmation:
+
 ```
 /gsd:archive-milestone
 ```
 
 Force archive without prompt:
+
 ```
 /gsd:archive-milestone --force
 ```

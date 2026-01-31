@@ -1,0 +1,14 @@
+{
+  "assignee": null,
+  "claim_note": "",
+  "claimed_at": null,
+  "created_at": "2026-01-30T11:40:02.838980Z",
+  "depends_on": [],
+  "epic": "fn-9-1f4",
+  "id": "fn-9-1f4.1",
+  "priority": null,
+  "spec_path": ".flow/tasks/fn-9-1f4.1.md",
+  "status": "todo",
+  "title": "Create PageSkeleton component + replace App.tsx fallback",
+  "updated_at": "2026-01-30T11:40:02.838995Z"
+}

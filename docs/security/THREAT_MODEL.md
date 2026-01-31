@@ -6,12 +6,12 @@
 
 ## Document Information
 
-| Attribute | Value |
-|-----------|-------|
-| Last Updated | 2026-01-12 |
-| Review Frequency | Quarterly |
-| Methodology | STRIDE + DREAD |
-| Scope | FreshTrack Pro application and infrastructure |
+| Attribute        | Value                                         |
+| ---------------- | --------------------------------------------- |
+| Last Updated     | 2026-01-12                                    |
+| Review Frequency | Quarterly                                     |
+| Methodology      | STRIDE + DREAD                                |
+| Scope            | FreshTrack Pro application and infrastructure |
 
 ---
 
@@ -19,30 +19,30 @@
 
 ### Critical Assets
 
-| Asset | Description | Confidentiality | Integrity | Availability |
-|-------|-------------|-----------------|-----------|--------------|
-| **Temperature Data** | Historical sensor readings | Medium | Critical | High |
-| **Alert Records** | Alert history, acknowledgments | Medium | Critical | High |
-| **TTN Credentials** | API keys for IoT infrastructure | Critical | Critical | High |
-| **User Credentials** | Passwords, sessions | Critical | Critical | High |
-| **Organization Data** | Customer configurations | High | High | High |
+| Asset                 | Description                     | Confidentiality | Integrity | Availability |
+| --------------------- | ------------------------------- | --------------- | --------- | ------------ |
+| **Temperature Data**  | Historical sensor readings      | Medium          | Critical  | High         |
+| **Alert Records**     | Alert history, acknowledgments  | Medium          | Critical  | High         |
+| **TTN Credentials**   | API keys for IoT infrastructure | Critical        | Critical  | High         |
+| **User Credentials**  | Passwords, sessions             | Critical        | Critical  | High         |
+| **Organization Data** | Customer configurations         | High            | High      | High         |
 
 ### High-Value Assets
 
-| Asset | Description | CIA Rating |
-|-------|-------------|------------|
-| Stripe credentials | Payment processing | C: Critical, I: Critical, A: High |
-| Webhook secrets | External integration auth | C: Critical, I: High, A: Medium |
-| Service role key | Database bypass access | C: Critical, I: Critical, A: Critical |
-| Audit logs | Compliance records | C: Medium, I: Critical, A: High |
+| Asset              | Description               | CIA Rating                            |
+| ------------------ | ------------------------- | ------------------------------------- |
+| Stripe credentials | Payment processing        | C: Critical, I: Critical, A: High     |
+| Webhook secrets    | External integration auth | C: Critical, I: High, A: Medium       |
+| Service role key   | Database bypass access    | C: Critical, I: Critical, A: Critical |
+| Audit logs         | Compliance records        | C: Medium, I: Critical, A: High       |
 
 ### Supporting Assets
 
-| Asset | Description | CIA Rating |
-|-------|-------------|------------|
-| Source code | Application logic | C: Medium, I: High, A: Medium |
-| Infrastructure config | Deployment settings | C: Medium, I: High, A: High |
-| Documentation | Technical/business docs | C: Low, I: Medium, A: Low |
+| Asset                 | Description             | CIA Rating                    |
+| --------------------- | ----------------------- | ----------------------------- |
+| Source code           | Application logic       | C: Medium, I: High, A: Medium |
+| Infrastructure config | Deployment settings     | C: Medium, I: High, A: High   |
+| Documentation         | Technical/business docs | C: Low, I: Medium, A: Low     |
 
 ---
 
@@ -50,14 +50,14 @@
 
 ### Actor Profiles
 
-| Actor | Motivation | Capability | Likelihood |
-|-------|------------|------------|------------|
-| **Competitor** | Data theft, sabotage | Medium | Low |
-| **Cybercriminal** | Financial gain, ransomware | Medium-High | Medium |
-| **Disgruntled Employee** | Revenge, data theft | High (insider) | Low |
-| **Script Kiddie** | Curiosity, reputation | Low | Medium |
-| **Nation State** | Espionage, disruption | Very High | Very Low |
-| **Malicious Customer** | Cross-tenant access | Medium | Medium |
+| Actor                    | Motivation                 | Capability     | Likelihood |
+| ------------------------ | -------------------------- | -------------- | ---------- |
+| **Competitor**           | Data theft, sabotage       | Medium         | Low        |
+| **Cybercriminal**        | Financial gain, ransomware | Medium-High    | Medium     |
+| **Disgruntled Employee** | Revenge, data theft        | High (insider) | Low        |
+| **Script Kiddie**        | Curiosity, reputation      | Low            | Medium     |
+| **Nation State**         | Espionage, disruption      | Very High      | Very Low   |
+| **Malicious Customer**   | Cross-tenant access        | Medium         | Medium     |
 
 ### Most Likely Threat Actors
 
@@ -122,14 +122,14 @@ graph TB
 
 ### Attack Surface Inventory
 
-| Surface | Entry Point | Authentication | Risk Level |
-|---------|-------------|----------------|------------|
-| Web Application | `/*` routes | JWT session | Medium |
-| REST API | `/functions/*` | JWT/API key | High |
-| TTN Webhook | `/functions/ttn-webhook` | Webhook secret | High |
-| Stripe Webhook | `/functions/stripe-webhook` | HMAC signature | Medium |
-| Auth Endpoints | `/auth/v1/*` | None (public) | High |
-| Database | PostgreSQL port | Service role | Critical |
+| Surface         | Entry Point                 | Authentication | Risk Level |
+| --------------- | --------------------------- | -------------- | ---------- |
+| Web Application | `/*` routes                 | JWT session    | Medium     |
+| REST API        | `/functions/*`              | JWT/API key    | High       |
+| TTN Webhook     | `/functions/ttn-webhook`    | Webhook secret | High       |
+| Stripe Webhook  | `/functions/stripe-webhook` | HMAC signature | Medium     |
+| Auth Endpoints  | `/auth/v1/*`                | None (public)  | High       |
+| Database        | PostgreSQL port             | Service role   | Critical   |
 
 ---
 
@@ -137,56 +137,56 @@ graph TB
 
 ### Spoofing
 
-| Threat | Target | Mitigation | Status |
-|--------|--------|------------|--------|
-| **S1** Session hijacking | User sessions | JWT with expiry, HTTPS only | Active |
-| **S2** Credential stuffing | Auth endpoint | Rate limiting, complexity rules | Active |
-| **S3** Forged webhook calls | TTN/Stripe | Secret/signature verification | Active |
-| **S4** API key theft | Service endpoints | Encrypted storage, rotation | Partial |
+| Threat                      | Target            | Mitigation                      | Status  |
+| --------------------------- | ----------------- | ------------------------------- | ------- |
+| **S1** Session hijacking    | User sessions     | JWT with expiry, HTTPS only     | Active  |
+| **S2** Credential stuffing  | Auth endpoint     | Rate limiting, complexity rules | Active  |
+| **S3** Forged webhook calls | TTN/Stripe        | Secret/signature verification   | Active  |
+| **S4** API key theft        | Service endpoints | Encrypted storage, rotation     | Partial |
 
 ### Tampering
 
-| Threat | Target | Mitigation | Status |
-|--------|--------|------------|--------|
+| Threat                               | Target          | Mitigation                  | Status |
+| ------------------------------------ | --------------- | --------------------------- | ------ |
 | **T1** Temperature data modification | Sensor readings | RLS, audit logs, hash chain | Active |
-| **T2** Alert state manipulation | Alert records | RLS, role checks | Active |
-| **T3** Configuration tampering | Org settings | RLS, admin-only access | Active |
-| **T4** Log tampering | Audit logs | Hash chain, append-only | Active |
+| **T2** Alert state manipulation      | Alert records   | RLS, role checks            | Active |
+| **T3** Configuration tampering       | Org settings    | RLS, admin-only access      | Active |
+| **T4** Log tampering                 | Audit logs      | Hash chain, append-only     | Active |
 
 ### Repudiation
 
-| Threat | Target | Mitigation | Status |
-|--------|--------|------------|--------|
-| **R1** Deny alert acknowledgment | Alert actions | Actor ID, timestamp, IP logged | Active |
-| **R2** Deny temperature logs | Manual entries | Actor ID, timestamp logged | Active |
-| **R3** Deny configuration changes | Settings | Event log with actor | Active |
+| Threat                            | Target         | Mitigation                     | Status |
+| --------------------------------- | -------------- | ------------------------------ | ------ |
+| **R1** Deny alert acknowledgment  | Alert actions  | Actor ID, timestamp, IP logged | Active |
+| **R2** Deny temperature logs      | Manual entries | Actor ID, timestamp logged     | Active |
+| **R3** Deny configuration changes | Settings       | Event log with actor           | Active |
 
 ### Information Disclosure
 
-| Threat | Target | Mitigation | Status |
-|--------|--------|------------|--------|
-| **I1** Cross-tenant data access | All data | RLS policies, org scope | Active |
-| **I2** API key exposure | TTN keys | Encryption, last4 display | Active |
-| **I3** Log leakage | Audit data | Access control, RLS | Partial |
-| **I4** Error message disclosure | Stack traces | Production error handling | Active |
+| Threat                          | Target       | Mitigation                | Status  |
+| ------------------------------- | ------------ | ------------------------- | ------- |
+| **I1** Cross-tenant data access | All data     | RLS policies, org scope   | Active  |
+| **I2** API key exposure         | TTN keys     | Encryption, last4 display | Active  |
+| **I3** Log leakage              | Audit data   | Access control, RLS       | Partial |
+| **I4** Error message disclosure | Stack traces | Production error handling | Active  |
 
 ### Denial of Service
 
-| Threat | Target | Mitigation | Status |
-|--------|--------|------------|--------|
-| **D1** API flooding | Edge functions | Rate limiting (platform) | Active |
-| **D2** Auth endpoint abuse | Login | Rate limiting | Active |
-| **D3** Webhook flooding | TTN webhook | Secret validation first | Active |
-| **D4** Database exhaustion | PostgreSQL | Connection pooling | Active |
+| Threat                     | Target         | Mitigation               | Status |
+| -------------------------- | -------------- | ------------------------ | ------ |
+| **D1** API flooding        | Edge functions | Rate limiting (platform) | Active |
+| **D2** Auth endpoint abuse | Login          | Rate limiting            | Active |
+| **D3** Webhook flooding    | TTN webhook    | Secret validation first  | Active |
+| **D4** Database exhaustion | PostgreSQL     | Connection pooling       | Active |
 
 ### Elevation of Privilege
 
-| Threat | Target | Mitigation | Status |
-|--------|--------|------------|--------|
-| **E1** Tenant escape | Cross-org access | RLS, org_id validation | Active |
-| **E2** Role escalation | User roles | DB constraints, RLS | Active |
-| **E3** Service role access | Privileged ops | Server-side only | Active |
-| **E4** Webhook to admin | Internal systems | Scoped permissions | Active |
+| Threat                     | Target           | Mitigation             | Status |
+| -------------------------- | ---------------- | ---------------------- | ------ |
+| **E1** Tenant escape       | Cross-org access | RLS, org_id validation | Active |
+| **E2** Role escalation     | User roles       | DB constraints, RLS    | Active |
+| **E3** Service role access | Privileged ops   | Server-side only       | Active |
+| **E4** Webhook to admin    | Internal systems | Scoped permissions     | Active |
 
 ---
 
@@ -206,6 +206,7 @@ graph TB
 ```
 
 **Mitigations:**
+
 - RLS policy checks `auth.uid()` against `profiles.organization_id`
 - Returns empty result, not error (prevents enumeration)
 - Function-level org validation as defense in depth
@@ -228,6 +229,7 @@ graph TB
 ```
 
 **Mitigations:**
+
 - Per-org webhook secret required in header
 - Constant-time secret comparison (timing attack prevention)
 - Org lookup via secret isolates scope
@@ -251,6 +253,7 @@ graph TB
 ```
 
 **Mitigations:**
+
 - Supabase rate limiting on auth endpoints
 - Password complexity requirements
 - **TBD:** Account lockout after failures
@@ -275,6 +278,7 @@ graph TB
 ```
 
 **Mitigations:**
+
 - Keys encrypted in database
 - Full key never returned to frontend (only last4)
 - Decryption requires server-side salt
@@ -298,6 +302,7 @@ graph TB
 ```
 
 **Mitigations:**
+
 - Role table protected by RLS
 - Only owner/admin can modify roles
 - `has_role()` function validates permissions
@@ -309,15 +314,15 @@ graph TB
 
 ## Risk Assessment (DREAD)
 
-| Threat | Damage | Reproducibility | Exploitability | Affected Users | Discoverability | Score |
-|--------|--------|-----------------|----------------|----------------|-----------------|-------|
-| S1 Session hijacking | 3 | 2 | 2 | 3 | 2 | **2.4** |
-| S2 Credential stuffing | 4 | 4 | 3 | 3 | 4 | **3.6** |
-| S3 Webhook forgery | 4 | 3 | 2 | 4 | 2 | **3.0** |
-| I1 Cross-tenant access | 5 | 2 | 2 | 5 | 3 | **3.4** |
-| I2 API key exposure | 4 | 2 | 2 | 4 | 2 | **2.8** |
-| E1 Tenant escape | 5 | 2 | 2 | 5 | 3 | **3.4** |
-| D1 API flooding | 2 | 4 | 4 | 4 | 4 | **3.6** |
+| Threat                 | Damage | Reproducibility | Exploitability | Affected Users | Discoverability | Score   |
+| ---------------------- | ------ | --------------- | -------------- | -------------- | --------------- | ------- |
+| S1 Session hijacking   | 3      | 2               | 2              | 3              | 2               | **2.4** |
+| S2 Credential stuffing | 4      | 4               | 3              | 3              | 4               | **3.6** |
+| S3 Webhook forgery     | 4      | 3               | 2              | 4              | 2               | **3.0** |
+| I1 Cross-tenant access | 5      | 2               | 2              | 5              | 3               | **3.4** |
+| I2 API key exposure    | 4      | 2               | 2              | 4              | 2               | **2.8** |
+| E1 Tenant escape       | 5      | 2               | 2              | 5              | 3               | **3.4** |
+| D1 API flooding        | 2      | 4               | 4              | 4              | 4               | **3.6** |
 
 **Score interpretation:** 1-2 (Low), 2-3 (Medium), 3-4 (High), 4-5 (Critical)
 
@@ -335,40 +340,40 @@ graph TB
 
 ### Authentication Controls
 
-| Control | Threat Addressed | Implementation |
-|---------|-----------------|----------------|
-| JWT verification | S1 Spoofing | Supabase Auth |
-| Password complexity | S2 Stuffing | Frontend validation |
-| Rate limiting | S2, D1 | Platform level |
-| Webhook secrets | S3 Forgery | Per-org secrets |
-| **MFA (TBD)** | S2 Stuffing | Not implemented |
+| Control             | Threat Addressed | Implementation      |
+| ------------------- | ---------------- | ------------------- |
+| JWT verification    | S1 Spoofing      | Supabase Auth       |
+| Password complexity | S2 Stuffing      | Frontend validation |
+| Rate limiting       | S2, D1           | Platform level      |
+| Webhook secrets     | S3 Forgery       | Per-org secrets     |
+| **MFA (TBD)**       | S2 Stuffing      | Not implemented     |
 
 ### Authorization Controls
 
-| Control | Threat Addressed | Implementation |
-|---------|-----------------|----------------|
-| RLS policies | E1, I1 | PostgreSQL |
-| Role validation | E2 | `has_role()` function |
-| Org scope checks | E1, I1 | Function-level |
-| Service role isolation | E3 | Server-side only |
+| Control                | Threat Addressed | Implementation        |
+| ---------------------- | ---------------- | --------------------- |
+| RLS policies           | E1, I1           | PostgreSQL            |
+| Role validation        | E2               | `has_role()` function |
+| Org scope checks       | E1, I1           | Function-level        |
+| Service role isolation | E3               | Server-side only      |
 
 ### Data Protection Controls
 
-| Control | Threat Addressed | Implementation |
-|---------|-----------------|----------------|
-| TLS | T1, I2 | Platform |
-| Encryption at rest | I2, I4 | Platform + app |
-| Audit logging | R1, R2, R3 | Event logs table |
-| Hash chain | T4 | Append-only logs |
+| Control            | Threat Addressed | Implementation   |
+| ------------------ | ---------------- | ---------------- |
+| TLS                | T1, I2           | Platform         |
+| Encryption at rest | I2, I4           | Platform + app   |
+| Audit logging      | R1, R2, R3       | Event logs table |
+| Hash chain         | T4               | Append-only logs |
 
 ### Monitoring Controls
 
-| Control | Threat Addressed | Status |
-|---------|-----------------|--------|
-| Failed login monitoring | S2 | **TBD** |
-| Unusual access patterns | E1, I1 | **TBD** |
-| API abuse detection | D1 | **TBD** |
-| Secret access logging | I2 | **TBD** |
+| Control                 | Threat Addressed | Status  |
+| ----------------------- | ---------------- | ------- |
+| Failed login monitoring | S2               | **TBD** |
+| Unusual access patterns | E1, I1           | **TBD** |
+| API abuse detection     | D1               | **TBD** |
+| Secret access logging   | I2               | **TBD** |
 
 ---
 
@@ -376,21 +381,21 @@ graph TB
 
 ### Penetration Testing Scope
 
-| Area | Test Type | Frequency |
-|------|-----------|-----------|
-| Authentication | Credential attacks, session | Annual |
-| Authorization | Tenant isolation, RBAC | Annual |
-| API security | Injection, rate limiting | Annual |
-| Webhook security | Forgery, replay | Annual |
+| Area             | Test Type                   | Frequency |
+| ---------------- | --------------------------- | --------- |
+| Authentication   | Credential attacks, session | Annual    |
+| Authorization    | Tenant isolation, RBAC      | Annual    |
+| API security     | Injection, rate limiting    | Annual    |
+| Webhook security | Forgery, replay             | Annual    |
 
 ### Automated Testing
 
-| Tool | Purpose | Integration |
-|------|---------|-------------|
-| Dependency scanner | Known vulnerabilities | CI/CD |
-| SAST | Code vulnerabilities | CI/CD |
-| DAST | Runtime vulnerabilities | Staging |
-| Secret scanner | Credential leakage | Pre-commit |
+| Tool               | Purpose                 | Integration |
+| ------------------ | ----------------------- | ----------- |
+| Dependency scanner | Known vulnerabilities   | CI/CD       |
+| SAST               | Code vulnerabilities    | CI/CD       |
+| DAST               | Runtime vulnerabilities | Staging     |
+| Secret scanner     | Credential leakage      | Pre-commit  |
 
 ---
 
@@ -398,20 +403,20 @@ graph TB
 
 ### Accepted Risks
 
-| Risk | Justification | Monitoring |
-|------|---------------|------------|
-| CORS wildcard | Multi-tenant SaaS, protected by auth | Auth logs |
-| localStorage JWT | Browser standard, short-lived | Session audit |
-| XOR encryption | Defense in depth, not sole protection | Key rotation |
+| Risk             | Justification                         | Monitoring    |
+| ---------------- | ------------------------------------- | ------------- |
+| CORS wildcard    | Multi-tenant SaaS, protected by auth  | Auth logs     |
+| localStorage JWT | Browser standard, short-lived         | Session audit |
+| XOR encryption   | Defense in depth, not sole protection | Key rotation  |
 
 ### Risks Requiring Attention
 
-| Risk | Current State | Recommendation | Priority |
-|------|---------------|----------------|----------|
-| No MFA | Single factor | Implement TOTP | High |
-| Limited rate visibility | Platform only | Add app-level | Medium |
-| No breach detection | Manual review | Automated alerting | Medium |
-| Key rotation manual | On-demand | Automated rotation | Low |
+| Risk                    | Current State | Recommendation     | Priority |
+| ----------------------- | ------------- | ------------------ | -------- |
+| No MFA                  | Single factor | Implement TOTP     | High     |
+| Limited rate visibility | Platform only | Add app-level      | Medium   |
+| No breach detection     | Manual review | Automated alerting | Medium   |
+| Key rotation manual     | On-demand     | Automated rotation | Low      |
 
 ---
 

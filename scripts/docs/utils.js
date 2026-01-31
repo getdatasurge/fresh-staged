@@ -70,7 +70,7 @@ export async function extractHeadings(filePath) {
       headings.push({
         level: match[1].length,
         text: match[2].trim(),
-        anchor: slugify(match[2].trim())
+        anchor: slugify(match[2].trim()),
       });
     }
 
@@ -117,18 +117,18 @@ export function getCategory(filePath) {
  * Category display names and order
  */
 export const CATEGORY_INFO = {
-  'executive': { name: 'Executive Summary', order: 1 },
-  'architecture': { name: 'Architecture', order: 2 },
-  'product': { name: 'Product', order: 3 },
-  'engineering': { name: 'Engineering', order: 4 },
-  'onboarding': { name: 'Onboarding', order: 5 },
-  'qa': { name: 'Quality Assurance', order: 6 },
-  'security': { name: 'Security', order: 7 },
-  'operations': { name: 'Operations', order: 8 },
-  'diagrams': { name: 'Diagrams', order: 9 },
-  'charts': { name: 'Charts', order: 10 },
-  'adr': { name: 'Architecture Decision Records', order: 11 },
-  'root': { name: 'General', order: 12 }
+  executive: { name: 'Executive Summary', order: 1 },
+  architecture: { name: 'Architecture', order: 2 },
+  product: { name: 'Product', order: 3 },
+  engineering: { name: 'Engineering', order: 4 },
+  onboarding: { name: 'Onboarding', order: 5 },
+  qa: { name: 'Quality Assurance', order: 6 },
+  security: { name: 'Security', order: 7 },
+  operations: { name: 'Operations', order: 8 },
+  diagrams: { name: 'Diagrams', order: 9 },
+  charts: { name: 'Charts', order: 10 },
+  adr: { name: 'Architecture Decision Records', order: 11 },
+  root: { name: 'General', order: 12 },
 };
 
 /**
@@ -145,7 +145,7 @@ export function extractLinks(content) {
     links.push({
       text: match[1],
       url: match[2],
-      full: match[0]
+      full: match[0],
     });
   }
 
@@ -202,7 +202,7 @@ export function extractMermaidBlocks(content) {
   while ((match = regex.exec(content)) !== null) {
     blocks.push({
       content: match[1].trim(),
-      full: match[0]
+      full: match[0],
     });
   }
 
@@ -216,26 +216,46 @@ export function extractMermaidBlocks(content) {
 export function validateMermaidSyntax(content) {
   // Check for valid diagram type declarations
   const validTypes = [
-    'graph', 'flowchart', 'sequenceDiagram', 'classDiagram',
-    'stateDiagram', 'stateDiagram-v2', 'erDiagram', 'journey',
-    'gantt', 'pie', 'quadrantChart', 'requirementDiagram',
-    'gitGraph', 'mindmap', 'timeline', 'sankey', 'subgraph',
-    'C4Context', 'C4Container', 'C4Component', 'C4Dynamic', 'C4Deployment'
+    'graph',
+    'flowchart',
+    'sequenceDiagram',
+    'classDiagram',
+    'stateDiagram',
+    'stateDiagram-v2',
+    'erDiagram',
+    'journey',
+    'gantt',
+    'pie',
+    'quadrantChart',
+    'requirementDiagram',
+    'gitGraph',
+    'mindmap',
+    'timeline',
+    'sankey',
+    'subgraph',
+    'C4Context',
+    'C4Container',
+    'C4Component',
+    'C4Dynamic',
+    'C4Deployment',
   ];
 
-  const lines = content.split('\n').filter(l => l.trim());
+  const lines = content.split('\n').filter((l) => l.trim());
   if (lines.length === 0) {
     return { valid: false, error: 'Empty diagram' };
   }
 
   const firstLine = lines[0].trim();
-  const hasValidType = validTypes.some(type =>
-    firstLine.startsWith(type) || firstLine.toLowerCase().startsWith(type.toLowerCase())
+  const hasValidType = validTypes.some(
+    (type) => firstLine.startsWith(type) || firstLine.toLowerCase().startsWith(type.toLowerCase()),
   );
 
   // Also allow comments at the start
   if (!hasValidType && !firstLine.startsWith('%%')) {
-    return { valid: false, error: `Missing diagram type. First line: "${firstLine.substring(0, 30)}..."` };
+    return {
+      valid: false,
+      error: `Missing diagram type. First line: "${firstLine.substring(0, 30)}..."`,
+    };
   }
 
   // All basic checks passed
@@ -290,7 +310,7 @@ export const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   cyan: '\x1b[36m',
-  dim: '\x1b[2m'
+  dim: '\x1b[2m',
 };
 
 /**

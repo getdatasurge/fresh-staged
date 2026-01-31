@@ -96,11 +96,7 @@ export function AccountDeletionModal({
             </div>
           </div>
 
-          <Button 
-            variant="outline" 
-            className="w-full" 
-            onClick={handleExportSnapshot}
-          >
+          <Button variant="outline" className="w-full" onClick={handleExportSnapshot}>
             <Download className="h-4 w-4 mr-2" />
             Export Support Snapshot
           </Button>
@@ -115,9 +111,7 @@ export function AccountDeletionModal({
           <Loader2 className="h-12 w-12 animate-spin text-destructive" />
           <div className="text-center">
             <p className="font-medium">{statusMessages[progress.status]}</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Please do not close this window...
-            </p>
+            <p className="text-sm text-muted-foreground mt-1">Please do not close this window...</p>
           </div>
         </div>
       );
@@ -132,8 +126,8 @@ export function AccountDeletionModal({
             <div>
               <p className="font-medium text-warning">Ownership Transfer Required</p>
               <p className="text-sm text-muted-foreground mt-1">
-                You are the owner of an organization with other users. You must transfer 
-                ownership to another user before you can delete your account.
+                You are the owner of an organization with other users. You must transfer ownership
+                to another user before you can delete your account.
               </p>
             </div>
           </div>
@@ -176,7 +170,8 @@ export function AccountDeletionModal({
                 {sensorCount > 0 && (
                   <li className="flex items-center gap-2 ml-4">
                     <CheckCircle2 className="h-4 w-4 text-destructive" />
-                    {sensorCount} sensor{sensorCount !== 1 ? 's' : ''} (TTN devices will be deprovisioned)
+                    {sensorCount} sensor{sensorCount !== 1 ? 's' : ''} (TTN devices will be
+                    deprovisioned)
                   </li>
                 )}
                 {gatewayCount > 0 && (
@@ -233,8 +228,8 @@ export function AccountDeletionModal({
   };
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onOpenChange={(newOpen) => {
         // Prevent closing during deletion
         if (isDeleting && !newOpen) return;
@@ -273,11 +268,7 @@ export function AccountDeletionModal({
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={!canDelete}
-              >
+              <Button variant="destructive" onClick={handleDelete} disabled={!canDelete}>
                 Delete My Account
               </Button>
             </>

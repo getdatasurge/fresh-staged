@@ -1,6 +1,13 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from 'react';
 import { debugLog, DebugLogEntry } from '@/lib/debugLogger';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface DebugContextValue {
   isDebugEnabled: boolean;
@@ -25,7 +32,6 @@ const STORAGE_KEY = 'frostguard_debug_enabled';
 const TERMINAL_VISIBLE_KEY = 'frostguard_debug_terminal_visible';
 
 export function DebugProvider({ children }: { children: ReactNode }) {
-  const { toast } = useToast();
   const [isDebugEnabled, setIsDebugEnabled] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem(STORAGE_KEY) === 'true';
@@ -36,7 +42,8 @@ export function DebugProvider({ children }: { children: ReactNode }) {
   });
   const [isPaused, setIsPaused] = useState(false);
   const [logs, setLogs] = useState<DebugLogEntry[]>([]);
-  const [selectedErrorForExplanation, setSelectedErrorForExplanation] = useState<DebugLogEntry | null>(null);
+  const [selectedErrorForExplanation, setSelectedErrorForExplanation] =
+    useState<DebugLogEntry | null>(null);
 
   // Sync debug mode with logger
   useEffect(() => {
@@ -61,7 +68,7 @@ export function DebugProvider({ children }: { children: ReactNode }) {
     if (!isDebugEnabled) return;
 
     const unsubscribe = debugLog.subscribe((entry) => {
-      setLogs(prev => [...prev.slice(-999), entry]);
+      setLogs((prev) => [...prev.slice(-999), entry]);
     });
 
     return unsubscribe;
@@ -72,22 +79,21 @@ export function DebugProvider({ children }: { children: ReactNode }) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
         e.preventDefault();
-        
+
         if (!isDebugEnabled) {
-          toast({
-            title: "Debug Mode Disabled",
-            description: "Enable debug mode in Settings → Developer",
+          toast('Debug Mode Disabled', {
+            description: 'Enable debug mode in Settings → Developer',
           });
           return;
         }
-        
-        setIsTerminalVisible(prev => !prev);
+
+        setIsTerminalVisible((prev) => !prev);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDebugEnabled, toast]);
+  }, [isDebugEnabled]);
 
   const setDebugEnabled = useCallback((enabled: boolean) => {
     setIsDebugEnabled(enabled);
@@ -98,7 +104,7 @@ export function DebugProvider({ children }: { children: ReactNode }) {
 
   const toggleTerminal = useCallback(() => {
     if (isDebugEnabled) {
-      setIsTerminalVisible(prev => !prev);
+      setIsTerminalVisible((prev) => !prev);
     }
   }, [isDebugEnabled]);
 

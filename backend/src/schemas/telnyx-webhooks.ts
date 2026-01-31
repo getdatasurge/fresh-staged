@@ -26,26 +26,36 @@ export const TelnyxMessagePayloadSchema = z.object({
   /** Message direction (always 'outbound' for our use case) */
   direction: z.enum(['outbound', 'inbound']).optional(),
   /** From phone number in E.164 format */
-  from: z.object({
-    phone_number: z.string(),
-    carrier: z.string().optional(),
-  }).optional(),
+  from: z
+    .object({
+      phone_number: z.string(),
+      carrier: z.string().optional(),
+    })
+    .optional(),
   /** To phone number in E.164 format */
-  to: z.array(z.object({
-    phone_number: z.string(),
-    status: z.string().optional(),
-    carrier: z.string().optional(),
-  })).optional(),
+  to: z
+    .array(
+      z.object({
+        phone_number: z.string(),
+        status: z.string().optional(),
+        carrier: z.string().optional(),
+      }),
+    )
+    .optional(),
   /** Message type (SMS, MMS) */
   type: z.string().optional(),
   /** Message text (for inbound) */
   text: z.string().optional(),
   /** Error codes if failed */
-  errors: z.array(z.object({
-    code: z.string(),
-    title: z.string(),
-    detail: z.string().optional(),
-  })).optional(),
+  errors: z
+    .array(
+      z.object({
+        code: z.string(),
+        title: z.string(),
+        detail: z.string().optional(),
+      }),
+    )
+    .optional(),
   /** Timestamp when message was completed */
   completed_at: z.string().optional(),
   /** Timestamp when message was sent */
@@ -72,12 +82,14 @@ export const TelnyxWebhookEventSchema = z.object({
     /** The message payload */
     payload: TelnyxMessagePayloadSchema,
   }),
-  meta: z.object({
-    /** Attempt number for webhook delivery */
-    attempt: z.number().optional(),
-    /** Timestamp of webhook delivery attempt */
-    delivered_to: z.string().optional(),
-  }).optional(),
+  meta: z
+    .object({
+      /** Attempt number for webhook delivery */
+      attempt: z.number().optional(),
+      /** Timestamp of webhook delivery attempt */
+      delivered_to: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type TelnyxWebhookEvent = z.infer<typeof TelnyxWebhookEventSchema>;

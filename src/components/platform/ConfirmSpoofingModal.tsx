@@ -82,17 +82,13 @@ export function ConfirmSpoofingModal({
                     <div className="font-medium text-foreground">
                       {target?.full_name || target?.email}
                     </div>
-                    {target?.full_name && (
-                      <div className="text-sm">{target.email}</div>
-                    )}
+                    {target?.full_name && <div className="text-sm">{target.email}</div>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Building2 className="w-4 h-4 text-muted-foreground" />
                   <div>
-                    <div className="font-medium text-foreground">
-                      {target?.organization_name}
-                    </div>
+                    <div className="font-medium text-foreground">{target?.organization_name}</div>
                     <div className="text-xs font-mono text-muted-foreground">
                       {target?.organization_id}
                     </div>
@@ -105,7 +101,9 @@ export function ConfirmSpoofingModal({
                 <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
                 <div className="text-sm text-amber-800 dark:text-amber-200">
                   <p className="font-medium">You will see exactly what this user sees.</p>
-                  <p className="mt-1">All actions performed during this session are logged and auditable.</p>
+                  <p className="mt-1">
+                    All actions performed during this session are logged and auditable.
+                  </p>
                 </div>
               </div>
 

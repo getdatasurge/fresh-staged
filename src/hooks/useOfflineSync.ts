@@ -4,11 +4,11 @@ import {
   markLogSynced,
   PendingManualLog,
   savePendingLog,
-} from "@/lib/offlineStorage"
-import { useTRPC } from "@/lib/trpc"
-import { useUser } from "@stackframe/react"
-import { useMutation } from "@tanstack/react-query"
-import { useCallback, useEffect, useState } from "react"
+} from '@/lib/offlineStorage';
+import { useTRPC } from '@/lib/trpc';
+import { useUser } from '@stackframe/react';
+import { useMutation } from '@tanstack/react-query';
+import { useCallback, useEffect, useState } from 'react';
 
 export function useOfflineSync() {
   const user = useUser();
@@ -22,12 +22,12 @@ export function useOfflineSync() {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
@@ -36,7 +36,7 @@ export function useOfflineSync() {
       const pending = await getPendingLogs();
       setPendingCount(pending.length);
     } catch (error) {
-      console.error("Error getting pending logs:", error);
+      console.error('Error getting pending logs:', error);
     }
   }, []);
 
@@ -53,11 +53,11 @@ export function useOfflineSync() {
   }, [isOnline]);
 
   const saveLogOffline = useCallback(
-    async (log: Omit<PendingManualLog, "synced">) => {
+    async (log: Omit<PendingManualLog, 'synced'>) => {
       await savePendingLog({ ...log, synced: 0 }); // Use 0 instead of false
       await refreshPendingCount();
     },
-    [refreshPendingCount]
+    [refreshPendingCount],
   );
 
   const syncPendingLogs = useCallback(async () => {
@@ -78,8 +78,8 @@ export function useOfflineSync() {
 
           await markLogSynced(log.id);
         } catch (error) {
-          console.error("Error syncing individual log:", error);
-          // If it's a validation error, we might want to discard it? 
+          console.error('Error syncing individual log:', error);
+          // If it's a validation error, we might want to discard it?
           // For now just stop the loop if it's a network error
         }
       }
@@ -87,7 +87,7 @@ export function useOfflineSync() {
       await deleteSyncedLogs();
       await refreshPendingCount();
     } catch (error) {
-      console.error("Error during sync:", error);
+      console.error('Error during sync:', error);
     } finally {
       setIsSyncing(false);
     }

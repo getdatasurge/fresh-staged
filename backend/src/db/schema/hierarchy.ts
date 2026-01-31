@@ -8,9 +8,15 @@ import {
   uniqueIndex,
   uuid,
   varchar,
-} from 'drizzle-orm/pg-core'
-import { complianceModeEnum, gatewayStatusEnum, tempUnitEnum, unitStatusEnum, unitTypeEnum } from './enums.js'
-import { organizations, ttnConnections } from './tenancy.js'
+} from 'drizzle-orm/pg-core';
+import {
+  complianceModeEnum,
+  gatewayStatusEnum,
+  tempUnitEnum,
+  unitStatusEnum,
+  unitTypeEnum,
+} from './enums.js';
+import { organizations, ttnConnections } from './tenancy.js';
 
 // Reusable timestamp columns
 const timestamps = {
@@ -35,7 +41,6 @@ const timestamps = {
     withTimezone: true,
   }),
 };
-
 
 // Sites - physical locations (top of hierarchy)
 export const sites = pgTable(
@@ -63,7 +68,7 @@ export const sites = pgTable(
   (table) => [
     index('sites_org_idx').on(table.organizationId),
     index('sites_active_idx').on(table.organizationId, table.isActive),
-  ]
+  ],
 );
 
 // Areas - subdivisions within a site
@@ -83,7 +88,7 @@ export const areas = pgTable(
   (table) => [
     index('areas_site_idx').on(table.siteId),
     index('areas_sort_idx').on(table.siteId, table.sortOrder),
-  ]
+  ],
 );
 
 // Units - refrigeration equipment (core monitoring entity)
@@ -100,9 +105,7 @@ export const units = pgTable(
     tempMin: integer('temp_min').notNull(),
     tempMax: integer('temp_max').notNull(),
     tempUnit: tempUnitEnum('temp_unit').notNull().default('F'),
-    manualMonitoringRequired: boolean('manual_monitoring_required')
-      .notNull()
-      .default(false),
+    manualMonitoringRequired: boolean('manual_monitoring_required').notNull().default(false),
     manualMonitoringInterval: integer('manual_monitoring_interval'), // minutes
     lastReadingAt: timestamp('last_reading_at', {
       mode: 'date',
@@ -124,7 +127,7 @@ export const units = pgTable(
     index('units_status_idx').on(table.status),
     index('units_type_idx').on(table.unitType),
     index('units_active_idx').on(table.areaId, table.isActive),
-  ]
+  ],
 );
 
 // Hubs - network aggregators for BLE sensors
@@ -150,7 +153,7 @@ export const hubs = pgTable(
   (table) => [
     index('hubs_site_idx').on(table.siteId),
     uniqueIndex('hubs_mac_idx').on(table.macAddress),
-  ]
+  ],
 );
 
 // Gateways - LoRaWAN gateways for TTN network
@@ -161,8 +164,7 @@ export const gateways = pgTable(
     ttnConnectionId: uuid('ttn_connection_id')
       .references(() => ttnConnections.id, { onDelete: 'cascade' })
       .notNull(),
-    siteId: uuid('site_id')
-      .references(() => sites.id, { onDelete: 'set null' }),
+    siteId: uuid('site_id').references(() => sites.id, { onDelete: 'set null' }),
     gatewayId: varchar('gateway_id', { length: 36 }).notNull(), // TTN gateway ID
     gatewayEui: varchar('gateway_eui', { length: 16 }).notNull(), // 16 hex chars
     name: varchar('name', { length: 256 }),
@@ -185,7 +187,7 @@ export const gateways = pgTable(
     index('gateways_site_idx').on(table.siteId),
     uniqueIndex('gateways_gateway_id_idx').on(table.gatewayId),
     uniqueIndex('gateways_gateway_eui_idx').on(table.gatewayEui),
-  ]
+  ],
 );
 
 // Type exports

@@ -38,13 +38,13 @@ key-files:
     - backend/src/trpc/router.ts
 
 key-decisions:
-  - "Use protectedProcedure for preferences (user-scoped, no org context needed)"
-  - "Fire-and-forget pattern for scheduler sync preserved from REST route"
-  - "Role check for SMS config: admin/owner only"
+  - 'Use protectedProcedure for preferences (user-scoped, no org context needed)'
+  - 'Fire-and-forget pattern for scheduler sync preserved from REST route'
+  - 'Role check for SMS config: admin/owner only'
 
 patterns-established:
-  - "User-scoped procedures: use protectedProcedure, operate on ctx.user.id"
-  - "JSON text parsing: digestSiteIds stored as text, parsed to array in response"
+  - 'User-scoped procedures: use protectedProcedure, operate on ctx.user.id'
+  - 'JSON text parsing: digestSiteIds stored as text, parsed to array in response'
 
 # Metrics
 duration: 5min
@@ -64,6 +64,7 @@ completed: 2026-01-25
 - **Files modified:** 7
 
 ## Accomplishments
+
 - Created preferencesRouter with getDigest, updateDigest, disableAllDigests procedures
 - Created smsConfigRouter with get and upsert procedures (admin/owner gated)
 - Created paymentsRouter with getSubscription, createCheckoutSession, createPortalSession
@@ -79,6 +80,7 @@ Each task was committed atomically:
 3. **Task 3: Add unit tests for all three routers** - `d8e9e34` (test)
 
 ## Files Created/Modified
+
 - `backend/src/routers/preferences.router.ts` - User digest preference management (3 procedures)
 - `backend/src/routers/sms-config.router.ts` - Organization SMS alerting config (2 procedures)
 - `backend/src/routers/payments.router.ts` - Stripe billing operations (3 procedures)
@@ -88,6 +90,7 @@ Each task was committed atomically:
 - `backend/tests/trpc/payments.router.test.ts` - 15 tests for payments
 
 ## Decisions Made
+
 - Used protectedProcedure for preferences router (user-scoped, no organization context needed)
 - Preserved fire-and-forget pattern for scheduler sync (don't block response waiting for BullMQ)
 - SMS config upsert restricted to admin/owner roles only
@@ -98,6 +101,7 @@ Each task was committed atomically:
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 - Test initially failed due to non-UUID strings in digestSiteIds array - fixed by using valid UUIDs in test data
 - Pre-existing TypeScript error in assets.router.ts (s3-request-presigner) unrelated to our changes
 
@@ -106,10 +110,12 @@ None - plan executed exactly as written.
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - All three Settings domain routers ready for frontend migration
 - REST routes remain operational for parallel operation during migration
 - Test patterns established for remaining Phase 21 plans (TTN, admin, assets routers)
 
 ---
-*Phase: 21-backend-api-migration-completion*
-*Completed: 2026-01-25*
+
+_Phase: 21-backend-api-migration-completion_
+_Completed: 2026-01-25_

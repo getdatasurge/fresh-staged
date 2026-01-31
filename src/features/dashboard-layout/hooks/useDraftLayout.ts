@@ -1,12 +1,12 @@
 /**
  * Draft Layout Hook
- * 
+ *
  * Manages local draft state for dashboard layouts.
  * Drafts persist in localStorage and survive browser refresh.
  */
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import type { LayoutConfig, TimelineState, WidgetPreferences } from "../types";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import type { LayoutConfig, TimelineState, WidgetPreferences } from '../types';
 import {
   saveDraft,
   loadDraft,
@@ -16,7 +16,7 @@ import {
   type DraftKeyParams,
   type StoredDraft,
   type DraftData,
-} from "../utils/draftManager";
+} from '../utils/draftManager';
 
 // ============================================================================
 // Types
@@ -35,7 +35,11 @@ export interface DraftState {
 
 export interface DraftActions {
   /** Save current state as a local draft */
-  saveDraftLocally: (config: LayoutConfig, timeline: TimelineState, prefs: WidgetPreferences) => void;
+  saveDraftLocally: (
+    config: LayoutConfig,
+    timeline: TimelineState,
+    prefs: WidgetPreferences,
+  ) => void;
   /** Load draft from localStorage (called on mount) */
   loadDraftFromStorage: () => StoredDraft | null;
   /** Clear the local draft */
@@ -56,20 +60,20 @@ export interface UseDraftLayoutResult {
 // ============================================================================
 
 export function useDraftLayout(
-  entityType: "site" | "unit",
+  entityType: 'site' | 'unit',
   entityId: string | undefined,
   layoutId: string,
   userId: string | undefined,
-  serverUpdatedAt: string | null
+  serverUpdatedAt: string | null,
 ): UseDraftLayoutResult {
   const [hasDraft, setHasDraft] = useState(false);
   const [draftUpdatedAt, setDraftUpdatedAt] = useState<Date | null>(null);
   const [isUsingDraft, setIsUsingDraft] = useState(false);
   const [draftData, setDraftData] = useState<DraftData | null>(null);
-  
+
   // Track if we've initialized to avoid double-loading
   const initializedRef = useRef(false);
-  
+
   // Create params object for draft manager
   const getParams = useCallback((): DraftKeyParams | null => {
     if (!entityId || !userId) return null;
@@ -82,8 +86,8 @@ export function useDraftLayout(
       cleanupExpiredDrafts();
     } catch (error) {
       // localStorage might be disabled or full - fail silently
-      if (process.env.NODE_ENV === "development") {
-        console.warn("[useDraftLayout] Failed to cleanup expired drafts:", error);
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[useDraftLayout] Failed to cleanup expired drafts:', error);
       }
     }
   }, []);
@@ -116,8 +120,8 @@ export function useDraftLayout(
     if (!params) return;
 
     const handleStorageChange = (event: StorageEvent) => {
-      if (!event.key?.includes(entityId || "")) return;
-      
+      if (!event.key?.includes(entityId || '')) return;
+
       // Reload draft state when changed in another tab
       const draft = loadDraft(params);
       if (draft && isDraftNewerThanServer(draft, serverUpdatedAt)) {
@@ -131,8 +135,8 @@ export function useDraftLayout(
       }
     };
 
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, [getParams, entityId, serverUpdatedAt]);
 
   // ============================================================================
@@ -150,7 +154,7 @@ export function useDraftLayout(
       setDraftData({ config, timelineState: timeline, widgetPrefs: prefs });
       setIsUsingDraft(true);
     },
-    [getParams]
+    [getParams],
   );
 
   const loadDraftFromStorage = useCallback((): StoredDraft | null => {

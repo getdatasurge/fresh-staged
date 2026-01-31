@@ -18,8 +18,8 @@ affects: [deployment, production, self-hosted]
 tech-stack:
   added: []
   patterns:
-    - "HTTP-01 challenge for individual certificates (default, no API credentials)"
-    - "DNS-01 challenge for wildcard certificates (requires DNS provider API)"
+    - 'HTTP-01 challenge for individual certificates (default, no API credentials)'
+    - 'DNS-01 challenge for wildcard certificates (requires DNS provider API)'
     - "Let's Encrypt staging environment for testing before production"
 
 key-files:
@@ -29,13 +29,13 @@ key-files:
   modified: []
 
 key-decisions:
-  - "HTTP-01 challenge recommended as default (simpler, no DNS API credentials needed)"
-  - "DNS-01 wildcard certificates for advanced deployments with many subdomains"
-  - "Cloudflare recommended as primary DNS provider (fast propagation, excellent API)"
+  - 'HTTP-01 challenge recommended as default (simpler, no DNS API credentials needed)'
+  - 'DNS-01 wildcard certificates for advanced deployments with many subdomains'
+  - 'Cloudflare recommended as primary DNS provider (fast propagation, excellent API)'
 
 patterns-established:
-  - "Comprehensive documentation pattern: default (simple) vs advanced (complex) paths"
-  - "DNS provider examples include Cloudflare, DigitalOcean, and Route53"
+  - 'Comprehensive documentation pattern: default (simple) vs advanced (complex) paths'
+  - 'DNS provider examples include Cloudflare, DigitalOcean, and Route53'
   - "Let's Encrypt staging environment mandatory for testing to avoid rate limits"
 
 # Metrics
@@ -91,16 +91,19 @@ Each task was committed atomically:
 ## Decisions Made
 
 **1. HTTP-01 as default, DNS-01 as advanced option**
+
 - Default Caddyfile uses HTTP-01 (individual certificates per subdomain)
 - Works with any DNS provider, no API credentials needed
 - Wildcard template is opt-in for users with DNS provider API access
 
 **2. Cloudflare recommended as primary DNS provider**
+
 - Fast DNS propagation (30-60 seconds vs minutes for others)
 - Excellent API with token-based authentication
 - Free tier sufficient for most deployments
 
 **3. Let's Encrypt staging mandatory for testing**
+
 - Staging environment documented prominently in both files
 - Prevents rate limit exhaustion during testing/troubleshooting
 - Staging issues untrusted certificates (expected behavior)
@@ -122,15 +125,18 @@ None - no external service configuration required. Documentation is for end-user
 **Ready for next plan.** SSL certificate documentation complete.
 
 **Enables:**
+
 - Self-hosted deployment with automatic HTTPS
 - Choice between simple (HTTP-01) and advanced (DNS-01) SSL setup
 - Production deployment with proper SSL configuration
 
 **Next steps:**
+
 - Docker Compose production configuration
 - Deployment automation scripts
 - Environment variable management
 
 ---
-*Phase: 11-self-hosted-deployment*
-*Completed: 2026-01-24*
+
+_Phase: 11-self-hosted-deployment_
+_Completed: 2026-01-24_

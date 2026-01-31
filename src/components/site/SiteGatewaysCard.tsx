@@ -1,18 +1,18 @@
-import { useState } from "react";
-import { useGateways, useUpdateGateway, useDeleteGateway } from "@/hooks/useGateways";
-import { AddGatewayDialog } from "@/components/settings/AddGatewayDialog";
-import { AssignGatewayDialog } from "@/components/settings/AssignGatewayDialog";
-import { EditGatewayDialog } from "@/components/settings/EditGatewayDialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState } from 'react';
+import { useGateways, useUpdateGateway, useDeleteGateway } from '@/hooks/useGateways';
+import { AddGatewayDialog } from '@/components/settings/AddGatewayDialog';
+import { AssignGatewayDialog } from '@/components/settings/AssignGatewayDialog';
+import { EditGatewayDialog } from '@/components/settings/EditGatewayDialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,9 +22,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Plus, Radio, MoreHorizontal, Pencil, Unlink, Trash2, Loader2, Info } from "lucide-react";
-import { Gateway } from "@/types/ttn";
+} from '@/components/ui/alert-dialog';
+import { Plus, Radio, MoreHorizontal, Pencil, Unlink, Trash2, Loader2, Info } from 'lucide-react';
+import { Gateway } from '@/types/ttn';
 
 interface SiteGatewaysCardProps {
   siteId: string;
@@ -36,7 +36,7 @@ export function SiteGatewaysCard({ siteId, siteName, organizationId }: SiteGatew
   const { data: allGateways = [], isLoading } = useGateways(organizationId);
   const updateGateway = useUpdateGateway();
   const deleteGateway = useDeleteGateway();
-  
+
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [editGateway, setEditGateway] = useState<Gateway | null>(null);
@@ -44,20 +44,28 @@ export function SiteGatewaysCard({ siteId, siteName, organizationId }: SiteGatew
   const [unassignGateway, setUnassignGateway] = useState<Gateway | null>(null);
 
   // Filter gateways assigned to this site
-  const siteGateways = allGateways.filter(g => g.site_id === siteId);
+  const siteGateways = allGateways.filter((g) => g.site_id === siteId);
   // Gateways available for assignment (not assigned to any site)
-  const unassignedGateways = allGateways.filter(g => !g.site_id);
+  const unassignedGateways = allGateways.filter((g) => !g.site_id);
 
   const formatEUI = (eui: string) => {
-    return eui.match(/.{1,2}/g)?.join(":") || eui;
+    return eui.match(/.{1,2}/g)?.join(':') || eui;
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "online":
-        return <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-500/20">Online</Badge>;
-      case "offline":
-        return <Badge variant="secondary" className="bg-red-500/10 text-red-600 border-red-500/20">Offline</Badge>;
+      case 'online':
+        return (
+          <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-500/20">
+            Online
+          </Badge>
+        );
+      case 'offline':
+        return (
+          <Badge variant="secondary" className="bg-red-500/10 text-red-600 border-red-500/20">
+            Offline
+          </Badge>
+        );
       default:
         return <Badge variant="outline">Pending</Badge>;
     }
@@ -67,7 +75,7 @@ export function SiteGatewaysCard({ siteId, siteName, organizationId }: SiteGatew
     if (!unassignGateway) return;
     await updateGateway.mutateAsync({
       id: unassignGateway.id,
-      updates: { site_id: null, status: "pending" },
+      updates: { site_id: null, status: 'pending' },
     });
     setUnassignGateway(null);
   };
@@ -134,22 +142,31 @@ export function SiteGatewaysCard({ siteId, siteName, organizationId }: SiteGatew
             <div className="flex items-center gap-3 p-3 mb-4 rounded-lg border border-primary/20 bg-primary/5">
               <Info className="w-4 h-4 text-primary flex-shrink-0" />
               <p className="text-sm text-foreground flex-1">
-                <span className="font-medium">{unassignedGateways.length}</span> unassigned gateway{unassignedGateways.length > 1 ? 's' : ''} available from sync
+                <span className="font-medium">{unassignedGateways.length}</span> unassigned gateway
+                {unassignedGateways.length > 1 ? 's' : ''} available from sync
               </p>
               <Button size="sm" variant="outline" onClick={() => setAssignDialogOpen(true)}>
                 Assign Now
               </Button>
             </div>
           )}
-          
+
           {siteGateways.length > 0 ? (
             <>
               {/* Show banner above gateways if there are more unassigned ones */}
               {unassignedGateways.length > 0 && (
                 <div className="flex items-center gap-2 p-2 mb-3 rounded-md bg-muted/50 text-sm text-muted-foreground">
                   <Info className="w-3.5 h-3.5" />
-                  <span>{unassignedGateways.length} more unassigned gateway{unassignedGateways.length > 1 ? 's' : ''} available</span>
-                  <Button size="sm" variant="ghost" className="h-6 px-2 ml-auto" onClick={() => setAssignDialogOpen(true)}>
+                  <span>
+                    {unassignedGateways.length} more unassigned gateway
+                    {unassignedGateways.length > 1 ? 's' : ''} available
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 px-2 ml-auto"
+                    onClick={() => setAssignDialogOpen(true)}
+                  >
                     Assign
                   </Button>
                 </div>
@@ -203,20 +220,22 @@ export function SiteGatewaysCard({ siteId, siteName, organizationId }: SiteGatew
                 ))}
               </div>
             </>
-          ) : !unassignedGateways.length && (
-            <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-lg">
-              <div className="w-12 h-12 rounded-xl bg-secondary/50 flex items-center justify-center mb-3">
-                <Radio className="w-6 h-6 text-muted-foreground" />
+          ) : (
+            !unassignedGateways.length && (
+              <div className="flex flex-col items-center justify-center py-8 border border-dashed rounded-lg">
+                <div className="w-12 h-12 rounded-xl bg-secondary/50 flex items-center justify-center mb-3">
+                  <Radio className="w-6 h-6 text-muted-foreground" />
+                </div>
+                <h3 className="font-medium text-foreground mb-1">No Gateways</h3>
+                <p className="text-sm text-muted-foreground text-center max-w-sm mb-4">
+                  Add LoRaWAN gateways to receive sensor data at this site.
+                </p>
+                <Button size="sm" onClick={() => setAddDialogOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Gateway
+                </Button>
               </div>
-              <h3 className="font-medium text-foreground mb-1">No Gateways</h3>
-              <p className="text-sm text-muted-foreground text-center max-w-sm mb-4">
-                Add LoRaWAN gateways to receive sensor data at this site.
-              </p>
-              <Button size="sm" onClick={() => setAddDialogOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Gateway
-              </Button>
-            </div>
+            )
           )}
         </CardContent>
       </Card>
@@ -250,12 +269,16 @@ export function SiteGatewaysCard({ siteId, siteName, organizationId }: SiteGatew
       )}
 
       {/* Unassign Confirmation */}
-      <AlertDialog open={!!unassignGateway} onOpenChange={(open) => !open && setUnassignGateway(null)}>
+      <AlertDialog
+        open={!!unassignGateway}
+        onOpenChange={(open) => !open && setUnassignGateway(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Unassign Gateway</AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove "{unassignGateway?.name}" from {siteName}. The gateway will still be available to assign to other sites.
+              This will remove "{unassignGateway?.name}" from {siteName}. The gateway will still be
+              available to assign to other sites.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -266,17 +289,24 @@ export function SiteGatewaysCard({ siteId, siteName, organizationId }: SiteGatew
       </AlertDialog>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteGatewayData} onOpenChange={(open) => !open && setDeleteGatewayData(null)}>
+      <AlertDialog
+        open={!!deleteGatewayData}
+        onOpenChange={(open) => !open && setDeleteGatewayData(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Gateway</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deleteGatewayData?.name}"? This action cannot be undone.
+              Are you sure you want to delete "{deleteGatewayData?.name}"? This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

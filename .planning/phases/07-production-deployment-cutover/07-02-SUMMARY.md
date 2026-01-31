@@ -62,9 +62,10 @@ decisions:
 ### Infrastructure Components
 
 **1. Caddy Reverse Proxy Configuration (docker/caddy/Caddyfile)**
+
 - Automatic HTTPS via Let's Encrypt
 - Domain configuration via DOMAIN environment variable (defaults to localhost)
-- Reverse proxy to backend:3000 for /api/* routes
+- Reverse proxy to backend:3000 for /api/\* routes
 - Reverse proxy to frontend:5173 for static files
 - Reverse proxy to monitoring subdomains (Grafana, Uptime Kuma)
 - Health check configuration for load balancing
@@ -78,6 +79,7 @@ decisions:
 - Access logging to /var/log/caddy/access.log in JSON format
 
 **2. Health Check Endpoints (backend/src/routes/health.ts)**
+
 - `/health` - Full health status with dependency checks
   - Database connectivity check with latency measurement
   - Returns 503 if any dependency fails
@@ -91,6 +93,7 @@ decisions:
   - Container restart signal if fails
 
 **3. App Integration (backend/src/app.ts)**
+
 - Health routes registered before auth middleware (no authentication required)
 - Removed old simple /health endpoint
 - Proper middleware ordering for unauthenticated health checks
@@ -100,6 +103,7 @@ decisions:
 ### Caddy Configuration Features
 
 **Auto-HTTPS:**
+
 ```caddy
 {
     email admin@freshtrackpro.com
@@ -111,6 +115,7 @@ decisions:
 ```
 
 **Reverse Proxy with Headers:**
+
 ```caddy
 reverse_proxy /api/* backend:3000 {
     health_uri /health
@@ -127,6 +132,7 @@ reverse_proxy /api/* backend:3000 {
 ### Health Check Implementation
 
 **Database Connectivity Check:**
+
 ```typescript
 const checkDatabase = async (): Promise<HealthCheck> => {
   const start = Date.now();
@@ -146,6 +152,7 @@ const checkDatabase = async (): Promise<HealthCheck> => {
 ```
 
 **Health Status Response:**
+
 ```json
 {
   "status": "healthy",
@@ -164,10 +171,12 @@ const checkDatabase = async (): Promise<HealthCheck> => {
 ## Files Changed
 
 ### Created
+
 - `docker/caddy/Caddyfile` (75 lines) - Reverse proxy configuration with auto-HTTPS
 - `backend/src/routes/health.ts` (105 lines) - Health check endpoints
 
 ### Modified
+
 - `backend/src/app.ts` (+4 lines) - Health routes registration
 
 ## Deviations from Plan
@@ -177,14 +186,17 @@ None - plan executed exactly as written.
 ## Next Phase Readiness
 
 ### Blockers
+
 None.
 
 ### Concerns
+
 1. **Caddy container not yet added to docker-compose** - Plan 07-01 should include Caddy service
 2. **Redis health check commented out** - Needs Redis client setup in future plan
 3. **Frontend service name assumption** - Assumes frontend:5173 service will exist in compose
 
 ### Recommendations
+
 1. Add Caddy service to docker-compose.production.yaml in plan 07-01
 2. Configure Caddy volumes for certificate persistence and log storage
 3. Test automatic HTTPS on staging environment before production
@@ -194,12 +206,14 @@ None.
 ## Testing Performed
 
 ### Verification Checks (All Passed)
+
 1. ✅ Caddyfile contains reverse_proxy directives
 2. ✅ healthRoutes exported from health.ts
 3. ✅ healthRoutes registered in app.ts
 4. ✅ TypeScript compilation successful
 
 ### Not Tested
+
 - Backend server startup with health endpoints (Docker not running)
 - Actual database connectivity test
 - Caddy reverse proxy functionality (requires Docker Compose setup)
@@ -208,11 +222,11 @@ None.
 
 ## Commits
 
-| Task | Commit | Description |
-|------|--------|-------------|
-| 1 | 48e7023 | Create Caddy reverse proxy configuration |
-| 2 | fc85a96 | Create health check endpoint with dependency checks |
-| 3 | 7ca4c39 | Register health routes in app.ts |
+| Task | Commit  | Description                                         |
+| ---- | ------- | --------------------------------------------------- |
+| 1    | 48e7023 | Create Caddy reverse proxy configuration            |
+| 2    | fc85a96 | Create health check endpoint with dependency checks |
+| 3    | 7ca4c39 | Register health routes in app.ts                    |
 
 **Total commits:** 3
 
@@ -234,11 +248,13 @@ None.
 ## Impact
 
 **Immediate:**
+
 - Production infrastructure ready for automatic HTTPS
 - Health monitoring endpoints available for Docker health checks
 - Security headers configured for production deployment
 
 **Next Plans:**
+
 - 07-01: Docker Compose configuration will reference Caddy service
 - 07-03: Deployment scripts can use health endpoints for validation
 - 07-04: Observability stack can monitor health endpoints

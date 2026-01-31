@@ -9,6 +9,7 @@
 Production deployment of a self-hosted Docker Compose stack with managed PostgreSQL requires careful attention to configuration layering, resource constraints, health checks, secrets management, and cutover procedures. The standard approach uses environment-specific compose files, Docker secrets for sensitive data, comprehensive health checks, and a dual-write pattern for zero-downtime database migration.
 
 For the FreshTrack Pro migration from Supabase, the recommended approach is:
+
 - **Infrastructure**: DigitalOcean Droplets (cost-effective, simpler than AWS) with managed PostgreSQL, self-hosted Docker Compose for Redis/MinIO
 - **Load balancing**: Caddy for single-server simplicity (50-500 users), or Traefik if future Kubernetes migration likely
 - **Observability**: Grafana + Loki + Prometheus stack via Docker Compose
@@ -20,39 +21,40 @@ For the FreshTrack Pro migration from Supabase, the recommended approach is:
 
 ### Core Infrastructure
 
-| Component | Version/Provider | Purpose | Why Standard |
-|-----------|------------------|---------|--------------|
-| Docker Compose | v2.x (Compose Spec v3.8+) | Container orchestration | Industry standard for single-server deployments, native deploy.resources support |
-| DigitalOcean Managed PostgreSQL | v15+ | Primary database | $15/month baseline, predictable pricing, SSL by default, automated backups |
-| DigitalOcean Droplets | Ubuntu 24.04 LTS | Application hosting | Simple, cost-effective ($12-24/month for 2-4GB RAM), good Docker support |
-| Docker Secrets | Built-in | Secrets management | Native Compose integration, mounted at /run/secrets/, encrypted at rest |
+| Component                       | Version/Provider          | Purpose                 | Why Standard                                                                     |
+| ------------------------------- | ------------------------- | ----------------------- | -------------------------------------------------------------------------------- |
+| Docker Compose                  | v2.x (Compose Spec v3.8+) | Container orchestration | Industry standard for single-server deployments, native deploy.resources support |
+| DigitalOcean Managed PostgreSQL | v15+                      | Primary database        | $15/month baseline, predictable pricing, SSL by default, automated backups       |
+| DigitalOcean Droplets           | Ubuntu 24.04 LTS          | Application hosting     | Simple, cost-effective ($12-24/month for 2-4GB RAM), good Docker support         |
+| Docker Secrets                  | Built-in                  | Secrets management      | Native Compose integration, mounted at /run/secrets/, encrypted at rest          |
 
 ### Reverse Proxy / Load Balancer
 
-| Option | Version | Purpose | When to Use |
-|--------|---------|---------|-------------|
-| Caddy | v2.x | Reverse proxy, auto-HTTPS | Best for single-server, simplicity priority (recommended for 50-500 users) |
-| Traefik | v3.x | Dynamic routing, load balancing | Best for microservices, Docker label-based config, future k8s migration |
-| Nginx | Latest | Traditional reverse proxy | Most performant, complex config, non-containerized environments |
+| Option  | Version | Purpose                         | When to Use                                                                |
+| ------- | ------- | ------------------------------- | -------------------------------------------------------------------------- |
+| Caddy   | v2.x    | Reverse proxy, auto-HTTPS       | Best for single-server, simplicity priority (recommended for 50-500 users) |
+| Traefik | v3.x    | Dynamic routing, load balancing | Best for microservices, Docker label-based config, future k8s migration    |
+| Nginx   | Latest  | Traditional reverse proxy       | Most performant, complex config, non-containerized environments            |
 
 ### Observability Stack
 
-| Component | Version | Purpose | Why Standard |
-|-----------|---------|---------|--------------|
-| Prometheus | v2.x | Metrics collection | De facto metrics standard, time-series DB, 2026 industry leader |
-| Grafana | v10.x | Visualization, dashboards | Universal observability platform, integrates Prometheus/Loki/Jaeger |
-| Loki | v2.x | Log aggregation | Lightweight logs, pairs with Promtail, Grafana native |
-| Promtail | v2.x | Log shipper | Discovers Docker logs, labels, pushes to Loki |
+| Component  | Version | Purpose                   | Why Standard                                                        |
+| ---------- | ------- | ------------------------- | ------------------------------------------------------------------- |
+| Prometheus | v2.x    | Metrics collection        | De facto metrics standard, time-series DB, 2026 industry leader     |
+| Grafana    | v10.x   | Visualization, dashboards | Universal observability platform, integrates Prometheus/Loki/Jaeger |
+| Loki       | v2.x    | Log aggregation           | Lightweight logs, pairs with Promtail, Grafana native               |
+| Promtail   | v2.x    | Log shipper               | Discovers Docker logs, labels, pushes to Loki                       |
 
 ### Supporting Tools
 
-| Tool | Version | Purpose | When to Use |
-|------|---------|---------|-------------|
-| PgBouncer | v1.25+ | Connection pooling | Optional but recommended for production (200+ concurrent users) |
-| Uptime Kuma | v1.x | Status page | Self-hosted, 95+ notification channels, 20s monitoring intervals |
-| fastify-healthcheck | v5.x | Fastify health endpoint | Integrates @fastify/under-pressure, Docker health checks |
+| Tool                | Version | Purpose                 | When to Use                                                      |
+| ------------------- | ------- | ----------------------- | ---------------------------------------------------------------- |
+| PgBouncer           | v1.25+  | Connection pooling      | Optional but recommended for production (200+ concurrent users)  |
+| Uptime Kuma         | v1.x    | Status page             | Self-hosted, 95+ notification channels, 20s monitoring intervals |
+| fastify-healthcheck | v5.x    | Fastify health endpoint | Integrates @fastify/under-pressure, Docker health checks         |
 
 **Installation (DigitalOcean):**
+
 ```bash
 # Create managed PostgreSQL database first via DO dashboard
 # Then create Droplet (Ubuntu 24.04, 2GB+ RAM)
@@ -106,6 +108,7 @@ project-root/
 **When to use:** Always in production deployments - separates dev and prod concerns
 
 **Example:**
+
 ```yaml
 # compose.yaml (base)
 services:
@@ -151,6 +154,7 @@ Source: [Docker Compose Production Documentation](https://docs.docker.com/compos
 **When to use:** Always in production for passwords, API keys, certificates
 
 **Example:**
+
 ```yaml
 # Source: https://docs.docker.com/compose/how-tos/use-secrets/
 services:
@@ -172,6 +176,7 @@ secrets:
 ```
 
 **Benefits:**
+
 - Not exposed in environment variables or logs
 - Standard file permissions protect access
 - Never committed to images
@@ -184,13 +189,14 @@ secrets:
 **When to use:** All production services - enables proper startup ordering and failure detection
 
 **Example:**
+
 ```yaml
 # Source: https://last9.io/blog/docker-compose-health-checks/
 services:
   postgres:
     image: postgres:15-alpine
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+      test: ['CMD', 'pg_isready', '-U', '${POSTGRES_USER}', '-d', '${POSTGRES_DB}']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -199,7 +205,7 @@ services:
   redis:
     image: redis:7-alpine
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 3s
       retries: 5
@@ -212,7 +218,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -220,6 +226,7 @@ services:
 ```
 
 **Fastify Health Check:**
+
 ```typescript
 // Source: https://context7.com/fastify/fastify
 import Fastify from 'fastify';
@@ -235,8 +242,8 @@ await app.register(healthcheck, {
     maxEventLoopDelay: 1000,
     maxHeapUsedBytes: 1000000000, // 1GB
     maxRssBytes: 1000000000,
-    maxEventLoopUtilization: 0.98
-  }
+    maxEventLoopUtilization: 0.98,
+  },
 });
 
 // Graceful shutdown for Docker SIGTERM
@@ -254,6 +261,7 @@ process.on('SIGTERM', async () => {
 **When to use:** Production cutover from Supabase to self-hosted
 
 **Phases:**
+
 ```
 1. Pre-Cutover (T-24h):
    - Staging rehearsal complete
@@ -286,6 +294,7 @@ process.on('SIGTERM', async () => {
 ```
 
 **Rollback Decision Tree:**
+
 ```
 Critical Data Loss? (readings/alerts not captured)
   YES → Immediate rollback
@@ -313,6 +322,7 @@ Source: [Zero-Downtime Database Migration Guide](https://dev.to/ari-ghosh/zero-d
 **When to use:** Only if rollback triggered within 7-day window
 
 **Strategy:**
+
 ```
 If rollback needed:
 
@@ -356,16 +366,16 @@ Trade-off: Brief data gap acceptable per user decision, but:
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Metrics collection | Custom stats endpoints | Prometheus + node-exporter | Industry standard, built-in alerting, visualization, 1000s of exporters |
-| Log aggregation | File tailing scripts | Loki + Promtail | Automatic Docker log discovery, label-based indexing, Grafana integration |
-| Health checks | Custom /ping endpoints | fastify-healthcheck + under-pressure | Handles process metrics, memory pressure, event loop monitoring out of box |
-| Connection pooling | Manual connection management | PgBouncer | Handles session/transaction pooling, connection limits, auth, failover |
-| Status page | Custom status dashboard | Uptime Kuma | 95+ notification channels, SSL monitoring, multi-protocol support, Docker-native |
-| SSL certificates | Manual cert management | Caddy auto-HTTPS | Automatic Let's Encrypt, renewal, OCSP stapling, HTTP/3 support |
-| Secrets rotation | Custom secret scripts | Cloud provider secret managers | Automated rotation, audit logs, IAM integration, encryption at rest |
-| Container restarts | Cron job health checks | Docker restart policies + health checks | Native container orchestration, exponential backoff, health-aware |
+| Problem            | Don't Build                  | Use Instead                             | Why                                                                              |
+| ------------------ | ---------------------------- | --------------------------------------- | -------------------------------------------------------------------------------- |
+| Metrics collection | Custom stats endpoints       | Prometheus + node-exporter              | Industry standard, built-in alerting, visualization, 1000s of exporters          |
+| Log aggregation    | File tailing scripts         | Loki + Promtail                         | Automatic Docker log discovery, label-based indexing, Grafana integration        |
+| Health checks      | Custom /ping endpoints       | fastify-healthcheck + under-pressure    | Handles process metrics, memory pressure, event loop monitoring out of box       |
+| Connection pooling | Manual connection management | PgBouncer                               | Handles session/transaction pooling, connection limits, auth, failover           |
+| Status page        | Custom status dashboard      | Uptime Kuma                             | 95+ notification channels, SSL monitoring, multi-protocol support, Docker-native |
+| SSL certificates   | Manual cert management       | Caddy auto-HTTPS                        | Automatic Let's Encrypt, renewal, OCSP stapling, HTTP/3 support                  |
+| Secrets rotation   | Custom secret scripts        | Cloud provider secret managers          | Automated rotation, audit logs, IAM integration, encryption at rest              |
+| Container restarts | Cron job health checks       | Docker restart policies + health checks | Native container orchestration, exponential backoff, health-aware                |
 
 **Key insight:** Production operations have been solved repeatedly. The observability stack (Prometheus/Grafana/Loki) is the 2026 industry standard, used from startups to FAANG. Custom solutions miss edge cases and create maintenance burden.
 
@@ -378,18 +388,21 @@ Problems that look simple but have existing solutions:
 **Why it happens:** Docker containers have no resource limits by default, memory leaks or traffic spikes can consume all host RAM
 
 **How to avoid:**
+
 - Set memory limits based on observed usage + 50% buffer
 - Set memory reservations to guarantee minimum resources
 - Monitor actual usage with `docker stats` before setting production limits
 - Use health checks to detect before OOM occurs
 
 **Warning signs:**
+
 - Container restarts without obvious errors in logs
 - "Killed" messages in `docker logs`
 - Host system becomes unresponsive
 - `dmesg` shows OOM killer activity
 
 **Example configuration:**
+
 ```yaml
 # Source: https://docs.docker.com/reference/compose-file/deploy/
 services:
@@ -397,11 +410,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'      # Hard limit: cannot exceed 1 CPU core
-          memory: 1G        # Hard limit: OOM kill if exceeds 1GB
+          cpus: '1.0' # Hard limit: cannot exceed 1 CPU core
+          memory: 1G # Hard limit: OOM kill if exceeds 1GB
         reservations:
-          cpus: '0.25'     # Guaranteed minimum: 25% of 1 core
-          memory: 256M      # Guaranteed minimum: 256MB
+          cpus: '0.25' # Guaranteed minimum: 25% of 1 core
+          memory: 256M # Guaranteed minimum: 256MB
 ```
 
 ### Pitfall 2: Health Check False Positives (curl Not Installed)
@@ -411,17 +424,20 @@ services:
 **Why it happens:** Minimal container images (alpine) don't include curl/wget by default
 
 **How to avoid:**
+
 - Use CMD form without shell: `["CMD", "executable", "arg"]` to get clear error messages
 - Install curl/wget in Dockerfile if needed: `RUN apk add --no-cache curl`
 - Or use language-native health checks: `node healthcheck.js`, `python health.py`
 - Or use TCP/HTTP checks external to container if application-level endpoint exists
 
 **Warning signs:**
+
 - Container marked unhealthy immediately on start
 - No obvious errors in application logs
 - Health check logs show "command not found"
 
 **Better alternatives:**
+
 ```yaml
 # For Node.js/Fastify apps
 healthcheck:
@@ -443,18 +459,21 @@ healthcheck:
 **Why it happens:** DNS TTL (time-to-live) often set to 3600s (1h) or 86400s (24h), caches don't refresh until TTL expires
 
 **How to avoid:**
+
 - 24-48 hours before cutover: Lower DNS TTL to 60 seconds
 - After cutover stabilizes (24h): Raise TTL back to normal (3600s)
 - Monitor both old and new systems during propagation window
 - Accept brief period of split traffic (expected, not a bug)
 
 **Warning signs:**
+
 - Some users see new system, others see old system
 - Duplicate data entries (both systems receiving writes)
 - Support tickets about "site looks different"
 - Old system still receiving traffic hours after DNS change
 
 **Timeline:**
+
 ```
 T-48h: Lower TTL from 3600s → 60s
 T-24h: Verify TTL propagated (dig +noall +answer domain.com)
@@ -473,6 +492,7 @@ Source: [Blue-Green Deployment DNS Considerations](https://moss.sh/deployment/bl
 **Why it happens:** Easiest way to get "production-like data" is to copy production database
 
 **How to avoid:**
+
 - Use anonymized production data: scramble PII, email addresses, phone numbers
 - Disable external integrations in staging: email, SMS, webhooks
 - Use separate credentials for staging: Telnyx test numbers, separate TTN orgs
@@ -480,12 +500,14 @@ Source: [Blue-Green Deployment DNS Considerations](https://moss.sh/deployment/bl
 - Prefix all staging alerts with [STAGING] in notification channels
 
 **Warning signs:**
+
 - Users receiving test alerts during rehearsal
 - Production support tickets about "weird notifications"
 - Real sensors showing up in staging dashboard
 - External API quota consumed by staging tests
 
 **Staging configuration checklist:**
+
 ```bash
 # Staging .env differences from production:
 NODE_ENV=staging  # Not production
@@ -503,6 +525,7 @@ FRONTEND_URL=staging.example.com
 **Why it happens:** Rollback procedures written but never tested, assumptions about data/system state incorrect
 
 **How to avoid:**
+
 - Include rollback test in staging rehearsal
 - Perform "cutover then rollback" dry run 48h before real cutover
 - Automate rollback with script (with confirmation prompts)
@@ -510,12 +533,14 @@ FRONTEND_URL=staging.example.com
 - Test data export/import during rollback
 
 **Warning signs:**
+
 - Rollback script written day-of cutover
 - Manual procedure with 15+ steps
 - Rollback never practiced
 - No backup plan if automation fails
 
 **Rollback automation example:**
+
 ```bash
 #!/bin/bash
 # rollback.sh - Automated rollback with confirmation prompts
@@ -569,7 +594,7 @@ services:
       NODE_ENV: development
       LOG_LEVEL: debug
     ports:
-      - "3000:3000"
+      - '3000:3000'
 
   postgres:
     image: postgres:15-alpine
@@ -593,13 +618,13 @@ volumes:
 services:
   backend:
     build:
-      target: production  # Use production stage
-    volumes: []  # Remove dev hot-reload volumes
+      target: production # Use production stage
+    volumes: [] # Remove dev hot-reload volumes
     environment:
       NODE_ENV: production
       LOG_LEVEL: info
     ports:
-      - "127.0.0.1:3000:3000"  # Bind to localhost only (Caddy will proxy)
+      - '127.0.0.1:3000:3000' # Bind to localhost only (Caddy will proxy)
     deploy:
       resources:
         limits:
@@ -617,7 +642,7 @@ services:
       - postgres_password
       - jwt_secret
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -636,7 +661,7 @@ services:
         reservations:
           memory: 256M
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
+      test: ['CMD', 'pg_isready', '-U', '${POSTGRES_USER}']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -650,7 +675,7 @@ services:
         reservations:
           memory: 128M
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 3s
       retries: 5
@@ -663,6 +688,7 @@ secrets:
 ```
 
 **Deploy command:**
+
 ```bash
 docker compose -f compose.yaml -f compose.production.yaml up -d
 ```
@@ -751,7 +777,7 @@ services:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     ports:
-      - "127.0.0.1:9090:9090"
+      - '127.0.0.1:9090:9090'
     restart: unless-stopped
 
   loki:
@@ -762,7 +788,7 @@ services:
       - ./docker/loki/loki.yml:/etc/loki/loki.yml:ro
       - loki_data:/loki
     ports:
-      - "127.0.0.1:3100:3100"
+      - '127.0.0.1:3100:3100'
     restart: unless-stopped
 
   promtail:
@@ -783,7 +809,7 @@ services:
     container_name: grafana
     environment:
       GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_password
-      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_USERS_ALLOW_SIGN_UP: 'false'
       GF_SERVER_ROOT_URL: https://monitoring.freshtrackpro.com
     secrets:
       - grafana_password
@@ -792,7 +818,7 @@ services:
       - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources:ro
       - grafana_data:/var/lib/grafana
     ports:
-      - "127.0.0.1:3001:3000"
+      - '127.0.0.1:3001:3000'
     depends_on:
       - prometheus
       - loki
@@ -811,7 +837,7 @@ services:
       - /sys:/host/sys:ro
       - /:/rootfs:ro
     ports:
-      - "127.0.0.1:9100:9100"
+      - '127.0.0.1:9100:9100'
     restart: unless-stopped
 
 secrets:
@@ -905,10 +931,8 @@ import type { FastifyInstance } from 'fastify';
 const app: FastifyInstance = Fastify({
   logger: {
     level: process.env.LOG_LEVEL || 'info',
-    transport: process.env.NODE_ENV === 'development'
-      ? { target: 'pino-pretty' }
-      : undefined
-  }
+    transport: process.env.NODE_ENV === 'development' ? { target: 'pino-pretty' } : undefined,
+  },
 });
 
 // Health check endpoint
@@ -922,15 +946,15 @@ app.get('/health', async (request, reply) => {
       status: 'unhealthy',
       checks: {
         database: dbHealthy,
-        redis: redisHealthy
-      }
+        redis: redisHealthy,
+      },
     });
   }
 
   return {
     status: 'healthy',
     uptime: process.uptime(),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 });
 
@@ -1059,18 +1083,19 @@ echo "All pre-flight checks passed!"
 
 ## State of the Art
 
-| Old Approach | Current Approach (2026) | When Changed | Impact |
-|--------------|-------------------------|--------------|--------|
-| Environment variables for secrets | Docker secrets (file-based) | 2019-2020 | Secrets no longer in env vars, logs, or process lists |
-| Manual SSL cert management | Automatic HTTPS (Caddy/Traefik) | 2020-2021 | Zero-config Let's Encrypt, auto-renewal |
-| ELK Stack (Elasticsearch, Logstash, Kibana) | PLG Stack (Prometheus, Loki, Grafana) | 2021-2023 | Lighter weight, lower resource usage, better Docker integration |
-| Docker Compose v2 format | Compose Spec v3.8+ | 2022 | deploy.resources support, better health check syntax |
-| Blue-green via load balancer | DNS-based for single server | 2023-2024 | Simpler for single-server deployments (50-500 users) |
-| Nginx for all reverse proxy | Caddy for simplicity, Traefik for microservices | 2024-2025 | Auto-HTTPS reduces config, Docker label-based routing |
-| PgBouncer v1.x | PgBouncer v1.25+ | 2025 | LDAP auth, direct TLS, SCRAM performance, idle reporting |
-| Connection pooling always | Connection pooling optional until 200+ users | 2025-2026 | Managed databases handle pooling internally for smaller scale |
+| Old Approach                                | Current Approach (2026)                         | When Changed | Impact                                                          |
+| ------------------------------------------- | ----------------------------------------------- | ------------ | --------------------------------------------------------------- |
+| Environment variables for secrets           | Docker secrets (file-based)                     | 2019-2020    | Secrets no longer in env vars, logs, or process lists           |
+| Manual SSL cert management                  | Automatic HTTPS (Caddy/Traefik)                 | 2020-2021    | Zero-config Let's Encrypt, auto-renewal                         |
+| ELK Stack (Elasticsearch, Logstash, Kibana) | PLG Stack (Prometheus, Loki, Grafana)           | 2021-2023    | Lighter weight, lower resource usage, better Docker integration |
+| Docker Compose v2 format                    | Compose Spec v3.8+                              | 2022         | deploy.resources support, better health check syntax            |
+| Blue-green via load balancer                | DNS-based for single server                     | 2023-2024    | Simpler for single-server deployments (50-500 users)            |
+| Nginx for all reverse proxy                 | Caddy for simplicity, Traefik for microservices | 2024-2025    | Auto-HTTPS reduces config, Docker label-based routing           |
+| PgBouncer v1.x                              | PgBouncer v1.25+                                | 2025         | LDAP auth, direct TLS, SCRAM performance, idle reporting        |
+| Connection pooling always                   | Connection pooling optional until 200+ users    | 2025-2026    | Managed databases handle pooling internally for smaller scale   |
 
 **Deprecated/outdated:**
+
 - **Docker Compose version: "3"**: Deprecated in favor of omitting version field (Compose Spec)
 - **Using environment variables for secrets**: Replaced by Docker secrets
 - **mem_limit syntax**: Replaced by deploy.resources.limits.memory
@@ -1133,6 +1158,7 @@ Things that couldn't be fully resolved:
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - Docker Compose, Fastify, observability stack verified via Context7 and official docs
 - Architecture: HIGH - Compose layering, secrets, health checks from Docker official documentation
 - Pitfalls: HIGH - Drawn from official docs, community-verified issues, and production incident reports
@@ -1143,6 +1169,7 @@ Things that couldn't be fully resolved:
 **Valid until:** 2026-03-23 (60 days - infrastructure and deployment patterns relatively stable)
 
 **Technologies verified:**
+
 - Docker Compose Spec v3.8+: Current as of 2026
 - Fastify v5.x: Current as of 2026
 - Prometheus/Loki/Grafana: Versions current as of 2026
@@ -1150,6 +1177,7 @@ Things that couldn't be fully resolved:
 - Caddy v2.x, Traefik v3.x: Current major versions
 
 **Next validation needed:**
+
 - DigitalOcean managed PostgreSQL pricing (may change quarterly)
 - Caddy/Traefik feature comparison (rapid development)
 - Observability stack versions (check for major releases)

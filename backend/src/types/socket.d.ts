@@ -47,17 +47,9 @@ export interface ServerToClientEvents {
     timestamp: string;
   }) => void;
 
-  'alert:resolved': (data: {
-    alertId: string;
-    unitId: string;
-    resolvedAt: string;
-  }) => void;
+  'alert:resolved': (data: { alertId: string; unitId: string; resolvedAt: string }) => void;
 
-  'alert:escalated': (data: {
-    alertId: string;
-    unitId: string;
-    escalationLevel: number;
-  }) => void;
+  'alert:escalated': (data: { alertId: string; unitId: string; escalationLevel: number }) => void;
 
   // Error events
   error: (data: { message: string; code?: string }) => void;

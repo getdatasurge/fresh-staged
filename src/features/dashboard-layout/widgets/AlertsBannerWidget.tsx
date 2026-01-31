@@ -1,15 +1,15 @@
 /**
  * Alerts Banner Widget
- * 
+ *
  * Displays active alerts for the unit with clear conditions.
  */
 
-import UnitAlertsBanner from "@/components/unit/UnitAlertsBanner";
+import UnitAlertsBanner from '@/components/unit/UnitAlertsBanner';
 
 interface UnitAlert {
   id: string;
   type: string;
-  severity: "critical" | "warning" | "info";
+  severity: 'critical' | 'warning' | 'info';
   title: string;
   message: string;
   clearCondition: string;

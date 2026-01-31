@@ -25,6 +25,7 @@ Complete guide for deploying FreshTrack Pro to a self-hosted Ubuntu 24.04 VM.
 This guide covers deploying FreshTrack Pro using the automated `deploy-automated.sh` script. The script is checkpoint-based, idempotent, and automatically resumes from the last successful step after failures.
 
 **What the script does:**
+
 - Installs Docker and Docker Compose
 - Configures UFW firewall (ports 22, 80, 443)
 - Installs fail2ban for intrusion prevention
@@ -43,19 +44,20 @@ This guide covers deploying FreshTrack Pro using the automated `deploy-automated
 
 ### Server Requirements
 
-| Requirement | Minimum | Recommended | Notes |
-|-------------|---------|-------------|-------|
-| CPU | 4 vCPU | 4+ vCPU | `preflight.sh` validates automatically |
-| RAM | 8 GB | 16 GB | Deployment fails preflight if less than minimum |
-| Storage | 100 GB SSD | 200 GB SSD | For database growth and Docker images |
-| OS | Ubuntu 22.04 LTS | Ubuntu 24.04 LTS | Other distros not officially supported |
-| Network | Static IP | Static IP | Required for DNS configuration |
+| Requirement | Minimum          | Recommended      | Notes                                           |
+| ----------- | ---------------- | ---------------- | ----------------------------------------------- |
+| CPU         | 4 vCPU           | 4+ vCPU          | `preflight.sh` validates automatically          |
+| RAM         | 8 GB             | 16 GB            | Deployment fails preflight if less than minimum |
+| Storage     | 100 GB SSD       | 200 GB SSD       | For database growth and Docker images           |
+| OS          | Ubuntu 22.04 LTS | Ubuntu 24.04 LTS | Other distros not officially supported          |
+| Network     | Static IP        | Static IP        | Required for DNS configuration                  |
 
 > **Note:** The `preflight.sh` script validates server requirements automatically. Deployment will abort early with clear error messages if minimums are not met.
 
 ### External Services Checklist
 
 **Required:**
+
 - [ ] Domain name with DNS access
   - Primary domain (e.g., `freshtrack.example.com`)
   - Subdomain for monitoring (`monitoring.example.com`)
@@ -65,6 +67,7 @@ This guide covers deploying FreshTrack Pro using the automated `deploy-automated
   - Secret Key (`sk_...`) - store securely, never commit to git
 
 **Optional:**
+
 - [ ] Telnyx account for SMS alerts
   - API Key (from Telnyx portal)
   - Messaging Profile ID (configured in portal)
@@ -87,12 +90,12 @@ Configure DNS records BEFORE running deployment. The deployment script verifies 
 
 ### Required Records
 
-| Type | Name | Value | Required | Purpose |
-|------|------|-------|----------|---------|
-| A | @ (or yourdomain.com) | YOUR_SERVER_IP | Yes | Main application |
-| A | monitoring | YOUR_SERVER_IP | Yes | Grafana/Prometheus dashboards |
-| A | status | YOUR_SERVER_IP | No | Uptime Kuma status page |
-| A | www | YOUR_SERVER_IP | No | WWW redirect |
+| Type | Name                  | Value          | Required | Purpose                       |
+| ---- | --------------------- | -------------- | -------- | ----------------------------- |
+| A    | @ (or yourdomain.com) | YOUR_SERVER_IP | Yes      | Main application              |
+| A    | monitoring            | YOUR_SERVER_IP | Yes      | Grafana/Prometheus dashboards |
+| A    | status                | YOUR_SERVER_IP | No       | Uptime Kuma status page       |
+| A    | www                   | YOUR_SERVER_IP | No       | WWW redirect                  |
 
 ### Verify DNS Propagation
 
@@ -107,6 +110,7 @@ dig yourdomain.com +short
 **Important:** The deployment script checks DNS before requesting SSL certificates. If DNS is not configured, deployment will abort to prevent Let's Encrypt rate limit exhaustion (5 failures per hour limit).
 
 **DNS propagation timing:**
+
 - Typical: 5-60 minutes
 - Worst case: up to 24 hours
 - Use `dig` command to verify before deploying
@@ -115,11 +119,11 @@ dig yourdomain.com +short
 
 Ensure these ports are accessible BEFORE deployment:
 
-| Port | Protocol | Direction | Purpose |
-|------|----------|-----------|---------|
-| 22 | TCP | Inbound | SSH access (required) |
-| 80 | TCP | Inbound | HTTP - Let's Encrypt ACME challenge |
-| 443 | TCP | Inbound | HTTPS - Production traffic |
+| Port | Protocol | Direction | Purpose                             |
+| ---- | -------- | --------- | ----------------------------------- |
+| 22   | TCP      | Inbound   | SSH access (required)               |
+| 80   | TCP      | Inbound   | HTTP - Let's Encrypt ACME challenge |
+| 443  | TCP      | Inbound   | HTTPS - Production traffic          |
 
 > **Note:** The deployment script configures UFW (host firewall) automatically, but **cloud provider firewalls** (AWS Security Groups, DigitalOcean Firewall, GCP VPC rules) must be configured manually before deployment.
 
@@ -245,13 +249,13 @@ sudo ./scripts/deploy-automated.sh
 
 The script orchestrates 5 phases with checkpoint-based recovery:
 
-| Phase | Name | What It Does | Duration |
-|-------|------|--------------|----------|
-| 1 | Pre-flight | Validates RAM, disk, network, OS | ~10 sec |
-| 2 | Prerequisites | Installs Docker, UFW, fail2ban, jq | 2-5 min |
-| 3 | Configuration | Prompts for domain, email, Stack Auth | Interactive |
-| 4 | Deployment | Calls deploy.sh (builds, migrates, starts) | 5-15 min |
-| 5 | Health Verification | Waits for services to report healthy | 1-5 min |
+| Phase | Name                | What It Does                               | Duration    |
+| ----- | ------------------- | ------------------------------------------ | ----------- |
+| 1     | Pre-flight          | Validates RAM, disk, network, OS           | ~10 sec     |
+| 2     | Prerequisites       | Installs Docker, UFW, fail2ban, jq         | 2-5 min     |
+| 3     | Configuration       | Prompts for domain, email, Stack Auth      | Interactive |
+| 4     | Deployment          | Calls deploy.sh (builds, migrates, starts) | 5-15 min    |
+| 5     | Health Verification | Waits for services to report healthy       | 1-5 min     |
 
 **Total time:** 15-30 minutes for first deployment
 
@@ -327,6 +331,7 @@ sudo ./scripts/deploy-automated.sh
 The script automatically resumes from the last successful checkpoint. Completed phases are skipped.
 
 **Example recovery output:**
+
 ```
 [1/5] Pre-flight checks... SKIPPED (checkpoint exists)
 [2/5] Installing prerequisites... SKIPPED (checkpoint exists)
@@ -335,6 +340,7 @@ The script automatically resumes from the last successful checkpoint. Completed 
 ```
 
 **To start fresh (clear all checkpoints):**
+
 ```bash
 sudo ./scripts/deploy-automated.sh --reset
 ```
@@ -372,16 +378,17 @@ After deployment completes, run the verification script to validate all componen
 
 The script performs 6 verification checks:
 
-| Check | Code | What It Validates |
-|-------|------|-------------------|
-| Service Health | VERIFY-01 | Backend, frontend, worker endpoints return 200 |
-| SSL Certificate | VERIFY-02 | Certificate valid, trusted, >30 days until expiry |
-| Dashboard Access | VERIFY-03 | Dashboard accessible via HTTPS (curl 200 OK) |
-| E2E Pipeline | VERIFY-04 | Sensor data flows through system (if TTN configured) |
-| Monitoring Stack | VERIFY-05 | Prometheus and Grafana accessible |
-| Consecutive Health | VERIFY-06 | Dashboard passes 3 consecutive health checks |
+| Check              | Code      | What It Validates                                    |
+| ------------------ | --------- | ---------------------------------------------------- |
+| Service Health     | VERIFY-01 | Backend, frontend, worker endpoints return 200       |
+| SSL Certificate    | VERIFY-02 | Certificate valid, trusted, >30 days until expiry    |
+| Dashboard Access   | VERIFY-03 | Dashboard accessible via HTTPS (curl 200 OK)         |
+| E2E Pipeline       | VERIFY-04 | Sensor data flows through system (if TTN configured) |
+| Monitoring Stack   | VERIFY-05 | Prometheus and Grafana accessible                    |
+| Consecutive Health | VERIFY-06 | Dashboard passes 3 consecutive health checks         |
 
 **Expected output:**
+
 ```
 ========================================
 FreshTrack Pro Deployment Verification
@@ -443,15 +450,16 @@ Run the post-deployment script to complete setup:
 
 The script performs 5 setup steps:
 
-| Step | Code | What It Does |
-|------|------|--------------|
-| URL Summary | POST-01 | Displays all service URLs |
-| Credentials | POST-02 | Shows credentials (terminal only, not logged) |
-| Demo Data | POST-03 | Seeds sample organization and sensor data |
-| Grafana Note | POST-04 | Confirms dashboards are provisioned |
-| Next Steps | POST-05 | Displays 5-step onboarding guide |
+| Step         | Code    | What It Does                                  |
+| ------------ | ------- | --------------------------------------------- |
+| URL Summary  | POST-01 | Displays all service URLs                     |
+| Credentials  | POST-02 | Shows credentials (terminal only, not logged) |
+| Demo Data    | POST-03 | Seeds sample organization and sensor data     |
+| Grafana Note | POST-04 | Confirms dashboards are provisioned           |
+| Next Steps   | POST-05 | Displays 5-step onboarding guide              |
 
 **Expected output:**
+
 ```
 ========================================
 FreshTrack Pro Post-Deployment Setup
@@ -499,12 +507,12 @@ Grafana:    efgh...uvwx
 
 After post-deployment completes:
 
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| Dashboard | https://your-domain.com | Sign up to create admin |
-| Grafana | https://your-domain.com/grafana | admin / (from secrets) |
-| Prometheus | https://your-domain.com/prometheus | None (internal) |
-| Bull Board | https://your-domain.com/api/admin/queues | None (admin only) |
+| Service    | URL                                      | Credentials             |
+| ---------- | ---------------------------------------- | ----------------------- |
+| Dashboard  | https://your-domain.com                  | Sign up to create admin |
+| Grafana    | https://your-domain.com/grafana          | admin / (from secrets)  |
+| Prometheus | https://your-domain.com/prometheus       | None (internal)         |
+| Bull Board | https://your-domain.com/api/admin/queues | None (admin only)       |
 
 ### SSH Tunnel for Prometheus
 
@@ -526,12 +534,14 @@ docker compose logs postgres_backup
 ```
 
 Expected output:
+
 ```
 postgres_backup | Backup cron job scheduled: 0 2 * * *
 postgres_backup | Daily backups at 2 AM UTC to MinIO
 ```
 
 **Backup details:**
+
 - Schedule: Daily at 2 AM UTC
 - Format: pg_dump custom format with compression level 9
 - Retention: 30 days (client-side, enforced by backup script)
@@ -555,6 +565,7 @@ ssh -L 9001:localhost:9001 root@YOUR_SERVER_IP
 ### SSL Certificate Monitoring
 
 Blackbox Exporter monitors SSL certificate expiry:
+
 - Warning alert: 30 days before expiry
 - Critical alert: 7 days before expiry
 
@@ -567,6 +578,7 @@ View alerts in Grafana dashboard.
 ### Automatic Rollback
 
 The deployment script automatically rolls back if health checks fail:
+
 - Previous 3 versions retained (configurable via `VERSION_RETENTION`)
 - Code-only rollback (database unchanged)
 - Previous Docker images restored
@@ -574,6 +586,7 @@ The deployment script automatically rolls back if health checks fail:
 - Rollback health check performed
 
 **Automatic rollback flow:**
+
 1. Health check fails after 30 attempts (15 minutes)
 2. Script retrieves previous version from `.deployment-history`
 3. Stops current deployment
@@ -593,6 +606,7 @@ cat .deployment-history
 ```
 
 Output example:
+
 ```
 v1.2.3-20260124-142315
 v1.2.2-20260123-103045
@@ -650,12 +664,14 @@ docker compose logs -f backend
 **Important:** Rollback is code-only. The database is NOT rolled back automatically.
 
 **Why code-only:**
+
 - Database rollback is complex and risky
 - Migrations are forward-only (per Phase 10 database practices)
 - Schema changes must be backwards-compatible
 - Rolling back code to previous version is safe and fast
 
 **If deployment included database migrations:**
+
 - Forward-only migrations (no automatic schema rollback)
 - Previous code version must be compatible with new schema
 - If schema change broke app, restore from backup
@@ -711,6 +727,7 @@ Pre-flight checks validate your system meets minimum requirements before deploym
 **Cause:** System has less than 8GB RAM (FreshTrack Pro requires 8GB minimum)
 
 **Solution:**
+
 1. Check current RAM: `free -h`
 2. Either:
    - Upgrade server to 8GB+ RAM, or
@@ -725,6 +742,7 @@ Pre-flight checks validate your system meets minimum requirements before deploym
 **Cause:** Less than 10GB free disk space
 
 **Solution:**
+
 ```bash
 # Check disk usage
 df -h
@@ -746,6 +764,7 @@ sudo ./scripts/deploy-automated.sh
 **Cause:** Server cannot reach external networks (required for Docker install, apt packages)
 
 **Solution:**
+
 1. Check DNS resolution: `dig docker.com`
 2. Check firewall outbound rules: `sudo ufw status`
 3. Check if behind proxy: configure `HTTP_PROXY` if needed
@@ -760,6 +779,7 @@ The deployment script uses checkpoints to track progress. If a checkpoint is cor
 **Symptom:** Script says checkpoint exists but deployment state is inconsistent
 
 **Solution:**
+
 ```bash
 # View checkpoint state
 cat .deploy-state/checkpoints.txt
@@ -778,6 +798,7 @@ sudo ./scripts/deploy-automated.sh --reset
 **Cause:** Previous deployment left services in partial state
 
 **Solution:**
+
 ```bash
 # Stop all containers
 docker compose down --timeout 30
@@ -796,6 +817,7 @@ sudo ./scripts/deploy-automated.sh
 **Cause:** Permission issues (usually when script was run as different user)
 
 **Solution:**
+
 ```bash
 # Fix ownership
 sudo chown -R $(whoami):$(whoami) .deploy-state/
@@ -814,6 +836,7 @@ sudo ./scripts/deploy-automated.sh
 **Solution:**
 
 1. Verify DNS records in your provider dashboard:
+
    ```
    Type: A
    Name: yourdomain.com (or @)
@@ -822,6 +845,7 @@ sudo ./scripts/deploy-automated.sh
    ```
 
 2. Check propagation status:
+
    ```bash
    dig yourdomain.com +short
    # Should return: YOUR_SERVER_IP
@@ -835,6 +859,7 @@ sudo ./scripts/deploy-automated.sh
    ```
 
 **DNS propagation checkers:**
+
 - https://dnschecker.org
 - https://www.whatsmydns.net
 
@@ -927,11 +952,13 @@ curl -I http://yourdomain.com
 **3. Let's Encrypt rate limit hit:**
 
 Let's Encrypt limits:
+
 - 5 failed authorizations per hour per account
 - 50 certificates per registered domain per week
 - 300 pending authorizations per account
 
 **Solution:**
+
 - Wait 1 hour if hit 5 failures/hour limit
 - Use staging environment for testing
 
@@ -972,6 +999,7 @@ The `verify-deployment.sh` script performs 6 checks. Here's how to troubleshoot 
 **Cause:** Backend not responding or unreachable
 
 **Solution:**
+
 ```bash
 # Check if backend container is running
 docker compose ps backend
@@ -992,6 +1020,7 @@ docker compose logs --tail=100 backend
 **Causes and solutions:**
 
 1. **Certificate not issued yet:**
+
    ```bash
    # Check Caddy logs
    docker compose logs caddy | grep -i "certificate"
@@ -1002,6 +1031,7 @@ docker compose logs --tail=100 backend
    ```
 
 2. **DNS not pointing to server:**
+
    ```bash
    # Check DNS resolution
    dig your-domain.com +short
@@ -1011,6 +1041,7 @@ docker compose logs --tail=100 backend
    ```
 
 3. **Port 80 blocked (Let's Encrypt needs HTTP-01 challenge):**
+
    ```bash
    # Check firewall
    sudo ufw status | grep 80
@@ -1025,6 +1056,7 @@ docker compose logs --tail=100 backend
 **Cause:** Dashboard returning non-200 responses intermittently
 
 **Solution:**
+
 ```bash
 # Check what status code is returned
 curl -I https://your-domain.com
@@ -1047,6 +1079,7 @@ docker compose logs frontend
 **Note:** This test only runs if `TTN_WEBHOOK_SECRET` is set.
 
 **Solution:**
+
 ```bash
 # Check if TTN is configured
 grep TTN_WEBHOOK_SECRET .env.production
@@ -1065,6 +1098,7 @@ curl -X POST https://your-domain.com/api/webhooks/ttn \
 **Note:** Monitoring failures are warnings, not blockers.
 
 **Solution:**
+
 ```bash
 # Check Prometheus
 docker compose logs prometheus
@@ -1133,6 +1167,7 @@ caddy:
 ```
 
 **Solution:**
+
 - Increase server resources, or
 - Adjust limits in `docker/compose.prod.yaml`
 
@@ -1171,26 +1206,27 @@ docker compose logs postgres_backup | grep webhook
 
 ### Error Quick Reference
 
-| Error Message | Phase | Likely Cause | Quick Fix |
-|---------------|-------|--------------|-----------|
-| `Pre-flight failed: RAM below minimum` | 1 | Insufficient RAM | Upgrade to 8GB+ |
-| `Pre-flight failed: Disk below minimum` | 1 | Insufficient disk | Run `docker system prune -a` |
-| `Cannot reach docker.com` | 1 | Network blocked | Check firewall outbound |
-| `Docker install failed` | 2 | apt lock or network | Wait 5 min, retry |
-| `UFW configuration failed` | 2 | UFW not installed | `apt install ufw` |
-| `Domain validation failed` | 3 | Invalid domain format | Use FQDN like app.example.com |
-| `DNS resolution failed` | 4 | DNS not propagated | Wait, check `dig domain` |
-| `Health check failed after N attempts` | 5 | Service not starting | Check `docker compose logs` |
-| `VERIFY-01: Backend unhealthy` | Verify | Backend error | `docker compose logs backend` |
-| `VERIFY-02: SSL invalid` | Verify | Cert not issued | Check Caddy logs, port 80 |
-| `VERIFY-03: Dashboard 502` | Verify | Frontend not ready | Wait 60s, retry |
-| `POST-03: Seed failed` | Post | DB not ready | `./scripts/seed-demo-data.sh` |
+| Error Message                           | Phase  | Likely Cause          | Quick Fix                     |
+| --------------------------------------- | ------ | --------------------- | ----------------------------- |
+| `Pre-flight failed: RAM below minimum`  | 1      | Insufficient RAM      | Upgrade to 8GB+               |
+| `Pre-flight failed: Disk below minimum` | 1      | Insufficient disk     | Run `docker system prune -a`  |
+| `Cannot reach docker.com`               | 1      | Network blocked       | Check firewall outbound       |
+| `Docker install failed`                 | 2      | apt lock or network   | Wait 5 min, retry             |
+| `UFW configuration failed`              | 2      | UFW not installed     | `apt install ufw`             |
+| `Domain validation failed`              | 3      | Invalid domain format | Use FQDN like app.example.com |
+| `DNS resolution failed`                 | 4      | DNS not propagated    | Wait, check `dig domain`      |
+| `Health check failed after N attempts`  | 5      | Service not starting  | Check `docker compose logs`   |
+| `VERIFY-01: Backend unhealthy`          | Verify | Backend error         | `docker compose logs backend` |
+| `VERIFY-02: SSL invalid`                | Verify | Cert not issued       | Check Caddy logs, port 80     |
+| `VERIFY-03: Dashboard 502`              | Verify | Frontend not ready    | Wait 60s, retry               |
+| `POST-03: Seed failed`                  | Post   | DB not ready          | `./scripts/seed-demo-data.sh` |
 
 ### Getting Help
 
 If you cannot resolve an issue:
 
 1. **Gather diagnostics:**
+
    ```bash
    # Create diagnostic bundle
    mkdir -p /tmp/freshtrack-diag
@@ -1226,6 +1262,7 @@ sudo ./scripts/deploy-automated.sh
 ```
 
 The script handles:
+
 - Git repository updates
 - Docker image rebuilds
 - Database migrations (if any)
@@ -1235,17 +1272,20 @@ The script handles:
 ### Monitoring
 
 **System metrics:**
+
 - Grafana dashboard: https://monitoring.yourdomain.com
 - CPU, memory, disk, network usage
 - Docker container stats
 - node_exporter metrics (port 9100)
 
 **Application logs:**
+
 - Centralized in Loki
 - View via Grafana Explore interface
 - Filter by service, time range, log level
 
 **SSL expiry:**
+
 - Blackbox exporter monitors certificate expiry
 - Alerts at 30 days (warning) and 7 days (critical)
 - View in Grafana alerting dashboard
@@ -1282,22 +1322,24 @@ See [docs/DATABASE.md](DATABASE.md) for complete backup and restore documentatio
 Logs are managed by Docker's logging driver:
 
 **Loki-compatible services:**
+
 ```yaml
 logging:
   driver: loki
   options:
-    loki-url: "http://localhost:3100/loki/api/v1/push"
-    max-size: "10m"
-    max-file: "3"
+    loki-url: 'http://localhost:3100/loki/api/v1/push'
+    max-size: '10m'
+    max-file: '3'
 ```
 
 **Loki itself (json-file driver):**
+
 ```yaml
 logging:
   driver: json-file
   options:
-    max-size: "10m"
-    max-file: "3"
+    max-size: '10m'
+    max-file: '3'
 ```
 
 **Retention:** 3 files × 10 MB = 30 MB per service (configurable)
@@ -1352,6 +1394,7 @@ sudo ufw reload
 ```
 
 **Current firewall configuration:**
+
 - Port 22 (SSH): Required for remote access
 - Port 80 (HTTP): Required for Let's Encrypt HTTP-01 challenge
 - Port 443 (HTTPS): Production traffic

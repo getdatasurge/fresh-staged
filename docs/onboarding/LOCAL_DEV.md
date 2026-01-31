@@ -8,15 +8,16 @@
 
 Before you begin, install these tools:
 
-| Tool | Version | Purpose | Install |
-|------|---------|---------|---------|
-| **Node.js** | 18+ | JavaScript runtime | [nodejs.org](https://nodejs.org) |
-| **npm** | 9+ | Package manager | Included with Node |
-| **Git** | 2.30+ | Version control | [git-scm.com](https://git-scm.com) |
-| **Supabase CLI** | Latest | Local backend | `npm install -g supabase` |
-| **Deno** | 1.40+ | Edge function runtime | [deno.land](https://deno.land) |
+| Tool             | Version | Purpose               | Install                            |
+| ---------------- | ------- | --------------------- | ---------------------------------- |
+| **Node.js**      | 18+     | JavaScript runtime    | [nodejs.org](https://nodejs.org)   |
+| **npm**          | 9+      | Package manager       | Included with Node                 |
+| **Git**          | 2.30+   | Version control       | [git-scm.com](https://git-scm.com) |
+| **Supabase CLI** | Latest  | Local backend         | `npm install -g supabase`          |
+| **Deno**         | 1.40+   | Edge function runtime | [deno.land](https://deno.land)     |
 
 **Optional but recommended:**
+
 - VS Code with extensions: ESLint, Prettier, Tailwind CSS IntelliSense
 - Docker (for running Supabase locally)
 
@@ -214,6 +215,7 @@ freshtrack-pro/
 ### VS Code (Recommended)
 
 Install these extensions:
+
 - **ESLint** — Linting
 - **Prettier** — Code formatting
 - **Tailwind CSS IntelliSense** — Autocomplete for Tailwind classes
@@ -244,6 +246,7 @@ Add to `.vscode/settings.json`:
 **Cause**: Dependencies not installed or outdated.
 
 **Solution**:
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
@@ -254,6 +257,7 @@ npm install
 **Cause**: Wrong environment variables or Supabase not running.
 
 **Solutions**:
+
 1. Check `.env` file has correct values
 2. Ensure no quotes around values in some shells
 3. Restart the dev server after changing `.env`
@@ -269,6 +273,7 @@ npm run dev
 **Cause**: Another process using the port.
 
 **Solution**:
+
 ```bash
 # Find and kill the process
 lsof -i :8080
@@ -283,6 +288,7 @@ npm run dev -- --port 3000
 **Cause**: Deno not installed or functions not served.
 
 **Solutions**:
+
 1. Install Deno: `curl -fsSL https://deno.land/install.sh | sh`
 2. Start function server: `supabase functions serve`
 3. Check function logs in terminal
@@ -292,6 +298,7 @@ npm run dev -- --port 3000
 **Cause**: Generated types may be stale.
 
 **Solution**:
+
 ```bash
 # Regenerate Supabase types
 supabase gen types typescript --local > src/integrations/supabase/types.ts
@@ -302,6 +309,7 @@ supabase gen types typescript --local > src/integrations/supabase/types.ts
 **Cause**: File watcher limits or Vite cache issues.
 
 **Solutions**:
+
 ```bash
 # Increase file watcher limit (Linux)
 echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
@@ -317,6 +325,7 @@ npm run dev
 **Cause**: Frontend calling wrong backend URL.
 
 **Solution**: Check `VITE_SUPABASE_URL` matches your running backend:
+
 - Local: `http://localhost:54321`
 - Remote: `https://your-project.supabase.co`
 
@@ -327,12 +336,14 @@ npm run dev
 ### Typical Day
 
 1. **Pull latest changes**
+
    ```bash
    git pull origin main
    npm install  # If package.json changed
    ```
 
 2. **Start the dev server**
+
    ```bash
    npm run dev
    ```
@@ -340,6 +351,7 @@ npm run dev
 3. **Make changes** — Hot reload will update the browser
 
 4. **Check for errors**
+
    ```bash
    npm run lint
    ```
@@ -353,11 +365,13 @@ npm run dev
 ### Working on Backend
 
 1. **Start Supabase locally**
+
    ```bash
    supabase start
    ```
 
 2. **Make database changes** via migration:
+
    ```bash
    supabase migration new my_change_name
    # Edit the generated SQL file

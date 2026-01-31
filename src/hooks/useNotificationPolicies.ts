@@ -7,44 +7,44 @@
  * Migrated to tRPC in Phase 21 (Plan 05).
  */
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTRPC, useTRPCClient } from "@/lib/trpc";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTRPC, useTRPCClient } from '@/lib/trpc';
 
 // Alert types that can have notification policies
 export const ALERT_TYPES = [
-  "temp_excursion",
-  "monitoring_interrupted",
-  "missed_manual_entry",
-  "low_battery",
-  "sensor_fault",
-  "door_open",
-  "alarm_active",
-  "suspected_cooling_failure",
+  'temp_excursion',
+  'monitoring_interrupted',
+  'missed_manual_entry',
+  'low_battery',
+  'sensor_fault',
+  'door_open',
+  'alarm_active',
+  'suspected_cooling_failure',
 ] as const;
 
 export type AlertType = (typeof ALERT_TYPES)[number];
 
 export const ALERT_TYPE_LABELS: Record<AlertType, string> = {
-  temp_excursion: "Temperature Excursion",
-  monitoring_interrupted: "Monitoring Interrupted",
-  missed_manual_entry: "Missed Manual Entry",
-  low_battery: "Low Battery",
-  sensor_fault: "Sensor Fault",
-  door_open: "Door Left Open",
-  alarm_active: "Alarm Active",
-  suspected_cooling_failure: "Suspected Cooling Failure",
+  temp_excursion: 'Temperature Excursion',
+  monitoring_interrupted: 'Monitoring Interrupted',
+  missed_manual_entry: 'Missed Manual Entry',
+  low_battery: 'Low Battery',
+  sensor_fault: 'Sensor Fault',
+  door_open: 'Door Left Open',
+  alarm_active: 'Alarm Active',
+  suspected_cooling_failure: 'Suspected Cooling Failure',
 };
 
-export type NotificationChannel = "WEB_TOAST" | "IN_APP_CENTER" | "EMAIL" | "SMS";
+export type NotificationChannel = 'WEB_TOAST' | 'IN_APP_CENTER' | 'EMAIL' | 'SMS';
 
 export interface EscalationStep {
   delay_minutes: number;
-  channels: ("EMAIL" | "SMS")[];
+  channels: ('EMAIL' | 'SMS')[];
   contact_priority?: number;
   repeat: boolean;
 }
 
-export type AppRole = "owner" | "admin" | "manager" | "staff" | "viewer";
+export type AppRole = 'owner' | 'admin' | 'manager' | 'staff' | 'viewer';
 
 export interface NotificationPolicy {
   id?: string;
@@ -62,7 +62,7 @@ export interface NotificationPolicy {
   quiet_hours_enabled: boolean;
   quiet_hours_start_local: string | null;
   quiet_hours_end_local: string | null;
-  severity_threshold: "INFO" | "WARNING" | "CRITICAL";
+  severity_threshold: 'INFO' | 'WARNING' | 'CRITICAL';
   allow_warning_notifications: boolean;
   // Recipient targeting
   notify_roles: AppRole[];
@@ -72,15 +72,18 @@ export interface NotificationPolicy {
   updated_at?: string | Date;
 }
 
-export interface EffectiveNotificationPolicy extends Omit<NotificationPolicy, "id" | "organization_id" | "site_id" | "unit_id" | "created_at" | "updated_at"> {
+export interface EffectiveNotificationPolicy extends Omit<
+  NotificationPolicy,
+  'id' | 'organization_id' | 'site_id' | 'unit_id' | 'created_at' | 'updated_at'
+> {
   source_unit: boolean;
   source_site: boolean;
   source_org: boolean;
 }
 
 // Default policy values
-export const DEFAULT_NOTIFICATION_POLICY: Omit<NotificationPolicy, "alert_type"> = {
-  initial_channels: ["IN_APP_CENTER"],
+export const DEFAULT_NOTIFICATION_POLICY: Omit<NotificationPolicy, 'alert_type'> = {
+  initial_channels: ['IN_APP_CENTER'],
   requires_ack: false,
   ack_deadline_minutes: null,
   escalation_steps: [],
@@ -90,9 +93,9 @@ export const DEFAULT_NOTIFICATION_POLICY: Omit<NotificationPolicy, "alert_type">
   quiet_hours_enabled: false,
   quiet_hours_start_local: null,
   quiet_hours_end_local: null,
-  severity_threshold: "WARNING",
+  severity_threshold: 'WARNING',
   allow_warning_notifications: false,
-  notify_roles: ["owner", "admin"],
+  notify_roles: ['owner', 'admin'],
   notify_site_managers: true,
   notify_assigned_users: false,
 };
@@ -157,7 +160,7 @@ export function useUnitNotificationPolicies(unitId: string | null, orgId?: strin
 export function useEffectiveNotificationPolicy(
   unitId: string | null,
   alertType: string | null,
-  orgId?: string
+  orgId?: string,
 ) {
   const trpc = useTRPC();
 
@@ -232,8 +235,10 @@ export function useUpsertNotificationPolicy() {
         queryClient.invalidateQueries({
           predicate: (query) => {
             const key = query.queryKey;
-            return Array.isArray(key) &&
-                   key.some(k => typeof k === 'object' && k !== null && 'unitId' in k);
+            return (
+              Array.isArray(key) &&
+              key.some((k) => typeof k === 'object' && k !== null && 'unitId' in k)
+            );
           },
         });
       }
@@ -296,8 +301,10 @@ export function useDeleteNotificationPolicy() {
         queryClient.invalidateQueries({
           predicate: (query) => {
             const key = query.queryKey;
-            return Array.isArray(key) &&
-                   key.some(k => typeof k === 'object' && k !== null && 'unitId' in k);
+            return (
+              Array.isArray(key) &&
+              key.some((k) => typeof k === 'object' && k !== null && 'unitId' in k)
+            );
           },
         });
       }
@@ -310,7 +317,7 @@ export function useDeleteNotificationPolicy() {
  */
 export function getPolicyForAlertType(
   policies: NotificationPolicy[] | undefined,
-  alertType: string
+  alertType: string,
 ): NotificationPolicy | undefined {
   return policies?.find((p) => p.alert_type === alertType);
 }

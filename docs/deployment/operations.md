@@ -92,6 +92,7 @@ sudo ./scripts/deploy-automated.sh
 ```
 
 **How it works:**
+
 - Deployment script detects existing installation
 - Skips pre-flight and prerequisites (checkpoints exist)
 - Rebuilds images with new code
@@ -256,6 +257,7 @@ If server is lost and you need to start fresh:
 1. **Provision new server** (same specs as original)
 
 2. **Restore from backup:**
+
    ```bash
    # Clone repository
    git clone https://github.com/your-org/freshtrack-pro.git /opt/freshtrack-pro
@@ -293,6 +295,7 @@ If server is lost and you need to start fresh:
 When you need more capacity:
 
 1. **Backup current state:**
+
    ```bash
    docker compose exec -T postgres pg_dump -U frostguard -Fc frostguard > pre-scale-backup.dump
    ```
@@ -303,6 +306,7 @@ When you need more capacity:
    - Most providers: Requires reboot
 
 3. **Verify after resize:**
+
    ```bash
    # Check new resources
    free -h
@@ -321,6 +325,7 @@ For high availability, deploy behind a load balancer:
 **Note:** Horizontal scaling requires additional infrastructure (load balancer, shared database, shared Redis). This is an advanced topic.
 
 **Basic architecture:**
+
 ```
                     +-------------+
                     | Load        |
@@ -342,6 +347,7 @@ For high availability, deploy behind a load balancer:
 ```
 
 **Requirements for horizontal scaling:**
+
 - External PostgreSQL (RDS, Cloud SQL, or dedicated server)
 - External Redis (ElastiCache, Memorystore, or dedicated)
 - Shared file storage (S3, MinIO cluster)
@@ -352,12 +358,14 @@ For high availability, deploy behind a load balancer:
 **Increase connection pool:**
 
 Edit `.env.production`:
+
 ```bash
 # Default is 10, increase for more concurrent users
 DB_POOL_SIZE=20
 ```
 
 Restart backend:
+
 ```bash
 docker compose restart backend
 ```
@@ -375,24 +383,26 @@ For read-heavy workloads, add PostgreSQL read replicas and configure application
 Access Grafana at `https://your-domain.com/grafana`
 
 **Pre-configured dashboards:**
+
 - **FreshTrack Pro Overview:** System metrics, request rates, error rates
 - **FreshTrack Sensor Metrics:** Temperature data, alert counts, sensor status
 
 **Key metrics to watch:**
 
-| Metric | Warning Threshold | Critical Threshold |
-|--------|------------------|-------------------|
-| CPU Usage | > 70% sustained | > 90% |
-| Memory Usage | > 80% | > 95% |
-| Disk Usage | > 70% | > 85% |
-| API Error Rate | > 1% | > 5% |
-| Response Time (p95) | > 500ms | > 2000ms |
+| Metric              | Warning Threshold | Critical Threshold |
+| ------------------- | ----------------- | ------------------ |
+| CPU Usage           | > 70% sustained   | > 90%              |
+| Memory Usage        | > 80%             | > 95%              |
+| Disk Usage          | > 70%             | > 85%              |
+| API Error Rate      | > 1%              | > 5%               |
+| Response Time (p95) | > 500ms           | > 2000ms           |
 
 ### Prometheus Alerts
 
 Prometheus is configured with default alerts. View at `https://your-domain.com/prometheus/alerts`
 
 **Default alerts:**
+
 - Service down (any container not running)
 - High memory usage (> 90%)
 - High CPU usage (> 90%)
@@ -409,6 +419,7 @@ Configure alert notifications in Grafana:
 4. Assign to alert rules
 
 **Slack webhook example:**
+
 ```
 https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXX
 ```
@@ -483,6 +494,7 @@ sudo ./scripts/deploy-automated.sh
 **Rotate secrets quarterly:**
 
 1. Generate new secrets:
+
    ```bash
    openssl rand -base64 32 > secrets/postgres_password_new.txt
    openssl rand -base64 32 > secrets/jwt_secret_new.txt
@@ -491,12 +503,14 @@ sudo ./scripts/deploy-automated.sh
 2. Update `.env.production` with new values
 
 3. Update database password:
+
    ```bash
    docker compose exec -T postgres psql -U postgres -c \
      "ALTER USER frostguard PASSWORD '$(cat secrets/postgres_password_new.txt)';"
    ```
 
 4. Restart services:
+
    ```bash
    docker compose down
    mv secrets/postgres_password_new.txt secrets/postgres_password.txt
@@ -512,17 +526,20 @@ sudo ./scripts/deploy-automated.sh
 ### Firewall Management (UFW)
 
 **Check firewall status:**
+
 ```bash
 sudo ufw status verbose
 ```
 
 **Default rules (configured by deployment):**
+
 - SSH (22): Allow
 - HTTP (80): Allow
 - HTTPS (443): Allow
 - All other inbound: Deny
 
 **Add custom rule:**
+
 ```bash
 sudo ufw allow from 10.0.0.0/8 to any port 5432 proto tcp comment 'PostgreSQL from internal'
 ```
@@ -530,16 +547,19 @@ sudo ufw allow from 10.0.0.0/8 to any port 5432 proto tcp comment 'PostgreSQL fr
 ### Fail2ban Management
 
 **Check banned IPs:**
+
 ```bash
 sudo fail2ban-client status sshd
 ```
 
 **Unban an IP:**
+
 ```bash
 sudo fail2ban-client set sshd unbanip 192.168.1.100
 ```
 
 **Check fail2ban logs:**
+
 ```bash
 sudo tail -f /var/log/fail2ban.log
 ```
@@ -600,15 +620,16 @@ docker compose exec backend npm run db:migrate
 
 Default resource limits (from compose.production.yaml):
 
-| Service | CPU | Memory |
-|---------|-----|--------|
-| backend | 2 | 2048M |
-| worker | 1 | 1024M |
-| postgres | 2 | 2048M |
-| redis | 0.5 | 512M |
-| caddy | 0.5 | 512M |
+| Service  | CPU | Memory |
+| -------- | --- | ------ |
+| backend  | 2   | 2048M  |
+| worker   | 1   | 1024M  |
+| postgres | 2   | 2048M  |
+| redis    | 0.5 | 512M   |
+| caddy    | 0.5 | 512M   |
 
 To adjust limits, edit `compose.production.yaml` and restart:
+
 ```bash
 docker compose down
 docker compose up -d
@@ -621,22 +642,27 @@ docker compose up -d
 ### Common Issues
 
 #### "Bad Gateway" (502)
+
 Usually means the backend is not running or not reachable by Caddy.
+
 1. Check backend logs: `docker compose logs backend`
 2. Check Caddy logs: `docker compose logs caddy`
 3. Verify backend is running: `docker compose ps backend`
 
 #### "Database Connection Error"
+
 1. Check Postgres status: `docker compose ps postgres`
 2. Check connection logs: `docker compose logs backend | grep -i "database\|postgres"`
 3. Verify database is accepting connections: `docker compose exec postgres pg_isready`
 
 #### High Memory Usage
+
 1. Check which container is consuming memory: `docker stats --no-stream`
 2. Review backend for memory leaks: `docker compose logs backend | grep -i "memory\|heap"`
 3. Consider increasing server memory or optimizing queries
 
 #### Slow Response Times
+
 1. Check database query performance: Enable slow query logging
 2. Check container resource limits: `docker stats --no-stream`
 3. Review API logs for slow endpoints
@@ -644,16 +670,19 @@ Usually means the backend is not running or not reachable by Caddy.
 ### Emergency Procedures
 
 #### Emergency Stop
+
 ```bash
 docker compose down --timeout 5
 ```
 
 #### Emergency Restart
+
 ```bash
 docker compose down --timeout 10 && docker compose up -d
 ```
 
 #### Force Rebuild
+
 ```bash
 docker compose down
 docker compose build --no-cache
@@ -716,5 +745,5 @@ docker compose exec -T postgres pg_restore -U frostguard -d frostguard < backup.
 
 ---
 
-*Last updated: 2026-01-29*
-*Version: 2.3*
+_Last updated: 2026-01-29_
+_Version: 2.3_

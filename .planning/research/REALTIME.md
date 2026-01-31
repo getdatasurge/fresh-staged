@@ -12,6 +12,7 @@ This research addresses implementing real-time features in FreshTrack Pro v2.0 f
 Socket.io is the industry-standard solution for real-time bidirectional communication, with 2,365+ code examples in Context7 documentation (High source reputation, 76.9-92 benchmark score). The integration pattern with Fastify is well-established, and the Redis adapter enables production-scale multi-tenant architectures.
 
 **Key Findings:**
+
 - Socket.io + Fastify integration is straightforward via `fastify-socket.io` plugin
 - Redis adapter enables horizontal scaling with pub/sub architecture
 - Multi-tenant isolation achieved through namespaces and rooms
@@ -38,6 +39,7 @@ npm install bufferutil utf-8-validate
 ```
 
 **Sources:**
+
 - [Socket.io v4 Documentation](https://socket.io/docs/v4/server-initialization) (Context7)
 - [fastify-socket.io GitHub](https://github.com/ducktors/fastify-socket.io)
 
@@ -119,13 +121,14 @@ app.register(fastifySocketIO, {
   preClose: (done) => {
     app.io.local.disconnectSockets(true);
     done();
-  }
+  },
 });
 ```
 
 3. **TypeScript Types:** The plugin intentionally doesn't provide types for the `io` decorator, allowing custom type definitions with Socket.io's type system.
 
 **Sources:**
+
 - [Socket.io Server Initialization](https://socket.io/docs/v4/server-initialization) (Context7)
 - [fastify-socket.io Documentation](https://github.com/ducktors/fastify-socket.io)
 
@@ -179,14 +182,13 @@ export async function configureRedisAdapter(io: Server) {
 
   const subClient = pubClient.duplicate();
 
-  await Promise.all([
-    pubClient.connect(),
-    subClient.connect()
-  ]);
+  await Promise.all([pubClient.connect(), subClient.connect()]);
 
-  io.adapter(createShardedAdapter(pubClient, subClient, {
-    publishOnSpecificResponseChannel: true, // More efficient - responses only to requesting server
-  }));
+  io.adapter(
+    createShardedAdapter(pubClient, subClient, {
+      publishOnSpecificResponseChannel: true, // More efficient - responses only to requesting server
+    }),
+  );
 
   console.log('Redis adapter configured for Socket.io');
 }
@@ -209,6 +211,7 @@ io.adapter(createAdapter(pubClient, subClient));
 **Implementation Options:**
 
 **Nginx Configuration:**
+
 ```nginx
 http {
   upstream socket_nodes {
@@ -240,6 +243,7 @@ http {
 ```
 
 **HAProxy Configuration:**
+
 ```haproxy
 backend nodes
   option httpchk HEAD /health
@@ -251,6 +255,7 @@ backend nodes
 ```
 
 **Sources:**
+
 - [Socket.io Redis Adapter](https://socket.io/docs/v4/redis-adapter) (Context7)
 - [Using Multiple Nodes](https://socket.io/docs/v4/using-multiple-nodes) (Context7)
 - [Horizontal Scaling with Socket.io](https://dev.to/kawanedres/horizontal-scaling-with-socketio-1lca)
@@ -273,6 +278,7 @@ FreshTrack Pro requires data isolation between organizations (multi-tenancy). So
 **Use Rooms for Organization Isolation (not dynamic namespaces)**
 
 **Why:**
+
 - Simpler implementation with single namespace
 - Better performance (fewer namespace instances)
 - Easier to broadcast organization-wide events
@@ -332,7 +338,7 @@ io.to(`org:${organizationId}`).emit('alert:triggered', {
 
 // Emit to single user (private notification)
 const sockets = await io.in(`org:${organizationId}`).fetchSockets();
-const userSocket = sockets.find(s => s.data.userId === userId);
+const userSocket = sockets.find((s) => s.data.userId === userId);
 if (userSocket) {
   userSocket.emit('notification:private', { message });
 }
@@ -346,24 +352,27 @@ Socket.io supports regex-based dynamic namespaces:
 // Creates namespace per workspace/tenant
 const workspaces = io.of(/^\/\w+$/);
 
-workspaces.on('connection', socket => {
+workspaces.on('connection', (socket) => {
   const workspace = socket.nsp;
   workspace.emit('hello');
 });
 ```
 
 **When to Use:**
+
 - Completely separate logical systems per tenant
 - Different middleware/handlers per namespace
 - Need to count connections per tenant easily
 
 **Why Not for FreshTrack Pro:**
+
 - Adds complexity without clear benefit
 - Room-based approach handles isolation well
 - Single namespace easier to maintain
 - Better scalability with Redis adapter
 
 **Sources:**
+
 - [Socket.io Namespaces](https://socket.io/docs/v4/namespaces) (Context7)
 - [Socket.io Rooms](https://socket.io/docs/v4/rooms) (Context7)
 - [Multi-tenant Fastify Auth](https://peerlist.io/shrey_/articles/building-better-auth-in-fastify-multitenant-saas-and-secure-api-authentication)
@@ -405,7 +414,7 @@ export function useRealtimeSensorData(organizationId: string) {
         (oldData: SensorReading[] | undefined) => {
           if (!oldData) return [data];
           return [data, ...oldData.slice(0, 99)]; // Keep last 100 readings
-        }
+        },
       );
     });
 
@@ -561,6 +570,7 @@ socket.io.on('reconnect', () => {
 ```
 
 **Sources:**
+
 - [Using WebSockets with React Query](https://tkdodo.eu/blog/using-web-sockets-with-react-query) (TkDodo's blog)
 - [TanStack Query and WebSockets](https://blog.logrocket.com/tanstack-query-websockets-real-time-react-data-fetching/)
 - [Socket.io + React Query Discussion](https://github.com/socketio/socket.io/discussions/4952)
@@ -612,6 +622,7 @@ socket.on('disconnect', (reason, details) => {
 ### Automatic Reconnection Behavior
 
 **Default Behavior:**
+
 - Socket.io client automatically attempts reconnection for most disconnect reasons
 - Uses exponential backoff: 1s, 2s, 5s, 10s, 20s, 40s, 60s (max)
 - Reconnects infinitely by default
@@ -622,12 +633,12 @@ socket.on('disconnect', (reason, details) => {
 
 ```typescript
 const socket = io({
-  reconnection: true,          // Enable auto-reconnection (default: true)
+  reconnection: true, // Enable auto-reconnection (default: true)
   reconnectionAttempts: Infinity, // Max attempts (default: Infinity)
-  reconnectionDelay: 1000,     // Initial delay (default: 1000ms)
-  reconnectionDelayMax: 5000,  // Max delay (default: 5000ms)
-  randomizationFactor: 0.5,    // Randomization (default: 0.5)
-  timeout: 20000,              // Connection timeout (default: 20000ms)
+  reconnectionDelay: 1000, // Initial delay (default: 1000ms)
+  reconnectionDelayMax: 5000, // Max delay (default: 5000ms)
+  randomizationFactor: 0.5, // Randomization (default: 0.5)
+  timeout: 20000, // Connection timeout (default: 20000ms)
 });
 ```
 
@@ -681,11 +692,13 @@ socket.on('connect', () => {
 ```
 
 **When to Use:**
+
 - Temporary network interruptions
 - Mobile device switching between WiFi/cellular
 - Short server restarts
 
 **Limitations:**
+
 - Only works for temporary disconnections (< maxDisconnectionDuration)
 - Client must reconnect to the same server instance (requires sticky sessions)
 - Not suitable for long-term offline scenarios
@@ -743,6 +756,7 @@ location / {
 ```
 
 **Sources:**
+
 - [Handling Disconnections](https://socket.io/docs/v4/tutorial/handling-disconnections) (Context7)
 - [Connection State Recovery](https://socket.io/docs/v4/connection-state-recovery) (Context7)
 - [Graceful Shutdown Discussion](https://github.com/socketio/socket.io/discussions/5030)
@@ -763,6 +777,7 @@ npm install --save-optional bufferutil utf-8-validate
 ```
 
 **Benefits:**
+
 - `bufferutil`: Faster masking/unmasking of WebSocket payload data
 - `utf-8-validate`: Faster UTF-8 validation
 - Significant performance improvement for high-throughput scenarios
@@ -780,6 +795,7 @@ io.engine.on('connection', (rawSocket) => {
 **When NOT to use:** If integrating with `express-session` or need session middleware.
 
 **2. Memory Scaling:**
+
 - Memory usage scales linearly with connected clients (not exponential)
 - Focus on per-client efficiency for best ROI
 
@@ -795,6 +811,7 @@ const io = new Server({
 ```
 
 **Options:**
+
 - `eiows` - Fork of uws, better memory/CPU than default
 - `µWebSockets.js` - Alternative HTTP server with WebSocket support
 
@@ -822,6 +839,7 @@ Allows ~55,000 concurrent connections per incoming IP address.
 **Confidence:** MEDIUM (based on GitHub issues and community reports)
 
 **Known Issues:**
+
 - Socket.io has experienced memory leaks in certain scenarios (v4.5.1 reports)
 - Emitting with acknowledgment callbacks can leak memory
 - ArrayBuffer transmission has caused issues in past versions
@@ -947,6 +965,7 @@ socket.on('sensor:readings:batch', (data) => {
 **Sticky Sessions Required:** Always use sticky sessions with multiple instances.
 
 **Recommended Configuration:**
+
 - IP hash for simplicity
 - Cookie-based for accuracy
 - Session affinity duration: At least 1 hour
@@ -968,6 +987,7 @@ app.get('/health', async (request, reply) => {
 ```
 
 **Sources:**
+
 - [Socket.io Performance Tuning](https://socket.io/docs/v4/performance-tuning) (Context7)
 - [Socket.io Memory Usage](https://socket.io/docs/v4/memory-usage) (Context7)
 - [Scaling Socket.io - Ably Guide](https://ably.com/topic/scaling-socketio)
@@ -1063,11 +1083,13 @@ const io = new Server({
 ```typescript
 import rateLimit from 'socket.io-rate-limit';
 
-io.use(rateLimit({
-  tokensPerInterval: 100,
-  interval: 1000, // 100 requests per second per socket
-  fireImmediately: true,
-}));
+io.use(
+  rateLimit({
+    tokensPerInterval: 100,
+    interval: 1000, // 100 requests per second per socket
+    fireImmediately: true,
+  }),
+);
 ```
 
 **4. Validate All Client Events:**
@@ -1098,6 +1120,7 @@ socket.on('device:command', async (data) => {
 ```
 
 **Sources:**
+
 - [Socket.io JWT Authentication](https://socket.io/how-to/use-with-jwt) (Context7)
 - [Socket.io Middlewares](https://socket.io/docs/v4/middlewares) (Context7)
 - [Securing Socket.io with Authentication](https://medium.com/@mcmohangowda/securing-socket-io-with-authentication-in-node-js-33a6ae8bb534)
@@ -1111,6 +1134,7 @@ socket.on('device:command', async (data) => {
 **Goal:** Get Socket.io working with Fastify and basic room-based multi-tenancy.
 
 **Tasks:**
+
 1. Install dependencies: `fastify-socket.io`, `socket.io`
 2. Create Socket.io plugin in `backend/src/plugins/socket.plugin.ts`
 3. Implement JWT authentication middleware
@@ -1124,6 +1148,7 @@ socket.on('device:command', async (data) => {
 **Goal:** Enable multi-instance deployments with Redis pub/sub.
 
 **Tasks:**
+
 1. Install Redis adapter: `@socket.io/redis-adapter`, `redis`
 2. Configure Redis clients (pub/sub)
 3. Setup sticky sessions in load balancer (nginx/HAProxy)
@@ -1137,6 +1162,7 @@ socket.on('device:command', async (data) => {
 **Goal:** Push live sensor readings to connected clients.
 
 **Tasks:**
+
 1. Create `SensorStreamBuffer` service for data throttling
 2. Modify TTN webhook handler to emit to Socket.io rooms
 3. Implement room subscription system (`subscribe:site`, `subscribe:unit`)
@@ -1150,6 +1176,7 @@ socket.on('device:command', async (data) => {
 **Goal:** Integrate Socket.io with React and TanStack Query.
 
 **Tasks:**
+
 1. Create `lib/socket.ts` with connection management
 2. Build `useRealtimeSensorData` hook
 3. Implement `useRealtimeAlerts` hook
@@ -1164,6 +1191,7 @@ socket.on('device:command', async (data) => {
 **Goal:** Real-time alert delivery with acknowledgment.
 
 **Tasks:**
+
 1. Emit alerts via Socket.io from `alert-evaluator.service.ts`
 2. Implement client-side alert toast notifications
 3. Add alert acknowledgment flow (client → server)
@@ -1177,6 +1205,7 @@ socket.on('device:command', async (data) => {
 **Goal:** Optimize for production performance and reliability.
 
 **Tasks:**
+
 1. Install binary add-ons (`bufferutil`, `utf-8-validate`)
 2. Configure memory optimization (discard HTTP request)
 3. Setup Socket.io Admin UI for monitoring
@@ -1279,11 +1308,11 @@ import ws from 'k6/ws';
 
 export const options = {
   stages: [
-    { duration: '1m', target: 100 },   // Ramp up to 100 users
-    { duration: '5m', target: 100 },   // Stay at 100 users
-    { duration: '1m', target: 1000 },  // Ramp to 1000
-    { duration: '5m', target: 1000 },  // Stay at 1000
-    { duration: '1m', target: 0 },     // Ramp down
+    { duration: '1m', target: 100 }, // Ramp up to 100 users
+    { duration: '5m', target: 100 }, // Stay at 100 users
+    { duration: '1m', target: 1000 }, // Ramp to 1000
+    { duration: '5m', target: 1000 }, // Stay at 1000
+    { duration: '1m', target: 0 }, // Ramp down
   ],
 };
 
@@ -1338,7 +1367,7 @@ const metrics = {
 // Export metrics endpoint
 app.get('/metrics', async (request, reply) => {
   return {
-    socketio_connections_total: await io.fetchSockets().then(s => s.length),
+    socketio_connections_total: await io.fetchSockets().then((s) => s.length),
     socketio_rooms_total: io.sockets.adapter.rooms.size,
     socketio_events_emitted_total: metrics.eventsEmitted,
     socketio_events_received_total: metrics.eventsReceived,
@@ -1379,11 +1408,13 @@ io.on('connection', (socket) => {
 **Problem:** Without sticky sessions, HTTP long-polling clients disconnect immediately.
 
 **Symptoms:**
+
 - Clients connect then immediately disconnect
 - `transport error` or `transport close` in rapid succession
 - Works with WebSocket-only clients but fails with fallback
 
 **Mitigation:**
+
 - Always configure sticky sessions in load balancer
 - Test with HTTP long-polling transport explicitly
 - Monitor disconnect reasons in production
@@ -1393,11 +1424,13 @@ io.on('connection', (socket) => {
 **Problem:** Registering event listeners inside `connect` event creates duplicates on each reconnect.
 
 **Symptoms:**
+
 - Event handlers fire multiple times
 - Memory increases on each reconnection
 - Users see duplicate notifications
 
 **Mitigation:**
+
 ```typescript
 // ✅ Register once, outside connect event
 socket.on('data', handleData);
@@ -1409,10 +1442,12 @@ socket.on('connect', () => console.log('Connected'));
 **Problem:** Typo in room name or missing organization check allows cross-tenant data access.
 
 **Symptoms:**
+
 - Users seeing other organization's data
 - Security vulnerability
 
 **Mitigation:**
+
 - Always use consistent room naming: `org:${organizationId}:resource:${resourceId}`
 - Validate organizationId from socket.data in all event handlers
 - Add integration tests for multi-tenant isolation
@@ -1422,11 +1457,13 @@ socket.on('connect', () => console.log('Connected'));
 **Problem:** Not cleaning up event listeners on disconnect.
 
 **Symptoms:**
+
 - Memory grows over time
 - Server becomes unresponsive
 - Node.js heap out of memory errors
 
 **Mitigation:**
+
 ```typescript
 socket.on('disconnect', () => {
   socket.removeAllListeners(); // Clean up all custom listeners
@@ -1438,11 +1475,13 @@ socket.on('disconnect', () => {
 **Problem:** IoT sensors emit data every 100ms, causing 10 renders/second.
 
 **Symptoms:**
+
 - UI lag/freezing
 - Browser performance degradation
 - High CPU usage in dev tools
 
 **Mitigation:**
+
 - Implement server-side buffering (batch updates to 1/second)
 - Use `useDeferredValue` or `useTransition` in React
 - Throttle cache updates in React Query
@@ -1452,11 +1491,13 @@ socket.on('disconnect', () => {
 **Problem:** Redis goes down, Socket.io stops broadcasting across instances.
 
 **Symptoms:**
+
 - Messages only reach clients on same server instance
 - No error messages visible
 - Silent degradation
 
 **Mitigation:**
+
 ```typescript
 pubClient.on('error', (err) => {
   logger.error('Redis pub client error:', err);
@@ -1473,13 +1514,16 @@ subClient.on('error', (err) => {
 **Problem:** JWT expires while user is connected, causing authorization issues.
 
 **Symptoms:**
+
 - User connected but can't perform authenticated actions
 - Confusing UX (appears connected but actions fail)
 
 **Mitigation:**
+
 - Implement token refresh flow on client
 - Disconnect client when token expires (server-side check)
 - Show "Session expired, reconnecting..." UI
+
 ```typescript
 // Server-side middleware
 io.use(async (socket, next) => {
@@ -1497,23 +1541,23 @@ io.use(async (socket, next) => {
 
 ### Use Socket.io When:
 
-| Scenario | Reason |
-|----------|--------|
-| Live sensor data updates | Push data without polling overhead |
-| Real-time alert notifications | Instant delivery to affected users |
-| Collaborative features (future) | Multi-user editing, presence indicators |
-| Dashboard auto-refresh | Keep data fresh without user action |
-| Live status indicators | Connection status, device online/offline |
+| Scenario                        | Reason                                   |
+| ------------------------------- | ---------------------------------------- |
+| Live sensor data updates        | Push data without polling overhead       |
+| Real-time alert notifications   | Instant delivery to affected users       |
+| Collaborative features (future) | Multi-user editing, presence indicators  |
+| Dashboard auto-refresh          | Keep data fresh without user action      |
+| Live status indicators          | Connection status, device online/offline |
 
 ### Don't Use Socket.io When:
 
-| Scenario | Better Alternative |
-|----------|-------------------|
-| One-time data fetches | HTTP REST API with TanStack Query |
-| Bulk data export | HTTP streaming or download endpoint |
-| File uploads | HTTP multipart/form-data |
-| Historical data queries | REST API with pagination |
-| Configuration updates | REST API with optimistic updates |
+| Scenario                | Better Alternative                  |
+| ----------------------- | ----------------------------------- |
+| One-time data fetches   | HTTP REST API with TanStack Query   |
+| Bulk data export        | HTTP streaming or download endpoint |
+| File uploads            | HTTP multipart/form-data            |
+| Historical data queries | REST API with pagination            |
+| Configuration updates   | REST API with optimistic updates    |
 
 ### Hybrid Approach (Recommended for FreshTrack Pro):
 
@@ -1527,41 +1571,41 @@ io.use(async (socket, next) => {
 
 ### Development Effort
 
-| Task | Estimated Effort |
-|------|-----------------|
-| Socket.io + Fastify integration | 4 hours |
-| JWT authentication middleware | 2 hours |
-| Room-based multi-tenancy | 4 hours |
-| Redis adapter configuration | 3 hours |
-| React client integration | 6 hours |
-| TanStack Query cache integration | 4 hours |
-| Real-time sensor streaming | 8 hours |
-| Alert notifications | 4 hours |
-| Testing (unit + integration) | 8 hours |
-| Production hardening | 6 hours |
-| **Total** | **49 hours (~1.5 weeks)** |
+| Task                             | Estimated Effort          |
+| -------------------------------- | ------------------------- |
+| Socket.io + Fastify integration  | 4 hours                   |
+| JWT authentication middleware    | 2 hours                   |
+| Room-based multi-tenancy         | 4 hours                   |
+| Redis adapter configuration      | 3 hours                   |
+| React client integration         | 6 hours                   |
+| TanStack Query cache integration | 4 hours                   |
+| Real-time sensor streaming       | 8 hours                   |
+| Alert notifications              | 4 hours                   |
+| Testing (unit + integration)     | 8 hours                   |
+| Production hardening             | 6 hours                   |
+| **Total**                        | **49 hours (~1.5 weeks)** |
 
 ### Infrastructure Costs (Monthly, AWS estimates)
 
-| Resource | Cost |
-|----------|------|
-| Redis (ElastiCache, cache.t3.micro) | $15 |
-| Load Balancer (ALB) | $20 |
-| Additional bandwidth (WebSocket overhead) | $5 |
-| Monitoring/logging overhead | $5 |
-| **Total Additional Cost** | **~$45/month** |
+| Resource                                  | Cost           |
+| ----------------------------------------- | -------------- |
+| Redis (ElastiCache, cache.t3.micro)       | $15            |
+| Load Balancer (ALB)                       | $20            |
+| Additional bandwidth (WebSocket overhead) | $5             |
+| Monitoring/logging overhead               | $5             |
+| **Total Additional Cost**                 | **~$45/month** |
 
 **Note:** Assumes existing EC2/ECS infrastructure. Socket.io runs in same instances as Fastify, no additional compute needed.
 
 ### Maintenance Burden
 
-| Area | Ongoing Effort |
-|------|---------------|
-| Monitoring socket connection health | 2 hours/month |
-| Redis adapter maintenance | 1 hour/month |
-| Memory leak investigation (if occurs) | 4-8 hours (rare) |
-| Version upgrades (Socket.io, Redis) | 2 hours/quarter |
-| **Total** | **~3-5 hours/month** |
+| Area                                  | Ongoing Effort       |
+| ------------------------------------- | -------------------- |
+| Monitoring socket connection health   | 2 hours/month        |
+| Redis adapter maintenance             | 1 hour/month         |
+| Memory leak investigation (if occurs) | 4-8 hours (rare)     |
+| Version upgrades (Socket.io, Redis)   | 2 hours/quarter      |
+| **Total**                             | **~3-5 hours/month** |
 
 ---
 
@@ -1570,12 +1614,14 @@ io.use(async (socket, next) => {
 ### Alternative 1: Server-Sent Events (SSE)
 
 **Pros:**
+
 - Simpler than WebSocket
 - Works over HTTP/1.1
 - Auto-reconnection built-in
 - No special proxy configuration
 
 **Cons:**
+
 - One-way (server → client only)
 - No binary data support
 - Connection limits per browser (6 concurrent per domain)
@@ -1586,11 +1632,13 @@ io.use(async (socket, next) => {
 ### Alternative 2: Native WebSocket API
 
 **Pros:**
+
 - No library dependency
 - Full control over protocol
 - Lower memory footprint
 
 **Cons:**
+
 - Must implement own reconnection logic
 - No room/namespace abstraction
 - No fallback to HTTP long-polling
@@ -1602,11 +1650,13 @@ io.use(async (socket, next) => {
 ### Alternative 3: GraphQL Subscriptions (Apollo)
 
 **Pros:**
+
 - Type-safe with GraphQL schema
 - Integrates well with existing GraphQL API (if you had one)
 - Built-in subscription management
 
 **Cons:**
+
 - FreshTrack Pro uses REST, not GraphQL
 - Higher complexity for this use case
 - Larger bundle size
@@ -1617,11 +1667,13 @@ io.use(async (socket, next) => {
 ### Alternative 4: Polling with TanStack Query
 
 **Pros:**
+
 - No WebSocket infrastructure needed
 - Simple implementation
 - Works everywhere (no proxy issues)
 
 **Cons:**
+
 - Higher latency (polling interval)
 - Unnecessary server load (wasted requests)
 - Doesn't scale well with many clients
@@ -1632,6 +1684,7 @@ io.use(async (socket, next) => {
 ### Recommendation: Socket.io
 
 **Why Socket.io is the best fit:**
+
 1. **Proven at scale** - Used by production IoT systems
 2. **Great DX** - Simple API, good TypeScript support
 3. **Production-ready** - Redis adapter, connection recovery, monitoring tools
@@ -1721,15 +1774,15 @@ io.use(async (socket, next) => {
 
 ## Confidence Assessment
 
-| Area | Confidence | Reasoning |
-|------|-----------|-----------|
-| Socket.io + Fastify Integration | **HIGH** | Verified from Context7, official GitHub, working examples |
-| Redis Adapter Configuration | **HIGH** | Official Socket.io docs, multiple production case studies |
-| Multi-Tenant Architecture | **HIGH** | Clear patterns from official docs + community implementations |
-| React + TanStack Query Integration | **HIGH** | TkDodo's authoritative blog + official discussions |
-| Production Scaling | **MEDIUM-HIGH** | Official performance docs + community scaling articles |
-| Memory Management | **MEDIUM** | Some historical issues, but mitigation strategies documented |
-| IoT-Specific Patterns | **MEDIUM** | Community examples + architectural patterns |
+| Area                               | Confidence      | Reasoning                                                     |
+| ---------------------------------- | --------------- | ------------------------------------------------------------- |
+| Socket.io + Fastify Integration    | **HIGH**        | Verified from Context7, official GitHub, working examples     |
+| Redis Adapter Configuration        | **HIGH**        | Official Socket.io docs, multiple production case studies     |
+| Multi-Tenant Architecture          | **HIGH**        | Clear patterns from official docs + community implementations |
+| React + TanStack Query Integration | **HIGH**        | TkDodo's authoritative blog + official discussions            |
+| Production Scaling                 | **MEDIUM-HIGH** | Official performance docs + community scaling articles        |
+| Memory Management                  | **MEDIUM**      | Some historical issues, but mitigation strategies documented  |
+| IoT-Specific Patterns              | **MEDIUM**      | Community examples + architectural patterns                   |
 
 **Overall Research Confidence:** HIGH
 

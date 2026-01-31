@@ -30,14 +30,14 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Use apt repository method (download.docker.com) instead of get.docker.com for idempotent installs"
-  - "300s default timeout for apt lock wait with configurable APT_LOCK_TIMEOUT"
-  - "Check 4 lock files: dpkg/lock, dpkg/lock-frontend, apt/lists/lock, apt/archives/lock"
+  - 'Use apt repository method (download.docker.com) instead of get.docker.com for idempotent installs'
+  - '300s default timeout for apt lock wait with configurable APT_LOCK_TIMEOUT'
+  - 'Check 4 lock files: dpkg/lock, dpkg/lock-frontend, apt/lists/lock, apt/archives/lock'
 
 patterns-established:
-  - "wait_for_apt_lock() before any apt-get command"
-  - "is_package_installed() check before ensure_package() installation"
-  - "Early return if Docker and Compose v2 already properly installed"
+  - 'wait_for_apt_lock() before any apt-get command'
+  - 'is_package_installed() check before ensure_package() installation'
+  - 'Early return if Docker and Compose v2 already properly installed'
 
 # Metrics
 duration: 9min
@@ -109,5 +109,6 @@ None - no external service configuration required. Docker installation runs enti
 - Ready for Plan 23-02 (Firewall Configuration)
 
 ---
-*Phase: 23-prerequisites-installation*
-*Completed: 2026-01-25*
+
+_Phase: 23-prerequisites-installation_
+_Completed: 2026-01-25_

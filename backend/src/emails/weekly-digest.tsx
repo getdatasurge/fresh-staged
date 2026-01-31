@@ -101,8 +101,7 @@ export function WeeklyDigest({
                 lineHeight: '1.6',
               }}
             >
-              Here's your weekly summary for <strong>{organizationName}</strong>
-              :
+              Here's your weekly summary for <strong>{organizationName}</strong>:
             </Text>
 
             {/* Summary Stats */}
@@ -287,8 +286,7 @@ export function WeeklyDigest({
                 lineHeight: '1.5',
               }}
             >
-              You're receiving this because you have email digest notifications
-              enabled.
+              You're receiving this because you have email digest notifications enabled.
               <br />
               <Link
                 href={unsubscribeUrl}

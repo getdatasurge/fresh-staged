@@ -9,20 +9,20 @@ export class TtnCrypto {
    * Supports: 'b64:' (plain base64), 'v2:' (XOR v2), and legacy (v1 XOR)
    */
   static deobfuscateKey(encoded: string | null, salt: string): string {
-    if (!encoded) return "";
+    if (!encoded) return '';
 
     // Handle b64: prefix (Plain Base64)
-    if (encoded.startsWith("b64:")) {
+    if (encoded.startsWith('b64:')) {
       try {
         return Buffer.from(encoded.slice(4), 'base64').toString('utf-8');
       } catch (err) {
-        console.error("[deobfuscateKey] Failed to decode b64:", err);
-        return "";
+        console.error('[deobfuscateKey] Failed to decode b64:', err);
+        return '';
       }
     }
 
     // Handle v2: prefix (XOR v2)
-    if (encoded.startsWith("v2:")) {
+    if (encoded.startsWith('v2:')) {
       return this.deobfuscateKeyV2(encoded, salt);
     }
 
@@ -51,22 +51,22 @@ export class TtnCrypto {
 
       return result.toString('utf-8');
     } catch (err) {
-      console.error("[deobfuscateKeyV2] Failed to decode:", err);
-      return "";
+      console.error('[deobfuscateKeyV2] Failed to decode:', err);
+      return '';
     }
   }
 
   private static legacyDeobfuscateKey(encoded: string, salt: string): string {
     try {
       const decoded = Buffer.from(encoded, 'base64').toString('binary');
-      let result = "";
+      let result = '';
       for (let i = 0; i < decoded.length; i++) {
         result += String.fromCharCode(decoded.charCodeAt(i) ^ salt.charCodeAt(i % salt.length));
       }
       return result;
     } catch {
-      console.warn("[legacyDeobfuscateKey] Failed to decode");
-      return "";
+      console.warn('[legacyDeobfuscateKey] Failed to decode');
+      return '';
     }
   }
 }

@@ -1,19 +1,15 @@
-import { useState, useCallback, useRef, useEffect } from "react";
-import { Search, Loader2, MapPin, AlertCircle } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { Search, Loader2, MapPin, AlertCircle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { searchAddress, GeocodingResult } from "@/lib/geocoding/geocodingService";
+} from '@/components/ui/command';
+import { searchAddress, GeocodingResult } from '@/lib/geocoding/geocodingService';
 
 interface AddressSearchInputProps {
   onSelect: (result: GeocodingResult) => void;
@@ -24,10 +20,10 @@ interface AddressSearchInputProps {
 export function AddressSearchInput({
   onSelect,
   disabled = false,
-  placeholder = "Search city, address, or ZIP...",
+  placeholder = 'Search city, address, or ZIP...',
 }: AddressSearchInputProps) {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [results, setResults] = useState<GeocodingResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +45,7 @@ export function AddressSearchInput({
       setResults(searchResults);
       setOpen(searchResults.length > 0 || searchQuery.length >= 3);
     } catch (err) {
-      setError("Search unavailable. Enter coordinates manually.");
+      setError('Search unavailable. Enter coordinates manually.');
       setResults([]);
       setOpen(true);
     } finally {
@@ -71,7 +67,7 @@ export function AddressSearchInput({
         performSearch(value);
       }, 500);
     },
-    [performSearch]
+    [performSearch],
   );
 
   const handleSelect = useCallback(
@@ -81,7 +77,7 @@ export function AddressSearchInput({
       setResults([]);
       onSelect(result);
     },
-    [onSelect]
+    [onSelect],
   );
 
   // Cleanup debounce on unmount
@@ -142,9 +138,7 @@ export function AddressSearchInput({
                   >
                     <MapPin className="mr-2 h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <div className="flex flex-col min-w-0">
-                      <span className="font-medium truncate">
-                        {result.shortName}
-                      </span>
+                      <span className="font-medium truncate">{result.shortName}</span>
                       <span className="text-xs text-muted-foreground truncate">
                         {result.displayName}
                       </span>

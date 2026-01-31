@@ -17,24 +17,28 @@ The primary work is migrating the Telnyx API integration from the Edge Function 
 The established libraries/tools for this domain:
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| telnyx | ^4.6.0 | Telnyx SMS API SDK | Official TypeScript SDK, auto-retry, type-safe responses |
-| bullmq | ^5.67.0 | Job queue processing | Already installed in Phase 15, TypeScript-first |
-| ioredis | ^5.9.2 | Redis connection | Already installed, required for BullMQ workers |
+
+| Library | Version | Purpose              | Why Standard                                             |
+| ------- | ------- | -------------------- | -------------------------------------------------------- |
+| telnyx  | ^4.6.0  | Telnyx SMS API SDK   | Official TypeScript SDK, auto-retry, type-safe responses |
+| bullmq  | ^5.67.0 | Job queue processing | Already installed in Phase 15, TypeScript-first          |
+| ioredis | ^5.9.2  | Redis connection     | Already installed, required for BullMQ workers           |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| zod | ^4.3.6 | Job data validation | Validate SMS job payloads before processing |
+
+| Library | Version | Purpose             | When to Use                                 |
+| ------- | ------- | ------------------- | ------------------------------------------- |
+| zod     | ^4.3.6  | Job data validation | Validate SMS job payloads before processing |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Telnyx SDK | Direct fetch to REST API | SDK has built-in retry, types, error handling; fetch requires manual implementation |
-| BullMQ exponential | Custom backoff | Custom only if carrier-specific delays needed |
+
+| Instead of         | Could Use                | Tradeoff                                                                            |
+| ------------------ | ------------------------ | ----------------------------------------------------------------------------------- |
+| Telnyx SDK         | Direct fetch to REST API | SDK has built-in retry, types, error handling; fetch requires manual implementation |
+| BullMQ exponential | Custom backoff           | Custom only if carrier-specific delays needed                                       |
 
 **Installation:**
+
 ```bash
 cd backend && npm install telnyx
 ```
@@ -42,6 +46,7 @@ cd backend && npm install telnyx
 ## Architecture Patterns
 
 ### Recommended Project Structure
+
 ```
 backend/src/
 ├── workers/
@@ -56,9 +61,11 @@ backend/src/
 ```
 
 ### Pattern 1: Telnyx Service Layer
+
 **What:** Encapsulate Telnyx SDK initialization and SMS sending in a dedicated service
 **When to use:** Always - separates API concerns from worker logic
 **Example:**
+
 ```typescript
 // Source: Telnyx Node.js SDK docs + existing Edge Function pattern
 import Telnyx from 'telnyx';
@@ -93,9 +100,11 @@ export class TelnyxService {
 ```
 
 ### Pattern 2: Error Categorization for Retries
+
 **What:** Classify Telnyx errors as retryable (transient) vs unrecoverable (permanent)
 **When to use:** In worker processor to determine retry behavior
 **Example:**
+
 ```typescript
 // Source: Telnyx Error Codes documentation + BullMQ UnrecoverableError docs
 import { UnrecoverableError } from 'bullmq';
@@ -137,9 +146,11 @@ export function categorizeError(errorCode: string): 'unrecoverable' | 'retryable
 ```
 
 ### Pattern 3: Worker Processor with Error Handling
+
 **What:** BullMQ processor that handles SMS sending with proper error categorization
 **When to use:** As the main worker processor function
 **Example:**
+
 ```typescript
 // Source: BullMQ Workers docs + Telnyx error handling pattern
 import { Job, UnrecoverableError } from 'bullmq';
@@ -150,7 +161,7 @@ import { categorizeError } from '../config/telnyx.config.js';
 const telnyxService = new TelnyxService();
 
 export async function processSmsNotification(
-  job: Job<SmsNotificationJobData>
+  job: Job<SmsNotificationJobData>,
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const { phoneNumber, message, organizationId, alertId } = job.data;
 
@@ -175,7 +186,7 @@ export async function processSmsNotification(
     if (category === 'unrecoverable') {
       // Throw UnrecoverableError to skip remaining retries
       throw new UnrecoverableError(
-        `Permanent failure: ${errorCode} - ${extractErrorMessage(error)}`
+        `Permanent failure: ${errorCode} - ${extractErrorMessage(error)}`,
       );
     }
 
@@ -186,6 +197,7 @@ export async function processSmsNotification(
 ```
 
 ### Anti-Patterns to Avoid
+
 - **Hardcoding phone numbers:** Always use E.164 format validation before queuing
 - **Ignoring error codes:** Retrying unrecoverable errors wastes resources and may cause account issues
 - **No job deduplication:** Multiple alerts can trigger duplicate SMS - use alertId for idempotency
@@ -196,43 +208,48 @@ export async function processSmsNotification(
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Phone validation | Custom regex | E.164 regex from existing Edge Function | Edge cases with country codes |
-| Retry with backoff | Custom timers | BullMQ exponential backoff | Handles edge cases, jitter support |
-| Error categorization | If/else chains | Categorized error code sets | Maintainable, documented by Telnyx |
-| Rate limiting | Custom counters | BullMQ job options + limiter | Built-in, Redis-backed |
-| Webhook signature | Manual crypto | Telnyx SDK verifyWebhook | Security-critical, SDK handles edge cases |
+| Problem              | Don't Build     | Use Instead                             | Why                                       |
+| -------------------- | --------------- | --------------------------------------- | ----------------------------------------- |
+| Phone validation     | Custom regex    | E.164 regex from existing Edge Function | Edge cases with country codes             |
+| Retry with backoff   | Custom timers   | BullMQ exponential backoff              | Handles edge cases, jitter support        |
+| Error categorization | If/else chains  | Categorized error code sets             | Maintainable, documented by Telnyx        |
+| Rate limiting        | Custom counters | BullMQ job options + limiter            | Built-in, Redis-backed                    |
+| Webhook signature    | Manual crypto   | Telnyx SDK verifyWebhook                | Security-critical, SDK handles edge cases |
 
 **Key insight:** The existing Edge Function (`send-sms-alert`) already solved E.164 validation, error code mapping, rate limiting, and toll-free verification. Port these patterns rather than reinventing.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Not Using maxRetriesPerRequest: null for Workers
+
 **What goes wrong:** BullMQ workers fail with "max number of retries" Redis errors
 **Why it happens:** BullMQ uses blocking Redis operations (BRPOPLPUSH) that need unlimited retries
 **How to avoid:** Already implemented in Phase 15 worker entry point - verify it remains
 **Warning signs:** Worker crashes after Redis connection hiccup
 
 ### Pitfall 2: Retrying Opted-Out Numbers
+
 **What goes wrong:** Continued SMS attempts to numbers that sent STOP
 **Why it happens:** Not checking error code 40300 before retrying
 **How to avoid:** Throw UnrecoverableError for opted-out recipients
 **Warning signs:** Same number appearing in failed jobs repeatedly
 
 ### Pitfall 3: Missing Exponential Backoff Jitter
+
 **What goes wrong:** All retried jobs hit Telnyx API at same intervals
 **Why it happens:** Default exponential backoff without jitter causes thundering herd
 **How to avoid:** Add jitter option to backoff configuration
 **Warning signs:** Telnyx rate limit errors after incident recovery
 
 ### Pitfall 4: Not Handling Toll-Free Verification Status
+
 **What goes wrong:** SMS delivery blocked or degraded without warning
 **Why it happens:** Toll-free verification pending/rejected affects deliverability
 **How to avoid:** Log verification warnings but don't block sending (per existing Edge Function pattern)
 **Warning signs:** Sudden delivery failures with 40008 errors
 
 ### Pitfall 5: Hardcoding Messaging Profile ID
+
 **What goes wrong:** Wrong routing, messages blocked
 **Why it happens:** Different profiles for different number types
 **How to avoid:** Use environment variable TELNYX_MESSAGING_PROFILE_ID
@@ -243,6 +260,7 @@ Problems that look simple but have existing solutions:
 Verified patterns from official sources and existing codebase:
 
 ### Telnyx SDK Initialization
+
 ```typescript
 // Source: Telnyx Node.js SDK README
 import Telnyx from 'telnyx';
@@ -258,6 +276,7 @@ const client = new Telnyx({
 ```
 
 ### BullMQ Worker with Typed Job Data
+
 ```typescript
 // Source: BullMQ Workers documentation
 import { Worker, Job } from 'bullmq';
@@ -271,11 +290,12 @@ const worker = new Worker<SmsNotificationJobData, { success: boolean }>(
   {
     connection, // Must have maxRetriesPerRequest: null
     concurrency: 5,
-  }
+  },
 );
 ```
 
 ### Job Options with Exponential Backoff and Jitter
+
 ```typescript
 // Source: BullMQ Retrying Failed Jobs + existing jobs/index.ts
 export const smsJobOptions: JobsOptions = {
@@ -291,6 +311,7 @@ export const smsJobOptions: JobsOptions = {
 ```
 
 ### E.164 Phone Number Validation
+
 ```typescript
 // Source: Existing send-sms-alert Edge Function
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
@@ -301,12 +322,14 @@ export function validateE164(phone: string): boolean {
 ```
 
 ### Notification Delivery Database Update
+
 ```typescript
 // Source: Existing notification_deliveries schema
 import { db } from '../db/client.js';
 import { notificationDeliveries } from '../db/schema/notifications.js';
 
-await db.update(notificationDeliveries)
+await db
+  .update(notificationDeliveries)
   .set({
     status: 'sent',
     externalId: messageId,
@@ -317,13 +340,14 @@ await db.update(notificationDeliveries)
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Direct REST API calls | Telnyx SDK v4 with TypeScript | 2024 | Full type safety, auto-retry |
-| Bull v3 | BullMQ v5 | 2023 | Better TypeScript, flows, groups |
-| Custom backoff | BullMQ exponential with jitter | Native | Prevents thundering herd |
+| Old Approach          | Current Approach               | When Changed | Impact                           |
+| --------------------- | ------------------------------ | ------------ | -------------------------------- |
+| Direct REST API calls | Telnyx SDK v4 with TypeScript  | 2024         | Full type safety, auto-retry     |
+| Bull v3               | BullMQ v5                      | 2023         | Better TypeScript, flows, groups |
+| Custom backoff        | BullMQ exponential with jitter | Native       | Prevents thundering herd         |
 
 **Deprecated/outdated:**
+
 - Telnyx SDK v1/v2: Replaced by v4.x with Stainless-generated TypeScript
 - Bull (without MQ): BullMQ is the maintained successor
 
@@ -349,22 +373,26 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Telnyx Node.js SDK GitHub: https://github.com/team-telnyx/telnyx-node - Installation, TypeScript support, error handling
 - BullMQ Official Docs: https://docs.bullmq.io/guide/workers - Worker configuration, concurrency
 - BullMQ Retry Docs: https://docs.bullmq.io/guide/retrying-failing-jobs - Exponential backoff, jitter, UnrecoverableError
 - Telnyx Error Codes: https://support.telnyx.com/en/articles/6505121-telnyx-messaging-error-codes - Error categorization
 
 ### Secondary (MEDIUM confidence)
+
 - Existing Edge Function: `supabase/functions/send-sms-alert/index.ts` - E.164 validation, error mapping, rate limiting
 - Existing Webhook Handler: `supabase/functions/telnyx-webhook/index.ts` - Status handling, signature verification
 - Existing SMS Docs: `docs/engineering/SMS_NOTIFICATIONS.md` - System architecture, message lifecycle
 
 ### Tertiary (LOW confidence)
+
 - WebSearch for Telnyx SDK v4 specifics - Some details unverified with official docs
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - Telnyx SDK officially documented, BullMQ proven in codebase
 - Architecture: HIGH - Patterns derived from existing Edge Functions and BullMQ docs
 - Pitfalls: HIGH - Documented in Telnyx error codes and BullMQ production guide

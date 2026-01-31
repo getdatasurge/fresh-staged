@@ -25,10 +25,10 @@ affects: [phase-22, frontend-components, supabase-removal]
 tech-stack:
   added: []
   patterns:
-    - "useTRPC() + useQuery() pattern for queries"
-    - "useTRPCClient() + useMutation() pattern for mutations"
-    - "queryOptions() for cache key derivation"
-    - "isPending from mutation for loading states"
+    - 'useTRPC() + useQuery() pattern for queries'
+    - 'useTRPCClient() + useMutation() pattern for mutations'
+    - 'queryOptions() for cache key derivation'
+    - 'isPending from mutation for loading states'
 
 key-files:
   created:
@@ -51,13 +51,13 @@ key-files:
     - src/components/settings/AlertTypePolicyCard.tsx
 
 key-decisions:
-  - "HOOKS-01: TTN edge function hooks marked for future migration"
-  - "HOOKS-02: useEscalationContacts kept with Supabase (backend router not yet created)"
+  - 'HOOKS-01: TTN edge function hooks marked for future migration'
+  - 'HOOKS-02: useEscalationContacts kept with Supabase (backend router not yet created)'
 
 patterns-established:
-  - "Hook migration pattern: Remove supabase import, add useTRPC/useTRPCClient, convert queries to trpc.router.procedure.queryOptions()"
-  - "Mutation pattern: useMutation with client.router.procedure.mutate() in mutationFn"
-  - "Cache invalidation: Use trpc.router.procedure.queryOptions().queryKey for invalidation"
+  - 'Hook migration pattern: Remove supabase import, add useTRPC/useTRPCClient, convert queries to trpc.router.procedure.queryOptions()'
+  - 'Mutation pattern: useMutation with client.router.procedure.mutate() in mutationFn'
+  - 'Cache invalidation: Use trpc.router.procedure.queryOptions().queryKey for invalidation'
 
 # Metrics
 duration: 25min
@@ -97,16 +97,19 @@ Each task was committed atomically:
 ## Files Created/Modified
 
 ### Created
+
 - `src/hooks/usePreferences.ts` - tRPC hooks for digest preferences
 - `src/hooks/useSmsConfig.ts` - tRPC hooks for organization SMS config
 - `src/hooks/usePayments.ts` - tRPC hooks for Stripe billing operations
 
 ### Modified (Fully Migrated to tRPC)
+
 - `src/hooks/useNotificationPolicies.ts` - Replaced Supabase with tRPC for all policy operations
 - `src/hooks/useGateways.ts` - Replaced Supabase with tRPC for gateway management
 - `src/hooks/useLoraSensors.ts` - Replaced Supabase with tRPC for device management
 
 ### Modified (TODO Comments Updated)
+
 - `src/hooks/useTTNSettings.ts` - Updated TODO for future migration
 - `src/hooks/useTTNApiKey.ts` - Updated TODO for future migration
 - `src/hooks/useTTNWebhook.ts` - Updated TODO for future migration
@@ -118,20 +121,22 @@ Each task was committed atomically:
 - `src/hooks/useEscalationContacts.ts` - Updated TODO (backend router needed)
 
 ### Modified (Component Fix)
+
 - `src/components/settings/AlertTypePolicyCard.tsx` - Updated to use hook-based mutations
 
 ## Decisions Made
 
-| ID | Decision | Rationale |
-|----|----------|-----------|
+| ID       | Decision                                            | Rationale                                                                                     |
+| -------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | HOOKS-01 | TTN edge function hooks marked for future migration | Backend routers for edge functions not yet created (manage-ttn-settings, ttn-bootstrap, etc.) |
-| HOOKS-02 | useEscalationContacts kept with Supabase | escalationContacts router not yet available in backend |
+| HOOKS-02 | useEscalationContacts kept with Supabase            | escalationContacts router not yet available in backend                                        |
 
 ## Deviations from Plan
 
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Fixed AlertTypePolicyCard component to use hook-based mutations**
+
 - **Found during:** Verification (npm run build)
 - **Issue:** Component imported old `upsertNotificationPolicy` and `deleteNotificationPolicy` as direct functions, but hook file now exports `useUpsertNotificationPolicy` and `useDeleteNotificationPolicy` hooks
 - **Fix:** Updated component to use hooks with `useUpsertNotificationPolicy()` and `useDeleteNotificationPolicy()`, replaced state variables with mutation.isPending
@@ -161,10 +166,12 @@ None - no external service configuration required.
 - Ready for Phase 22 or frontend component migration
 
 ### Remaining Work (Future Phases)
+
 - TTN edge function hooks still use Supabase (8 files)
 - escalationContacts hook still uses Supabase
 - Numerous other hooks across codebase still need migration
 
 ---
-*Phase: 21-backend-api-migration-completion*
-*Completed: 2026-01-25*
+
+_Phase: 21-backend-api-migration-completion_
+_Completed: 2026-01-25_

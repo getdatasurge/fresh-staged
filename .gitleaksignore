@@ -1,0 +1,119 @@
+# Gitleaks baseline - all findings verified as false positives (2026-01-30)
+# Categories: documentation examples, test fixtures, placeholder API keys,
+# Supabase anon keys (public), example configs
+#
+# Regenerate baseline: gitleaks detect --source . --report-format json --report-path /tmp/gitleaks-report.json
+
+# .env - Supabase anon key (public, not a secret) and placeholder API key
+72d016eae58a1dd8d34247612503a264d1a0427f:.env:generic-api-key:3
+72d016eae58a1dd8d34247612503a264d1a0427f:.env:jwt:7
+
+# .env.production - placeholder/template values
+73fdf04190b2e29b1467332cd047f50d132858f7:.env.production:generic-api-key:52
+73fdf04190b2e29b1467332cd047f50d132858f7:.env.production:generic-api-key:56
+73fdf04190b2e29b1467332cd047f50d132858f7:.env.production:generic-api-key:105
+
+# Planning docs - example curl commands and placeholder keys
+72d016eae58a1dd8d34247612503a264d1a0427f:.planning/phases/14-real-time-foundation/14-06-PLAN.md:curl-auth-header:187
+578fc75a31e410c65d3332c1ae04cd9f57677635:.planning/phases/22-foundation-pre-flight/22-01-PLAN.md:curl-auth-header:162
+578fc75a31e410c65d3332c1ae04cd9f57677635:.planning/phases/22-foundation-pre-flight/22-02-PLAN.md:curl-auth-header:396
+a787f5709b7fd1da152ad426f27f2d641279e473:.planning/phases/24-interactive-configuration/24-03-PLAN.md:generic-api-key:209
+a787f5709b7fd1da152ad426f27f2d641279e473:.planning/phases/24-interactive-configuration/24-03-PLAN.md:stripe-access-token:211
+
+# Backend tests - mock/test API keys (not real secrets)
+4a919363b71071772381fc5327409e66191fb492:backend/tests/api/ttn-devices.test.ts:generic-api-key:170
+4a919363b71071772381fc5327409e66191fb492:backend/tests/services/ttn.service.test.ts:generic-api-key:166
+c14ba9cec2ebe4f3c1794a7c1b3f503fc8373f58:backend/tests/api/ttn-devices.test.ts:generic-api-key:604
+c14ba9cec2ebe4f3c1794a7c1b3f503fc8373f58:backend/tests/services/ttn-device-bootstrap.service.test.ts:generic-api-key:286
+c14ba9cec2ebe4f3c1794a7c1b3f503fc8373f58:backend/tests/services/ttn-device-bootstrap.service.test.ts:generic-api-key:306
+d8e9e343c48607fbcddcd5396c1aab5412e901b0:backend/tests/trpc/sms-config.router.test.ts:generic-api-key:142
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:backend/tests/api/sms-config.test.ts:generic-api-key:202
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:backend/tests/api/sms-config.test.ts:generic-api-key:391
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:backend/tests/api/sms-config.test.ts:generic-api-key:428
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:backend/tests/api/sms-config.test.ts:generic-api-key:488
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:backend/tests/api/ttn-devices.test.ts:generic-api-key:172
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:backend/tests/api/ttn-devices.test.ts:generic-api-key:604
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:backend/tests/services/email-digest.test.ts:generic-api-key:145
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:backend/tests/services/ttn-device-bootstrap.service.test.ts:generic-api-key:286
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:backend/tests/services/ttn-device-bootstrap.service.test.ts:generic-api-key:306
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:backend/tests/services/ttn.service.test.ts:generic-api-key:166
+7d374f1a2b94dfcdf9ea893b5fbde339703f83aa:backend/tests/trpc/ttn-devices.router.test.ts:generic-api-key:113
+7d374f1a2b94dfcdf9ea893b5fbde339703f83aa:backend/tests/trpc/ttn-devices.router.test.ts:generic-api-key:223
+
+# Frontend tests - mock API keys
+6bc1dab33f51ea336c9f9456cc2c60c15e447128:src/lib/actions/sensorEligibility.test.ts:generic-api-key:14
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:src/lib/actions/sensorEligibility.test.ts:generic-api-key:18
+72d016eae58a1dd8d34247612503a264d1a0427f:src/lib/actions/sensorEligibility.test.ts:generic-api-key:18
+
+# Documentation - example curl commands and placeholder keys
+6bc1dab33f51ea336c9f9456cc2c60c15e447128:docs/EMULATOR_QUICK_START.md:generic-api-key:278
+6bc1dab33f51ea336c9f9456cc2c60c15e447128:docs/EMULATOR_TTN_INTEGRATION.md:generic-api-key:78
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/EMULATOR_QUICK_START.md:curl-auth-header:196
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/EMULATOR_QUICK_START.md:curl-auth-header:224
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/EMULATOR_QUICK_START.md:curl-auth-header:302
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/EMULATOR_QUICK_START.md:generic-api-key:280
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/EMULATOR_TTN_INTEGRATION.md:curl-auth-header:514
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/EMULATOR_TTN_INTEGRATION.md:curl-auth-header:543
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/EMULATOR_TTN_INTEGRATION.md:generic-api-key:72
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/TTN_PRODUCTION_SETUP.md:generic-api-key:27
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/EMULATOR_QUICK_START.md:curl-auth-header:196
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/EMULATOR_QUICK_START.md:curl-auth-header:224
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/EMULATOR_QUICK_START.md:curl-auth-header:302
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/EMULATOR_QUICK_START.md:generic-api-key:280
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/EMULATOR_TTN_INTEGRATION.md:curl-auth-header:514
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/EMULATOR_TTN_INTEGRATION.md:curl-auth-header:543
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/EMULATOR_TTN_INTEGRATION.md:generic-api-key:72
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/TTN_PRODUCTION_SETUP.md:generic-api-key:27
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/engineering/SMS_NOTIFICATIONS.md:generic-api-key:118
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/engineering/SMS_NOTIFICATIONS.md:generic-api-key:118
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/qa/E2E_SCENARIOS.md:generic-api-key:40
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/qa/E2E_SCENARIOS.md:generic-api-key:40
+
+# Documentation - generated build artifacts
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/_build/FreshTrackPro-Documentation.html:curl-auth-header:6850
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/_build/FreshTrackPro-Documentation.html:curl-auth-header:6903
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/_build/FreshTrackPro-Documentation.html:curl-auth-header:6969
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/_build/FreshTrackPro-Documentation.html:curl-auth-header:7026
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/_build/FreshTrackPro-Documentation.html:generic-api-key:4289
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/_build/FreshTrackPro-Documentation.md:curl-auth-header:15266
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/_build/FreshTrackPro-Documentation.md:curl-auth-header:15377
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/_build/FreshTrackPro-Documentation.md:curl-auth-header:15532
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/_build/FreshTrackPro-Documentation.md:curl-auth-header:15651
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/_build/FreshTrackPro-Documentation.md:generic-api-key:9993
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/_build/FreshTrackPro-Documentation.html:curl-auth-header:6850
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/_build/FreshTrackPro-Documentation.html:curl-auth-header:6903
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/_build/FreshTrackPro-Documentation.html:curl-auth-header:6969
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/_build/FreshTrackPro-Documentation.html:curl-auth-header:7026
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/_build/FreshTrackPro-Documentation.html:generic-api-key:4289
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/_build/FreshTrackPro-Documentation.md:curl-auth-header:15266
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/_build/FreshTrackPro-Documentation.md:curl-auth-header:15377
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/_build/FreshTrackPro-Documentation.md:curl-auth-header:15532
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/_build/FreshTrackPro-Documentation.md:curl-auth-header:15651
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/_build/FreshTrackPro-Documentation.md:generic-api-key:9993
+
+# Operations runbooks - example curl commands
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/operations/RUNBOOKS.md:curl-auth-header:336
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/operations/RUNBOOKS.md:curl-auth-header:506
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/operations/RUNBOOKS.md:curl-auth-header:671
+72d016eae58a1dd8d34247612503a264d1a0427f:docs/operations/RUNBOOKS.md:curl-auth-header:790
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/operations/RUNBOOKS.md:curl-auth-header:336
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/operations/RUNBOOKS.md:curl-auth-header:506
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/operations/RUNBOOKS.md:curl-auth-header:671
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:docs/operations/RUNBOOKS.md:curl-auth-header:790
+
+# Scripts - example/placeholder values
+317c35ab1b513a32ce476edbf363ea80a535ce86:scripts/lib/preflight-lib.sh:curl-auth-header:181
+72d016eae58a1dd8d34247612503a264d1a0427f:scripts/deploy.config.example:stripe-access-token:53
+72d016eae58a1dd8d34247612503a264d1a0427f:scripts/setup-ttn-secrets.sh:generic-api-key:30
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:scripts/deploy.config.example:stripe-access-token:53
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:scripts/setup-ttn-secrets.sh:generic-api-key:30
+
+# Supabase edge functions - header parsing, not secrets
+72d016eae58a1dd8d34247612503a264d1a0427f:supabase/functions/org-state-api/index.ts:curl-auth-header:10
+72d016eae58a1dd8d34247612503a264d1a0427f:supabase/functions/org-state-api/index.ts:curl-auth-header:17
+72d016eae58a1dd8d34247612503a264d1a0427f:supabase/functions/org-state-api/index.ts:curl-auth-header:21
+72d016eae58a1dd8d34247612503a264d1a0427f:supabase/functions/update-sensor-assignment/index.ts:curl-auth-header:8
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:supabase/functions/org-state-api/index.ts:curl-auth-header:10
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:supabase/functions/org-state-api/index.ts:curl-auth-header:17
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:supabase/functions/org-state-api/index.ts:curl-auth-header:21
+dfcce0ebd3ad1b6dcdae9cf6477c5e5dad429af1:supabase/functions/update-sensor-assignment/index.ts:curl-auth-header:8

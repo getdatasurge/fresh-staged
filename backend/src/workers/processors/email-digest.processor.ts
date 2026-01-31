@@ -44,17 +44,13 @@ export interface ProcessEmailDigestResult {
  * @returns Processing result with success status and optional messageId
  */
 export async function processEmailDigest(
-  job: Job<EmailDigestJobData>
+  job: Job<EmailDigestJobData>,
 ): Promise<ProcessEmailDigestResult> {
   const { userId, organizationId, period } = job.data;
   console.log(`[Email Digest] Processing ${period} digest for user ${userId}`);
 
   // Get user profile
-  const [user] = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.userId, userId))
-    .limit(1);
+  const [user] = await db.select().from(profiles).where(eq(profiles.userId, userId)).limit(1);
 
   if (!user) {
     console.warn(`[Email Digest] User ${userId} not found - skipping`);
@@ -103,7 +99,7 @@ export async function processEmailDigest(
     period,
     startDate,
     endDate,
-    siteIds
+    siteIds,
   );
 
   // Skip if no alerts (don't send empty digests)
@@ -153,7 +149,7 @@ export async function processEmailDigest(
   }
 
   console.log(
-    `[Email Digest] Sent ${period} digest to ${user.email} - messageId: ${result.messageId}`
+    `[Email Digest] Sent ${period} digest to ${user.email} - messageId: ${result.messageId}`,
   );
   return { success: true, messageId: result.messageId };
 }

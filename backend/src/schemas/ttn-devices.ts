@@ -23,7 +23,7 @@ export const TTNDeviceIdSchema = z
   .max(36)
   .regex(
     /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/,
-    'Device ID must be lowercase alphanumeric with optional hyphens, cannot start or end with hyphen'
+    'Device ID must be lowercase alphanumeric with optional hyphens, cannot start or end with hyphen',
   );
 
 // Frequency plan IDs supported by TTN

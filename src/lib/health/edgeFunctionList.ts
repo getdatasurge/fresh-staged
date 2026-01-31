@@ -2,7 +2,7 @@ import { EdgeFunctionInfo } from './types';
 
 /**
  * Comprehensive list of all Edge Functions with their health check configuration.
- * 
+ *
  * Check methods:
  * - GET: Function supports GET requests for health checks
  * - POST: Function only accepts POST, but we can test with empty body
@@ -217,19 +217,19 @@ export const EDGE_FUNCTIONS: EdgeFunctionInfo[] = [
  * Get functions that support GET health checks
  */
 export function getTestableEdgeFunctions(): EdgeFunctionInfo[] {
-  return EDGE_FUNCTIONS.filter(f => f.checkMethod === 'GET');
+  return EDGE_FUNCTIONS.filter((f) => f.checkMethod === 'GET');
 }
 
 /**
  * Get functions that should be skipped
  */
 export function getSkippedEdgeFunctions(): EdgeFunctionInfo[] {
-  return EDGE_FUNCTIONS.filter(f => f.checkMethod === 'skip');
+  return EDGE_FUNCTIONS.filter((f) => f.checkMethod === 'skip');
 }
 
 /**
  * Get critical functions only
  */
 export function getCriticalEdgeFunctions(): EdgeFunctionInfo[] {
-  return EDGE_FUNCTIONS.filter(f => f.critical);
+  return EDGE_FUNCTIONS.filter((f) => f.critical);
 }

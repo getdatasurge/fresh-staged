@@ -32,13 +32,13 @@ key-files:
     - scripts/migration/src/verify.ts
 
 key-decisions:
-  - "Used MD5 aggregation for deterministic table checksums"
-  - "Exclude user ID columns from checksum (IDs differ after mapping)"
-  - "Pass/Fail/Warn status: Pass=match, Fail=mismatch, Warn=checksum not computed"
+  - 'Used MD5 aggregation for deterministic table checksums'
+  - 'Exclude user ID columns from checksum (IDs differ after mapping)'
+  - 'Pass/Fail/Warn status: Pass=match, Fail=mismatch, Warn=checksum not computed'
 
 patterns-established:
-  - "Checksum exclusion: Tables with user ID columns use computeChecksumExcludingColumns"
-  - "Verification report: JSON with per-table results and summary counts"
+  - 'Checksum exclusion: Tables with user ID columns use computeChecksumExcludingColumns'
+  - 'Verification report: JSON with per-table results and summary counts'
 
 # Metrics
 duration: 2min
@@ -58,6 +58,7 @@ completed: 2026-01-23
 - **Files created/modified:** 2
 
 ## Accomplishments
+
 - Checksum utilities for deterministic data integrity verification
 - CLI verification script with --output, --table, --skip-checksum, --fail-fast options
 - Row count comparison for all 24 tables in import order
@@ -73,10 +74,12 @@ Each task was committed atomically:
 2. **Task 2: Create main verification script** - `6977090` (feat)
 
 ## Files Created/Modified
+
 - `scripts/migration/lib/checksum.ts` - Checksum computation utilities (getTableRowCount, computeTableChecksum, computeChecksumExcludingColumns, compareTableStats)
 - `scripts/migration/src/verify.ts` - Main verification CLI comparing source and target databases
 
 ## Decisions Made
+
 - **MD5 aggregation for checksums:** Used `md5(string_agg(md5(row), '' ORDER BY md5(row)))` for deterministic table-level checksum
 - **User ID exclusion:** Tables in TABLES_WITH_USER_IDS have those columns excluded from checksum since IDs differ after migration mapping
 - **Three-state result:** Pass (match), Fail (mismatch), Warn (checksum couldn't be computed but row counts match)
@@ -93,14 +96,17 @@ None.
 ## User Setup Required
 
 None - no external service configuration required. The verification script uses the same environment variables as export/import scripts:
+
 - `SUPABASE_DB_URL` - Source database connection string
 - `DATABASE_URL` - Target database connection string
 
 ## Next Phase Readiness
+
 - Complete migration toolchain: export, import, verify scripts
 - Ready for Phase 6 completion and Phase 7 cutover planning
 - Verification script is the final gate before production cutover
 
 ---
-*Phase: 06-data-migration-scripts*
-*Completed: 2026-01-23*
+
+_Phase: 06-data-migration-scripts_
+_Completed: 2026-01-23_

@@ -1,30 +1,26 @@
-import { useState } from "react";
-import { useUser } from "@stackframe/react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { useState } from 'react';
+import { useUser } from '@stackframe/react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { useUpdateUnit } from "@/hooks/useUnits";
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+import { useUpdateUnit } from '@/hooks/useUnits';
 import {
   Settings,
   ChevronDown,
@@ -33,7 +29,7 @@ import {
   Loader2,
   Thermometer,
   DoorOpen,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface UnitSettingsSectionProps {
   unitId: string;
@@ -50,12 +46,12 @@ interface UnitSettingsSectionProps {
 }
 
 const unitTypeLabels: Record<string, string> = {
-  fridge: "Fridge",
-  freezer: "Freezer",
-  display_case: "Display Case",
-  walk_in_cooler: "Walk-in Cooler",
-  walk_in_freezer: "Walk-in Freezer",
-  blast_chiller: "Blast Chiller",
+  fridge: 'Fridge',
+  freezer: 'Freezer',
+  display_case: 'Display Case',
+  walk_in_cooler: 'Walk-in Cooler',
+  walk_in_freezer: 'Walk-in Freezer',
+  blast_chiller: 'Blast Chiller',
 };
 
 export default function UnitSettingsSection({
@@ -71,7 +67,6 @@ export default function UnitSettingsSection({
   doorOpenGraceMinutes = 20,
   onSettingsUpdated,
 }: UnitSettingsSectionProps) {
-  const { toast } = useToast();
   const user = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -83,19 +78,19 @@ export default function UnitSettingsSection({
   // Edit form state
   const [editUnitType, setEditUnitType] = useState(unitType);
   const [editLowLimit, setEditLowLimit] = useState(
-    tempLimitLow !== null ? tempLimitLow.toString() : ""
+    tempLimitLow !== null ? tempLimitLow.toString() : '',
   );
   const [editHighLimit, setEditHighLimit] = useState(tempLimitHigh.toString());
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const formatTemp = (temp: number | null) => {
-    if (temp === null) return "Not set";
+    if (temp === null) return 'Not set';
     return `${temp}°F`;
   };
 
   const openEditModal = () => {
     setEditUnitType(unitType);
-    setEditLowLimit(tempLimitLow !== null ? tempLimitLow.toString() : "");
+    setEditLowLimit(tempLimitLow !== null ? tempLimitLow.toString() : '');
     setEditHighLimit(tempLimitHigh.toString());
     setValidationError(null);
     setShowEditModal(true);
@@ -106,12 +101,12 @@ export default function UnitSettingsSection({
     const highVal = parseFloat(editHighLimit);
 
     if (isNaN(highVal)) {
-      setValidationError("High limit is required");
+      setValidationError('High limit is required');
       return;
     }
 
     if (lowVal !== null && lowVal >= highVal) {
-      setValidationError("Low limit must be less than high limit");
+      setValidationError('Low limit must be less than high limit');
       return;
     }
 
@@ -120,19 +115,17 @@ export default function UnitSettingsSection({
 
     // Check authentication
     if (!user) {
-      toast({ title: "Not authenticated", variant: "destructive" });
+      toast.error('Not authenticated');
       setIsSaving(false);
       return;
     }
 
     // Check for changes
     const hasChanges =
-      editUnitType !== unitType ||
-      lowVal !== tempLimitLow ||
-      highVal !== tempLimitHigh;
+      editUnitType !== unitType || lowVal !== tempLimitLow || highVal !== tempLimitHigh;
 
     if (!hasChanges) {
-      toast({ title: "No changes to save" });
+      toast('No changes to save');
       setShowEditModal(false);
       setIsSaving(false);
       return;
@@ -147,27 +140,28 @@ export default function UnitSettingsSection({
         areaId,
         unitId,
         data: {
-          unitType: editUnitType as 'fridge' | 'freezer' | 'display_case' | 'walk_in_cooler' | 'walk_in_freezer' | 'blast_chiller',
+          unitType: editUnitType as
+            | 'fridge'
+            | 'freezer'
+            | 'display_case'
+            | 'walk_in_cooler'
+            | 'walk_in_freezer'
+            | 'blast_chiller',
           tempMin: lowVal !== null ? Math.round(lowVal) : undefined,
           tempMax: Math.round(highVal),
         },
       });
 
-      toast({ title: "Unit settings updated" });
+      toast.success('Unit settings updated');
       setShowEditModal(false);
       onSettingsUpdated();
     } catch (error: any) {
-      console.error("Save error:", error);
-      toast({
-        title: "Failed to save settings",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error('Save error:', error);
+      toast.error('Failed to save settings', { description: error.message });
     }
 
     setIsSaving(false);
   };
-
 
   return (
     <>
@@ -183,7 +177,8 @@ export default function UnitSettingsSection({
                 <div className="flex items-center gap-2">
                   {!isOpen && (
                     <span className="text-sm text-muted-foreground hidden sm:inline">
-                      {unitTypeLabels[unitType] || unitType} · Low: {formatTemp(tempLimitLow)} · High: {formatTemp(tempLimitHigh)}
+                      {unitTypeLabels[unitType] || unitType} · Low: {formatTemp(tempLimitLow)} ·
+                      High: {formatTemp(tempLimitHigh)}
                     </span>
                   )}
                   {isOpen ? (
@@ -227,7 +222,9 @@ export default function UnitSettingsSection({
                   <DoorOpen className="w-4 h-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Door Sensor</p>
-                    <p className="font-medium">{doorSensorEnabled ? `On (${doorOpenGraceMinutes}m grace)` : "Off"}</p>
+                    <p className="font-medium">
+                      {doorSensorEnabled ? `On (${doorOpenGraceMinutes}m grace)` : 'Off'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -278,9 +275,7 @@ export default function UnitSettingsSection({
                   value={editLowLimit}
                   onChange={(e) => setEditLowLimit(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Negative values for freezers
-                </p>
+                <p className="text-xs text-muted-foreground">Negative values for freezers</p>
               </div>
               <div className="space-y-2">
                 <Label>High Limit (°F)</Label>
@@ -294,9 +289,7 @@ export default function UnitSettingsSection({
               </div>
             </div>
 
-            {validationError && (
-              <p className="text-sm text-destructive">{validationError}</p>
-            )}
+            {validationError && <p className="text-sm text-destructive">{validationError}</p>}
           </div>
 
           <DialogFooter>
@@ -310,7 +303,6 @@ export default function UnitSettingsSection({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </>
   );
 }

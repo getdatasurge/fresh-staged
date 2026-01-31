@@ -16,40 +16,43 @@ score: 5/5 must-haves verified
 
 ### Observable Truths
 
-| # | Truth | Status | Evidence |
-|---|-------|--------|----------|
-| 1 | No uncaught promise rejection from ServiceWorker registration in browser console | ✓ VERIFIED | onRegisterError callback catches errors at line 8 of ServiceWorkerRegistration.tsx |
-| 2 | ServiceWorker registration succeeds (valid SSL) or fails silently with console.info log | ✓ VERIFIED | onRegisteredSW logs success, onRegisterError logs failure with console.info (not console.error) |
-| 3 | App loads and functions identically with or without ServiceWorker | ✓ VERIFIED | Component returns null (no UI), renders before providers (no dependencies) |
-| 4 | PWA install prompt still works when SSL is valid (future domain setup) | ✓ VERIFIED | injectRegister: false only disables auto-script, SW still generated (dist/sw.js exists), registerType: "autoUpdate" preserved |
-| 5 | pnpm run build succeeds | ✓ VERIFIED | Build completed successfully in 11.36s, generated dist/sw.js (2.0K) |
+| #   | Truth                                                                                   | Status     | Evidence                                                                                                                      |
+| --- | --------------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 1   | No uncaught promise rejection from ServiceWorker registration in browser console        | ✓ VERIFIED | onRegisterError callback catches errors at line 8 of ServiceWorkerRegistration.tsx                                            |
+| 2   | ServiceWorker registration succeeds (valid SSL) or fails silently with console.info log | ✓ VERIFIED | onRegisteredSW logs success, onRegisterError logs failure with console.info (not console.error)                               |
+| 3   | App loads and functions identically with or without ServiceWorker                       | ✓ VERIFIED | Component returns null (no UI), renders before providers (no dependencies)                                                    |
+| 4   | PWA install prompt still works when SSL is valid (future domain setup)                  | ✓ VERIFIED | injectRegister: false only disables auto-script, SW still generated (dist/sw.js exists), registerType: "autoUpdate" preserved |
+| 5   | pnpm run build succeeds                                                                 | ✓ VERIFIED | Build completed successfully in 11.36s, generated dist/sw.js (2.0K)                                                           |
 
 **Score:** 5/5 truths verified
 
 ### Required Artifacts
 
-| Artifact | Expected | Status | Details |
-|----------|----------|--------|---------|
-| `vite.config.ts` | VitePWA config with injectRegister: false | ✓ VERIFIED | Line 19: `injectRegister: false,` present, registerType: "autoUpdate" preserved |
-| `src/vite-env.d.ts` | TypeScript type declarations for PWA virtual module | ✓ VERIFIED | Contains both `/// <reference types="vite/client" />` and `/// <reference types="vite-plugin-pwa/client" />` |
+| Artifact                                       | Expected                                                   | Status     | Details                                                                                                                         |
+| ---------------------------------------------- | ---------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `vite.config.ts`                               | VitePWA config with injectRegister: false                  | ✓ VERIFIED | Line 19: `injectRegister: false,` present, registerType: "autoUpdate" preserved                                                 |
+| `src/vite-env.d.ts`                            | TypeScript type declarations for PWA virtual module        | ✓ VERIFIED | Contains both `/// <reference types="vite/client" />` and `/// <reference types="vite-plugin-pwa/client" />`                    |
 | `src/components/ServiceWorkerRegistration.tsx` | React component with useRegisterSW hook and error handling | ✓ VERIFIED | 13 lines, imports useRegisterSW from virtual:pwa-register/react, has onRegisteredSW and onRegisterError callbacks, returns null |
-| `src/App.tsx` | App root rendering ServiceWorkerRegistration component | ✓ VERIFIED | Line 2 imports component, line 96 renders `<ServiceWorkerRegistration />` inside Suspense boundary before providers |
+| `src/App.tsx`                                  | App root rendering ServiceWorkerRegistration component     | ✓ VERIFIED | Line 2 imports component, line 96 renders `<ServiceWorkerRegistration />` inside Suspense boundary before providers             |
 
 **Artifact Verification:**
 
 #### vite.config.ts
+
 - **Exists:** YES (108 lines)
 - **Substantive:** YES (complete VitePWA config with manifest, workbox settings)
 - **Wired:** YES (imported by Vite build system, generates dist/sw.js)
 - **Contains required pattern:** YES (line 19: `injectRegister: false,`)
 
 #### src/vite-env.d.ts
+
 - **Exists:** YES (2 lines)
 - **Substantive:** YES (both required type references present)
 - **Wired:** YES (used by TypeScript compiler for virtual module types)
 - **Contains required pattern:** YES (line 2: `/// <reference types="vite-plugin-pwa/client" />`)
 
 #### src/components/ServiceWorkerRegistration.tsx
+
 - **Exists:** YES (13 lines)
 - **Substantive:** YES (complete React component with error handling)
 - **Wired:** YES (imported and rendered in App.tsx line 96)
@@ -57,6 +60,7 @@ score: 5/5 must-haves verified
 - **No stub patterns:** VERIFIED (no TODO, placeholder, or console-only logic)
 
 #### src/App.tsx
+
 - **Exists:** YES (374 lines)
 - **Substantive:** YES (complete application root with routing)
 - **Wired:** YES (application entry point)
@@ -64,11 +68,11 @@ score: 5/5 must-haves verified
 
 ### Key Link Verification
 
-| From | To | Via | Status | Details |
-|------|----|----|--------|---------|
-| src/components/ServiceWorkerRegistration.tsx | virtual:pwa-register/react | import useRegisterSW hook | ✓ WIRED | Line 1: `import { useRegisterSW } from 'virtual:pwa-register/react'`, hook called on line 4 with callbacks |
-| src/App.tsx | src/components/ServiceWorkerRegistration.tsx | import and render component | ✓ WIRED | Line 2 imports component, line 96 renders it inside Suspense boundary |
-| vite.config.ts | build output | injectRegister: false prevents auto-generated registerSW.js script | ✓ WIRED | Line 19 config verified, dist/index.html has 0 occurrences of 'registerSW' (no auto-injected script) |
+| From                                         | To                                           | Via                                                                | Status  | Details                                                                                                    |
+| -------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------- |
+| src/components/ServiceWorkerRegistration.tsx | virtual:pwa-register/react                   | import useRegisterSW hook                                          | ✓ WIRED | Line 1: `import { useRegisterSW } from 'virtual:pwa-register/react'`, hook called on line 4 with callbacks |
+| src/App.tsx                                  | src/components/ServiceWorkerRegistration.tsx | import and render component                                        | ✓ WIRED | Line 2 imports component, line 96 renders it inside Suspense boundary                                      |
+| vite.config.ts                               | build output                                 | injectRegister: false prevents auto-generated registerSW.js script | ✓ WIRED | Line 19 config verified, dist/index.html has 0 occurrences of 'registerSW' (no auto-injected script)       |
 
 **Link Verification Details:**
 
@@ -85,15 +89,15 @@ score: 5/5 must-haves verified
 3. **vite.config.ts → build output**
    - Config applied: YES (injectRegister: false on line 19)
    - Auto-script disabled: YES (grep 'registerSW' dist/index.html returned 0)
-   - Virtual module bundled: YES (grep 'Registration unavailable' dist/assets/index-*.js returned 1)
+   - Virtual module bundled: YES (grep 'Registration unavailable' dist/assets/index-\*.js returned 1)
    - SW file generated: YES (dist/sw.js exists, 2.0K)
 
 ### Requirements Coverage
 
-| Requirement | Status | Evidence |
-|-------------|--------|----------|
-| SW-01: ServiceWorker registration failure on self-signed cert does not produce uncaught promise rejection | ✓ SATISFIED | onRegisterError callback catches all registration errors |
-| SW-02: App functions normally when ServiceWorker registration is unavailable | ✓ SATISFIED | Component returns null (no UI impact), placed before providers (no dependencies) |
+| Requirement                                                                                               | Status      | Evidence                                                                         |
+| --------------------------------------------------------------------------------------------------------- | ----------- | -------------------------------------------------------------------------------- |
+| SW-01: ServiceWorker registration failure on self-signed cert does not produce uncaught promise rejection | ✓ SATISFIED | onRegisterError callback catches all registration errors                         |
+| SW-02: App functions normally when ServiceWorker registration is unavailable                              | ✓ SATISFIED | Component returns null (no UI impact), placed before providers (no dependencies) |
 
 ### Anti-Patterns Found
 
@@ -111,12 +115,12 @@ score: 5/5 must-haves verified
 
 ### Human Verification Required
 
-| Test | Expected | Why Human |
-|------|----------|-----------|
-| 1. Test on self-signed SSL | Open browser to https://192.168.4.181, check console - should see `[SW] Registration unavailable:` message (console.info, not uncaught error) | Need browser runtime environment |
-| 2. Test on valid SSL | Deploy to valid domain, check console - should see `[SW] Registered:` message | Need valid SSL environment |
-| 3. Verify app functionality | With or without SW registration, app should load dashboard, display data, allow navigation | Need to interact with running app |
-| 4. PWA install prompt | On valid SSL, browser should offer "Install app" prompt | Need valid SSL + browser PWA support |
+| Test                        | Expected                                                                                                                                      | Why Human                            |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| 1. Test on self-signed SSL  | Open browser to https://192.168.4.181, check console - should see `[SW] Registration unavailable:` message (console.info, not uncaught error) | Need browser runtime environment     |
+| 2. Test on valid SSL        | Deploy to valid domain, check console - should see `[SW] Registered:` message                                                                 | Need valid SSL environment           |
+| 3. Verify app functionality | With or without SW registration, app should load dashboard, display data, allow navigation                                                    | Need to interact with running app    |
+| 4. PWA install prompt       | On valid SSL, browser should offer "Install app" prompt                                                                                       | Need valid SSL + browser PWA support |
 
 ---
 
@@ -125,6 +129,7 @@ score: 5/5 must-haves verified
 **All must-haves verified.** Phase goal achieved.
 
 The implementation correctly:
+
 1. Disables auto-injected registerSW.js script (which had no error handling)
 2. Uses virtual:pwa-register/react hook with onRegisterError callback
 3. Logs registration failures gracefully via console.info (not console.error)

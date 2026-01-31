@@ -31,13 +31,13 @@ key-files:
     - scripts/lib/preflight-lib.sh
 
 key-decisions:
-  - "Use getent ahostsv4 as fallback when dig is unavailable for portability"
-  - "DNS validation is optional in run_preflight_checks (domain may not be configured during preflight)"
-  - "Multiple public IP detection services for reliability (ifconfig.me, icanhazip.com, ipinfo.io)"
+  - 'Use getent ahostsv4 as fallback when dig is unavailable for portability'
+  - 'DNS validation is optional in run_preflight_checks (domain may not be configured during preflight)'
+  - 'Multiple public IP detection services for reliability (ifconfig.me, icanhazip.com, ipinfo.io)'
 
 patterns-established:
-  - "PREFLIGHT-06: DNS validation pattern with A record guidance"
-  - "Optional parameter pattern for staged validation (preflight vs deploy-time)"
+  - 'PREFLIGHT-06: DNS validation pattern with A record guidance'
+  - 'Optional parameter pattern for staged validation (preflight vs deploy-time)'
 
 # Metrics
 duration: 5min
@@ -57,6 +57,7 @@ completed: 2026-01-25
 - **Files modified:** 1
 
 ## Accomplishments
+
 - PREFLIGHT-06: validate_dns function checks domain resolves to server's public IP
 - DNS validation shows clear A record configuration instructions on failure
 - run_preflight_checks accepts optional domain parameter for DNS validation
@@ -72,6 +73,7 @@ All tasks committed together as single feature:
 3. **Task 3: Add DNS validation to self-tests** - `f1ffcaa` (feat)
 
 ## Files Created/Modified
+
 - `scripts/lib/preflight-lib.sh` - Added validate_dns, run_dns_check functions, updated run_preflight_checks, added DNS self-tests
 
 ## Decisions Made
@@ -89,6 +91,7 @@ All tasks committed together as single feature:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Added getent fallback for dig**
+
 - **Found during:** Task 1 (validate_dns implementation)
 - **Issue:** dig command not available in development environment, and apt-get install requires sudo
 - **Fix:** Added getent ahostsv4 as fallback when dig is not available. getent is part of glibc and universally available.
@@ -102,6 +105,7 @@ All tasks committed together as single feature:
 **Impact on plan:** Enhanced portability - DNS validation now works on more systems without manual package installation.
 
 ## Issues Encountered
+
 - dig not installed in dev environment and sudo unavailable for apt-get - resolved by adding getent fallback (see deviation above)
 - ERR trap firing on expected failures during testing - resolved by disabling trap in self-test block for expected failure tests
 
@@ -110,11 +114,13 @@ All tasks committed together as single feature:
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - DNS validation complete and tested
 - Integrates with existing preflight checks (RAM, disk, CPU, OS, network)
 - Ready for Phase 22-05 verification and integration
 - Checkpoint and progress functions from 22-03 available for orchestration
 
 ---
-*Phase: 22-foundation-pre-flight*
-*Completed: 2026-01-25*
+
+_Phase: 22-foundation-pre-flight_
+_Completed: 2026-01-25_

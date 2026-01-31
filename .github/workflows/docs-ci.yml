@@ -59,7 +59,7 @@ jobs:
       - name: Generate documentation (deterministic mode)
         run: npm run docs:generate
         env:
-          CI: 'true'  # Ensures deterministic output (no timestamps)
+          CI: 'true' # Ensures deterministic output (no timestamps)
 
       - name: Check for uncommitted changes
         run: |

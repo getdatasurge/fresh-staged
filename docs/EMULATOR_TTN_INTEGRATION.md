@@ -17,34 +17,39 @@ FreshTrack Pro (Project 1) syncs user data to the emulator including their organ
 
 ```typescript
 {
-  users: [{
-    // User Identity
-    user_id: string,              // "550e8400-e29b-41d4-a716-446655440000"
-    email: string,                // "user@example.com"
-    full_name: string | null,     // "John Doe"
+  users: [
+    {
+      // User Identity
+      user_id: string, // "550e8400-e29b-41d4-a716-446655440000"
+      email: string, // "user@example.com"
+      full_name: string | null, // "John Doe"
 
-    // Organization & Location
-    organization_id: string | null,   // "org-uuid" (critical for TTN)
-    site_id: string | null,           // Current/default site
-    unit_id: string | null,           // Current/default unit
-    default_site_id: string | null,   // User's preferred site
-    user_sites: [{                    // All sites user has access to
-      site_id: string,
-      site_name: string
-    }],
+      // Organization & Location
+      organization_id: string | null, // "org-uuid" (critical for TTN)
+      site_id: string | null, // Current/default site
+      unit_id: string | null, // Current/default unit
+      default_site_id: string | null, // User's preferred site
+      user_sites: [
+        {
+          // All sites user has access to
+          site_id: string,
+          site_name: string,
+        },
+      ],
 
-    // Sync Metadata
-    updated_at: string,           // "2025-12-31T21:00:00.000Z"
+      // Sync Metadata
+      updated_at: string, // "2025-12-31T21:00:00.000Z"
 
-    // TTN Configuration (NEW)
-    ttn: {
-      enabled: boolean,           // Is TTN integration active for this org?
-      cluster: string,            // "nam1" | "eu1" | "au1" | "as1"
-      application_id: string | null,  // "ft-acme-corp" (org's TTN app)
-      api_key: string | null,     // "NNSXS.BMG4N2AJ43HN4YVPZ6DLQAPHVHU..." (FULL KEY)
-      api_key_last4: string | null    // "VZRWQ" (for display/logging only)
-    }
-  }]
+      // TTN Configuration (NEW)
+      ttn: {
+        enabled: boolean, // Is TTN integration active for this org?
+        cluster: string, // "nam1" | "eu1" | "au1" | "as1"
+        application_id: string | null, // "ft-acme-corp" (org's TTN app)
+        api_key: string | null, // "NNSXS.BMG4N2AJ43HN4YVPZ6DLQAPHVHU..." (FULL KEY)
+        api_key_last4: string | null, // "VZRWQ" (for display/logging only)
+      },
+    },
+  ];
 }
 ```
 
@@ -52,27 +57,29 @@ FreshTrack Pro (Project 1) syncs user data to the emulator including their organ
 
 ```json
 {
-  "users": [{
-    "user_id": "550e8400-e29b-41d4-a716-446655440000",
-    "email": "peter@sustainablefinishes.com",
-    "full_name": "Peter Smith",
-    "organization_id": "org-123",
-    "site_id": "site-456",
-    "unit_id": "unit-789",
-    "default_site_id": "site-456",
-    "user_sites": [
-      { "site_id": "site-456", "site_name": "Main Kitchen" },
-      { "site_id": "site-999", "site_name": "Storage Room" }
-    ],
-    "updated_at": "2025-12-31T21:30:00.000Z",
-    "ttn": {
-      "enabled": true,
-      "cluster": "eu1",
-      "application_id": "ft-sustainablefinishes",
-      "api_key": "NNSXS.BMG4N2AJ43HN4YVPZ6DLQAPHVHUZBVPTOB37JFQ.FHBMPAB26Q2XM4QVBE4GBQ772NBIYP5MGOKCBBOM5NTCCMCJZRWQ",
-      "api_key_last4": "ZRWQ"
+  "users": [
+    {
+      "user_id": "550e8400-e29b-41d4-a716-446655440000",
+      "email": "peter@sustainablefinishes.com",
+      "full_name": "Peter Smith",
+      "organization_id": "org-123",
+      "site_id": "site-456",
+      "unit_id": "unit-789",
+      "default_site_id": "site-456",
+      "user_sites": [
+        { "site_id": "site-456", "site_name": "Main Kitchen" },
+        { "site_id": "site-999", "site_name": "Storage Room" }
+      ],
+      "updated_at": "2025-12-31T21:30:00.000Z",
+      "ttn": {
+        "enabled": true,
+        "cluster": "eu1",
+        "application_id": "ft-sustainablefinishes",
+        "api_key": "NNSXS.BMG4N2AJ43HN4YVPZ6DLQAPHVHUZBVPTOB37JFQ.FHBMPAB26Q2XM4QVBE4GBQ772NBIYP5MGOKCBBOM5NTCCMCJZRWQ",
+        "api_key_last4": "ZRWQ"
+      }
     }
-  }]
+  ]
 }
 ```
 
@@ -145,7 +152,7 @@ CREATE POLICY "Service role only" ON user_ttn_config
 ```typescript
 // supabase/functions/user-sync/index.ts (in Emulator project)
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 interface IncomingSyncPayload {
   users: Array<{
@@ -169,18 +176,18 @@ interface IncomingSyncPayload {
 }
 
 Deno.serve(async (req) => {
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   // Authenticate request
-  const authHeader = req.headers.get("Authorization");
-  const expectedKey = Deno.env.get("SYNC_API_KEY");
+  const authHeader = req.headers.get('Authorization');
+  const expectedKey = Deno.env.get('SYNC_API_KEY');
 
   if (!authHeader || authHeader !== `Bearer ${expectedKey}`) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
-      headers: { "Content-Type": "application/json" }
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 
@@ -189,9 +196,8 @@ Deno.serve(async (req) => {
 
   for (const user of payload.users) {
     // Upsert user with TTN config
-    const { error } = await supabase
-      .from("synced_users")
-      .upsert({
+    const { error } = await supabase.from('synced_users').upsert(
+      {
         user_id: user.user_id,
         email: user.email,
         full_name: user.full_name,
@@ -200,12 +206,14 @@ Deno.serve(async (req) => {
         unit_id: user.unit_id,
         default_site_id: user.default_site_id,
         user_sites: user.user_sites,
-        ttn: user.ttn,  // Store entire TTN config as JSONB
+        ttn: user.ttn, // Store entire TTN config as JSONB
         updated_at: user.updated_at,
         synced_at: new Date().toISOString(),
-      }, {
-        onConflict: "user_id"
-      });
+      },
+      {
+        onConflict: 'user_id',
+      },
+    );
 
     if (error) {
       console.error(`[user-sync] Error syncing user ${user.user_id}:`, error);
@@ -214,10 +222,10 @@ Deno.serve(async (req) => {
     }
   }
 
-  return new Response(
-    JSON.stringify({ success: true, synced: payload.users.length }),
-    { status: 200, headers: { "Content-Type": "application/json" } }
-  );
+  return new Response(JSON.stringify({ success: true, synced: payload.users.length }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
 });
 ```
 
@@ -229,9 +237,9 @@ Deno.serve(async (req) => {
 // Helper function to get TTN config for a user
 async function getTtnConfigForUser(userId: string) {
   const { data: user } = await supabase
-    .from("synced_users")
-    .select("organization_id, ttn")
-    .eq("user_id", userId)
+    .from('synced_users')
+    .select('organization_id, ttn')
+    .eq('user_id', userId)
     .single();
 
   if (!user?.ttn) {
@@ -261,10 +269,10 @@ async function getTtnConfigForUser(userId: string) {
 
 function getRegionalUrl(cluster: string): string {
   const urls: Record<string, string> = {
-    nam1: "https://nam1.cloud.thethings.network",
-    eu1: "https://eu1.cloud.thethings.network",
-    au1: "https://au1.cloud.thethings.network",
-    as1: "https://as1.cloud.thethings.network",
+    nam1: 'https://nam1.cloud.thethings.network',
+    eu1: 'https://eu1.cloud.thethings.network',
+    au1: 'https://au1.cloud.thethings.network',
+    as1: 'https://as1.cloud.thethings.network',
   };
   return urls[cluster] || urls.nam1;
 }
@@ -281,12 +289,12 @@ async function simulateUplink(
     temperature?: number;
     humidity?: number;
     battery?: number;
-  }
+  },
 ) {
   // Get user's TTN config
   const ttnConfig = await getTtnConfigForUser(userId);
   if (!ttnConfig) {
-    throw new Error("TTN not configured for this user");
+    throw new Error('TTN not configured for this user');
   }
 
   // Normalize DevEUI
@@ -309,23 +317,25 @@ async function simulateUplink(
     },
     uplink_message: {
       f_port: 1,
-      frm_payload: btoa(encodedPayload),  // Base64 encoded
-      rx_metadata: [{
-        gateway_ids: {
-          gateway_id: "emulator-gateway",
+      frm_payload: btoa(encodedPayload), // Base64 encoded
+      rx_metadata: [
+        {
+          gateway_ids: {
+            gateway_id: 'emulator-gateway',
+          },
+          rssi: -50,
+          snr: 10,
+          timestamp: Date.now() * 1000,
         },
-        rssi: -50,
-        snr: 10,
-        timestamp: Date.now() * 1000,
-      }],
+      ],
       settings: {
         data_rate: {
           lora: {
             bandwidth: 125000,
             spreading_factor: 7,
-          }
+          },
         },
-        frequency: "868100000",
+        frequency: '868100000',
       },
     },
   };
@@ -334,13 +344,13 @@ async function simulateUplink(
   const response = await fetch(
     `${ttnConfig.regionalUrl}/api/v3/as/applications/${ttnConfig.applicationId}/devices/${deviceId}/up`,
     {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Authorization": `Bearer ${ttnConfig.apiKey}`,
-        "Content-Type": "application/json",
+        Authorization: `Bearer ${ttnConfig.apiKey}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(uplinkMessage),
-    }
+    },
   );
 
   if (!response.ok) {
@@ -354,25 +364,29 @@ async function simulateUplink(
 }
 
 // Simple payload encoder (example)
-function encodePayload(payload: { temperature?: number; humidity?: number; battery?: number }): string {
+function encodePayload(payload: {
+  temperature?: number;
+  humidity?: number;
+  battery?: number;
+}): string {
   // Cayenne LPP format example
   let bytes: number[] = [];
 
   if (payload.temperature !== undefined) {
-    bytes.push(0x01, 0x67);  // Channel 1, Temperature
+    bytes.push(0x01, 0x67); // Channel 1, Temperature
     const temp = Math.round(payload.temperature * 10);
-    bytes.push((temp >> 8) & 0xFF, temp & 0xFF);
+    bytes.push((temp >> 8) & 0xff, temp & 0xff);
   }
 
   if (payload.humidity !== undefined) {
-    bytes.push(0x02, 0x68);  // Channel 2, Humidity
+    bytes.push(0x02, 0x68); // Channel 2, Humidity
     bytes.push(Math.round(payload.humidity * 2));
   }
 
   if (payload.battery !== undefined) {
-    bytes.push(0x03, 0x02);  // Channel 3, Analog
+    bytes.push(0x03, 0x02); // Channel 3, Analog
     const batt = Math.round(payload.battery * 100);
-    bytes.push((batt >> 8) & 0xFF, batt & 0xFF);
+    bytes.push((batt >> 8) & 0xff, batt & 0xff);
   }
 
   return String.fromCharCode(...bytes);
@@ -384,36 +398,36 @@ function encodePayload(payload: { temperature?: number; humidity?: number; batte
 ```typescript
 // supabase/functions/simulate-uplink/index.ts (in Emulator)
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 Deno.serve(async (req) => {
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   const { userId, devEui, temperature, humidity, battery } = await req.json();
 
   // Get TTN config
   const { data: user } = await supabase
-    .from("synced_users")
-    .select("ttn")
-    .eq("user_id", userId)
+    .from('synced_users')
+    .select('ttn')
+    .eq('user_id', userId)
     .single();
 
   if (!user?.ttn) {
-    return new Response(
-      JSON.stringify({ error: "User not found or TTN not configured" }),
-      { status: 404, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: 'User not found or TTN not configured' }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const ttn = user.ttn as any;
 
   if (!ttn.enabled || !ttn.api_key) {
-    return new Response(
-      JSON.stringify({ error: "TTN not enabled or API key missing" }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: 'TTN not enabled or API key missing' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   // Simulate uplink (use the function from above)
@@ -424,15 +438,15 @@ Deno.serve(async (req) => {
       battery,
     });
 
-    return new Response(
-      JSON.stringify(result),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 });
 ```
@@ -566,6 +580,7 @@ curl -X POST https://emulator.supabase.co/functions/v1/simulate-uplink \
 **Cause**: API key is invalid or expired
 
 **Fix**:
+
 - Verify the API key in FreshTrack Pro Settings
 - Regenerate the API key in TTN Console
 - Trigger a user sync to get the new key
@@ -575,6 +590,7 @@ curl -X POST https://emulator.supabase.co/functions/v1/simulate-uplink \
 **Cause**: API key doesn't have sufficient permissions
 
 **Fix**:
+
 - Check API key rights in TTN Console → Applications → API keys
 - Ensure it has: `Write downlink application traffic`, `Read application traffic`
 - Regenerate with correct permissions
@@ -584,6 +600,7 @@ curl -X POST https://emulator.supabase.co/functions/v1/simulate-uplink \
 **Cause**: Device not registered in TTN
 
 **Fix**:
+
 - Register the device in TTN Console first
 - Or use FreshTrack Pro's "Provision to TTN" feature
 
@@ -592,6 +609,7 @@ curl -X POST https://emulator.supabase.co/functions/v1/simulate-uplink \
 **Cause**: Organization doesn't have TTN configured
 
 **Fix**:
+
 - Go to FreshTrack Pro → Settings → Gateways
 - Click "Provision TTN Application"
 - Enable the TTN integration
