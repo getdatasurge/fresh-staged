@@ -29,8 +29,9 @@ import {
   useScanTTNOrphans,
   useEnqueueOrphanCleanup,
   useRetryDeprovisionJob,
-  TTNDevice,
 } from '@/hooks/useTTNDeprovision';
+
+type TTNDevice = { dev_eui: string; name?: string; [key: string]: any };
 
 export default function TTNCleanup() {
   const { effectiveOrgId: orgId, isInitialized } = useEffectiveIdentity();
@@ -50,7 +51,7 @@ export default function TTNCleanup() {
   const handleScan = async () => {
     if (!orgId) return;
     try {
-      const result = await scanMutation.mutateAsync(orgId);
+      const result = (await scanMutation.mutateAsync(orgId)) as any;
       setScanResult(result);
       setSelectedOrphans([]);
       toast.success(`Found ${result.orphans.length} orphaned devices`);
@@ -288,7 +289,7 @@ export default function TTNCleanup() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {jobs.slice(0, 20).map((job) => (
+                  {jobs.slice(0, 20).map((job: any) => (
                     <TableRow key={job.id}>
                       <TableCell>{job.sensor_name || '-'}</TableCell>
                       <TableCell className="font-mono text-xs">{job.dev_eui}</TableCell>

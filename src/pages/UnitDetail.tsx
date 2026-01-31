@@ -283,8 +283,8 @@ const UnitDetail = () => {
       temp_limit_high: unitQuery.data.tempMax,
       temp_limit_low: unitQuery.data.tempMin,
       last_temp_reading: unitQuery.data.lastTemperature,
-      last_reading_at: unitQuery.data.lastReadingAt?.toISOString() || null,
-      last_manual_log_at: lastManualLogAt ? lastManualLogAt.toISOString() : null,
+      last_reading_at: unitQuery.data.lastReadingAt || null,
+      last_manual_log_at: lastManualLogAt || null,
       manual_log_cadence: unitQuery.data.manualMonitoringInterval || 240,
       area: {
         id: unitLookup.areaId,
@@ -315,7 +315,7 @@ const UnitDetail = () => {
         id: r.id,
         temperature: r.temperature,
         humidity: r.humidity,
-        recorded_at: r.recordedAt.toISOString(),
+        recorded_at: r.recordedAt as unknown as string,
       })) || []
     );
   }, [readingsQuery.data]);
@@ -326,7 +326,7 @@ const UnitDetail = () => {
         id: l.id,
         temperature: l.temperature,
         notes: l.notes,
-        logged_at: l.recordedAt.toISOString(),
+        logged_at: l.recordedAt as unknown as string,
         is_in_range: true,
       })) || []
     );
@@ -338,7 +338,7 @@ const UnitDetail = () => {
         id: e.id,
         event_type: e.eventType,
         event_data: e.eventData,
-        recorded_at: e.recordedAt.toISOString(),
+        recorded_at: e.recordedAt as unknown as string,
       })) || []
     );
   }, [eventsQuery.data]);
@@ -355,7 +355,7 @@ const UnitDetail = () => {
     return {
       id: deviceQuery.data.id,
       unit_id: deviceQuery.data.unitId,
-      last_seen_at: deviceQuery.data.lastSeenAt?.toISOString() || null,
+      last_seen_at: deviceQuery.data.lastSeenAt || null,
       serial_number: deviceQuery.data.devEui,
       battery_level: 100,
       signal_strength: -50,
@@ -400,12 +400,12 @@ const UnitDetail = () => {
       const eventTime = new Date(latestEvent.occurredAt).getTime();
       const unitTime = new Date((unitQuery.data as any).doorLastChangedAt).getTime();
       if (eventTime >= unitTime) {
-        return { state: latestEvent.state, since: latestEvent.occurredAt.toISOString() };
+        return { state: latestEvent.state, since: latestEvent.occurredAt as unknown as string };
       }
     }
     return {
       state: (unitQuery.data as any)?.doorState || 'unknown',
-      since: (unitQuery.data as any)?.doorLastChangedAt?.toISOString() || null,
+      since: (unitQuery.data as any)?.doorLastChangedAt || null,
     };
   }, [doorEventsQuery.data, unitQuery.data]);
 

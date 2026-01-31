@@ -64,6 +64,9 @@ vi.mock('../../src/middleware/api-key-auth.js', () => ({
 
 vi.mock('../../src/middleware/auth.js', () => ({
   requireAuth: vi.fn(),
+  requirePlatformAdmin: vi.fn(async (request: any, reply: any) => {
+    // no-op in tests
+  }),
 }));
 
 vi.mock('../../src/middleware/org-context.js', () => ({

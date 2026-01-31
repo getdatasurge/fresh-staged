@@ -341,11 +341,17 @@ const Settings = () => {
   // Handle TTN settings data changes
   useEffect(() => {
     if (ttnSettingsQuery.data) {
+      const ttnData = ttnSettingsQuery.data as any;
       setTtnConfig({
-        isEnabled: ttnSettingsQuery.data.isEnabled ?? false,
-        hasApiKey: !!(ttnSettingsQuery.data.apiKeyLast4 || ttnSettingsQuery.data.hasApiKey),
-        applicationId: ttnSettingsQuery.data.applicationId ?? null,
-        apiKeyLast4: ttnSettingsQuery.data.apiKeyLast4 ?? null,
+        isEnabled: ttnData.isEnabled ?? ttnData.is_enabled ?? false,
+        hasApiKey: !!(
+          ttnData.apiKeyLast4 ||
+          ttnData.api_key_last4 ||
+          ttnData.hasApiKey ||
+          ttnData.has_api_key
+        ),
+        applicationId: ttnData.applicationId ?? ttnData.application_id ?? null,
+        apiKeyLast4: ttnData.apiKeyLast4 ?? ttnData.api_key_last4 ?? null,
       });
     }
   }, [ttnSettingsQuery.data]);
@@ -457,15 +463,16 @@ const Settings = () => {
       });
 
       if (result?.status === 'sent') {
+        const resultAny = result as any;
         // Check for verification warning
-        if (result.warning) {
-          toast.warning(`SMS sent with warning: ${result.warning}`, {
+        if (resultAny.warning) {
+          toast.warning(`SMS sent with warning: ${resultAny.warning}`, {
             id: 'test-sms',
             duration: 8000,
           });
         } else {
           toast.success(
-            `Test SMS sent! (ID: ${result.provider_message_id?.slice(-8) || 'confirmed'})`,
+            `Test SMS sent! (ID: ${resultAny.provider_message_id?.slice(-8) || 'confirmed'})`,
             { id: 'test-sms' },
           );
         }
