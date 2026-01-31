@@ -11,45 +11,51 @@ import { TRPCProvider, createTRPCClientInstance } from '@/lib/trpc';
 import { RealtimeProvider } from '@/providers/RealtimeProvider';
 import { StackProvider, StackTheme, useUser } from '@stackframe/react';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
-import { Suspense, useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import PageSkeleton from './components/PageSkeleton';
 import { RequireImpersonationGuard } from './components/guards/RequireImpersonationGuard';
 import { ImpersonationCacheSync, PlatformGuard } from './components/platform';
-import AccountDeleted from './pages/AccountDeleted';
-import Alerts from './pages/Alerts';
-import AreaDetail from './pages/AreaDetail';
-import Areas from './pages/Areas';
+
+// Critical path - static imports (landing, auth flow)
+import Index from './pages/Index';
 import Auth from './pages/Auth';
 import AuthCallback from './pages/AuthCallback';
-import Dashboard from './pages/Dashboard';
-import DataMaintenance from './pages/DataMaintenance';
-import EventHistory from './pages/EventHistory';
-import HealthDashboard from './pages/HealthDashboard';
-import Index from './pages/Index';
-import Inspector from './pages/Inspector';
-import ManualLog from './pages/ManualLog';
-import NotFound from './pages/NotFound';
-import Onboarding from './pages/Onboarding';
-import OrganizationDashboard from './pages/OrganizationDashboard';
-import PilotSetup from './pages/PilotSetup';
-import PlatformAuditLog from './pages/platform/PlatformAuditLog';
-import PlatformDeveloperTools from './pages/platform/PlatformDeveloperTools';
-import PlatformOrganizationDetail from './pages/platform/PlatformOrganizationDetail';
-import PlatformOrganizations from './pages/platform/PlatformOrganizations';
-import PlatformUserDetail from './pages/platform/PlatformUserDetail';
-import PlatformUsers from './pages/platform/PlatformUsers';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import RecentlyDeleted from './pages/RecentlyDeleted';
-import Reports from './pages/Reports';
-import Settings from './pages/Settings';
-import SiteDetail from './pages/SiteDetail';
-import Sites from './pages/Sites';
-import TermsConditions from './pages/TermsConditions';
-import TTNCleanup from './pages/TTNCleanup';
-import UnitDetail from './pages/UnitDetail';
-import Units from './pages/Units';
-import UploadTelnyxImage from './pages/UploadTelnyxImage';
+
+// Route-level code splitting - lazy loaded
+const AccountDeleted = lazy(() => import('./pages/AccountDeleted'));
+const Alerts = lazy(() => import('./pages/Alerts'));
+const AreaDetail = lazy(() => import('./pages/AreaDetail'));
+const Areas = lazy(() => import('./pages/Areas'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const DataMaintenance = lazy(() => import('./pages/DataMaintenance'));
+const EventHistory = lazy(() => import('./pages/EventHistory'));
+const HealthDashboard = lazy(() => import('./pages/HealthDashboard'));
+const Inspector = lazy(() => import('./pages/Inspector'));
+const ManualLog = lazy(() => import('./pages/ManualLog'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const Onboarding = lazy(() => import('./pages/Onboarding'));
+const OrganizationDashboard = lazy(() => import('./pages/OrganizationDashboard'));
+const PilotSetup = lazy(() => import('./pages/PilotSetup'));
+const PlatformAuditLog = lazy(() => import('./pages/platform/PlatformAuditLog'));
+const PlatformDeveloperTools = lazy(() => import('./pages/platform/PlatformDeveloperTools'));
+const PlatformOrganizationDetail = lazy(
+  () => import('./pages/platform/PlatformOrganizationDetail'),
+);
+const PlatformOrganizations = lazy(() => import('./pages/platform/PlatformOrganizations'));
+const PlatformUserDetail = lazy(() => import('./pages/platform/PlatformUserDetail'));
+const PlatformUsers = lazy(() => import('./pages/platform/PlatformUsers'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const RecentlyDeleted = lazy(() => import('./pages/RecentlyDeleted'));
+const Reports = lazy(() => import('./pages/Reports'));
+const Settings = lazy(() => import('./pages/Settings'));
+const SiteDetail = lazy(() => import('./pages/SiteDetail'));
+const Sites = lazy(() => import('./pages/Sites'));
+const TermsConditions = lazy(() => import('./pages/TermsConditions'));
+const TTNCleanup = lazy(() => import('./pages/TTNCleanup'));
+const UnitDetail = lazy(() => import('./pages/UnitDetail'));
+const Units = lazy(() => import('./pages/Units'));
+const UploadTelnyxImage = lazy(() => import('./pages/UploadTelnyxImage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {

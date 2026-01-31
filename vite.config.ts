@@ -1,9 +1,10 @@
 /// <reference types="vitest" />
-import { defineConfig } from 'vite';
+import { defineConfig, type PluginOption } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 import { componentTagger } from 'lovable-tagger';
 import { VitePWA } from 'vite-plugin-pwa';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -97,7 +98,52 @@ export default defineConfig(({ mode }) => ({
         ],
       },
     }),
+    mode === 'production' &&
+      (visualizer({
+        filename: 'dist/stats.html',
+        gzipSize: true,
+      }) as PluginOption),
   ].filter(Boolean),
+  build: {
+    rollupOptions: {
+      onwarn(warning, defaultHandler) {
+        // Suppress @stackframe internal circular re-export warnings (upstream package issue)
+        if (warning.message?.includes('@stackframe/')) return;
+        defaultHandler(warning);
+      },
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          // Order matters: more specific patterns first to avoid false matches
+          if (id.includes('/@radix-ui/')) return 'vendor-ui';
+          if (id.includes('/recharts/') || id.includes('/d3-')) return 'vendor-charts';
+          if (id.includes('/@tanstack/react-query') || id.includes('/@tanstack/query-core'))
+            return 'vendor-query';
+          if (
+            id.includes('/react-hook-form/') ||
+            id.includes('/@hookform/') ||
+            id.includes('/zod/')
+          )
+            return 'vendor-forms';
+          if (id.includes('/date-fns/')) return 'vendor-date';
+          if (id.includes('/lucide-react/')) return 'vendor-icons';
+          if (id.includes('/socket.io') || id.includes('/engine.io')) return 'vendor-realtime';
+          if (id.includes('/framer-motion/')) return 'vendor-motion';
+          if (id.includes('/@stackframe/')) return 'vendor-auth';
+          if (id.includes('/@trpc/')) return 'vendor-trpc';
+          if (
+            id.includes('/react-grid-layout/') ||
+            id.includes('/react-resizable-panels/') ||
+            id.includes('/react-resizable/')
+          )
+            return 'vendor-grid';
+          // React core last — only match exact package names
+          if (/\/node_modules\/\.pnpm\/(react-dom|react-router|scheduler|react)@/.test(id))
+            return 'vendor-react';
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
