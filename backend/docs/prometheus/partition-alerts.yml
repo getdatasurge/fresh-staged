@@ -1,0 +1,87 @@
+groups:
+  - name: partition_health
+    interval: 5m
+    rules:
+      - alert: MissingFuturePartitions
+        expr: sensor_readings_future_partition_count < 2
+        for: 15m
+        labels:
+          severity: warning
+          component: database
+          feature: partitions
+        annotations:
+          summary: "Insufficient future partition buffer for sensor_readings"
+          description: "Only {{ $value }} future partitions exist (expected ≥2). Run partition:create job manually to create missing partitions."
+          runbook_url: "https://github.com/org/repo/blob/main/backend/docs/runbooks/partition-management.md#missing-future-partitions"
+
+      - alert: PartitionCreationFailed
+        expr: increase(bullmq_job_failed_total{job="partition:create"}[1h]) > 0
+        for: 5m
+        labels:
+          severity: critical
+          component: database
+          feature: partitions
+        annotations:
+          summary: "Partition creation job failed"
+          description: "partition:create BullMQ job has failed {{ $value }} times in the last hour. Check logs and run manual partition creation if needed."
+          runbook_url: "https://github.com/org/repo/blob/main/backend/docs/runbooks/partition-management.md#manual-partition-creation"
+
+      - alert: PartitionRetentionFailed
+        expr: increase(bullmq_job_failed_total{job="partition:retention"}[1h]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+          feature: partitions
+        annotations:
+          summary: "Partition retention job failed"
+          description: "partition:retention BullMQ job has failed {{ $value }} times in the last hour. Check logs and verify retention policy."
+          runbook_url: "https://github.com/org/repo/blob/main/backend/docs/runbooks/partition-management.md#manual-partition-deletion"
+
+      - alert: DefaultPartitionReceivingData
+        expr: sensor_readings_default_partition_rows > 100
+        for: 10m
+        labels:
+          severity: warning
+          component: database
+          feature: partitions
+        annotations:
+          summary: "Default partition contains unexpected data"
+          description: "sensor_readings_default partition contains {{ $value }} rows (expected 0). Investigate NULL or out-of-range recorded_at values."
+          runbook_url: "https://github.com/org/repo/blob/main/backend/docs/runbooks/partition-management.md#troubleshooting-partition-routing-failures"
+
+      - alert: PartitionCountAnomalous
+        expr: abs(delta(sensor_readings_partition_count[24h])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+          feature: partitions
+        annotations:
+          summary: "Anomalous partition count change"
+          description: "Partition count changed by {{ $value }} in last 24 hours (unexpected). Verify no manual partition operations occurred."
+          runbook_url: "https://github.com/org/repo/blob/main/backend/docs/runbooks/partition-management.md"
+
+      - alert: PartitionSizeGrowthAnomaly
+        expr: rate(sensor_readings_total_size_bytes[1h]) > 1000000000
+        for: 15m
+        labels:
+          severity: info
+          component: database
+          feature: partitions
+        annotations:
+          summary: "High partition size growth rate"
+          description: "Partition storage growing at {{ $value | humanize }}B/sec. Monitor for unexpected data volume increases."
+          runbook_url: "https://github.com/org/repo/blob/main/backend/docs/runbooks/partition-management.md"
+
+      - alert: PartitionHealthUnhealthy
+        expr: sensor_readings_partition_healthy == 0
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+          feature: partitions
+        annotations:
+          summary: "Partition health check failed"
+          description: "Partition health status is UNHEALTHY. Check partition metrics and logs for warnings."
+          runbook_url: "https://github.com/org/repo/blob/main/backend/docs/runbooks/partition-management.md"

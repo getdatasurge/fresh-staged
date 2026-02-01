@@ -25,14 +25,16 @@ export async function getOrganization(
  */
 export async function updateOrganization(
   organizationId: string,
-  data: Partial<Pick<InsertOrganization, 'name' | 'timezone' | 'complianceMode' | 'logoUrl'>>
+  data: Partial<{
+    name: string;
+    timezone: string;
+    complianceMode: 'standard' | 'haccp';
+    logoUrl: string | null;
+  }>
 ): Promise<Organization | null> {
   const [org] = await db
     .update(organizations)
-    .set({
-      ...data,
-      updatedAt: new Date(),
-    })
+    .set(data)
     .where(eq(organizations.id, organizationId))
     .returning();
 

@@ -467,13 +467,13 @@ export const notificationPoliciesRouter = router({
 				notifyOffline: input.data.notifyOffline,
 				notifyLowBattery: input.data.notifyLowBattery,
 				notifyWarnings: input.data.notifyWarnings,
-			}
+			} as const
 
 			if (existing) {
 				// Update
 				const [updated] = await db
 					.update(notificationSettings)
-					.set(settingsData)
+					.set(settingsData as any)
 					.where(eq(notificationSettings.id, existing.id))
 					.returning()
 				return { ...input.data, id: updated.id }

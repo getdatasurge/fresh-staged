@@ -46,11 +46,24 @@ export interface MeterReportJobData extends BaseJobData {
   timestamp?: number;
 }
 
+// Partition creation job data (REC-002)
+export interface PartitionCreateJobData extends BaseJobData {
+  /** Number of months to create ahead (default: 3) */
+  bufferMonths: number;
+}
+
+// Partition retention job data (REC-002)
+export interface PartitionRetentionJobData extends BaseJobData {
+  /** Number of months to retain (default: 24) */
+  retentionMonths: number;
+}
+
 // Queue name constants (prevents typos)
 export const QueueNames = {
   SMS_NOTIFICATIONS: 'sms-notifications',
   EMAIL_DIGESTS: 'email-digests',
   METER_REPORTING: 'meter-reporting',
+  PARTITION_MANAGEMENT: 'partition-management',
 } as const;
 
 export type QueueName = typeof QueueNames[keyof typeof QueueNames];
@@ -61,6 +74,8 @@ export const JobNames = {
   EMAIL_DIGEST: 'email:digest',
   METER_REPORT: 'meter:report',
   SENSOR_COUNT_SCHEDULER: 'meter:sensor-count-scheduler',
+  PARTITION_CREATE: 'partition:create',
+  PARTITION_RETENTION: 'partition:retention',
 } as const;
 
 export type JobName = typeof JobNames[keyof typeof JobNames];
@@ -69,16 +84,17 @@ export type JobName = typeof JobNames[keyof typeof JobNames];
 export type SmsNotificationJob = Job<SmsNotificationJobData>;
 export type EmailDigestJob = Job<EmailDigestJobData>;
 export type MeterReportJob = Job<MeterReportJobData>;
+export type PartitionCreateJob = Job<PartitionCreateJobData>;
+export type PartitionRetentionJob = Job<PartitionRetentionJobData>;
 
-// Default job options
 export const defaultJobOptions: JobsOptions = {
   attempts: 3,
   backoff: {
     type: 'exponential',
-    delay: 1000, // 1 second initial delay
+    delay: 1000,
   },
-  removeOnComplete: 100, // Keep last 100 completed jobs
-  removeOnFail: 500,     // Keep last 500 failed jobs for debugging
+  removeOnComplete: 100,
+  removeOnFail: 500,
 };
 
 /**
@@ -97,7 +113,7 @@ export const smsJobOptions: JobsOptions = {
   attempts: 5,
   backoff: {
     type: 'exponential',
-    delay: 2000, // 2s initial, then 4s, 8s, 16s, 32s
+    delay: 2000,
   },
   removeOnComplete: 100,
   removeOnFail: 500,
@@ -118,7 +134,7 @@ export const emailDigestJobOptions: JobsOptions = {
   attempts: 3,
   backoff: {
     type: 'exponential',
-    delay: 2000, // 2s initial
+    delay: 2000,
   },
   removeOnComplete: 100,
   removeOnFail: 500,
@@ -136,8 +152,50 @@ export const meterReportJobOptions: JobsOptions = {
   attempts: 5,
   backoff: {
     type: 'exponential',
-    delay: 5000, // 5s initial
+    delay: 5000,
   },
   removeOnComplete: 200,
   removeOnFail: 1000,
+};
+
+/**
+ * Partition creation job options (REC-002)
+ *
+ * Configuration:
+ * - 3 attempts (automated partition creation should be reliable)
+ * - 5s initial delay with exponential backoff
+ * - Standard retention
+ *
+ * Creates future partitions to maintain 3-month buffer
+ * Runs weekly via cron schedule
+ */
+export const partitionCreateJobOptions: JobsOptions = {
+  attempts: 3,
+  backoff: {
+    type: 'exponential',
+    delay: 5000,
+  },
+  removeOnComplete: 50,
+  removeOnFail: 200,
+};
+
+/**
+ * Partition retention job options (REC-002)
+ *
+ * Configuration:
+ * - 2 attempts (destructive operation, fewer retries)
+ * - 10s initial delay with exponential backoff
+ * - Longer retention for audit trail
+ *
+ * Drops partitions older than retention policy (24 months)
+ * Runs monthly via cron schedule
+ */
+export const partitionRetentionJobOptions: JobsOptions = {
+  attempts: 2,
+  backoff: {
+    type: 'exponential',
+    delay: 10000,
+  },
+  removeOnComplete: 50,
+  removeOnFail: 200,
 };

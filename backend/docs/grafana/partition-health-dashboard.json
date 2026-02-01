@@ -1,0 +1,291 @@
+{
+  "dashboard": {
+    "title": "Sensor Readings Partition Health",
+    "uid": "partition-health",
+    "tags": ["database", "partitions", "performance"],
+    "timezone": "UTC",
+    "refresh": "5m",
+    "time": {
+      "from": "now-7d",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Partition Count",
+        "type": "stat",
+        "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "sensor_readings_partition_count",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "red" },
+                { "value": 12, "color": "yellow" },
+                { "value": 24, "color": "green" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Future Partition Buffer",
+        "type": "stat",
+        "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "sensor_readings_future_partition_count",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "red" },
+                { "value": 2, "color": "yellow" },
+                { "value": 3, "color": "green" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Total Rows",
+        "type": "stat",
+        "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "sensor_readings_total_rows",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Total Size",
+        "type": "stat",
+        "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "sensor_readings_total_size_bytes",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "bytes",
+            "decimals": 1
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Partition Timeline (Row Count)",
+        "type": "graph",
+        "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "expr": "sensor_readings_partition_rows",
+            "refId": "A",
+            "legendFormat": "{{partition}}"
+          }
+        ],
+        "options": {
+          "legend": {
+            "show": true,
+            "values": true,
+            "current": true
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Partition Size Distribution",
+        "type": "graph",
+        "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "expr": "sensor_readings_partition_size_bytes",
+            "refId": "A",
+            "legendFormat": "{{partition}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "bytes"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Default Partition Rows (Should be 0)",
+        "type": "stat",
+        "gridPos": { "x": 0, "y": 12, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "sensor_readings_default_partition_rows",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "colorMode": "background"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "green" },
+                { "value": 1, "color": "red" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Partition Health Status",
+        "type": "stat",
+        "gridPos": { "x": 6, "y": 12, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "sensor_readings_partition_healthy",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              { "value": 0, "text": "UNHEALTHY", "color": "red" },
+              { "value": 1, "text": "HEALTHY", "color": "green" }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "red" },
+                { "value": 1, "color": "green" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Row Growth Trend",
+        "type": "graph",
+        "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+        "targets": [
+          {
+            "expr": "rate(sensor_readings_total_rows[1h])",
+            "refId": "A",
+            "legendFormat": "Row growth rate (rows/sec)"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Partition Details Table",
+        "type": "table",
+        "gridPos": { "x": 0, "y": 20, "w": 24, "h": 8 },
+        "targets": [
+          {
+            "expr": "sensor_readings_partition_rows",
+            "refId": "A",
+            "format": "table"
+          },
+          {
+            "expr": "sensor_readings_partition_size_bytes",
+            "refId": "B",
+            "format": "table"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "merge",
+            "options": {}
+          }
+        ],
+        "fieldConfig": {
+          "overrides": [
+            {
+              "matcher": { "id": "byName", "options": "Value #A" },
+              "properties": [
+                { "id": "displayName", "value": "Row Count" },
+                { "id": "unit", "value": "short" }
+              ]
+            },
+            {
+              "matcher": { "id": "byName", "options": "Value #B" },
+              "properties": [
+                { "id": "displayName", "value": "Size" },
+                { "id": "unit", "value": "bytes" }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "name": "Partition Events",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "changes(sensor_readings_partition_count[5m]) > 0",
+          "tagKeys": "event",
+          "textFormat": "Partition count changed",
+          "titleFormat": "Partition Event"
+        }
+      ]
+    }
+  }
+}

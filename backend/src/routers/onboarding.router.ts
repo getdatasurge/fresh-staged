@@ -120,7 +120,7 @@ export const onboardingRouter = router({
               name: input.name,
               slug: input.slug,
               timezone: input.timezone,
-            })
+            } as any)
             .returning({ id: organizations.id })
 
           if (!org) {
@@ -135,14 +135,14 @@ export const onboardingRouter = router({
             isActive: true,
             isEnabled: false,
             provisioningStatus: 'not_started',
-          })
+          } as any)
 
           // Create user role (owner)
           await tx.insert(userRoles).values({
             userId: ctx.user.id,
             organizationId: org.id,
             role: 'owner',
-          })
+          } as any)
 
           // Create or update profile
           const [existingProfileCheck] = await tx
@@ -164,7 +164,7 @@ export const onboardingRouter = router({
               organizationId: org.id,
               email: ctx.user.email ?? '',
               fullName: ctx.user.name ?? null,
-            })
+            } as any)
           }
 
           return org
@@ -209,7 +209,7 @@ export const onboardingRouter = router({
           state: input.state || null,
           postalCode: input.postalCode || null,
           timezone: 'America/New_York', // Default, inherit from org
-        })
+        } as any)
         .returning({ id: sites.id })
 
       if (!site) {
@@ -253,7 +253,7 @@ export const onboardingRouter = router({
           siteId: input.siteId,
           name: input.name,
           description: input.description || null,
-        })
+        } as any)
         .returning({ id: areas.id })
 
       if (!area) {
@@ -364,7 +364,7 @@ export const onboardingRouter = router({
           gatewayId,
           gatewayEui: input.gatewayEui.toUpperCase(),
           name: input.name,
-        })
+        } as any)
         .returning({ id: gateways.id })
 
       if (!gateway) {

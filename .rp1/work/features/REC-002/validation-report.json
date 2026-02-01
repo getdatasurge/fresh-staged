@@ -1,0 +1,57 @@
+[
+  {
+    "check": "PostgreSQL Version",
+    "status": "PASS",
+    "message": "PostgreSQL 15.x detected (≥10 required for declarative partitioning)",
+    "details": {
+      "versionString": "PostgreSQL 15.15 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+      "majorVersion": 15
+    }
+  },
+  {
+    "check": "sensor_readings Table Statistics",
+    "status": "INFO",
+    "message": "Table has 0 rows spanning 0 months",
+    "details": {
+      "rowCount": 0,
+      "minRecordedAt": null,
+      "maxRecordedAt": null,
+      "tableSize": "40 kB",
+      "monthsSpan": 0
+    }
+  },
+  {
+    "check": "Data Validation: NULL recorded_at",
+    "status": "PASS",
+    "message": "No NULL recorded_at values found (partition routing will work)"
+  },
+  {
+    "check": "pg_partman Extension",
+    "status": "INFO",
+    "message": "pg_partman extension not available. Will use BullMQ custom automation (Option B)."
+  },
+  {
+    "check": "Drizzle ORM Partition Compatibility",
+    "status": "PASS",
+    "message": "Partition routing and pruning work correctly with Drizzle ORM raw SQL",
+    "details": {
+      "testTable": "test_partitioned_readings",
+      "insertedId": "b766f341-2acf-4def-8487-71572cf20808",
+      "partitionPruning": "working"
+    }
+  },
+  {
+    "check": "Drizzle Schema Support for Partitions",
+    "status": "INFO",
+    "message": "Drizzle ORM does not support PARTITION BY in schema definitions. Will use custom migration DDL.",
+    "details": {
+      "approach": "Migration script will contain hand-written CREATE TABLE ... PARTITION BY DDL",
+      "schemaUpdate": "Only documentation comments will be added to telemetry.ts"
+    }
+  },
+  {
+    "check": "Traffic Pattern Analysis",
+    "status": "INFO",
+    "message": "No sensor readings in last 7 days. Cannot analyze traffic patterns."
+  }
+]
