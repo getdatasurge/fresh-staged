@@ -114,21 +114,20 @@ async function logPartitionsToBeDropped(
 	cutoffDate.setMonth(cutoffDate.getMonth() - retentionMonths)
 
 	const partitionsToBeDropped = allPartitions.filter((partition) => {
-		if (!partition.fromValue) return false
-		return partition.fromValue < cutoffDate
+		if (!partition.toValue) return false
+		return partition.toValue < cutoffDate
 	})
 
 	if (partitionsToBeDropped.length > 0) {
 		await job.log(`Partitions eligible for deletion (${partitionsToBeDropped.length}):`)
 		for (const partition of partitionsToBeDropped) {
 			await job.log(
-				`  - ${partition.name} (${partition.fromValue?.toISOString().split('T')[0]} to ${partition.toValue?.toISOString().split('T')[0]}, ${partition.rowCount} rows)`,
+				`  - ${partition.partitionName} (${partition.fromValue.toISOString().split('T')[0]} to ${partition.toValue.toISOString().split('T')[0]}, ${partition.rowCount} rows)`,
 			)
 		}
 
-		// Calculate total data loss
 		const totalRows = partitionsToBeDropped.reduce(
-			(sum, p) => sum + (p.rowCount || 0),
+			(sum, p) => sum + p.rowCount,
 			0,
 		)
 		await job.log(
@@ -136,7 +135,7 @@ async function logPartitionsToBeDropped(
 		)
 	}
 
-	return partitionsToBeDropped.map((p) => p.name)
+	return partitionsToBeDropped.map((p) => p.partitionName)
 }
 
 export async function processPartitionRetention(
@@ -157,12 +156,27 @@ export async function processPartitionRetention(
 		return { droppedPartitions: [] }
 	}
 
-	// Execute retention policy
+	// Execute retention policy (respects active overrides in partition_retention_overrides table)
 	const droppedPartitions = await enforceRetentionPolicy(retentionMonths)
 
-	await job.log(
-		`✓ Successfully dropped ${droppedPartitions.length} partitions: ${droppedPartitions.join(', ')}`,
-	)
+	const skippedCount = partitionsToBeDropped.length - droppedPartitions.length
+	if (skippedCount > 0) {
+		await job.log(
+			`ℹ️  ${skippedCount} partition(s) skipped due to active retention overrides`,
+		)
+	}
 
-	return { droppedPartitions }
+	if (droppedPartitions.length > 0) {
+		for (const dropped of droppedPartitions) {
+			await job.log(
+				`  ✓ Dropped ${dropped.partitionName} (${dropped.rowCount.toLocaleString()} rows, ${dropped.fromValue.toISOString().split('T')[0]} to ${dropped.toValue.toISOString().split('T')[0]})`,
+			)
+		}
+		const totalDroppedRows = droppedPartitions.reduce((sum, p) => sum + p.rowCount, 0)
+		await job.log(
+			`✓ Successfully dropped ${droppedPartitions.length} partitions (${totalDroppedRows.toLocaleString()} total rows)`,
+		)
+	}
+
+	return { droppedPartitions: droppedPartitions.map((p) => p.partitionName) }
 }

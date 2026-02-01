@@ -1,5 +1,6 @@
 import { db } from '../db/client.js'
 import { sql } from 'drizzle-orm'
+import { partitionRetentionOverrides } from '../db/schema/partition-overrides.js'
 
 /**
  * Partition lifecycle management service for sensor_readings table
@@ -156,17 +157,42 @@ export async function createFuturePartitions(
 	return createdPartitions
 }
 
+export interface DroppedPartitionInfo {
+	partitionName: string
+	rowCount: number
+	fromValue: Date
+	toValue: Date
+}
+
+/**
+ * Get active retention overrides (not expired)
+ * Returns partition names that should be excluded from retention enforcement
+ */
+async function getActiveOverrides(): Promise<Set<string>> {
+	const now = new Date()
+	const overrides = await db
+		.select({ partitionName: partitionRetentionOverrides.partitionName })
+		.from(partitionRetentionOverrides)
+		.where(
+			sql`${partitionRetentionOverrides.expiresAt} IS NULL OR ${partitionRetentionOverrides.expiresAt} > ${now}`,
+		)
+
+	return new Set(overrides.map((o) => o.partitionName))
+}
+
 /**
  * Enforce retention policy by dropping old partitions
  * Called by partition:retention BullMQ job (monthly)
  *
+ * Skips partitions with active retention overrides (legal holds, compliance).
+ *
  * @param retentionMonths Number of months to retain (default: 24)
- * @returns Array of dropped partition names
+ * @returns Array of dropped partition info with row counts for audit
  */
 export async function enforceRetentionPolicy(
 	retentionMonths: number = 24,
-): Promise<string[]> {
-	const droppedPartitions: string[] = []
+): Promise<DroppedPartitionInfo[]> {
+	const droppedPartitions: DroppedPartitionInfo[] = []
 	const cutoffDate = new Date(
 		Date.UTC(
 			new Date().getUTCFullYear(),
@@ -176,13 +202,23 @@ export async function enforceRetentionPolicy(
 	)
 
 	const partitions = await listPartitions()
+	const activeOverrides = await getActiveOverrides()
 
 	for (const partition of partitions) {
 		if (partition.toValue < cutoffDate) {
+			if (activeOverrides.has(partition.partitionName)) {
+				continue
+			}
+
 			await db.execute(
 				sql.raw(`DROP TABLE IF EXISTS ${partition.partitionName}`),
 			)
-			droppedPartitions.push(partition.partitionName)
+			droppedPartitions.push({
+				partitionName: partition.partitionName,
+				rowCount: partition.rowCount,
+				fromValue: partition.fromValue,
+				toValue: partition.toValue,
+			})
 		}
 	}
 

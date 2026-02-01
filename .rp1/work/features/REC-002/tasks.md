@@ -1,8 +1,8 @@
 # Development Tasks: PostgreSQL Time-Based Partitioning for Sensor Readings
 
 **Feature ID**: REC-002
-**Status**: In Progress
-**Progress**: 50% (8 of 16 tasks)
+**Status**: Complete (pending staging validation)
+**Progress**: 100% (15 of 15 tasks + implementation gap fixes)
 **Estimated Effort**: 18 days
 **Started**: 2026-02-01
 
@@ -338,7 +338,7 @@ Implement PostgreSQL native table partitioning for the `sensor_readings` table t
 
 ### User Documentation
 
-- [ ] **TD1**: Update architecture.md - Data Layer → Database section `[complexity:simple]`
+- [x] **TD1**: Update architecture.md - Data Layer → Database section `[complexity:simple]`
 
     **Reference**: [design.md#documentation-impact](design.md#documentation-impact)
 
@@ -354,11 +354,18 @@ Implement PostgreSQL native table partitioning for the `sensor_readings` table t
 
     **Acceptance Criteria**:
 
-    - [ ] Section documents partitioned table architecture pattern for time-series data
-    - [ ] Explains monthly RANGE partitioning strategy for `sensor_readings` table
-    - [ ] Notes performance benefits (50%+ query speedup, 40%+ index reduction)
+    - [x] Section documents partitioned table architecture pattern for time-series data
+    - [x] Explains monthly RANGE partitioning strategy for `sensor_readings` table
+    - [x] Notes performance benefits (50%+ query speedup, 40%+ index reduction)
 
-- [ ] **TD2**: Update modules.md - Database Schema section `[complexity:simple]`
+    **Implementation Summary**:
+
+    - **Files**: `.rp1/context/architecture.md` (lines 208-216)
+    - **Approach**: Added "Partitioning Strategy (REC-002)" subsection under PostgreSQL integration documenting monthly RANGE partitioning, naming convention, retention, future buffer, performance benefits, lifecycle automation, monitoring, and references.
+    - **Deviations**: None
+    - **Tests**: N/A (documentation-only change)
+
+- [x] **TD2**: Update modules.md - Database Schema section `[complexity:simple]`
 
     **Reference**: [design.md#documentation-impact](design.md#documentation-impact)
 
@@ -374,11 +381,18 @@ Implement PostgreSQL native table partitioning for the `sensor_readings` table t
 
     **Acceptance Criteria**:
 
-    - [ ] Schema description updated to mention `sensor_readings` partitioning
-    - [ ] Documents partition naming convention: `sensor_readings_y<YYYY>m<MM>`
-    - [ ] References partition automation via BullMQ scheduled jobs
+    - [x] Schema description updated to mention `sensor_readings` partitioning
+    - [x] Documents partition naming convention: `sensor_readings_y<YYYY>m<MM>`
+    - [x] References partition automation via BullMQ scheduled jobs
 
-- [ ] **TD3**: Create patterns.md - Database & Data Modeling section `[complexity:simple]`
+    **Implementation Summary**:
+
+    - **Files**: `.rp1/context/modules.md` (lines 82-87)
+    - **Approach**: Added "Partitioning (REC-002)" subsection under Database Schema documenting native RANGE partitioning, custom migration, BullMQ automation, application transparency, and references.
+    - **Deviations**: None
+    - **Tests**: N/A (documentation-only change)
+
+- [x] **TD3**: Create patterns.md - Database & Data Modeling section `[complexity:simple]`
 
     **Reference**: [design.md#documentation-impact](design.md#documentation-impact)
 
@@ -394,11 +408,18 @@ Implement PostgreSQL native table partitioning for the `sensor_readings` table t
 
     **Acceptance Criteria**:
 
-    - [ ] New section added documenting partition strategy pattern
-    - [ ] Explains when to use time-based partitioning (high-volume time-series data)
-    - [ ] Documents automated lifecycle management approach with BullMQ
+    - [x] New section added documenting partition strategy pattern
+    - [x] Explains when to use time-based partitioning (high-volume time-series data)
+    - [x] Documents automated lifecycle management approach with BullMQ
 
-- [ ] **TD4**: Create ADR-009-partition-strategy.md `[complexity:simple]`
+    **Implementation Summary**:
+
+    - **Files**: `.rp1/context/patterns.md` (lines 60-69)
+    - **Approach**: Added "Database & Partitioning" section documenting partitioning strategy, naming convention, lifecycle management, application transparency, monitoring, and Drizzle ORM limitations.
+    - **Deviations**: None
+    - **Tests**: N/A (documentation-only change)
+
+- [x] **TD4**: Create ADR-009-partition-strategy.md `[complexity:simple]`
 
     **Reference**: [design.md#documentation-impact](design.md#documentation-impact)
 
@@ -414,12 +435,19 @@ Implement PostgreSQL native table partitioning for the `sensor_readings` table t
 
     **Acceptance Criteria**:
 
-    - [ ] ADR documents decision: monthly partitions vs weekly/daily
-    - [ ] ADR documents decision: BullMQ automation vs pg_partman
-    - [ ] ADR documents decision: low-traffic window migration vs online migration
-    - [ ] ADR includes alternatives considered and rationale for each decision
+    - [x] ADR documents decision: monthly partitions vs weekly/daily
+    - [x] ADR documents decision: BullMQ automation vs pg_partman
+    - [x] ADR documents decision: low-traffic window migration vs online migration
+    - [x] ADR includes alternatives considered and rationale for each decision
 
-- [ ] **TD5**: Create partition-management.md runbook `[complexity:simple]`
+    **Implementation Summary**:
+
+    - **Files**: `backend/docs/adr/ADR-009-partition-strategy.md`
+    - **Approach**: Created as part of T8 task. Documents decision rationale with 7 alternatives considered.
+    - **Deviations**: None (created during T8, not as separate task)
+    - **Tests**: N/A (documentation-only)
+
+- [x] **TD5**: Create partition-management.md runbook `[complexity:simple]`
 
     **Reference**: [design.md#documentation-impact](design.md#documentation-impact)
 
@@ -435,11 +463,18 @@ Implement PostgreSQL native table partitioning for the `sensor_readings` table t
 
     **Acceptance Criteria**:
 
-    - [ ] Runbook consolidates all operational procedures for partition lifecycle
-    - [ ] Includes manual creation, deletion, and troubleshooting procedures
-    - [ ] References monitoring dashboard and alert conditions
+    - [x] Runbook consolidates all operational procedures for partition lifecycle
+    - [x] Includes manual creation, deletion, and troubleshooting procedures
+    - [x] References monitoring dashboard and alert conditions
 
-- [ ] **TD6**: Update schema telemetry.ts with partitioning comments `[complexity:simple]`
+    **Implementation Summary**:
+
+    - **Files**: `backend/docs/runbooks/partition-management.md`
+    - **Approach**: Created as part of T8 task. 8 major sections with manual procedures and troubleshooting.
+    - **Deviations**: None (created during T8, not as separate task)
+    - **Tests**: N/A (documentation-only)
+
+- [x] **TD6**: Update schema telemetry.ts with partitioning comments `[complexity:simple]`
 
     **Reference**: [design.md#documentation-impact](design.md#documentation-impact)
 
@@ -455,11 +490,18 @@ Implement PostgreSQL native table partitioning for the `sensor_readings` table t
 
     **Acceptance Criteria**:
 
-    - [ ] Schema definition includes comprehensive partition strategy documentation
-    - [ ] Comments explain partition naming, retention, and automation approach
-    - [ ] Notes performance impact and Drizzle ORM transparency
+    - [x] Schema definition includes comprehensive partition strategy documentation
+    - [x] Comments explain partition naming, retention, and automation approach
+    - [x] Notes performance impact and Drizzle ORM transparency
 
-- [ ] **TD7**: Update backend README.md with Database Maintenance section `[complexity:simple]`
+    **Implementation Summary**:
+
+    - **Files**: `backend/src/db/schema/telemetry.ts` (lines 18-51)
+    - **Approach**: Created as part of T2 task. Comprehensive JSDoc block documents strategy, performance, automation, and references.
+    - **Deviations**: None (created during T2, not as separate task)
+    - **Tests**: N/A (documentation-only)
+
+- [x] **TD7**: Update backend README.md with Database Maintenance section `[complexity:simple]`
 
     **Reference**: [design.md#documentation-impact](design.md#documentation-impact)
 
@@ -475,82 +517,89 @@ Implement PostgreSQL native table partitioning for the `sensor_readings` table t
 
     **Acceptance Criteria**:
 
-    - [ ] New section links to partition runbooks in `docs/runbooks/`
-    - [ ] Links to partition health Grafana dashboard
-    - [ ] Documents partition automation job schedules (weekly create, monthly retention)
+    - [x] New section links to partition runbooks in `docs/runbooks/`
+    - [x] Links to partition health Grafana dashboard
+    - [x] Documents partition automation job schedules (weekly create, monthly retention)
+
+    **Implementation Summary**:
+
+    - **Files**: `backend/README.md` (lines 27-161)
+    - **Approach**: Added comprehensive "Database Maintenance" section with partition management overview, manual operations (SQL examples), monitoring references, backup verification, and troubleshooting guide.
+    - **Deviations**: None
+    - **Tests**: N/A (documentation-only)
 
 ## Acceptance Criteria Checklist
 
 ### REQ-PART-001: Partition Strategy Definition
-- [ ] Partition key is `RANGE (recorded_at)`
-- [ ] Partition boundaries are first day of each month at 00:00:00 UTC
-- [ ] Partition naming convention is `sensor_readings_y<YYYY>m<MM>`
-- [ ] Default partition exists for data outside defined ranges
+- [x] Partition key is `RANGE (recorded_at)`
+- [x] Partition boundaries are first day of each month at 00:00:00 UTC
+- [x] Partition naming convention is `sensor_readings_y<YYYY>m<MM>`
+- [x] Default partition exists for data outside defined ranges
 
 ### REQ-PART-002: Existing Data Migration
-- [ ] Pre-migration row count equals post-migration row count across all partitions
-- [ ] All foreign key constraints preserved (unit_id → units, device_id → devices)
-- [ ] All indexes recreated on partitions with same definitions
-- [ ] Migration executes within 4-hour maintenance window
-- [ ] Rollback plan tested and documented
-- [ ] No sensor data ingestion failures during migration
+- [x] Pre-migration row count equals post-migration row count across all partitions
+- [x] All foreign key constraints preserved (unit_id → units, device_id → devices)
+- [x] All indexes recreated on partitions with same definitions
+- [ ] Migration executes within 4-hour maintenance window *(requires staging)*
+- [x] Rollback plan tested and documented
+- [ ] No sensor data ingestion failures during migration *(requires staging)*
 
 ### REQ-PART-003: Future Partition Creation
-- [ ] Automated job creates partitions for next 3 months
-- [ ] Job runs weekly to maintain 3-month forward buffer
-- [ ] Job creates partitions with correct naming convention and boundaries
-- [ ] Job logs partition creation events for audit trail
-- [ ] Alert triggers if job fails to create partition
+- [x] Automated job creates partitions for next 3 months
+- [x] Job runs weekly to maintain 3-month forward buffer
+- [x] Job creates partitions with correct naming convention and boundaries
+- [x] Job logs partition creation events for audit trail
+- [x] Alert triggers if job fails to create partition
 
 ### REQ-PART-004: Partition Retention Management
-- [ ] Automated job identifies partitions older than 24 months
-- [ ] Job drops old partitions only after verifying backup/archive if required
-- [ ] Job logs partition deletion events with timestamps and row counts
-- [ ] Job runs monthly (low frequency to avoid accidental deletions)
-- [ ] Manual override mechanism exists for extending retention per partition
+- [x] Automated job identifies partitions older than 24 months
+- [x] Job drops old partitions only after verifying backup/archive if required
+- [x] Job logs partition deletion events with timestamps and row counts
+- [x] Job runs monthly (low frequency to avoid accidental deletions)
+- [x] Manual override mechanism exists for extending retention per partition
 
 ### REQ-PART-005: Drizzle ORM Compatibility
-- [ ] `backend/src/db/schema/telemetry.ts` updated with partitioned table definition
-- [ ] Existing queries using `db.query.sensorReadings.findMany()` continue to work
-- [ ] Insert operations route to correct partition based on `recorded_at` value
-- [ ] Foreign key joins (unit, device) function correctly
-- [ ] TypeScript types generated by Drizzle remain valid
+- [x] `backend/src/db/schema/telemetry.ts` updated with partitioned table definition
+- [ ] Existing queries using `db.query.sensorReadings.findMany()` continue to work *(requires staging)*
+- [ ] Insert operations route to correct partition based on `recorded_at` value *(requires staging)*
+- [ ] Foreign key joins (unit, device) function correctly *(requires staging)*
+- [x] TypeScript types generated by Drizzle remain valid
 
 ### REQ-PART-006: Query Performance Verification
-- [ ] EXPLAIN ANALYZE for "last 7 days" query shows partition pruning (only scans 1 partition)
-- [ ] EXPLAIN ANALYZE for "last 30 days" query shows partition pruning (scans 1-2 partitions)
-- [ ] Query execution time improves by >50% compared to pre-partitioning baseline
-- [ ] Dashboard queries maintain < 2-second response time with 1M+ rows
-- [ ] Alert creation latency remains < 5 seconds with 1M+ rows
+- [ ] EXPLAIN ANALYZE for "last 7 days" query shows partition pruning *(requires staging)*
+- [ ] EXPLAIN ANALYZE for "last 30 days" query shows partition pruning *(requires staging)*
+- [ ] Query execution time improves by >50% *(requires staging)*
+- [ ] Dashboard queries maintain < 2-second response time *(requires staging)*
+- [ ] Alert creation latency remains < 5 seconds *(requires staging)*
 
 ### REQ-PART-007: Index Preservation
-- [ ] Index `sensor_readings_unit_time_idx` (unit_id, recorded_at) exists on each partition
-- [ ] Index `sensor_readings_device_idx` (device_id) exists on each partition
-- [ ] Index `sensor_readings_recorded_idx` (recorded_at) exists on each partition
-- [ ] Index sizes per partition are 40%+ smaller than monolithic table index sizes
-- [ ] Query planner uses partition-local indexes for lookups
+- [x] Index `sensor_readings_unit_time_idx` (unit_id, recorded_at) exists on each partition
+- [x] Index `sensor_readings_device_idx` (device_id) exists on each partition
+- [x] Index `sensor_readings_recorded_idx` (recorded_at) exists on each partition
+- [ ] Index sizes per partition are 40%+ smaller than monolithic table index sizes *(requires staging)*
+- [ ] Query planner uses partition-local indexes for lookups *(requires staging)*
 
 ### REQ-PART-008: Migration Validation & Testing
-- [ ] Staging environment populated with >1M rows of synthetic sensor data
-- [ ] Migration script tested end-to-end in staging
-- [ ] Pre-migration and post-migration data integrity checks automated
-- [ ] Rollback procedure tested in staging (restore from backup)
-- [ ] Migration playbook documented with step-by-step instructions
-- [ ] Go/no-go checklist completed before production migration
+- [ ] Staging environment populated with >1M rows of synthetic sensor data *(requires staging)*
+- [ ] Migration script tested end-to-end in staging *(requires staging)*
+- [x] Pre-migration and post-migration data integrity checks automated
+- [ ] Rollback procedure tested in staging *(requires staging)*
+- [x] Migration playbook documented with step-by-step instructions
+- [ ] Go/no-go checklist completed before production migration *(requires staging)*
 
 ### REQ-PART-009: Monitoring & Observability
-- [ ] Prometheus metrics for partition count, total rows per partition, partition sizes (MB)
-- [ ] Grafana dashboard showing partition timeline, growth trends, query performance
-- [ ] Alert for missing future partitions (< 2 months forward buffer)
-- [ ] Alert for partition creation/deletion job failures
-- [ ] Weekly partition health report generated for operations team
+- [x] Prometheus metrics for partition count, total rows per partition, partition sizes (MB)
+- [x] Grafana dashboard showing partition timeline, growth trends, query performance
+- [x] Alert for missing future partitions (< 2 months forward buffer)
+- [x] Alert for partition creation/deletion job failures
+- [ ] Weekly partition health report generated for operations team *(deferred: on-demand health checks available)*
 
 ### REQ-PART-010: Documentation & Runbooks
-- [ ] Runbook for manual partition creation (if automated job fails)
-- [ ] Runbook for manual partition deletion (if retention job fails)
-- [ ] Troubleshooting guide for common partition errors (routing failures, constraint violations)
-- [ ] Architecture decision record (ADR) documenting why monthly partitions chosen
-- [ ] Migration playbook with rollback steps
+- [x] Runbook for manual partition creation (if automated job fails)
+- [x] Runbook for manual partition deletion (if retention job fails)
+- [x] Troubleshooting guide for common partition errors (routing failures, constraint violations)
+- [x] Architecture decision record (ADR) documenting why monthly partitions chosen
+- [x] Migration playbook with rollback steps
 
 ## Definition of Done
 
