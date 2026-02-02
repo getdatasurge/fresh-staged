@@ -76,6 +76,31 @@ const isAuthed = middleware(async ({ ctx, next }) => {
 export const protectedProcedure = publicProcedure.use(performanceMonitor).use(isAuthed);
 
 /**
+ * Super admin middleware
+ * Checks that authenticated user has the SUPER_ADMIN platform role
+ */
+const isSuperAdminUser = middleware(async ({ ctx, next }) => {
+  const user = ctx.user as AuthUser;
+
+  const isAdmin = await userService.isSuperAdmin(user.id);
+  if (!isAdmin) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'Super admin access required',
+    });
+  }
+
+  return next();
+});
+
+/**
+ * Super admin procedure - requires authentication + SUPER_ADMIN platform role
+ *
+ * Use for platform-wide admin endpoints (system status, user management, etc.)
+ */
+export const superAdminProcedure = protectedProcedure.use(isSuperAdminUser);
+
+/**
  * Organization membership middleware
  * Checks that user has access to the organization in input.organizationId
  *

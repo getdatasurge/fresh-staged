@@ -10,6 +10,7 @@ import { desc, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../db/client.js';
 import { profiles, userRoles, userSyncLog } from '../db/schema/users.js';
+import { userService } from '../services/index.js';
 import { router } from '../trpc/index.js';
 import { protectedProcedure } from '../trpc/procedures.js';
 
@@ -78,7 +79,7 @@ export const usersRouter = router({
           email_enabled: input.notificationPreferences?.email,
           sms_enabled: input.notificationPreferences?.sms,
           updated_at: new Date(),
-        } as any)
+        } as Record<string, unknown>)
         .where(eq(profiles.userId, userId));
 
       return { success: true };
@@ -147,4 +148,12 @@ export const usersRouter = router({
 
       return { success: true };
     }),
+
+  /**
+   * Check if the current user has super admin status
+   */
+  checkSuperAdminStatus: protectedProcedure.query(async ({ ctx }) => {
+    const isSuperAdmin = await userService.isSuperAdmin(ctx.user.id);
+    return { isSuperAdmin };
+  }),
 });

@@ -10,10 +10,9 @@ import {
   notificationDeliveries,
   type Alert,
   type InsertAlert,
-  type Unit,
 } from '../db/schema/index.js';
-import type { SocketService } from './socket.service.js';
 import { getQueueService } from './queue.service.js';
+import type { SocketService } from './socket.service.js';
 
 // Rate limit window in milliseconds (15 minutes)
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
@@ -155,15 +154,39 @@ export interface EffectiveThresholds {
   confirmTimeSeconds: number;
 }
 
+// In-memory threshold cache with TTL
+const THRESHOLD_CACHE_TTL_MS = 60_000; // 60 seconds
+const thresholdCache = new Map<string, { value: EffectiveThresholds; expiresAt: number }>();
+
+/**
+ * Clear the in-memory threshold cache
+ *
+ * @param unitId - Optional unit ID to clear; omit to clear all entries
+ */
+export function clearThresholdCache(unitId?: string): void {
+  if (unitId) {
+    thresholdCache.delete(unitId);
+  } else {
+    thresholdCache.clear();
+  }
+}
+
 /**
  * Resolve effective thresholds for a unit using hierarchy:
  * Unit thresholds OR alert rules (unit -> site -> org precedence)
+ *
+ * Results are cached for 60 seconds per unit.
  *
  * @param unitId - Unit to resolve thresholds for
  * @returns Effective thresholds with hysteresis and confirmation time
  * @throws Error if unit not found or no thresholds configured
  */
 export async function resolveEffectiveThresholds(unitId: string): Promise<EffectiveThresholds> {
+  // Check cache
+  const cached = thresholdCache.get(unitId);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.value;
+  }
   // Fetch unit with area/site/org context
   const [unitData] = await db
     .select({
@@ -236,12 +259,20 @@ export async function resolveEffectiveThresholds(unitId: string): Promise<Effect
     );
   }
 
-  return {
+  const result: EffectiveThresholds = {
     tempMin,
     tempMax,
     hysteresis,
     confirmTimeSeconds,
   };
+
+  // Store in cache
+  thresholdCache.set(unitId, {
+    value: result,
+    expiresAt: Date.now() + THRESHOLD_CACHE_TTL_MS,
+  });
+
+  return result;
 }
 
 /**

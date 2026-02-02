@@ -8,6 +8,7 @@
  * All procedures require authentication.
  */
 
+import { TRPCError } from '@trpc/server';
 import { and, count, desc, eq, ilike, isNull, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../db/client.js';
@@ -18,7 +19,7 @@ import { platformRoles, profiles, userRoles } from '../db/schema/users.js';
 import { getQueueService } from '../services/queue.service.js';
 import { getOrCreateProfile, getUserPrimaryOrganization } from '../services/user.service.js';
 import { router } from '../trpc/index.js';
-import { protectedProcedure } from '../trpc/procedures.js';
+import { superAdminProcedure } from '../trpc/procedures.js';
 
 /**
  * Queue stats schema for response typing
@@ -55,7 +56,7 @@ export const adminRouter = router({
    *
    * @requires Authentication (protectedProcedure)
    */
-  queueHealth: protectedProcedure
+  queueHealth: superAdminProcedure
     .output(
       z.object({
         redisEnabled: z.boolean(),
@@ -98,7 +99,7 @@ export const adminRouter = router({
               delayed,
             },
           });
-        } catch (error) {
+        } catch {
           queueStats.push({
             name,
             error: 'Failed to get queue stats',
@@ -116,7 +117,7 @@ export const adminRouter = router({
   /**
    * Get overall system status
    */
-  systemStatus: protectedProcedure
+  systemStatus: superAdminProcedure
     .output(
       z.object({
         queues: z.object({
@@ -153,7 +154,7 @@ export const adminRouter = router({
   /**
    * Get system record counts
    */
-  systemStats: protectedProcedure
+  systemStats: superAdminProcedure
     .output(
       z.object({
         organizations: z.number(),
@@ -196,7 +197,7 @@ export const adminRouter = router({
   /**
    * List all TTN connections across all organizations
    */
-  ttnConnections: protectedProcedure
+  ttnConnections: superAdminProcedure
     .output(
       z.array(
         z.object({
@@ -210,7 +211,8 @@ export const adminRouter = router({
       ),
     )
     .query(async () => {
-      const results = (await db
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const results = (await (db as any)
         .select({
           id: sql`ttn_connections.id`,
           organizationId: sql`ttn_connections.organization_id`,
@@ -218,14 +220,14 @@ export const adminRouter = router({
           applicationId: sql`ttn_connections.application_id`,
           isActive: sql`ttn_connections.is_active`,
           createdAt: sql`ttn_connections.created_at`,
-        } as any)
+        })
         .from(sql`ttn_connections`)
         .leftJoin(
           sql`organizations`,
           sql`ttn_connections.organization_id = organizations.id`,
-        )) as unknown as any[];
+        )) as Record<string, unknown>[];
 
-      return results.map((r: any) => ({
+      return results.map((r) => ({
         id: r.id,
         organizationId: r.organizationId,
         orgName: r.orgName,
@@ -238,7 +240,7 @@ export const adminRouter = router({
   /**
    * List all system organizations with stats
    */
-  listOrganizations: protectedProcedure
+  listOrganizations: superAdminProcedure
     .output(
       z.array(
         z.object({
@@ -296,7 +298,7 @@ export const adminRouter = router({
   /**
    * List all system users with roles and organization context
    */
-  listUsers: protectedProcedure
+  listUsers: superAdminProcedure
     .output(
       z.array(
         z.object({
@@ -357,7 +359,7 @@ export const adminRouter = router({
    * Search users by email or name
    * Used by GlobalUserSearch component for super admin support mode
    */
-  searchUsers: protectedProcedure
+  searchUsers: superAdminProcedure
     .input(z.object({ query: z.string().min(2) }))
     .output(
       z.array(
@@ -408,7 +410,7 @@ export const adminRouter = router({
   /**
    * Log a super admin action for platform audit trail
    */
-  logSuperAdminAction: protectedProcedure
+  logSuperAdminAction: superAdminProcedure
     .input(
       z.object({
         action: z.string(),
@@ -451,9 +453,9 @@ export const adminRouter = router({
           targetOrgId: targetOrgId || null,
           impersonatedUserId: impersonatedUserId || null,
           details: details || {},
-        } as any,
+        },
         recordedAt: new Date(),
-      } as any);
+      } as Record<string, unknown>);
 
       return { success: true };
     }),
@@ -461,7 +463,7 @@ export const adminRouter = router({
   /**
    * List platform audit log entries
    */
-  listSuperAdminAuditLog: protectedProcedure
+  listSuperAdminAuditLog: superAdminProcedure
     .input(
       z.object({
         limit: z.number().int().min(1).max(1000).optional(),
@@ -521,5 +523,272 @@ export const adminRouter = router({
           createdAt: entry.createdAt.toISOString(),
         };
       });
+    }),
+
+  /**
+   * Find orphan organizations (organizations with no members)
+   */
+  findOrphanOrganizations: superAdminProcedure.query(async () => {
+    const result = await db.execute(sql`
+      SELECT
+        o.id AS org_id,
+        o.name AS org_name,
+        o.slug AS org_slug,
+        o.created_at AS org_created_at,
+        COUNT(DISTINCT s.id) AS sites_count,
+        COUNT(DISTINCT a.id) AS areas_count,
+        COUNT(DISTINCT u.id) AS units_count,
+        COUNT(DISTINCT sen.id) AS sensors_count,
+        COUNT(DISTINCT g.id) AS gateways_count,
+        COUNT(DISTINCT al.id) AS alerts_count,
+        COUNT(DISTINCT el.id) AS event_logs_count,
+        CASE WHEN sub.id IS NOT NULL THEN true ELSE false END AS has_subscription
+      FROM organizations o
+      LEFT JOIN user_roles ur ON o.id = ur.organization_id
+      LEFT JOIN sites s ON o.id = s.organization_id AND s.deleted_at IS NULL
+      LEFT JOIN areas a ON s.id = a.site_id AND a.deleted_at IS NULL
+      LEFT JOIN units u ON a.id = u.area_id AND u.deleted_at IS NULL
+      LEFT JOIN sensors sen ON u.id = sen.unit_id AND sen.deleted_at IS NULL
+      LEFT JOIN gateways g ON o.id = g.ttn_connection_id
+      LEFT JOIN alerts al ON u.id = al.unit_id
+      LEFT JOIN event_logs el ON o.id = el.organization_id
+      LEFT JOIN subscriptions sub ON o.id = sub.organization_id
+      WHERE ur.id IS NULL
+        AND o.deleted_at IS NULL
+      GROUP BY o.id, o.name, o.slug, o.created_at, sub.id
+      ORDER BY o.created_at DESC
+    `);
+
+    return result.rows as Record<string, unknown>[];
+  }),
+
+  /**
+   * List cleanup jobs (placeholder)
+   */
+  listCleanupJobs: superAdminProcedure.query(async () => {
+    return [];
+  }),
+
+  /**
+   * Get organization details with users and sites
+   */
+  getOrganization: superAdminProcedure
+    .input(z.object({ organizationId: z.string().uuid() }))
+    .query(async ({ input }) => {
+      const { organizationId } = input;
+
+      // Fetch organization
+      const [org] = await db
+        .select({
+          id: organizations.id,
+          name: organizations.name,
+          slug: organizations.slug,
+          timezone: organizations.timezone,
+          complianceMode: organizations.complianceMode,
+          sensorLimit: organizations.sensorLimit,
+          createdAt: organizations.createdAt,
+          deletedAt: organizations.deletedAt,
+        })
+        .from(organizations)
+        .where(eq(organizations.id, organizationId))
+        .limit(1);
+
+      if (!org) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Organization not found',
+        });
+      }
+
+      // Fetch users for this organization
+      const userResults = await db
+        .select({
+          userId: profiles.userId,
+          email: profiles.email,
+          fullName: profiles.fullName,
+          phone: profiles.phone,
+          role: userRoles.role,
+        })
+        .from(profiles)
+        .leftJoin(
+          userRoles,
+          and(
+            eq(profiles.userId, userRoles.userId),
+            eq(profiles.organizationId, userRoles.organizationId),
+          ),
+        )
+        .where(eq(profiles.organizationId, organizationId));
+
+      // Fetch sites for this organization
+      const siteResults = await db
+        .select({
+          id: sites.id,
+          name: sites.name,
+          address: sites.address,
+          isActive: sites.isActive,
+        })
+        .from(sites)
+        .where(eq(sites.organizationId, organizationId));
+
+      // Get units count for this organization
+      const unitsCountResult = await db.execute(sql`
+        SELECT COUNT(*)::int as count
+        FROM units u
+        INNER JOIN areas a ON u.area_id = a.id
+        INNER JOIN sites s ON a.site_id = s.id
+        WHERE s.organization_id = ${organizationId}
+          AND u.deleted_at IS NULL
+      `);
+      const unitsCount = (unitsCountResult.rows[0] as Record<string, unknown>)?.count || 0;
+
+      return {
+        ...org,
+        createdAt: org.createdAt.toISOString(),
+        deletedAt: org.deletedAt ? org.deletedAt.toISOString() : null,
+        unitsCount,
+        users: userResults.map((user) => ({
+          userId: user.userId,
+          email: user.email,
+          fullName: user.fullName,
+          phone: user.phone,
+          role: user.role,
+        })),
+        sites: siteResults.map((site) => ({
+          id: site.id,
+          name: site.name,
+          address: site.address,
+          isActive: site.isActive,
+        })),
+      };
+    }),
+
+  /**
+   * Get user profile with roles and super admin status
+   */
+  getUser: superAdminProcedure
+    .input(z.object({ userId: z.string().uuid() }))
+    .query(async ({ input }) => {
+      const { userId } = input;
+
+      // Fetch profile
+      const [profile] = await db
+        .select({
+          userId: profiles.userId,
+          email: profiles.email,
+          fullName: profiles.fullName,
+          phone: profiles.phone,
+          organizationId: profiles.organizationId,
+          createdAt: profiles.createdAt,
+          updatedAt: profiles.updatedAt,
+        })
+        .from(profiles)
+        .where(eq(profiles.userId, userId))
+        .limit(1);
+
+      if (!profile) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'User not found',
+        });
+      }
+
+      // Fetch user roles
+      const roleResults = await db
+        .select({
+          organizationId: userRoles.organizationId,
+          organizationName: organizations.name,
+          role: userRoles.role,
+        })
+        .from(userRoles)
+        .innerJoin(organizations, eq(userRoles.organizationId, organizations.id))
+        .where(eq(userRoles.userId, userId));
+
+      // Check if user is super admin
+      const [superAdminRole] = await db
+        .select({ id: platformRoles.id })
+        .from(platformRoles)
+        .where(and(eq(platformRoles.userId, userId), eq(platformRoles.role, 'SUPER_ADMIN')))
+        .limit(1);
+
+      return {
+        userId: profile.userId,
+        email: profile.email,
+        fullName: profile.fullName,
+        phone: profile.phone,
+        organizationId: profile.organizationId,
+        createdAt: profile.createdAt.toISOString(),
+        updatedAt: profile.updatedAt.toISOString(),
+        roles: roleResults.map((r) => ({
+          organizationId: r.organizationId,
+          organizationName: r.organizationName || null,
+          role: r.role,
+        })),
+        isSuperAdmin: !!superAdminRole,
+      };
+    }),
+
+  /**
+   * Soft delete an organization (sets deletedAt and frees up slug)
+   */
+  softDeleteOrganization: superAdminProcedure
+    .input(z.object({ organizationId: z.string().uuid() }))
+    .mutation(async ({ input }) => {
+      const { organizationId } = input;
+
+      // Fetch organization first
+      const [org] = await db
+        .select({ id: organizations.id, slug: organizations.slug, name: organizations.name })
+        .from(organizations)
+        .where(eq(organizations.id, organizationId))
+        .limit(1);
+
+      if (!org) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Organization not found or already deleted',
+        });
+      }
+
+      // Soft delete: set deletedAt and append timestamp to slug
+      const timestamp = Date.now();
+      const newSlug = `${org.slug}_deleted_${timestamp}`;
+
+      await db
+        .update(organizations)
+        .set({
+          deletedAt: new Date(),
+          slug: newSlug,
+        })
+        .where(eq(organizations.id, organizationId));
+
+      return { success: true };
+    }),
+
+  /**
+   * Hard delete an organization (permanently deletes from database)
+   */
+  hardDeleteOrganization: superAdminProcedure
+    .input(z.object({ organizationId: z.string().uuid() }))
+    .mutation(async ({ input }) => {
+      const { organizationId } = input;
+
+      // Fetch organization first
+      const [org] = await db
+        .select({ id: organizations.id, name: organizations.name })
+        .from(organizations)
+        .where(eq(organizations.id, organizationId))
+        .limit(1);
+
+      if (!org) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Organization not found',
+        });
+      }
+
+      // Hard delete
+      await db.delete(organizations).where(eq(organizations.id, organizationId));
+
+      return { success: true };
     }),
 });

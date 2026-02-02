@@ -8,14 +8,25 @@
  * All procedures require authentication (protectedProcedure).
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TRPCError } from '@trpc/server';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { adminRouter } from '../../src/routers/admin.router.js';
 import { createCallerFactory } from '../../src/trpc/index.js';
 
 // Mock the queue service
 vi.mock('../../src/services/queue.service.js', () => ({
   getQueueService: vi.fn(),
+}));
+
+// Mock the services barrel (used by superAdminProcedure middleware)
+vi.mock('../../src/services/index.js', () => ({
+  userService: {
+    isSuperAdmin: vi.fn().mockResolvedValue(true),
+    getOrCreateProfile: vi.fn(),
+    getUserPrimaryOrganization: vi.fn(),
+    getUserRoleInOrg: vi.fn(),
+    getProfileByUserId: vi.fn(),
+  },
 }));
 
 describe('Admin tRPC Router', () => {
@@ -27,7 +38,7 @@ describe('Admin tRPC Router', () => {
   // Create context that simulates authenticated user
   const createAuthContext = () => ({
     req: {} as any,
-    res: {} as any,
+    res: { header: vi.fn() } as any,
     user: {
       id: 'user-123',
       email: 'admin@example.com',
@@ -38,7 +49,7 @@ describe('Admin tRPC Router', () => {
   // Create context without authentication
   const createNoAuthContext = () => ({
     req: {} as any,
-    res: {} as any,
+    res: { header: vi.fn() } as any,
     user: null,
   });
 

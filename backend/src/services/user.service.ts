@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db/client.js';
-import { profiles, userRoles } from '../db/schema/users.js';
+import { platformRoles, profiles, userRoles } from '../db/schema/users.js';
 import type { AppRole } from '../types/auth.js';
 
 /**
@@ -91,6 +91,22 @@ export async function getUserPrimaryOrganization(
     .limit(1);
 
   return roleRecord || null;
+}
+
+/**
+ * Check if a user has the SUPER_ADMIN platform role
+ *
+ * @param stackAuthUserId - Stack Auth user ID (from JWT sub claim)
+ * @returns True if the user has the SUPER_ADMIN platform role
+ */
+export async function isSuperAdmin(stackAuthUserId: string): Promise<boolean> {
+  const [role] = await db
+    .select({ id: platformRoles.id })
+    .from(platformRoles)
+    .where(and(eq(platformRoles.userId, stackAuthUserId), eq(platformRoles.role, 'SUPER_ADMIN')))
+    .limit(1);
+
+  return !!role;
 }
 
 /**
