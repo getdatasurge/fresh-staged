@@ -1,18 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { SingleReading } from '../../src/schemas/readings.js';
+import * as alertEvaluator from '../../src/services/alert-evaluator.service.js';
 import {
   calculateMetricsForReadings,
   getHourStart,
   getHourEnd,
   getDayStart,
   getDayEnd,
-  processMetricsForReadings,
   ingestReadings,
-  queryMetrics,
-  upsertHourlyMetrics,
-  type CalculatedMetrics,
   type ThresholdContext,
 } from '../../src/services/reading-ingestion.service.js';
-import type { SingleReading } from '../../src/schemas/readings.js';
+import * as readingsService from '../../src/services/readings.service.js';
 
 // Mock dependencies
 vi.mock('../../src/db/client.js', () => ({
@@ -27,7 +25,9 @@ vi.mock('../../src/db/client.js', () => ({
       })),
     })),
     insert: vi.fn(() => ({
-      values: vi.fn(() => Promise.resolve()),
+      values: vi.fn(() => ({
+        onConflictDoUpdate: vi.fn(() => Promise.resolve()),
+      })),
     })),
     update: vi.fn(() => ({
       set: vi.fn(() => ({
@@ -45,9 +45,6 @@ vi.mock('../../src/services/alert-evaluator.service.js', () => ({
   resolveEffectiveThresholds: vi.fn(),
   evaluateUnitAfterReading: vi.fn(),
 }));
-
-import * as readingsService from '../../src/services/readings.service.js';
-import * as alertEvaluator from '../../src/services/alert-evaluator.service.js';
 
 const mockIngestBulkReadings = vi.mocked(readingsService.ingestBulkReadings);
 const mockResolveThresholds = vi.mocked(alertEvaluator.resolveEffectiveThresholds);

@@ -149,6 +149,8 @@ describe('Inspector tRPC Router', () => {
           },
         ],
       });
+      // Org membership check must pass before session status is checked
+      mockDbChain.limit.mockResolvedValueOnce([{ id: 'role-1' }]);
 
       const caller = createCaller(createAuthContext());
 
@@ -169,6 +171,8 @@ describe('Inspector tRPC Router', () => {
           },
         ],
       });
+      // Org membership check must pass before expiry is checked
+      mockDbChain.limit.mockResolvedValueOnce([{ id: 'role-1' }]);
 
       const caller = createCaller(createAuthContext());
 
@@ -195,6 +199,8 @@ describe('Inspector tRPC Router', () => {
           ],
         })
         .mockResolvedValueOnce({ rows: [] }); // UPDATE response
+      // Org membership check must pass
+      mockDbChain.limit.mockResolvedValueOnce([{ id: 'role-1' }]);
 
       const caller = createCaller(createAuthContext());
       const result = await caller.validateSession({ token: 'valid-token' });
@@ -221,6 +227,8 @@ describe('Inspector tRPC Router', () => {
           ],
         })
         .mockResolvedValueOnce({ rows: [] });
+      // Org membership check must pass
+      mockDbChain.limit.mockResolvedValueOnce([{ id: 'role-1' }]);
 
       const caller = createCaller(createAuthContext());
       const result = await caller.validateSession({ token: 'valid-token' });
