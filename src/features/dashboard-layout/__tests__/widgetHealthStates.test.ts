@@ -4,6 +4,8 @@
  * Tests for state transitions and failure layer classification.
  */
 
+import { beforeEach, describe, expect, it } from 'vitest';
+import type { WidgetHealthStatus } from '../types/widgetState';
 import {
   clearAllCounters,
   getBufferedEvents,
@@ -19,8 +21,6 @@ import {
   PAYLOAD_SCHEMAS,
   validatePayloadSchema,
 } from '@/lib/validation/runtimeSchemaValidator';
-import { beforeEach, describe, expect, it } from 'vitest';
-import type { WidgetHealthStatus } from '../types/widgetState';
 
 describe('Widget Health State Machine', () => {
   describe('Schema Validation', () => {
@@ -154,7 +154,7 @@ describe('Widget Health State Machine', () => {
   });
 });
 
-describe.skip('Widget Health Metrics', () => {
+describe('Widget Health Metrics', () => {
   beforeEach(() => {
     clearAllCounters();
   });
