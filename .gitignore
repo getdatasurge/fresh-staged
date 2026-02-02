@@ -27,6 +27,14 @@ dist-docs
 # WSL Windows artifacts
 *:Zone.Identifier
 
+# Lockfiles (pnpm only)
+package-lock.json
+bun.lockb
+yarn.lock
+
+# Test coverage
+coverage/
+
 # Skills (developer-local context)
 .skills/
 
