@@ -180,6 +180,10 @@ export const alerts = pgTable(
     index('alerts_triggered_idx').on(table.triggeredAt),
     // Composite for finding active alerts per unit
     index('alerts_unit_status_idx').on(table.unitId, table.status),
+    // Per-unit alert history sorted by recency
+    index('alerts_unit_triggered_desc_idx').on(table.unitId, table.triggeredAt.desc()),
+    // Dashboard filtering by status + severity
+    index('alerts_status_severity_idx').on(table.status, table.severity),
   ],
 );
 

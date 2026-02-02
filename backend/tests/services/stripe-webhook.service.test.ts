@@ -1,5 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type Stripe from 'stripe';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { db } from '../../src/db/client.js';
+import * as stripeWebhookService from '../../src/services/stripe-webhook.service.js';
 
 // Mock the database client
 vi.mock('../../src/db/client.js', () => ({
@@ -10,7 +12,8 @@ vi.mock('../../src/db/client.js', () => ({
   },
 }));
 
-// Mock Stripe with proper implementation
+// Mock Stripe with proper implementation — shared mock functions
+const mockConstructEvent = vi.fn();
 const mockRetrieveSubscription = vi.fn().mockResolvedValue({
   items: {
     data: [
@@ -26,7 +29,7 @@ vi.mock('stripe', () => {
   return {
     default: class MockStripe {
       webhooks = {
-        constructEvent: vi.fn(),
+        constructEvent: mockConstructEvent,
       };
       subscriptions = {
         retrieve: mockRetrieveSubscription,
@@ -35,12 +38,9 @@ vi.mock('stripe', () => {
   };
 });
 
-// Set up environment variables before importing the service
+// Set up environment variables
 process.env.STRIPE_SECRET_KEY = 'sk_test_mock';
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_mock';
-
-import { db } from '../../src/db/client.js';
-import * as stripeWebhookService from '../../src/services/stripe-webhook.service.js';
 
 const mockDb = vi.mocked(db);
 
@@ -56,6 +56,60 @@ describe('Stripe Webhook Service', () => {
 
   afterEach(() => {
     stripeWebhookService.clearAdminNotifications();
+  });
+
+  describe('verifyWebhookSignature', () => {
+    it('should return Stripe event when signature is valid', () => {
+      const mockEvent = {
+        id: 'evt_valid',
+        type: 'checkout.session.completed',
+        data: { object: {} },
+      } as unknown as Stripe.Event;
+
+      mockConstructEvent.mockReturnValue(mockEvent);
+
+      const result = stripeWebhookService.verifyWebhookSignature(
+        '{"type":"test"}',
+        't=1234567890,v1=valid_sig',
+      );
+
+      expect(result).toEqual(mockEvent);
+      expect(mockConstructEvent).toHaveBeenCalledWith(
+        '{"type":"test"}',
+        't=1234567890,v1=valid_sig',
+        'whsec_test_mock',
+      );
+    });
+
+    it('should throw SignatureVerificationError when signature is invalid', () => {
+      mockConstructEvent.mockImplementation(() => {
+        throw new Error('No signatures found matching the expected signature');
+      });
+
+      expect(() =>
+        stripeWebhookService.verifyWebhookSignature('{"type":"test"}', 'invalid_sig'),
+      ).toThrow(stripeWebhookService.SignatureVerificationError);
+    });
+
+    it('should include original error message in SignatureVerificationError', () => {
+      mockConstructEvent.mockImplementation(() => {
+        throw new Error('Webhook payload must be provided as a string');
+      });
+
+      expect(() => stripeWebhookService.verifyWebhookSignature('', 't=123,v1=abc')).toThrow(
+        /Webhook signature verification failed.*Webhook payload must be provided/,
+      );
+    });
+
+    it('should throw SignatureVerificationError for non-Error exceptions', () => {
+      mockConstructEvent.mockImplementation(() => {
+        throw 'unexpected string error';
+      });
+
+      expect(() => stripeWebhookService.verifyWebhookSignature('payload', 'sig')).toThrow(
+        stripeWebhookService.SignatureVerificationError,
+      );
+    });
   });
 
   describe('handleCheckoutCompleted', () => {

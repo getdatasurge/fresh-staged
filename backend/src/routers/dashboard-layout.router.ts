@@ -8,16 +8,19 @@
  * - delete: Delete a dashboard layout
  * - setDefault: Set a layout as the user's default
  *
- * All procedures use protectedProcedure or orgProcedure to enforce authentication.
+ * All procedures use orgProcedure to enforce authentication and org membership.
  */
 
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../db/client.js';
-import { entityDashboardLayouts } from '../db/schema/telemetry.js';
+import {
+  entityDashboardLayouts,
+  type InsertEntityDashboardLayout,
+} from '../db/schema/telemetry.js';
 import { router } from '../trpc/index.js';
-import { protectedProcedure } from '../trpc/procedures.js';
+import { orgProcedure } from '../trpc/procedures.js';
 
 // --- Schemas ---
 
@@ -52,6 +55,7 @@ const CreateLayoutSchema = z.object({
 });
 
 const UpdateLayoutSchema = z.object({
+  organizationId: z.string().uuid(),
   layoutId: z.string().uuid(),
   name: z.string().min(1).max(256).optional(),
   layoutJson: z.any().optional(),
@@ -60,21 +64,23 @@ const UpdateLayoutSchema = z.object({
 });
 
 const DeleteLayoutSchema = z.object({
+  organizationId: z.string().uuid(),
   layoutId: z.string().uuid(),
 });
 
 const SetDefaultLayoutSchema = z.object({
-  layoutId: z.string().uuid(),
   organizationId: z.string().uuid(),
+  layoutId: z.string().uuid(),
 });
 
 export const dashboardLayoutRouter = router({
   /**
    * List all dashboard layouts for a specific entity
    */
-  list: protectedProcedure
+  list: orgProcedure
     .input(
       z.object({
+        organizationId: z.string().uuid(),
         entityType: EntityTypeSchema,
         entityId: z.string().uuid(),
       }),
@@ -82,12 +88,14 @@ export const dashboardLayoutRouter = router({
     .output(z.array(LayoutSchema))
     .query(async ({ ctx, input }) => {
       const userId = ctx.user.id;
+      const organizationId = ctx.user.organizationId;
 
       const layouts = await db
         .select()
         .from(entityDashboardLayouts)
         .where(
           and(
+            eq(entityDashboardLayouts.organizationId, organizationId),
             eq(entityDashboardLayouts.entityType, input.entityType),
             eq(entityDashboardLayouts.entityId, input.entityId),
             eq(entityDashboardLayouts.userId, userId),
@@ -108,11 +116,12 @@ export const dashboardLayoutRouter = router({
   /**
    * Create a new dashboard layout
    */
-  create: protectedProcedure
+  create: orgProcedure
     .input(CreateLayoutSchema)
     .output(LayoutSchema)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
+      const organizationId = ctx.user.organizationId;
 
       // Check if user already has maximum 3 layouts for this entity
       const existingLayouts = await db
@@ -120,6 +129,7 @@ export const dashboardLayoutRouter = router({
         .from(entityDashboardLayouts)
         .where(
           and(
+            eq(entityDashboardLayouts.organizationId, organizationId),
             eq(entityDashboardLayouts.entityType, input.entityType),
             eq(entityDashboardLayouts.entityId, input.entityId),
             eq(entityDashboardLayouts.userId, userId),
@@ -136,7 +146,7 @@ export const dashboardLayoutRouter = router({
       const [newLayout] = await db
         .insert(entityDashboardLayouts)
         .values({
-          organizationId: input.organizationId,
+          organizationId,
           entityType: input.entityType,
           entityId: input.entityId,
           userId: userId,
@@ -147,7 +157,7 @@ export const dashboardLayoutRouter = router({
           widgetPrefsJson: input.widgetPrefsJson || {},
           timelineStateJson: input.timelineStateJson,
           layoutVersion: 1,
-        } as any)
+        } satisfies InsertEntityDashboardLayout)
         .returning();
 
       if (!newLayout) {
@@ -170,14 +180,15 @@ export const dashboardLayoutRouter = router({
   /**
    * Update an existing dashboard layout
    */
-  update: protectedProcedure
+  update: orgProcedure
     .input(UpdateLayoutSchema)
     .output(LayoutSchema)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
+      const organizationId = ctx.user.organizationId;
 
       // Build update object
-      const updates: any = {
+      const updates: Partial<InsertEntityDashboardLayout> & { updatedAt: Date } = {
         updatedAt: new Date(),
       };
 
@@ -193,6 +204,7 @@ export const dashboardLayoutRouter = router({
         .where(
           and(
             eq(entityDashboardLayouts.id, input.layoutId),
+            eq(entityDashboardLayouts.organizationId, organizationId),
             eq(entityDashboardLayouts.userId, userId),
           ),
         )
@@ -218,17 +230,19 @@ export const dashboardLayoutRouter = router({
   /**
    * Delete a dashboard layout
    */
-  remove: protectedProcedure
+  remove: orgProcedure
     .input(DeleteLayoutSchema)
     .output(z.object({ success: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
+      const organizationId = ctx.user.organizationId;
 
       await db
         .delete(entityDashboardLayouts)
         .where(
           and(
             eq(entityDashboardLayouts.id, input.layoutId),
+            eq(entityDashboardLayouts.organizationId, organizationId),
             eq(entityDashboardLayouts.userId, userId),
           ),
         );
@@ -239,20 +253,21 @@ export const dashboardLayoutRouter = router({
   /**
    * Set a layout as the user's default
    */
-  setDefault: protectedProcedure
+  setDefault: orgProcedure
     .input(SetDefaultLayoutSchema)
     .output(z.object({ success: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
+      const organizationId = ctx.user.organizationId;
 
-      // First, unset all other layouts as default for this entity
-      // Get all layouts for this entity to determine entityType and entityId
+      // First, find the layout and verify ownership
       const entityLayouts = await db
         .select()
         .from(entityDashboardLayouts)
         .where(
           and(
             eq(entityDashboardLayouts.id, input.layoutId),
+            eq(entityDashboardLayouts.organizationId, organizationId),
             eq(entityDashboardLayouts.userId, userId),
           ),
         );
@@ -266,23 +281,29 @@ export const dashboardLayoutRouter = router({
 
       const [layoutToSetDefault] = entityLayouts;
 
-      // Unset all other layouts as default
+      // Unset all other layouts as default for this entity
       await db
         .update(entityDashboardLayouts)
-        .set({ isUserDefault: false } as any)
+        .set({ isUserDefault: false })
         .where(
           and(
+            eq(entityDashboardLayouts.organizationId, organizationId),
             eq(entityDashboardLayouts.entityType, layoutToSetDefault.entityType),
             eq(entityDashboardLayouts.entityId, layoutToSetDefault.entityId),
             eq(entityDashboardLayouts.userId, userId),
           ),
         );
 
-      // Set the selected layout as default
+      // Set the selected layout as default (with org scoping)
       await db
         .update(entityDashboardLayouts)
-        .set({ isUserDefault: true } as any)
-        .where(eq(entityDashboardLayouts.id, input.layoutId));
+        .set({ isUserDefault: true })
+        .where(
+          and(
+            eq(entityDashboardLayouts.id, input.layoutId),
+            eq(entityDashboardLayouts.organizationId, organizationId),
+          ),
+        );
 
       return { success: true };
     }),

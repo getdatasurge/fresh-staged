@@ -23,10 +23,13 @@
  * ```
  */
 
-import type { Server as SocketIOServer, Socket } from 'socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
+import { and, eq } from 'drizzle-orm';
 import { createClient } from 'redis';
 import type { RedisClientType } from 'redis';
+import type { Server as SocketIOServer, Socket } from 'socket.io';
+import { db } from '../db/client.js';
+import { areas, sites, units } from '../db/schema/hierarchy.js';
 
 /**
  * SocketService class for managing WebSocket connections and broadcasting
@@ -135,47 +138,99 @@ export class SocketService {
   }
 
   /**
-   * Join socket to site-specific room
+   * Verify a site belongs to the given organization
    *
-   * Called when client subscribes to a specific site.
-   * Site rooms are scoped within organization for security.
+   * @param siteId - Site UUID to check
+   * @param organizationId - Organization UUID to match
+   * @returns true if the site belongs to the organization
+   */
+  async verifySiteOwnership(siteId: string, organizationId: string): Promise<boolean> {
+    const [site] = await db
+      .select({ id: sites.id })
+      .from(sites)
+      .where(and(eq(sites.id, siteId), eq(sites.organizationId, organizationId)))
+      .limit(1);
+    return !!site;
+  }
+
+  /**
+   * Verify a unit belongs to the given organization
+   *
+   * Units don't have a direct organizationId — the chain is:
+   * unit → area → site → organization
+   *
+   * @param unitId - Unit UUID to check
+   * @param organizationId - Organization UUID to match
+   * @returns true if the unit belongs to the organization
+   */
+  async verifyUnitOwnership(unitId: string, organizationId: string): Promise<boolean> {
+    const [unit] = await db
+      .select({ id: units.id })
+      .from(units)
+      .innerJoin(areas, eq(units.areaId, areas.id))
+      .innerJoin(sites, eq(areas.siteId, sites.id))
+      .where(and(eq(units.id, unitId), eq(sites.organizationId, organizationId)))
+      .limit(1);
+    return !!unit;
+  }
+
+  /**
+   * Join socket to site-specific room after verifying ownership
+   *
+   * Validates that the site belongs to the socket's organization before
+   * joining the room. Returns false if ownership check fails.
    *
    * Room format: `org:{organizationId}:site:{siteId}`
    *
    * @param socket - Socket instance with authenticated data
    * @param siteId - Site UUID to subscribe to
+   * @returns true if joined successfully, false if access denied
    */
-  joinSite(socket: Socket, siteId: string): void {
+  async joinSite(socket: Socket, siteId: string): Promise<boolean> {
     const { organizationId } = socket.data;
     if (!organizationId) {
       console.warn('[SocketService] Cannot join site - no organizationId in socket.data');
-      return;
+      return false;
+    }
+
+    const hasAccess = await this.verifySiteOwnership(siteId, organizationId);
+    if (!hasAccess) {
+      return false;
     }
 
     const room = `org:${organizationId}:site:${siteId}`;
     socket.join(room);
+    return true;
   }
 
   /**
-   * Join socket to unit-specific room
+   * Join socket to unit-specific room after verifying ownership
    *
-   * Called when client subscribes to a specific refrigeration unit.
-   * Unit rooms are scoped within organization for security.
+   * Validates that the unit belongs to the socket's organization
+   * (via unit → area → site → org chain) before joining the room.
+   * Returns false if ownership check fails.
    *
    * Room format: `org:{organizationId}:unit:{unitId}`
    *
    * @param socket - Socket instance with authenticated data
    * @param unitId - Unit UUID to subscribe to
+   * @returns true if joined successfully, false if access denied
    */
-  joinUnit(socket: Socket, unitId: string): void {
+  async joinUnit(socket: Socket, unitId: string): Promise<boolean> {
     const { organizationId } = socket.data;
     if (!organizationId) {
       console.warn('[SocketService] Cannot join unit - no organizationId in socket.data');
-      return;
+      return false;
+    }
+
+    const hasAccess = await this.verifyUnitOwnership(unitId, organizationId);
+    if (!hasAccess) {
+      return false;
     }
 
     const room = `org:${organizationId}:unit:${unitId}`;
     socket.join(room);
+    return true;
   }
 
   /**
@@ -200,7 +255,7 @@ export class SocketService {
    * @param event - Event name (must match ServerToClientEvents)
    * @param data - Event payload
    */
-  emitToOrg(organizationId: string, event: string, data: any): void {
+  emitToOrg(organizationId: string, event: string, data: unknown): void {
     const room = `org:${organizationId}`;
     this.io.to(room).emit(event, data);
   }
@@ -213,7 +268,7 @@ export class SocketService {
    * @param event - Event name (must match ServerToClientEvents)
    * @param data - Event payload
    */
-  emitToSite(organizationId: string, siteId: string, event: string, data: any): void {
+  emitToSite(organizationId: string, siteId: string, event: string, data: unknown): void {
     const room = `org:${organizationId}:site:${siteId}`;
     this.io.to(room).emit(event, data);
   }
@@ -226,7 +281,7 @@ export class SocketService {
    * @param event - Event name (must match ServerToClientEvents)
    * @param data - Event payload
    */
-  emitToUnit(organizationId: string, unitId: string, event: string, data: any): void {
+  emitToUnit(organizationId: string, unitId: string, event: string, data: unknown): void {
     const room = `org:${organizationId}:unit:${unitId}`;
     this.io.to(room).emit(event, data);
   }

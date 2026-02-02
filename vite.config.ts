@@ -97,6 +97,29 @@ export default defineConfig(({ mode }) => ({
       },
     }),
   ].filter(Boolean),
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core React runtime — cached across all pages
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          // UI component library (Radix primitives)
+          'vendor-ui': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-tooltip',
+          ],
+          // Data fetching layer
+          'vendor-query': ['@tanstack/react-query', '@trpc/client'],
+          // Charting (heavy, only used on dashboard/detail pages)
+          'vendor-charts': ['recharts'],
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

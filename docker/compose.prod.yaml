@@ -349,6 +349,59 @@ services:
         loki-external-labels: 'service={{.Name}},environment=production'
 
   # ===========================================
+  # Caddy (Reverse Proxy / TLS Termination)
+  # ===========================================
+  # Terminates TLS and proxies to backend + frontend services.
+  # Uses the Caddyfile at ./caddy/Caddyfile for routing rules.
+  #
+  # For IP-based deployments (no domain), generate self-signed certs:
+  #   ./caddy/generate-self-signed-certs.sh
+  #
+  # For domain-based deployments with wildcard certs:
+  #   cp ./caddy/Caddyfile.wildcard.example ./caddy/Caddyfile
+  #   Set DOMAIN, ADMIN_EMAIL, and DNS provider env vars
+  caddy:
+    image: caddy:2-alpine
+    container_name: freshtrack-caddy
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/certs:/etc/caddy/certs:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - caddy_logs:/var/log/caddy
+    environment:
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@freshtrackpro.com}
+      DEFAULT_SNI: ${DEFAULT_SNI:-localhost}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 120s
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:2019/config/']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: loki
+      options:
+        loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-retries: '3'
+        loki-external-labels: 'service={{.Name}},environment=production'
+
+  # ===========================================
   # PostgreSQL Backup Service
   # ===========================================
   postgres_backup:
@@ -414,6 +467,12 @@ services:
         crond -f -l 2
 
 volumes:
+  caddy_data:
+    name: freshtrack_caddy_data
+  caddy_config:
+    name: freshtrack_caddy_config
+  caddy_logs:
+    name: freshtrack_caddy_logs
   prometheus_data:
     name: freshtrack_prometheus_data
   grafana_data:

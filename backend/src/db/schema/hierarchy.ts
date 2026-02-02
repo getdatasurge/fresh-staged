@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   boolean,
   index,
@@ -127,6 +128,10 @@ export const units = pgTable(
     index('units_status_idx').on(table.status),
     index('units_type_idx').on(table.unitType),
     index('units_active_idx').on(table.areaId, table.isActive),
+    // Offline detection: find units by last reading time (active units only)
+    index('units_last_reading_at_idx')
+      .on(table.lastReadingAt.desc())
+      .where(sql`${table.isActive} = true`),
   ],
 );
 

@@ -1,4 +1,3 @@
-import { useTRPCClient } from '@/lib/trpc';
 import { useUser } from '@stackframe/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -10,11 +9,28 @@ import type {
   TimelineState,
   WidgetPreferences,
 } from '../types';
+import { useTRPCClient } from '@/lib/trpc';
 
 // Re-export EntityType for backward compatibility
 export type { EntityType };
 
-function rowToSavedLayout(row: any): SavedLayout {
+interface LayoutRow {
+  id: string;
+  organizationId: string;
+  entityType: string;
+  entityId: string;
+  userId: string;
+  name: string;
+  isUserDefault: boolean;
+  layoutJson: unknown;
+  widgetPrefsJson?: unknown;
+  timelineStateJson?: unknown;
+  layoutVersion: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+function rowToSavedLayout(row: LayoutRow): SavedLayout {
   return {
     id: row.id,
     organizationId: row.organizationId,
@@ -61,13 +77,14 @@ export function useEntityLayoutStorage(
       if (!user || !entityId) return [];
 
       const response = await trpcClient.dashboardLayouts.list.query({
+        organizationId: organizationId!,
         entityType,
         entityId,
       });
 
       return response.map(rowToSavedLayout);
     },
-    enabled: !!entityId,
+    enabled: !!entityId && !!organizationId,
     staleTime: 1000 * 60 * 5, // 5 minutes - prevents refetch on navigation
   });
 
@@ -75,10 +92,7 @@ export function useEntityLayoutStorage(
   const layoutBySlot = (slot: 1 | 2 | 3): SavedLayout | null => {
     const layouts = savedLayouts as SavedLayout[];
     return (
-      layouts.find((l, idx) => {
-        // Slot number is stored in DB, but also we can use index + 1
-        const row = l as any;
-        // Check if we can access slot_number from the underlying data
+      layouts.find((_l, idx) => {
         // Since we order by slot_number, slot 1 = index 0, etc.
         return idx + 1 === slot;
       }) || null
@@ -146,7 +160,10 @@ export function useEntityLayoutStorage(
       widgetPrefsJson?: WidgetPreferences;
       timelineStateJson?: TimelineState;
     }) => {
-      const response = await trpcClient.dashboardLayouts.update.mutate(params);
+      const response = await trpcClient.dashboardLayouts.update.mutate({
+        ...params,
+        organizationId: organizationId!,
+      });
       return rowToSavedLayout(response);
     },
     onSuccess: (updatedLayout) => {
@@ -168,7 +185,10 @@ export function useEntityLayoutStorage(
   // Delete layout mutation
   const deleteLayoutMutation = useMutation({
     mutationFn: async (layoutId: string) => {
-      await trpcClient.dashboardLayouts.remove.mutate({ layoutId });
+      await trpcClient.dashboardLayouts.remove.mutate({
+        organizationId: organizationId!,
+        layoutId,
+      });
     },
     onSuccess: (_data, deletedLayoutId) => {
       // Update cache directly by removing the deleted layout

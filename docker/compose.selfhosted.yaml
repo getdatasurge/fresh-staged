@@ -47,41 +47,13 @@ services:
   # ===========================================
   # Caddy (Reverse Proxy)
   # ===========================================
-  # Note: Only Caddy should be externally accessible
-  # All other services are bound to localhost
-  # Uncomment when backend service is defined in base compose:
-  # caddy:
-  #   image: caddy:latest
-  #   container_name: freshtrack-caddy
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   volumes:
-  #     - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-  #     - caddy_data:/data
-  #     - caddy_config:/config
-  #   depends_on:
-  #     - backend
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: "0.5"
-  #         memory: 256M
-  #       reservations:
-  #         cpus: "0.25"
-  #         memory: 128M
-  #     restart_policy:
-  #       condition: on-failure
-  #       delay: 5s
-  #       max_attempts: 5
-  #       window: 120s
-  #   logging:
-  #     driver: loki
-  #     options:
-  #       loki-url: "http://loki:3100/loki/api/v1/push"
-  #       loki-batch-size: "400"
-  #       loki-retries: "3"
-  #       loki-external-labels: "service={{.Name}},environment=production"
+  # Only Caddy should be externally accessible.
+  # All other services are bound to localhost above.
+  # Caddy base definition is in compose.prod.yaml.
+  caddy:
+    ports:
+      - '0.0.0.0:80:80'
+      - '0.0.0.0:443:443'
 
   # ===========================================
   # Backend API
@@ -108,12 +80,4 @@ secrets:
   stack_auth_secret:
     file: /var/infisical/secrets/stack_auth_secret
 
-# ===========================================
-# Volumes
-# ===========================================
-# Uncomment when Caddy is enabled:
-# volumes:
-#   caddy_data:
-#     name: freshtrack_caddy_data
-#   caddy_config:
-#     name: freshtrack_caddy_config
+# Volumes are defined in compose.prod.yaml (caddy_data, caddy_config, caddy_logs)

@@ -1,10 +1,10 @@
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fastifyPlugin from 'fastify-plugin';
 import { Server as SocketIOServer } from 'socket.io';
-import type { TypedSocketIOServer } from '../types/socket.js';
 import { setupSocketAuth } from '../middleware/socket-auth.js';
-import { SocketService } from '../services/socket.service.js';
 import { SensorStreamService } from '../services/sensor-stream.service.js';
+import { SocketService } from '../services/socket.service.js';
+import type { TypedSocketIOServer } from '../types/socket.js';
 
 /**
  * Socket.io plugin for Fastify
@@ -108,9 +108,24 @@ const socketPlugin: FastifyPluginAsync<SocketPluginOptions> = async (
         callback(latest || null);
       });
 
-      // Handle client subscription events
-      socket.on('subscribe:site', (siteId: string) => {
-        socketService.joinSite(socket, siteId);
+      // Handle client subscription events with ownership validation
+      socket.on('subscribe:site', async (siteId: string) => {
+        const joined = await socketService.joinSite(socket, siteId);
+        if (!joined) {
+          socket.emit('subscription:error', {
+            entity: 'site',
+            entityId: siteId,
+            message: 'Access denied',
+          });
+          fastify.log.warn({
+            event: 'socket:subscribe:site:denied',
+            socketId: socket.id,
+            userId: socket.data.userId,
+            organizationId: socket.data.organizationId,
+            siteId,
+          });
+          return;
+        }
         fastify.log.info({
           event: 'socket:subscribe:site',
           socketId: socket.id,
@@ -119,8 +134,23 @@ const socketPlugin: FastifyPluginAsync<SocketPluginOptions> = async (
         });
       });
 
-      socket.on('subscribe:unit', (unitId: string) => {
-        socketService.joinUnit(socket, unitId);
+      socket.on('subscribe:unit', async (unitId: string) => {
+        const joined = await socketService.joinUnit(socket, unitId);
+        if (!joined) {
+          socket.emit('subscription:error', {
+            entity: 'unit',
+            entityId: unitId,
+            message: 'Access denied',
+          });
+          fastify.log.warn({
+            event: 'socket:subscribe:unit:denied',
+            socketId: socket.id,
+            userId: socket.data.userId,
+            organizationId: socket.data.organizationId,
+            unitId,
+          });
+          return;
+        }
         fastify.log.info({
           event: 'socket:subscribe:unit',
           socketId: socket.id,
