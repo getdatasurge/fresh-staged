@@ -20,6 +20,13 @@ vi.mock('../../src/services/user.service.ts', () => ({
   getOrCreateProfile: vi.fn(),
 }));
 
+// Mock the audit service (used by update procedure)
+vi.mock('../../src/services/AuditService.ts', () => ({
+  AuditService: {
+    logEvent: vi.fn().mockResolvedValue({ success: true }),
+  },
+}));
+
 // Mock the site service
 vi.mock('../../src/services/site.service.js', () => ({
   listSitesWithStats: vi.fn(),
@@ -254,7 +261,7 @@ describe('Sites tRPC Router', () => {
   });
 
   describe('update', () => {
-    it.skip('should update site when user is admin', async () => {
+    it('should update site when user is admin', async () => {
       mockGetUserRoleInOrg.mockResolvedValue('admin');
       const updatedSite = {
         ...baseMockSite,
@@ -279,7 +286,7 @@ describe('Sites tRPC Router', () => {
       );
     });
 
-    it.skip('should update site when user is owner', async () => {
+    it('should update site when user is owner', async () => {
       mockGetUserRoleInOrg.mockResolvedValue('owner');
       const updatedSite = {
         ...baseMockSite,
