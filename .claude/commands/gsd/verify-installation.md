@@ -4,7 +4,7 @@ description: Run comprehensive installation verification
 category: setup
 arguments: []
 examples:
-  - command: "/gsd:verify-installation"
+  - command: '/gsd:verify-installation'
     description: Verify GSD installation and check CLI compatibility
 ---
 
@@ -13,6 +13,7 @@ examples:
 Run comprehensive diagnostics to verify GSD installation works correctly.
 
 This command will check:
+
 - ✓ Which CLIs are installed (Claude Code, Copilot CLI, Codex CLI)
 - ✓ Whether GSD skill/prompt is registered in each CLI
 - ✓ Whether all GSD commands are accessible
@@ -22,7 +23,10 @@ This command will check:
 
 ```javascript
 const { runDiagnostics } = require('../../lib-ghcc/verification/diagnostic-runner');
-const { CLIInstalledTest, SkillRegisteredTest } = require('../../lib-ghcc/verification/cli-detector');
+const {
+  CLIInstalledTest,
+  SkillRegisteredTest,
+} = require('../../lib-ghcc/verification/cli-detector');
 const { CommandAvailableTest } = require('../../lib-ghcc/verification/command-verifier');
 const { AgentCapabilityTest } = require('../../lib-ghcc/verification/agent-verifier');
 
@@ -32,15 +36,15 @@ const tests = [
   new CLIInstalledTest('Claude Code', 'claude'),
   new CLIInstalledTest('GitHub Copilot CLI', 'gh'),
   new CLIInstalledTest('Codex CLI', 'codex'),
-  
+
   // Skill Registration Tests
   new SkillRegisteredTest('claude'),
   new SkillRegisteredTest('copilot'),
   new SkillRegisteredTest('codex'),
-  
+
   // Command Availability Test
   new CommandAvailableTest(),
-  
+
   // Agent Capability Tests (key agents)
   new AgentCapabilityTest('gsd-executor'),
   new AgentCapabilityTest('gsd-planner'),
@@ -52,35 +56,38 @@ const tests = [
   new AgentCapabilityTest('gsd-project-researcher'),
   new AgentCapabilityTest('gsd-research-synthesizer'),
   new AgentCapabilityTest('gsd-roadmapper'),
-  new AgentCapabilityTest('gsd-integration-checker')
+  new AgentCapabilityTest('gsd-integration-checker'),
 ];
 
 // Run diagnostics
-runDiagnostics(tests).then(summary => {
-  console.log('\n═══════════════════════════════════════════════');
-  console.log('  VERIFICATION SUMMARY');
-  console.log('═══════════════════════════════════════════════');
-  console.log(`✓ ${summary.passed} passed`);
-  console.log(`⚠ ${summary.warned} warnings`);
-  console.log(`✗ ${summary.failed} failed`);
-  console.log('═══════════════════════════════════════════════\n');
-  
-  if (summary.failed === 0 && summary.warned === 0) {
-    console.log('🎉 All checks passed! GSD is ready to use.\n');
-  } else if (summary.failed === 0) {
-    console.log('⚠️  Some warnings detected. GSD should work but may have limitations.\n');
-  } else {
-    console.log('❌ Some checks failed. Please address the issues above.\n');
-  }
-}).catch(error => {
-  console.error('Verification error:', error.message);
-  process.exit(1);
-});
+runDiagnostics(tests)
+  .then((summary) => {
+    console.log('\n═══════════════════════════════════════════════');
+    console.log('  VERIFICATION SUMMARY');
+    console.log('═══════════════════════════════════════════════');
+    console.log(`✓ ${summary.passed} passed`);
+    console.log(`⚠ ${summary.warned} warnings`);
+    console.log(`✗ ${summary.failed} failed`);
+    console.log('═══════════════════════════════════════════════\n');
+
+    if (summary.failed === 0 && summary.warned === 0) {
+      console.log('🎉 All checks passed! GSD is ready to use.\n');
+    } else if (summary.failed === 0) {
+      console.log('⚠️  Some warnings detected. GSD should work but may have limitations.\n');
+    } else {
+      console.log('❌ Some checks failed. Please address the issues above.\n');
+    }
+  })
+  .catch((error) => {
+    console.error('Verification error:', error.message);
+    process.exit(1);
+  });
 ```
 
 ## Understanding Results
 
 **Status Icons:**
+
 - ✓ **Pass**: Feature works as expected
 - ⚠ **Warn**: Feature works with limitations
 - ✗ **Fail**: Feature not available

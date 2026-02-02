@@ -51,12 +51,14 @@ npx get-shit-done-multi@latest
 Initialize new project through unified flow.
 
 One command takes you from idea to ready-for-planning:
+
 - Deep questioning to understand what you're building
 - Optional domain research (spawns 4 parallel researcher agents)
 - Requirements definition with v1/v2/out-of-scope scoping
 - Roadmap creation with phase breakdown and success criteria
 
 Creates all `.planning/` artifacts:
+
 - `PROJECT.md` — vision and requirements
 - `config.json` — workflow mode (interactive/yolo)
 - `research/` — domain research (if selected)

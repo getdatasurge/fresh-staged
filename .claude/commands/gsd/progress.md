@@ -15,7 +15,6 @@ Check project progress, summarize recent work and what's ahead, then intelligent
 Provides situational awareness before continuing work.
 </objective>
 
-
 <process>
 
 <step name="verify">
@@ -129,16 +128,17 @@ grep -l "status: diagnosed" .planning/phases/[current-phase-dir]/*-UAT.md 2>/dev
 ```
 
 Track:
+
 - `uat_with_gaps`: UAT.md files with status "diagnosed" (gaps need fixing)
 
 **Step 2: Route based on counts**
 
-| Condition | Meaning | Action |
-|-----------|---------|--------|
-| uat_with_gaps > 0 | UAT gaps need fix plans | Go to **Route E** |
-| summaries < plans | Unexecuted plans exist | Go to **Route A** |
-| summaries = plans AND plans > 0 | Phase complete | Go to Step 3 |
-| plans = 0 | Phase not yet planned | Go to **Route B** |
+| Condition                       | Meaning                 | Action            |
+| ------------------------------- | ----------------------- | ----------------- |
+| uat_with_gaps > 0               | UAT gaps need fix plans | Go to **Route E** |
+| summaries < plans               | Unexecuted plans exist  | Go to **Route A** |
+| summaries = plans AND plans > 0 | Phase complete          | Go to Step 3      |
+| plans = 0                       | Phase not yet planned   | Go to **Route B** |
 
 ---
 
@@ -237,6 +237,7 @@ UAT.md exists with gaps (diagnosed issues). User needs to plan fixes.
 **Step 3: Check milestone status (only when phase complete)**
 
 Read ROADMAP.md and identify:
+
 1. Current phase number
 2. All phase numbers in the current milestone section
 
@@ -246,8 +247,8 @@ State: "Current phase is {X}. Milestone has {N} phases (highest: {Y})."
 
 **Route based on milestone status:**
 
-| Condition | Meaning | Action |
-|-----------|---------|--------|
+| Condition                     | Meaning            | Action            |
+| ----------------------------- | ------------------ | ----------------- |
 | current phase < highest phase | More phases remain | Go to **Route C** |
 | current phase = highest phase | Milestone complete | Go to **Route D** |
 
