@@ -4,3 +4,5 @@ pnpm-lock.yaml
 backend/pnpm-lock.yaml
 coverage
 backend/drizzle
+.claude
+.github/badges
