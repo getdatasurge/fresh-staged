@@ -28,7 +28,7 @@ export interface SmsProcessorResult {
 }
 
 export async function processSmsNotification(
-  job: Job<SmsNotificationJobData>
+  job: Job<SmsNotificationJobData>,
 ): Promise<SmsProcessorResult> {
   const { phoneNumber, message, organizationId, alertId, deliveryId } = job.data;
 
@@ -62,7 +62,9 @@ export async function processSmsNotification(
       message,
     });
 
-    console.log(`[SMS Processor] Sent message ${result.messageId} to ${phoneNumber.slice(0, 5)}***`);
+    console.log(
+      `[SMS Processor] Sent message ${result.messageId} to ${phoneNumber.slice(0, 5)}***`,
+    );
     console.log(`[SMS Processor] Status: ${result.status}`);
 
     // Update delivery record on success
@@ -91,9 +93,7 @@ export async function processSmsNotification(
       }
 
       // Throw UnrecoverableError to skip remaining retries
-      throw new UnrecoverableError(
-        `Permanent SMS failure: ${errorCode} - ${errorMessage}`
-      );
+      throw new UnrecoverableError(`Permanent SMS failure: ${errorCode} - ${errorMessage}`);
     }
 
     // For retryable or unknown errors, update retry count and throw

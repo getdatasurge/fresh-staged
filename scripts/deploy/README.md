@@ -8,11 +8,11 @@ The deployment notification script supports Slack, Discord, and generic webhook 
 
 Set the following environment variables:
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DEPLOY_WEBHOOK_URL` | Yes | Webhook URL for notifications |
-| `DEPLOY_ENVIRONMENT` | No | Environment name (default: production) |
-| `DEPLOY_VERSION` | No | Version being deployed (auto-detected from git) |
+| Variable             | Required | Description                                     |
+| -------------------- | -------- | ----------------------------------------------- |
+| `DEPLOY_WEBHOOK_URL` | Yes      | Webhook URL for notifications                   |
+| `DEPLOY_ENVIRONMENT` | No       | Environment name (default: production)          |
+| `DEPLOY_VERSION`     | No       | Version being deployed (auto-detected from git) |
 
 ### Slack Setup
 
@@ -40,17 +40,19 @@ For custom endpoints, the script sends a JSON payload:
 
 ```json
 {
-  "attachments": [{
-    "color": "#36a64f",
-    "title": "FreshTrack Pro Deployment",
-    "fields": [
-      {"title": "Status", "value": "success"},
-      {"title": "Environment", "value": "production"},
-      {"title": "Version", "value": "v1.2.3"},
-      {"title": "Host", "value": "prod-server-1"},
-      {"title": "Message", "value": "Deployment completed"}
-    ]
-  }]
+  "attachments": [
+    {
+      "color": "#36a64f",
+      "title": "FreshTrack Pro Deployment",
+      "fields": [
+        { "title": "Status", "value": "success" },
+        { "title": "Environment", "value": "production" },
+        { "title": "Version", "value": "v1.2.3" },
+        { "title": "Host", "value": "prod-server-1" },
+        { "title": "Message", "value": "Deployment completed" }
+      ]
+    }
+  ]
 }
 ```
 

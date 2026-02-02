@@ -6,7 +6,11 @@ let tokenGetter: (() => Promise<string | null>) | null = null;
 // Type-safe socket with event interfaces
 interface ServerToClientEvents {
   'sensor:reading': (data: SensorReading) => void;
-  'sensor:readings:batch': (data: { unitId: string; readings: SensorReading[]; count: number }) => void;
+  'sensor:readings:batch': (data: {
+    unitId: string;
+    readings: SensorReading[];
+    count: number;
+  }) => void;
   'alert:triggered': (data: AlertNotification) => void;
   'alert:resolved': (data: { alertId: string; unitId: string; resolvedAt: string }) => void;
   'alert:escalated': (data: { alertId: string; unitId: string; escalationLevel: number }) => void;
@@ -24,7 +28,8 @@ interface ClientToServerEvents {
 
 // Export typed socket
 export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
-  import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin),
+  import.meta.env.VITE_API_URL ||
+    (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin),
   {
     autoConnect: false, // Connect manually after auth
     transports: ['websocket'], // Skip polling→websocket upgrade
@@ -42,7 +47,7 @@ export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
         cb({ token: '' });
       }
     },
-  }
+  },
 );
 
 export function setTokenGetter(getter: (() => Promise<string | null>) | null) {

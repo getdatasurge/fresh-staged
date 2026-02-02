@@ -11,6 +11,7 @@ This phase implements the sensor data ingestion pipeline and alert evaluation sy
 The existing system uses a per-organization webhook secret for authentication (stored in `ttn_connections` table), bulk sensor reading insertions, threshold-based alert triggering with confirmation delays, and duplicate alert prevention via status checking. The migration must preserve this exact behavior while adapting to the new Drizzle ORM + Fastify stack.
 
 Key findings:
+
 - Drizzle ORM supports bulk inserts with `.values([...])` syntax and returning clauses for PostgreSQL
 - Alert deduplication is currently handled by checking for existing `active`/`acknowledged` alerts before creating new ones
 - The unit status state machine (ok -> excursion -> alarm_active) provides built-in confirmation delays
@@ -22,27 +23,31 @@ Key findings:
 ## Standard Stack
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| Drizzle ORM | 0.38+ | Bulk inserts, transactions, queries | Already integrated; type-safe bulk insert with `.values([])`, transaction support |
-| Fastify | 5.x | Route handlers, validation | Already integrated; preHandler hooks for API key auth |
-| Zod | 3.25+ | Request validation | Already integrated; validates bulk reading payloads |
-| node:crypto | Built-in | Secure comparison, UUID generation | Constant-time comparison for API key validation |
+
+| Library     | Version  | Purpose                             | Why Standard                                                                      |
+| ----------- | -------- | ----------------------------------- | --------------------------------------------------------------------------------- |
+| Drizzle ORM | 0.38+    | Bulk inserts, transactions, queries | Already integrated; type-safe bulk insert with `.values([])`, transaction support |
+| Fastify     | 5.x      | Route handlers, validation          | Already integrated; preHandler hooks for API key auth                             |
+| Zod         | 3.25+    | Request validation                  | Already integrated; validates bulk reading payloads                               |
+| node:crypto | Built-in | Secure comparison, UUID generation  | Constant-time comparison for API key validation                                   |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| date-fns | 3.x | Date manipulation | Time calculations for confirmation delays, grace periods |
-| pino | 8.x | Structured logging | Fastify default; trace request IDs for debugging |
+
+| Library  | Version | Purpose            | When to Use                                              |
+| -------- | ------- | ------------------ | -------------------------------------------------------- |
+| date-fns | 3.x     | Date manipulation  | Time calculations for confirmation delays, grace periods |
+| pino     | 8.x     | Structured logging | Fastify default; trace request IDs for debugging         |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Drizzle bulk insert | Individual inserts | Bulk is significantly faster for multi-reading payloads |
-| Service-layer evaluation | Database triggers | Service layer is more testable and debuggable |
-| Synchronous alert evaluation | BullMQ job | Synchronous is simpler for MVP; async can be added later |
+
+| Instead of                   | Could Use          | Tradeoff                                                 |
+| ---------------------------- | ------------------ | -------------------------------------------------------- |
+| Drizzle bulk insert          | Individual inserts | Bulk is significantly faster for multi-reading payloads  |
+| Service-layer evaluation     | Database triggers  | Service layer is more testable and debuggable            |
+| Synchronous alert evaluation | BullMQ job         | Synchronous is simpler for MVP; async can be added later |
 
 **Installation:**
+
 ```bash
 cd backend
 pnpm add date-fns
@@ -52,6 +57,7 @@ pnpm add date-fns
 ## Architecture Patterns
 
 ### Recommended Project Structure
+
 ```
 backend/src/
 ├── routes/
@@ -68,10 +74,12 @@ backend/src/
 ```
 
 ### Pattern 1: Bulk Insert with Transaction
+
 **What:** Insert multiple readings atomically with unit state update
 **When to use:** Every bulk readings ingestion request
 
 **Example:**
+
 ```typescript
 // Source: Drizzle ORM documentation (orm.drizzle.team/docs/insert)
 import { db } from '../db/client.js';
@@ -79,7 +87,7 @@ import { sensorReadings, units } from '../db/schema/index.js';
 
 export async function insertBulkReadings(
   readings: InsertSensorReading[],
-  unitId: string
+  unitId: string,
 ): Promise<{ insertedCount: number; readingIds: string[] }> {
   return db.transaction(async (tx) => {
     // 1. Bulk insert readings
@@ -103,34 +111,38 @@ export async function insertBulkReadings(
 
     return {
       insertedCount: inserted.length,
-      readingIds: inserted.map(r => r.id),
+      readingIds: inserted.map((r) => r.id),
     };
   });
 }
 ```
 
 ### Pattern 2: Alert Deduplication via Status Check
+
 **What:** Prevent duplicate alerts by checking for existing active/acknowledged alerts
 **When to use:** Before creating any new alert
 
 **Example:**
+
 ```typescript
 // Source: Existing process-unit-states pattern
 export async function createAlertIfNotExists(
   db: DrizzleClient,
   unitId: string,
   alertType: AlertType,
-  alertData: Omit<InsertAlert, 'id' | 'createdAt' | 'updatedAt'>
+  alertData: Omit<InsertAlert, 'id' | 'createdAt' | 'updatedAt'>,
 ): Promise<Alert | null> {
   // Check for existing open alert of same type for this unit
   const [existing] = await db
     .select()
     .from(alerts)
-    .where(and(
-      eq(alerts.unitId, unitId),
-      eq(alerts.alertType, alertType),
-      inArray(alerts.status, ['active', 'acknowledged'])
-    ))
+    .where(
+      and(
+        eq(alerts.unitId, unitId),
+        eq(alerts.alertType, alertType),
+        inArray(alerts.status, ['active', 'acknowledged']),
+      ),
+    )
     .limit(1);
 
   if (existing) {
@@ -139,36 +151,30 @@ export async function createAlertIfNotExists(
   }
 
   // No existing alert, create new one
-  const [alert] = await db
-    .insert(alerts)
-    .values(alertData)
-    .returning();
+  const [alert] = await db.insert(alerts).values(alertData).returning();
 
   return alert;
 }
 ```
 
 ### Pattern 3: Per-Organization API Key Authentication
+
 **What:** Middleware that validates webhook secret and resolves organization context
 **When to use:** Ingestion endpoints that receive data from external sources (TTN, etc.)
 
 **Example:**
+
 ```typescript
 // Source: Existing ttn-webhook pattern adapted for Fastify
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { timingSafeEqual } from 'node:crypto';
 
-export async function requireApiKey(
-  request: FastifyRequest,
-  reply: FastifyReply
-): Promise<void> {
-  const providedKey =
-    request.headers['x-webhook-secret'] ||
-    request.headers['x-api-key'];
+export async function requireApiKey(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const providedKey = request.headers['x-webhook-secret'] || request.headers['x-api-key'];
 
   if (!providedKey || typeof providedKey !== 'string') {
     return reply.code(401).send({
-      error: { code: 'UNAUTHORIZED', message: 'Missing API key' }
+      error: { code: 'UNAUTHORIZED', message: 'Missing API key' },
     });
   }
 
@@ -177,7 +183,7 @@ export async function requireApiKey(
 
   if (!orgContext) {
     return reply.code(401).send({
-      error: { code: 'UNAUTHORIZED', message: 'Invalid API key' }
+      error: { code: 'UNAUTHORIZED', message: 'Invalid API key' },
     });
   }
 
@@ -195,20 +201,29 @@ function secureCompare(a: string, b: string): boolean {
 ```
 
 ### Pattern 4: State Machine for Alert Confirmation
+
 **What:** Multi-step state transitions with confirmation delays
 **When to use:** Temperature excursion detection to prevent false alarms
 
 **State Machine:**
+
 ```
 ok -> excursion -> alarm_active -> restoring -> ok
      (immediate)  (after confirm_time)  (temp returns)  (N good readings)
 ```
 
 **Example:**
+
 ```typescript
 // Source: Existing process-unit-states logic
-type UnitStatus = 'ok' | 'excursion' | 'alarm_active' | 'monitoring_interrupted' |
-                  'manual_required' | 'restoring' | 'offline';
+type UnitStatus =
+  | 'ok'
+  | 'excursion'
+  | 'alarm_active'
+  | 'monitoring_interrupted'
+  | 'manual_required'
+  | 'restoring'
+  | 'offline';
 
 interface StateTransition {
   from: UnitStatus;
@@ -219,7 +234,7 @@ interface StateTransition {
 function evaluateUnitState(
   unit: Unit,
   latestTemp: number | null,
-  now: Date
+  now: Date,
 ): StateTransition | null {
   const { status: currentStatus, tempLimitHigh, tempLimitLow, tempHysteresis } = unit;
 
@@ -235,9 +250,10 @@ function evaluateUnitState(
   if (isOutOfRange && currentStatus === 'excursion') {
     const statusChangeTime = unit.lastStatusChange?.getTime() || now.getTime();
     const timeInExcursion = now.getTime() - statusChangeTime;
-    const confirmTime = unit.doorState === 'open'
-      ? unit.confirmTimeDoorOpen * 1000
-      : unit.confirmTimeDoorClosed * 1000;
+    const confirmTime =
+      unit.doorState === 'open'
+        ? unit.confirmTimeDoorOpen * 1000
+        : unit.confirmTimeDoorClosed * 1000;
 
     if (timeInExcursion >= confirmTime) {
       return { from: 'excursion', to: 'alarm_active', reason: 'Excursion confirmed' };
@@ -247,10 +263,13 @@ function evaluateUnitState(
   // Temperature back in range with hysteresis?
   const inRangeWithHysteresis =
     latestTemp !== null &&
-    latestTemp <= (tempLimitHigh - tempHysteresis) &&
-    (tempLimitLow === null || latestTemp >= (tempLimitLow + tempHysteresis));
+    latestTemp <= tempLimitHigh - tempHysteresis &&
+    (tempLimitLow === null || latestTemp >= tempLimitLow + tempHysteresis);
 
-  if (inRangeWithHysteresis && (currentStatus === 'excursion' || currentStatus === 'alarm_active')) {
+  if (
+    inRangeWithHysteresis &&
+    (currentStatus === 'excursion' || currentStatus === 'alarm_active')
+  ) {
     return { from: currentStatus, to: 'restoring', reason: 'Temperature returning to range' };
   }
 
@@ -259,6 +278,7 @@ function evaluateUnitState(
 ```
 
 ### Anti-Patterns to Avoid
+
 - **Evaluating alerts in route handlers:** Always delegate to service layer for testability
 - **Creating alerts without deduplication check:** Always check for existing active alerts first
 - **Trusting timestamps from external sources:** Validate and sanitize `recorded_at` from payloads
@@ -268,38 +288,43 @@ function evaluateUnitState(
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Bulk insert optimization | Manual batching with loops | Drizzle `.values([...])` | Drizzle handles parameterization and batching |
-| Alert deduplication | Custom locking/semaphores | Status-based idempotency check | Database-level check is simpler and atomic |
-| Constant-time comparison | Character-by-character loop | `crypto.timingSafeEqual()` | Built-in is audited and correct |
-| Date/time math | Manual millisecond calculations | `date-fns` | Handles edge cases, DST, timezone |
-| UUID generation | Custom implementation | `crypto.randomUUID()` | Built-in, RFC 4122 compliant |
-| Transaction rollback | Manual try/catch with explicit rollback | Drizzle `db.transaction()` | Auto-rollback on error |
+| Problem                  | Don't Build                             | Use Instead                    | Why                                           |
+| ------------------------ | --------------------------------------- | ------------------------------ | --------------------------------------------- |
+| Bulk insert optimization | Manual batching with loops              | Drizzle `.values([...])`       | Drizzle handles parameterization and batching |
+| Alert deduplication      | Custom locking/semaphores               | Status-based idempotency check | Database-level check is simpler and atomic    |
+| Constant-time comparison | Character-by-character loop             | `crypto.timingSafeEqual()`     | Built-in is audited and correct               |
+| Date/time math           | Manual millisecond calculations         | `date-fns`                     | Handles edge cases, DST, timezone             |
+| UUID generation          | Custom implementation                   | `crypto.randomUUID()`          | Built-in, RFC 4122 compliant                  |
+| Transaction rollback     | Manual try/catch with explicit rollback | Drizzle `db.transaction()`     | Auto-rollback on error                        |
 
 **Key insight:** The existing Supabase implementation already solved most edge cases. Port the logic, don't reinvent it.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Duplicate Alerts on Concurrent Requests
+
 **What goes wrong:** Two simultaneous requests both check for existing alert, both find none, both create alerts
 **Why it happens:** Race condition between check and insert
 **How to avoid:**
+
 - Use database unique constraint on (unit_id, alert_type) for active alerts, OR
 - Use advisory locks for critical sections, OR
 - Accept eventual consistency and dedupe on query (recommended for MVP)
-**Warning signs:** Multiple alerts with same type for same unit in short time window
+  **Warning signs:** Multiple alerts with same type for same unit in short time window
 
 ### Pitfall 2: Bulk Insert Parameter Limit
+
 **What goes wrong:** PostgreSQL has a 65,534 parameter limit; large bulk inserts fail
 **Why it happens:** Each row adds N parameters (one per column)
 **How to avoid:**
+
 - Batch inserts into chunks of ~500-1000 rows
 - Calculate max: 65534 / columns_per_row = max_rows_per_insert
 - For sensor_readings (11 columns), max is ~5958 rows per insert
-**Warning signs:** `MAX_PARAMETERS_EXCEEDED` error on large payloads
+  **Warning signs:** `MAX_PARAMETERS_EXCEEDED` error on large payloads
 
 **Example:**
+
 ```typescript
 const BATCH_SIZE = 500;
 
@@ -308,8 +333,11 @@ async function insertReadingsInBatches(readings: InsertSensorReading[]) {
 
   for (let i = 0; i < readings.length; i += BATCH_SIZE) {
     const batch = readings.slice(i, i + BATCH_SIZE);
-    const inserted = await db.insert(sensorReadings).values(batch).returning({ id: sensorReadings.id });
-    results.push(...inserted.map(r => r.id));
+    const inserted = await db
+      .insert(sensorReadings)
+      .values(batch)
+      .returning({ id: sensorReadings.id });
+    results.push(...inserted.map((r) => r.id));
   }
 
   return results;
@@ -317,35 +345,42 @@ async function insertReadingsInBatches(readings: InsertSensorReading[]) {
 ```
 
 ### Pitfall 3: Stale Unit State After Reading Insert
+
 **What goes wrong:** Alert evaluation uses cached unit state, not the just-updated state
 **Why it happens:** Reading insert and state evaluation are separate queries
 **How to avoid:**
+
 - Use transaction to ensure atomic read-after-write
 - Fetch fresh unit state within the transaction
 - Or evaluate based on the readings just inserted, not unit table
-**Warning signs:** Alerts triggered incorrectly after reading insert
+  **Warning signs:** Alerts triggered incorrectly after reading insert
 
 ### Pitfall 4: Timezone Confusion in recordedAt
+
 **What goes wrong:** Sensor sends UTC, system interprets as local time (or vice versa)
 **Why it happens:** Inconsistent timestamp handling across system boundaries
 **How to avoid:**
+
 - Store all timestamps as UTC with timezone in PostgreSQL (`timestamp with time zone`)
 - Parse incoming timestamps with explicit timezone handling
 - Use ISO 8601 format for all API responses
-**Warning signs:** Readings appear hours offset from reality
+  **Warning signs:** Readings appear hours offset from reality
 
 ### Pitfall 5: Alert Acknowledge Without Authorization
+
 **What goes wrong:** User acknowledges alert they don't have access to
 **Why it happens:** Missing hierarchy validation for alert ownership
 **How to avoid:**
+
 - Alert routes must validate: unit -> area -> site -> organization hierarchy
 - Use same pattern as existing unit.service.ts `verifyAreaAccess`
 - Never trust alertId from URL without org context verification
-**Warning signs:** Users seeing/modifying alerts from other organizations
+  **Warning signs:** Users seeing/modifying alerts from other organizations
 
 ## Code Examples
 
 ### Example 1: Bulk Readings Ingestion Route
+
 ```typescript
 // Source: Fastify + Zod patterns + existing ttn-webhook logic
 import type { FastifyInstance } from 'fastify';
@@ -355,63 +390,73 @@ import { requireApiKey } from '../middleware/api-key-auth.js';
 import * as readingsService from '../services/readings.service.js';
 
 const BulkReadingsSchema = z.object({
-  readings: z.array(z.object({
-    unitId: z.string().uuid(),
-    deviceId: z.string().uuid().optional(),
-    temperature: z.number().int(), // Integer * 10 (e.g., 320 = 32.0F)
-    humidity: z.number().optional(),
-    battery: z.number().int().min(0).max(100).optional(),
-    signalStrength: z.number().int().optional(),
-    recordedAt: z.string().datetime(), // ISO 8601
-    source: z.enum(['ttn', 'manual', 'api']).default('api'),
-  })).min(1).max(1000),
+  readings: z
+    .array(
+      z.object({
+        unitId: z.string().uuid(),
+        deviceId: z.string().uuid().optional(),
+        temperature: z.number().int(), // Integer * 10 (e.g., 320 = 32.0F)
+        humidity: z.number().optional(),
+        battery: z.number().int().min(0).max(100).optional(),
+        signalStrength: z.number().int().optional(),
+        recordedAt: z.string().datetime(), // ISO 8601
+        source: z.enum(['ttn', 'manual', 'api']).default('api'),
+      }),
+    )
+    .min(1)
+    .max(1000),
 });
 
 export default async function readingsRoutes(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
 
   // POST /api/ingest/readings - Bulk readings ingestion
-  app.post('/ingest/readings', {
-    preHandler: [requireApiKey],
-    schema: {
-      body: BulkReadingsSchema,
-      response: {
-        200: z.object({
-          success: z.boolean(),
-          insertedCount: z.number(),
-          readingIds: z.array(z.string().uuid()),
-          alertsTriggered: z.number(),
-        }),
+  app.post(
+    '/ingest/readings',
+    {
+      preHandler: [requireApiKey],
+      schema: {
+        body: BulkReadingsSchema,
+        response: {
+          200: z.object({
+            success: z.boolean(),
+            insertedCount: z.number(),
+            readingIds: z.array(z.string().uuid()),
+            alertsTriggered: z.number(),
+          }),
+        },
       },
     },
-  }, async (request, reply) => {
-    const { readings } = request.body;
-    const orgId = request.orgContext!.organizationId;
+    async (request, reply) => {
+      const { readings } = request.body;
+      const orgId = request.orgContext!.organizationId;
 
-    // Validate all units belong to this organization
-    const unitIds = [...new Set(readings.map(r => r.unitId))];
-    const validUnits = await readingsService.validateUnitsInOrg(unitIds, orgId);
+      // Validate all units belong to this organization
+      const unitIds = [...new Set(readings.map((r) => r.unitId))];
+      const validUnits = await readingsService.validateUnitsInOrg(unitIds, orgId);
 
-    if (validUnits.length !== unitIds.length) {
-      return reply.code(403).send({
-        error: { code: 'FORBIDDEN', message: 'Some units not accessible' }
-      });
-    }
+      if (validUnits.length !== unitIds.length) {
+        return reply.code(403).send({
+          error: { code: 'FORBIDDEN', message: 'Some units not accessible' },
+        });
+      }
 
-    // Insert readings and trigger alert evaluation
-    const result = await readingsService.ingestBulkReadings(readings, orgId);
+      // Insert readings and trigger alert evaluation
+      const result = await readingsService.ingestBulkReadings(readings, orgId);
 
-    return {
-      success: true,
-      insertedCount: result.insertedCount,
-      readingIds: result.readingIds,
-      alertsTriggered: result.alertsTriggered,
-    };
-  });
+      return {
+        success: true,
+        insertedCount: result.insertedCount,
+        readingIds: result.readingIds,
+        alertsTriggered: result.alertsTriggered,
+      };
+    },
+  );
 }
 ```
 
 ### Example 2: Alert Acknowledge/Resolve Endpoints
+
 ```typescript
 // Source: Alert lifecycle patterns from existing system
 import type { FastifyInstance } from 'fastify';
@@ -434,56 +479,71 @@ export default async function alertRoutes(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
 
   // POST /api/orgs/:orgId/alerts/:alertId/acknowledge
-  app.post('/:alertId/acknowledge', {
-    preHandler: [requireAuth, requireOrgContext, requireRole('staff')],
-    schema: {
-      body: AlertAcknowledgeSchema,
+  app.post(
+    '/:alertId/acknowledge',
+    {
+      preHandler: [requireAuth, requireOrgContext, requireRole('staff')],
+      schema: {
+        body: AlertAcknowledgeSchema,
+      },
     },
-  }, async (request, reply) => {
-    const { alertId } = request.params;
-    const { notes } = request.body;
-    const userId = request.user!.id;
-    const orgId = request.user!.organizationId!;
+    async (request, reply) => {
+      const { alertId } = request.params;
+      const { notes } = request.body;
+      const userId = request.user!.id;
+      const orgId = request.user!.organizationId!;
 
-    const alert = await alertService.acknowledgeAlert(alertId, orgId, userId, notes);
+      const alert = await alertService.acknowledgeAlert(alertId, orgId, userId, notes);
 
-    if (alert === null) {
-      return notFound(reply, 'Alert not found');
-    }
+      if (alert === null) {
+        return notFound(reply, 'Alert not found');
+      }
 
-    if (alert === 'already_acknowledged') {
-      return reply.code(409).send({
-        error: { code: 'CONFLICT', message: 'Alert already acknowledged' }
-      });
-    }
+      if (alert === 'already_acknowledged') {
+        return reply.code(409).send({
+          error: { code: 'CONFLICT', message: 'Alert already acknowledged' },
+        });
+      }
 
-    return alert;
-  });
+      return alert;
+    },
+  );
 
   // POST /api/orgs/:orgId/alerts/:alertId/resolve
-  app.post('/:alertId/resolve', {
-    preHandler: [requireAuth, requireOrgContext, requireRole('staff')],
-    schema: {
-      body: AlertResolveSchema,
+  app.post(
+    '/:alertId/resolve',
+    {
+      preHandler: [requireAuth, requireOrgContext, requireRole('staff')],
+      schema: {
+        body: AlertResolveSchema,
+      },
     },
-  }, async (request, reply) => {
-    const { alertId } = request.params;
-    const { resolution, correctiveAction } = request.body;
-    const userId = request.user!.id;
-    const orgId = request.user!.organizationId!;
+    async (request, reply) => {
+      const { alertId } = request.params;
+      const { resolution, correctiveAction } = request.body;
+      const userId = request.user!.id;
+      const orgId = request.user!.organizationId!;
 
-    const alert = await alertService.resolveAlert(alertId, orgId, userId, resolution, correctiveAction);
+      const alert = await alertService.resolveAlert(
+        alertId,
+        orgId,
+        userId,
+        resolution,
+        correctiveAction,
+      );
 
-    if (alert === null) {
-      return notFound(reply, 'Alert not found');
-    }
+      if (alert === null) {
+        return notFound(reply, 'Alert not found');
+      }
 
-    return alert;
-  });
+      return alert;
+    },
+  );
 }
 ```
 
 ### Example 3: Alert Evaluator Service
+
 ```typescript
 // Source: Existing process-unit-states logic adapted for Node.js
 import { db } from '../db/client.js';
@@ -499,15 +559,11 @@ interface EvaluationResult {
 export async function evaluateUnitAfterReading(
   unitId: string,
   latestTemp: number,
-  recordedAt: Date
+  recordedAt: Date,
 ): Promise<EvaluationResult> {
   return db.transaction(async (tx) => {
     // 1. Fetch current unit state with FOR UPDATE to prevent race conditions
-    const [unit] = await tx
-      .select()
-      .from(units)
-      .where(eq(units.id, unitId))
-      .limit(1);
+    const [unit] = await tx.select().from(units).where(eq(units.id, unitId)).limit(1);
 
     if (!unit) throw new Error(`Unit ${unitId} not found`);
 
@@ -533,11 +589,14 @@ export async function evaluateUnitAfterReading(
         reason: `Temperature ${latestTemp} ${isAboveLimit ? 'above' : 'below'} limit`,
       };
 
-      await tx.update(units).set({
-        status: 'excursion',
-        lastStatusChange: now,
-        updatedAt: now,
-      }).where(eq(units.id, unitId));
+      await tx
+        .update(units)
+        .set({
+          status: 'excursion',
+          lastStatusChange: now,
+          updatedAt: now,
+        })
+        .where(eq(units.id, unitId));
 
       // Create excursion alert if none exists
       result.alertCreated = await createAlertIfNotExists(tx, {
@@ -563,55 +622,65 @@ export async function evaluateUnitAfterReading(
           reason: 'Temperature excursion confirmed',
         };
 
-        await tx.update(units).set({
-          status: 'alarm_active',
-          lastStatusChange: now,
-          updatedAt: now,
-        }).where(eq(units.id, unitId));
+        await tx
+          .update(units)
+          .set({
+            status: 'alarm_active',
+            lastStatusChange: now,
+            updatedAt: now,
+          })
+          .where(eq(units.id, unitId));
 
         // Escalate alert to critical
-        await tx.update(alerts)
+        await tx
+          .update(alerts)
           .set({ severity: 'critical', updatedAt: now })
-          .where(and(
-            eq(alerts.unitId, unitId),
-            eq(alerts.alertType, 'alarm_active'),
-            inArray(alerts.status, ['active', 'acknowledged'])
-          ));
+          .where(
+            and(
+              eq(alerts.unitId, unitId),
+              eq(alerts.alertType, 'alarm_active'),
+              inArray(alerts.status, ['active', 'acknowledged']),
+            ),
+          );
       }
     }
 
     // Check for temperature recovery
     const hysteresis = 5; // 0.5 degrees in integer format
     const inRangeWithHysteresis =
-      latestTemp <= (unit.tempMax - hysteresis) &&
-      latestTemp >= (unit.tempMin + hysteresis);
+      latestTemp <= unit.tempMax - hysteresis && latestTemp >= unit.tempMin + hysteresis;
 
-    if (inRangeWithHysteresis &&
-        (unit.status === 'excursion' || unit.status === 'alarm_active')) {
+    if (inRangeWithHysteresis && (unit.status === 'excursion' || unit.status === 'alarm_active')) {
       result.stateChange = {
         from: unit.status,
         to: 'restoring',
         reason: 'Temperature returning to range',
       };
 
-      await tx.update(units).set({
-        status: 'restoring',
-        lastStatusChange: now,
-        updatedAt: now,
-      }).where(eq(units.id, unitId));
+      await tx
+        .update(units)
+        .set({
+          status: 'restoring',
+          lastStatusChange: now,
+          updatedAt: now,
+        })
+        .where(eq(units.id, unitId));
 
       // Resolve alert
-      const [resolved] = await tx.update(alerts)
+      const [resolved] = await tx
+        .update(alerts)
         .set({
           status: 'resolved',
           resolvedAt: now,
           updatedAt: now,
         })
-        .where(and(
-          eq(alerts.unitId, unitId),
-          eq(alerts.alertType, 'alarm_active'),
-          inArray(alerts.status, ['active', 'acknowledged'])
-        ))
+        .where(
+          and(
+            eq(alerts.unitId, unitId),
+            eq(alerts.alertType, 'alarm_active'),
+            inArray(alerts.status, ['active', 'acknowledged']),
+          ),
+        )
         .returning();
 
       result.alertResolved = resolved || null;
@@ -623,12 +692,19 @@ export async function evaluateUnitAfterReading(
 ```
 
 ### Example 4: Integration Test for Alert Triggering
+
 ```typescript
 // Source: Vitest + Fastify inject patterns from existing tests
 import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest';
 import { buildApp } from '../../src/app.js';
 import type { FastifyInstance } from 'fastify';
-import { createTestOrg, createTestSite, createTestArea, createTestUnit, cleanupTestData } from '../helpers/fixtures.js';
+import {
+  createTestOrg,
+  createTestSite,
+  createTestArea,
+  createTestUnit,
+  cleanupTestData,
+} from '../helpers/fixtures.js';
 
 describe('Alert Triggering', () => {
   let app: FastifyInstance;
@@ -648,8 +724,8 @@ describe('Alert Triggering', () => {
     const site = await createTestSite(org.id);
     const area = await createTestArea(site.id);
     const unit = await createTestUnit(area.id, {
-      tempMin: 320,  // 32.0 F
-      tempMax: 400,  // 40.0 F
+      tempMin: 320, // 32.0 F
+      tempMax: 400, // 40.0 F
     });
     testUnitId = unit.id;
   });
@@ -666,12 +742,14 @@ describe('Alert Triggering', () => {
       url: '/api/ingest/readings',
       headers: { 'x-api-key': testApiKey },
       payload: {
-        readings: [{
-          unitId: testUnitId,
-          temperature: 420,  // 42.0 F - above 40.0 limit
-          recordedAt: new Date().toISOString(),
-          source: 'api',
-        }],
+        readings: [
+          {
+            unitId: testUnitId,
+            temperature: 420, // 42.0 F - above 40.0 limit
+            recordedAt: new Date().toISOString(),
+            source: 'api',
+          },
+        ],
       },
     });
 
@@ -697,12 +775,14 @@ describe('Alert Triggering', () => {
       url: '/api/ingest/readings',
       headers: { 'x-api-key': testApiKey },
       payload: {
-        readings: [{
-          unitId: testUnitId,
-          temperature: 430,
-          recordedAt: new Date().toISOString(),
-          source: 'api',
-        }],
+        readings: [
+          {
+            unitId: testUnitId,
+            temperature: 430,
+            recordedAt: new Date().toISOString(),
+            source: 'api',
+          },
+        ],
       },
     });
 
@@ -725,12 +805,14 @@ describe('Alert Triggering', () => {
       url: '/api/ingest/readings',
       headers: { 'x-api-key': testApiKey },
       payload: {
-        readings: [{
-          unitId: testUnitId,
-          temperature: 350,  // 35.0 F - well within range
-          recordedAt: new Date().toISOString(),
-          source: 'api',
-        }],
+        readings: [
+          {
+            unitId: testUnitId,
+            temperature: 350, // 35.0 F - well within range
+            recordedAt: new Date().toISOString(),
+            source: 'api',
+          },
+        ],
       },
     });
 
@@ -750,14 +832,15 @@ describe('Alert Triggering', () => {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Supabase Edge Functions | Node.js Fastify services | This migration | Full control, easier debugging, same logic |
-| Service role key bypass | Per-org API keys | Already in place | Better isolation, audit trail |
-| Polling for state evaluation | Evaluate on ingestion + scheduled | Hybrid approach | Near real-time response |
-| Manual duplicate checking | Alias-based deduplication | Industry standard | Simpler, more reliable |
+| Old Approach                 | Current Approach                  | When Changed      | Impact                                     |
+| ---------------------------- | --------------------------------- | ----------------- | ------------------------------------------ |
+| Supabase Edge Functions      | Node.js Fastify services          | This migration    | Full control, easier debugging, same logic |
+| Service role key bypass      | Per-org API keys                  | Already in place  | Better isolation, audit trail              |
+| Polling for state evaluation | Evaluate on ingestion + scheduled | Hybrid approach   | Near real-time response                    |
+| Manual duplicate checking    | Alias-based deduplication         | Industry standard | Simpler, more reliable                     |
 
 **Deprecated/outdated:**
+
 - Global service role key for all ingestion - replaced with per-org webhook secrets
 - Supabase Realtime for alert notifications - replaced with Socket.io (Phase 5+)
 
@@ -786,6 +869,7 @@ describe('Alert Triggering', () => {
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Existing codebase: `supabase/functions/ttn-webhook/index.ts` - Per-org webhook auth pattern
 - Existing codebase: `supabase/functions/process-unit-states/index.ts` - State machine and alert evaluation
 - Existing codebase: `backend/src/db/schema/telemetry.ts` - Sensor readings schema
@@ -794,16 +878,19 @@ describe('Alert Triggering', () => {
 - [Drizzle ORM Transactions Documentation](https://orm.drizzle.team/docs/transactions) - Transaction handling
 
 ### Secondary (MEDIUM confidence)
+
 - [API Key Security Best Practices 2026](https://dev.to/alixd/api-key-security-best-practices-for-2026-1n5d) - Key management patterns
 - [Temperature Logger Alarm Handling](https://sgsystemsglobal.com/glossary/temperature-logger-alarm-handling/) - Alert lifecycle patterns
 - [Alert De-duplication Atlassian](https://support.atlassian.com/opsgenie/docs/what-is-alert-de-duplication/) - Alias-based deduplication
 
 ### Tertiary (LOW confidence)
+
 - None - all findings verified with existing codebase or official documentation
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - Using existing Drizzle/Fastify stack, no new dependencies needed
 - Architecture: HIGH - Patterns derived from existing Supabase Edge Functions being migrated
 - Pitfalls: HIGH - Identified from existing code patterns and database constraints

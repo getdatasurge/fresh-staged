@@ -1,729 +1,704 @@
-import { useToast } from '@/hooks/use-toast'
-import { useTRPC } from '@/lib/trpc'
-import { useUser } from '@stackframe/react'
-import { useMutation } from '@tanstack/react-query'
+import { useToast } from '@/hooks/use-toast';
+import { useTRPC } from '@/lib/trpc';
+import { useUser } from '@stackframe/react';
+import { useMutation } from '@tanstack/react-query';
 import {
-	createContext,
-	ReactNode,
-	useCallback,
-	useContext,
-	useEffect,
-	useRef,
-	useState,
-} from 'react'
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 // Support mode timeout (30 minutes in milliseconds)
-const SUPPORT_MODE_TIMEOUT_MS = 30 * 60 * 1000
-const SUPPORT_MODE_INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000
-const SUPPORT_MODE_STORAGE_KEY = 'ftp_support_mode'
+const SUPPORT_MODE_TIMEOUT_MS = 30 * 60 * 1000;
+const SUPPORT_MODE_INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000;
+const SUPPORT_MODE_STORAGE_KEY = 'ftp_support_mode';
 
 // Role load status state machine
-export type RoleLoadStatus = 'idle' | 'loading' | 'loaded' | 'error'
+export type RoleLoadStatus = 'idle' | 'loading' | 'loaded' | 'error';
 
 interface ImpersonationState {
-	isImpersonating: boolean
-	impersonatedUserId: string | null
-	impersonatedUserEmail: string | null
-	impersonatedUserName: string | null
-	impersonatedOrgId: string | null
-	impersonatedOrgName: string | null
-	startedAt: Date | null
+  isImpersonating: boolean;
+  impersonatedUserId: string | null;
+  impersonatedUserEmail: string | null;
+  impersonatedUserName: string | null;
+  impersonatedOrgId: string | null;
+  impersonatedOrgName: string | null;
+  startedAt: Date | null;
 }
 
 interface ViewingOrgState {
-	orgId: string | null
-	orgName: string | null
+  orgId: string | null;
+  orgName: string | null;
 }
 
 interface SuperAdminContextType {
-	// Super admin status with explicit state machine
-	isSuperAdmin: boolean
-	isLoadingSuperAdmin: boolean // derived: status === 'loading'
-	rolesLoaded: boolean // derived: status === 'loaded' || status === 'error'
-	roleLoadStatus: RoleLoadStatus
-	roleLoadError: string | null
+  // Super admin status with explicit state machine
+  isSuperAdmin: boolean;
+  isLoadingSuperAdmin: boolean; // derived: status === 'loading'
+  rolesLoaded: boolean; // derived: status === 'loaded' || status === 'error'
+  roleLoadStatus: RoleLoadStatus;
+  roleLoadError: string | null;
 
-	// Support mode
-	isSupportModeActive: boolean
-	supportModeStartedAt: Date | null
-	supportModeExpiresAt: Date | null
-	enterSupportMode: () => Promise<void>
-	exitSupportMode: () => Promise<void>
+  // Support mode
+  isSupportModeActive: boolean;
+  supportModeStartedAt: Date | null;
+  supportModeExpiresAt: Date | null;
+  enterSupportMode: () => Promise<void>;
+  exitSupportMode: () => Promise<void>;
 
-	// Impersonation
-	impersonation: ImpersonationState
-	startImpersonation: (
-		userId: string,
-		userEmail: string,
-		userName: string,
-		orgId: string,
-		orgName: string,
-	) => Promise<boolean>
-	stopImpersonation: () => Promise<void>
+  // Impersonation
+  impersonation: ImpersonationState;
+  startImpersonation: (
+    userId: string,
+    userEmail: string,
+    userName: string,
+    orgId: string,
+    orgName: string,
+  ) => Promise<boolean>;
+  stopImpersonation: () => Promise<void>;
 
-	// Impersonation change callback (for cache invalidation)
-	registerImpersonationCallback: (
-		callback: (isImpersonating: boolean) => void,
-	) => () => void
+  // Impersonation change callback (for cache invalidation)
+  registerImpersonationCallback: (callback: (isImpersonating: boolean) => void) => () => void;
 
-	// Org viewing (without impersonation)
-	viewingOrg: ViewingOrgState
-	setViewingOrg: (orgId: string | null, orgName: string | null) => void
-	exitToplatform: () => void
+  // Org viewing (without impersonation)
+  viewingOrg: ViewingOrgState;
+  setViewingOrg: (orgId: string | null, orgName: string | null) => void;
+  exitToplatform: () => void;
 
-	// Audit logging
-	logSuperAdminAction: (
-		actionType: string,
-		targetType?: string,
-		targetId?: string,
-		targetOrgId?: string,
-		metadata?: Record<string, unknown>,
-	) => Promise<void>
+  // Audit logging
+  logSuperAdminAction: (
+    actionType: string,
+    targetType?: string,
+    targetId?: string,
+    targetOrgId?: string,
+    metadata?: Record<string, unknown>,
+  ) => Promise<void>;
 
-	// Refresh super admin status
-	refreshSuperAdminStatus: () => Promise<void>
+  // Refresh super admin status
+  refreshSuperAdminStatus: () => Promise<void>;
 }
 
-const SuperAdminContext = createContext<SuperAdminContextType | undefined>(
-	undefined,
-)
+const SuperAdminContext = createContext<SuperAdminContextType | undefined>(undefined);
 
 // Safe default for when hook is called before provider mounts
 const SUPER_ADMIN_DEFAULT: SuperAdminContextType = {
-	isSuperAdmin: false,
-	isLoadingSuperAdmin: true,
-	rolesLoaded: false,
-	roleLoadStatus: 'idle',
-	roleLoadError: null,
-	isSupportModeActive: false,
-	supportModeStartedAt: null,
-	supportModeExpiresAt: null,
-	enterSupportMode: async () => {},
-	exitSupportMode: async () => {},
-	impersonation: {
-		isImpersonating: false,
-		impersonatedUserId: null,
-		impersonatedUserEmail: null,
-		impersonatedUserName: null,
-		impersonatedOrgId: null,
-		impersonatedOrgName: null,
-		startedAt: null,
-	},
-	startImpersonation: async () => false,
-	stopImpersonation: async () => {},
-	registerImpersonationCallback: () => () => {},
-	viewingOrg: { orgId: null, orgName: null },
-	setViewingOrg: () => {},
-	exitToplatform: () => {},
-	logSuperAdminAction: async () => {},
-	refreshSuperAdminStatus: async () => {},
-}
+  isSuperAdmin: false,
+  isLoadingSuperAdmin: true,
+  rolesLoaded: false,
+  roleLoadStatus: 'idle',
+  roleLoadError: null,
+  isSupportModeActive: false,
+  supportModeStartedAt: null,
+  supportModeExpiresAt: null,
+  enterSupportMode: async () => {},
+  exitSupportMode: async () => {},
+  impersonation: {
+    isImpersonating: false,
+    impersonatedUserId: null,
+    impersonatedUserEmail: null,
+    impersonatedUserName: null,
+    impersonatedOrgId: null,
+    impersonatedOrgName: null,
+    startedAt: null,
+  },
+  startImpersonation: async () => false,
+  stopImpersonation: async () => {},
+  registerImpersonationCallback: () => () => {},
+  viewingOrg: { orgId: null, orgName: null },
+  setViewingOrg: () => {},
+  exitToplatform: () => {},
+  logSuperAdminAction: async () => {},
+  refreshSuperAdminStatus: async () => {},
+};
 
 interface SuperAdminProviderProps {
-	children: ReactNode
+  children: ReactNode;
 }
 
 export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
-	const { toast } = useToast()
-	const stackUser = useUser()
-	const trpc = useTRPC()
-	const logSuperAdminActionMutation = useMutation(trpc.admin.logSuperAdminAction.mutationOptions())
+  const { toast } = useToast();
+  const stackUser = useUser();
+  const trpc = useTRPC();
+  const logSuperAdminActionMutation = useMutation(trpc.admin.logSuperAdminAction.mutationOptions());
 
-	// Super admin status with explicit state machine
-	const [isSuperAdmin, setIsSuperAdmin] = useState(false)
-	const [roleLoadStatus, setRoleLoadStatus] = useState<RoleLoadStatus>('idle')
-	const [roleLoadError, setRoleLoadError] = useState<string | null>(null)
+  // Super admin status with explicit state machine
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [roleLoadStatus, setRoleLoadStatus] = useState<RoleLoadStatus>('idle');
+  const [roleLoadError, setRoleLoadError] = useState<string | null>(null);
 
-	// Derived states for backward compatibility
-	const isLoadingSuperAdmin = roleLoadStatus === 'loading'
-	const rolesLoaded = roleLoadStatus === 'loaded' || roleLoadStatus === 'error'
+  // Derived states for backward compatibility
+  const isLoadingSuperAdmin = roleLoadStatus === 'loading';
+  const rolesLoaded = roleLoadStatus === 'loaded' || roleLoadStatus === 'error';
 
-	// Track previous status for logging transitions
-	const prevStatusRef = useRef<RoleLoadStatus>('idle')
-	// Support mode state
-	const [isSupportModeActive, setIsSupportModeActive] = useState(false)
-	const [supportModeStartedAt, setSupportModeStartedAt] = useState<Date | null>(
-		null,
-	)
-	const [supportModeExpiresAt, setSupportModeExpiresAt] = useState<Date | null>(
-		null,
-	)
-	const [lastActivityTime, setLastActivityTime] = useState<Date>(new Date())
+  // Track previous status for logging transitions
+  const prevStatusRef = useRef<RoleLoadStatus>('idle');
+  // Support mode state
+  const [isSupportModeActive, setIsSupportModeActive] = useState(false);
+  const [supportModeStartedAt, setSupportModeStartedAt] = useState<Date | null>(null);
+  const [supportModeExpiresAt, setSupportModeExpiresAt] = useState<Date | null>(null);
+  const [lastActivityTime, setLastActivityTime] = useState<Date>(new Date());
 
-	// Impersonation state
-	const [impersonation, setImpersonation] = useState<ImpersonationState>({
-		isImpersonating: false,
-		impersonatedUserId: null,
-		impersonatedUserEmail: null,
-		impersonatedUserName: null,
-		impersonatedOrgId: null,
-		impersonatedOrgName: null,
-		startedAt: null,
-	})
+  // Impersonation state
+  const [impersonation, setImpersonation] = useState<ImpersonationState>({
+    isImpersonating: false,
+    impersonatedUserId: null,
+    impersonatedUserEmail: null,
+    impersonatedUserName: null,
+    impersonatedOrgId: null,
+    impersonatedOrgName: null,
+    startedAt: null,
+  });
 
-	// Viewing org state (for browsing without impersonation)
-	const [viewingOrg, setViewingOrgState] = useState<ViewingOrgState>({
-		orgId: null,
-		orgName: null,
-	})
+  // Viewing org state (for browsing without impersonation)
+  const [viewingOrg, setViewingOrgState] = useState<ViewingOrgState>({
+    orgId: null,
+    orgName: null,
+  });
 
-	// Impersonation change callbacks (for cache invalidation)
-	const impersonationCallbacksRef = useRef<
-		Set<(isImpersonating: boolean) => void>
-	>(new Set())
+  // Impersonation change callbacks (for cache invalidation)
+  const impersonationCallbacksRef = useRef<Set<(isImpersonating: boolean) => void>>(new Set());
 
-	// Helper for gated RBAC logging
-	const shouldLogRbac = useCallback(
-		() =>
-			import.meta.env.DEV ||
-			(typeof window !== 'undefined' &&
-				window.location.search.includes('debug_rbac=1')),
-		[],
-	)
+  // Helper for gated RBAC logging
+  const shouldLogRbac = useCallback(
+    () =>
+      import.meta.env.DEV ||
+      (typeof window !== 'undefined' && window.location.search.includes('debug_rbac=1')),
+    [],
+  );
 
-	const rbacLog = useCallback(
-		(message: string, ...args: unknown[]) => {
-			if (shouldLogRbac()) {
-				console.log(`[RBAC] ${message}`, ...args)
-			}
-		},
-		[shouldLogRbac],
-	)
+  const rbacLog = useCallback(
+    (message: string, ...args: unknown[]) => {
+      if (shouldLogRbac()) {
+        console.log(`[RBAC] ${message}`, ...args);
+      }
+    },
+    [shouldLogRbac],
+  );
 
-	// Helper to update status with logging
-	const updateRoleStatus = useCallback(
-		(newStatus: RoleLoadStatus, error?: string | null) => {
-			const prevStatus = prevStatusRef.current
-			if (prevStatus !== newStatus) {
-				rbacLog('status transition:', prevStatus, '→', newStatus)
-				prevStatusRef.current = newStatus
-			}
-			setRoleLoadStatus(newStatus)
-			if (error !== undefined) {
-				setRoleLoadError(error)
-			}
-		},
-		[rbacLog],
-	)
+  // Helper to update status with logging
+  const updateRoleStatus = useCallback(
+    (newStatus: RoleLoadStatus, error?: string | null) => {
+      const prevStatus = prevStatusRef.current;
+      if (prevStatus !== newStatus) {
+        rbacLog('status transition:', prevStatus, '→', newStatus);
+        prevStatusRef.current = newStatus;
+      }
+      setRoleLoadStatus(newStatus);
+      if (error !== undefined) {
+        setRoleLoadError(error);
+      }
+    },
+    [rbacLog],
+  );
 
-	// Check super admin status
-	// MIGRATED: Now uses Stack Auth user instead of Supabase auth
-	// TODO Phase 6: Migrate RBAC RPC functions to work with Stack Auth
-	const checkSuperAdminStatus = useCallback(async () => {
-		try {
-			updateRoleStatus('loading', null)
-			rbacLog('role fetch start')
+  // Check super admin status
+  // MIGRATED: Now uses Stack Auth user instead of Supabase auth
+  // TODO Phase 6: Migrate RBAC RPC functions to work with Stack Auth
+  const checkSuperAdminStatus = useCallback(async () => {
+    try {
+      updateRoleStatus('loading', null);
+      rbacLog('role fetch start');
 
-			// Use Stack Auth user instead of Supabase auth
-			if (!stackUser) {
-				rbacLog('no authenticated user')
-				setIsSuperAdmin(false)
-				updateRoleStatus('loaded', null)
-				return
-			}
+      // Use Stack Auth user instead of Supabase auth
+      if (!stackUser) {
+        rbacLog('no authenticated user');
+        setIsSuperAdmin(false);
+        updateRoleStatus('loaded', null);
+        return;
+      }
 
-			rbacLog('session user:', stackUser.primaryEmail, stackUser.id)
+      rbacLog('session user:', stackUser.primaryEmail, stackUser.id);
 
-			// TODO Phase 6: Migrate super admin check to new backend
-			// For now, super admin is disabled since Supabase RPC won't work without Supabase session
-			// The RPC `is_current_user_super_admin` uses auth.uid() which requires Supabase auth
-			rbacLog('super admin check skipped (Phase 6 migration pending)')
-			setIsSuperAdmin(false)
-			updateRoleStatus('loaded', null)
-		} catch (err) {
-			const errorMessage = err instanceof Error ? err.message : 'Unknown error'
-			rbacLog('role fetch exception:', errorMessage)
-			console.error('Error checking super admin status:', err)
-			setIsSuperAdmin(false)
-			updateRoleStatus('error', errorMessage)
-		}
-	}, [rbacLog, updateRoleStatus, stackUser])
+      // TODO Phase 6: Migrate super admin check to new backend
+      // For now, super admin is disabled since Supabase RPC won't work without Supabase session
+      // The RPC `is_current_user_super_admin` uses auth.uid() which requires Supabase auth
+      rbacLog('super admin check skipped (Phase 6 migration pending)');
+      setIsSuperAdmin(false);
+      updateRoleStatus('loaded', null);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      rbacLog('role fetch exception:', errorMessage);
+      console.error('Error checking super admin status:', err);
+      setIsSuperAdmin(false);
+      updateRoleStatus('error', errorMessage);
+    }
+  }, [rbacLog, updateRoleStatus, stackUser]);
 
-	// Restore Support Mode from localStorage on mount
-	useEffect(() => {
-		try {
-			const stored = localStorage.getItem(SUPPORT_MODE_STORAGE_KEY)
-			if (stored) {
-				const { active, startedAt, expiresAt } = JSON.parse(stored)
-				const expireDate = new Date(expiresAt)
+  // Restore Support Mode from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(SUPPORT_MODE_STORAGE_KEY);
+      if (stored) {
+        const { active, startedAt, expiresAt } = JSON.parse(stored);
+        const expireDate = new Date(expiresAt);
 
-				// Only restore if still valid
-				if (active && expireDate > new Date()) {
-					rbacLog('Restoring Support Mode from localStorage')
-					setIsSupportModeActive(true)
-					setSupportModeStartedAt(new Date(startedAt))
-					setSupportModeExpiresAt(expireDate)
-					setLastActivityTime(new Date())
-				} else {
-					// Clean up expired state
-					localStorage.removeItem(SUPPORT_MODE_STORAGE_KEY)
-				}
-			}
-		} catch (err) {
-			console.error('Error restoring Support Mode:', err)
-			localStorage.removeItem(SUPPORT_MODE_STORAGE_KEY)
-		}
-	}, [rbacLog])
+        // Only restore if still valid
+        if (active && expireDate > new Date()) {
+          rbacLog('Restoring Support Mode from localStorage');
+          setIsSupportModeActive(true);
+          setSupportModeStartedAt(new Date(startedAt));
+          setSupportModeExpiresAt(expireDate);
+          setLastActivityTime(new Date());
+        } else {
+          // Clean up expired state
+          localStorage.removeItem(SUPPORT_MODE_STORAGE_KEY);
+        }
+      }
+    } catch (err) {
+      console.error('Error restoring Support Mode:', err);
+      localStorage.removeItem(SUPPORT_MODE_STORAGE_KEY);
+    }
+  }, [rbacLog]);
 
-	// Restore Impersonation from localStorage on mount
-	useEffect(() => {
-		try {
-			const stored = localStorage.getItem('ftp_impersonation_session')
-			if (stored && isSupportModeActive) {
-				const parsed = JSON.parse(stored)
-				const expiresAt = new Date(parsed.expiresAt)
+  // Restore Impersonation from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('ftp_impersonation_session');
+      if (stored && isSupportModeActive) {
+        const parsed = JSON.parse(stored);
+        const expiresAt = new Date(parsed.expiresAt);
 
-				// Only restore if not expired
-				if (expiresAt > new Date()) {
-					rbacLog('Restoring Impersonation from localStorage')
-					setImpersonation({
-						isImpersonating: true,
-						impersonatedUserId: parsed.targetUserId,
-						impersonatedUserEmail: parsed.targetUserEmail,
-						impersonatedUserName: parsed.targetUserName,
-						impersonatedOrgId: parsed.targetOrgId,
-						impersonatedOrgName: parsed.targetOrgName,
-						startedAt: new Date(),
-					})
-				} else {
-					// Clean up expired impersonation
-					localStorage.removeItem('ftp_impersonation_session')
-				}
-			}
-		} catch (err) {
-			console.error('Error restoring Impersonation:', err)
-			localStorage.removeItem('ftp_impersonation_session')
-		}
-	}, [isSupportModeActive, rbacLog])
+        // Only restore if not expired
+        if (expiresAt > new Date()) {
+          rbacLog('Restoring Impersonation from localStorage');
+          setImpersonation({
+            isImpersonating: true,
+            impersonatedUserId: parsed.targetUserId,
+            impersonatedUserEmail: parsed.targetUserEmail,
+            impersonatedUserName: parsed.targetUserName,
+            impersonatedOrgId: parsed.targetOrgId,
+            impersonatedOrgName: parsed.targetOrgName,
+            startedAt: new Date(),
+          });
+        } else {
+          // Clean up expired impersonation
+          localStorage.removeItem('ftp_impersonation_session');
+        }
+      }
+    } catch (err) {
+      console.error('Error restoring Impersonation:', err);
+      localStorage.removeItem('ftp_impersonation_session');
+    }
+  }, [isSupportModeActive, rbacLog]);
 
-	// Persist Support Mode state to localStorage
-	useEffect(() => {
-		if (isSupportModeActive && supportModeStartedAt && supportModeExpiresAt) {
-			localStorage.setItem(
-				SUPPORT_MODE_STORAGE_KEY,
-				JSON.stringify({
-					active: true,
-					startedAt: supportModeStartedAt.toISOString(),
-					expiresAt: supportModeExpiresAt.toISOString(),
-				}),
-			)
-		} else {
-			localStorage.removeItem(SUPPORT_MODE_STORAGE_KEY)
-		}
-	}, [isSupportModeActive, supportModeStartedAt, supportModeExpiresAt])
+  // Persist Support Mode state to localStorage
+  useEffect(() => {
+    if (isSupportModeActive && supportModeStartedAt && supportModeExpiresAt) {
+      localStorage.setItem(
+        SUPPORT_MODE_STORAGE_KEY,
+        JSON.stringify({
+          active: true,
+          startedAt: supportModeStartedAt.toISOString(),
+          expiresAt: supportModeExpiresAt.toISOString(),
+        }),
+      );
+    } else {
+      localStorage.removeItem(SUPPORT_MODE_STORAGE_KEY);
+    }
+  }, [isSupportModeActive, supportModeStartedAt, supportModeExpiresAt]);
 
-	// Initial load and auth state changes
-	// MIGRATED: Now uses Stack Auth user changes instead of Supabase auth
-	useEffect(() => {
-		checkSuperAdminStatus()
+  // Initial load and auth state changes
+  // MIGRATED: Now uses Stack Auth user changes instead of Supabase auth
+  useEffect(() => {
+    checkSuperAdminStatus();
 
-		// Reset all super admin state when Stack Auth user signs out
-		if (!stackUser) {
-			setIsSuperAdmin(false)
-			setIsSupportModeActive(false)
-			setSupportModeStartedAt(null)
-			setSupportModeExpiresAt(null)
-			localStorage.removeItem(SUPPORT_MODE_STORAGE_KEY)
-			setImpersonation({
-				isImpersonating: false,
-				impersonatedUserId: null,
-				impersonatedUserEmail: null,
-				impersonatedUserName: null,
-				impersonatedOrgId: null,
-				impersonatedOrgName: null,
-				startedAt: null,
-			})
-			setViewingOrgState({ orgId: null, orgName: null })
-		}
-	}, [checkSuperAdminStatus, stackUser])
+    // Reset all super admin state when Stack Auth user signs out
+    if (!stackUser) {
+      setIsSuperAdmin(false);
+      setIsSupportModeActive(false);
+      setSupportModeStartedAt(null);
+      setSupportModeExpiresAt(null);
+      localStorage.removeItem(SUPPORT_MODE_STORAGE_KEY);
+      setImpersonation({
+        isImpersonating: false,
+        impersonatedUserId: null,
+        impersonatedUserEmail: null,
+        impersonatedUserName: null,
+        impersonatedOrgId: null,
+        impersonatedOrgName: null,
+        startedAt: null,
+      });
+      setViewingOrgState({ orgId: null, orgName: null });
+    }
+  }, [checkSuperAdminStatus, stackUser]);
 
-	// Ref to hold the exit support mode function (avoids hoisting issues in useEffect)
-	const exitSupportModeRef = useRef<(() => Promise<void>) | null>(null)
+  // Ref to hold the exit support mode function (avoids hoisting issues in useEffect)
+  const exitSupportModeRef = useRef<(() => Promise<void>) | null>(null);
 
-	// Support mode auto-timeout
-	useEffect(() => {
-		if (!isSupportModeActive || !supportModeExpiresAt) return
+  // Support mode auto-timeout
+  useEffect(() => {
+    if (!isSupportModeActive || !supportModeExpiresAt) return;
 
-		const checkExpiry = () => {
-			const now = new Date()
-			const timeSinceActivity = now.getTime() - lastActivityTime.getTime()
+    const checkExpiry = () => {
+      const now = new Date();
+      const timeSinceActivity = now.getTime() - lastActivityTime.getTime();
 
-			// Check inactivity timeout
-			if (timeSinceActivity >= SUPPORT_MODE_INACTIVITY_TIMEOUT_MS) {
-				exitSupportModeRef.current?.()
-				toast({
-					title: 'Support Mode Ended',
-					description:
-						'Support mode has been automatically disabled due to inactivity.',
-				})
-				return
-			}
+      // Check inactivity timeout
+      if (timeSinceActivity >= SUPPORT_MODE_INACTIVITY_TIMEOUT_MS) {
+        exitSupportModeRef.current?.();
+        toast({
+          title: 'Support Mode Ended',
+          description: 'Support mode has been automatically disabled due to inactivity.',
+        });
+        return;
+      }
 
-			// Check absolute timeout
-			if (now >= supportModeExpiresAt) {
-				exitSupportModeRef.current?.()
-				toast({
-					title: 'Support Mode Ended',
-					description: 'Support mode has reached its maximum duration.',
-				})
-			}
-		}
+      // Check absolute timeout
+      if (now >= supportModeExpiresAt) {
+        exitSupportModeRef.current?.();
+        toast({
+          title: 'Support Mode Ended',
+          description: 'Support mode has reached its maximum duration.',
+        });
+      }
+    };
 
-		const interval = setInterval(checkExpiry, 60000) // Check every minute
-		return () => clearInterval(interval)
-	}, [isSupportModeActive, supportModeExpiresAt, lastActivityTime, toast])
+    const interval = setInterval(checkExpiry, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [isSupportModeActive, supportModeExpiresAt, lastActivityTime, toast]);
 
-	// Track activity for inactivity timeout
-	useEffect(() => {
-		if (!isSupportModeActive) return
+  // Track activity for inactivity timeout
+  useEffect(() => {
+    if (!isSupportModeActive) return;
 
-		const updateActivity = () => setLastActivityTime(new Date())
+    const updateActivity = () => setLastActivityTime(new Date());
 
-		window.addEventListener('click', updateActivity)
-		window.addEventListener('keydown', updateActivity)
-		window.addEventListener('mousemove', updateActivity)
+    window.addEventListener('click', updateActivity);
+    window.addEventListener('keydown', updateActivity);
+    window.addEventListener('mousemove', updateActivity);
 
-		return () => {
-			window.removeEventListener('click', updateActivity)
-			window.removeEventListener('keydown', updateActivity)
-			window.removeEventListener('mousemove', updateActivity)
-		}
-	}, [isSupportModeActive])
+    return () => {
+      window.removeEventListener('click', updateActivity);
+      window.removeEventListener('keydown', updateActivity);
+      window.removeEventListener('mousemove', updateActivity);
+    };
+  }, [isSupportModeActive]);
 
-	// Log super admin action
-	const logSuperAdminAction = useCallback(
-		async (
-			actionType: string,
-			targetType?: string,
-			targetId?: string,
-			targetOrgId?: string,
-			metadata?: Record<string, unknown>,
-		) => {
-			if (!isSuperAdmin) return
+  // Log super admin action
+  const logSuperAdminAction = useCallback(
+    async (
+      actionType: string,
+      targetType?: string,
+      targetId?: string,
+      targetOrgId?: string,
+      metadata?: Record<string, unknown>,
+    ) => {
+      if (!isSuperAdmin) return;
 
-			try {
-				await logSuperAdminActionMutation.mutateAsync({
-					action: actionType,
-					targetType: targetType || null,
-					targetId: targetId || null,
-					targetOrgId: targetOrgId || null,
-					impersonatedUserId: impersonation.impersonatedUserId || null,
-					details: metadata || {},
-				})
-			} catch (err) {
-				console.error('Error logging super admin action:', err)
-			}
-		},
-		[isSuperAdmin, impersonation.impersonatedUserId],
-	)
+      try {
+        await logSuperAdminActionMutation.mutateAsync({
+          action: actionType,
+          targetType: targetType || null,
+          targetId: targetId || null,
+          targetOrgId: targetOrgId || null,
+          impersonatedUserId: impersonation.impersonatedUserId || null,
+          details: metadata || {},
+        });
+      } catch (err) {
+        console.error('Error logging super admin action:', err);
+      }
+    },
+    [isSuperAdmin, impersonation.impersonatedUserId],
+  );
 
-	// Enter support mode
-	const enterSupportMode = useCallback(async () => {
-		if (!isSuperAdmin) {
-			toast({
-				title: 'Access Denied',
-				description: 'Only Super Admins can enter Support Mode.',
-				variant: 'destructive',
-			})
-			return
-		}
+  // Enter support mode
+  const enterSupportMode = useCallback(async () => {
+    if (!isSuperAdmin) {
+      toast({
+        title: 'Access Denied',
+        description: 'Only Super Admins can enter Support Mode.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-		const now = new Date()
-		const expiresAt = new Date(now.getTime() + SUPPORT_MODE_TIMEOUT_MS)
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + SUPPORT_MODE_TIMEOUT_MS);
 
-		setIsSupportModeActive(true)
-		setSupportModeStartedAt(now)
-		setSupportModeExpiresAt(expiresAt)
-		setLastActivityTime(now)
+    setIsSupportModeActive(true);
+    setSupportModeStartedAt(now);
+    setSupportModeExpiresAt(expiresAt);
+    setLastActivityTime(now);
 
-		await logSuperAdminAction('SUPPORT_MODE_ENTERED')
+    await logSuperAdminAction('SUPPORT_MODE_ENTERED');
 
-		toast({
-			title: 'Support Mode Activated',
-			description:
-				'You now have access to support tools. Mode will auto-expire after 30 minutes of inactivity.',
-		})
-	}, [isSuperAdmin, logSuperAdminAction, toast])
+    toast({
+      title: 'Support Mode Activated',
+      description:
+        'You now have access to support tools. Mode will auto-expire after 30 minutes of inactivity.',
+    });
+  }, [isSuperAdmin, logSuperAdminAction, toast]);
 
-	// Start impersonation with server-side session
-	const startImpersonation = useCallback(
-		async (
-			userId: string,
-			userEmail: string,
-			userName: string,
-			orgId: string,
-			orgName: string,
-		): Promise<boolean> => {
-			if (!isSuperAdmin || !isSupportModeActive) {
-				toast({
-					title: 'Access Denied',
-					description: 'Impersonation requires active Support Mode.',
-					variant: 'destructive',
-				})
-				return false
-			}
+  // Start impersonation with server-side session
+  const startImpersonation = useCallback(
+    async (
+      userId: string,
+      userEmail: string,
+      userName: string,
+      orgId: string,
+      orgName: string,
+    ): Promise<boolean> => {
+      if (!isSuperAdmin || !isSupportModeActive) {
+        toast({
+          title: 'Access Denied',
+          description: 'Impersonation requires active Support Mode.',
+          variant: 'destructive',
+        });
+        return false;
+      }
 
-			try {
-				// Create server-side impersonation session (temporarily disabled)
-				// const { data, error } = await supabase.rpc('start_impersonation', {
-				// 	p_target_user_id: userId,
-				// 	p_target_org_id: orgId,
-				// 	p_duration_minutes: 60,
-				// })
+      try {
+        // Create server-side impersonation session (temporarily disabled)
+        // const { data, error } = await supabase.rpc('start_impersonation', {
+        // 	p_target_user_id: userId,
+        // 	p_target_org_id: orgId,
+        // 	p_duration_minutes: 60,
+        // })
 
-				// if (error) {
-				// 	console.error('Error starting impersonation:', error)
-				// 	toast({
-				// 		title: 'Impersonation Failed',
-				// 		description:
-				// 			error.message || 'Could not start impersonation session.',
-				// 		variant: 'destructive',
-				// 	})
-				// 	return false
-				// }
+        // if (error) {
+        // 	console.error('Error starting impersonation:', error)
+        // 	toast({
+        // 		title: 'Impersonation Failed',
+        // 		description:
+        // 			error.message || 'Could not start impersonation session.',
+        // 		variant: 'destructive',
+        // 	})
+        // 	return false
+        // }
 
-				const sessionData = {
-					session_id: 'temp-session-id',
-					target_user_id: userId,
-					target_org_id: orgId,
-					target_user_email: userEmail,
-					target_user_name: userName,
-					target_org_name: orgName,
-					expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-				}
+        const sessionData = {
+          session_id: 'temp-session-id',
+          target_user_id: userId,
+          target_org_id: orgId,
+          target_user_email: userEmail,
+          target_user_name: userName,
+          target_org_name: orgName,
+          expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        };
 
-				// Update local state
-				setImpersonation({
-					isImpersonating: true,
-					impersonatedUserId: userId,
-					impersonatedUserEmail: sessionData.target_user_email || userEmail,
-					impersonatedUserName: sessionData.target_user_name || userName,
-					impersonatedOrgId: orgId,
-					impersonatedOrgName: sessionData.target_org_name || orgName,
-					startedAt: new Date(),
-				})
+        // Update local state
+        setImpersonation({
+          isImpersonating: true,
+          impersonatedUserId: userId,
+          impersonatedUserEmail: sessionData.target_user_email || userEmail,
+          impersonatedUserName: sessionData.target_user_name || userName,
+          impersonatedOrgId: orgId,
+          impersonatedOrgName: sessionData.target_org_name || orgName,
+          startedAt: new Date(),
+        });
 
-				// Persist to localStorage for page refresh
-				localStorage.setItem(
-					'ftp_impersonation_session',
-					JSON.stringify({
-						sessionId: sessionData.session_id,
-						targetUserId: userId,
-						targetOrgId: orgId,
-						targetUserEmail: sessionData.target_user_email || userEmail,
-						targetUserName: sessionData.target_user_name || userName,
-						targetOrgName: sessionData.target_org_name || orgName,
-						expiresAt: sessionData.expires_at,
-					}),
-				)
+        // Persist to localStorage for page refresh
+        localStorage.setItem(
+          'ftp_impersonation_session',
+          JSON.stringify({
+            sessionId: sessionData.session_id,
+            targetUserId: userId,
+            targetOrgId: orgId,
+            targetUserEmail: sessionData.target_user_email || userEmail,
+            targetUserName: sessionData.target_user_name || userName,
+            targetOrgName: sessionData.target_org_name || orgName,
+            expiresAt: sessionData.expires_at,
+          }),
+        );
 
-				toast({
-					title: 'Impersonation Started',
-					description: `Now viewing as ${sessionData.target_user_name || sessionData.target_user_email || userEmail}`,
-				})
+        toast({
+          title: 'Impersonation Started',
+          description: `Now viewing as ${sessionData.target_user_name || sessionData.target_user_email || userEmail}`,
+        });
 
-				return true
-			} catch (err) {
-				console.error('Error in startImpersonation:', err)
-				toast({
-					title: 'Impersonation Failed',
-					description: 'An unexpected error occurred.',
-					variant: 'destructive',
-				})
-				return false
-			}
-		},
-		[isSuperAdmin, isSupportModeActive, toast],
-	)
+        return true;
+      } catch (err) {
+        console.error('Error in startImpersonation:', err);
+        toast({
+          title: 'Impersonation Failed',
+          description: 'An unexpected error occurred.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+    },
+    [isSuperAdmin, isSupportModeActive, toast],
+  );
 
-	// Stop impersonation with server-side session cleanup
-	const stopImpersonation = useCallback(async () => {
-		try {
-			// End server-side session (temporarily disabled)
-			// const { error } = await supabase.rpc('stop_impersonation')
-			// if (error) {
-			// 	console.error('Error stopping impersonation:', error)
-			// 	// Continue with local cleanup even if server call fails
-			// }
-		} catch (err) {
-			console.error('Error in stopImpersonation:', err)
-		}
+  // Stop impersonation with server-side session cleanup
+  const stopImpersonation = useCallback(async () => {
+    try {
+      // End server-side session (temporarily disabled)
+      // const { error } = await supabase.rpc('stop_impersonation')
+      // if (error) {
+      // 	console.error('Error stopping impersonation:', error)
+      // 	// Continue with local cleanup even if server call fails
+      // }
+    } catch (err) {
+      console.error('Error in stopImpersonation:', err);
+    }
 
-		// Clear local state
-		setImpersonation({
-			isImpersonating: false,
-			impersonatedUserId: null,
-			impersonatedUserEmail: null,
-			impersonatedUserName: null,
-			impersonatedOrgId: null,
-			impersonatedOrgName: null,
-			startedAt: null,
-		})
+    // Clear local state
+    setImpersonation({
+      isImpersonating: false,
+      impersonatedUserId: null,
+      impersonatedUserEmail: null,
+      impersonatedUserName: null,
+      impersonatedOrgId: null,
+      impersonatedOrgName: null,
+      startedAt: null,
+    });
 
-		// Clear localStorage
-		localStorage.removeItem('ftp_impersonation_session')
+    // Clear localStorage
+    localStorage.removeItem('ftp_impersonation_session');
 
-		// Notify callbacks (for cache invalidation)
-		impersonationCallbacksRef.current.forEach(callback => {
-			try {
-				callback(false)
-			} catch (err) {
-				console.error('Error in impersonation callback:', err)
-			}
-		})
+    // Notify callbacks (for cache invalidation)
+    impersonationCallbacksRef.current.forEach((callback) => {
+      try {
+        callback(false);
+      } catch (err) {
+        console.error('Error in impersonation callback:', err);
+      }
+    });
 
-		toast({
-			title: 'Impersonation Ended',
-			description: 'Returned to your admin view.',
-		})
-	}, [toast])
+    toast({
+      title: 'Impersonation Ended',
+      description: 'Returned to your admin view.',
+    });
+  }, [toast]);
 
-	// Exit support mode (defined after stopImpersonation to avoid hoisting issues)
-	const exitSupportMode = useCallback(async () => {
-		// Stop impersonation first if active
-		if (impersonation.isImpersonating) {
-			await stopImpersonation()
-		}
+  // Exit support mode (defined after stopImpersonation to avoid hoisting issues)
+  const exitSupportMode = useCallback(async () => {
+    // Stop impersonation first if active
+    if (impersonation.isImpersonating) {
+      await stopImpersonation();
+    }
 
-		// Expire all server-side impersonation sessions for this admin (temporarily disabled)
-		// try {
-		// 	const { data, error } = await supabase.rpc(
-		// 		'expire_all_admin_impersonation_sessions',
-		// 	)
-		// 	if (error) {
-		// 		console.error('Error expiring server sessions:', error)
-		// 	} else if (data && data > 0) {
-		// 		rbacLog(`Expired ${data} server-side impersonation session(s)`)
-		// 	}
-		// } catch (err) {
-		// 	console.warn('Error expiring server sessions:', err)
-		// }
+    // Expire all server-side impersonation sessions for this admin (temporarily disabled)
+    // try {
+    // 	const { data, error } = await supabase.rpc(
+    // 		'expire_all_admin_impersonation_sessions',
+    // 	)
+    // 	if (error) {
+    // 		console.error('Error expiring server sessions:', error)
+    // 	} else if (data && data > 0) {
+    // 		rbacLog(`Expired ${data} server-side impersonation session(s)`)
+    // 	}
+    // } catch (err) {
+    // 	console.warn('Error expiring server sessions:', err)
+    // }
 
-		setIsSupportModeActive(false)
-		setSupportModeStartedAt(null)
-		setSupportModeExpiresAt(null)
-		setViewingOrgState({ orgId: null, orgName: null })
+    setIsSupportModeActive(false);
+    setSupportModeStartedAt(null);
+    setSupportModeExpiresAt(null);
+    setViewingOrgState({ orgId: null, orgName: null });
 
-		await logSuperAdminAction('SUPPORT_MODE_EXITED')
-	}, [
-		impersonation.isImpersonating,
-		logSuperAdminAction,
-		rbacLog,
-		stopImpersonation,
-	])
+    await logSuperAdminAction('SUPPORT_MODE_EXITED');
+  }, [impersonation.isImpersonating, logSuperAdminAction, rbacLog, stopImpersonation]);
 
-	// Keep exitSupportModeRef in sync with exitSupportMode callback
-	useEffect(() => {
-		exitSupportModeRef.current = exitSupportMode
-	}, [exitSupportMode])
+  // Keep exitSupportModeRef in sync with exitSupportMode callback
+  useEffect(() => {
+    exitSupportModeRef.current = exitSupportMode;
+  }, [exitSupportMode]);
 
-	const registerImpersonationCallback = useCallback(
-		(callback: (isImpersonating: boolean) => void) => {
-			impersonationCallbacksRef.current.add(callback)
-			return () => {
-				impersonationCallbacksRef.current.delete(callback)
-			}
-		},
-		[],
-	)
+  const registerImpersonationCallback = useCallback(
+    (callback: (isImpersonating: boolean) => void) => {
+      impersonationCallbacksRef.current.add(callback);
+      return () => {
+        impersonationCallbacksRef.current.delete(callback);
+      };
+    },
+    [],
+  );
 
-	// Set viewing org (for browsing without impersonation)
-	const setViewingOrg = useCallback(
-		(orgId: string | null, orgName: string | null) => {
-			setViewingOrgState({ orgId, orgName })
-			if (orgId) {
-				logSuperAdminAction(
-					'VIEWED_ORGANIZATION',
-					'organization',
-					orgId,
-					orgId,
-					{ org_name: orgName },
-				)
-			}
-		},
-		[logSuperAdminAction],
-	)
+  // Set viewing org (for browsing without impersonation)
+  const setViewingOrg = useCallback(
+    (orgId: string | null, orgName: string | null) => {
+      setViewingOrgState({ orgId, orgName });
+      if (orgId) {
+        logSuperAdminAction('VIEWED_ORGANIZATION', 'organization', orgId, orgId, {
+          org_name: orgName,
+        });
+      }
+    },
+    [logSuperAdminAction],
+  );
 
-	// Exit to platform view
-	const exitToplatform = useCallback(() => {
-		setViewingOrgState({ orgId: null, orgName: null })
-		if (impersonation.isImpersonating) {
-			stopImpersonation()
-		}
-	}, [impersonation.isImpersonating, stopImpersonation])
+  // Exit to platform view
+  const exitToplatform = useCallback(() => {
+    setViewingOrgState({ orgId: null, orgName: null });
+    if (impersonation.isImpersonating) {
+      stopImpersonation();
+    }
+  }, [impersonation.isImpersonating, stopImpersonation]);
 
-	const value: SuperAdminContextType = {
-		isSuperAdmin,
-		isLoadingSuperAdmin,
-		rolesLoaded,
-		roleLoadStatus,
-		roleLoadError,
-		isSupportModeActive,
-		supportModeStartedAt,
-		supportModeExpiresAt,
-		enterSupportMode,
-		exitSupportMode,
-		impersonation,
-		startImpersonation,
-		stopImpersonation,
-		registerImpersonationCallback,
-		viewingOrg,
-		setViewingOrg,
-		exitToplatform,
-		logSuperAdminAction,
-		refreshSuperAdminStatus: checkSuperAdminStatus,
-	}
+  const value: SuperAdminContextType = {
+    isSuperAdmin,
+    isLoadingSuperAdmin,
+    rolesLoaded,
+    roleLoadStatus,
+    roleLoadError,
+    isSupportModeActive,
+    supportModeStartedAt,
+    supportModeExpiresAt,
+    enterSupportMode,
+    exitSupportMode,
+    impersonation,
+    startImpersonation,
+    stopImpersonation,
+    registerImpersonationCallback,
+    viewingOrg,
+    setViewingOrg,
+    exitToplatform,
+    logSuperAdminAction,
+    refreshSuperAdminStatus: checkSuperAdminStatus,
+  };
 
-	return (
-		<SuperAdminContext.Provider value={value}>
-			{children}
-		</SuperAdminContext.Provider>
-	)
+  return <SuperAdminContext.Provider value={value}>{children}</SuperAdminContext.Provider>;
 }
 
 export function useSuperAdmin(): SuperAdminContextType {
-	const context = useContext(SuperAdminContext)
-	if (context === undefined) {
-		return SUPER_ADMIN_DEFAULT
-	}
-	return context
+  const context = useContext(SuperAdminContext);
+  if (context === undefined) {
+    return SUPER_ADMIN_DEFAULT;
+  }
+  return context;
 }
 
 // Convenience hooks
 export function useIsSuperAdmin() {
-	const { isSuperAdmin, isLoadingSuperAdmin } = useSuperAdmin()
-	return { isSuperAdmin, isLoading: isLoadingSuperAdmin }
+  const { isSuperAdmin, isLoadingSuperAdmin } = useSuperAdmin();
+  return { isSuperAdmin, isLoading: isLoadingSuperAdmin };
 }
 
 export function useSupportMode() {
-	const {
-		isSupportModeActive,
-		supportModeStartedAt,
-		supportModeExpiresAt,
-		enterSupportMode,
-		exitSupportMode,
-	} = useSuperAdmin()
-	return {
-		isSupportModeActive,
-		supportModeStartedAt,
-		supportModeExpiresAt,
-		enterSupportMode,
-		exitSupportMode,
-	}
+  const {
+    isSupportModeActive,
+    supportModeStartedAt,
+    supportModeExpiresAt,
+    enterSupportMode,
+    exitSupportMode,
+  } = useSuperAdmin();
+  return {
+    isSupportModeActive,
+    supportModeStartedAt,
+    supportModeExpiresAt,
+    enterSupportMode,
+    exitSupportMode,
+  };
 }
 
 export function useImpersonation() {
-	const {
-		impersonation,
-		startImpersonation,
-		stopImpersonation,
-		isSupportModeActive,
-		isSuperAdmin,
-	} = useSuperAdmin()
-	return {
-		...impersonation,
-		startImpersonation,
-		stopImpersonation,
-		canImpersonate: isSuperAdmin && isSupportModeActive,
-	}
+  const {
+    impersonation,
+    startImpersonation,
+    stopImpersonation,
+    isSupportModeActive,
+    isSuperAdmin,
+  } = useSuperAdmin();
+  return {
+    ...impersonation,
+    startImpersonation,
+    stopImpersonation,
+    canImpersonate: isSuperAdmin && isSupportModeActive,
+  };
 }

@@ -116,9 +116,7 @@ function mapRowToSettings(row: RawTTNSettingsRow): TTNSettings {
  * Get TTN settings for an organization
  * @returns TTNSettings or null if not found
  */
-export async function getTTNSettings(
-  organizationId: string
-): Promise<TTNSettings | null> {
+export async function getTTNSettings(organizationId: string): Promise<TTNSettings | null> {
   const result = await db.execute<RawTTNSettingsRow>(sql`
     SELECT * FROM ttn_settings
     WHERE organization_id = ${organizationId}
@@ -139,10 +137,10 @@ export async function getTTNSettings(
  */
 export async function updateTTNSettings(
   organizationId: string,
-  data: UpdateTTNSettings
+  data: UpdateTTNSettings,
 ): Promise<boolean> {
   // Build SET clause dynamically based on provided fields
-  const setClauses: string[] = ['last_updated_source = \'api\''];
+  const setClauses: string[] = ["last_updated_source = 'api'"];
   const values: unknown[] = [];
 
   if (data.is_enabled !== undefined) {
@@ -182,7 +180,7 @@ export async function updateTTNSettings(
  */
 export async function updateTestResult(
   organizationId: string,
-  testResult: TestConnectionResult
+  testResult: TestConnectionResult,
 ): Promise<boolean> {
   const result = await db.execute(sql`
     UPDATE ttn_settings
@@ -200,9 +198,7 @@ export async function updateTestResult(
  * Check if TTN is configured for an organization
  * @returns true if has API key configured
  */
-export async function isTTNConfigured(
-  organizationId: string
-): Promise<boolean> {
+export async function isTTNConfigured(organizationId: string): Promise<boolean> {
   const settings = await getTTNSettings(organizationId);
   return settings !== null && settings.has_api_key;
 }

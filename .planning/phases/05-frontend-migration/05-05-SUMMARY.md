@@ -31,16 +31,16 @@ key-files:
     - src/hooks/useSoftDelete.ts
 
 key-decisions:
-  - "Navigation tree built by composing sitesApi → areasApi → unitsApi sequentially"
-  - "Sensors and layouts still fetched from Supabase (not yet migrated to new API)"
-  - "Cascade deletion handled manually in frontend until backend supports it"
-  - "Supabase session.access_token used for authentication (Stack Auth not yet integrated)"
-  - "Restore operations kept as Supabase (no restore endpoints in new API yet)"
+  - 'Navigation tree built by composing sitesApi → areasApi → unitsApi sequentially'
+  - 'Sensors and layouts still fetched from Supabase (not yet migrated to new API)'
+  - 'Cascade deletion handled manually in frontend until backend supports it'
+  - 'Supabase session.access_token used for authentication (Stack Auth not yet integrated)'
+  - 'Restore operations kept as Supabase (no restore endpoints in new API yet)'
 
 patterns-established:
-  - "Hierarchical data fetching via sequential API composition in useQuery"
-  - "Access token extraction from supabase.auth.getSession() for API calls"
-  - "Manual cascade delete orchestration when backend lacks cascade support"
+  - 'Hierarchical data fetching via sequential API composition in useQuery'
+  - 'Access token extraction from supabase.auth.getSession() for API calls'
+  - 'Manual cascade delete orchestration when backend lacks cascade support'
 
 # Metrics
 duration: 4min 46sec
@@ -125,17 +125,20 @@ None - hooks ready for use in components.
 ## Next Phase Readiness
 
 **Ready for Phase 05-06 (Component migration):**
+
 - Navigation tree available via useNavTree(orgId)
 - Org branding available via useBranding()
 - Delete operations functional via softDeleteSite/Area/Unit functions
 - All query keys preserved for existing component compatibility
 
 **Foundation established:**
+
 - Pattern for hierarchical API composition in hooks
 - Pattern for accessing session.access_token for API authentication
 - Manual cascade handling pattern until backend supports it
 
 **Known limitations:**
+
 - Sensors and layouts in useNavTree still use Supabase (not blocking)
 - Restore and permanent delete still use Supabase (not blocking)
 - Cascade delete requires manual child iteration (acceptable until backend handles it)
@@ -144,5 +147,6 @@ None - hooks ready for use in components.
 **No blockers.** Ready to migrate components that consume these hooks.
 
 ---
-*Phase: 05-frontend-migration*
-*Completed: 2026-01-23*
+
+_Phase: 05-frontend-migration_
+_Completed: 2026-01-23_

@@ -30,13 +30,13 @@ key-files:
     - src/lib/errorHandler.ts
 
 key-decisions:
-  - "Check migration errors FIRST in handleError before permission errors"
-  - "Migration toasts use 5s duration for longer reading time"
-  - "Non-migration errors re-thrown to parent boundaries"
+  - 'Check migration errors FIRST in handleError before permission errors'
+  - 'Migration toasts use 5s duration for longer reading time'
+  - 'Non-migration errors re-thrown to parent boundaries'
 
 patterns-established:
-  - "src/components/errors/ directory for error UI components"
-  - "Warning color scheme (border-warning/50) for migration-related UI"
+  - 'src/components/errors/ directory for error UI components'
+  - 'Warning color scheme (border-warning/50) for migration-related UI'
 
 # Metrics
 duration: 4min
@@ -56,6 +56,7 @@ completed: 2026-01-29
 - **Files modified:** 3
 
 ## Accomplishments
+
 - Extended errorHandler.ts with isMigrationError() and getMigrationErrorMessage() helpers
 - Updated handleError() to check migration errors FIRST before permission errors
 - Created MigrationErrorBoundary to catch render-time migration errors
@@ -69,30 +70,37 @@ Each task was committed atomically:
 2. **Task 2: Create MigrationErrorBoundary and MigrationErrorFallback components** - `ab040ef` (feat)
 
 ## Files Created/Modified
+
 - `src/lib/errorHandler.ts` - Added migration error detection and handling
 - `src/components/errors/MigrationErrorBoundary.tsx` - React error boundary for migration errors
 - `src/components/errors/MigrationErrorFallback.tsx` - Warning card UI with retry button
 
 ## Decisions Made
+
 - **Check migration errors first:** handleError() now checks isSupabaseMigrationError() before isPermissionError() to ensure migration-specific messages appear
 - **5s toast duration:** Migration toasts use longer duration (5000ms) for user reading time
 - **Re-throw non-migration errors:** MigrationErrorBoundary only handles migration errors; other errors bubble up to parent boundaries
 - **Warning color scheme:** Fallback uses border-warning/50 bg-warning/5 to indicate temporary unavailability (not destructive error)
 
 ## Deviations from Plan
+
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 None
 
 ## User Setup Required
+
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Error handling infrastructure complete
 - Ready for Plan 02: Error-wrapped UI components with toast integration
 - Ready for Plan 03: Per-feature error state with manual retry
 
 ---
-*Phase: 33-error-handling-ui-integration*
-*Completed: 2026-01-29*
+
+_Phase: 33-error-handling-ui-integration_
+_Completed: 2026-01-29_

@@ -9,6 +9,7 @@
 Phase 26 is the final phase of the v2.1 Streamlined Deployment milestone. It focuses on verifying that the deployed system is working end-to-end and ensuring users have everything needed for operations. The phase involves creating a verification library that validates health endpoints, SSL certificates, runs E2E tests, and displays a complete URL summary. It also includes creating sample organization/site data for demo purposes, configuring Grafana dashboards, and generating comprehensive deployment documentation.
 
 Key findings:
+
 1. Existing infrastructure already provides health check functions (wait_for_all_services_healthy in deploy-automated.sh) that verify postgres, redis, backend, and caddy health
 2. SSL certificate validation can use standard openssl commands or Caddy's certificate status APIs
 3. Existing E2E test scripts (e2e-sensor-pipeline.sh, e2e-alert-notifications.sh) provide comprehensive sensor data and alert notification testing
@@ -23,31 +24,32 @@ The established tools and patterns for verification and completion:
 
 ### Core
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| bash | 4.4+ | Shell scripting for verification | Already used across all deployment infrastructure |
-| curl | 7.68+ | HTTP health checks | Standard for making HTTP requests in bash |
-| openssl | 1.1.1+ | SSL certificate validation | Native to most Linux distros, comprehensive SSL tools |
-| jq | 1.6+ | JSON parsing for API responses | Standard for JSON manipulation in bash scripts |
-| docker compose | v2.20+ | Container health verification | Already used for deployment orchestration |
+| Library        | Version | Purpose                          | Why Standard                                          |
+| -------------- | ------- | -------------------------------- | ----------------------------------------------------- |
+| bash           | 4.4+    | Shell scripting for verification | Already used across all deployment infrastructure     |
+| curl           | 7.68+   | HTTP health checks               | Standard for making HTTP requests in bash             |
+| openssl        | 1.1.1+  | SSL certificate validation       | Native to most Linux distros, comprehensive SSL tools |
+| jq             | 1.6+    | JSON parsing for API responses   | Standard for JSON manipulation in bash scripts        |
+| docker compose | v2.20+  | Container health verification    | Already used for deployment orchestration             |
 
 ### Supporting
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| docker exec | 20.10+ | Run commands inside containers | For postgres (pg_isready) and redis (redis-cli ping) |
-| dig/dnsutils | 9.16+ | DNS validation | For verifying domain resolution |
-| tsx/faker | Latest | Synthetic test data generation | For sample organization/demo data seeding |
+| Library      | Version | Purpose                        | When to Use                                          |
+| ------------ | ------- | ------------------------------ | ---------------------------------------------------- |
+| docker exec  | 20.10+  | Run commands inside containers | For postgres (pg_isready) and redis (redis-cli ping) |
+| dig/dnsutils | 9.16+   | DNS validation                 | For verifying domain resolution                      |
+| tsx/faker    | Latest  | Synthetic test data generation | For sample organization/demo data seeding            |
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| bash verification lib | Node.js verification script | bash integrates better with existing deploy-automated.sh |
-| openssl for SSL | Caddy API calls | openssl is more portable, doesn't require Caddy HTTP access |
-| jq for JSON | Python/json.tool | jq is more concise and standard in devops pipelines |
+| Instead of            | Could Use                   | Tradeoff                                                    |
+| --------------------- | --------------------------- | ----------------------------------------------------------- |
+| bash verification lib | Node.js verification script | bash integrates better with existing deploy-automated.sh    |
+| openssl for SSL       | Caddy API calls             | openssl is more portable, doesn't require Caddy HTTP access |
+| jq for JSON           | Python/json.tool            | jq is more concise and standard in devops pipelines         |
 
 **Installation:**
+
 ```bash
 # Most are pre-installed on Ubuntu 20.04+
 # Only jq may need explicit installation:
@@ -85,6 +87,7 @@ docs/
 **When to use:** For all verification steps in Phase 26 and for ongoing operational verification.
 
 **Example:**
+
 ```bash
 # Source: verify-lib.sh
 verify_health_endpoints() {
@@ -128,6 +131,7 @@ verify_health_endpoints() {
 **When to use:** After Caddy has issued certificates and before declaring deployment complete.
 
 **Example:**
+
 ```bash
 verify_ssl_certificate() {
     local domain="${1:-localhost}"
@@ -183,6 +187,7 @@ verify_ssl_certificate() {
 **When to use:** After all services are healthy, before declaring deployment complete.
 
 **Example:**
+
 ```bash
 run_e2e_tests() {
     local domain="${1:-localhost}"
@@ -219,6 +224,7 @@ run_e2e_tests() {
 **When to use:** After deployment verification, as part of post-deployment completion.
 
 **Example:**
+
 ```bash
 seed_demo_data() {
     local domain="${1:-localhost}"
@@ -255,6 +261,7 @@ seed_demo_data() {
 **When to use:** After all verification steps pass, as the final step before exit.
 
 **Example:**
+
 ```bash
 display_completion_summary() {
     local domain="${1:-localhost}"
@@ -309,13 +316,13 @@ display_completion_summary() {
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Health check polling | Custom sleep loops | Wait for multiple consecutive passes with exponential backoff | Handles temporary network blips, reduces false failures |
-| SSL certificate parsing | Custom string parsing | openssl x509 with standardized output format | Handles all certificate formats, edge cases |
-| JSON API responses | grep/awk on curl output | jq for structured JSON parsing | Handles nested structures, whitespace variations |
-| Test data generation | Manual INSERT statements | Use existing generate-test-data.ts pattern | Realistic data distribution, bulk insert optimization |
-| Documentation formatting | Manual markdown writing | Follow existing SELFHOSTED_DEPLOYMENT.md structure | Consistent with existing docs, proven user experience |
+| Problem                  | Don't Build              | Use Instead                                                   | Why                                                     |
+| ------------------------ | ------------------------ | ------------------------------------------------------------- | ------------------------------------------------------- |
+| Health check polling     | Custom sleep loops       | Wait for multiple consecutive passes with exponential backoff | Handles temporary network blips, reduces false failures |
+| SSL certificate parsing  | Custom string parsing    | openssl x509 with standardized output format                  | Handles all certificate formats, edge cases             |
+| JSON API responses       | grep/awk on curl output  | jq for structured JSON parsing                                | Handles nested structures, whitespace variations        |
+| Test data generation     | Manual INSERT statements | Use existing generate-test-data.ts pattern                    | Realistic data distribution, bulk insert optimization   |
+| Documentation formatting | Manual markdown writing  | Follow existing SELFHOSTED_DEPLOYMENT.md structure            | Consistent with existing docs, proven user experience   |
 
 **Key insight:** Verification and completion is a well-understood operational problem. Existing tools (openssl, curl, jq, docker) provide 95% of needed functionality. Focus on orchestrating these tools rather than building new capabilities.
 
@@ -539,14 +546,15 @@ seed_demo_organization() {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Single health check | 3 consecutive passes | 2025-01 (deploy-automated.sh) | Reduces false failures from 30% to <5% |
-| Manual SSL verification | Automated openssl validation | 2025-01 (SSL_CERTIFICATES.md) | SSL validation now consistent and documented |
-| No demo data | Synthetic data generation | 2026-01 (generate-test-data.ts) | Users can now explore system with sample data |
-| Post-deployment manual steps | Automated completion summary | 2025-01 (deploy-automated.sh) | Users get immediate guidance after deployment |
+| Old Approach                 | Current Approach             | When Changed                    | Impact                                        |
+| ---------------------------- | ---------------------------- | ------------------------------- | --------------------------------------------- |
+| Single health check          | 3 consecutive passes         | 2025-01 (deploy-automated.sh)   | Reduces false failures from 30% to <5%        |
+| Manual SSL verification      | Automated openssl validation | 2025-01 (SSL_CERTIFICATES.md)   | SSL validation now consistent and documented  |
+| No demo data                 | Synthetic data generation    | 2026-01 (generate-test-data.ts) | Users can now explore system with sample data |
+| Post-deployment manual steps | Automated completion summary | 2025-01 (deploy-automated.sh)   | Users get immediate guidance after deployment |
 
 **Deprecated/outdated:**
+
 - Individual certificate requests per subdomain: Use Caddy's automatic HTTPS (handles all subdomains)
 - Manual SSL verification: Use verify-lib.sh verify_ssl_certificate()
 - Manual demo data creation: Use seed_demo_data() with idempotency checks
@@ -602,6 +610,7 @@ seed_demo_organization() {
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - All tools are standard Linux utilities already used in codebase
 - Architecture: HIGH - Based on existing deploy-automated.sh patterns and verification infrastructure
 - Pitfalls: HIGH - Derived from common deployment issues documented in SELFHOSTED_DEPLOYMENT.md

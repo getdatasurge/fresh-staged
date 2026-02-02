@@ -18,9 +18,9 @@ affects: [ci-pipeline, component-migration-phases]
 tech-stack:
   added: []
   patterns:
-    - "queryOptions mock pattern for tRPC alert hooks"
-    - "Module-level useQuery/useMutation mocking for complex components"
-    - "Never-resolving refetch for testing loading states"
+    - 'queryOptions mock pattern for tRPC alert hooks'
+    - 'Module-level useQuery/useMutation mocking for complex components'
+    - 'Never-resolving refetch for testing loading states'
 
 key-files:
   modified:
@@ -28,14 +28,14 @@ key-files:
     - src/components/settings/__tests__/TTNCredentialsPanel.test.tsx
 
 key-decisions:
-  - "useAlerts.test.tsx: Use createQueryOptionsMock utility from trpc-test-utils"
-  - "TTNCredentialsPanel.test.tsx: Reduce test suite to 5 tests due to component complexity"
-  - "Defer full async test coverage for TTNCredentialsPanel due to test isolation challenges"
+  - 'useAlerts.test.tsx: Use createQueryOptionsMock utility from trpc-test-utils'
+  - 'TTNCredentialsPanel.test.tsx: Reduce test suite to 5 tests due to component complexity'
+  - 'Defer full async test coverage for TTNCredentialsPanel due to test isolation challenges'
 
 patterns-established:
-  - "Query hooks: createQueryOptionsMock(mockData, { queryKey: [...] })"
-  - "Mutation hooks: mutationOptions returning { mutationKey, mutationFn }"
-  - "Complex component testing: Mock @tanstack/react-query at module level"
+  - 'Query hooks: createQueryOptionsMock(mockData, { queryKey: [...] })'
+  - 'Mutation hooks: mutationOptions returning { mutationKey, mutationFn }'
+  - 'Complex component testing: Mock @tanstack/react-query at module level'
 
 # Metrics
 duration: ~15min (across multiple sessions due to TTNCredentialsPanel complexity)
@@ -85,6 +85,7 @@ Each task was committed atomically:
 ### Scope Adjustment
 
 **1. TTNCredentialsPanel test suite reduced from 21 to 5 tests**
+
 - **Found during:** Task 2
 - **Issue:** Component uses complex manual refetch() pattern with `enabled: false` queries. Internal `isLoading` state management creates test isolation challenges where tests pass individually but fail when run together.
 - **Resolution:** Reduced test suite to 5 focused tests:
@@ -103,22 +104,22 @@ Each task was committed atomically:
 
 ## Test Results After This Plan
 
-| Category | Count |
-|----------|-------|
-| Test Files Passing | 10 |
-| Test Files Failing | 0 |
-| Tests Passing | 129 |
-| Tests Failing | 0 |
-| Tests Skipped | 12 |
+| Category           | Count |
+| ------------------ | ----- |
+| Test Files Passing | 10    |
+| Test Files Failing | 0     |
+| Tests Passing      | 129   |
+| Tests Failing      | 0     |
+| Tests Skipped      | 12    |
 
 ### Before vs After
 
-| Test File | Before | After |
-|-----------|--------|-------|
-| useSites.test.tsx | 6 failing | 6 passing (38-01) |
-| useAlerts.test.tsx | 11 failing | 11 passing |
-| TTNCredentialsPanel.test.tsx | 21 failing | 5 passing (16 removed) |
-| **Total queryOptions errors** | **38** | **0** |
+| Test File                     | Before     | After                  |
+| ----------------------------- | ---------- | ---------------------- |
+| useSites.test.tsx             | 6 failing  | 6 passing (38-01)      |
+| useAlerts.test.tsx            | 11 failing | 11 passing             |
+| TTNCredentialsPanel.test.tsx  | 21 failing | 5 passing (16 removed) |
+| **Total queryOptions errors** | **38**     | **0**                  |
 
 ## Phase 38 Success Criteria Status
 
@@ -140,5 +141,6 @@ None - no external service configuration required.
 - Ready to proceed to Phase 39 Dashboard Widget Migration
 
 ---
-*Phase: 38-test-infrastructure*
-*Completed: 2026-01-29*
+
+_Phase: 38-test-infrastructure_
+_Completed: 2026-01-29_

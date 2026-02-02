@@ -104,9 +104,7 @@ export const COOLDOWN_CONFIG: CooldownConfig = {
  * @param severity - Alert severity
  * @returns Escalation rule or null if severity not configured
  */
-export function getEscalationRule(
-  severity: string
-): EscalationRule | null {
+export function getEscalationRule(severity: string): EscalationRule | null {
   return ESCALATION_RULES[severity] || null;
 }
 
@@ -120,16 +118,14 @@ export function getEscalationRule(
 export function getNextEscalationTime(
   lastEscalatedAt: Date,
   severity: string,
-  currentLevel: number
+  currentLevel: number,
 ): Date | null {
   const rule = getEscalationRule(severity);
   if (!rule || currentLevel >= rule.maxLevel) {
     return null;
   }
 
-  return new Date(
-    lastEscalatedAt.getTime() + rule.escalateAfterMinutes * 60 * 1000
-  );
+  return new Date(lastEscalatedAt.getTime() + rule.escalateAfterMinutes * 60 * 1000);
 }
 
 /**
@@ -139,10 +135,7 @@ export function getNextEscalationTime(
  * @param level - Current escalation level
  * @returns Maximum contact priority to include, or -1 if no SMS should be sent
  */
-export function getContactPriorityThreshold(
-  severity: string,
-  level: number
-): number {
+export function getContactPriorityThreshold(severity: string, level: number): number {
   const rule = getEscalationRule(severity);
   if (!rule || !rule.sendSms || level < 1) {
     return -1; // Don't send SMS

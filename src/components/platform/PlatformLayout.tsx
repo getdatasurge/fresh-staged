@@ -1,7 +1,7 @@
-import { ReactNode, useEffect } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
-import { useSuperAdmin } from "@/contexts/SuperAdminContext";
-import { Button } from "@/components/ui/button";
+import { ReactNode, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useSuperAdmin } from '@/contexts/SuperAdminContext';
+import { Button } from '@/components/ui/button';
 import {
   LogOut,
   Shield,
@@ -14,15 +14,15 @@ import {
   ChevronLeft,
   Home,
   Headphones,
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-import ThemeToggle from "@/components/ThemeToggle";
-import BrandedLogo from "@/components/BrandedLogo";
-import { SupportModeBanner } from "./SupportModeBanner";
-import { GlobalUserSearch } from "./GlobalUserSearch";
-import { useState } from "react";
-import { useStackApp } from "@stackframe/react";
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import ThemeToggle from '@/components/ThemeToggle';
+import BrandedLogo from '@/components/BrandedLogo';
+import { SupportModeBanner } from './SupportModeBanner';
+import { GlobalUserSearch } from './GlobalUserSearch';
+import { useState } from 'react';
+import { useStackApp } from '@stackframe/react';
 import {
   Dialog,
   DialogContent,
@@ -30,7 +30,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
 interface PlatformLayoutProps {
   children: ReactNode;
@@ -40,13 +40,18 @@ interface PlatformLayoutProps {
 }
 
 const platformNavItems = [
-  { href: "/platform/organizations", label: "Organizations", icon: Building2 },
-  { href: "/platform/users", label: "Users", icon: Users },
-  { href: "/platform/audit", label: "Audit Log", icon: FileText },
-  { href: "/platform/developer-tools", label: "Developer Tools", icon: Wrench },
+  { href: '/platform/organizations', label: 'Organizations', icon: Building2 },
+  { href: '/platform/users', label: 'Users', icon: Users },
+  { href: '/platform/audit', label: 'Audit Log', icon: FileText },
+  { href: '/platform/developer-tools', label: 'Developer Tools', icon: Wrench },
 ];
 
-export default function PlatformLayout({ children, title, showBack, backHref }: PlatformLayoutProps) {
+export default function PlatformLayout({
+  children,
+  title,
+  showBack,
+  backHref,
+}: PlatformLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -57,7 +62,7 @@ export default function PlatformLayout({ children, title, showBack, backHref }: 
     isSupportModeActive,
     enterSupportMode,
     viewingOrg,
-    exitToplatform
+    exitToplatform,
   } = useSuperAdmin();
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -67,24 +72,24 @@ export default function PlatformLayout({ children, title, showBack, backHref }: 
   useEffect(() => {
     if (!isLoadingSuperAdmin && !isSuperAdmin) {
       toast({
-        title: "Access Denied",
-        description: "Platform Admin access requires Super Admin privileges.",
-        variant: "destructive",
+        title: 'Access Denied',
+        description: 'Platform Admin access requires Super Admin privileges.',
+        variant: 'destructive',
       });
-      navigate("/dashboard");
+      navigate('/dashboard');
     }
   }, [isSuperAdmin, isLoadingSuperAdmin, navigate, toast]);
 
   const handleSignOut = async () => {
     try {
       await stackApp.signOut();
-      navigate("/");
+      navigate('/');
     } catch (err) {
-      console.error("Sign out error:", err);
+      console.error('Sign out error:', err);
       toast({
-        title: "Sign out failed",
-        description: err instanceof Error ? err.message : "Unknown error",
-        variant: "destructive",
+        title: 'Sign out failed',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
       });
     }
   };
@@ -114,8 +119,8 @@ export default function PlatformLayout({ children, title, showBack, backHref }: 
       {/* Header */}
       <header
         className={cn(
-          "sticky z-50 glass border-b border-border/50",
-          isSupportModeActive ? "top-10" : "top-0"
+          'sticky z-50 glass border-b border-border/50',
+          isSupportModeActive ? 'top-10' : 'top-0',
         )}
       >
         <div className="flex h-16">
@@ -219,21 +224,23 @@ export default function PlatformLayout({ children, title, showBack, backHref }: 
         {/* Desktop Sidebar */}
         <aside
           className={cn(
-            "hidden lg:flex w-64 flex-col fixed left-0 bottom-0 border-r border-border/50 bg-card/50",
-            isSupportModeActive ? "top-[104px]" : "top-16"
+            'hidden lg:flex w-64 flex-col fixed left-0 bottom-0 border-r border-border/50 bg-card/50',
+            isSupportModeActive ? 'top-[104px]' : 'top-16',
           )}
         >
           <nav className="flex-1 p-4 space-y-1">
             {platformNavItems.map((item) => {
-              const isActive = location.pathname === item.href ||
-                (item.href !== "/platform" && location.pathname.startsWith(item.href));
+              const isActive =
+                location.pathname === item.href ||
+                (item.href !== '/platform' && location.pathname.startsWith(item.href));
               return (
                 <Link key={item.href} to={item.href}>
                   <Button
-                    variant={isActive ? "secondary" : "ghost"}
+                    variant={isActive ? 'secondary' : 'ghost'}
                     className={cn(
-                      "w-full justify-start gap-3",
-                      isActive && "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                      'w-full justify-start gap-3',
+                      isActive &&
+                        'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
                     )}
                   >
                     <item.icon className="w-5 h-5" />
@@ -263,25 +270,23 @@ export default function PlatformLayout({ children, title, showBack, backHref }: 
             />
             <aside
               className={cn(
-                "absolute left-0 bottom-0 w-64 bg-card border-r border-border/50 p-4",
-                isSupportModeActive ? "top-[104px]" : "top-16"
+                'absolute left-0 bottom-0 w-64 bg-card border-r border-border/50 p-4',
+                isSupportModeActive ? 'top-[104px]' : 'top-16',
               )}
             >
               <nav className="space-y-1">
                 {platformNavItems.map((item) => {
-                  const isActive = location.pathname === item.href ||
-                    (item.href !== "/platform" && location.pathname.startsWith(item.href));
+                  const isActive =
+                    location.pathname === item.href ||
+                    (item.href !== '/platform' && location.pathname.startsWith(item.href));
                   return (
-                    <Link
-                      key={item.href}
-                      to={item.href}
-                      onClick={() => setMobileNavOpen(false)}
-                    >
+                    <Link key={item.href} to={item.href} onClick={() => setMobileNavOpen(false)}>
                       <Button
-                        variant={isActive ? "secondary" : "ghost"}
+                        variant={isActive ? 'secondary' : 'ghost'}
                         className={cn(
-                          "w-full justify-start gap-3",
-                          isActive && "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                          'w-full justify-start gap-3',
+                          isActive &&
+                            'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
                         )}
                       >
                         <item.icon className="w-5 h-5" />
@@ -321,14 +326,12 @@ export default function PlatformLayout({ children, title, showBack, backHref }: 
         {/* Main Content */}
         <main
           className={cn(
-            "flex-1 lg:ml-64 min-w-0 overflow-x-hidden",
-            isSupportModeActive && "pt-10"
+            'flex-1 lg:ml-64 min-w-0 overflow-x-hidden',
+            isSupportModeActive && 'pt-10',
           )}
         >
           <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
-            {title && (
-              <h1 className="text-2xl font-bold text-foreground mb-6">{title}</h1>
-            )}
+            {title && <h1 className="text-2xl font-bold text-foreground mb-6">{title}</h1>}
             {children}
           </div>
         </main>
@@ -355,7 +358,8 @@ export default function PlatformLayout({ children, title, showBack, backHref }: 
                   All actions will be logged
                 </div>
                 <div className="text-amber-700 dark:text-amber-300">
-                  Every action taken in Support Mode is recorded in the audit log with your identity.
+                  Every action taken in Support Mode is recorded in the audit log with your
+                  identity.
                 </div>
               </div>
             </div>

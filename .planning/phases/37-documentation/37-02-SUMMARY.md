@@ -27,8 +27,8 @@ affects: [37-03, future-deployment-docs]
 tech-stack:
   added: []
   patterns:
-    - "VERIFY-XX codes for verification checks"
-    - "POST-XX codes for post-deployment steps"
+    - 'VERIFY-XX codes for verification checks'
+    - 'POST-XX codes for post-deployment steps'
 
 key-files:
   created: []
@@ -36,14 +36,14 @@ key-files:
     - docs/SELFHOSTED_DEPLOYMENT.md
 
 key-decisions:
-  - "Used 5-phase table format for deployment workflow"
-  - "Included expected output examples for all scripts"
-  - "Added Access Your Application table for quick service reference"
+  - 'Used 5-phase table format for deployment workflow'
+  - 'Included expected output examples for all scripts'
+  - 'Added Access Your Application table for quick service reference'
 
 patterns-established:
-  - "Verification codes (VERIFY-01 to VERIFY-06) for deployment validation"
-  - "Post-deployment codes (POST-01 to POST-05) for setup steps"
-  - "Checkpoint recovery documentation with --reset option"
+  - 'Verification codes (VERIFY-01 to VERIFY-06) for deployment validation'
+  - 'Post-deployment codes (POST-01 to POST-05) for setup steps'
+  - 'Checkpoint recovery documentation with --reset option'
 
 # Metrics
 duration: 5min
@@ -110,5 +110,6 @@ None - no external service configuration required.
 - Ready to complete Phase 37 with troubleshooting (37-03 already complete)
 
 ---
-*Phase: 37-documentation*
-*Completed: 2026-01-29*
+
+_Phase: 37-documentation_
+_Completed: 2026-01-29_

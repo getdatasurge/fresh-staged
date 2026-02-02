@@ -19,19 +19,19 @@ Progress: [░░░░░░░░░░] 0%
 
 ## Milestones Shipped
 
-| Version | Name | Phases | Plans | Shipped |
-|---------|------|--------|-------|---------|
-| v1.0 | Self-Hosted MVP | 1-7 | 47 | 2026-01-23 |
-| v1.1 | Production Ready | 8-13 | 31 | 2026-01-24 |
-| v2.0 | Real-Time & Billing | 14-21 | 40 | 2026-01-25 |
-| v2.1 | Streamlined Deployment | 22-26 | 9 | 2026-01-25 |
-| v2.2 | Technical Debt & Stabilization | 27-33 | 27 | 2026-01-29 |
-| v2.3 | Deployment Orchestration | 34-37 | 11 | 2026-01-29 |
-| v2.4 | Tech Debt Cleanup | 38-43 | 16 | 2026-01-29 |
-| v2.5 | TTN Test Fixes | 44 | 1 | 2026-01-29 |
-| v2.6 | Production Deployment | 45 | 3 | 2026-01-29 |
-| v2.7 | tRPC Client Fix | 46-48 | 5 | 2026-01-30 |
-| v2.8 | Production Polish | 49-51 | 3 | 2026-01-30 |
+| Version | Name                           | Phases | Plans | Shipped    |
+| ------- | ------------------------------ | ------ | ----- | ---------- |
+| v1.0    | Self-Hosted MVP                | 1-7    | 47    | 2026-01-23 |
+| v1.1    | Production Ready               | 8-13   | 31    | 2026-01-24 |
+| v2.0    | Real-Time & Billing            | 14-21  | 40    | 2026-01-25 |
+| v2.1    | Streamlined Deployment         | 22-26  | 9     | 2026-01-25 |
+| v2.2    | Technical Debt & Stabilization | 27-33  | 27    | 2026-01-29 |
+| v2.3    | Deployment Orchestration       | 34-37  | 11    | 2026-01-29 |
+| v2.4    | Tech Debt Cleanup              | 38-43  | 16    | 2026-01-29 |
+| v2.5    | TTN Test Fixes                 | 44     | 1     | 2026-01-29 |
+| v2.6    | Production Deployment          | 45     | 3     | 2026-01-29 |
+| v2.7    | tRPC Client Fix                | 46-48  | 5     | 2026-01-30 |
+| v2.8    | Production Polish              | 49-51  | 3     | 2026-01-30 |
 
 **Total shipped:** 11 milestones, 51 phases, 195 plans
 

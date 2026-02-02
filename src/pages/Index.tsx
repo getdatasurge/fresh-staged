@@ -1,39 +1,51 @@
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Thermometer, Shield, Bell, Smartphone, BarChart3, Clock, CheckCircle2, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import {
+  Thermometer,
+  Shield,
+  Bell,
+  Smartphone,
+  BarChart3,
+  Clock,
+  CheckCircle2,
+  ArrowRight,
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const features = [
   {
     icon: Thermometer,
-    title: "Real-Time Monitoring",
-    description: "24/7 automated temperature tracking with instant readings from wireless sensors."
+    title: 'Real-Time Monitoring',
+    description: '24/7 automated temperature tracking with instant readings from wireless sensors.',
   },
   {
     icon: Bell,
-    title: "Smart Alerts",
-    description: "Immediate notifications via push, email, or SMS when temperatures go out of range."
+    title: 'Smart Alerts',
+    description:
+      'Immediate notifications via push, email, or SMS when temperatures go out of range.',
   },
   {
     icon: Shield,
-    title: "HACCP Compliance",
-    description: "Inspection-ready logs and tamper-evident audit trails for food safety compliance."
+    title: 'HACCP Compliance',
+    description:
+      'Inspection-ready logs and tamper-evident audit trails for food safety compliance.',
   },
   {
     icon: Smartphone,
-    title: "Mobile-First PWA",
-    description: "Works offline, installable on any device. Log temperatures even without internet."
+    title: 'Mobile-First PWA',
+    description:
+      'Works offline, installable on any device. Log temperatures even without internet.',
   },
   {
     icon: BarChart3,
-    title: "Detailed Reports",
-    description: "Export CSV reports, view temperature trends, and generate compliance documents."
+    title: 'Detailed Reports',
+    description: 'Export CSV reports, view temperature trends, and generate compliance documents.',
   },
   {
     icon: Clock,
-    title: "Manual Mode Fallback",
-    description: "When sensors fail, automatic prompts ensure staff log temperatures manually."
-  }
+    title: 'Manual Mode Fallback',
+    description: 'When sensors fail, automatic prompts ensure staff log temperatures manually.',
+  },
 ];
 
 const Index = () => {
@@ -51,7 +63,9 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-4">
               <Link to="/auth">
-                <Button variant="ghost" size="sm">Sign In</Button>
+                <Button variant="ghost" size="sm">
+                  Sign In
+                </Button>
               </Link>
               <Link to="/auth?mode=signup">
                 <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground">
@@ -65,15 +79,15 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden hero-gradient">
-        <div 
-          className="absolute inset-0 opacity-10" 
+        <div
+          className="absolute inset-0 opacity-10"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1'%3E%3Cpath d='M0 20h40M20 0v40'/%3E%3C/g%3E%3C/svg%3E")`,
-            backgroundSize: '40px 40px'
-          }} 
+            backgroundSize: '40px 40px',
+          }}
         />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <motion.div 
+          <motion.div
             className="max-w-4xl mx-auto text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -88,33 +102,41 @@ const Index = () => {
               <span className="text-accent"> Food Safety</span>
             </h1>
             <p className="text-lg sm:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-              Protect your inventory, ensure compliance, and prevent costly spoilage with 24/7 automated temperature monitoring.
+              Protect your inventory, ensure compliance, and prevent costly spoilage with 24/7
+              automated temperature monitoring.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/auth?mode=signup">
-                <Button size="lg" className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8">
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8"
+                >
                   Start Free Trial
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
-              <Button size="lg" variant="ghost" className="w-full sm:w-auto border border-white/30 text-white hover:bg-white/10">
+              <Button
+                size="lg"
+                variant="ghost"
+                className="w-full sm:w-auto border border-white/30 text-white hover:bg-white/10"
+              >
                 Watch Demo
               </Button>
             </div>
           </motion.div>
 
           {/* Stats */}
-          <motion.div 
+          <motion.div
             className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 max-w-4xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             {[
-              { value: "99.9%", label: "Uptime" },
-              { value: "5,000+", label: "Units Monitored" },
-              { value: "< 30s", label: "Alert Response" },
-              { value: "$2M+", label: "Food Saved" }
+              { value: '99.9%', label: 'Uptime' },
+              { value: '5,000+', label: 'Units Monitored' },
+              { value: '< 30s', label: 'Alert Response' },
+              { value: '$2M+', label: 'Food Saved' },
             ].map((stat, i) => (
               <div key={i} className="text-center p-4 rounded-xl bg-white/5 border border-white/10">
                 <div className="text-2xl sm:text-3xl font-bold text-white">{stat.value}</div>
@@ -133,7 +155,8 @@ const Index = () => {
               Everything You Need for Compliance
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              From automated monitoring to manual logging fallbacks, FrostGuard keeps your food safe and your records inspection-ready.
+              From automated monitoring to manual logging fallbacks, FrostGuard keeps your food safe
+              and your records inspection-ready.
             </p>
           </div>
 
@@ -168,7 +191,10 @@ const Index = () => {
             Start your 14-day free trial. No credit card required.
           </p>
           <Link to="/auth?mode=signup">
-            <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8">
+            <Button
+              size="lg"
+              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8"
+            >
               Get Started Free
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
@@ -187,10 +213,16 @@ const Index = () => {
               <span className="text-lg font-bold text-sidebar-foreground">FrostGuard</span>
             </div>
             <div className="flex items-center gap-6 text-sm">
-              <Link to="/privacy" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
+              <Link
+                to="/privacy"
+                className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors"
+              >
                 Privacy Policy
               </Link>
-              <Link to="/terms" className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors">
+              <Link
+                to="/terms"
+                className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors"
+              >
                 Terms & Conditions
               </Link>
             </div>

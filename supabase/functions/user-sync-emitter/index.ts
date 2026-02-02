@@ -1,6 +1,6 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { deobfuscateKey } from "../_shared/ttnConfig.ts";
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { deobfuscateKey } from '../_shared/ttnConfig.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -68,10 +68,10 @@ serve(async (req) => {
 
   if (!project2Endpoint || !project2ApiKey) {
     console.error('[user-sync-emitter] Missing PROJECT2_SYNC_ENDPOINT or PROJECT2_SYNC_API_KEY');
-    return new Response(
-      JSON.stringify({ error: 'Sync configuration missing' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: 'Sync configuration missing' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -79,13 +79,17 @@ serve(async (req) => {
   try {
     const triggerPayload: TriggerPayload = await req.json();
 
-    console.log(`[user-sync-emitter] Received ${triggerPayload.event_type} event for user ${triggerPayload.user_id}`);
-    console.log(`[user-sync-emitter] Site data: default_site_id=${triggerPayload.default_site_id}, user_sites=${JSON.stringify(triggerPayload.user_sites)}`);
+    console.log(
+      `[user-sync-emitter] Received ${triggerPayload.event_type} event for user ${triggerPayload.user_id}`,
+    );
+    console.log(
+      `[user-sync-emitter] Site data: default_site_id=${triggerPayload.default_site_id}, user_sites=${JSON.stringify(triggerPayload.user_sites)}`,
+    );
 
     // NAM1-ONLY: Default cluster is always nam1
     let ttnConfig: TtnConfig = {
       enabled: false,
-      cluster: "nam1",
+      cluster: 'nam1',
       application_id: null,
       api_key: null,
       api_key_last4: null,
@@ -99,11 +103,14 @@ serve(async (req) => {
     };
 
     if (triggerPayload.organization_id) {
-      console.log(`[user-sync-emitter] Fetching TTN config for org: ${triggerPayload.organization_id}`);
+      console.log(
+        `[user-sync-emitter] Fetching TTN config for org: ${triggerPayload.organization_id}`,
+      );
 
       const { data: ttnConnection } = await supabase
-        .from("ttn_connections")
-        .select(`
+        .from('ttn_connections')
+        .select(
+          `
           is_enabled, 
           ttn_region, 
           ttn_application_id, 
@@ -115,16 +122,19 @@ serve(async (req) => {
           ttn_webhook_id,
           ttn_webhook_url,
           ttn_webhook_secret_last4
-        `)
-        .eq("organization_id", triggerPayload.organization_id)
+        `,
+        )
+        .eq('organization_id', triggerPayload.organization_id)
         .maybeSingle();
 
       if (ttnConnection) {
-        console.log(`[user-sync-emitter] Found TTN config, enabled: ${ttnConnection.is_enabled}, app: ${ttnConnection.ttn_application_id}`);
+        console.log(
+          `[user-sync-emitter] Found TTN config, enabled: ${ttnConnection.is_enabled}, app: ${ttnConnection.ttn_application_id}`,
+        );
 
         // Decrypt the API key
-        const encryptionSalt = Deno.env.get("TTN_ENCRYPTION_SALT") ||
-          supabaseServiceKey?.slice(0, 32) || "";
+        const encryptionSalt =
+          Deno.env.get('TTN_ENCRYPTION_SALT') || supabaseServiceKey?.slice(0, 32) || '';
 
         // Decrypt the Application API key
         const fullApiKey = ttnConnection.ttn_api_key_encrypted
@@ -139,7 +149,7 @@ serve(async (req) => {
         ttnConfig = {
           enabled: ttnConnection.is_enabled || false,
           // NAM1-ONLY: Always use nam1 regardless of stored value
-          cluster: "nam1",
+          cluster: 'nam1',
           application_id: ttnConnection.ttn_application_id || null,
           api_key: fullApiKey,
           api_key_last4: ttnConnection.ttn_api_key_last4 || null,
@@ -152,9 +162,13 @@ serve(async (req) => {
           webhook_secret_last4: ttnConnection.ttn_webhook_secret_last4 || null,
         };
 
-        console.log(`[user-sync-emitter] TTN config prepared: cluster=${ttnConfig.cluster}, app=${ttnConfig.application_id}, api_key_present=${!!ttnConfig.api_key}, gateway_api_key_present=${!!ttnConfig.gateway_api_key}`);
+        console.log(
+          `[user-sync-emitter] TTN config prepared: cluster=${ttnConfig.cluster}, app=${ttnConfig.application_id}, api_key_present=${!!ttnConfig.api_key}, gateway_api_key_present=${!!ttnConfig.gateway_api_key}`,
+        );
       } else {
-        console.log(`[user-sync-emitter] No TTN config found for org: ${triggerPayload.organization_id}`);
+        console.log(
+          `[user-sync-emitter] No TTN config found for org: ${triggerPayload.organization_id}`,
+        );
       }
     }
 
@@ -172,8 +186,8 @@ serve(async (req) => {
           default_site_id: triggerPayload.default_site_id,
           user_sites: triggerPayload.user_sites || [],
           ttn: ttnConfig,
-        }
-      ]
+        },
+      ],
     };
 
     console.log(`[user-sync-emitter] Sending to Project 2: ${project2Endpoint}`);
@@ -184,7 +198,7 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${project2ApiKey}`,
+        Authorization: `Bearer ${project2ApiKey}`,
       },
       body: JSON.stringify(outboundPayload),
     });
@@ -200,7 +214,7 @@ serve(async (req) => {
         .update({
           status: 'failed',
           last_error: `HTTP ${response.status}: ${responseText}`,
-          attempts: 1
+          attempts: 1,
         })
         .eq('user_id', triggerPayload.user_id)
         .eq('status', 'pending')
@@ -209,11 +223,13 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ error: 'Failed to sync to Project 2', status: response.status }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
 
-    console.log(`[user-sync-emitter] Successfully synced user ${triggerPayload.user_id} to Project 2`);
+    console.log(
+      `[user-sync-emitter] Successfully synced user ${triggerPayload.user_id} to Project 2`,
+    );
 
     // Update sync log to sent
     await supabase
@@ -221,24 +237,23 @@ serve(async (req) => {
       .update({
         status: 'sent',
         sent_at: new Date().toISOString(),
-        attempts: 1
+        attempts: 1,
       })
       .eq('user_id', triggerPayload.user_id)
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
       .limit(1);
 
-    return new Response(
-      JSON.stringify({ success: true, user_id: triggerPayload.user_id }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
+    return new Response(JSON.stringify({ success: true, user_id: triggerPayload.user_id }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('[user-sync-emitter] Error:', errorMessage);
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });

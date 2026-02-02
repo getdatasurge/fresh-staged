@@ -18,9 +18,9 @@ affects: [frontend-auth-cleanup]
 tech-stack:
   added: []
   patterns:
-    - "Stack Auth useUser() hook for reactive auth state in complex pages"
-    - "Removal of onAuthStateChange subscriptions (Stack Auth is reactive)"
-    - "Direct user object access instead of session management"
+    - 'Stack Auth useUser() hook for reactive auth state in complex pages'
+    - 'Removal of onAuthStateChange subscriptions (Stack Auth is reactive)'
+    - 'Direct user object access instead of session management'
 
 key-files:
   created: []
@@ -34,14 +34,14 @@ key-files:
     - src/pages/UnitDetail.tsx
 
 key-decisions:
-  - "Removed all onAuthStateChange subscriptions in favor of reactive Stack Auth useUser() hook"
-  - "Preserved all database operations (supabase.from, supabase.rpc, supabase.functions)"
-  - "Preserved realtime subscriptions (supabase.channel) in UnitDetail"
+  - 'Removed all onAuthStateChange subscriptions in favor of reactive Stack Auth useUser() hook'
+  - 'Preserved all database operations (supabase.from, supabase.rpc, supabase.functions)'
+  - 'Preserved realtime subscriptions (supabase.channel) in UnitDetail'
 
 patterns-established:
-  - "Complex pages with auth subscriptions now use Stack Auth reactive patterns"
-  - "Session state removed - Stack Auth useUser() provides reactive user state"
-  - "Database and realtime operations remain unchanged (only auth migrated)"
+  - 'Complex pages with auth subscriptions now use Stack Auth reactive patterns'
+  - 'Session state removed - Stack Auth useUser() provides reactive user state'
+  - 'Database and realtime operations remain unchanged (only auth migrated)'
 
 # Metrics
 duration: 9min
@@ -61,6 +61,7 @@ completed: 2026-01-24
 - **Files modified:** 7
 
 ## Accomplishments
+
 - Migrated Dashboard and ManualLog pages with onAuthStateChange subscriptions to Stack Auth
 - Migrated Reports, DataMaintenance, and Settings pages with multiple auth calls
 - Migrated SiteDetail and UnitDetail pages with auth subscriptions and realtime features
@@ -77,6 +78,7 @@ Each task was committed atomically:
 3. **Task 3: Migrate SiteDetail and UnitDetail** - `7af62da` (feat)
 
 ## Files Created/Modified
+
 - `src/pages/Dashboard.tsx` - Removed onAuthStateChange subscription, uses Stack Auth useUser()
 - `src/pages/ManualLog.tsx` - Removed onAuthStateChange subscription, uses Stack Auth useUser()
 - `src/pages/Reports.tsx` - Replaced supabase.auth.getUser() with Stack Auth user
@@ -86,6 +88,7 @@ Each task was committed atomically:
 - `src/pages/UnitDetail.tsx` - Replaced auth calls with Stack Auth user, preserved realtime subscriptions
 
 ## Decisions Made
+
 - Used `stackUser` instead of `user` in Settings.tsx to avoid naming collision with mapped user variable
 - Preserved all database calls (supabase.from) and realtime subscriptions (supabase.channel)
 - Removed Session type imports and session state management entirely
@@ -104,6 +107,7 @@ None - plan executed exactly as written.
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - All 7 complex pages successfully migrated to Stack Auth
 - Zero `supabase.auth` calls remain in any of the migrated pages
 - Zero `onAuthStateChange` subscriptions remain
@@ -112,5 +116,6 @@ None - no external service configuration required.
 - Ready to continue with remaining frontend auth cleanup tasks
 
 ---
-*Phase: 08-frontend-auth-cleanup*
-*Completed: 2026-01-24*
+
+_Phase: 08-frontend-auth-cleanup_
+_Completed: 2026-01-24_

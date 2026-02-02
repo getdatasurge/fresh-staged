@@ -3,29 +3,29 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSuperAdmin } from '@/contexts/SuperAdminContext';
 import { useTRPC } from '@/lib/trpc';
 import { useQuery } from '@tanstack/react-query';
 import {
-    Activity,
-    AlertCircle,
-    CheckCircle,
-    Database,
-    Globe,
-    Radio,
-    RefreshCw,
-    Server,
-    Webhook,
-    XCircle,
-    Zap
+  Activity,
+  AlertCircle,
+  CheckCircle,
+  Database,
+  Globe,
+  Radio,
+  RefreshCw,
+  Server,
+  Webhook,
+  XCircle,
+  Zap,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -54,13 +54,13 @@ export default function PlatformDeveloperTools() {
     trpc.admin.systemStats.queryOptions(undefined, {
       enabled: isSupportModeActive,
       refetchOnWindowFocus: false,
-    })
+    }),
   );
   const ttnQuery = useQuery(
     trpc.admin.ttnConnections.queryOptions(undefined, {
       enabled: isSupportModeActive,
       refetchOnWindowFocus: false,
-    })
+    }),
   );
 
   const [systemHealth, setSystemHealth] = useState<SystemHealth>({
@@ -70,14 +70,16 @@ export default function PlatformDeveloperTools() {
     ttn: 'healthy',
   });
   const [webhookDeliveries, setWebhookDeliveries] = useState<WebhookDelivery[]>([]);
-  const [ttnConnections, setTtnConnections] = useState<Array<{
-    id: string;
-    organization_id: string;
-    org_name?: string;
-    ttn_application_id: string | null;
-    provisioning_status: string;
-    created_at: string;
-  }>>([]);
+  const [ttnConnections, setTtnConnections] = useState<
+    Array<{
+      id: string;
+      organization_id: string;
+      org_name?: string;
+      ttn_application_id: string | null;
+      provisioning_status: string;
+      created_at: string;
+    }>
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dbStats, setDbStats] = useState({
     organizations: 0,
@@ -91,10 +93,7 @@ export default function PlatformDeveloperTools() {
   const loadDevTools = async () => {
     setIsLoading(true);
     try {
-      const [stats, ttnList] = await Promise.all([
-        statsQuery.refetch(),
-        ttnQuery.refetch(),
-      ]);
+      const [stats, ttnList] = await Promise.all([statsQuery.refetch(), ttnQuery.refetch()]);
 
       if (stats.data) {
         setDbStats({
@@ -108,14 +107,16 @@ export default function PlatformDeveloperTools() {
       }
 
       if (ttnList.data) {
-        setTtnConnections(ttnList.data.map(conn => ({
-          id: conn.id,
-          organization_id: conn.organizationId,
-          org_name: conn.orgName,
-          ttn_application_id: conn.applicationId,
-          provisioning_status: conn.isActive ? 'completed' : 'inactive',
-          created_at: conn.createdAt,
-        })));
+        setTtnConnections(
+          ttnList.data.map((conn) => ({
+            id: conn.id,
+            organization_id: conn.organizationId,
+            org_name: conn.orgName,
+            ttn_application_id: conn.applicationId,
+            provisioning_status: conn.isActive ? 'completed' : 'inactive',
+            created_at: conn.createdAt,
+          })),
+        );
       }
 
       setWebhookDeliveries([]);
@@ -126,7 +127,6 @@ export default function PlatformDeveloperTools() {
         webhooks: 'healthy',
         ttn: ttnList.status === 'error' ? 'degraded' : 'healthy',
       });
-
     } catch (err) {
       console.error('Error loading dev tools:', err);
       setSystemHealth({
@@ -164,7 +164,8 @@ export default function PlatformDeveloperTools() {
               Support Mode Required
             </div>
             <div className="text-sm text-amber-700 dark:text-amber-300">
-              Some diagnostic tools require Support Mode to be active. Enter Support Mode from the header to access all features.
+              Some diagnostic tools require Support Mode to be active. Enter Support Mode from the
+              header to access all features.
             </div>
           </div>
         </div>
@@ -286,7 +287,9 @@ export default function PlatformDeveloperTools() {
                 <Radio className="w-5 h-5" />
                 TTN Connections
               </CardTitle>
-              <CardDescription>LoRaWAN/TTN application connections per organization</CardDescription>
+              <CardDescription>
+                LoRaWAN/TTN application connections per organization
+              </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
@@ -326,8 +329,8 @@ export default function PlatformDeveloperTools() {
                               conn.provisioning_status === 'completed'
                                 ? 'default'
                                 : conn.provisioning_status === 'failed'
-                                ? 'destructive'
-                                : 'secondary'
+                                  ? 'destructive'
+                                  : 'secondary'
                             }
                           >
                             {conn.provisioning_status}

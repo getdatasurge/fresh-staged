@@ -1,9 +1,9 @@
 /**
  * Centralized Query Key Factory
- * 
+ *
  * Single source of truth for all React Query cache keys.
  * Uses hierarchical structure for efficient prefix-based invalidation.
- * 
+ *
  * Pattern: [scope, scopeId, resource, ...params]
  * Examples:
  *   - ['org', 'abc-123', 'sites']
@@ -19,7 +19,7 @@ export const qk = {
   org: (orgId: string | null) => ({
     // Base key for all org data - use for broad invalidation
     all: ['org', orgId] as const,
-    
+
     // Navigation & hierarchy
     sites: () => ['org', orgId, 'sites'] as const,
     units: () => ['org', orgId, 'units'] as const,
@@ -27,40 +27,41 @@ export const qk = {
 
     // Organization stats (unit counts, compliance, etc.)
     stats: () => ['org', orgId, 'stats'] as const,
-    
+
     // Sensors & devices
     loraSensors: () => ['org', orgId, 'lora-sensors'] as const,
     gateways: () => ['org', orgId, 'gateways'] as const,
     devices: () => ['org', orgId, 'devices'] as const,
-    
+
     // Alert configuration
     alertRules: () => ['org', orgId, 'alert-rules'] as const,
     notificationPolicies: () => ['org', orgId, 'notification-policies'] as const,
     notificationSettings: () => ['org', orgId, 'notification-settings'] as const,
     escalationContacts: () => ['org', orgId, 'escalation-contacts'] as const,
     escalationPolicies: () => ['org', orgId, 'escalation-policies'] as const,
-    
+
     // Dashboard & layouts
     layouts: () => ['org', orgId, 'layouts'] as const,
     dashboardLayouts: () => ['org', orgId, 'dashboard-layouts'] as const,
-    
+
     // Events & audit
     eventLogs: () => ['org', orgId, 'event-logs'] as const,
     alerts: (status?: unknown, unitId?: string, siteId?: string, page?: number, limit?: number) =>
       ['org', orgId, 'alerts', status, unitId, siteId, page, limit] as const,
-    
+
     // Reports
     reports: () => ['org', orgId, 'reports'] as const,
     complianceReports: () => ['org', orgId, 'compliance-reports'] as const,
-    
+
     // Organization details
     profile: () => ['org', orgId, 'profile'] as const,
     branding: () => ['org', orgId, 'branding'] as const,
-    
+
     // TTN / provisioning
     ttnSettings: () => ['org', orgId, 'ttn-settings'] as const,
     ttnJobs: () => ['org', orgId, 'ttn-jobs'] as const,
-    ttnDeprovisionJobs: (statusFilter?: string[]) => ['org', orgId, 'ttn-deprovision-jobs', statusFilter] as const,
+    ttnDeprovisionJobs: (statusFilter?: string[]) =>
+      ['org', orgId, 'ttn-deprovision-jobs', statusFilter] as const,
     ttnJobStats: () => ['org', orgId, 'ttn-job-stats'] as const,
     ttnProvisioningLogs: () => ['org', orgId, 'ttn-provisioning-logs'] as const,
     provisioning: () => ['org', orgId, 'provisioning'] as const,
@@ -71,7 +72,8 @@ export const qk = {
     telnyxWebhookStats: () => ['org', orgId, 'telnyx-webhook-stats'] as const,
 
     // Alert rules history
-    alertRulesHistory: (scope?: string, limit?: number) => ['org', orgId, 'alert-rules-history', scope, limit] as const,
+    alertRulesHistory: (scope?: string, limit?: number) =>
+      ['org', orgId, 'alert-rules-history', scope, limit] as const,
 
     // Health & status
     healthCheck: () => ['org', orgId, 'health-check'] as const,
@@ -85,29 +87,30 @@ export const qk = {
   unit: (unitId: string | null) => ({
     // Base key for all unit data
     all: ['unit', unitId] as const,
-    
+
     // Core unit data
     header: () => ['unit', unitId, 'header'] as const,
     status: () => ['unit', unitId, 'status'] as const,
-    
+
     // Sensor readings
     readings: (range?: string) => ['unit', unitId, 'readings', range ?? 'default'] as const,
-    temperatureReadings: (range?: string) => ['unit', unitId, 'temperature-readings', range ?? 'default'] as const,
-    
+    temperatureReadings: (range?: string) =>
+      ['unit', unitId, 'temperature-readings', range ?? 'default'] as const,
+
     // Door events
     doorEvents: () => ['unit', unitId, 'door-events'] as const,
-    
+
     // Sensors linked to unit
     loraSensors: () => ['unit', unitId, 'lora-sensors'] as const,
-    
+
     // Alert rules & overrides
     alertRules: () => ['unit', unitId, 'alert-rules'] as const,
     alertRulesOverride: () => ['unit', unitId, 'alert-rules-override'] as const,
-    
+
     // Notification policies
-    notificationPolicies: (alertType?: string) => 
+    notificationPolicies: (alertType?: string) =>
       ['unit', unitId, 'notification-policies', alertType ?? 'all'] as const,
-    
+
     // Manual logs
     manualLogs: () => ['unit', unitId, 'manual-logs'] as const,
 
@@ -129,7 +132,8 @@ export const qk = {
     areas: () => ['site', siteId, 'areas'] as const,
     alertRules: () => ['site', siteId, 'alert-rules'] as const,
     layouts: () => ['site', siteId, 'layouts'] as const,
-    weather: (lat?: number, lon?: number, timezone?: string) => ['site', siteId, 'weather', lat, lon, timezone] as const,
+    weather: (lat?: number, lon?: number, timezone?: string) =>
+      ['site', siteId, 'weather', lat, lon, timezone] as const,
     hubs: () => ['site', siteId, 'hubs'] as const,
   }),
 
@@ -148,12 +152,11 @@ export const qk = {
     all: ['sensor', sensorId] as const,
     details: () => ['sensor', sensorId, 'details'] as const,
   }),
-  
+
   /**
    * Lookup by dev_eui (separate from sensor ID lookups)
    */
-  sensorByEui: (devEui: string | null) => 
-    ['sensor', 'by-eui', devEui] as const,
+  sensorByEui: (devEui: string | null) => ['sensor', 'by-eui', devEui] as const,
 
   /**
    * Entity layouts (generic for unit/site dashboards)

@@ -1,20 +1,14 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Webhook, 
-  Copy, 
-  Check, 
-  ExternalLink,
-  Radio
-} from "lucide-react";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Webhook, Copy, Check, ExternalLink, Radio } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Messaging Profile configuration - source of truth
 const MESSAGING_PROFILE = {
-  name: "frost guard",
-  id: "40019baa-aa62-463c-b254-463c66f4b2d3",
+  name: 'frost guard',
+  id: '40019baa-aa62-463c-b254-463c66f4b2d3',
 } as const;
 
 // Build webhook URL from Supabase project URL
@@ -31,22 +25,17 @@ export function TelnyxWebhookUrlsCard() {
       toast.success(`${field} copied to clipboard`);
       setTimeout(() => setCopiedField(null), 2000);
     } catch {
-      toast.error("Failed to copy to clipboard");
+      toast.error('Failed to copy to clipboard');
     }
   };
 
   const handleCopyAll = async () => {
     const allUrls = `Primary Webhook URL:\n${WEBHOOK_URL}\n\nFailover Webhook URL:\n${WEBHOOK_URL}`;
-    await handleCopy(allUrls, "All URLs");
+    await handleCopy(allUrls, 'All URLs');
   };
 
   const CopyButton = ({ text, field }: { text: string; field: string }) => (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="h-7 px-2"
-      onClick={() => handleCopy(text, field)}
-    >
+    <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => handleCopy(text, field)}>
       {copiedField === field ? (
         <Check className="h-3.5 w-3.5 text-safe" />
       ) : (
@@ -102,9 +91,7 @@ export function TelnyxWebhookUrlsCard() {
               <span className="text-xs font-medium text-muted-foreground">Primary Webhook</span>
               <CopyButton text={WEBHOOK_URL} field="Primary Webhook" />
             </div>
-            <code className="text-xs font-mono text-foreground break-all block">
-              {WEBHOOK_URL}
-            </code>
+            <code className="text-xs font-mono text-foreground break-all block">{WEBHOOK_URL}</code>
           </div>
 
           {/* Failover Webhook */}
@@ -113,9 +100,7 @@ export function TelnyxWebhookUrlsCard() {
               <span className="text-xs font-medium text-muted-foreground">Failover Webhook</span>
               <CopyButton text={WEBHOOK_URL} field="Failover Webhook" />
             </div>
-            <code className="text-xs font-mono text-foreground break-all block">
-              {WEBHOOK_URL}
-            </code>
+            <code className="text-xs font-mono text-foreground break-all block">{WEBHOOK_URL}</code>
           </div>
         </div>
 
@@ -123,21 +108,19 @@ export function TelnyxWebhookUrlsCard() {
         <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 space-y-2">
           <span className="text-xs font-medium">Recommended Webhook Events</span>
           <div className="flex flex-wrap gap-1.5">
-            {["message.sent", "message.delivered", "message.failed", "message.received"].map((event) => (
-              <Badge key={event} variant="secondary" className="text-xs font-mono">
-                {event}
-              </Badge>
-            ))}
+            {['message.sent', 'message.delivered', 'message.failed', 'message.received'].map(
+              (event) => (
+                <Badge key={event} variant="secondary" className="text-xs font-mono">
+                  {event}
+                </Badge>
+              ),
+            )}
           </div>
         </div>
 
         {/* Actions */}
         <div className="flex items-center justify-between pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCopyAll}
-          >
+          <Button variant="outline" size="sm" onClick={handleCopyAll}>
             <Copy className="h-3.5 w-3.5 mr-1.5" />
             Copy All URLs
           </Button>

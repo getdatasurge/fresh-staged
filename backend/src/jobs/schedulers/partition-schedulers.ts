@@ -1,9 +1,5 @@
-import { Queue } from 'bullmq'
-import {
-	JobNames,
-	partitionCreateJobOptions,
-	partitionRetentionJobOptions,
-} from '../index.js'
+import { Queue } from 'bullmq';
+import { JobNames, partitionCreateJobOptions, partitionRetentionJobOptions } from '../index.js';
 
 /**
  * Register partition lifecycle management schedulers
@@ -24,27 +20,27 @@ import {
  * - Service: backend/src/services/partition.service.ts
  */
 export async function registerPartitionSchedulers(queue: Queue) {
-	await queue.add(
-		JobNames.PARTITION_CREATE,
-		{ organizationId: 'system', bufferMonths: 3 },
-		{
-			...partitionCreateJobOptions,
-			repeat: {
-				pattern: '0 2 * * 0',
-			},
-			jobId: 'partition-create-weekly',
-		},
-	)
+  await queue.add(
+    JobNames.PARTITION_CREATE,
+    { organizationId: 'system', bufferMonths: 3 },
+    {
+      ...partitionCreateJobOptions,
+      repeat: {
+        pattern: '0 2 * * 0',
+      },
+      jobId: 'partition-create-weekly',
+    },
+  );
 
-	await queue.add(
-		JobNames.PARTITION_RETENTION,
-		{ organizationId: 'system', retentionMonths: 24 },
-		{
-			...partitionRetentionJobOptions,
-			repeat: {
-				pattern: '0 3 1 * *',
-			},
-			jobId: 'partition-retention-monthly',
-		},
-	)
+  await queue.add(
+    JobNames.PARTITION_RETENTION,
+    { organizationId: 'system', retentionMonths: 24 },
+    {
+      ...partitionRetentionJobOptions,
+      repeat: {
+        pattern: '0 3 1 * *',
+      },
+      jobId: 'partition-retention-monthly',
+    },
+  );
 }

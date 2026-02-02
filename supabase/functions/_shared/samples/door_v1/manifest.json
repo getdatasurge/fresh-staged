@@ -9,7 +9,9 @@
     "type": "object",
     "properties": {
       "door_status": { "type": "string", "enum": ["open", "closed"] },
-      "door": { "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["open", "closed"] }] },
+      "door": {
+        "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["open", "closed"] }]
+      },
       "open_close": { "type": "integer", "enum": [0, 1] },
       "battery_level": { "type": "integer", "minimum": 0, "maximum": 100 },
       "battery_voltage": { "type": "number", "minimum": 0, "maximum": 5 }

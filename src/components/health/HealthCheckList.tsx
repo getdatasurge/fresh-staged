@@ -19,8 +19,8 @@ interface HealthCheckListProps {
 
 type SortOption = 'name' | 'status' | 'latency';
 
-export function HealthCheckList({ 
-  checks, 
+export function HealthCheckList({
+  checks,
   categoryFilter = 'all',
   showSkipped = true,
 }: HealthCheckListProps) {
@@ -32,18 +32,18 @@ export function HealthCheckList({
   let filteredChecks = checks;
 
   if (categoryFilter !== 'all') {
-    filteredChecks = filteredChecks.filter(c => c.category === categoryFilter);
+    filteredChecks = filteredChecks.filter((c) => c.category === categoryFilter);
   }
 
   if (!showSkippedState) {
-    filteredChecks = filteredChecks.filter(c => !c.skipped);
+    filteredChecks = filteredChecks.filter((c) => !c.skipped);
   }
 
   if (search) {
     const searchLower = search.toLowerCase();
     filteredChecks = filteredChecks.filter(
-      c => c.name.toLowerCase().includes(searchLower) ||
-           c.error?.toLowerCase().includes(searchLower)
+      (c) =>
+        c.name.toLowerCase().includes(searchLower) || c.error?.toLowerCase().includes(searchLower),
     );
   }
 
@@ -62,7 +62,7 @@ export function HealthCheckList({
     return aOrder - bOrder;
   });
 
-  const skippedCount = checks.filter(c => c.skipped).length;
+  const skippedCount = checks.filter((c) => c.skipped).length;
 
   return (
     <div className="space-y-4">
@@ -86,10 +86,7 @@ export function HealthCheckList({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuCheckboxItem
-                checked={showSkippedState}
-                onCheckedChange={setShowSkipped}
-              >
+              <DropdownMenuCheckboxItem checked={showSkippedState} onCheckedChange={setShowSkipped}>
                 Show skipped ({skippedCount})
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
@@ -132,9 +129,7 @@ export function HealthCheckList({
         ))}
 
         {sortedChecks.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            No checks match your filters
-          </div>
+          <div className="text-center py-8 text-muted-foreground">No checks match your filters</div>
         )}
       </div>
 

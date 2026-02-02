@@ -44,10 +44,10 @@ metrics:
 
 ## Commits
 
-| Hash | Description |
-|------|-------------|
+| Hash    | Description                                                                         |
+| ------- | ----------------------------------------------------------------------------------- |
 | 8547604 | docs(quick-001): update README tech stack to reflect Stack Auth and Fastify backend |
-| 775a5a2 | docs(quick-001): add migration notice to ARCHITECTURE.md |
+| 775a5a2 | docs(quick-001): add migration notice to ARCHITECTURE.md                            |
 
 ## Decisions Made
 
@@ -69,14 +69,18 @@ None - plan executed exactly as written.
 ## Next Phase Readiness
 
 ### Blockers
+
 None
 
 ### Impact
+
 New developers reading README.md will now understand:
+
 1. Auth is via Stack Auth, not Supabase Auth
 2. Backend is Fastify-based, not Supabase Edge Functions
 3. Some Supabase integration remains during migration (documented in .env.example)
 
 ### Follow-up Tasks
+
 - Consider updating ARCHITECTURE.md fully once migration is complete (larger effort)
 - Update other docs that may reference Supabase as primary backend (docs/engineering/, etc.)

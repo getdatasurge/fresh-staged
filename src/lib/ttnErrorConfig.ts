@@ -12,75 +12,78 @@ export interface TTNErrorInfo {
 
 export const TTN_ERROR_MAP: Record<string, TTNErrorInfo> = {
   CLUSTER_MISMATCH: {
-    title: "Region Mismatch",
-    description: "Your Application ID exists on a different TTN cluster than selected.",
-    action: "Select the correct region that matches where your gateway is registered.",
+    title: 'Region Mismatch',
+    description: 'Your Application ID exists on a different TTN cluster than selected.',
+    action: 'Select the correct region that matches where your gateway is registered.',
     severity: 'error',
   },
   APP_NOT_FOUND: {
-    title: "Application Not Found",
-    description: "The TTN application could not be found on the selected cluster.",
+    title: 'Application Not Found',
+    description: 'The TTN application could not be found on the selected cluster.',
     action: "Verify the Application ID and ensure you've selected the correct TTN region.",
     severity: 'error',
   },
   API_KEY_INVALID: {
-    title: "Invalid API Key",
-    description: "The TTN API key is invalid or has expired.",
-    action: "Generate a new API key in TTN Console → Applications → API keys.",
+    title: 'Invalid API Key',
+    description: 'The TTN API key is invalid or has expired.',
+    action: 'Generate a new API key in TTN Console → Applications → API keys.',
     severity: 'error',
   },
   API_KEY_PERMISSIONS: {
-    title: "Insufficient Permissions",
-    description: "Your API key lacks the required permissions for device management.",
-    action: "Create a new key with: applications:read, end_devices:read, end_devices:write.",
+    title: 'Insufficient Permissions',
+    description: 'Your API key lacks the required permissions for device management.',
+    action: 'Create a new key with: applications:read, end_devices:read, end_devices:write.',
     severity: 'error',
   },
   DEVICE_NOT_FOUND: {
-    title: "Device Not Registered",
-    description: "This device is not registered in The Things Network.",
-    action: "Provision this sensor to TTN using the cloud upload button, or manually register it in TTN Console.",
+    title: 'Device Not Registered',
+    description: 'This device is not registered in The Things Network.',
+    action:
+      'Provision this sensor to TTN using the cloud upload button, or manually register it in TTN Console.',
     severity: 'warning',
   },
   DEVICE_NOT_JOINED: {
-    title: "Device Not Joined",
-    description: "Device is registered but has not completed the LoRaWAN join process.",
-    action: "Ensure the device is powered on and within range of an active gateway.",
+    title: 'Device Not Joined',
+    description: 'Device is registered but has not completed the LoRaWAN join process.',
+    action: 'Ensure the device is powered on and within range of an active gateway.',
     severity: 'info',
   },
   WEBHOOK_UNREACHABLE: {
-    title: "Webhook Unreachable",
-    description: "TTN could not deliver uplinks to the FrostGuard webhook endpoint.",
-    action: "Verify the webhook URL in TTN Console → Applications → Integrations → Webhooks.",
+    title: 'Webhook Unreachable',
+    description: 'TTN could not deliver uplinks to the FrostGuard webhook endpoint.',
+    action: 'Verify the webhook URL in TTN Console → Applications → Integrations → Webhooks.',
     severity: 'error',
   },
   WEBHOOK_SECRET_MISMATCH: {
-    title: "Webhook Secret Mismatch",
-    description: "The webhook secret does not match what TTN is sending.",
-    action: "Update the webhook secret in Settings → Developer → TTN Connection to match TTN Console.",
+    title: 'Webhook Secret Mismatch',
+    description: 'The webhook secret does not match what TTN is sending.',
+    action:
+      'Update the webhook secret in Settings → Developer → TTN Connection to match TTN Console.',
     severity: 'error',
   },
   NETWORK_ERROR: {
-    title: "Network Connection Failed",
-    description: "Could not connect to The Things Network servers.",
-    action: "Check your internet connection and try again. If the issue persists, TTN may be experiencing issues.",
+    title: 'Network Connection Failed',
+    description: 'Could not connect to The Things Network servers.',
+    action:
+      'Check your internet connection and try again. If the issue persists, TTN may be experiencing issues.',
     severity: 'error',
   },
   NO_API_KEY: {
-    title: "API Key Required",
-    description: "No TTN API key has been configured.",
-    action: "Add a TTN API key in Settings → Developer → TTN Connection.",
+    title: 'API Key Required',
+    description: 'No TTN API key has been configured.',
+    action: 'Add a TTN API key in Settings → Developer → TTN Connection.',
     severity: 'warning',
   },
   TTN_NOT_CONFIGURED: {
-    title: "TTN Not Configured",
-    description: "The Things Network integration has not been set up for this organization.",
-    action: "Complete the TTN Setup Wizard to enable LoRaWAN device management.",
+    title: 'TTN Not Configured',
+    description: 'The Things Network integration has not been set up for this organization.',
+    action: 'Complete the TTN Setup Wizard to enable LoRaWAN device management.',
     severity: 'info',
   },
   NO_UPLINK: {
-    title: "No Uplinks Received",
-    description: "Device has never sent data since registration.",
-    action: "Confirm the device is powered on and has completed OTAA join. Check gateway coverage.",
+    title: 'No Uplinks Received',
+    description: 'Device has never sent data since registration.',
+    action: 'Confirm the device is powered on and has completed OTAA join. Check gateway coverage.',
     severity: 'warning',
   },
 };
@@ -98,7 +101,10 @@ export function getTTNErrorInfo(statusCode: number, errorMessage?: string): TTNE
   }
   if (statusCode === 404) {
     // Check if it's a device or app not found
-    if (errorMessage?.toLowerCase().includes('device') || errorMessage?.toLowerCase().includes('end device')) {
+    if (
+      errorMessage?.toLowerCase().includes('device') ||
+      errorMessage?.toLowerCase().includes('end device')
+    ) {
       return TTN_ERROR_MAP.DEVICE_NOT_FOUND;
     }
     return TTN_ERROR_MAP.APP_NOT_FOUND;
@@ -109,9 +115,9 @@ export function getTTNErrorInfo(statusCode: number, errorMessage?: string): TTNE
 
   // Default error
   return {
-    title: "TTN Error",
+    title: 'TTN Error',
     description: errorMessage || `Unexpected error (${statusCode})`,
-    action: "Check TTN Console for more details or contact support.",
+    action: 'Check TTN Console for more details or contact support.',
     severity: 'error',
   };
 }
@@ -171,12 +177,12 @@ export const TTN_REGIONS = [
   { value: 'as1', label: 'Asia (as1)', url: 'https://as1.cloud.thethings.network' },
 ] as const;
 
-export type TTNRegion = typeof TTN_REGIONS[number]['value'];
+export type TTNRegion = (typeof TTN_REGIONS)[number]['value'];
 
 /**
  * Get TTN Console URL for a given region
  */
 export function getTTNConsoleUrl(region: TTNRegion): string {
-  const regionConfig = TTN_REGIONS.find(r => r.value === region);
+  const regionConfig = TTN_REGIONS.find((r) => r.value === region);
   return regionConfig ? regionConfig.url : TTN_REGIONS[0].url;
 }

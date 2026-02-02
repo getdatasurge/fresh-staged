@@ -14,11 +14,7 @@
       "battery_level": { "type": "integer", "minimum": 0, "maximum": 100 },
       "battery_voltage": { "type": "number", "minimum": 0, "maximum": 5 }
     },
-    "oneOf": [
-      { "required": ["water_leak"] },
-      { "required": ["leak"] },
-      { "required": ["flood"] }
-    ]
+    "oneOf": [{ "required": ["water_leak"] }, { "required": ["leak"] }, { "required": ["flood"] }]
   },
   "discriminators": {
     "primary": ["water_leak", "leak", "flood"],

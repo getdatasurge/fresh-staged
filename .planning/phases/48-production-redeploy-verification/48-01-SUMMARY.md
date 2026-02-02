@@ -15,30 +15,30 @@ completed: 2026-01-30
 
 Three frontend files used `import.meta.env.VITE_API_URL || 'http://localhost:3000'` which fell back to `localhost:3000` in production (because `VITE_API_URL` was passed as empty string, which is falsy in JavaScript). Fixed to use relative URLs in production:
 
-| File | Change |
-|------|--------|
-| `src/lib/trpc.ts:15` | `|| 'http://localhost:3000'` → `|| (import.meta.env.DEV ? 'http://localhost:3000' : '')` |
-| `src/lib/socket.ts:24` | `|| 'http://localhost:3000'` → `|| (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin)` |
-| `src/hooks/useTTNSettings.ts:64` | `|| 'http://localhost:3000'` → `|| (import.meta.env.DEV ? 'http://localhost:3000' : '')` |
+| File                             | Change |
+| -------------------------------- | ------ | --- | -------------------------- | --- | ------------------------------------------------------------------------- |
+| `src/lib/trpc.ts:15`             | `      |     | 'http://localhost:3000'`→` |     | (import.meta.env.DEV ? 'http://localhost:3000' : '')`                     |
+| `src/lib/socket.ts:24`           | `      |     | 'http://localhost:3000'`→` |     | (import.meta.env.DEV ? 'http://localhost:3000' : window.location.origin)` |
+| `src/hooks/useTTNSettings.ts:64` | `      |     | 'http://localhost:3000'`→` |     | (import.meta.env.DEV ? 'http://localhost:3000' : '')`                     |
 
 ### Caddy Reverse Proxy (Missing Routes + TLS Fix)
 
-| File | Change |
-|------|--------|
-| `docker/caddy/Caddyfile` | Added `/trpc/*` route → `backend:3000` (tRPC API) |
-| `docker/caddy/Caddyfile` | Added `/socket.io/*` route → `backend:3000` (WebSocket) |
+| File                     | Change                                                                                                     |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| `docker/caddy/Caddyfile` | Added `/trpc/*` route → `backend:3000` (tRPC API)                                                          |
+| `docker/caddy/Caddyfile` | Added `/socket.io/*` route → `backend:3000` (WebSocket)                                                    |
 | `docker/caddy/Caddyfile` | Changed server block from `https://{$DOMAIN:localhost}` to `:443` (port-based matching for IP deployments) |
-| `docker/caddy/Caddyfile` | Changed HTTP redirect from `http://{$DOMAIN:localhost}` to `:80` |
-| `docker/caddy/Caddyfile` | Changed TLS from env-var cert paths to hardcoded `/etc/caddy/certs/server.crt` and `server.key` |
+| `docker/caddy/Caddyfile` | Changed HTTP redirect from `http://{$DOMAIN:localhost}` to `:80`                                           |
+| `docker/caddy/Caddyfile` | Changed TLS from env-var cert paths to hardcoded `/etc/caddy/certs/server.crt` and `server.key`            |
 
 ### Component Tree Ordering (Blank Page Fix)
 
 `RealtimeProvider` was positioned above `SuperAdminProvider` in `src/App.tsx`. Its internal `RealtimeHandlers` component calls `useOrgScope()` → `useEffectiveIdentity()` → `useSuperAdmin()`, which threw because the SuperAdmin context was not yet provided. With no error boundary, React 18 unmounted the entire tree → blank dashboard page.
 
-| File | Change |
-|------|--------|
-| `src/App.tsx` | Moved `RealtimeProvider` inside `SuperAdminProvider` (below it in the tree) |
-| `src/components/DashboardLayout.tsx:69` | Fixed `limit: 0` → `limit: 1` (Zod validation required `>= 1`) |
+| File                                    | Change                                                                      |
+| --------------------------------------- | --------------------------------------------------------------------------- |
+| `src/App.tsx`                           | Moved `RealtimeProvider` inside `SuperAdminProvider` (below it in the tree) |
+| `src/components/DashboardLayout.tsx:69` | Fixed `limit: 0` → `limit: 1` (Zod validation required `>= 1`)              |
 
 ### Production VM
 
@@ -65,7 +65,17 @@ Running 4 tests using 1 worker
 ### Health Endpoint
 
 ```json
-{"status":"healthy","uptime":504.86,"timestamp":"2026-01-30T00:47:32.557Z","version":"1.0.0","environment":"production","checks":{"database":{"status":"pass","latency_ms":2},"redis":{"status":"pass","latency_ms":1}}}
+{
+  "status": "healthy",
+  "uptime": 504.86,
+  "timestamp": "2026-01-30T00:47:32.557Z",
+  "version": "1.0.0",
+  "environment": "production",
+  "checks": {
+    "database": { "status": "pass", "latency_ms": 2 },
+    "redis": { "status": "pass", "latency_ms": 1 }
+  }
+}
 ```
 
 ### React Mount
@@ -92,11 +102,11 @@ Running 4 tests using 1 worker
 
 ## Files Modified
 
-| File | Action |
-|------|--------|
-| `src/lib/trpc.ts` | Fixed production URL fallback |
-| `src/lib/socket.ts` | Fixed production URL fallback |
-| `src/hooks/useTTNSettings.ts` | Fixed production URL fallback |
-| `docker/caddy/Caddyfile` | Added tRPC/socket.io routes, fixed TLS and host matching |
-| `src/App.tsx` | Moved RealtimeProvider inside SuperAdminProvider (blank page fix) |
-| `src/components/DashboardLayout.tsx` | Fixed alerts query limit: 0 → 1 |
+| File                                 | Action                                                            |
+| ------------------------------------ | ----------------------------------------------------------------- |
+| `src/lib/trpc.ts`                    | Fixed production URL fallback                                     |
+| `src/lib/socket.ts`                  | Fixed production URL fallback                                     |
+| `src/hooks/useTTNSettings.ts`        | Fixed production URL fallback                                     |
+| `docker/caddy/Caddyfile`             | Added tRPC/socket.io routes, fixed TLS and host matching          |
+| `src/App.tsx`                        | Moved RealtimeProvider inside SuperAdminProvider (blank page fix) |
+| `src/components/DashboardLayout.tsx` | Fixed alerts query limit: 0 → 1                                   |

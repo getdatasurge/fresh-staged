@@ -9,6 +9,7 @@
 Fix all 60 failing tests (38 frontend, 22 backend) by establishing proper mocking patterns for tRPC and BullMQ. This is infrastructure work that enables subsequent migration phases to have working tests.
 
 **Specific failures:**
+
 - Frontend (38 tests): `trpc.X.Y.queryOptions is not a function` — mock doesn't implement queryOptions pattern
 - Backend (22 tests): `queue.service.test.ts` — BullMQ/Redis mock issues
 
@@ -42,9 +43,10 @@ This is a technical infrastructure phase. Claude has full discretion on:
 No specific requirements — open to standard approaches.
 
 **Key pattern to support:**
+
 ```typescript
 // This pattern must work in tests:
-const query = useQuery(trpc.sites.list.queryOptions({ organizationId }))
+const query = useQuery(trpc.sites.list.queryOptions({ organizationId }));
 ```
 
 </specifics>
@@ -58,5 +60,5 @@ None — discussion skipped for technical phase.
 
 ---
 
-*Phase: 38-test-infrastructure*
-*Context gathered: 2026-01-29*
+_Phase: 38-test-infrastructure_
+_Context gathered: 2026-01-29_

@@ -40,9 +40,7 @@ export function useAuthAndOnboarding(): AuthOnboardingState {
   const isSuperAdmin = false;
 
   // Create minimal session object for compatibility
-  const session = stackUser
-    ? { user: { id: stackUser.id } }
-    : null;
+  const session = stackUser ? { user: { id: stackUser.id } } : null;
 
   return {
     isInitializing: !isInitialized,

@@ -45,7 +45,7 @@ export interface SimulationResult {
 export function generateTemperature(
   baseTemp: number,
   variance: number,
-  timeOffset: number
+  timeOffset: number,
 ): number {
   // Compressor cycle: approximately 15-minute period
   const cycleRadians = (timeOffset / 15) * Math.PI * 2;
@@ -82,10 +82,7 @@ export function generateHumidity(baseHumidity: number = 45): number {
  * @param totalReadings Total number of readings in simulation
  * @returns Battery percentage (0-100)
  */
-export function generateBattery(
-  readingIndex: number,
-  totalReadings: number
-): number {
+export function generateBattery(readingIndex: number, totalReadings: number): number {
   // Start at 100%, decrease linearly over the simulation
   const baseLevel = 100 - (readingIndex / totalReadings) * 20;
   const noise = (Math.random() - 0.5) * 2;
@@ -117,19 +114,13 @@ export function generateReadings(config: SimulationConfig): Array<{
     source: 'api';
   }> = [];
 
-  const totalReadings = Math.ceil(
-    (config.durationMinutes * 60) / config.intervalSeconds
-  );
+  const totalReadings = Math.ceil((config.durationMinutes * 60) / config.intervalSeconds);
 
   const endTime = new Date();
-  const startTime = new Date(
-    endTime.getTime() - config.durationMinutes * 60 * 1000
-  );
+  const startTime = new Date(endTime.getTime() - config.durationMinutes * 60 * 1000);
 
   for (let i = 0; i < totalReadings; i++) {
-    const readingTime = new Date(
-      startTime.getTime() + i * config.intervalSeconds * 1000
-    );
+    const readingTime = new Date(startTime.getTime() + i * config.intervalSeconds * 1000);
     const timeOffsetMinutes = i * (config.intervalSeconds / 60);
 
     const reading: {
@@ -142,11 +133,7 @@ export function generateReadings(config: SimulationConfig): Array<{
       source: 'api';
     } = {
       unitId: config.unitId,
-      temperature: generateTemperature(
-        config.baseTemperature,
-        config.variance,
-        timeOffsetMinutes
-      ),
+      temperature: generateTemperature(config.baseTemperature, config.variance, timeOffsetMinutes),
       recordedAt: readingTime.toISOString(),
       source: 'api',
     };
@@ -175,12 +162,10 @@ export function generateReadings(config: SimulationConfig): Array<{
  */
 export async function runSimulation(
   config: SimulationConfig,
-  organizationId: string
+  organizationId: string,
 ): Promise<SimulationResult> {
   const endTime = new Date();
-  const startTime = new Date(
-    endTime.getTime() - config.durationMinutes * 60 * 1000
-  );
+  const startTime = new Date(endTime.getTime() - config.durationMinutes * 60 * 1000);
 
   // Generate the readings
   const readings = generateReadings(config);
@@ -196,10 +181,7 @@ export async function runSimulation(
   }
 
   // Ingest the readings using the existing service
-  const result = await readingsService.ingestBulkReadings(
-    readings,
-    organizationId
-  );
+  const result = await readingsService.ingestBulkReadings(readings, organizationId);
 
   return {
     success: true,

@@ -1,41 +1,42 @@
 /**
  * org-state-api: Pull-based endpoint for Project 2 (Emulator) to fetch authoritative org state
- * 
+ *
  * Authentication: Uses PROJECT2_SYNC_API_KEY (no JWT, no service role key)
  * Headers accepted: Authorization: Bearer <key> OR X-Sync-API-Key: <key>
- * 
+ *
  * Usage examples:
- * 
+ *
  * # Health check (no auth required)
  * curl -X GET "https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/org-state-api?action=health"
- * 
+ *
  * # Check dirty status
  * curl -X GET "https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/org-state-api?org_id=YOUR_ORG_ID&check_only=true" \
  *   -H "X-Sync-API-Key: YOUR_API_KEY"
- * 
+ *
  * # Get full org state
  * curl -X GET "https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/org-state-api?org_id=YOUR_ORG_ID" \
  *   -H "X-Sync-API-Key: YOUR_API_KEY"
- * 
+ *
  * # With debug info
  * curl -X GET "https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/org-state-api?org_id=YOUR_ORG_ID" \
  *   -H "X-Sync-API-Key: YOUR_API_KEY" \
  *   -H "X-Debug: 1"
  */
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { 
-  validateProject2SyncApiKey, 
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+  validateProject2SyncApiKey,
   structuredErrorResponse,
-  uuidSchema 
-} from "../_shared/validation.ts";
+  uuidSchema,
+} from '../_shared/validation.ts';
 
-const VERSION = "1.1.0";
+const VERSION = '1.1.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-sync-api-key, x-debug',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type, x-sync-api-key, x-debug',
 };
 
 interface OrgSyncPayload {
@@ -112,10 +113,15 @@ function generateRequestId(): string {
   return crypto.randomUUID();
 }
 
-function log(requestId: string, level: 'info' | 'warn' | 'error', message: string, data?: Record<string, unknown>) {
+function log(
+  requestId: string,
+  level: 'info' | 'warn' | 'error',
+  message: string,
+  data?: Record<string, unknown>,
+) {
   const prefix = `[org-state-api][${requestId}]`;
   const logData = data ? ` ${JSON.stringify(data)}` : '';
-  
+
   if (level === 'error') {
     console.error(`${prefix} ${message}${logData}`);
   } else if (level === 'warn') {
@@ -128,7 +134,7 @@ function log(requestId: string, level: 'info' | 'warn' | 'error', message: strin
 serve(async (req) => {
   const requestId = generateRequestId();
   const startTime = Date.now();
-  
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -137,14 +143,14 @@ serve(async (req) => {
   const url = new URL(req.url);
   const action = url.searchParams.get('action');
   const isDebugMode = req.headers.get('X-Debug') === '1';
-  
+
   // Health endpoint (no auth required)
   if (action === 'health') {
     log(requestId, 'info', 'Health check requested');
-    
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const syncApiKey = Deno.env.get('PROJECT2_SYNC_API_KEY');
-    
+
     return new Response(
       JSON.stringify({
         ok: true,
@@ -154,30 +160,31 @@ serve(async (req) => {
         env_configured: {
           supabase_url: !!supabaseUrl,
           sync_api_key: !!syncApiKey,
-        }
+        },
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }
 
   // All other endpoints require authentication
   const authResult = validateProject2SyncApiKey(req);
-  
+
   if (!authResult.valid) {
     log(requestId, 'warn', 'Authentication failed', { error: authResult.error });
-    
+
     const status = authResult.errorCode === 'NOT_CONFIGURED' ? 500 : 401;
-    const hint = authResult.errorCode === 'NOT_CONFIGURED' 
-      ? 'Contact FrostGuard admin to configure PROJECT2_SYNC_API_KEY'
-      : 'Provide valid API key via Authorization: Bearer <key> or X-Sync-API-Key header';
-    
+    const hint =
+      authResult.errorCode === 'NOT_CONFIGURED'
+        ? 'Contact FrostGuard admin to configure PROJECT2_SYNC_API_KEY'
+        : 'Provide valid API key via Authorization: Bearer <key> or X-Sync-API-Key header';
+
     return structuredErrorResponse(
       status,
       authResult.errorCode || 'UNAUTHORIZED',
       authResult.error || 'Authentication failed',
       requestId,
       corsHeaders,
-      { hint }
+      { hint },
     );
   }
 
@@ -203,10 +210,10 @@ serve(async (req) => {
       'org_id parameter is required',
       requestId,
       corsHeaders,
-      { 
+      {
         hint: 'Provide org_id as query parameter: ?org_id=<uuid>',
-        details: { parameter: 'org_id', received: null }
-      }
+        details: { parameter: 'org_id', received: null },
+      },
     );
   }
 
@@ -220,14 +227,14 @@ serve(async (req) => {
       'org_id must be a valid UUID',
       requestId,
       corsHeaders,
-      { 
+      {
         hint: 'org_id should be in format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
-        details: { 
-          parameter: 'org_id', 
+        details: {
+          parameter: 'org_id',
           received: orgId,
-          validation_error: uuidValidation.error.issues[0]?.message 
-        }
-      }
+          validation_error: uuidValidation.error.issues[0]?.message,
+        },
+      },
     );
   }
 
@@ -239,20 +246,20 @@ serve(async (req) => {
   try {
     // Check for dirty status first if requested
     const checkOnly = url.searchParams.get('check_only') === 'true';
-    
+
     if (checkOnly) {
       log(requestId, 'info', 'Checking dirty status', { org_id: orgId });
-      
+
       const { data, error } = await supabase.rpc('check_org_dirty', {
-        p_org_id: orgId
+        p_org_id: orgId,
       });
 
       if (error) {
-        log(requestId, 'error', 'check_org_dirty RPC failed', { 
+        log(requestId, 'error', 'check_org_dirty RPC failed', {
           error_message: error.message,
-          error_code: error.code 
+          error_code: error.code,
         });
-        
+
         return structuredErrorResponse(
           500,
           'RPC_FAILED',
@@ -264,23 +271,23 @@ serve(async (req) => {
             details: {
               rpc_function: 'check_org_dirty',
               error_code: error.code,
-              error_message: error.message
-            }
-          }
+              error_message: error.message,
+            },
+          },
         );
       }
 
       const durationMs = Date.now() - startTime;
-      log(requestId, 'info', 'Dirty status check complete', { 
-        org_id: orgId, 
+      log(requestId, 'info', 'Dirty status check complete', {
+        org_id: orgId,
         is_dirty: data?.is_dirty,
-        duration_ms: durationMs 
+        duration_ms: durationMs,
       });
 
       const response: Record<string, unknown> = {
         success: true,
         request_id: requestId,
-        ...data
+        ...data,
       };
 
       if (isDebugMode) {
@@ -289,30 +296,30 @@ serve(async (req) => {
           resolved_org_id: orgId,
           sync_version: data?.sync_version,
           api_key_last4: authResult.keyLast4,
-          duration_ms: durationMs
+          duration_ms: durationMs,
         };
       }
 
-      return new Response(
-        JSON.stringify(response),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify(response), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Get full sync payload
     log(requestId, 'info', 'Fetching full state', { org_id: orgId });
-    
+
     const { data, error } = await supabase.rpc('get_org_sync_payload', {
-      p_org_id: orgId
+      p_org_id: orgId,
     });
 
     if (error) {
-      log(requestId, 'error', 'get_org_sync_payload RPC failed', { 
+      log(requestId, 'error', 'get_org_sync_payload RPC failed', {
         error_message: error.message,
         error_code: error.code,
-        error_details: error.details
+        error_details: error.details,
       });
-      
+
       return structuredErrorResponse(
         500,
         'RPC_FAILED',
@@ -324,9 +331,9 @@ serve(async (req) => {
           details: {
             rpc_function: 'get_org_sync_payload',
             error_code: error.code,
-            error_message: error.message
-          }
-        }
+            error_message: error.message,
+          },
+        },
       );
     }
 
@@ -341,28 +348,28 @@ serve(async (req) => {
         corsHeaders,
         {
           hint: 'Verify the organization ID is correct and the org exists in FrostGuard',
-          details: { org_id: orgId }
-        }
+          details: { org_id: orgId },
+        },
       );
     }
 
     const payload = data as OrgSyncPayload;
     const durationMs = Date.now() - startTime;
-    
-    log(requestId, 'info', 'State fetch complete', { 
+
+    log(requestId, 'info', 'State fetch complete', {
       org_id: orgId,
       sites_count: payload.sites?.length || 0,
       areas_count: payload.areas?.length || 0,
       units_count: payload.units?.length || 0,
       sensors_count: payload.sensors?.length || 0,
       gateways_count: payload.gateways?.length || 0,
-      duration_ms: durationMs
+      duration_ms: durationMs,
     });
 
     const response: Record<string, unknown> = {
       success: true,
       request_id: requestId,
-      ...payload
+      ...payload,
     };
 
     if (isDebugMode) {
@@ -375,27 +382,26 @@ serve(async (req) => {
           areas: payload.areas?.length || 0,
           units: payload.units?.length || 0,
           sensors: payload.sensors?.length || 0,
-          gateways: payload.gateways?.length || 0
+          gateways: payload.gateways?.length || 0,
         },
         api_key_last4: authResult.keyLast4,
-        duration_ms: durationMs
+        duration_ms: durationMs,
       };
     }
 
-    return new Response(
-      JSON.stringify(response),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
+    return new Response(JSON.stringify(response), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
-    
-    log(requestId, 'error', 'Unexpected error', { 
+
+    log(requestId, 'error', 'Unexpected error', {
       error_message: errorMessage,
-      error_stack: errorStack
+      error_stack: errorStack,
     });
-    
+
     return structuredErrorResponse(
       500,
       'INTERNAL_ERROR',
@@ -406,9 +412,9 @@ serve(async (req) => {
         hint: 'Export a support snapshot if this error persists',
         details: {
           error_type: error instanceof Error ? error.constructor.name : typeof error,
-          error_message: errorMessage
-        }
-      }
+          error_message: errorMessage,
+        },
+      },
     );
   }
 });

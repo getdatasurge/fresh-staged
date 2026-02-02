@@ -1,12 +1,12 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { useTRPC } from "@/lib/trpc";
-import DashboardLayout from "@/components/DashboardLayout";
-import LogTempModal, { LogTempUnit } from "@/components/LogTempModal";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { useTRPC } from '@/lib/trpc';
+import DashboardLayout from '@/components/DashboardLayout';
+import LogTempModal, { LogTempUnit } from '@/components/LogTempModal';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Thermometer,
   Loader2,
@@ -17,12 +17,12 @@ import {
   Check,
   Clock,
   AlertTriangle,
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useOfflineSync } from "@/hooks/useOfflineSync";
-import { useUser } from "@stackframe/react";
-import { computeUnitStatus, UnitStatusInfo } from "@/hooks/useUnitStatus";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useOfflineSync } from '@/hooks/useOfflineSync';
+import { useUser } from '@stackframe/react';
+import { computeUnitStatus, UnitStatusInfo } from '@/hooks/useUnitStatus';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
 
 interface UnitForLogging extends UnitStatusInfo {}
 
@@ -38,22 +38,22 @@ const ManualLog = () => {
 
   // Redirect to auth if not logged in
   if (!user) {
-    navigate("/auth");
+    navigate('/auth');
   }
 
   // Fetch units via tRPC
   const unitsQuery = useQuery(
     trpc.units.listByOrg.queryOptions(
-      { organizationId: effectiveOrgId || "" },
-      { enabled: isInitialized && !!effectiveOrgId && !!user }
-    )
+      { organizationId: effectiveOrgId || '' },
+      { enabled: isInitialized && !!effectiveOrgId && !!user },
+    ),
   );
 
   // Transform tRPC camelCase response to snake_case UnitStatusInfo interface
   const units: UnitForLogging[] = useMemo(() => {
     if (!unitsQuery.data) return [];
 
-    return unitsQuery.data.map(u => ({
+    return unitsQuery.data.map((u) => ({
       id: u.id,
       name: u.name,
       unit_type: u.unitType,
@@ -69,7 +69,7 @@ const ManualLog = () => {
       consecutive_checkins: 0, // Default - listByOrg doesn't include this field
       area: {
         name: u.areaName,
-        site: { name: u.siteName }
+        site: { name: u.siteName },
       },
     }));
   }, [unitsQuery.data]);
@@ -90,17 +90,17 @@ const ManualLog = () => {
   const formatCadence = (seconds: number) => {
     const hours = seconds / 3600;
     if (hours < 1) return `${Math.round(seconds / 60)} min`;
-    if (hours === 1) return "1 hour";
+    if (hours === 1) return '1 hour';
     return `${hours} hours`;
   };
 
   // Compute which units need logging using unified logic
-  const unitsWithStatus = units.map(u => ({
+  const unitsWithStatus = units.map((u) => ({
     ...u,
     computed: computeUnitStatus(u),
   }));
 
-  const unitsRequiringLog = unitsWithStatus.filter(u => u.computed.manualRequired);
+  const unitsRequiringLog = unitsWithStatus.filter((u) => u.computed.manualRequired);
 
   const handleUnitClick = (unit: UnitForLogging) => {
     setSelectedUnit({
@@ -162,15 +162,10 @@ const ManualLog = () => {
             disabled={unitsQuery.isLoading}
             title="Refresh units"
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
           {pendingCount > 0 && isOnline && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={syncPendingLogs}
-              disabled={isSyncing}
-            >
+            <Button variant="outline" size="sm" onClick={syncPendingLogs} disabled={isSyncing}>
               {isSyncing ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
@@ -193,7 +188,8 @@ const ManualLog = () => {
           </CardHeader>
           <CardContent className="pt-0">
             <p className="text-sm text-muted-foreground mb-3">
-              The following units require immediate manual temperature logs due to sensor issues or missed log intervals.
+              The following units require immediate manual temperature logs due to sensor issues or
+              missed log intervals.
             </p>
             <div className="grid gap-2">
               {unitsRequiringLog.slice(0, 3).map((unit) => (
@@ -211,8 +207,8 @@ const ManualLog = () => {
                   </div>
                   <div className="text-right">
                     <Badge variant="destructive" className="mb-1">
-                      {unit.computed.minutesSinceManualLog === null 
-                        ? "Never logged" 
+                      {unit.computed.minutesSinceManualLog === null
+                        ? 'Never logged'
                         : `${Math.floor(unit.computed.manualOverdueMinutes / 60)}h overdue`}
                     </Badge>
                     <p className="text-xs text-muted-foreground">
@@ -241,17 +237,21 @@ const ManualLog = () => {
             <Card
               key={unit.id}
               className={`cursor-pointer transition-all ${
-                needsAttention ? "border-warning/50 bg-warning/5" : "card-hover"
+                needsAttention ? 'border-warning/50 bg-warning/5' : 'card-hover'
               }`}
               onClick={() => handleUnitClick(unit)}
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      needsAttention ? "bg-warning/10" : "bg-accent/10"
-                    }`}>
-                      <Thermometer className={`w-5 h-5 ${needsAttention ? "text-warning" : "text-accent"}`} />
+                    <div
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        needsAttention ? 'bg-warning/10' : 'bg-accent/10'
+                      }`}
+                    >
+                      <Thermometer
+                        className={`w-5 h-5 ${needsAttention ? 'text-warning' : 'text-accent'}`}
+                      />
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">{unit.name}</h3>
@@ -260,31 +260,32 @@ const ManualLog = () => {
                       </p>
                     </div>
                   </div>
-                  {needsAttention && (
-                    <AlertTriangle className="w-4 h-4 text-warning" />
-                  )}
+                  {needsAttention && <AlertTriangle className="w-4 h-4 text-warning" />}
                 </div>
                 <div className="mt-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground capitalize">
-                      {unit.unit_type.replace(/_/g, " ")}
+                      {unit.unit_type.replace(/_/g, ' ')}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       · Every {formatCadence(unit.manual_log_cadence)}
                     </span>
                   </div>
-                  <div className={`flex items-center gap-1 text-xs ${computed.manualRequired ? "text-warning" : "text-safe"}`}>
+                  <div
+                    className={`flex items-center gap-1 text-xs ${computed.manualRequired ? 'text-warning' : 'text-safe'}`}
+                  >
                     {computed.manualRequired ? (
                       <Clock className="w-3 h-3" />
                     ) : (
                       <Check className="w-3 h-3" />
                     )}
-                    {computed.manualRequired 
-                      ? (computed.minutesSinceManualLog === null ? "Never" : "Overdue")
+                    {computed.manualRequired
+                      ? computed.minutesSinceManualLog === null
+                        ? 'Never'
+                        : 'Overdue'
                       : `${Math.floor((computed.minutesSinceManualLog || 0) / 60)}h ago`}
                   </div>
                 </div>
-
               </CardContent>
             </Card>
           );

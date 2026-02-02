@@ -1,11 +1,11 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 import {
   Globe,
   Loader2,
@@ -17,11 +17,11 @@ import {
   Info,
   Pencil,
   X,
-  Save
-} from "lucide-react";
-import { toast } from "sonner";
-import { AVAILABLE_WEBHOOK_EVENTS } from "@/hooks/useTTNWebhook";
-import { WEBHOOK_URL, type TTNSettings } from "@/hooks/useTTNSettings";
+  Save,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { AVAILABLE_WEBHOOK_EVENTS } from '@/hooks/useTTNWebhook';
+import { WEBHOOK_URL, type TTNSettings } from '@/hooks/useTTNSettings';
 
 const InfoTooltip: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <TooltipProvider>
@@ -130,18 +130,20 @@ export function TTNWebhookConfig({
       )}
 
       {/* Validation Warnings */}
-      {isEditingWebhook && webhookValidation.warnings.length > 0 && webhookValidation.errors.length === 0 && (
-        <div className="p-3 rounded-lg bg-warning/10 border border-warning/30">
-          <ul className="text-sm text-warning space-y-1">
-            {webhookValidation.warnings.map((warning, i) => (
-              <li key={i} className="flex items-center gap-2">
-                <AlertTriangle className="h-3 w-3" />
-                {warning}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {isEditingWebhook &&
+        webhookValidation.warnings.length > 0 &&
+        webhookValidation.errors.length === 0 && (
+          <div className="p-3 rounded-lg bg-warning/10 border border-warning/30">
+            <ul className="text-sm text-warning space-y-1">
+              {webhookValidation.warnings.map((warning, i) => (
+                <li key={i} className="flex items-center gap-2">
+                  <AlertTriangle className="h-3 w-3" />
+                  {warning}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
       {/* Webhook Status Summary - Read Only Mode */}
       {settings.has_webhook_secret && !isEditingWebhook && (
@@ -149,22 +151,22 @@ export function TTNWebhookConfig({
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Webhook ID:</span>
             <code className="bg-muted px-2 py-0.5 rounded text-xs">
-              {settings.webhook_id || "freshtracker"}
+              {settings.webhook_id || 'freshtracker'}
             </code>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Secret:</span>
             <code className="bg-muted px-2 py-0.5 rounded text-xs">
-              ****{settings.webhook_secret_last4 || "****"}
+              ****{settings.webhook_secret_last4 || '****'}
             </code>
           </div>
           {settings.webhook_events && settings.webhook_events.length > 0 && (
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Events:</span>
               <div className="flex gap-1 flex-wrap justify-end">
-                {settings.webhook_events.map(event => (
+                {settings.webhook_events.map((event) => (
                   <Badge key={event} variant="secondary" className="text-xs">
-                    {event.replace(/_/g, " ")}
+                    {event.replace(/_/g, ' ')}
                   </Badge>
                 ))}
               </div>
@@ -179,26 +181,22 @@ export function TTNWebhookConfig({
           <Label className="text-sm">Webhook URL</Label>
           <InfoTooltip>
             {isEditingWebhook
-              ? "Enter the URL where TTN will send sensor data"
-              : "This URL is automatically configured in your TTN application webhook"
-            }
+              ? 'Enter the URL where TTN will send sensor data'
+              : 'This URL is automatically configured in your TTN application webhook'}
           </InfoTooltip>
         </div>
         <div className="flex gap-2">
           <Input
-            value={isEditingWebhook ? webhookDraft.url : (settings.webhook_url || WEBHOOK_URL)}
+            value={isEditingWebhook ? webhookDraft.url : settings.webhook_url || WEBHOOK_URL}
             readOnly={!isEditingWebhook}
             onChange={(e) => onUrlChange(e.target.value)}
-            className={cn(
-              "font-mono text-xs",
-              !isEditingWebhook && "bg-muted"
-            )}
+            className={cn('font-mono text-xs', !isEditingWebhook && 'bg-muted')}
           />
           {!isEditingWebhook && (
             <Button
               variant="outline"
               size="icon"
-              onClick={() => copyToClipboard(settings.webhook_url || WEBHOOK_URL, "Webhook URL")}
+              onClick={() => copyToClipboard(settings.webhook_url || WEBHOOK_URL, 'Webhook URL')}
             >
               <Copy className="h-4 w-4" />
             </Button>
@@ -230,18 +228,11 @@ export function TTNWebhookConfig({
       {/* Edit Mode Actions */}
       {isEditingWebhook && (
         <div className="flex items-center gap-2 pt-3 border-t">
-          <Button
-            variant="outline"
-            onClick={onCancelEditing}
-            disabled={isSavingWebhook}
-          >
+          <Button variant="outline" onClick={onCancelEditing} disabled={isSavingWebhook}>
             <X className="h-4 w-4 mr-1" />
             Cancel
           </Button>
-          <Button
-            onClick={onSave}
-            disabled={!webhookValidation.isValid || isSavingWebhook}
-          >
+          <Button onClick={onSave} disabled={!webhookValidation.isValid || isSavingWebhook}>
             {isSavingWebhook ? (
               <Loader2 className="h-4 w-4 mr-1 animate-spin" />
             ) : (
@@ -267,7 +258,7 @@ export function TTNWebhookConfig({
             onClick={onRegenerate}
             disabled={isRegenerating || !settings.has_webhook_secret || readOnly}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRegenerating ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRegenerating ? 'animate-spin' : ''}`} />
             Regenerate
           </Button>
         </div>

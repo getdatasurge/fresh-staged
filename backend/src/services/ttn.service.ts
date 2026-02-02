@@ -169,7 +169,7 @@ export class TTNClient {
    */
   private getHeaders(): HeadersInit {
     return {
-      'Authorization': `Bearer ${this.apiKey}`,
+      Authorization: `Bearer ${this.apiKey}`,
       'Content-Type': 'application/json',
     };
   }
@@ -268,7 +268,14 @@ export class TTNClient {
         description,
       },
       field_mask: {
-        paths: ['ids.device_id', 'ids.dev_eui', 'ids.join_eui', 'ids.application_ids', 'name', 'description'],
+        paths: [
+          'ids.device_id',
+          'ids.dev_eui',
+          'ids.join_eui',
+          'ids.application_ids',
+          'name',
+          'description',
+        ],
       },
     };
 
@@ -298,7 +305,13 @@ export class TTNClient {
         },
       },
       field_mask: {
-        paths: ['ids.device_id', 'ids.dev_eui', 'ids.join_eui', 'ids.application_ids', 'root_keys.app_key.key'],
+        paths: [
+          'ids.device_id',
+          'ids.dev_eui',
+          'ids.join_eui',
+          'ids.application_ids',
+          'root_keys.app_key.key',
+        ],
       },
     };
 
@@ -381,7 +394,7 @@ export class TTNClient {
       name?: string;
       description?: string;
       attributes?: Record<string, string>;
-    }
+    },
   ): Promise<TTNDevice> {
     const url = `${this.apiUrl}/api/v3/applications/${this.applicationId}/devices/${deviceId}`;
 
@@ -437,7 +450,7 @@ export class TTNClient {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${keyToValidate}`,
+        Authorization: `Bearer ${keyToValidate}`,
         'Content-Type': 'application/json',
       },
     });
@@ -458,7 +471,7 @@ export class TTNClient {
       throw new TTNApiError(response.status, `TTN auth_info failed: ${errorBody}`);
     }
 
-    const authInfo: TTNAuthInfo = await response.json() as TTNAuthInfo;
+    const authInfo: TTNAuthInfo = (await response.json()) as TTNAuthInfo;
 
     // CRITICAL: TTN auth_info response for Personal API keys is DOUBLE-NESTED:
     // { api_key: { api_key: { rights: [...] }, entity_ids: { user_ids: { user_id: "..." } } } }
@@ -686,7 +699,7 @@ export class TTNClient {
       latitude?: number | null;
       longitude?: number | null;
       altitude?: number | null;
-    }
+    },
   ): Promise<TTNGateway> {
     const url = `${this.apiUrl}/api/v3/gateways/${gatewayId}`;
 
@@ -805,7 +818,7 @@ export class TTNClient {
 export class TTNApiError extends Error {
   constructor(
     public readonly statusCode: number,
-    message: string
+    message: string,
   ) {
     super(message);
     this.name = 'TTNApiError';

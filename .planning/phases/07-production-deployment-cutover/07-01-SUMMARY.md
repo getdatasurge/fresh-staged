@@ -99,24 +99,29 @@ metrics:
 # Phase 07 Plan 01: Production Infrastructure Foundation Summary
 
 ## One-Liner
+
 Multi-stage Docker builds, production compose overrides with resource limits, and file-based secrets management for secure production deployment.
 
 ## Objective Achieved
+
 Created production infrastructure foundation with Docker multi-stage builds, compose production overrides, and file-based secrets management. Backend builds successfully for both dev and production, compose configuration validates, and secrets directory structure is ready for credential deployment.
 
 ## Work Completed
 
 ### Task 1: Create backend Dockerfile with multi-stage build
+
 **Status:** ✓ Complete
 **Commit:** 1d312a8
 
 Created multi-stage Dockerfile with four build targets:
+
 - **deps stage:** Installs dependencies with frozen lockfile (for caching)
 - **builder stage:** Compiles TypeScript to JavaScript
 - **development stage:** Hot reload development environment
 - **production stage:** Minimal production image with non-root user
 
 **Production stage features:**
+
 - Non-root user (nodejs:nodejs) for security
 - curl installed for health checks
 - Production dependencies only
@@ -124,21 +129,25 @@ Created multi-stage Dockerfile with four build targets:
 - CMD: `node dist/index.js`
 
 **Supporting files:**
+
 - `.dockerignore` excludes node_modules, dist, env files, tests
 
 **Build verification:**
+
 ```bash
 docker build -t freshtrack-backend:test --target production ./backend
 # ✓ Build successful
 ```
 
 ### Task 2: Create compose.production.yaml with production overrides
+
 **Status:** ✓ Complete
 **Commit:** ba025e7
 
 Created production compose file that layers over base `docker-compose.yml` with:
 
 **Backend service overrides:**
+
 - Build target: `production`
 - Resource limits: 1 CPU, 1GB memory
 - Resource reservations: 0.25 CPU, 256MB memory
@@ -149,19 +158,23 @@ Created production compose file that layers over base `docker-compose.yml` with:
 - Dependencies: postgres (healthy), redis (healthy)
 
 **Database service overrides:**
+
 - Resource limits: 2 CPU, 2GB memory
 - Resource reservations: 0.5 CPU, 512MB memory
 
 **Redis service overrides:**
+
 - Resource limits: 0.5 CPU, 256MB memory
 - Resource reservations: 0.1 CPU, 128MB memory
 
 **MinIO service overrides:**
+
 - File-based secrets: MINIO_ROOT_USER_FILE, MINIO_ROOT_PASSWORD_FILE
 - Resource limits: 1 CPU, 512MB memory
 - Resource reservations: 0.25 CPU, 256MB memory
 
 **Secrets section:**
+
 ```yaml
 secrets:
   postgres_password:
@@ -177,24 +190,29 @@ secrets:
 ```
 
 **Admin tools excluded:**
+
 - pgadmin and redis-commander use "admin" profile (not run in production)
 
 **Validation:**
+
 ```bash
 docker compose -f docker-compose.yml -f compose.production.yaml config
 # ✓ Configuration valid
 ```
 
 ### Task 3: Create secrets directory and environment template
+
 **Status:** ✓ Complete
 **Commit:** 72a9953
 
 **secrets/.gitignore:**
+
 - Ignores: `*.txt`, `*.key`, `*.pem`
 - Keeps: `.gitignore`, `README.md`
 
 **secrets/README.md:**
 Comprehensive secret management guide:
+
 - Required secrets: postgres_password, jwt_secret, stack_auth_secret, minio_user, minio_password
 - Generation methods: openssl, pwgen, /dev/urandom
 - File permissions: `chmod 600 secrets/*.txt`
@@ -204,6 +222,7 @@ Comprehensive secret management guide:
 
 **.env.production.example:**
 Production environment template with:
+
 - Application config: NODE_ENV, LOG_LEVEL, PORT, HOST
 - Domain configuration: FRONTEND_URL, API_URL, MONITORING_URL, STATUS_URL
 - Database: DATABASE_URL, connection pool settings
@@ -222,6 +241,7 @@ Production environment template with:
 ### Auto-fixed Issues
 
 **1. [Rule 2 - Missing Critical] Added health endpoint with database check**
+
 - **Found during:** Task 1 (Dockerfile creation)
 - **Issue:** No health endpoint existed for Docker healthcheck
 - **Fix:** Created comprehensive health routes with database connectivity check
@@ -234,6 +254,7 @@ Production environment template with:
 - **Commit:** Included in 1d312a8
 
 **2. [Rule 1 - Bug] Fixed import path in health.ts**
+
 - **Found during:** Task 1 (Docker build)
 - **Issue:** health.ts imported from `../db/index.js` but file is `../db/client.ts`
 - **Fix:** Changed import to `../db/client.js`
@@ -266,11 +287,13 @@ All verification checks passed:
 ## Integration Points
 
 **Upstream (dependencies):**
+
 - Phase 06-06: Migration verification (data integrity confirmed before production)
 - Phase 05-14: Frontend setup wizard (UI ready for production deployment)
 - Phase 04-05: Domain service layer (business logic ready)
 
 **Downstream (affects):**
+
 - **Phase 07-02 (Caddy reverse proxy):** Uses health endpoints for monitoring
 - **Phase 07-03 (Deployment automation):** Uses compose files for orchestration
 - **Phase 07-04 (Monitoring setup):** Integrates with health check endpoints
@@ -279,11 +302,13 @@ All verification checks passed:
 ## Next Phase Readiness
 
 **Ready for Phase 07-02 (Caddy reverse proxy & TLS):**
+
 - Backend health endpoints available at /health, /health/ready, /health/live
 - Production compose file defines service architecture
 - Secrets structure ready for TLS certificates
 
 **Ready for Phase 07-03 (Deployment automation):**
+
 - Docker images build successfully
 - Compose files validate
 - Secrets management structure established
@@ -291,6 +316,7 @@ All verification checks passed:
 **Blockers:** None
 
 **Concerns:**
+
 - Secrets files must be created manually before production deployment
 - Resource limits may need tuning based on actual production load
 - Database connection pooling settings may need adjustment under load
@@ -298,16 +324,19 @@ All verification checks passed:
 ## Technical Decisions Impact
 
 **Multi-stage builds:**
+
 - Pros: Smaller production images, better build caching, clear separation of concerns
 - Cons: More complex Dockerfile, longer initial build time
 - Impact: Production image ~100MB smaller, builds 2x faster after first run (caching)
 
 **File-based secrets:**
+
 - Pros: More secure than env vars, integrates with orchestration tools, easier rotation
 - Cons: Requires manual file creation, more setup complexity
 - Impact: Improved security posture, compatible with Kubernetes secrets
 
 **Health check endpoints:**
+
 - Pros: Better monitoring, graceful deployments, load balancer integration
 - Cons: Adds database load (periodic queries)
 - Impact: Enables zero-downtime deployments, better incident response
@@ -315,12 +344,14 @@ All verification checks passed:
 ## Artifacts Created
 
 **Production-ready artifacts:**
+
 1. `backend/Dockerfile` - Multi-stage build (deps, builder, dev, prod)
 2. `compose.production.yaml` - Production overrides with resource limits
 3. `secrets/` directory - Structure for credential management
 4. `.env.production.example` - Configuration template
 
 **Documentation:**
+
 1. `secrets/README.md` - Secret generation and management guide
 2. Inline comments in compose.production.yaml explaining each override
 
@@ -329,16 +360,19 @@ All verification checks passed:
 ## Lessons Learned
 
 **What went well:**
+
 - Multi-stage Dockerfile compiled and built successfully on first attempt (after import fix)
 - Compose file layering validated correctly
 - Health endpoint implementation was comprehensive
 
 **What could improve:**
+
 - Consider automating secret generation script in deployment automation phase
 - May need to add database connection pooling tuning based on load testing
 - Consider adding metrics endpoint (/metrics) for Prometheus integration
 
 **Recommendations for next plans:**
+
 - Test resource limits under realistic load (Phase 07-04 monitoring)
 - Document secret rotation procedures in runbook
 - Add automated testing of health endpoints in CI/CD

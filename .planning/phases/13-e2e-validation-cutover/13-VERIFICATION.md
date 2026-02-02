@@ -17,59 +17,59 @@ re_verification: false
 
 ### Observable Truths
 
-| # | Truth | Status | Evidence |
-|---|-------|--------|----------|
-| 1 | Sensor data flows from ingestion → storage → alert trigger on self-hosted deployment | ✓ VERIFIED | `e2e-sensor-pipeline.sh` (512 lines) tests complete flow via `/api/ingest/readings` and `/api/orgs/.../alerts` endpoints |
-| 2 | Alert notifications delivered successfully (email, webhook tested end-to-end) | ✓ VERIFIED | `e2e-alert-notifications.sh` (463 lines) tests full lifecycle with webhook receiver; calls `/alerts/:id/acknowledge` and `/alerts/:id/resolve` |
-| 3 | Migration procedure tested with production-sized dataset (timing validated) | ✓ VERIFIED | `generate-test-data.ts` (221 lines) creates 100K records via Drizzle; `validate-migration-timing.sh` (295 lines) measures pg_dump/pg_restore timing |
-| 4 | Zero-downtime deployment validated (health checks prevent traffic to unhealthy containers) | ✓ VERIFIED | `validate-zero-downtime.sh` (543 lines) verifies Docker health checks and service dependencies; tests deployment transition |
-| 5 | Deployment decision guide exists (which target to choose based on requirements) | ✓ VERIFIED | `DEPLOYMENT_DECISION_GUIDE.md` (493 lines) provides 5 scenarios with cost estimates and clear recommendations; links to deployment docs |
+| #   | Truth                                                                                      | Status     | Evidence                                                                                                                                            |
+| --- | ------------------------------------------------------------------------------------------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Sensor data flows from ingestion → storage → alert trigger on self-hosted deployment       | ✓ VERIFIED | `e2e-sensor-pipeline.sh` (512 lines) tests complete flow via `/api/ingest/readings` and `/api/orgs/.../alerts` endpoints                            |
+| 2   | Alert notifications delivered successfully (email, webhook tested end-to-end)              | ✓ VERIFIED | `e2e-alert-notifications.sh` (463 lines) tests full lifecycle with webhook receiver; calls `/alerts/:id/acknowledge` and `/alerts/:id/resolve`      |
+| 3   | Migration procedure tested with production-sized dataset (timing validated)                | ✓ VERIFIED | `generate-test-data.ts` (221 lines) creates 100K records via Drizzle; `validate-migration-timing.sh` (295 lines) measures pg_dump/pg_restore timing |
+| 4   | Zero-downtime deployment validated (health checks prevent traffic to unhealthy containers) | ✓ VERIFIED | `validate-zero-downtime.sh` (543 lines) verifies Docker health checks and service dependencies; tests deployment transition                         |
+| 5   | Deployment decision guide exists (which target to choose based on requirements)            | ✓ VERIFIED | `DEPLOYMENT_DECISION_GUIDE.md` (493 lines) provides 5 scenarios with cost estimates and clear recommendations; links to deployment docs             |
 
 **Score:** 5/5 truths verified
 
 ### Required Artifacts
 
-| Artifact | Expected | Status | Details |
-|----------|----------|--------|---------|
-| `scripts/test/e2e-sensor-pipeline.sh` | E2E sensor pipeline validation script (100+ lines) | ✓ VERIFIED | 512 lines, executable, tests sensor → storage → alert flow via `/api/ingest/readings` and `/api/orgs/.../alerts` |
-| `scripts/test/e2e-alert-notifications.sh` | E2E alert notification pipeline test (120+ lines) | ✓ VERIFIED | 463 lines, executable, tests full alert lifecycle (trigger → acknowledge → resolve) |
-| `scripts/test/webhook-receiver.sh` | Webhook receiver for notification capture (40+ lines) | ✓ VERIFIED | 136 lines, executable, captures HTTP requests for E2E testing |
-| `scripts/test/generate-test-data.ts` | Synthetic data generator using Faker.js (80+ lines) | ✓ VERIFIED | 221 lines, uses `@faker-js/faker` and Drizzle to generate 100K realistic sensor readings |
-| `scripts/test/validate-migration-timing.sh` | Migration timing validation (100+ lines) | ✓ VERIFIED | 295 lines, executable, measures pg_dump/pg_restore via Docker exec, provides scaling estimates |
-| `scripts/test/validate-zero-downtime.sh` | Zero-downtime deployment validation (80+ lines) | ✓ VERIFIED | 543 lines, executable, verifies Docker health checks and service dependencies |
-| `scripts/test/README.md` | Test script documentation (30+ lines) | ✓ VERIFIED | 33,016 bytes (1,074 lines), comprehensive documentation for all test scripts |
-| `docs/DEPLOYMENT_DECISION_GUIDE.md` | Scenario-based deployment decision guide (200+ lines) | ✓ VERIFIED | 493 lines, 5 detailed scenarios with cost estimates, monthly costs, and clear recommendations |
-| `docs/E2E_VALIDATION_CHECKLIST.md` | Final E2E validation checklist (100+ lines) | ✓ VERIFIED | 533 lines, 44 checkboxes, covers TEST-01 through TEST-04 with pre/post-cutover checklists |
+| Artifact                                    | Expected                                              | Status     | Details                                                                                                          |
+| ------------------------------------------- | ----------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------- |
+| `scripts/test/e2e-sensor-pipeline.sh`       | E2E sensor pipeline validation script (100+ lines)    | ✓ VERIFIED | 512 lines, executable, tests sensor → storage → alert flow via `/api/ingest/readings` and `/api/orgs/.../alerts` |
+| `scripts/test/e2e-alert-notifications.sh`   | E2E alert notification pipeline test (120+ lines)     | ✓ VERIFIED | 463 lines, executable, tests full alert lifecycle (trigger → acknowledge → resolve)                              |
+| `scripts/test/webhook-receiver.sh`          | Webhook receiver for notification capture (40+ lines) | ✓ VERIFIED | 136 lines, executable, captures HTTP requests for E2E testing                                                    |
+| `scripts/test/generate-test-data.ts`        | Synthetic data generator using Faker.js (80+ lines)   | ✓ VERIFIED | 221 lines, uses `@faker-js/faker` and Drizzle to generate 100K realistic sensor readings                         |
+| `scripts/test/validate-migration-timing.sh` | Migration timing validation (100+ lines)              | ✓ VERIFIED | 295 lines, executable, measures pg_dump/pg_restore via Docker exec, provides scaling estimates                   |
+| `scripts/test/validate-zero-downtime.sh`    | Zero-downtime deployment validation (80+ lines)       | ✓ VERIFIED | 543 lines, executable, verifies Docker health checks and service dependencies                                    |
+| `scripts/test/README.md`                    | Test script documentation (30+ lines)                 | ✓ VERIFIED | 33,016 bytes (1,074 lines), comprehensive documentation for all test scripts                                     |
+| `docs/DEPLOYMENT_DECISION_GUIDE.md`         | Scenario-based deployment decision guide (200+ lines) | ✓ VERIFIED | 493 lines, 5 detailed scenarios with cost estimates, monthly costs, and clear recommendations                    |
+| `docs/E2E_VALIDATION_CHECKLIST.md`          | Final E2E validation checklist (100+ lines)           | ✓ VERIFIED | 533 lines, 44 checkboxes, covers TEST-01 through TEST-04 with pre/post-cutover checklists                        |
 
 **All artifacts:** ✓ EXISTS, ✓ SUBSTANTIVE, ✓ WIRED
 
 ### Key Link Verification
 
-| From | To | Via | Status | Details |
-|------|-----|-----|--------|---------|
-| `e2e-sensor-pipeline.sh` | `backend/src/routes/readings.ts` | POST `/api/ingest/readings` | ✓ WIRED | Script line 255, 341: `curl -X POST "${BASE_URL}/api/ingest/readings"` |
-| `e2e-sensor-pipeline.sh` | `backend/src/services/alert-evaluator.service.ts` | Alert trigger after threshold breach | ✓ WIRED | Script line 407: queries `/api/orgs/${TEST_ORG_ID}/alerts?unitId=${TEST_UNIT_ID}&status=active` |
-| `e2e-alert-notifications.sh` | `backend/src/services/alert.service.ts` | POST `/api/alerts/:id/acknowledge` | ✓ WIRED | Script line 315: `"${BASE_URL}/api/orgs/${ORGANIZATION_ID}/alerts/${ALERT_ID}/acknowledge"` |
-| `e2e-alert-notifications.sh` | `backend/src/services/alert.service.ts` | POST `/api/alerts/:id/resolve` | ✓ WIRED | Script line 372: `"${BASE_URL}/api/orgs/${ORGANIZATION_ID}/alerts/${ALERT_ID}/resolve"` |
-| `generate-test-data.ts` | `backend/src/db/schema/telemetry.ts` | Drizzle insert | ✓ WIRED | Lines 18-22: imports faker, db client, sensorReadings schema; line 191: `tx.insert(sensorReadings).values(records)` |
-| `validate-migration-timing.sh` | `docker/docker-compose.yml` | pg_dump/pg_restore via Docker | ✓ WIRED | Lines 165, 196: `docker exec "$POSTGRES_CONTAINER" pg_dump` and `pg_restore` commands |
-| `validate-zero-downtime.sh` | `docker/docker-compose.yml` | Docker health check verification | ✓ WIRED | Line 175: `verify_docker_healthcheck()` function checks service configuration |
-| `validate-zero-downtime.sh` | `backend/src/routes/health.ts` | Health endpoint response | ✓ WIRED | Script polls `/health` endpoint during deployment transition |
-| `DEPLOYMENT_DECISION_GUIDE.md` | `docs/SELFHOSTED_DEPLOYMENT.md` | Link to self-hosted guide | ✓ WIRED | Lines 71, 155, 213, 456: multiple links to `./SELFHOSTED_DEPLOYMENT.md` |
-| `DEPLOYMENT_DECISION_GUIDE.md` | `docs/DIGITALOCEAN_DEPLOYMENT.md` | Link to DigitalOcean guide | ✓ WIRED | Lines 71, 111, 470: links to `./DIGITALOCEAN_DEPLOYMENT.md` |
-| `docs/SELFHOSTED_DEPLOYMENT.md` | `DEPLOYMENT_DECISION_GUIDE.md` | Cross-reference from deployment doc | ✓ WIRED | Line 5: callout box linking to decision guide |
-| `docs/DIGITALOCEAN_DEPLOYMENT.md` | `DEPLOYMENT_DECISION_GUIDE.md` | Cross-reference from deployment doc | ✓ WIRED | Line 5: callout box linking to decision guide |
+| From                              | To                                                | Via                                  | Status  | Details                                                                                                             |
+| --------------------------------- | ------------------------------------------------- | ------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `e2e-sensor-pipeline.sh`          | `backend/src/routes/readings.ts`                  | POST `/api/ingest/readings`          | ✓ WIRED | Script line 255, 341: `curl -X POST "${BASE_URL}/api/ingest/readings"`                                              |
+| `e2e-sensor-pipeline.sh`          | `backend/src/services/alert-evaluator.service.ts` | Alert trigger after threshold breach | ✓ WIRED | Script line 407: queries `/api/orgs/${TEST_ORG_ID}/alerts?unitId=${TEST_UNIT_ID}&status=active`                     |
+| `e2e-alert-notifications.sh`      | `backend/src/services/alert.service.ts`           | POST `/api/alerts/:id/acknowledge`   | ✓ WIRED | Script line 315: `"${BASE_URL}/api/orgs/${ORGANIZATION_ID}/alerts/${ALERT_ID}/acknowledge"`                         |
+| `e2e-alert-notifications.sh`      | `backend/src/services/alert.service.ts`           | POST `/api/alerts/:id/resolve`       | ✓ WIRED | Script line 372: `"${BASE_URL}/api/orgs/${ORGANIZATION_ID}/alerts/${ALERT_ID}/resolve"`                             |
+| `generate-test-data.ts`           | `backend/src/db/schema/telemetry.ts`              | Drizzle insert                       | ✓ WIRED | Lines 18-22: imports faker, db client, sensorReadings schema; line 191: `tx.insert(sensorReadings).values(records)` |
+| `validate-migration-timing.sh`    | `docker/docker-compose.yml`                       | pg_dump/pg_restore via Docker        | ✓ WIRED | Lines 165, 196: `docker exec "$POSTGRES_CONTAINER" pg_dump` and `pg_restore` commands                               |
+| `validate-zero-downtime.sh`       | `docker/docker-compose.yml`                       | Docker health check verification     | ✓ WIRED | Line 175: `verify_docker_healthcheck()` function checks service configuration                                       |
+| `validate-zero-downtime.sh`       | `backend/src/routes/health.ts`                    | Health endpoint response             | ✓ WIRED | Script polls `/health` endpoint during deployment transition                                                        |
+| `DEPLOYMENT_DECISION_GUIDE.md`    | `docs/SELFHOSTED_DEPLOYMENT.md`                   | Link to self-hosted guide            | ✓ WIRED | Lines 71, 155, 213, 456: multiple links to `./SELFHOSTED_DEPLOYMENT.md`                                             |
+| `DEPLOYMENT_DECISION_GUIDE.md`    | `docs/DIGITALOCEAN_DEPLOYMENT.md`                 | Link to DigitalOcean guide           | ✓ WIRED | Lines 71, 111, 470: links to `./DIGITALOCEAN_DEPLOYMENT.md`                                                         |
+| `docs/SELFHOSTED_DEPLOYMENT.md`   | `DEPLOYMENT_DECISION_GUIDE.md`                    | Cross-reference from deployment doc  | ✓ WIRED | Line 5: callout box linking to decision guide                                                                       |
+| `docs/DIGITALOCEAN_DEPLOYMENT.md` | `DEPLOYMENT_DECISION_GUIDE.md`                    | Cross-reference from deployment doc  | ✓ WIRED | Line 5: callout box linking to decision guide                                                                       |
 
 **All key links:** ✓ WIRED
 
 ### Requirements Coverage
 
-| Requirement | Status | Evidence |
-|-------------|--------|----------|
-| **TEST-01**: Sensor data ingestion validated end-to-end | ✓ SATISFIED | `e2e-sensor-pipeline.sh` tests sensor → storage → alert flow; calls `/api/ingest/readings` and verifies alert creation |
-| **TEST-02**: Alert trigger → notification pipeline validated | ✓ SATISFIED | `e2e-alert-notifications.sh` tests full lifecycle (trigger → acknowledge → resolve); `webhook-receiver.sh` captures notifications |
+| Requirement                                                        | Status      | Evidence                                                                                                                                       |
+| ------------------------------------------------------------------ | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **TEST-01**: Sensor data ingestion validated end-to-end            | ✓ SATISFIED | `e2e-sensor-pipeline.sh` tests sensor → storage → alert flow; calls `/api/ingest/readings` and verifies alert creation                         |
+| **TEST-02**: Alert trigger → notification pipeline validated       | ✓ SATISFIED | `e2e-alert-notifications.sh` tests full lifecycle (trigger → acknowledge → resolve); `webhook-receiver.sh` captures notifications              |
 | **TEST-03**: Migration procedure tested with production-sized data | ✓ SATISFIED | `generate-test-data.ts` creates 100K records; `validate-migration-timing.sh` measures pg_dump/pg_restore timing and provides scaling estimates |
-| **TEST-04**: Zero-downtime deployment validated with health checks | ✓ SATISFIED | `validate-zero-downtime.sh` verifies Docker health checks, service dependencies, and deployment transition behavior |
+| **TEST-04**: Zero-downtime deployment validated with health checks | ✓ SATISFIED | `validate-zero-downtime.sh` verifies Docker health checks, service dependencies, and deployment transition behavior                            |
 
 **All requirements:** ✓ SATISFIED
 
@@ -78,12 +78,14 @@ re_verification: false
 **No blocker anti-patterns found.**
 
 Scanned files:
+
 - `scripts/test/*.sh` (5 files)
 - `scripts/test/*.ts` (1 file)
 - `docs/DEPLOYMENT_DECISION_GUIDE.md`
 - `docs/E2E_VALIDATION_CHECKLIST.md`
 
 Findings:
+
 - ✓ No TODO/FIXME comments
 - ✓ No placeholder content
 - ✓ No empty implementations
@@ -93,11 +95,13 @@ Findings:
 ### Artifact Quality Analysis
 
 **Level 1: Existence** ✓ PASSED
+
 - All 9 required artifacts exist on disk
 - All shell scripts have executable permissions (755)
 - All files accessible at expected paths
 
 **Level 2: Substantive** ✓ PASSED
+
 - All scripts exceed minimum line counts:
   - `e2e-sensor-pipeline.sh`: 512 lines (min: 100) ✓
   - `e2e-alert-notifications.sh`: 463 lines (min: 120) ✓
@@ -113,6 +117,7 @@ Findings:
 - All documentation has substantive content
 
 **Level 3: Wired** ✓ PASSED
+
 - Test scripts call actual backend API endpoints
 - Backend endpoints exist and are functional:
   - `/health` and `/health/ready` (health.ts)
@@ -128,13 +133,13 @@ Findings:
 
 From ROADMAP.md Phase 13 success criteria:
 
-| Criterion | Status | Verification Method |
-|-----------|--------|---------------------|
-| 1. Sensor data flows from ingestion → storage → alert trigger on self-hosted deployment | ✓ VERIFIED | Script `e2e-sensor-pipeline.sh` tests complete flow; calls verified API endpoints |
-| 2. Alert notifications delivered successfully (email, webhook tested end-to-end) | ✓ VERIFIED | Script `e2e-alert-notifications.sh` tests lifecycle; webhook receiver captures payloads |
-| 3. Migration procedure tested with production-sized dataset (timing validated) | ✓ VERIFIED | Scripts generate 100K records and measure pg_dump/pg_restore timing with scaling estimates |
-| 4. Zero-downtime deployment validated (health checks prevent traffic to unhealthy containers) | ✓ VERIFIED | Script `validate-zero-downtime.sh` confirms Docker health checks and service dependencies |
-| 5. Deployment decision guide exists (which target to choose based on requirements) | ✓ VERIFIED | Guide provides 5 scenarios with costs, recommendations, and links to deployment docs |
+| Criterion                                                                                     | Status     | Verification Method                                                                        |
+| --------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------ |
+| 1. Sensor data flows from ingestion → storage → alert trigger on self-hosted deployment       | ✓ VERIFIED | Script `e2e-sensor-pipeline.sh` tests complete flow; calls verified API endpoints          |
+| 2. Alert notifications delivered successfully (email, webhook tested end-to-end)              | ✓ VERIFIED | Script `e2e-alert-notifications.sh` tests lifecycle; webhook receiver captures payloads    |
+| 3. Migration procedure tested with production-sized dataset (timing validated)                | ✓ VERIFIED | Scripts generate 100K records and measure pg_dump/pg_restore timing with scaling estimates |
+| 4. Zero-downtime deployment validated (health checks prevent traffic to unhealthy containers) | ✓ VERIFIED | Script `validate-zero-downtime.sh` confirms Docker health checks and service dependencies  |
+| 5. Deployment decision guide exists (which target to choose based on requirements)            | ✓ VERIFIED | Guide provides 5 scenarios with costs, recommendations, and links to deployment docs       |
 
 **All 5 success criteria:** ✓ VERIFIED
 
@@ -145,6 +150,7 @@ From ROADMAP.md Phase 13 success criteria:
 **Purpose:** Validate sensor data flow from ingestion to alert trigger
 
 **Verification:**
+
 - ✓ Pre-flight checks: backend health, database connectivity
 - ✓ Test flow: normal reading → breach reading → alert verification
 - ✓ API calls verified: POST `/api/ingest/readings`, GET `/api/orgs/.../alerts`
@@ -153,6 +159,7 @@ From ROADMAP.md Phase 13 success criteria:
 - ✓ Error handling: Graceful failures with clear messages
 
 **Key features:**
+
 - Unique device ID generation for idempotency
 - Configurable alert timeout (default: 10s)
 - Configurable temperature breach value (default: 5.0°C)
@@ -163,6 +170,7 @@ From ROADMAP.md Phase 13 success criteria:
 **Purpose:** Validate alert notification pipeline and lifecycle
 
 **Verification:**
+
 - ✓ Test flow: trigger → acknowledge → resolve
 - ✓ API calls verified: POST `/alerts/:id/acknowledge`, POST `/alerts/:id/resolve`
 - ✓ Webhook testing: Optional webhook receiver integration
@@ -171,6 +179,7 @@ From ROADMAP.md Phase 13 success criteria:
 - ✓ Notification capture: webhook-receiver.sh logs payloads to /tmp
 
 **Key features:**
+
 - Full lifecycle coverage (8 steps)
 - Optional webhook validation (WEBHOOK_TEST=true)
 - Alert ID extraction for subsequent operations
@@ -181,6 +190,7 @@ From ROADMAP.md Phase 13 success criteria:
 **Purpose:** Generate production-scale synthetic sensor data
 
 **Verification:**
+
 - ✓ Uses @faker-js/faker for realistic data generation
 - ✓ Uses Drizzle ORM for database insertion
 - ✓ Batch processing: 5,000 records per batch (configurable)
@@ -190,6 +200,7 @@ From ROADMAP.md Phase 13 success criteria:
 - ✓ Data quality: Temperature range -20°C to 40°C, humidity 30-95%
 
 **Key features:**
+
 - Configurable TARGET_RECORDS (default: 100,000)
 - Transaction per batch for performance
 - Referential integrity (checks for valid unit IDs)
@@ -200,6 +211,7 @@ From ROADMAP.md Phase 13 success criteria:
 **Purpose:** Measure database migration timing for maintenance window planning
 
 **Verification:**
+
 - ✓ Pre-flight: Verifies Docker, PostgreSQL container, data exists
 - ✓ pg_dump: Custom format (-Fc), compression level 9
 - ✓ pg_restore: To test database, timing measured
@@ -209,6 +221,7 @@ From ROADMAP.md Phase 13 success criteria:
 - ✓ Output: Summary with timing, file size, recommendations
 
 **Key features:**
+
 - Non-destructive (uses test database)
 - Measures export and import separately
 - Provides production scaling estimates
@@ -219,6 +232,7 @@ From ROADMAP.md Phase 13 success criteria:
 **Purpose:** Validate zero-downtime deployment mechanism
 
 **Verification:**
+
 - ✓ Verifies Docker health check configuration
 - ✓ Confirms service dependencies (condition: service_healthy)
 - ✓ Tests deployment transition (docker compose up -d --no-deps backend)
@@ -228,6 +242,7 @@ From ROADMAP.md Phase 13 success criteria:
 - ✓ Recommendations if failures occur
 
 **Key features:**
+
 - 5-step validation process
 - Real deployment simulation (recreates backend container)
 - Success rate calculation
@@ -238,14 +253,16 @@ From ROADMAP.md Phase 13 success criteria:
 **Purpose:** Capture webhook notifications during E2E testing
 
 **Verification:**
+
 - ✓ Simple HTTP listener (Python http.server)
-- ✓ Logs payloads to /tmp/webhook-test-*.json
+- ✓ Logs payloads to /tmp/webhook-test-\*.json
 - ✓ Configurable port (default: 8888)
 - ✓ Timeout handling (default: 60s)
 - ✓ Returns 200 OK to sender
 - ✓ Executable and well-commented
 
 **Key features:**
+
 - Background execution compatible
 - Payload logging for verification
 - Simple implementation (no external dependencies)
@@ -257,6 +274,7 @@ From ROADMAP.md Phase 13 success criteria:
 **Purpose:** Document test script usage and troubleshooting
 
 **Verification:**
+
 - ✓ Overview of E2E test suite
 - ✓ Individual script documentation:
   - e2e-sensor-pipeline.sh: What it tests, env vars, usage, expected output
@@ -271,6 +289,7 @@ From ROADMAP.md Phase 13 success criteria:
 - ✓ Links to E2E_VALIDATION_CHECKLIST.md
 
 **Key features:**
+
 - 1,074 lines of comprehensive documentation
 - Usage examples for local and production
 - Clear prerequisites and dependencies
@@ -281,6 +300,7 @@ From ROADMAP.md Phase 13 success criteria:
 **Purpose:** Help users choose deployment target based on requirements
 
 **Verification:**
+
 - ✓ Quick decision matrix (6 common situations)
 - ✓ 5 detailed scenarios:
   1. Small Restaurant/Cafe (1-10 sensors) → DO + Managed DB ($36/mo)
@@ -297,6 +317,7 @@ From ROADMAP.md Phase 13 success criteria:
 - ✓ Cross-references verified in both deployment docs
 
 **Key features:**
+
 - 493 lines, scenario-based approach
 - Prescriptive recommendations based on profile
 - Cost breakdowns with specific tiers
@@ -308,6 +329,7 @@ From ROADMAP.md Phase 13 success criteria:
 **Purpose:** Final validation checklist before production cutover
 
 **Verification:**
+
 - ✓ Covers all 4 TEST requirements (TEST-01 through TEST-04)
 - ✓ 44 checkboxes for systematic verification
 - ✓ Section structure:
@@ -325,6 +347,7 @@ From ROADMAP.md Phase 13 success criteria:
 - ✓ Production readiness guidance
 
 **Key features:**
+
 - 533 lines, comprehensive coverage
 - Pre-cutover and post-cutover sections
 - Rollback procedures documented
@@ -334,6 +357,7 @@ From ROADMAP.md Phase 13 success criteria:
 ## Human Verification Required
 
 **None.** All verification completed programmatically by checking:
+
 - File existence and permissions
 - Line counts and content quality
 - API endpoint calls in scripts

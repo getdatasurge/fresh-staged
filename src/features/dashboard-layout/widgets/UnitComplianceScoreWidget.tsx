@@ -4,13 +4,13 @@
  * Shows overall compliance percentage with breakdown.
  */
 
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Target, Thermometer, ClipboardList, Bell } from "lucide-react";
-import { useTRPC } from "@/lib/trpc";
-import type { WidgetProps } from "../types";
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Target, Thermometer, ClipboardList, Bell } from 'lucide-react';
+import { useTRPC } from '@/lib/trpc';
+import type { WidgetProps } from '../types';
 
 interface ComplianceMetrics {
   readingCompliance: number;
@@ -23,10 +23,7 @@ export function UnitComplianceScoreWidget({ entityId, organizationId }: WidgetPr
   const trpc = useTRPC();
 
   // Calculate time range: last 24 hours
-  const dayAgo = useMemo(
-    () => new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    []
-  );
+  const dayAgo = useMemo(() => new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), []);
 
   // Query readings via tRPC
   const readingsQueryOptions = trpc.readings.list.queryOptions({
@@ -65,8 +62,7 @@ export function UnitComplianceScoreWidget({ entityId, organizationId }: WidgetPr
     enabled: !!entityId && !!organizationId,
   });
 
-  const isLoading =
-    readingsQuery.isLoading || logsQuery.isLoading || alertsQuery.isLoading;
+  const isLoading = readingsQuery.isLoading || logsQuery.isLoading || alertsQuery.isLoading;
 
   // Compute metrics from tRPC data
   const metrics = useMemo<ComplianceMetrics | null>(() => {
@@ -80,10 +76,7 @@ export function UnitComplianceScoreWidget({ entityId, organizationId }: WidgetPr
 
     const readingCount = readingsQuery.data?.length ?? 0;
     const expectedReadings = 144; // 24h * 6 per hour
-    const readingCompliance = Math.min(
-      100,
-      (readingCount / expectedReadings) * 100
-    );
+    const readingCompliance = Math.min(100, (readingCount / expectedReadings) * 100);
 
     const logCount = logsQuery.data?.length ?? 0;
     const expectedLogs = 6; // 4-hour intervals
@@ -92,14 +85,11 @@ export function UnitComplianceScoreWidget({ entityId, organizationId }: WidgetPr
     const alerts = alertsQuery.data ?? [];
     const totalAlerts = alerts.length;
     const resolvedAlerts = alerts.filter((a) => a.resolvedAt).length;
-    const alertResponseCompliance =
-      totalAlerts > 0 ? (resolvedAlerts / totalAlerts) * 100 : 100;
+    const alertResponseCompliance = totalAlerts > 0 ? (resolvedAlerts / totalAlerts) * 100 : 100;
 
     // Calculate overall (weighted average)
     const overall =
-      readingCompliance * 0.4 +
-      manualLogCompliance * 0.3 +
-      alertResponseCompliance * 0.3;
+      readingCompliance * 0.4 + manualLogCompliance * 0.3 + alertResponseCompliance * 0.3;
 
     return {
       readingCompliance,
@@ -141,11 +131,12 @@ export function UnitComplianceScoreWidget({ entityId, organizationId }: WidgetPr
     );
   }
 
-  const scoreColor = metrics.overall >= 90 
-    ? "text-green-500" 
-    : metrics.overall >= 70 
-      ? "text-yellow-500" 
-      : "text-destructive";
+  const scoreColor =
+    metrics.overall >= 90
+      ? 'text-green-500'
+      : metrics.overall >= 70
+        ? 'text-yellow-500'
+        : 'text-destructive';
 
   return (
     <Card className="h-full">
@@ -157,9 +148,7 @@ export function UnitComplianceScoreWidget({ entityId, organizationId }: WidgetPr
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-center">
-          <p className={`text-4xl font-bold ${scoreColor}`}>
-            {Math.round(metrics.overall)}%
-          </p>
+          <p className={`text-4xl font-bold ${scoreColor}`}>{Math.round(metrics.overall)}%</p>
           <p className="text-xs text-muted-foreground">Overall Compliance</p>
         </div>
 

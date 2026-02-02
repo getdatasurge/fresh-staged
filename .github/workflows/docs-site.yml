@@ -27,7 +27,7 @@ on:
 
 # Allow only one concurrent deployment to GitHub Pages
 concurrency:
-  group: "pages"
+  group: 'pages'
   cancel-in-progress: true
 
 # Sets permissions of the GITHUB_TOKEN
@@ -46,7 +46,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for mike versioning
+          fetch-depth: 0 # Full history for mike versioning
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -79,7 +79,7 @@ jobs:
       - name: Generate documentation (deterministic mode)
         run: npm run docs:generate
         env:
-          CI: 'true'  # Ensures deterministic output (no timestamps)
+          CI: 'true' # Ensures deterministic output (no timestamps)
 
       - name: Build MkDocs site
         run: |

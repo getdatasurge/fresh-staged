@@ -10,9 +10,9 @@ requires:
 
 provides:
   - deliverables:
-    - 7 components migrated from Supabase to Stack Auth
-    - Simple auth pattern replacements (signOut, getUser)
-    - Consistent Stack Auth hook usage
+      - 7 components migrated from Supabase to Stack Auth
+      - Simple auth pattern replacements (signOut, getUser)
+      - Consistent Stack Auth hook usage
 
 affects:
   - future-phases: [08-03, 08-04, 08-05]
@@ -21,10 +21,10 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "useStackApp() for auth actions (signOut)"
-    - "useUser() for user identity and authentication checks"
-    - "user.id for user identification"
-    - "user.primaryEmail for email display"
+    - 'useStackApp() for auth actions (signOut)'
+    - 'useUser() for user identity and authentication checks'
+    - 'user.id for user identification'
+    - 'user.primaryEmail for email display'
 
 key-files:
   created: []
@@ -38,24 +38,24 @@ key-files:
     - src/features/dashboard-layout/widgets/AnnotationsWidget.tsx
 
 decisions:
-  - decision: "Use useStackApp for auth actions, useUser for identity"
-    rationale: "Follows Stack Auth SDK patterns - useStackApp for application-level actions, useUser for user-specific data"
-    impact: "Consistent pattern across all migrated components"
-    date: "2026-01-24"
+  - decision: 'Use useStackApp for auth actions, useUser for identity'
+    rationale: 'Follows Stack Auth SDK patterns - useStackApp for application-level actions, useUser for user-specific data'
+    impact: 'Consistent pattern across all migrated components'
+    date: '2026-01-24'
 
-  - decision: "Remove supabase auth imports only when no database operations remain"
-    rationale: "Components may still use supabase.from() for database calls"
-    impact: "Mixed import state is acceptable during migration"
-    date: "2026-01-24"
+  - decision: 'Remove supabase auth imports only when no database operations remain'
+    rationale: 'Components may still use supabase.from() for database calls'
+    impact: 'Mixed import state is acceptable during migration'
+    date: '2026-01-24'
 
-  - decision: "Direct property access (user.id, user.primaryEmail) instead of destructuring"
-    rationale: "Stack Auth user object is always present or null, simplifies null checks"
-    impact: "More concise code, easier null handling"
-    date: "2026-01-24"
+  - decision: 'Direct property access (user.id, user.primaryEmail) instead of destructuring'
+    rationale: 'Stack Auth user object is always present or null, simplifies null checks'
+    impact: 'More concise code, easier null handling'
+    date: '2026-01-24'
 
 metrics:
-  duration: "5 minutes"
-  completed: "2026-01-24"
+  duration: '5 minutes'
+  completed: '2026-01-24'
   commits: 3
   files_modified: 7
   lines_changed: ~70
@@ -80,18 +80,22 @@ metrics:
 ## Tasks Completed
 
 ### Task 1: Migrate PlatformLayout and UnitSettingsSection
+
 **Commit:** `9d83cd6`
 **Files:**
+
 - `src/components/platform/PlatformLayout.tsx`
 - `src/components/unit/UnitSettingsSection.tsx`
 
 **Changes:**
+
 - PlatformLayout: `useStackApp()` for signOut action
 - UnitSettingsSection: `useUser()` for user ID in settings history
 - Removed supabase auth imports
 - Simplified error handling for signOut
 
 **Pattern established:**
+
 ```typescript
 // PlatformLayout
 const stackApp = useStackApp();
@@ -99,30 +103,34 @@ await stackApp.signOut();
 
 // UnitSettingsSection
 const user = useUser();
-if (!user) throw new Error("Not authenticated");
+if (!user) throw new Error('Not authenticated');
 const userId = user.id;
 ```
 
 ### Task 2: Migrate ComplianceReportCard, EmulatorResyncCard, DebugTerminal
+
 **Commit:** `88fefda`
 **Files:**
+
 - `src/components/reports/ComplianceReportCard.tsx`
 - `src/components/settings/EmulatorResyncCard.tsx`
 - `src/components/debug/DebugTerminal.tsx`
 
 **Changes:**
+
 - ComplianceReportCard: Simple auth check before export
 - EmulatorResyncCard: User ID for sync operations in both query and mutation
 - DebugTerminal: Replaced useEffect/useState with direct `user.primaryEmail` access
 - Removed all supabase.auth.getUser() calls
 
 **Pattern established:**
+
 ```typescript
 const user = useUser();
 
 // Auth check
 if (!user) {
-  toast.error("Not authenticated");
+  toast.error('Not authenticated');
   return;
 }
 
@@ -131,17 +139,21 @@ const userEmail = user?.primaryEmail ?? null;
 ```
 
 ### Task 3: Migrate dashboard-layout hooks and widgets
+
 **Commit:** `77e2b2b`
 **Files:**
+
 - `src/features/dashboard-layout/hooks/useEntityLayoutStorage.ts`
 - `src/features/dashboard-layout/widgets/AnnotationsWidget.tsx`
 
 **Changes:**
+
 - useEntityLayoutStorage: Hook-level `useUser()` for layout operations
 - AnnotationsWidget: `user.id` for annotation authorship
 - Maintained database operation patterns (supabase.from)
 
 **Pattern established:**
+
 ```typescript
 // Hook pattern
 export function useEntityLayoutStorage(...) {
@@ -168,13 +180,17 @@ export function useEntityLayoutStorage(...) {
 ### Migration Pattern Applied
 
 **Before (Supabase):**
+
 ```typescript
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 if (!user) return;
 const userId = user.id;
 ```
 
 **After (Stack Auth):**
+
 ```typescript
 const user = useUser(); // at component level
 if (!user) return;
@@ -184,12 +200,16 @@ const userId = user.id;
 ### Auth Action Pattern
 
 **Before (Supabase):**
+
 ```typescript
 const { error } = await supabase.auth.signOut();
-if (error) { /* handle */ }
+if (error) {
+  /* handle */
+}
 ```
 
 **After (Stack Auth):**
+
 ```typescript
 const stackApp = useStackApp();
 await stackApp.signOut();
@@ -198,16 +218,18 @@ await stackApp.signOut();
 ### Import Changes
 
 **Removed:**
+
 ```typescript
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/integrations/supabase/client';
 // Only when no database operations remain
 ```
 
 **Added:**
+
 ```typescript
-import { useUser } from "@stackframe/react";
+import { useUser } from '@stackframe/react';
 // or
-import { useStackApp } from "@stackframe/react";
+import { useStackApp } from '@stackframe/react';
 ```
 
 ## Component Categories Migrated
@@ -242,6 +264,7 @@ None - all migrations completed without errors or blockers.
 **Phase 08 Plan 03** is ready to proceed with the next batch of component migrations.
 
 **Remaining auth migrations:**
+
 - ~23 components still using Supabase auth (tracked in phase audit)
 - Patterns established in 08-02 apply to remaining migrations
 
@@ -257,15 +280,15 @@ None - all migrations completed without errors or blockers.
 
 ## Files Changed
 
-| File | Type | Auth Pattern | LOC Changed |
-|------|------|--------------|-------------|
-| PlatformLayout.tsx | Component | useStackApp (signOut) | ~10 |
-| UnitSettingsSection.tsx | Component | useUser (userId) | ~8 |
-| ComplianceReportCard.tsx | Component | useUser (authCheck) | ~6 |
-| EmulatorResyncCard.tsx | Component | useUser (userId) | ~10 |
-| DebugTerminal.tsx | Component | useUser (email) | ~8 |
-| useEntityLayoutStorage.ts | Hook | useUser (userId) | ~6 |
-| AnnotationsWidget.tsx | Widget | useUser (userId) | ~4 |
+| File                      | Type      | Auth Pattern          | LOC Changed |
+| ------------------------- | --------- | --------------------- | ----------- |
+| PlatformLayout.tsx        | Component | useStackApp (signOut) | ~10         |
+| UnitSettingsSection.tsx   | Component | useUser (userId)      | ~8          |
+| ComplianceReportCard.tsx  | Component | useUser (authCheck)   | ~6          |
+| EmulatorResyncCard.tsx    | Component | useUser (userId)      | ~10         |
+| DebugTerminal.tsx         | Component | useUser (email)       | ~8          |
+| useEntityLayoutStorage.ts | Hook      | useUser (userId)      | ~6          |
+| AnnotationsWidget.tsx     | Widget    | useUser (userId)      | ~4          |
 
 **Total:** 7 files, ~52 lines changed
 

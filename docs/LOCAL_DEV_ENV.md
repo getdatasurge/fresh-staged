@@ -134,6 +134,7 @@ Start with the `--admin` flag to include admin interfaces:
 - **Password:** admin
 
 To connect to PostgreSQL from pgAdmin:
+
 1. Add New Server
 2. Name: FrostGuard Dev
 3. Host: `postgres` (use container name, not localhost)
@@ -155,12 +156,12 @@ To connect to PostgreSQL from pgAdmin:
 
 ## Scripts Reference
 
-| Script | Description |
-|--------|-------------|
-| `./scripts/dev/up.sh` | Start all development services |
-| `./scripts/dev/up.sh --admin` | Start with admin UIs |
-| `./scripts/dev/down.sh` | Stop all services (preserves data) |
-| `./scripts/dev/reset.sh` | Stop and remove all data (fresh start) |
+| Script                        | Description                            |
+| ----------------------------- | -------------------------------------- |
+| `./scripts/dev/up.sh`         | Start all development services         |
+| `./scripts/dev/up.sh --admin` | Start with admin UIs                   |
+| `./scripts/dev/down.sh`       | Stop all services (preserves data)     |
+| `./scripts/dev/reset.sh`      | Stop and remove all data (fresh start) |
 
 ## Troubleshooting
 
@@ -228,12 +229,12 @@ If all else fails, do a complete reset:
 
 All services run on the `frostguard_network` Docker network. Services can reach each other by container name:
 
-| Service | Container Name | Internal URL |
-|---------|----------------|--------------|
-| PostgreSQL | frostguard-postgres | postgres:5432 |
-| PgBouncer | frostguard-pgbouncer | pgbouncer:6432 |
-| Redis | frostguard-redis | redis:6379 |
-| MinIO | frostguard-minio | minio:9000 |
+| Service    | Container Name       | Internal URL   |
+| ---------- | -------------------- | -------------- |
+| PostgreSQL | frostguard-postgres  | postgres:5432  |
+| PgBouncer  | frostguard-pgbouncer | pgbouncer:6432 |
+| Redis      | frostguard-redis     | redis:6379     |
+| MinIO      | frostguard-minio     | minio:9000     |
 
 ## Data Persistence
 
@@ -247,4 +248,4 @@ Volumes persist across container restarts. Use `reset.sh` to remove all data.
 
 ---
 
-*Last Updated: January 2026*
+_Last Updated: January 2026_

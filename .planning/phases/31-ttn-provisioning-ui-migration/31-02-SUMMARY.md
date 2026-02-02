@@ -28,13 +28,13 @@ key-files:
     - src/components/settings/TTNCredentialsPanel.tsx
 
 key-decisions:
-  - "Use useQuery with enabled:false + refetch() for imperative data loading"
-  - "Dual error display (toast.error + inline setFetchError) per CONTEXT.md"
-  - "Type cast tRPC response to TTNCredentials interface for local state"
+  - 'Use useQuery with enabled:false + refetch() for imperative data loading'
+  - 'Dual error display (toast.error + inline setFetchError) per CONTEXT.md'
+  - 'Type cast tRPC response to TTNCredentials interface for local state'
 
 patterns-established:
-  - "tRPC query refetch pattern: useQuery with enabled:false, call refetch() for manual fetch"
-  - "Error typing: Use err: unknown with instanceof Error check instead of err: any"
+  - 'tRPC query refetch pattern: useQuery with enabled:false, call refetch() for manual fetch'
+  - 'Error typing: Use err: unknown with instanceof Error check instead of err: any'
 
 # Metrics
 duration: 8min
@@ -54,6 +54,7 @@ completed: 2026-01-28
 - **Files modified:** 1
 
 ## Accomplishments
+
 - Replaced all 6 supabase.functions.invoke calls with tRPC
 - fetchCredentials now uses trpc.ttnSettings.getCredentials.refetch()
 - All provisioning actions (retry, start fresh, deep clean, check status) use tRPC mutations/queries
@@ -68,9 +69,11 @@ Each task was committed atomically:
 2. **Task 2: Replace provisioning actions with tRPC mutations** - `44ee624` (feat)
 
 ## Files Created/Modified
+
 - `src/components/settings/TTNCredentialsPanel.tsx` - Migrated from Supabase edge functions to tRPC
 
 ## Decisions Made
+
 - Used `useQuery` with `enabled: false` + `refetch()` for imperative data loading (allows manual control over when credentials are fetched)
 - Followed CONTEXT.md for dual error display: both toast.error() and inline setFetchError()
 - Cast tRPC response to TTNCredentials type since the backend schema matches the frontend interface
@@ -88,10 +91,12 @@ None - migration was straightforward since backend procedures were already imple
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - TTNCredentialsPanel.tsx is fully migrated to tRPC
 - Ready for phase 32 (remaining edge function migration) to continue eliminating supabase.functions.invoke calls from other files
 - Frontend builds successfully with no TypeScript errors
 
 ---
-*Phase: 31-ttn-provisioning-ui-migration*
-*Completed: 2026-01-28*
+
+_Phase: 31-ttn-provisioning-ui-migration_
+_Completed: 2026-01-28_

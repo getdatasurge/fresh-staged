@@ -1,21 +1,27 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUser } from "@stackframe/react";
-import { useTRPC, useTRPCClient } from "@/lib/trpc";
-import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { useSlugAvailability } from "@/hooks/useSlugAvailability";
-import { 
-  Thermometer, 
-  Building2, 
-  MapPin, 
-  LayoutGrid, 
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '@stackframe/react';
+import { useTRPC, useTRPCClient } from '@/lib/trpc';
+import { useQuery } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { useSlugAvailability } from '@/hooks/useSlugAvailability';
+import {
+  Thermometer,
+  Building2,
+  MapPin,
+  LayoutGrid,
   Loader2,
   CheckCircle2,
   ArrowRight,
@@ -24,8 +30,8 @@ import {
   Plus,
   AlertCircle,
   Check,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   organizationNameSchema,
   organizationSlugSchema,
@@ -38,9 +44,9 @@ import {
   areaDescriptionSchema,
   unitNameSchema,
   validateInput,
-} from "@/lib/validation";
+} from '@/lib/validation';
 
-type Step = "organization" | "site" | "area" | "unit" | "gateway" | "complete";
+type Step = 'organization' | 'site' | 'area' | 'unit' | 'gateway' | 'complete';
 
 interface OnboardingData {
   organization: {
@@ -70,29 +76,29 @@ interface OnboardingData {
 }
 
 const timezones = [
-  { value: "America/New_York", label: "Eastern Time (ET)" },
-  { value: "America/Chicago", label: "Central Time (CT)" },
-  { value: "America/Denver", label: "Mountain Time (MT)" },
-  { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
-  { value: "America/Anchorage", label: "Alaska Time (AKT)" },
-  { value: "Pacific/Honolulu", label: "Hawaii Time (HT)" },
+  { value: 'America/New_York', label: 'Eastern Time (ET)' },
+  { value: 'America/Chicago', label: 'Central Time (CT)' },
+  { value: 'America/Denver', label: 'Mountain Time (MT)' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+  { value: 'America/Anchorage', label: 'Alaska Time (AKT)' },
+  { value: 'Pacific/Honolulu', label: 'Hawaii Time (HT)' },
 ];
 
 const unitTypes = [
-  { value: "fridge", label: "Refrigerator", tempLimit: "41°F" },
-  { value: "freezer", label: "Freezer", tempLimit: "0°F" },
-  { value: "walk_in_cooler", label: "Walk-in Cooler", tempLimit: "41°F" },
-  { value: "walk_in_freezer", label: "Walk-in Freezer", tempLimit: "0°F" },
-  { value: "display_case", label: "Display Case", tempLimit: "41°F" },
-  { value: "blast_chiller", label: "Blast Chiller", tempLimit: "-10°F" },
+  { value: 'fridge', label: 'Refrigerator', tempLimit: '41°F' },
+  { value: 'freezer', label: 'Freezer', tempLimit: '0°F' },
+  { value: 'walk_in_cooler', label: 'Walk-in Cooler', tempLimit: '41°F' },
+  { value: 'walk_in_freezer', label: 'Walk-in Freezer', tempLimit: '0°F' },
+  { value: 'display_case', label: 'Display Case', tempLimit: '41°F' },
+  { value: 'blast_chiller', label: 'Blast Chiller', tempLimit: '-10°F' },
 ];
 
 const steps: { key: Step; title: string; icon: React.ElementType }[] = [
-  { key: "organization", title: "Organization", icon: Building2 },
-  { key: "site", title: "Site", icon: MapPin },
-  { key: "area", title: "Area", icon: LayoutGrid },
-  { key: "unit", title: "Unit", icon: Thermometer },
-  { key: "gateway", title: "Gateway", icon: Radio },
+  { key: 'organization', title: 'Organization', icon: Building2 },
+  { key: 'site', title: 'Site', icon: MapPin },
+  { key: 'area', title: 'Area', icon: LayoutGrid },
+  { key: 'unit', title: 'Unit', icon: Thermometer },
+  { key: 'gateway', title: 'Gateway', icon: Radio },
 ];
 
 const Onboarding = () => {
@@ -101,7 +107,7 @@ const Onboarding = () => {
   const { toast } = useToast();
   const trpc = useTRPC();
   const trpcClient = useTRPCClient();
-  const [currentStep, setCurrentStep] = useState<Step>("organization");
+  const [currentStep, setCurrentStep] = useState<Step>('organization');
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingOrg, setIsCheckingOrg] = useState(true);
   const [ttnStatus, setTtnStatus] = useState<{
@@ -124,11 +130,11 @@ const Onboarding = () => {
   const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [data, setData] = useState<OnboardingData>({
-    organization: { name: "", slug: "", timezone: "America/New_York" },
-    site: { name: "", address: "", city: "", state: "", postalCode: "" },
-    area: { name: "", description: "" },
-    unit: { name: "", type: "fridge" },
-    gateway: { name: "", eui: "" },
+    organization: { name: '', slug: '', timezone: 'America/New_York' },
+    site: { name: '', address: '', city: '', state: '', postalCode: '' },
+    area: { name: '', description: '' },
+    unit: { name: '', type: 'fridge' },
+    gateway: { name: '', eui: '' },
   });
 
   // Use the slug availability hook
@@ -138,8 +144,8 @@ const Onboarding = () => {
   const statusQuery = useQuery(
     trpc.ttnSettings.getStatus.queryOptions(
       { organizationId: createdIds.orgId || '' },
-      { enabled: false } // Manual polling control
-    )
+      { enabled: false }, // Manual polling control
+    ),
   );
 
   // Cleanup polling interval on unmount
@@ -162,7 +168,7 @@ const Onboarding = () => {
 
       // Redirect to auth if not signed in
       if (!stackUser) {
-        navigate("/auth", { replace: true });
+        navigate('/auth', { replace: true });
         return;
       }
 
@@ -174,10 +180,10 @@ const Onboarding = () => {
 
         // Redirect to callback if user has an org
         if (result.hasOrg && result.organizationId) {
-          navigate("/auth/callback", { replace: true });
+          navigate('/auth/callback', { replace: true });
         }
       } catch (err) {
-        console.error("Error checking org:", err);
+        console.error('Error checking org:', err);
         setIsCheckingOrg(false);
       }
     };
@@ -187,14 +193,14 @@ const Onboarding = () => {
   const generateSlug = (name: string) => {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
   };
 
   const updateData = <K extends keyof OnboardingData>(
     section: K,
     field: keyof OnboardingData[K],
-    value: string
+    value: string,
   ) => {
     setData((prev) => ({
       ...prev,
@@ -202,7 +208,7 @@ const Onboarding = () => {
     }));
 
     // Auto-generate slug when org name changes
-    if (section === "organization" && field === "name") {
+    if (section === 'organization' && field === 'name') {
       setData((prev) => ({
         ...prev,
         organization: { ...prev.organization, slug: generateSlug(value) },
@@ -221,7 +227,7 @@ const Onboarding = () => {
     setTtnStatus({ status: 'provisioning', step: 'Starting...' });
 
     // Store orgId for status query
-    setCreatedIds(prev => ({ ...prev, orgId }));
+    setCreatedIds((prev) => ({ ...prev, orgId }));
 
     return new Promise((resolve) => {
       const startTime = Date.now();
@@ -240,7 +246,10 @@ const Onboarding = () => {
           if (statusResult) {
             const status = statusResult.provisioning_status;
             setTtnStatus({
-              status: status === 'completed' ? 'ready' : (status as 'idle' | 'provisioning' | 'ready' | 'failed'),
+              status:
+                status === 'completed'
+                  ? 'ready'
+                  : (status as 'idle' | 'provisioning' | 'ready' | 'failed'),
               step: statusResult.provisioning_step || undefined,
               error: statusResult.provisioning_error || undefined,
               retryable: true,
@@ -273,7 +282,8 @@ const Onboarding = () => {
             }
             setTtnStatus({
               status: 'failed',
-              error: 'Provisioning is taking longer than expected. You can continue and retry from Settings.',
+              error:
+                'Provisioning is taking longer than expected. You can continue and retry from Settings.',
               retryable: true,
             });
             resolve(false);
@@ -285,7 +295,7 @@ const Onboarding = () => {
       }, POLL_INTERVAL_MS);
 
       // Also poll immediately on first call
-      statusQuery.refetch().catch(err => {
+      statusQuery.refetch().catch((err) => {
         console.error('[Onboarding] Initial TTN status poll error:', err);
       });
     });
@@ -294,14 +304,17 @@ const Onboarding = () => {
   const handleCreateOrganization = async () => {
     // If org was already created, just move to next step
     if (createdIds.orgId) {
-      setCurrentStep("site");
+      setCurrentStep('site');
       return;
     }
 
     // Validate organization name
     const nameResult = validateInput(organizationNameSchema, data.organization.name);
     if (!nameResult.success) {
-      toast({ title: (nameResult as { success: false; error: string }).error, variant: "destructive" });
+      toast({
+        title: (nameResult as { success: false; error: string }).error,
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -309,18 +322,22 @@ const Onboarding = () => {
     const slugToUse = data.organization.slug || generateSlug(data.organization.name);
     const slugResult = validateInput(organizationSlugSchema, slugToUse);
     if (!slugResult.success) {
-      toast({ title: (slugResult as { success: false; error: string }).error, variant: "destructive" });
+      toast({
+        title: (slugResult as { success: false; error: string }).error,
+        variant: 'destructive',
+      });
       return;
     }
 
     // Check if slug was marked as unavailable
     if (slugStatus.available === false) {
       toast({
-        title: "URL Already Taken",
-        description: slugStatus.suggestions.length > 0
-          ? `Try one of these: ${slugStatus.suggestions.slice(0, 3).join(", ")}`
-          : "Please choose a different URL slug.",
-        variant: "destructive"
+        title: 'URL Already Taken',
+        description:
+          slugStatus.suggestions.length > 0
+            ? `Try one of these: ${slugStatus.suggestions.slice(0, 3).join(', ')}`
+            : 'Please choose a different URL slug.',
+        variant: 'destructive',
       });
       return;
     }
@@ -335,7 +352,7 @@ const Onboarding = () => {
 
       if (response.ok && response.organizationId) {
         setCreatedIds((prev) => ({ ...prev, orgId: response.organizationId }));
-        toast({ title: "Organization created!" });
+        toast({ title: 'Organization created!' });
 
         // Trigger TTN provisioning in background (non-blocking)
         // Don't await - let it run while user continues onboarding
@@ -347,59 +364,59 @@ const Onboarding = () => {
           }
         });
 
-        setCurrentStep("site");
+        setCurrentStep('site');
       } else {
         // Handle specific error codes
         switch (response.code) {
-          case "SLUG_TAKEN":
+          case 'SLUG_TAKEN':
             toast({
-              title: "URL Already Taken",
+              title: 'URL Already Taken',
               description: response.suggestions?.length
-                ? `Try: ${response.suggestions.slice(0, 3).join(", ")}`
-                : "Please choose a different URL.",
-              variant: "destructive"
+                ? `Try: ${response.suggestions.slice(0, 3).join(', ')}`
+                : 'Please choose a different URL.',
+              variant: 'destructive',
             });
             break;
-          case "ALREADY_IN_ORG":
+          case 'ALREADY_IN_ORG':
             toast({
-              title: "Already Registered",
-              description: "Your account is already associated with an organization.",
-              variant: "destructive"
+              title: 'Already Registered',
+              description: 'Your account is already associated with an organization.',
+              variant: 'destructive',
             });
-            setTimeout(() => navigate("/auth/callback", { replace: true }), 2000);
+            setTimeout(() => navigate('/auth/callback', { replace: true }), 2000);
             break;
-          case "AUTH_REQUIRED":
-            toast({ title: "Please sign in", variant: "destructive" });
-            navigate("/auth", { replace: true });
+          case 'AUTH_REQUIRED':
+            toast({ title: 'Please sign in', variant: 'destructive' });
+            navigate('/auth', { replace: true });
             break;
-          case "VALIDATION_ERROR":
+          case 'VALIDATION_ERROR':
             toast({
-              title: "Invalid Input",
-              description: response.message || "Please check your input.",
-              variant: "destructive"
+              title: 'Invalid Input',
+              description: response.message || 'Please check your input.',
+              variant: 'destructive',
             });
             break;
           default:
             toast({
-              title: "Could not create organization",
-              description: response.message || "Please try again.",
-              variant: "destructive"
+              title: 'Could not create organization',
+              description: response.message || 'Please try again.',
+              variant: 'destructive',
             });
         }
       }
     } catch (err: unknown) {
-      console.error("Error creating organization:", err);
+      console.error('Error creating organization:', err);
       toast({
-        title: "Could not create organization",
-        description: "A server error occurred. Please try again.",
-        variant: "destructive"
+        title: 'Could not create organization',
+        description: 'A server error occurred. Please try again.',
+        variant: 'destructive',
       });
     }
     setIsLoading(false);
   };
 
   const handleSelectSuggestion = (suggestion: string) => {
-    setData(prev => ({
+    setData((prev) => ({
       ...prev,
       organization: { ...prev.organization, slug: suggestion },
     }));
@@ -408,14 +425,17 @@ const Onboarding = () => {
   const handleCreateSite = async () => {
     // If site was already created, just move to next step
     if (createdIds.siteId) {
-      setCurrentStep("area");
+      setCurrentStep('area');
       return;
     }
 
     // Validate site name
     const nameResult = validateInput(siteNameSchema, data.site.name);
     if (!nameResult.success) {
-      toast({ title: (nameResult as { success: false; error: string }).error, variant: "destructive" });
+      toast({
+        title: (nameResult as { success: false; error: string }).error,
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -426,19 +446,31 @@ const Onboarding = () => {
     const postalResult = validateInput(postalCodeSchema, data.site.postalCode);
 
     if (!addressResult.success) {
-      toast({ title: (addressResult as { success: false; error: string }).error, variant: "destructive" });
+      toast({
+        title: (addressResult as { success: false; error: string }).error,
+        variant: 'destructive',
+      });
       return;
     }
     if (!cityResult.success) {
-      toast({ title: (cityResult as { success: false; error: string }).error, variant: "destructive" });
+      toast({
+        title: (cityResult as { success: false; error: string }).error,
+        variant: 'destructive',
+      });
       return;
     }
     if (!stateResult.success) {
-      toast({ title: (stateResult as { success: false; error: string }).error, variant: "destructive" });
+      toast({
+        title: (stateResult as { success: false; error: string }).error,
+        variant: 'destructive',
+      });
       return;
     }
     if (!postalResult.success) {
-      toast({ title: (postalResult as { success: false; error: string }).error, variant: "destructive" });
+      toast({
+        title: (postalResult as { success: false; error: string }).error,
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -454,11 +486,15 @@ const Onboarding = () => {
       });
 
       setCreatedIds((prev) => ({ ...prev, siteId: result.siteId }));
-      toast({ title: "Site created!" });
-      setCurrentStep("area");
+      toast({ title: 'Site created!' });
+      setCurrentStep('area');
     } catch (error: unknown) {
-      console.error("Error creating site:", error);
-      toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
+      console.error('Error creating site:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive',
+      });
     }
     setIsLoading(false);
   };
@@ -466,21 +502,27 @@ const Onboarding = () => {
   const handleCreateArea = async () => {
     // If area was already created, just move to next step
     if (createdIds.areaId) {
-      setCurrentStep("unit");
+      setCurrentStep('unit');
       return;
     }
 
     // Validate area name
     const nameResult = validateInput(areaNameSchema, data.area.name);
     if (!nameResult.success) {
-      toast({ title: (nameResult as { success: false; error: string }).error, variant: "destructive" });
+      toast({
+        title: (nameResult as { success: false; error: string }).error,
+        variant: 'destructive',
+      });
       return;
     }
 
     // Validate description
     const descResult = validateInput(areaDescriptionSchema, data.area.description);
     if (!descResult.success) {
-      toast({ title: (descResult as { success: false; error: string }).error, variant: "destructive" });
+      toast({
+        title: (descResult as { success: false; error: string }).error,
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -494,11 +536,15 @@ const Onboarding = () => {
       });
 
       setCreatedIds((prev) => ({ ...prev, areaId: result.areaId }));
-      toast({ title: "Area created!" });
-      setCurrentStep("unit");
+      toast({ title: 'Area created!' });
+      setCurrentStep('unit');
     } catch (error: unknown) {
-      console.error("Error creating area:", error);
-      toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
+      console.error('Error creating area:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive',
+      });
     }
     setIsLoading(false);
   };
@@ -506,14 +552,17 @@ const Onboarding = () => {
   const handleCreateUnit = async () => {
     // If unit was already created, just move to gateway step
     if (createdIds.unitId) {
-      setCurrentStep("gateway");
+      setCurrentStep('gateway');
       return;
     }
 
     // Validate unit name
     const nameResult = validateInput(unitNameSchema, data.unit.name);
     if (!nameResult.success) {
-      toast({ title: (nameResult as { success: false; error: string }).error, variant: "destructive" });
+      toast({
+        title: (nameResult as { success: false; error: string }).error,
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -523,15 +572,25 @@ const Onboarding = () => {
         organizationId: createdIds.orgId!,
         areaId: createdIds.areaId!,
         name: (nameResult as { success: true; data: string }).data,
-        unitType: data.unit.type as "fridge" | "freezer" | "walk_in_cooler" | "walk_in_freezer" | "display_case" | "blast_chiller",
+        unitType: data.unit.type as
+          | 'fridge'
+          | 'freezer'
+          | 'walk_in_cooler'
+          | 'walk_in_freezer'
+          | 'display_case'
+          | 'blast_chiller',
       });
 
       setCreatedIds((prev) => ({ ...prev, unitId: result.unitId }));
-      toast({ title: "Unit created!" });
-      setCurrentStep("gateway");
+      toast({ title: 'Unit created!' });
+      setCurrentStep('gateway');
     } catch (error: unknown) {
-      console.error("Error creating unit:", error);
-      toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
+      console.error('Error creating unit:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive',
+      });
     }
     setIsLoading(false);
   };
@@ -539,20 +598,20 @@ const Onboarding = () => {
   const handleCreateGateway = async () => {
     // If gateway was already created, just move to complete
     if (createdIds.gatewayId) {
-      setCurrentStep("complete");
+      setCurrentStep('complete');
       return;
     }
 
     // Validate gateway name
     if (!data.gateway.name.trim()) {
-      toast({ title: "Gateway name is required", variant: "destructive" });
+      toast({ title: 'Gateway name is required', variant: 'destructive' });
       return;
     }
 
     // Validate gateway EUI (16 hex characters)
     const euiRegex = /^[0-9A-Fa-f]{16}$/;
     if (!euiRegex.test(data.gateway.eui)) {
-      toast({ title: "Gateway EUI must be 16 hexadecimal characters", variant: "destructive" });
+      toast({ title: 'Gateway EUI must be 16 hexadecimal characters', variant: 'destructive' });
       return;
     }
 
@@ -566,17 +625,21 @@ const Onboarding = () => {
       });
 
       setCreatedIds((prev) => ({ ...prev, gatewayId: result.gatewayId }));
-      toast({ title: "Gateway registered!" });
-      setCurrentStep("complete");
+      toast({ title: 'Gateway registered!' });
+      setCurrentStep('complete');
     } catch (error: unknown) {
-      console.error("Error creating gateway:", error);
-      toast({ title: "Error", description: error instanceof Error ? error.message : "Unknown error", variant: "destructive" });
+      console.error('Error creating gateway:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive',
+      });
     }
     setIsLoading(false);
   };
 
   const handleSkipGateway = () => {
-    setCurrentStep("complete");
+    setCurrentStep('complete');
   };
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
@@ -602,7 +665,7 @@ const Onboarding = () => {
         </div>
 
         {/* Progress Steps */}
-        {currentStep !== "complete" && (
+        {currentStep !== 'complete' && (
           <div className="flex items-center justify-center gap-2 mb-8">
             {steps.map((step, i) => {
               const Icon = step.icon;
@@ -614,9 +677,9 @@ const Onboarding = () => {
                   <div
                     className={`
                       flex items-center justify-center w-10 h-10 rounded-full transition-all
-                      ${isComplete ? "bg-safe text-safe-foreground" : ""}
-                      ${isActive ? "bg-accent text-accent-foreground" : ""}
-                      ${!isActive && !isComplete ? "bg-muted text-muted-foreground" : ""}
+                      ${isComplete ? 'bg-safe text-safe-foreground' : ''}
+                      ${isActive ? 'bg-accent text-accent-foreground' : ''}
+                      ${!isActive && !isComplete ? 'bg-muted text-muted-foreground' : ''}
                     `}
                   >
                     {isComplete ? (
@@ -626,11 +689,7 @@ const Onboarding = () => {
                     )}
                   </div>
                   {i < steps.length - 1 && (
-                    <div
-                      className={`w-8 h-0.5 mx-1 ${
-                        isComplete ? "bg-safe" : "bg-border"
-                      }`}
-                    />
+                    <div className={`w-8 h-0.5 mx-1 ${isComplete ? 'bg-safe' : 'bg-border'}`} />
                   )}
                 </div>
               );
@@ -647,7 +706,7 @@ const Onboarding = () => {
             transition={{ duration: 0.3 }}
           >
             {/* Organization Step */}
-            {currentStep === "organization" && (
+            {currentStep === 'organization' && (
               <Card className="shadow-lg">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
@@ -665,7 +724,7 @@ const Onboarding = () => {
                       id="org-name"
                       placeholder="Acme Restaurants"
                       value={data.organization.name}
-                      onChange={(e) => updateData("organization", "name", e.target.value)}
+                      onChange={(e) => updateData('organization', 'name', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -677,13 +736,19 @@ const Onboarding = () => {
                           id="org-slug"
                           placeholder="acme-restaurants"
                           value={data.organization.slug}
-                          onChange={(e) => updateData("organization", "slug", e.target.value)}
-                          className={`pr-8 ${slugStatus.available === false ? "border-destructive" : slugStatus.available === true ? "border-safe" : ""}`}
+                          onChange={(e) => updateData('organization', 'slug', e.target.value)}
+                          className={`pr-8 ${slugStatus.available === false ? 'border-destructive' : slugStatus.available === true ? 'border-safe' : ''}`}
                         />
                         <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                          {slugStatus.isChecking && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
-                          {!slugStatus.isChecking && slugStatus.available === true && <Check className="w-4 h-4 text-safe" />}
-                          {!slugStatus.isChecking && slugStatus.available === false && <AlertCircle className="w-4 h-4 text-destructive" />}
+                          {slugStatus.isChecking && (
+                            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                          )}
+                          {!slugStatus.isChecking && slugStatus.available === true && (
+                            <Check className="w-4 h-4 text-safe" />
+                          )}
+                          {!slugStatus.isChecking && slugStatus.available === false && (
+                            <AlertCircle className="w-4 h-4 text-destructive" />
+                          )}
                         </div>
                       </div>
                     </div>
@@ -691,9 +756,9 @@ const Onboarding = () => {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs text-muted-foreground">Try:</span>
                         {slugStatus.suggestions.slice(0, 3).map((s) => (
-                          <Badge 
-                            key={s} 
-                            variant="outline" 
+                          <Badge
+                            key={s}
+                            variant="outline"
                             className="cursor-pointer hover:bg-accent/10"
                             onClick={() => handleSelectSuggestion(s)}
                           >
@@ -707,7 +772,7 @@ const Onboarding = () => {
                     <Label htmlFor="org-timezone">Timezone</Label>
                     <Select
                       value={data.organization.timezone}
-                      onValueChange={(v) => updateData("organization", "timezone", v)}
+                      onValueChange={(v) => updateData('organization', 'timezone', v)}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -735,7 +800,7 @@ const Onboarding = () => {
             )}
 
             {/* Site Step */}
-            {currentStep === "site" && (
+            {currentStep === 'site' && (
               <Card className="shadow-lg">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
@@ -753,7 +818,7 @@ const Onboarding = () => {
                       id="site-name"
                       placeholder="Downtown Location"
                       value={data.site.name}
-                      onChange={(e) => updateData("site", "name", e.target.value)}
+                      onChange={(e) => updateData('site', 'name', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -762,7 +827,7 @@ const Onboarding = () => {
                       id="site-address"
                       placeholder="123 Main Street"
                       value={data.site.address}
-                      onChange={(e) => updateData("site", "address", e.target.value)}
+                      onChange={(e) => updateData('site', 'address', e.target.value)}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -772,7 +837,7 @@ const Onboarding = () => {
                         id="site-city"
                         placeholder="New York"
                         value={data.site.city}
-                        onChange={(e) => updateData("site", "city", e.target.value)}
+                        onChange={(e) => updateData('site', 'city', e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
@@ -781,7 +846,7 @@ const Onboarding = () => {
                         id="site-state"
                         placeholder="NY"
                         value={data.site.state}
-                        onChange={(e) => updateData("site", "state", e.target.value)}
+                        onChange={(e) => updateData('site', 'state', e.target.value)}
                       />
                     </div>
                   </div>
@@ -791,13 +856,13 @@ const Onboarding = () => {
                       id="site-zip"
                       placeholder="10001"
                       value={data.site.postalCode}
-                      onChange={(e) => updateData("site", "postalCode", e.target.value)}
+                      onChange={(e) => updateData('site', 'postalCode', e.target.value)}
                     />
                   </div>
                   <div className="flex gap-3">
                     <Button
                       variant="outline"
-                      onClick={() => setCurrentStep("organization")}
+                      onClick={() => setCurrentStep('organization')}
                       disabled={isLoading}
                     >
                       <ArrowLeft className="w-4 h-4 mr-2" />
@@ -818,7 +883,7 @@ const Onboarding = () => {
             )}
 
             {/* Area Step */}
-            {currentStep === "area" && (
+            {currentStep === 'area' && (
               <Card className="shadow-lg">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
@@ -836,7 +901,7 @@ const Onboarding = () => {
                       id="area-name"
                       placeholder="Main Kitchen"
                       value={data.area.name}
-                      onChange={(e) => updateData("area", "name", e.target.value)}
+                      onChange={(e) => updateData('area', 'name', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -845,13 +910,13 @@ const Onboarding = () => {
                       id="area-desc"
                       placeholder="Primary food prep area"
                       value={data.area.description}
-                      onChange={(e) => updateData("area", "description", e.target.value)}
+                      onChange={(e) => updateData('area', 'description', e.target.value)}
                     />
                   </div>
                   <div className="flex gap-3">
                     <Button
                       variant="outline"
-                      onClick={() => setCurrentStep("site")}
+                      onClick={() => setCurrentStep('site')}
                       disabled={isLoading}
                     >
                       <ArrowLeft className="w-4 h-4 mr-2" />
@@ -872,7 +937,7 @@ const Onboarding = () => {
             )}
 
             {/* Unit Step */}
-            {currentStep === "unit" && (
+            {currentStep === 'unit' && (
               <Card className="shadow-lg">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
@@ -890,14 +955,14 @@ const Onboarding = () => {
                       id="unit-name"
                       placeholder="Walk-in Cooler #1"
                       value={data.unit.name}
-                      onChange={(e) => updateData("unit", "name", e.target.value)}
+                      onChange={(e) => updateData('unit', 'name', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="unit-type">Unit Type</Label>
                     <Select
                       value={data.unit.type}
-                      onValueChange={(v) => updateData("unit", "type", v)}
+                      onValueChange={(v) => updateData('unit', 'type', v)}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -922,7 +987,7 @@ const Onboarding = () => {
                   <div className="flex gap-3">
                     <Button
                       variant="outline"
-                      onClick={() => setCurrentStep("area")}
+                      onClick={() => setCurrentStep('area')}
                       disabled={isLoading}
                     >
                       <ArrowLeft className="w-4 h-4 mr-2" />
@@ -943,7 +1008,7 @@ const Onboarding = () => {
             )}
 
             {/* Gateway Step */}
-            {currentStep === "gateway" && (
+            {currentStep === 'gateway' && (
               <Card className="shadow-lg">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
@@ -961,7 +1026,7 @@ const Onboarding = () => {
                       id="gateway-name"
                       placeholder="Main Building Gateway"
                       value={data.gateway.name}
-                      onChange={(e) => updateData("gateway", "name", e.target.value)}
+                      onChange={(e) => updateData('gateway', 'name', e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -973,8 +1038,8 @@ const Onboarding = () => {
                       maxLength={16}
                       value={data.gateway.eui}
                       onChange={(e) => {
-                        const value = e.target.value.replace(/[^0-9A-Fa-f]/g, "");
-                        updateData("gateway", "eui", value.toUpperCase());
+                        const value = e.target.value.replace(/[^0-9A-Fa-f]/g, '');
+                        updateData('gateway', 'eui', value.toUpperCase());
                       }}
                     />
                     <p className="text-xs text-muted-foreground">
@@ -984,7 +1049,7 @@ const Onboarding = () => {
                   <div className="flex gap-3 pt-2">
                     <Button
                       variant="outline"
-                      onClick={() => setCurrentStep("unit")}
+                      onClick={() => setCurrentStep('unit')}
                       disabled={isLoading}
                     >
                       <ArrowLeft className="w-4 h-4 mr-2" />
@@ -1011,33 +1076,33 @@ const Onboarding = () => {
             )}
 
             {/* Complete Step */}
-            {currentStep === "complete" && (
+            {currentStep === 'complete' && (
               <Card className="shadow-lg">
                 <CardContent className="py-12 text-center">
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    transition={{ type: "spring", duration: 0.5 }}
+                    transition={{ type: 'spring', duration: 0.5 }}
                     className="w-20 h-20 rounded-full bg-safe/10 flex items-center justify-center mx-auto mb-6"
                   >
                     <CheckCircle2 className="w-10 h-10 text-safe" />
                   </motion.div>
-                  <h2 className="text-2xl font-bold text-foreground mb-2">
-                    You're All Set!
-                  </h2>
+                  <h2 className="text-2xl font-bold text-foreground mb-2">You're All Set!</h2>
                   <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-                    Your organization, site, area, {createdIds.gatewayId ? "gateway, " : ""}and first unit have been created. 
-                    You can now start monitoring temperatures.
+                    Your organization, site, area, {createdIds.gatewayId ? 'gateway, ' : ''}and
+                    first unit have been created. You can now start monitoring temperatures.
                   </p>
-                  
+
                   {/* TTN Status Banner */}
                   {ttnStatus.status === 'provisioning' && (
                     <div className="mb-6 p-3 rounded-lg bg-muted/50 flex items-center justify-center gap-2 text-sm text-muted-foreground">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Setting up IoT connection{ttnStatus.step ? `: ${ttnStatus.step}` : '...'}</span>
+                      <span>
+                        Setting up IoT connection{ttnStatus.step ? `: ${ttnStatus.step}` : '...'}
+                      </span>
                     </div>
                   )}
-                  
+
                   {ttnStatus.status === 'failed' && (
                     <div className="mb-6 p-3 rounded-lg bg-warning/10 border border-warning/20">
                       <div className="flex items-center justify-center gap-2 text-sm text-warning mb-2">
@@ -1046,8 +1111,8 @@ const Onboarding = () => {
                       </div>
                       <p className="text-xs text-muted-foreground mb-2">{ttnStatus.error}</p>
                       {ttnStatus.retryable && createdIds.orgId && (
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => provisionTTN(createdIds.orgId!)}
                           className="text-xs"
@@ -1057,17 +1122,17 @@ const Onboarding = () => {
                       )}
                     </div>
                   )}
-                  
+
                   {ttnStatus.status === 'ready' && (
                     <div className="mb-6 p-3 rounded-lg bg-safe/10 flex items-center justify-center gap-2 text-sm text-safe">
                       <CheckCircle2 className="w-4 h-4" />
                       <span>IoT connection ready</span>
                     </div>
                   )}
-                  
+
                   <div className="flex flex-col items-center gap-3">
                     <Button
-                      onClick={() => navigate("/settings?tab=sensors&action=add")}
+                      onClick={() => navigate('/settings?tab=sensors&action=add')}
                       className="w-full max-w-xs bg-accent hover:bg-accent/90"
                     >
                       <Plus className="w-4 h-4 mr-2" />
@@ -1075,7 +1140,7 @@ const Onboarding = () => {
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() => navigate("/dashboard")}
+                      onClick={() => navigate('/dashboard')}
                       className="w-full max-w-xs"
                     >
                       Go to Dashboard

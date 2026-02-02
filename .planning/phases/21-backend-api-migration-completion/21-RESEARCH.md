@@ -19,24 +19,28 @@ Key findings: (1) The Supabase client is used in ~100 frontend files, primarily 
 The established libraries/tools for this domain:
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| @trpc/server | ^11.8.1 | Backend tRPC routers | Already installed in Phase 19, domain routers pattern proven |
-| @trpc/client | ^11.8.1 | Frontend tRPC client | Already installed, TRPCProvider established |
-| @trpc/tanstack-react-query | ^11.8.1 | React Query integration | Already installed, useTRPC() pattern proven |
+
+| Library                    | Version | Purpose                 | Why Standard                                                 |
+| -------------------------- | ------- | ----------------------- | ------------------------------------------------------------ |
+| @trpc/server               | ^11.8.1 | Backend tRPC routers    | Already installed in Phase 19, domain routers pattern proven |
+| @trpc/client               | ^11.8.1 | Frontend tRPC client    | Already installed, TRPCProvider established                  |
+| @trpc/tanstack-react-query | ^11.8.1 | React Query integration | Already installed, useTRPC() pattern proven                  |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| zod | ^4.3.6 (backend) | Input/output validation | Existing schemas in backend/src/schemas/ |
-| Drizzle ORM | Current | Database layer | Service layer uses Drizzle, routers call services |
+
+| Library     | Version          | Purpose                 | When to Use                                       |
+| ----------- | ---------------- | ----------------------- | ------------------------------------------------- |
+| zod         | ^4.3.6 (backend) | Input/output validation | Existing schemas in backend/src/schemas/          |
+| Drizzle ORM | Current          | Database layer          | Service layer uses Drizzle, routers call services |
 
 ### To Be Removed
-| Library | Version | Reason |
-|---------|---------|--------|
+
+| Library               | Version | Reason                                |
+| --------------------- | ------- | ------------------------------------- |
 | @supabase/supabase-js | ^2.89.0 | Replaced by tRPC - AUTH-02 completion |
 
 **Installation:**
+
 ```bash
 # No new packages needed
 # REMOVAL at end of phase:
@@ -49,31 +53,32 @@ npm uninstall @supabase/supabase-js
 
 Based on existing REST routes analysis:
 
-| REST Route | tRPC Router | Priority | Complexity |
-|------------|-------------|----------|------------|
-| `routes/preferences.ts` | `preferencesRouter` | HIGH | LOW - 3 endpoints |
-| `routes/sms-config.ts` | `smsConfigRouter` | HIGH | LOW - 2 endpoints |
-| `routes/payments.ts` | `paymentsRouter` | HIGH | LOW - 3 endpoints |
-| `routes/ttn-gateways.ts` | `ttnGatewaysRouter` | MEDIUM | MEDIUM - 6 endpoints |
-| `routes/ttn-devices.ts` | `ttnDevicesRouter` | MEDIUM | MEDIUM - 6 endpoints |
-| `routes/admin.ts` | `adminRouter` | MEDIUM | LOW - 2 endpoints |
-| `routes/assets.ts` | `assetsRouter` | LOW | LOW - 1 endpoint (file upload) |
-| `routes/availability.ts` | `availabilityRouter` | LOW | LOW - 2 public endpoints |
+| REST Route               | tRPC Router          | Priority | Complexity                     |
+| ------------------------ | -------------------- | -------- | ------------------------------ |
+| `routes/preferences.ts`  | `preferencesRouter`  | HIGH     | LOW - 3 endpoints              |
+| `routes/sms-config.ts`   | `smsConfigRouter`    | HIGH     | LOW - 2 endpoints              |
+| `routes/payments.ts`     | `paymentsRouter`     | HIGH     | LOW - 3 endpoints              |
+| `routes/ttn-gateways.ts` | `ttnGatewaysRouter`  | MEDIUM   | MEDIUM - 6 endpoints           |
+| `routes/ttn-devices.ts`  | `ttnDevicesRouter`   | MEDIUM   | MEDIUM - 6 endpoints           |
+| `routes/admin.ts`        | `adminRouter`        | MEDIUM   | LOW - 2 endpoints              |
+| `routes/assets.ts`       | `assetsRouter`       | LOW      | LOW - 1 endpoint (file upload) |
+| `routes/availability.ts` | `availabilityRouter` | LOW      | LOW - 2 public endpoints       |
 
 ### Routes to KEEP as REST (External Webhooks)
 
 These routes should NOT be migrated to tRPC:
 
-| REST Route | Reason |
-|------------|--------|
-| `routes/ttn-webhooks.ts` | External webhook with API key auth (not JWT) |
-| `routes/telnyx-webhooks.ts` | External webhook, no auth |
+| REST Route                  | Reason                                       |
+| --------------------------- | -------------------------------------------- |
+| `routes/ttn-webhooks.ts`    | External webhook with API key auth (not JWT) |
+| `routes/telnyx-webhooks.ts` | External webhook, no auth                    |
 | `routes/stripe-webhooks.ts` | External webhook with signature verification |
-| `routes/unsubscribe.ts` | Public token-based auth (email links) |
-| `routes/health.ts` | Public health check endpoint |
-| `routes/dev.ts` | Development-only routes (NODE_ENV protected) |
+| `routes/unsubscribe.ts`     | Public token-based auth (email links)        |
+| `routes/health.ts`          | Public health check endpoint                 |
+| `routes/dev.ts`             | Development-only routes (NODE_ENV protected) |
 
 ### Recommended Project Structure
+
 ```
 backend/src/
 ├── trpc/
@@ -105,9 +110,11 @@ src/
 ```
 
 ### Pattern 1: Preferences Router (Settings Domain)
+
 **What:** Migrate user digest preferences to tRPC
 **When to use:** User settings that operate on authenticated user context
 **Example:**
+
 ```typescript
 // backend/src/routers/preferences.router.ts
 import { z } from 'zod';
@@ -169,9 +176,11 @@ export const preferencesRouter = router({
 ```
 
 ### Pattern 2: TTN Devices Router (Complex Admin Domain)
+
 **What:** Migrate TTN device management with subscription middleware
 **When to use:** Admin features with additional middleware (requireSensorCapacity)
 **Example:**
+
 ```typescript
 // backend/src/routers/ttn-devices.router.ts
 import { z } from 'zod';
@@ -216,9 +225,11 @@ export const ttnDevicesRouter = router({
 ```
 
 ### Pattern 3: File Upload in tRPC (Assets)
+
 **What:** Handle multipart file uploads through tRPC
 **When to use:** Asset uploads that need org context
 **Example:**
+
 ```typescript
 // backend/src/routers/assets.router.ts
 // NOTE: File uploads are complex in tRPC. Consider keeping as REST or using:
@@ -247,9 +258,11 @@ export const assetsRouter = router({
 ```
 
 ### Pattern 4: Public Procedures (Availability)
+
 **What:** Public endpoints that don't require authentication
 **When to use:** Registration flow validation
 **Example:**
+
 ```typescript
 // backend/src/routers/availability.router.ts
 import { router, publicProcedure } from '../trpc/index.js';
@@ -272,6 +285,7 @@ export const availabilityRouter = router({
 ```
 
 ### Anti-Patterns to Avoid
+
 - **Migrating external webhooks to tRPC:** Webhooks use API key/signature auth, not JWT
 - **Breaking existing REST during migration:** Keep REST routes until frontend fully migrated
 - **Removing Supabase before frontend migrated:** All 100 frontend files must migrate first
@@ -282,77 +296,90 @@ export const availabilityRouter = router({
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Subscription checking | Custom middleware per route | Single sensorCapacityProcedure | Consistent across all TTN endpoints |
-| Scheduler sync | Inline database + scheduler | Existing syncUserDigestSchedulers | Service already handles complexity |
-| File upload auth | Manual token verification | Pre-signed URL pattern | S3/R2 standard, offloads processing |
-| Edge function replacement | New edge functions | tRPC procedures | Consolidate to single deployment |
-| Role checking | Per-procedure role checks | Role-aware procedure middleware | DRY, consistent with Phase 19-20 |
+| Problem                   | Don't Build                 | Use Instead                       | Why                                 |
+| ------------------------- | --------------------------- | --------------------------------- | ----------------------------------- |
+| Subscription checking     | Custom middleware per route | Single sensorCapacityProcedure    | Consistent across all TTN endpoints |
+| Scheduler sync            | Inline database + scheduler | Existing syncUserDigestSchedulers | Service already handles complexity  |
+| File upload auth          | Manual token verification   | Pre-signed URL pattern            | S3/R2 standard, offloads processing |
+| Edge function replacement | New edge functions          | tRPC procedures                   | Consolidate to single deployment    |
+| Role checking             | Per-procedure role checks   | Role-aware procedure middleware   | DRY, consistent with Phase 19-20    |
 
 **Key insight:** The migration should reuse Phase 19-20 patterns exactly. No new infrastructure needed.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Supabase Edge Function Dependencies
+
 **What goes wrong:** Frontend calls edge functions that don't exist after migration
-**Why it happens:** Edge functions (ttn-*, manage-ttn-settings) are Supabase-specific
+**Why it happens:** Edge functions (ttn-\*, manage-ttn-settings) are Supabase-specific
 **How to avoid:**
+
 1. Identify all supabase.functions.invoke() calls
 2. Create equivalent tRPC procedures
 3. Update frontend before removing edge functions
-**Warning signs:** 403/404 errors on TTN operations
+   **Warning signs:** 403/404 errors on TTN operations
 
 ### Pitfall 2: Premature package.json Changes
+
 **What goes wrong:** Build fails or runtime errors from missing Supabase
 **Why it happens:** Removing @supabase/supabase-js before all code migrated
 **How to avoid:**
+
 1. Migrate all 100 frontend files first
 2. Run full test suite
 3. Only then remove package dependency
-**Warning signs:** Import errors, "Cannot find module" at build time
+   **Warning signs:** Import errors, "Cannot find module" at build time
 
 ### Pitfall 3: Breaking Webhook Routes
+
 **What goes wrong:** TTN sensors stop sending data, Stripe payments fail
 **Why it happens:** Accidentally migrating webhook routes that use non-JWT auth
 **How to avoid:**
-1. Leave all *-webhooks.ts routes as REST
+
+1. Leave all \*-webhooks.ts routes as REST
 2. Keep routes/unsubscribe.ts as REST (token auth)
 3. Only migrate user-facing endpoints
-**Warning signs:** External service integration failures
+   **Warning signs:** External service integration failures
 
 ### Pitfall 4: Notification Policy Migration Complexity
+
 **What goes wrong:** Supabase RPC functions (get_effective_notification_policy) unavailable
 **Why it happens:** RPC functions are Supabase-specific, need backend equivalent
 **How to avoid:**
+
 1. Create equivalent service method in backend
 2. Port SQL logic to Drizzle ORM query
 3. Test inheritance logic thoroughly (unit -> site -> org)
-**Warning signs:** Incorrect notification routing, missing escalations
+   **Warning signs:** Incorrect notification routing, missing escalations
 
 ### Pitfall 5: TTN Settings Tied to Edge Functions
+
 **What goes wrong:** TTN configuration stops working
 **Why it happens:** useTTNSettings hooks call supabase.functions.invoke
 **How to avoid:**
+
 1. Map all edge functions to tRPC procedures
 2. Update frontend hooks atomically
 3. Keep edge functions until fully migrated
-**Warning signs:** TTN setup wizard fails, connection tests fail
+   **Warning signs:** TTN setup wizard fails, connection tests fail
 
 ### Pitfall 6: Incomplete Frontend Hook Migration
+
 **What goes wrong:** Runtime errors after Supabase removal
 **Why it happens:** Not all 100 frontend files updated
 **How to avoid:**
+
 1. Use grep to find ALL supabase imports
 2. Migrate systematically (by feature area)
 3. Remove imports only after tRPC equivalent verified
-**Warning signs:** Console warnings "Using Supabase - TODO: migrate"
+   **Warning signs:** Console warnings "Using Supabase - TODO: migrate"
 
 ## Code Examples
 
 Verified patterns from Phase 19-20 and existing codebase:
 
 ### SMS Config Router
+
 ```typescript
 // backend/src/routers/sms-config.router.ts
 import { z } from 'zod';
@@ -388,10 +415,12 @@ export const smsConfigRouter = router({
 
   // POST /api/alerts/sms/config
   upsert: orgProcedure
-    .input(z.object({
-      organizationId: z.string().uuid(),
-      data: SmsConfigCreateSchema,
-    }))
+    .input(
+      z.object({
+        organizationId: z.string().uuid(),
+        data: SmsConfigCreateSchema,
+      }),
+    )
     .output(SmsConfigResponseSchema)
     .mutation(async ({ ctx, input }) => {
       // Role check from REST: requireRole('admin')
@@ -403,10 +432,7 @@ export const smsConfigRouter = router({
       }
 
       try {
-        return await smsConfigService.upsertSmsConfig(
-          ctx.user.organizationId,
-          input.data
-        );
+        return await smsConfigService.upsertSmsConfig(ctx.user.organizationId, input.data);
       } catch (error) {
         if (error instanceof smsConfigService.SmsConfigError) {
           throw new TRPCError({
@@ -421,6 +447,7 @@ export const smsConfigRouter = router({
 ```
 
 ### Payments Router
+
 ```typescript
 // backend/src/routers/payments.router.ts
 import { z } from 'zod';
@@ -444,29 +471,31 @@ export const paymentsRouter = router({
     .input(OrgInput)
     .output(SubscriptionResponseSchema.nullable())
     .query(async ({ ctx }) => {
-      const subscription = await checkoutService.getSubscription(
-        ctx.user.organizationId
-      );
+      const subscription = await checkoutService.getSubscription(ctx.user.organizationId);
       return subscription;
     }),
 
   // POST /api/orgs/:orgId/payments/checkout
   createCheckoutSession: orgProcedure
-    .input(z.object({
-      organizationId: z.string().uuid(),
-      data: CreateCheckoutSessionSchema,
-    }))
+    .input(
+      z.object({
+        organizationId: z.string().uuid(),
+        data: CreateCheckoutSessionSchema,
+      }),
+    )
     .output(CheckoutSessionResponseSchema)
     .mutation(async ({ ctx, input }) => {
       try {
         return await checkoutService.createCheckoutSession(
           ctx.user.organizationId,
           ctx.user.id,
-          input.data
+          input.data,
         );
       } catch (error) {
-        if (error instanceof Error &&
-            (error.name === 'StripeConfigError' || error.name === 'CheckoutError')) {
+        if (
+          error instanceof Error &&
+          (error.name === 'StripeConfigError' || error.name === 'CheckoutError')
+        ) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
             message: error.message,
@@ -478,20 +507,21 @@ export const paymentsRouter = router({
 
   // POST /api/orgs/:orgId/payments/portal
   createPortalSession: orgProcedure
-    .input(z.object({
-      organizationId: z.string().uuid(),
-      data: CreatePortalSessionSchema,
-    }))
+    .input(
+      z.object({
+        organizationId: z.string().uuid(),
+        data: CreatePortalSessionSchema,
+      }),
+    )
     .output(PortalSessionResponseSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        return await checkoutService.createPortalSession(
-          ctx.user.organizationId,
-          input.data
-        );
+        return await checkoutService.createPortalSession(ctx.user.organizationId, input.data);
       } catch (error) {
-        if (error instanceof Error &&
-            (error.name === 'StripeConfigError' || error.name === 'PortalError')) {
+        if (
+          error instanceof Error &&
+          (error.name === 'StripeConfigError' || error.name === 'PortalError')
+        ) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
             message: error.message,
@@ -504,18 +534,19 @@ export const paymentsRouter = router({
 ```
 
 ### Frontend Hook Migration (Before/After)
+
 ```typescript
 // BEFORE: useNotificationPolicies.ts using Supabase
-import { supabase } from "@/integrations/supabase/client";  // TEMPORARY
+import { supabase } from '@/integrations/supabase/client'; // TEMPORARY
 
 export function useOrgNotificationPolicies(orgId: string | null) {
   return useQuery({
     queryKey: qk.org(orgId).notificationPolicies(),
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("notification_policies")
-        .select("*")
-        .eq("organization_id", orgId);
+        .from('notification_policies')
+        .select('*')
+        .eq('organization_id', orgId);
       if (error) throw error;
       return data.map(mapDbRowToPolicy);
     },
@@ -524,19 +555,20 @@ export function useOrgNotificationPolicies(orgId: string | null) {
 }
 
 // AFTER: Using tRPC
-import { useTRPC } from "@/lib/trpc";
+import { useTRPC } from '@/lib/trpc';
 
 export function useOrgNotificationPolicies(orgId: string | null) {
   const trpc = useTRPC();
 
   return trpc.notificationPolicies.listByOrg.useQuery(
     { organizationId: orgId! },
-    { enabled: !!orgId }
+    { enabled: !!orgId },
   );
 }
 ```
 
 ### Router Registration
+
 ```typescript
 // backend/src/trpc/router.ts - UPDATE
 import { router, publicProcedure } from './index.js';
@@ -575,14 +607,15 @@ export const appRouter = router({
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Supabase client for queries | tRPC procedures | Phase 19 (2026-01) | Type safety, single API layer |
-| Edge functions for operations | tRPC mutations | Phase 21 | Consolidated deployment |
-| Multiple auth patterns | JWT via Stack Auth | Phase 2 (2025) | Single auth source |
-| REST + Supabase parallel | tRPC only | Phase 21 | Simplified architecture |
+| Old Approach                  | Current Approach   | When Changed       | Impact                        |
+| ----------------------------- | ------------------ | ------------------ | ----------------------------- |
+| Supabase client for queries   | tRPC procedures    | Phase 19 (2026-01) | Type safety, single API layer |
+| Edge functions for operations | tRPC mutations     | Phase 21           | Consolidated deployment       |
+| Multiple auth patterns        | JWT via Stack Auth | Phase 2 (2025)     | Single auth source            |
+| REST + Supabase parallel      | tRPC only          | Phase 21           | Simplified architecture       |
 
 **Deprecated/outdated:**
+
 - `src/integrations/supabase/client.ts`: Remove after migration
 - `supabase.functions.invoke()`: Replace with tRPC procedures
 - `supabase.rpc()`: Implement as backend service methods
@@ -615,6 +648,7 @@ Things that couldn't be fully resolved:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Phase 19 Research Document (`19-RESEARCH.md`) - tRPC infrastructure patterns
 - Phase 20 Research Document (`20-RESEARCH.md`) - Domain router patterns
 - `backend/src/routers/*.router.ts` - 6 existing router implementations
@@ -623,21 +657,25 @@ Things that couldn't be fully resolved:
 - `src/integrations/supabase/client.ts` - Supabase client to remove
 
 ### Secondary (MEDIUM confidence)
+
 - [tRPC Server-Side Calls](https://trpc.io/docs/v10/server/server-side-calls) - createCallerFactory for testing
 - [tRPC File Uploads Discussion](https://github.com/trpc/trpc/discussions/1937) - Community patterns
 
 ### Tertiary (LOW confidence)
+
 - None - all research based on verified codebase analysis
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - No new packages, proven patterns from Phase 19-20
 - Architecture: HIGH - Clear migration path from existing REST routes to tRPC
 - Pitfalls: HIGH - Based on codebase analysis of actual Supabase usage patterns
 - Migration strategy: HIGH - Systematic approach with verification gates
 
 **Scope Analysis:**
+
 - Backend routers to create: 8
 - Frontend files to migrate: ~100
 - REST routes to keep: 6 (webhooks)

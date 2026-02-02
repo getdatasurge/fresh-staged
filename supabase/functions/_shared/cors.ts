@@ -8,7 +8,11 @@
  */
 
 // Allowed origins from environment (comma-separated) or default to wildcard for dev
-const allowedOrigins = Deno.env.get("CORS_ORIGINS")?.split(",").map((o) => o.trim()) || [];
+const allowedOrigins =
+  Deno.env
+    .get('CORS_ORIGINS')
+    ?.split(',')
+    .map((o) => o.trim()) || [];
 
 /**
  * Get CORS headers for a specific request origin
@@ -16,7 +20,7 @@ const allowedOrigins = Deno.env.get("CORS_ORIGINS")?.split(",").map((o) => o.tri
  * Falls back to "*" only if no CORS_ORIGINS is configured (development mode)
  */
 export function getCorsHeaders(requestOrigin?: string | null): Record<string, string> {
-  let origin = "*";
+  let origin = '*';
 
   if (allowedOrigins.length > 0) {
     // Production: only allow configured origins
@@ -29,10 +33,11 @@ export function getCorsHeaders(requestOrigin?: string | null): Record<string, st
   }
 
   return {
-    "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-sync-api-key",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Credentials": "true",
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Headers':
+      'authorization, x-client-info, apikey, content-type, x-sync-api-key',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Credentials': 'true',
   };
 }
 

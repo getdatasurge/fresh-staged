@@ -1,30 +1,23 @@
-import DashboardLayout from "@/components/DashboardLayout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import DashboardLayout from '@/components/DashboardLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useSuperAdmin } from "@/contexts/SuperAdminContext";
-import { useToast } from "@/hooks/use-toast";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import { useTRPC } from "@/lib/trpc";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-    Building2,
-    ChevronRight,
-    Loader2,
-    MapPin,
-    Plus,
-    Thermometer
-} from "lucide-react";
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useSuperAdmin } from '@/contexts/SuperAdminContext';
+import { useToast } from '@/hooks/use-toast';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { useTRPC } from '@/lib/trpc';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Building2, ChevronRight, Loader2, MapPin, Plus, Thermometer } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 interface Site {
   id: string;
@@ -42,30 +35,30 @@ const Sites = () => {
   const { effectiveOrgId, isInitialized, isImpersonating } = useEffectiveIdentity();
   const { isSupportModeActive } = useSuperAdmin();
   const trpc = useTRPC();
-  
+
   const sitesQuery = useQuery(
     trpc.sites.list.queryOptions(
-      { organizationId: effectiveOrgId || "" },
-      { enabled: !!effectiveOrgId }
-    )
+      { organizationId: effectiveOrgId || '' },
+      { enabled: !!effectiveOrgId },
+    ),
   );
 
   const createSiteMutation = useMutation(trpc.sites.create.mutationOptions());
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
-    address: "",
-    city: "",
-    state: "",
-    postal_code: "",
+    name: '',
+    address: '',
+    city: '',
+    state: '',
+    postal_code: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Map tRPC sites to local format
   const sites = useMemo(() => {
     if (!sitesQuery.data) return [];
-    return sitesQuery.data.map(s => ({
+    return sitesQuery.data.map((s) => ({
       id: s.id,
       name: s.name,
       address: s.address,
@@ -77,34 +70,35 @@ const Sites = () => {
     }));
   }, [sitesQuery.data]);
 
-  const isLoading = isInitialized && (sitesQuery.isLoading || (isSupportModeActive && !effectiveOrgId));
+  const isLoading =
+    isInitialized && (sitesQuery.isLoading || (isSupportModeActive && !effectiveOrgId));
 
   const handleCreate = async () => {
     if (!formData.name.trim()) {
-      toast({ title: "Site name is required", variant: "destructive" });
+      toast({ title: 'Site name is required', variant: 'destructive' });
       return;
     }
 
     setIsSubmitting(true);
     try {
       await createSiteMutation.mutateAsync({
-        organizationId: effectiveOrgId || "",
+        organizationId: effectiveOrgId || '',
         data: {
           name: formData.name,
           address: formData.address || null,
           city: formData.city || null,
           state: formData.state || null,
           postalCode: formData.postal_code || null,
-        }
+        },
       });
 
-      toast({ title: "Site created successfully" });
-      setFormData({ name: "", address: "", city: "", state: "", postal_code: "" });
+      toast({ title: 'Site created successfully' });
+      setFormData({ name: '', address: '', city: '', state: '', postal_code: '' });
       setDialogOpen(false);
       sitesQuery.refetch();
     } catch (error) {
-      console.error("Error creating site:", error);
-      toast({ title: "Failed to create site", variant: "destructive" });
+      console.error('Error creating site:', error);
+      toast({ title: 'Failed to create site', variant: 'destructive' });
     }
     setIsSubmitting(false);
   };
@@ -114,7 +108,9 @@ const Sites = () => {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <p className="text-muted-foreground">Manage your locations and their refrigeration units</p>
+          <p className="text-muted-foreground">
+            Manage your locations and their refrigeration units
+          </p>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-accent hover:bg-accent/90 text-accent-foreground">
@@ -178,8 +174,8 @@ const Sites = () => {
                   <Button variant="outline" onClick={() => setDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button 
-                    onClick={handleCreate} 
+                  <Button
+                    onClick={handleCreate}
                     disabled={isSubmitting}
                     className="bg-accent hover:bg-accent/90"
                   >
@@ -211,7 +207,7 @@ const Sites = () => {
                         <div>
                           <h3 className="font-semibold text-foreground">{site.name}</h3>
                           <p className="text-sm text-muted-foreground">
-                            {[site.city, site.state].filter(Boolean).join(", ") || "No address set"}
+                            {[site.city, site.state].filter(Boolean).join(', ') || 'No address set'}
                           </p>
                         </div>
                       </div>
@@ -244,7 +240,7 @@ const Sites = () => {
               <p className="text-muted-foreground text-center max-w-md mb-6">
                 Create your first site to start organizing your refrigeration monitoring.
               </p>
-              <Button 
+              <Button
                 onClick={() => setDialogOpen(true)}
                 className="bg-accent hover:bg-accent/90 text-accent-foreground"
               >

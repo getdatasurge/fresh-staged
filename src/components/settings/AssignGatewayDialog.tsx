@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useUpdateGateway } from "@/hooks/useGateways";
-import { Gateway } from "@/types/ttn";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useUpdateGateway } from '@/hooks/useGateways';
+import { Gateway } from '@/types/ttn';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,9 +9,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Radio } from "lucide-react";
+} from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Loader2, Radio } from 'lucide-react';
 
 interface AssignGatewayDialogProps {
   open: boolean;
@@ -33,7 +33,7 @@ export function AssignGatewayDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const formatEUI = (eui: string) => {
-    return eui.match(/.{1,2}/g)?.join(":") || eui;
+    return eui.match(/.{1,2}/g)?.join(':') || eui;
   };
 
   const toggleSelection = (id: string) => {
@@ -50,16 +50,16 @@ export function AssignGatewayDialog({
 
   const handleAssign = async () => {
     if (selectedIds.size === 0) return;
-    
+
     setIsSubmitting(true);
     try {
       await Promise.all(
         Array.from(selectedIds).map((id) =>
           updateGateway.mutateAsync({
             id,
-            updates: { site_id: siteId, status: "pending" },
-          })
-        )
+            updates: { site_id: siteId, status: 'pending' },
+          }),
+        ),
       );
       setSelectedIds(new Set());
       onOpenChange(false);
@@ -80,9 +80,7 @@ export function AssignGatewayDialog({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Assign Gateways</DialogTitle>
-          <DialogDescription>
-            Select gateways to assign to {siteName}.
-          </DialogDescription>
+          <DialogDescription>Select gateways to assign to {siteName}.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2 max-h-[300px] overflow-y-auto py-2">
@@ -111,9 +109,7 @@ export function AssignGatewayDialog({
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Radio className="w-8 h-8 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">
-                No unassigned gateways available
-              </p>
+              <p className="text-sm text-muted-foreground">No unassigned gateways available</p>
               <p className="text-xs text-muted-foreground mt-2 max-w-xs">
                 Sync from emulator or register a new gateway in Settings → Gateways
               </p>
@@ -125,17 +121,14 @@ export function AssignGatewayDialog({
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            onClick={handleAssign}
-            disabled={selectedIds.size === 0 || isSubmitting}
-          >
+          <Button onClick={handleAssign} disabled={selectedIds.size === 0 || isSubmitting}>
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Assigning...
               </>
             ) : (
-              `Assign ${selectedIds.size > 0 ? `(${selectedIds.size})` : ""}`
+              `Assign ${selectedIds.size > 0 ? `(${selectedIds.size})` : ''}`
             )}
           </Button>
         </DialogFooter>

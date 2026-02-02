@@ -6,7 +6,7 @@
     {
       "description": "Nested GPS object",
       "decoded_payload": {
-        "gps": { "lat": 40.7128, "lon": -74.0060 },
+        "gps": { "lat": 40.7128, "lon": -74.006 },
         "battery_level": 80
       }
     }

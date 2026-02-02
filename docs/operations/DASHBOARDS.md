@@ -75,12 +75,12 @@ graph TB
 
 #### What It Shows
 
-| Section | Information | Update Frequency |
-|---------|-------------|------------------|
-| Overall Status | System health summary | 1 minute (auto-refresh) |
-| Category Breakdown | Database, Edge Functions, TTN, Overall | 1 minute |
-| Check List | Individual check results | 1 minute |
-| Latency Display | Response times per check | Per check |
+| Section            | Information                            | Update Frequency        |
+| ------------------ | -------------------------------------- | ----------------------- |
+| Overall Status     | System health summary                  | 1 minute (auto-refresh) |
+| Category Breakdown | Database, Edge Functions, TTN, Overall | 1 minute                |
+| Check List         | Individual check results               | 1 minute                |
+| Latency Display    | Response times per check               | Per check               |
 
 #### Visual Elements
 
@@ -109,11 +109,11 @@ TTN Integration
 
 #### Refresh Controls
 
-| Control | Behavior |
-|---------|----------|
-| Auto-refresh | 1-minute interval (toggle) |
-| Quick check | 5-minute interval for header badge |
-| Manual refresh | Click to run all checks |
+| Control        | Behavior                           |
+| -------------- | ---------------------------------- |
+| Auto-refresh   | 1-minute interval (toggle)         |
+| Quick check    | 5-minute interval for header badge |
+| Manual refresh | Click to run all checks            |
 
 ---
 
@@ -125,14 +125,14 @@ TTN Integration
 
 #### What It Shows
 
-| Tab | Contents |
-|-----|----------|
-| **Events** | All logged events |
-| **CRUD** | Database operations |
-| **Network** | Edge function calls |
-| **Sync** | Data synchronization |
-| **TTN** | TTN-related operations |
-| **Errors** | Error-level logs only |
+| Tab         | Contents               |
+| ----------- | ---------------------- |
+| **Events**  | All logged events      |
+| **CRUD**    | Database operations    |
+| **Network** | Edge function calls    |
+| **Sync**    | Data synchronization   |
+| **TTN**     | TTN-related operations |
+| **Errors**  | Error-level logs only  |
 
 #### Log Entry Details
 
@@ -146,14 +146,14 @@ TTN Integration
 
 #### Controls
 
-| Control | Function |
-|---------|----------|
-| Pause/Resume | Stop/start log collection |
-| Clear | Empty the log buffer |
-| Auto-scroll | Follow new entries |
-| Export JSON | Download full log |
+| Control          | Function                    |
+| ---------------- | --------------------------- |
+| Pause/Resume     | Stop/start log collection   |
+| Clear            | Empty the log buffer        |
+| Auto-scroll      | Follow new entries          |
+| Export JSON      | Download full log           |
 | Support Snapshot | Redacted export for support |
-| Filter | By level, category, search |
+| Filter           | By level, category, search  |
 
 ---
 
@@ -165,12 +165,12 @@ TTN Integration
 
 #### What It Shows
 
-| Section | Information |
-|---------|-------------|
-| Temperature Logs | Manual and sensor readings |
-| Exception Logs | Alerts, violations, issues |
-| Corrective Actions | Responses to exceptions |
-| Monitoring Gaps | Periods without data |
+| Section            | Information                |
+| ------------------ | -------------------------- |
+| Temperature Logs   | Manual and sensor readings |
+| Exception Logs     | Alerts, violations, issues |
+| Corrective Actions | Responses to exceptions    |
+| Monitoring Gaps    | Periods without data       |
 
 #### Filters Available
 
@@ -196,15 +196,15 @@ TTN Integration
 
 All business events from `event_logs` table:
 
-| Event Category | Examples |
-|----------------|----------|
-| Device | sensor_paired, reading_received, device_offline |
-| Alert | created, activated, acknowledged, resolved |
-| Compliance | manual_temp_logged, excursion_started |
-| Settings | unit_settings_updated, alert_rules_updated |
-| Notification | sent, failed, delivered |
-| TTN | settings.updated, .enabled, .tested |
-| System | user_login, report_exported |
+| Event Category | Examples                                        |
+| -------------- | ----------------------------------------------- |
+| Device         | sensor_paired, reading_received, device_offline |
+| Alert          | created, activated, acknowledged, resolved      |
+| Compliance     | manual_temp_logged, excursion_started           |
+| Settings       | unit_settings_updated, alert_rules_updated      |
+| Notification   | sent, failed, delivered                         |
+| TTN            | settings.updated, .enabled, .tested             |
+| System         | user_login, report_exported                     |
 
 #### Display Features
 
@@ -224,11 +224,11 @@ All business events from `event_logs` table:
 
 #### What It Shows
 
-| Section | Information |
-|---------|-------------|
-| Orphan Organizations | Orgs with no active users |
-| Cleanup Jobs | Background job status |
-| Data Integrity | Referential integrity checks |
+| Section              | Information                  |
+| -------------------- | ---------------------------- |
+| Orphan Organizations | Orgs with no active users    |
+| Cleanup Jobs         | Background job status        |
+| Data Integrity       | Referential integrity checks |
 
 #### Actions Available
 
@@ -248,34 +248,34 @@ Access via: https://supabase.com/dashboard/project/{project-id}
 
 #### Database
 
-| View | Information |
-|------|-------------|
-| Table Editor | Browse/edit data |
-| SQL Editor | Run queries |
+| View            | Information      |
+| --------------- | ---------------- |
+| Table Editor    | Browse/edit data |
+| SQL Editor      | Run queries      |
 | Database Health | Connection stats |
 
 #### Edge Functions
 
-| View | Information |
-|------|-------------|
-| Function List | All deployed functions |
-| Logs | Real-time function logs |
-| Metrics | Invocations, latency, errors |
+| View          | Information                  |
+| ------------- | ---------------------------- |
+| Function List | All deployed functions       |
+| Logs          | Real-time function logs      |
+| Metrics       | Invocations, latency, errors |
 
 #### Authentication
 
-| View | Information |
-|------|-------------|
-| Users | Registered users |
-| Sessions | Active sessions |
-| Logs | Auth events |
+| View     | Information      |
+| -------- | ---------------- |
+| Users    | Registered users |
+| Sessions | Active sessions  |
+| Logs     | Auth events      |
 
 #### Storage
 
-| View | Information |
-|------|-------------|
-| Buckets | File storage |
-| Usage | Storage metrics |
+| View    | Information     |
+| ------- | --------------- |
+| Buckets | File storage    |
+| Usage   | Storage metrics |
 
 ---
 
@@ -306,13 +306,13 @@ Access via: https://supabase.com/dashboard/project/{project-id}
 
 #### Recommended Implementation
 
-| Component | Tool | Data Source |
-|-----------|------|-------------|
-| System Health | Health check API | `/functions/v1/health-check` |
-| Alert Summary | Database query | `alerts` table |
-| Integration Status | Health checks | TTN, Stripe checks |
-| Key Metrics | Database queries | Aggregated data |
-| Recent Events | Event logs | `event_logs` table |
+| Component          | Tool             | Data Source                  |
+| ------------------ | ---------------- | ---------------------------- |
+| System Health      | Health check API | `/functions/v1/health-check` |
+| Alert Summary      | Database query   | `alerts` table               |
+| Integration Status | Health checks    | TTN, Stripe checks           |
+| Key Metrics        | Database queries | Aggregated data              |
+| Recent Events      | Event logs       | `event_logs` table           |
 
 ---
 
@@ -372,14 +372,14 @@ Access via: https://supabase.com/dashboard/project/{project-id}
 
 ## Dashboard Access Matrix
 
-| Dashboard | Owner | Admin | Manager | Staff | Viewer |
-|-----------|:-----:|:-----:|:-------:|:-----:|:------:|
-| Health Dashboard | ✓ | ✓ | - | - | - |
-| Debug Terminal | ✓ | ✓ | ✓ | - | - |
-| Inspector | ✓ | ✓ | - | - | ✓ |
-| Event History | ✓ | ✓ | - | - | - |
-| Data Maintenance | ✓ | ✓ | - | - | - |
-| Supabase Dashboard | Infra team only | - | - | - | - |
+| Dashboard          |      Owner      | Admin | Manager | Staff | Viewer |
+| ------------------ | :-------------: | :---: | :-----: | :---: | :----: |
+| Health Dashboard   |        ✓        |   ✓   |    -    |   -   |   -    |
+| Debug Terminal     |        ✓        |   ✓   |    ✓    |   -   |   -    |
+| Inspector          |        ✓        |   ✓   |    -    |   -   |   ✓    |
+| Event History      |        ✓        |   ✓   |    -    |   -   |   -    |
+| Data Maintenance   |        ✓        |   ✓   |    -    |   -   |   -    |
+| Supabase Dashboard | Infra team only |   -   |    -    |   -   |   -    |
 
 ---
 
@@ -387,21 +387,21 @@ Access via: https://supabase.com/dashboard/project/{project-id}
 
 ### Application Dashboards
 
-| Dashboard | URL Path |
-|-----------|----------|
-| Health Dashboard | `/admin/health` |
-| Inspector | `/inspector` |
-| Event History | `/event-history` |
+| Dashboard        | URL Path             |
+| ---------------- | -------------------- |
+| Health Dashboard | `/admin/health`      |
+| Inspector        | `/inspector`         |
+| Event History    | `/event-history`     |
 | Data Maintenance | `/admin/maintenance` |
 
 ### External Dashboards
 
-| Dashboard | URL |
-|-----------|-----|
-| Supabase | `https://supabase.com/dashboard/project/{id}` |
+| Dashboard   | URL                                                                 |
+| ----------- | ------------------------------------------------------------------- |
+| Supabase    | `https://supabase.com/dashboard/project/{id}`                       |
 | TTN Console | `https://nam1.cloud.thethings.network/console` (or region-specific) |
-| Stripe | `https://dashboard.stripe.com` |
-| Resend | `https://resend.com/emails` |
+| Stripe      | `https://dashboard.stripe.com`                                      |
+| Resend      | `https://resend.com/emails`                                         |
 
 ---
 

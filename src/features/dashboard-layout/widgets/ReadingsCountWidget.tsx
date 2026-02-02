@@ -1,6 +1,6 @@
 /**
  * Readings Count Widget
- * 
+ *
  * Displays the count of sensor readings in the current time period.
  * Note: Card wrapper is provided by WidgetWrapper.
  */

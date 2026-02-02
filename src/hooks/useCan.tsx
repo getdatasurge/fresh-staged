@@ -39,14 +39,10 @@ export function PermissionProvider({ children }: { children: React.ReactNode }) 
 
   const value = useMemo(
     () => ({ role, isLoading, organizationId }),
-    [role, isLoading, organizationId]
+    [role, isLoading, organizationId],
   );
 
-  return (
-    <PermissionContext.Provider value={value}>
-      {children}
-    </PermissionContext.Provider>
-  );
+  return <PermissionContext.Provider value={value}>{children}</PermissionContext.Provider>;
 }
 
 /**
@@ -107,7 +103,11 @@ export function useCanAll(permissions: Permission[]): { allowed: boolean; isLoad
  * Hook to get the current user's role
  * @returns Object with role, isLoading, and organizationId
  */
-export function useCurrentRole(): { role: Role | null; isLoading: boolean; organizationId: string | null } {
+export function useCurrentRole(): {
+  role: Role | null;
+  isLoading: boolean;
+  organizationId: string | null;
+} {
   return usePermissionContext();
 }
 
@@ -193,7 +193,13 @@ interface CanProps {
  *   <ExportButton />
  * </Can>
  */
-export function Can({ permission, mode = 'any', children, fallback = null, showLoading = false }: CanProps) {
+export function Can({
+  permission,
+  mode = 'any',
+  children,
+  fallback = null,
+  showLoading = false,
+}: CanProps) {
   const { role, isLoading } = usePermissionContext();
 
   if (isLoading && showLoading) {
@@ -277,10 +283,11 @@ export function WithPermissionTooltip({
   }
 
   // Find the minimum role required for this permission
-  const requiredRole = (['owner', 'admin', 'manager', 'staff', 'viewer', 'inspector'] as Role[]).find(
-    r => can(r, permission)
-  );
-  const message = deniedMessage || `Requires ${requiredRole ? ROLE_CONFIG[requiredRole].label : 'higher'} role`;
+  const requiredRole = (
+    ['owner', 'admin', 'manager', 'staff', 'viewer', 'inspector'] as Role[]
+  ).find((r) => can(r, permission));
+  const message =
+    deniedMessage || `Requires ${requiredRole ? ROLE_CONFIG[requiredRole].label : 'higher'} role`;
 
   return (
     <TooltipProvider>

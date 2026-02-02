@@ -17,24 +17,24 @@ export interface ActionEligibility {
  */
 export type ActionCode =
   // General
-  | "ALLOWED"
-  | "PERMISSION_DENIED"
+  | 'ALLOWED'
+  | 'PERMISSION_DENIED'
   // TTN related
-  | "TTN_NOT_CONFIGURED"
-  | "TTN_MISSING_API_KEY"
-  | "TTN_MISSING_APPLICATION"
-  | "TTN_WRONG_KEY_TYPE"
-  | "TTN_MISSING_GATEWAY_RIGHTS"
+  | 'TTN_NOT_CONFIGURED'
+  | 'TTN_MISSING_API_KEY'
+  | 'TTN_MISSING_APPLICATION'
+  | 'TTN_WRONG_KEY_TYPE'
+  | 'TTN_MISSING_GATEWAY_RIGHTS'
   // Sensor specific
-  | "MISSING_DEV_EUI"
-  | "MISSING_APP_KEY"
-  | "SENSOR_ALREADY_PROVISIONED"
+  | 'MISSING_DEV_EUI'
+  | 'MISSING_APP_KEY'
+  | 'SENSOR_ALREADY_PROVISIONED'
   // Gateway specific
-  | "MISSING_GATEWAY_EUI"
-  | "GATEWAY_ALREADY_PROVISIONED"
+  | 'MISSING_GATEWAY_EUI'
+  | 'GATEWAY_ALREADY_PROVISIONED'
   // Status related
-  | "INVALID_STATUS"
-  | "IN_PROGRESS";
+  | 'INVALID_STATUS'
+  | 'IN_PROGRESS';
 
 /**
  * TTN configuration state used by eligibility helpers.
@@ -44,8 +44,8 @@ export interface TTNConfigState {
   hasApiKey?: boolean;
   applicationId?: string | null;
   // New fields for gateway provisioning
-  ownerScope?: "user" | "organization" | null;
-  credentialType?: "personal_api_key" | "organization_api_key" | "application_api_key" | null;
+  ownerScope?: 'user' | 'organization' | null;
+  credentialType?: 'personal_api_key' | 'organization_api_key' | 'application_api_key' | null;
   gatewayRightsVerified?: boolean;
 }
 

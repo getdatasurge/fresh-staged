@@ -18,7 +18,7 @@ import {
   getGeneratedTimestamp,
   logSuccess,
   logInfo,
-  logHeader
+  logHeader,
 } from './utils.js';
 
 async function generateDocsMap() {
@@ -32,7 +32,7 @@ async function generateDocsMap() {
     ...(generatedTimestamp ? { generated: generatedTimestamp } : {}),
     totalFiles: files.length,
     categories: {},
-    files: []
+    files: [],
   };
 
   for (const filePath of files) {
@@ -45,10 +45,12 @@ async function generateDocsMap() {
       path: relativePath,
       title,
       category,
-      headings: headings.filter(h => h.level <= 2).map(h => ({
-        text: h.text,
-        anchor: h.anchor
-      }))
+      headings: headings
+        .filter((h) => h.level <= 2)
+        .map((h) => ({
+          text: h.text,
+          anchor: h.anchor,
+        })),
     };
 
     docsMap.files.push(fileInfo);
@@ -58,12 +60,12 @@ async function generateDocsMap() {
       docsMap.categories[category] = {
         name: CATEGORY_INFO[category]?.name || category,
         order: CATEGORY_INFO[category]?.order || 99,
-        files: []
+        files: [],
       };
     }
     docsMap.categories[category].files.push({
       path: relativePath,
-      title
+      title,
     });
   }
 

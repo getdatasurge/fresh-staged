@@ -1,15 +1,15 @@
-import DashboardLayout from "@/components/DashboardLayout"
-import { RBACDebugPanel } from "@/components/debug/RBACDebugPanel"
-import LogTempModal, { LogTempUnit } from "@/components/LogTempModal"
-import { Badge as UIBadge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
-import { useUnitAlerts } from "@/hooks/useUnitAlerts"
-import { computeUnitStatus, UnitStatusInfo } from "@/hooks/useUnitStatus"
-import { useTRPC } from "@/lib/trpc"
-import { useUser } from "@stackframe/react"
-import { formatDistanceToNow } from "date-fns"
+import DashboardLayout from '@/components/DashboardLayout';
+import { RBACDebugPanel } from '@/components/debug/RBACDebugPanel';
+import LogTempModal, { LogTempUnit } from '@/components/LogTempModal';
+import { Badge as UIBadge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { useUnitAlerts } from '@/hooks/useUnitAlerts';
+import { computeUnitStatus, UnitStatusInfo } from '@/hooks/useUnitStatus';
+import { useTRPC } from '@/lib/trpc';
+import { useUser } from '@stackframe/react';
+import { formatDistanceToNow } from 'date-fns';
 import {
   AlertCircle,
   AlertTriangle,
@@ -25,10 +25,10 @@ import {
   Thermometer,
   Wifi,
   WifiOff,
-} from "lucide-react"
-import { useQuery } from "@tanstack/react-query"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+} from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface DashboardStats {
   totalUnits: number;
@@ -37,7 +37,7 @@ interface DashboardStats {
   totalSites: number;
 }
 
-import { STATUS_CONFIG } from "@/lib/statusConfig"
+import { STATUS_CONFIG } from '@/lib/statusConfig';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -48,16 +48,16 @@ const Dashboard = () => {
   // Queries
   const statsQuery = useQuery(
     trpc.organizations.stats.queryOptions(
-      { organizationId: effectiveOrgId || "" },
-      { enabled: !!effectiveOrgId }
-    )
+      { organizationId: effectiveOrgId || '' },
+      { enabled: !!effectiveOrgId },
+    ),
   );
 
   const unitsQuery = useQuery(
     trpc.units.listByOrg.queryOptions(
-      { organizationId: effectiveOrgId || "" },
-      { enabled: !!effectiveOrgId }
-    )
+      { organizationId: effectiveOrgId || '' },
+      { enabled: !!effectiveOrgId },
+    ),
   );
 
   const [isLoading, setIsLoading] = useState(true);
@@ -70,8 +70,8 @@ const Dashboard = () => {
   // Map tRPC units to local format
   const units = useMemo(() => {
     if (!unitsQuery.data) return [];
-    
-    return unitsQuery.data.map(u => ({
+
+    return unitsQuery.data.map((u) => ({
       id: u.id,
       name: u.name,
       unit_type: u.unitType,
@@ -97,25 +97,26 @@ const Dashboard = () => {
         temp_limit_low: u.tempMin,
         manual_log_cadence: u.manualMonitoringInterval || 240,
         last_manual_log_at: u.lastManualLogAt?.toISOString() || null,
-        area: { name: u.areaName, site: { name: u.siteName } }
-      } as any)
+        area: { name: u.areaName, site: { name: u.siteName } },
+      } as any),
     }));
   }, [unitsQuery.data]);
 
-  const unitsRequiringAction = useMemo(() => 
-    units.filter(u => u.computed.actionRequired),
-  [units]);
+  const unitsRequiringAction = useMemo(
+    () => units.filter((u) => u.computed.actionRequired),
+    [units],
+  );
 
   // Redirect to auth if not logged in
   useEffect(() => {
     if (!user) {
-      navigate("/auth", { replace: true });
+      navigate('/auth', { replace: true });
     }
   }, [user, navigate]);
 
   useEffect(() => {
     if (isInitialized && !effectiveOrgId) {
-      navigate("/auth/callback", { replace: true });
+      navigate('/auth/callback', { replace: true });
     }
     if (effectiveOrgId) {
       setOrganizationId(effectiveOrgId);
@@ -123,7 +124,7 @@ const Dashboard = () => {
   }, [effectiveOrgId, isInitialized, navigate]);
 
   useEffect(() => {
-    if (isInitialized && (!statsQuery.isLoading && !unitsQuery.isLoading)) {
+    if (isInitialized && !statsQuery.isLoading && !unitsQuery.isLoading) {
       setIsLoading(false);
     }
   }, [isInitialized, statsQuery.isLoading, unitsQuery.isLoading]);
@@ -148,22 +149,24 @@ const Dashboard = () => {
   const alertsSummary = useUnitAlerts(units);
 
   const formatTemp = (temp: number | null) => {
-    if (temp === null) return "--";
+    if (temp === null) return '--';
     return `${temp.toFixed(1)}°F`;
   };
 
   const getTimeAgo = (dateStr: string | null) => {
-    if (!dateStr) return "Never";
+    if (!dateStr) return 'Never';
     const diffMins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
-    if (diffMins < 1) return "Just now";
+    if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `${diffHours}h ago`;
     return `${Math.floor(diffHours / 24)}d ago`;
   };
 
-  const getComplianceBadge = (unit: UnitStatusInfo & { computed: ReturnType<typeof computeUnitStatus> }) => {
-    if (unit.status === "ok" && !unit.computed.actionRequired) {
+  const getComplianceBadge = (
+    unit: UnitStatusInfo & { computed: ReturnType<typeof computeUnitStatus> },
+  ) => {
+    if (unit.status === 'ok' && !unit.computed.actionRequired) {
       return (
         <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold gap-1 text-safe border-safe/30 bg-safe/5">
           <ShieldCheck className="w-3 h-3" />
@@ -177,7 +180,7 @@ const Dashboard = () => {
           Log Due
         </span>
       );
-    } else if (["alarm_active", "excursion"].includes(unit.status)) {
+    } else if (['alarm_active', 'excursion'].includes(unit.status)) {
       return (
         <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold gap-1 text-alarm border-alarm/30 bg-alarm/5">
           <ShieldAlert className="w-3 h-3" />
@@ -188,16 +191,15 @@ const Dashboard = () => {
     return null;
   };
 
-
   const getLastLogDisplay = (unit: UnitStatusInfo) => {
     if (!unit.last_manual_log_at) {
       return <span className="text-muted-foreground">No logs</span>;
     }
-    
+
     const computed = computeUnitStatus(unit);
 
     return (
-      <span className={computed.manualRequired ? "text-warning" : "text-muted-foreground"}>
+      <span className={computed.manualRequired ? 'text-warning' : 'text-muted-foreground'}>
         {formatDistanceToNow(new Date(unit.last_manual_log_at), { addSuffix: true })}
       </span>
     );
@@ -219,8 +221,6 @@ const Dashboard = () => {
     setModalOpen(true);
   };
 
-
-
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -235,7 +235,7 @@ const Dashboard = () => {
     <DashboardLayout>
       {/* RBAC Debug Panel - only visible with ?debug_rbac=1 */}
       <RBACDebugPanel />
-      
+
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card className="stat-card card-hover">
@@ -269,10 +269,18 @@ const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Alerts</p>
-                <p className={`text-3xl font-bold ${alertsSummary.totalCount > 0 ? "text-alarm" : "text-foreground"}`}>{alertsSummary.totalCount}</p>
+                <p
+                  className={`text-3xl font-bold ${alertsSummary.totalCount > 0 ? 'text-alarm' : 'text-foreground'}`}
+                >
+                  {alertsSummary.totalCount}
+                </p>
               </div>
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${alertsSummary.totalCount > 0 ? "bg-alarm/10" : "bg-muted"}`}>
-                <AlertTriangle className={`w-6 h-6 ${alertsSummary.totalCount > 0 ? "text-alarm" : "text-muted-foreground"}`} />
+              <div
+                className={`w-12 h-12 rounded-xl flex items-center justify-center ${alertsSummary.totalCount > 0 ? 'bg-alarm/10' : 'bg-muted'}`}
+              >
+                <AlertTriangle
+                  className={`w-6 h-6 ${alertsSummary.totalCount > 0 ? 'text-alarm' : 'text-muted-foreground'}`}
+                />
               </div>
             </div>
           </CardContent>
@@ -307,25 +315,37 @@ const Dashboard = () => {
               <CardContent>
                 <div className="grid gap-2">
                   {alertsSummary.alerts
-                    .filter(a => a.severity === "critical")
+                    .filter((a) => a.severity === 'critical')
                     .slice(0, 5)
                     .map((alert) => {
-                      const unit = units.find(u => u.id === alert.unit_id);
+                      const unit = units.find((u) => u.id === alert.unit_id);
                       if (!unit) return null;
-                      const showLogButton = alert.type === "MANUAL_REQUIRED";
-                      
+                      const showLogButton = alert.type === 'MANUAL_REQUIRED';
+
                       return (
-                        <div key={alert.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg bg-background hover:bg-muted/50 transition-colors">
-                          <Link to={`/units/${alert.unit_id}`} className="flex items-center gap-3 flex-1 min-w-0">
+                        <div
+                          key={alert.id}
+                          className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg bg-background hover:bg-muted/50 transition-colors"
+                        >
+                          <Link
+                            to={`/units/${alert.unit_id}`}
+                            className="flex items-center gap-3 flex-1 min-w-0"
+                          >
                             <div className="w-10 h-10 rounded-lg bg-alarm/10 flex items-center justify-center flex-shrink-0">
                               <Thermometer className="w-5 h-5 text-alarm" />
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-medium text-foreground">{alert.unit_name}</span>
-                                <UIBadge variant="destructive" className="text-xs">{alert.type === "MANUAL_REQUIRED" ? "Log Required" : "Alarm"}</UIBadge>
+                                <span className="font-medium text-foreground">
+                                  {alert.unit_name}
+                                </span>
+                                <UIBadge variant="destructive" className="text-xs">
+                                  {alert.type === 'MANUAL_REQUIRED' ? 'Log Required' : 'Alarm'}
+                                </UIBadge>
                               </div>
-                              <p className="text-xs text-muted-foreground">{alert.site_name} · {alert.area_name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {alert.site_name} · {alert.area_name}
+                              </p>
                               {/* Show message on mobile and desktop - no truncation */}
                               <p className="text-xs text-muted-foreground mt-1 break-words leading-relaxed">
                                 {alert.message}
@@ -368,14 +388,20 @@ const Dashboard = () => {
               <CardContent>
                 <div className="grid gap-2">
                   {alertsSummary.alerts
-                    .filter(a => a.severity === "warning")
+                    .filter((a) => a.severity === 'warning')
                     .slice(0, 5)
                     .map((alert) => {
                       return (
-                        <div key={alert.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg bg-background hover:bg-muted/50 transition-colors">
-                          <Link to={`/units/${alert.unit_id}`} className="flex items-center gap-3 flex-1 min-w-0">
+                        <div
+                          key={alert.id}
+                          className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg bg-background hover:bg-muted/50 transition-colors"
+                        >
+                          <Link
+                            to={`/units/${alert.unit_id}`}
+                            className="flex items-center gap-3 flex-1 min-w-0"
+                          >
                             <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center flex-shrink-0">
-                              {alert.type === "OFFLINE" ? (
+                              {alert.type === 'OFFLINE' ? (
                                 <WifiOff className="w-5 h-5 text-warning" />
                               ) : (
                                 <Thermometer className="w-5 h-5 text-warning" />
@@ -383,12 +409,19 @@ const Dashboard = () => {
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-medium text-foreground">{alert.unit_name}</span>
-                                <UIBadge variant="secondary" className="text-xs bg-warning/10 text-warning border-0">
-                                  {alert.type === "OFFLINE" ? "Offline" : "Excursion"}
+                                <span className="font-medium text-foreground">
+                                  {alert.unit_name}
+                                </span>
+                                <UIBadge
+                                  variant="secondary"
+                                  className="text-xs bg-warning/10 text-warning border-0"
+                                >
+                                  {alert.type === 'OFFLINE' ? 'Offline' : 'Excursion'}
                                 </UIBadge>
                               </div>
-                              <p className="text-xs text-muted-foreground">{alert.site_name} · {alert.area_name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {alert.site_name} · {alert.area_name}
+                              </p>
                               {/* Show message - no truncation, fully wrapping */}
                               <p className="text-xs text-muted-foreground mt-1 break-words leading-relaxed">
                                 {alert.message}
@@ -407,7 +440,6 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           )}
-
         </>
       )}
 
@@ -426,9 +458,8 @@ const Dashboard = () => {
           <div className="grid gap-3">
             {units.map((unit) => {
               // Use computed status when offline, otherwise use database status
-              const effectiveStatus = unit.computed.offlineSeverity !== 'none' 
-                ? 'offline' 
-                : unit.status;
+              const effectiveStatus =
+                unit.computed.offlineSeverity !== 'none' ? 'offline' : unit.status;
               const status = STATUS_CONFIG[effectiveStatus] || STATUS_CONFIG.offline;
               const isOnline = unit.computed.sensorOnline;
               return (
@@ -437,25 +468,39 @@ const Dashboard = () => {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-xl ${status.bgColor} flex items-center justify-center`}>
+                          <div
+                            className={`w-12 h-12 rounded-xl ${status.bgColor} flex items-center justify-center`}
+                          >
                             <Thermometer className={`w-6 h-6 ${status.color}`} />
                           </div>
                           <div>
                             <div className="flex items-center gap-2 flex-wrap">
                               <h3 className="font-semibold text-foreground">{unit.name}</h3>
-                              <span className={`text-xs px-2 py-0.5 rounded-full ${status.bgColor} ${status.color}`}>{status.label}</span>
+                              <span
+                                className={`text-xs px-2 py-0.5 rounded-full ${status.bgColor} ${status.color}`}
+                              >
+                                {status.label}
+                              </span>
                               {getComplianceBadge(unit)}
                             </div>
-                            <p className="text-sm text-muted-foreground">{unit.area.site.name} · {unit.area.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {unit.area.site.name} · {unit.area.name}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-6">
                           <div className="text-right hidden sm:block">
-                            <div className={`temp-display text-xl font-semibold ${unit.last_temp_reading && unit.last_temp_reading > unit.temp_limit_high ? "text-alarm" : status.color}`}>
+                            <div
+                              className={`temp-display text-xl font-semibold ${unit.last_temp_reading && unit.last_temp_reading > unit.temp_limit_high ? 'text-alarm' : status.color}`}
+                            >
                               {formatTemp(unit.last_temp_reading)}
                             </div>
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              {isOnline ? <Wifi className="w-3 h-3 text-safe" /> : <WifiOff className="w-3 h-3" />}
+                              {isOnline ? (
+                                <Wifi className="w-3 h-3 text-safe" />
+                              ) : (
+                                <WifiOff className="w-3 h-3" />
+                              )}
                               {getTimeAgo(unit.last_reading_at)}
                             </div>
                           </div>
@@ -464,9 +509,7 @@ const Dashboard = () => {
                               <ClipboardList className="w-3 h-3" />
                               Last Log
                             </div>
-                            <div className="text-xs">
-                              {getLastLogDisplay(unit)}
-                            </div>
+                            <div className="text-xs">{getLastLogDisplay(unit)}</div>
                           </div>
                           <ChevronRight className="w-5 h-5 text-muted-foreground" />
                         </div>

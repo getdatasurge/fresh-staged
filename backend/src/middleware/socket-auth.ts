@@ -76,7 +76,7 @@ export function setupSocketAuth(io: SocketIOServer): void {
         userId,
         userOrganization.organizationId,
         payload.email,
-        payload.name
+        payload.name,
       );
 
       // Populate socket.data with authenticated user context

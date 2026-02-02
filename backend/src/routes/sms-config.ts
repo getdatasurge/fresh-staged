@@ -7,11 +7,7 @@
 
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
-import {
-  requireAuth,
-  requireOrgContext,
-  requireRole,
-} from '../middleware/index.js';
+import { requireAuth, requireOrgContext, requireRole } from '../middleware/index.js';
 import * as smsConfigService from '../services/sms-config.service.js';
 import { validationError } from '../utils/errors.js';
 import {
@@ -38,9 +34,7 @@ export default async function smsConfigRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const config = await smsConfigService.getSmsConfig(
-        request.user!.organizationId!
-      );
+      const config = await smsConfigService.getSmsConfig(request.user!.organizationId!);
 
       if (!config) {
         return {
@@ -50,7 +44,7 @@ export default async function smsConfigRoutes(fastify: FastifyInstance) {
       }
 
       return config;
-    }
+    },
   );
 
   // POST /api/alerts/sms/config - Create or update SMS configuration
@@ -71,7 +65,7 @@ export default async function smsConfigRoutes(fastify: FastifyInstance) {
       try {
         const config = await smsConfigService.upsertSmsConfig(
           request.user!.organizationId!,
-          request.body
+          request.body,
         );
 
         return config;
@@ -81,6 +75,6 @@ export default async function smsConfigRoutes(fastify: FastifyInstance) {
         }
         throw error;
       }
-    }
+    },
   );
 }

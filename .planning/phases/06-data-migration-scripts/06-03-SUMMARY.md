@@ -32,16 +32,16 @@ key-files:
     - scripts/migration/package.json
 
 key-decisions:
-  - "90-day mapping retention with retainUntil timestamp in file"
-  - "Stack Auth user creation via REST API (POST /api/v1/users)"
-  - "Password migration not supported - users need password reset post-migration"
-  - "Case-insensitive email matching for existing user mapping"
-  - "100ms default rate limit between Stack Auth API calls"
+  - '90-day mapping retention with retainUntil timestamp in file'
+  - 'Stack Auth user creation via REST API (POST /api/v1/users)'
+  - 'Password migration not supported - users need password reset post-migration'
+  - 'Case-insensitive email matching for existing user mapping'
+  - '100ms default rate limit between Stack Auth API calls'
 
 patterns-established:
-  - "UserMapping interface: supabaseUserId, stackAuthUserId, email, migratedAt"
-  - "UserMappingFile structure with generatedAt and retainUntil metadata"
-  - "CLI pattern: commander with --dry-run, --input, --output options"
+  - 'UserMapping interface: supabaseUserId, stackAuthUserId, email, migratedAt'
+  - 'UserMappingFile structure with generatedAt and retainUntil metadata'
+  - 'CLI pattern: commander with --dry-run, --input, --output options'
 
 # Metrics
 duration: 4min
@@ -116,11 +116,11 @@ None - plan executed exactly as written.
 
 ## Key Links Verified
 
-| From | To | Via | Pattern |
-|------|-----|-----|---------|
-| migrate-users.ts | Stack Auth API | fetch POST /api/v1/users | `api.stack-auth.com.*users` |
-| map-users.ts | Stack Auth API | fetch GET /api/v1/users | `api.stack-auth.com.*users` |
-| user-mapping.ts | migration-data/user-mapping.json | file read/write | `user-mapping\.json` |
+| From             | To                               | Via                      | Pattern                     |
+| ---------------- | -------------------------------- | ------------------------ | --------------------------- |
+| migrate-users.ts | Stack Auth API                   | fetch POST /api/v1/users | `api.stack-auth.com.*users` |
+| map-users.ts     | Stack Auth API                   | fetch GET /api/v1/users  | `api.stack-auth.com.*users` |
+| user-mapping.ts  | migration-data/user-mapping.json | file read/write          | `user-mapping\.json`        |
 
 ## Next Phase Readiness
 
@@ -130,5 +130,6 @@ None - plan executed exactly as written.
 - Password reset communication should be planned before production migration
 
 ---
-*Phase: 06-data-migration-scripts*
-*Completed: 2026-01-23*
+
+_Phase: 06-data-migration-scripts_
+_Completed: 2026-01-23_

@@ -11,6 +11,7 @@ This phase implements REST API endpoints for the organizational hierarchy (organ
 The existing backend already has authentication (`requireAuth`), RBAC (`requireRole`), and organization context (`requireOrgContext`) middleware in place. The database schema (Drizzle ORM) for all four entity types is defined with proper relationships and cascade behaviors. The task is to build route handlers that leverage these existing patterns.
 
 **Key findings:**
+
 - Fastify's preHandler hooks provide clean middleware composition for auth/RBAC
 - Zod schemas enable type-safe validation with detailed error messages
 - Fastify-type-provider-zod bridges compile-time types with runtime validation
@@ -23,29 +24,33 @@ The existing backend already has authentication (`requireAuth`), RBAC (`requireR
 ## Standard Stack
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| Fastify | 5.x | HTTP server framework | High performance, TypeScript-first, rich plugin ecosystem, built-in schema validation |
-| Zod | 3.25+ | Request/response validation | TypeScript-first, composable schemas, excellent error messages, compile-time type inference |
-| fastify-type-provider-zod | Latest | Bridge Fastify & Zod | Type-safe request/response handling, enables schema validation with TypeScript inference |
-| Drizzle ORM | 0.38+ | Database queries | Type-safe queries, SQL-like API, excellent migration control, already integrated |
-| jose | 6.x | JWT validation | Standards-compliant JWT/JWKS handling, already used for auth middleware |
+
+| Library                   | Version | Purpose                     | Why Standard                                                                                |
+| ------------------------- | ------- | --------------------------- | ------------------------------------------------------------------------------------------- |
+| Fastify                   | 5.x     | HTTP server framework       | High performance, TypeScript-first, rich plugin ecosystem, built-in schema validation       |
+| Zod                       | 3.25+   | Request/response validation | TypeScript-first, composable schemas, excellent error messages, compile-time type inference |
+| fastify-type-provider-zod | Latest  | Bridge Fastify & Zod        | Type-safe request/response handling, enables schema validation with TypeScript inference    |
+| Drizzle ORM               | 0.38+   | Database queries            | Type-safe queries, SQL-like API, excellent migration control, already integrated            |
+| jose                      | 6.x     | JWT validation              | Standards-compliant JWT/JWKS handling, already used for auth middleware                     |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| @fastify/swagger | 8.x | API documentation | Auto-generate OpenAPI specs from Zod schemas (future phase) |
-| @fastify/cors | 9.x | CORS handling | Frontend communication (likely already configured) |
-| pino | 8.x | Structured logging | Request/response logging, error tracking (Fastify default) |
+
+| Library          | Version | Purpose            | When to Use                                                 |
+| ---------------- | ------- | ------------------ | ----------------------------------------------------------- |
+| @fastify/swagger | 8.x     | API documentation  | Auto-generate OpenAPI specs from Zod schemas (future phase) |
+| @fastify/cors    | 9.x     | CORS handling      | Frontend communication (likely already configured)          |
+| pino             | 8.x     | Structured logging | Request/response logging, error tracking (Fastify default)  |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Zod | JSON Schema (Ajv) | JSON Schema is Fastify's default but lacks TypeScript inference; Zod provides better DX |
-| fastify-type-provider-zod | fastify-zod-openapi | OpenAPI support adds complexity; defer until API documentation phase |
-| Cursor pagination | Offset pagination | Offset is simpler but causes page drift with frequent writes (unsuitable for multi-tenant) |
+
+| Instead of                | Could Use           | Tradeoff                                                                                   |
+| ------------------------- | ------------------- | ------------------------------------------------------------------------------------------ |
+| Zod                       | JSON Schema (Ajv)   | JSON Schema is Fastify's default but lacks TypeScript inference; Zod provides better DX    |
+| fastify-type-provider-zod | fastify-zod-openapi | OpenAPI support adds complexity; defer until API documentation phase                       |
+| Cursor pagination         | Offset pagination   | Offset is simpler but causes page drift with frequent writes (unsuitable for multi-tenant) |
 
 **Installation:**
+
 ```bash
 cd backend
 pnpm add zod fastify-type-provider-zod
@@ -54,6 +59,7 @@ pnpm add zod fastify-type-provider-zod
 ## Architecture Patterns
 
 ### Recommended Project Structure
+
 ```
 backend/src/
 ├── routes/
@@ -75,10 +81,12 @@ backend/src/
 ```
 
 ### Pattern 1: Route File Structure
+
 **What:** Each route file registers endpoints for one resource type with validation schemas
 **When to use:** All CRUD route files in this phase
 
 **Example:**
+
 ```typescript
 // Source: Fastify best practices + Context7
 import type { FastifyInstance } from 'fastify';
@@ -104,7 +112,7 @@ const CreateSiteSchema = SiteSchema.omit({
   id: true,
   organizationId: true,
   createdAt: true,
-  updatedAt: true
+  updatedAt: true,
 });
 
 const UpdateSiteSchema = CreateSiteSchema.partial();
@@ -118,119 +126,135 @@ export default async function sitesRoutes(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
 
   // List sites in organization
-  app.get('/:organizationId/sites', {
-    preHandler: [requireAuth, requireOrgContext],
-    schema: {
-      params: ParamsSchema,
-      response: {
-        200: z.array(SiteSchema)
-      }
-    }
-  }, async (request, reply) => {
-    const sites = await siteService.listSites(request.user!.organizationId!);
-    return sites;
-  });
+  app.get(
+    '/:organizationId/sites',
+    {
+      preHandler: [requireAuth, requireOrgContext],
+      schema: {
+        params: ParamsSchema,
+        response: {
+          200: z.array(SiteSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      const sites = await siteService.listSites(request.user!.organizationId!);
+      return sites;
+    },
+  );
 
   // Create site
-  app.post('/:organizationId/sites', {
-    preHandler: [requireAuth, requireOrgContext, requireRole('admin')],
-    schema: {
-      params: ParamsSchema,
-      body: CreateSiteSchema,
-      response: {
-        201: SiteSchema
-      }
-    }
-  }, async (request, reply) => {
-    const site = await siteService.createSite(
-      request.user!.organizationId!,
-      request.body
-    );
-    reply.code(201);
-    return site;
-  });
+  app.post(
+    '/:organizationId/sites',
+    {
+      preHandler: [requireAuth, requireOrgContext, requireRole('admin')],
+      schema: {
+        params: ParamsSchema,
+        body: CreateSiteSchema,
+        response: {
+          201: SiteSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const site = await siteService.createSite(request.user!.organizationId!, request.body);
+      reply.code(201);
+      return site;
+    },
+  );
 
   // Get single site
-  app.get('/:organizationId/sites/:siteId', {
-    preHandler: [requireAuth, requireOrgContext],
-    schema: {
-      params: ParamsSchema,
-      response: {
-        200: SiteSchema
+  app.get(
+    '/:organizationId/sites/:siteId',
+    {
+      preHandler: [requireAuth, requireOrgContext],
+      schema: {
+        params: ParamsSchema,
+        response: {
+          200: SiteSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const site = await siteService.getSite(request.params.siteId!, request.user!.organizationId!);
+
+      if (!site) {
+        return reply.code(404).send({
+          error: { code: 'NOT_FOUND', message: 'Site not found' },
+        });
       }
-    }
-  }, async (request, reply) => {
-    const site = await siteService.getSite(
-      request.params.siteId!,
-      request.user!.organizationId!
-    );
 
-    if (!site) {
-      return reply.code(404).send({
-        error: { code: 'NOT_FOUND', message: 'Site not found' }
-      });
-    }
-
-    return site;
-  });
+      return site;
+    },
+  );
 
   // Update site
-  app.put('/:organizationId/sites/:siteId', {
-    preHandler: [requireAuth, requireOrgContext, requireRole('admin')],
-    schema: {
-      params: ParamsSchema,
-      body: UpdateSiteSchema,
-      response: {
-        200: SiteSchema
+  app.put(
+    '/:organizationId/sites/:siteId',
+    {
+      preHandler: [requireAuth, requireOrgContext, requireRole('admin')],
+      schema: {
+        params: ParamsSchema,
+        body: UpdateSiteSchema,
+        response: {
+          200: SiteSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const site = await siteService.updateSite(
+        request.params.siteId!,
+        request.user!.organizationId!,
+        request.body,
+      );
+
+      if (!site) {
+        return reply.code(404).send({
+          error: { code: 'NOT_FOUND', message: 'Site not found' },
+        });
       }
-    }
-  }, async (request, reply) => {
-    const site = await siteService.updateSite(
-      request.params.siteId!,
-      request.user!.organizationId!,
-      request.body
-    );
 
-    if (!site) {
-      return reply.code(404).send({
-        error: { code: 'NOT_FOUND', message: 'Site not found' }
-      });
-    }
-
-    return site;
-  });
+      return site;
+    },
+  );
 
   // Delete site
-  app.delete('/:organizationId/sites/:siteId', {
-    preHandler: [requireAuth, requireOrgContext, requireRole('admin')],
-    schema: {
-      params: ParamsSchema,
-      response: {
-        204: z.void()
+  app.delete(
+    '/:organizationId/sites/:siteId',
+    {
+      preHandler: [requireAuth, requireOrgContext, requireRole('admin')],
+      schema: {
+        params: ParamsSchema,
+        response: {
+          204: z.void(),
+        },
+      },
+    },
+    async (request, reply) => {
+      const deleted = await siteService.deleteSite(
+        request.params.siteId!,
+        request.user!.organizationId!,
+      );
+
+      if (!deleted) {
+        return reply.code(404).send({
+          error: { code: 'NOT_FOUND', message: 'Site not found' },
+        });
       }
-    }
-  }, async (request, reply) => {
-    const deleted = await siteService.deleteSite(
-      request.params.siteId!,
-      request.user!.organizationId!
-    );
 
-    if (!deleted) {
-      return reply.code(404).send({
-        error: { code: 'NOT_FOUND', message: 'Site not found' }
-      });
-    }
-
-    reply.code(204);
-  });
+      reply.code(204);
+    },
+  );
 }
 ```
 
 ### Pattern 2: Service Layer with Drizzle ORM
+
 **What:** Service functions encapsulate database queries with proper error handling and authorization checks
 **When to use:** All database interactions in this phase
 
 **Example:**
+
 ```typescript
 // Source: Drizzle ORM documentation (orm.drizzle.team)
 import { db } from '../db/client.js';
@@ -239,17 +263,16 @@ import { eq, and } from 'drizzle-orm';
 
 export async function listSites(organizationId: string) {
   // Silent filtering - only return sites user has access to
-  return db.select()
+  return db
+    .select()
     .from(sites)
-    .where(and(
-      eq(sites.organizationId, organizationId),
-      eq(sites.isActive, true)
-    ))
+    .where(and(eq(sites.organizationId, organizationId), eq(sites.isActive, true)))
     .orderBy(sites.name);
 }
 
 export async function createSite(organizationId: string, data: InsertSite) {
-  const [site] = await db.insert(sites)
+  const [site] = await db
+    .insert(sites)
     .values({
       ...data,
       organizationId,
@@ -260,12 +283,10 @@ export async function createSite(organizationId: string, data: InsertSite) {
 }
 
 export async function getSite(siteId: string, organizationId: string) {
-  const [site] = await db.select()
+  const [site] = await db
+    .select()
     .from(sites)
-    .where(and(
-      eq(sites.id, siteId),
-      eq(sites.organizationId, organizationId)
-    ))
+    .where(and(eq(sites.id, siteId), eq(sites.organizationId, organizationId)))
     .limit(1);
 
   return site ?? null;
@@ -274,17 +295,15 @@ export async function getSite(siteId: string, organizationId: string) {
 export async function updateSite(
   siteId: string,
   organizationId: string,
-  data: Partial<InsertSite>
+  data: Partial<InsertSite>,
 ) {
-  const [site] = await db.update(sites)
+  const [site] = await db
+    .update(sites)
     .set({
       ...data,
       updatedAt: new Date(),
     })
-    .where(and(
-      eq(sites.id, siteId),
-      eq(sites.organizationId, organizationId)
-    ))
+    .where(and(eq(sites.id, siteId), eq(sites.organizationId, organizationId)))
     .returning();
 
   return site ?? null;
@@ -292,12 +311,10 @@ export async function updateSite(
 
 export async function deleteSite(siteId: string, organizationId: string) {
   // Soft delete by setting isActive = false
-  const [site] = await db.update(sites)
+  const [site] = await db
+    .update(sites)
     .set({ isActive: false, updatedAt: new Date() })
-    .where(and(
-      eq(sites.id, siteId),
-      eq(sites.organizationId, organizationId)
-    ))
+    .where(and(eq(sites.id, siteId), eq(sites.organizationId, organizationId)))
     .returning();
 
   return site ?? null;
@@ -314,10 +331,12 @@ export async function deleteSite(siteId: string, organizationId: string) {
 ```
 
 ### Pattern 3: Structured Error Responses
+
 **What:** Consistent error format following RFC 9457 Problem Details standard
 **When to use:** All error responses across all endpoints
 
 **Example:**
+
 ```typescript
 // Source: RFC 9457 + Fastify error handling best practices
 // Success response (200)
@@ -357,29 +376,44 @@ export async function deleteSite(siteId: string, organizationId: string) {
 ```
 
 ### Pattern 4: Middleware Composition
+
 **What:** Chain preHandler hooks in specific order for auth, org context, and RBAC
 **When to use:** All protected endpoints
 
 **Example:**
+
 ```typescript
 // Source: Existing middleware patterns + Fastify documentation
 // Read operations - any authenticated org member
-app.get('/orgs/:organizationId/sites', {
-  preHandler: [requireAuth, requireOrgContext]
-}, handler);
+app.get(
+  '/orgs/:organizationId/sites',
+  {
+    preHandler: [requireAuth, requireOrgContext],
+  },
+  handler,
+);
 
 // Write operations - admin or higher
-app.post('/orgs/:organizationId/sites', {
-  preHandler: [requireAuth, requireOrgContext, requireRole('admin')]
-}, handler);
+app.post(
+  '/orgs/:organizationId/sites',
+  {
+    preHandler: [requireAuth, requireOrgContext, requireRole('admin')],
+  },
+  handler,
+);
 
 // Owner-only operations
-app.delete('/orgs/:organizationId', {
-  preHandler: [requireAuth, requireOrgContext, requireRole('owner')]
-}, handler);
+app.delete(
+  '/orgs/:organizationId',
+  {
+    preHandler: [requireAuth, requireOrgContext, requireRole('owner')],
+  },
+  handler,
+);
 ```
 
 ### Anti-Patterns to Avoid
+
 - **Validation in route handlers:** Always use Zod schemas in the `schema` property, not manual validation
 - **Direct database queries in routes:** Always use service layer functions for database access
 - **Mixing authorization logic:** Don't duplicate RBAC checks; rely on middleware chain
@@ -390,30 +424,33 @@ app.delete('/orgs/:organizationId', {
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Request validation | Custom validators with if/else chains | Zod schemas with fastify-type-provider-zod | Handles type coercion, nested validation, custom refinements, and TypeScript inference |
-| Error response formatting | Ad-hoc error objects per endpoint | Standardized error schema following RFC 9457 | Consistency across API, easier client error handling, industry standard |
-| Pagination | Manual LIMIT/OFFSET queries | Cursor-based pagination with Drizzle | Prevents page drift, handles concurrent writes, better performance on large datasets |
-| UUID validation | Regex checks in handlers | Zod's z.string().uuid() | Handles RFC 4122 compliance, better error messages |
-| Authorization checks | Inline permission logic | requireRole() middleware | Centralized, auditable, prevents BOLA vulnerabilities |
-| Cascade deletes | Manual deletion of child records | Drizzle schema's onDelete: 'cascade' | Database-enforced referential integrity, atomic operations |
-| Transaction management | Manual BEGIN/COMMIT/ROLLBACK | Drizzle's db.transaction() | Automatic rollback on error, nested transaction support |
+| Problem                   | Don't Build                           | Use Instead                                  | Why                                                                                    |
+| ------------------------- | ------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Request validation        | Custom validators with if/else chains | Zod schemas with fastify-type-provider-zod   | Handles type coercion, nested validation, custom refinements, and TypeScript inference |
+| Error response formatting | Ad-hoc error objects per endpoint     | Standardized error schema following RFC 9457 | Consistency across API, easier client error handling, industry standard                |
+| Pagination                | Manual LIMIT/OFFSET queries           | Cursor-based pagination with Drizzle         | Prevents page drift, handles concurrent writes, better performance on large datasets   |
+| UUID validation           | Regex checks in handlers              | Zod's z.string().uuid()                      | Handles RFC 4122 compliance, better error messages                                     |
+| Authorization checks      | Inline permission logic               | requireRole() middleware                     | Centralized, auditable, prevents BOLA vulnerabilities                                  |
+| Cascade deletes           | Manual deletion of child records      | Drizzle schema's onDelete: 'cascade'         | Database-enforced referential integrity, atomic operations                             |
+| Transaction management    | Manual BEGIN/COMMIT/ROLLBACK          | Drizzle's db.transaction()                   | Automatic rollback on error, nested transaction support                                |
 
 **Key insight:** The combination of Zod validation, Drizzle ORM's type safety, and Fastify's middleware system handles most common REST API challenges. Custom implementations introduce bugs and maintenance burden.
 
 ## Common Pitfalls
 
 ### Pitfall 1: Broken Object Level Authorization (BOLA)
+
 **What goes wrong:** User modifies `organizationId` parameter to access another tenant's data
 **Why it happens:** Routes trust URL parameters without verifying user membership in that organization
 **How to avoid:**
+
 - ALWAYS use `requireOrgContext` middleware before any org-scoped route
 - NEVER trust organizationId from request body or query params
 - Service layer functions MUST filter by organizationId from `request.user.organizationId`
-**Warning signs:** Routes accessing org data without `requireOrgContext` in preHandler chain
+  **Warning signs:** Routes accessing org data without `requireOrgContext` in preHandler chain
 
 **Example of vulnerability:**
+
 ```typescript
 // VULNERABLE - no org context validation
 app.get('/sites/:siteId', async (request) => {
@@ -423,42 +460,43 @@ app.get('/sites/:siteId', async (request) => {
 });
 
 // SECURE - org context enforced
-app.get('/orgs/:organizationId/sites/:siteId', {
-  preHandler: [requireAuth, requireOrgContext]
-}, async (request) => {
-  // Only returns site if user is member of organization
-  const site = await siteService.getSite(
-    request.params.siteId,
-    request.user!.organizationId! // Validated by middleware
-  );
-  return site;
-});
+app.get(
+  '/orgs/:organizationId/sites/:siteId',
+  {
+    preHandler: [requireAuth, requireOrgContext],
+  },
+  async (request) => {
+    // Only returns site if user is member of organization
+    const site = await siteService.getSite(
+      request.params.siteId,
+      request.user!.organizationId!, // Validated by middleware
+    );
+    return site;
+  },
+);
 ```
 
 ### Pitfall 2: Insufficient Validation of Related Resources
+
 **What goes wrong:** Creating area with siteId from different organization, bypassing authorization
 **Why it happens:** Only validating parent resource (org) but not intermediate resources (site)
 **How to avoid:**
+
 - Verify entire hierarchy chain in service layer
 - For `POST /orgs/:orgId/sites/:siteId/areas`, verify site belongs to org before creating area
 - Use transactions to ensure atomic operations
-**Warning signs:** Hierarchical creates that only check top-level organizationId
+  **Warning signs:** Hierarchical creates that only check top-level organizationId
 
 **Example:**
+
 ```typescript
 // Service layer must verify hierarchy
-export async function createArea(
-  organizationId: string,
-  siteId: string,
-  data: InsertArea
-) {
+export async function createArea(organizationId: string, siteId: string, data: InsertArea) {
   // Verify site belongs to organization
-  const site = await db.select()
+  const site = await db
+    .select()
     .from(sites)
-    .where(and(
-      eq(sites.id, siteId),
-      eq(sites.organizationId, organizationId)
-    ))
+    .where(and(eq(sites.id, siteId), eq(sites.organizationId, organizationId)))
     .limit(1);
 
   if (!site.length) {
@@ -466,7 +504,8 @@ export async function createArea(
   }
 
   // Now safe to create area
-  const [area] = await db.insert(areas)
+  const [area] = await db
+    .insert(areas)
     .values({ ...data, siteId })
     .returning();
 
@@ -475,36 +514,43 @@ export async function createArea(
 ```
 
 ### Pitfall 3: Inconsistent Soft Delete Handling
+
 **What goes wrong:** Soft-deleted (isActive=false) records appear in lists or can be updated
 **Why it happens:** Forgetting to filter by `isActive` in every query
 **How to avoid:**
+
 - ALWAYS add `eq(table.isActive, true)` to WHERE clauses in list/get operations
 - Update operations should check isActive before allowing modifications
 - Consider Drizzle views or query helpers to enforce this automatically
-**Warning signs:** Queries without isActive filter, deleted records reappearing
+  **Warning signs:** Queries without isActive filter, deleted records reappearing
 
 ### Pitfall 4: N+1 Query Problem in Hierarchical Lists
+
 **What goes wrong:** Fetching 100 sites, then making 100 queries to count areas in each site
 **Why it happens:** Returning computed fields without using JOIN or subquery
 **How to avoid:**
+
 - If returning counts/aggregates, use Drizzle's `leftJoin` with aggregation
 - For simple listings, return IDs only; client can request details separately
 - Use `with` clause in Drizzle relational queries for intentional eager loading
-**Warning signs:** List endpoints taking seconds, database showing hundreds of simple queries
+  **Warning signs:** List endpoints taking seconds, database showing hundreds of simple queries
 
 ### Pitfall 5: Exposing Stack Traces in Error Responses
+
 **What goes wrong:** 500 errors return full stack traces with file paths and database details
 **Why it happens:** Default error handlers in development mode
 **How to avoid:**
+
 - Custom error handler that sanitizes errors in production
 - Log full errors server-side with trace IDs
 - Return generic "Internal Server Error" message to client
 - Include trace ID in response so support can look up details
-**Warning signs:** Error responses containing file paths, SQL queries, or environment details
+  **Warning signs:** Error responses containing file paths, SQL queries, or environment details
 
 ## Code Examples
 
 ### Example 1: Organization Update Endpoint
+
 ```typescript
 // Source: Fastify + Zod + Drizzle patterns
 import type { FastifyInstance } from 'fastify';
@@ -524,95 +570,96 @@ export default async function organizationsRoutes(fastify: FastifyInstance) {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
 
   // GET /api/orgs/:organizationId
-  app.get('/:organizationId', {
-    preHandler: [requireAuth, requireOrgContext],
-    schema: {
-      params: z.object({ organizationId: z.string().uuid() }),
-      response: {
-        200: z.object({
-          id: z.string().uuid(),
-          name: z.string(),
-          slug: z.string(),
-          timezone: z.string(),
-          complianceMode: z.enum(['standard', 'haccp', 'custom']),
-          sensorLimit: z.number(),
-          logoUrl: z.string().nullable(),
-          createdAt: z.date(),
-          updatedAt: z.date(),
-        })
+  app.get(
+    '/:organizationId',
+    {
+      preHandler: [requireAuth, requireOrgContext],
+      schema: {
+        params: z.object({ organizationId: z.string().uuid() }),
+        response: {
+          200: z.object({
+            id: z.string().uuid(),
+            name: z.string(),
+            slug: z.string(),
+            timezone: z.string(),
+            complianceMode: z.enum(['standard', 'haccp', 'custom']),
+            sensorLimit: z.number(),
+            logoUrl: z.string().nullable(),
+            createdAt: z.date(),
+            updatedAt: z.date(),
+          }),
+        },
+      },
+    },
+    async (request) => {
+      // Organization context already validated by middleware
+      const org = await orgService.getOrganization(request.user!.organizationId!);
+
+      if (!org) {
+        return request.reply.code(404).send({
+          error: { code: 'NOT_FOUND', message: 'Organization not found' },
+        });
       }
-    }
-  }, async (request) => {
-    // Organization context already validated by middleware
-    const org = await orgService.getOrganization(request.user!.organizationId!);
 
-    if (!org) {
-      return request.reply.code(404).send({
-        error: { code: 'NOT_FOUND', message: 'Organization not found' }
-      });
-    }
-
-    return org;
-  });
+      return org;
+    },
+  );
 
   // PUT /api/orgs/:organizationId
-  app.put('/:organizationId', {
-    preHandler: [requireAuth, requireOrgContext, requireRole('owner')],
-    schema: {
-      params: z.object({ organizationId: z.string().uuid() }),
-      body: UpdateOrgSchema,
-      response: {
-        200: z.object({
-          id: z.string().uuid(),
-          name: z.string(),
-          slug: z.string(),
-          timezone: z.string(),
-          complianceMode: z.enum(['standard', 'haccp', 'custom']),
-          sensorLimit: z.number(),
-          logoUrl: z.string().nullable(),
-          createdAt: z.date(),
-          updatedAt: z.date(),
-        })
+  app.put(
+    '/:organizationId',
+    {
+      preHandler: [requireAuth, requireOrgContext, requireRole('owner')],
+      schema: {
+        params: z.object({ organizationId: z.string().uuid() }),
+        body: UpdateOrgSchema,
+        response: {
+          200: z.object({
+            id: z.string().uuid(),
+            name: z.string(),
+            slug: z.string(),
+            timezone: z.string(),
+            complianceMode: z.enum(['standard', 'haccp', 'custom']),
+            sensorLimit: z.number(),
+            logoUrl: z.string().nullable(),
+            createdAt: z.date(),
+            updatedAt: z.date(),
+          }),
+        },
+      },
+    },
+    async (request) => {
+      const org = await orgService.updateOrganization(request.user!.organizationId!, request.body);
+
+      if (!org) {
+        return request.reply.code(404).send({
+          error: { code: 'NOT_FOUND', message: 'Organization not found' },
+        });
       }
-    }
-  }, async (request) => {
-    const org = await orgService.updateOrganization(
-      request.user!.organizationId!,
-      request.body
-    );
 
-    if (!org) {
-      return request.reply.code(404).send({
-        error: { code: 'NOT_FOUND', message: 'Organization not found' }
-      });
-    }
-
-    return org;
-  });
+      return org;
+    },
+  );
 }
 ```
 
 ### Example 2: Units CRUD with Full Hierarchy Validation
+
 ```typescript
 // Service layer for units (deepest hierarchy level)
 import { db } from '../db/client.js';
 import { units, areas, sites } from '../db/schema/index.js';
 import { eq, and } from 'drizzle-orm';
 
-export async function listUnits(
-  organizationId: string,
-  siteId: string,
-  areaId: string
-) {
+export async function listUnits(organizationId: string, siteId: string, areaId: string) {
   // Verify full hierarchy: org -> site -> area
-  const [area] = await db.select()
+  const [area] = await db
+    .select()
     .from(areas)
     .innerJoin(sites, eq(sites.id, areas.siteId))
-    .where(and(
-      eq(areas.id, areaId),
-      eq(areas.siteId, siteId),
-      eq(sites.organizationId, organizationId)
-    ))
+    .where(
+      and(eq(areas.id, areaId), eq(areas.siteId, siteId), eq(sites.organizationId, organizationId)),
+    )
     .limit(1);
 
   if (!area) {
@@ -620,12 +667,10 @@ export async function listUnits(
   }
 
   // Now safe to list units
-  return db.select()
+  return db
+    .select()
     .from(units)
-    .where(and(
-      eq(units.areaId, areaId),
-      eq(units.isActive, true)
-    ))
+    .where(and(eq(units.areaId, areaId), eq(units.isActive, true)))
     .orderBy(units.sortOrder);
 }
 
@@ -633,19 +678,22 @@ export async function createUnit(
   organizationId: string,
   siteId: string,
   areaId: string,
-  data: InsertUnit
+  data: InsertUnit,
 ) {
   // Use transaction to ensure atomicity
   return db.transaction(async (tx) => {
     // Verify hierarchy
-    const [area] = await tx.select()
+    const [area] = await tx
+      .select()
       .from(areas)
       .innerJoin(sites, eq(sites.id, areas.siteId))
-      .where(and(
-        eq(areas.id, areaId),
-        eq(areas.siteId, siteId),
-        eq(sites.organizationId, organizationId)
-      ))
+      .where(
+        and(
+          eq(areas.id, areaId),
+          eq(areas.siteId, siteId),
+          eq(sites.organizationId, organizationId),
+        ),
+      )
       .limit(1);
 
     if (!area) {
@@ -653,7 +701,8 @@ export async function createUnit(
     }
 
     // Create unit
-    const [unit] = await tx.insert(units)
+    const [unit] = await tx
+      .insert(units)
       .values({ ...data, areaId })
       .returning();
 
@@ -663,6 +712,7 @@ export async function createUnit(
 ```
 
 ### Example 3: Integration Test with Fastify inject()
+
 ```typescript
 // Source: Fastify testing documentation + Vitest
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -693,18 +743,20 @@ describe('Sites API', () => {
       method: 'GET',
       url: `/api/orgs/${organizationId}/sites`,
       headers: {
-        authorization: `Bearer ${authToken}`
-      }
+        authorization: `Bearer ${authToken}`,
+      },
     });
 
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        id: expect.any(String),
-        name: expect.any(String),
-        organizationId: organizationId
-      })
-    ]));
+    expect(response.json()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          name: expect.any(String),
+          organizationId: organizationId,
+        }),
+      ]),
+    );
   });
 
   it('should create site with valid data', async () => {
@@ -712,21 +764,21 @@ describe('Sites API', () => {
       method: 'POST',
       url: `/api/orgs/${organizationId}/sites`,
       headers: {
-        authorization: `Bearer ${authToken}`
+        authorization: `Bearer ${authToken}`,
       },
       payload: {
         name: 'Test Site',
         address: '123 Main St',
         city: 'Boston',
-        timezone: 'America/New_York'
-      }
+        timezone: 'America/New_York',
+      },
     });
 
     expect(response.statusCode).toBe(201);
     expect(response.json()).toMatchObject({
       name: 'Test Site',
       city: 'Boston',
-      organizationId: organizationId
+      organizationId: organizationId,
     });
   });
 
@@ -735,12 +787,12 @@ describe('Sites API', () => {
       method: 'POST',
       url: `/api/orgs/${organizationId}/sites`,
       headers: {
-        authorization: `Bearer ${authToken}`
+        authorization: `Bearer ${authToken}`,
       },
       payload: {
         name: '', // Invalid - empty string
-        timezone: 'Invalid/Timezone'
-      }
+        timezone: 'Invalid/Timezone',
+      },
     });
 
     expect(response.statusCode).toBe(400);
@@ -756,14 +808,14 @@ describe('Sites API', () => {
       method: 'GET',
       url: `/api/orgs/${otherOrgId}/sites`,
       headers: {
-        authorization: `Bearer ${authToken}`
-      }
+        authorization: `Bearer ${authToken}`,
+      },
     });
 
     expect(response.statusCode).toBe(403);
     expect(response.json()).toMatchObject({
       error: 'Forbidden',
-      message: 'No access to this organization'
+      message: 'No access to this organization',
     });
   });
 });
@@ -771,16 +823,17 @@ describe('Sites API', () => {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| JSON Schema validation | Zod with TypeScript inference | 2023 | Better DX, compile-time safety, composable schemas |
-| Offset pagination | Cursor-based pagination | Ongoing | Prevents page drift, better for real-time data |
-| Ad-hoc error formats | RFC 9457 Problem Details | 2023 | Standardized error handling, easier client integration |
-| Manual type guards | fastify-type-provider-zod | 2022 | Automatic type inference from schemas |
-| Prisma | Drizzle ORM | 2024 | Faster, lighter, SQL-like API, better migrations |
-| Express middleware | Fastify preHandler hooks | N/A | Async-first, better performance, plugin encapsulation |
+| Old Approach           | Current Approach              | When Changed | Impact                                                 |
+| ---------------------- | ----------------------------- | ------------ | ------------------------------------------------------ |
+| JSON Schema validation | Zod with TypeScript inference | 2023         | Better DX, compile-time safety, composable schemas     |
+| Offset pagination      | Cursor-based pagination       | Ongoing      | Prevents page drift, better for real-time data         |
+| Ad-hoc error formats   | RFC 9457 Problem Details      | 2023         | Standardized error handling, easier client integration |
+| Manual type guards     | fastify-type-provider-zod     | 2022         | Automatic type inference from schemas                  |
+| Prisma                 | Drizzle ORM                   | 2024         | Faster, lighter, SQL-like API, better migrations       |
+| Express middleware     | Fastify preHandler hooks      | N/A          | Async-first, better performance, plugin encapsulation  |
 
 **Deprecated/outdated:**
+
 - **Offset pagination for dynamic data:** Still common but causes page drift; cursor-based is now standard for multi-tenant
 - **Plain Express:** Fastify's performance and TypeScript support make it superior for new APIs
 - **Manual JWT verification:** jose library handles JWKS rotation and edge cases better
@@ -810,6 +863,7 @@ describe('Sites API', () => {
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - [Fastify official documentation](https://fastify.dev/docs/v5.2.x/Reference/Validation-and-Serialization) - Route validation and error handling
 - [Zod documentation](https://zod.dev/) - Schema validation and TypeScript integration
 - [Drizzle ORM documentation](https://orm.drizzle.team/) - CRUD operations and transactions
@@ -818,6 +872,7 @@ describe('Sites API', () => {
 - Context7 library ID: `/websites/orm_drizzle_team` - Drizzle ORM queries and transactions
 
 ### Secondary (MEDIUM confidence)
+
 - [Fastify + Zod integration guide](https://medium.com/@tomas.gabrs/building-a-fastify-application-with-zod-validation-in-an-nx-monorepo-7c49ed6d77be) - fastify-type-provider-zod setup
 - [fastify-type-provider-zod GitHub](https://github.com/turkerdev/fastify-type-provider-zod) - Type provider implementation
 - [REST API naming conventions](https://restfulapi.net/resource-naming/) - Resource naming best practices
@@ -829,11 +884,13 @@ describe('Sites API', () => {
 - [Fastify authorization middleware](https://www.permit.io/blog/how-to-create-an-authorization-middleware-for-fastify) - preHandler hook patterns
 
 ### Tertiary (LOW confidence)
+
 - None - all findings verified with official sources
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - All libraries verified with Context7 and official docs; already integrated in backend
 - Architecture: HIGH - Patterns derived from Fastify best practices and existing middleware implementation
 - Pitfalls: HIGH - BOLA confirmed as #1 API security risk by OWASP; other pitfalls from official security guides

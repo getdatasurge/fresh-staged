@@ -185,11 +185,7 @@ describe('Payments tRPC Router', () => {
       const result = await caller.createCheckoutSession(validInput);
 
       expect(result).toEqual(mockSession);
-      expect(mockCreateCheckoutSession).toHaveBeenCalledWith(
-        orgId,
-        userId,
-        validInput.data
-      );
+      expect(mockCreateCheckoutSession).toHaveBeenCalledWith(orgId, userId, validInput.data);
     });
 
     it('should create checkout session with custom URLs', async () => {
@@ -207,20 +203,16 @@ describe('Payments tRPC Router', () => {
         },
       });
 
-      expect(mockCreateCheckoutSession).toHaveBeenCalledWith(
-        orgId,
-        userId,
-        {
-          plan: 'haccp',
-          successUrl: 'https://example.com/success',
-          cancelUrl: 'https://example.com/cancel',
-        }
-      );
+      expect(mockCreateCheckoutSession).toHaveBeenCalledWith(orgId, userId, {
+        plan: 'haccp',
+        successUrl: 'https://example.com/success',
+        cancelUrl: 'https://example.com/cancel',
+      });
     });
 
     it('should throw BAD_REQUEST for StripeConfigError', async () => {
       mockCreateCheckoutSession.mockRejectedValue(
-        new StripeConfigError('STRIPE_SECRET_KEY not configured')
+        new StripeConfigError('STRIPE_SECRET_KEY not configured'),
       );
 
       const ctx = createOrgContext();
@@ -235,9 +227,7 @@ describe('Payments tRPC Router', () => {
     });
 
     it('should throw BAD_REQUEST for CheckoutError', async () => {
-      mockCreateCheckoutSession.mockRejectedValue(
-        new CheckoutError('Invalid plan: invalid')
-      );
+      mockCreateCheckoutSession.mockRejectedValue(new CheckoutError('Invalid plan: invalid'));
 
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
@@ -293,16 +283,13 @@ describe('Payments tRPC Router', () => {
         },
       });
 
-      expect(mockCreatePortalSession).toHaveBeenCalledWith(
-        orgId,
-        { returnUrl: 'https://example.com/settings/billing' }
-      );
+      expect(mockCreatePortalSession).toHaveBeenCalledWith(orgId, {
+        returnUrl: 'https://example.com/settings/billing',
+      });
     });
 
     it('should throw BAD_REQUEST for StripeConfigError', async () => {
-      mockCreatePortalSession.mockRejectedValue(
-        new StripeConfigError('STRIPE_SECRET_KEY not set')
-      );
+      mockCreatePortalSession.mockRejectedValue(new StripeConfigError('STRIPE_SECRET_KEY not set'));
 
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
@@ -315,7 +302,7 @@ describe('Payments tRPC Router', () => {
 
     it('should throw BAD_REQUEST for PortalError', async () => {
       mockCreatePortalSession.mockRejectedValue(
-        new PortalError('No subscription found for organization')
+        new PortalError('No subscription found for organization'),
       );
 
       const ctx = createOrgContext();
@@ -331,7 +318,7 @@ describe('Payments tRPC Router', () => {
 
     it('should throw BAD_REQUEST when no Stripe customer exists', async () => {
       mockCreatePortalSession.mockRejectedValue(
-        new PortalError('No Stripe customer found for organization')
+        new PortalError('No Stripe customer found for organization'),
       );
 
       const ctx = createOrgContext();

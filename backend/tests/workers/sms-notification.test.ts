@@ -24,10 +24,7 @@ import { categorizeError, validateE164 } from '../../src/config/telnyx.config.js
 import type { SmsNotificationJobData } from '../../src/jobs/index.js';
 
 // Mock TelnyxService
-const mockSendSms = vi.fn<
-  [{ to: string; message: string }],
-  Promise<SendSmsResult>
->();
+const mockSendSms = vi.fn<[{ to: string; message: string }], Promise<SendSmsResult>>();
 
 const mockTelnyxService = {
   sendSms: mockSendSms,
@@ -131,7 +128,7 @@ describe('SMS Notification Processor', () => {
 
   describe('processSmsNotification', () => {
     const createMockJob = (
-      data: Partial<SmsNotificationJobData> = {}
+      data: Partial<SmsNotificationJobData> = {},
     ): Job<SmsNotificationJobData> => {
       const defaultData: SmsNotificationJobData = {
         organizationId: 'org-123',
@@ -182,20 +179,14 @@ describe('SMS Notification Processor', () => {
     it('should throw UnrecoverableError for invalid phone number', async () => {
       const job = createMockJob({ phoneNumber: 'invalid' });
 
-      await expect(processSmsNotification(job)).rejects.toThrow(
-        UnrecoverableError
-      );
-      await expect(processSmsNotification(job)).rejects.toThrow(
-        'Invalid phone number format'
-      );
+      await expect(processSmsNotification(job)).rejects.toThrow(UnrecoverableError);
+      await expect(processSmsNotification(job)).rejects.toThrow('Invalid phone number format');
     });
 
     it('should throw UnrecoverableError for phone without + prefix', async () => {
       const job = createMockJob({ phoneNumber: '5551234567' });
 
-      await expect(processSmsNotification(job)).rejects.toThrow(
-        UnrecoverableError
-      );
+      await expect(processSmsNotification(job)).rejects.toThrow(UnrecoverableError);
     });
 
     it('should throw UnrecoverableError for opted-out number', async () => {
@@ -223,9 +214,7 @@ describe('SMS Notification Processor', () => {
 
       const job = createMockJob();
 
-      await expect(processSmsNotification(job)).rejects.toThrow(
-        UnrecoverableError
-      );
+      await expect(processSmsNotification(job)).rejects.toThrow(UnrecoverableError);
     });
 
     it('should throw regular Error for retryable failures', async () => {
@@ -268,9 +257,7 @@ describe('SMS Notification Processor', () => {
       setTelnyxService(null as unknown as TelnyxService);
       const job = createMockJob();
 
-      await expect(processSmsNotification(job)).rejects.toThrow(
-        'TelnyxService not initialized'
-      );
+      await expect(processSmsNotification(job)).rejects.toThrow('TelnyxService not initialized');
     });
 
     it('should handle unknown error codes as retryable', async () => {

@@ -13,7 +13,7 @@ interface RequireImpersonationGuardProps {
 /**
  * Guard component that blocks Super Admins from accessing Main App routes
  * unless they have an active impersonation session.
- * 
+ *
  * For normal users, this is a pass-through (renders children directly).
  * For Super Admins without impersonation, shows a blocking message with CTA.
  */
@@ -53,8 +53,8 @@ export function RequireImpersonationGuard({ children }: RequireImpersonationGuar
           </div>
           <CardTitle className="text-xl">Main App Access Restricted</CardTitle>
           <CardDescription className="text-base mt-2">
-            Super Admins cannot access the main application directly. 
-            You must impersonate a user to view their experience.
+            Super Admins cannot access the main application directly. You must impersonate a user to
+            view their experience.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -64,9 +64,9 @@ export function RequireImpersonationGuard({ children }: RequireImpersonationGuar
               <p>
                 <span className="font-medium">Why this restriction?</span>
                 <br />
-                Super Admins have elevated privileges that could affect all organizations. 
-                Impersonation ensures you see exactly what a specific user sees, 
-                with proper data scoping and audit logging.
+                Super Admins have elevated privileges that could affect all organizations.
+                Impersonation ensures you see exactly what a specific user sees, with proper data
+                scoping and audit logging.
               </p>
             </div>
           </div>
@@ -87,7 +87,7 @@ export function RequireImpersonationGuard({ children }: RequireImpersonationGuar
                 </Button>
               </Link>
             )}
-            
+
             <Link to="/platform" className="w-full">
               <Button variant="outline" className="w-full">
                 Back to Platform Admin

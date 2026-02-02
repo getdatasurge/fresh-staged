@@ -1,18 +1,14 @@
-import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm'
-import { db } from '../db/client.js'
+import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
+import { db } from '../db/client.js';
 import {
   areas,
   manualTemperatureLogs,
   sensorReadings,
   sites,
   units,
-  type InsertSensorReading
-} from '../db/schema/index.js'
-import type {
-  ReadingQuery,
-  ReadingResponse,
-  SingleReading,
-} from '../schemas/readings.js'
+  type InsertSensorReading,
+} from '../db/schema/index.js';
+import type { ReadingQuery, ReadingResponse, SingleReading } from '../schemas/readings.js';
 
 // PostgreSQL parameter limit safety margin
 const BATCH_SIZE = 500;
@@ -33,17 +29,12 @@ export interface BulkIngestResult {
  * @param readings - Array of readings to process
  * @returns Map of unitId to latest reading for that unit
  */
-export function getLatestReadingPerUnit(
-  readings: SingleReading[]
-): Map<string, SingleReading> {
+export function getLatestReadingPerUnit(readings: SingleReading[]): Map<string, SingleReading> {
   const latestByUnit = new Map<string, SingleReading>();
 
   for (const reading of readings) {
     const existing = latestByUnit.get(reading.unitId);
-    if (
-      !existing ||
-      new Date(reading.recordedAt) > new Date(existing.recordedAt)
-    ) {
+    if (!existing || new Date(reading.recordedAt) > new Date(existing.recordedAt)) {
       latestByUnit.set(reading.unitId, reading);
     }
   }
@@ -57,7 +48,7 @@ export function getLatestReadingPerUnit(
  */
 export async function validateUnitsInOrg(
   unitIds: string[],
-  organizationId: string
+  organizationId: string,
 ): Promise<string[]> {
   if (unitIds.length === 0) {
     return [];
@@ -75,8 +66,8 @@ export async function validateUnitsInOrg(
         eq(sites.organizationId, organizationId),
         eq(units.isActive, true),
         eq(areas.isActive, true),
-        eq(sites.isActive, true)
-      )
+        eq(sites.isActive, true),
+      ),
     );
 
   return validUnits.map((u) => u.id);
@@ -92,7 +83,7 @@ export async function validateUnitsInOrg(
  */
 export async function ingestBulkReadings(
   readings: SingleReading[],
-  organizationId: string
+  organizationId: string,
 ): Promise<BulkIngestResult> {
   if (readings.length === 0) {
     return { insertedCount: 0, readingIds: [], alertsTriggered: 0 };
@@ -107,9 +98,7 @@ export async function ingestBulkReadings(
   }
 
   // Filter readings to only include valid units
-  const validReadings = readings.filter((r) =>
-    validUnitIds.includes(r.unitId)
-  );
+  const validReadings = readings.filter((r) => validUnitIds.includes(r.unitId));
 
   if (validReadings.length === 0) {
     throw new Error('All readings reference invalid units');
@@ -148,10 +137,7 @@ export async function ingestBulkReadings(
     const unitReadings = new Map<string, SingleReading>();
     for (const reading of validReadings) {
       const existing = unitReadings.get(reading.unitId);
-      if (
-        !existing ||
-        new Date(reading.recordedAt) > new Date(existing.recordedAt)
-      ) {
+      if (!existing || new Date(reading.recordedAt) > new Date(existing.recordedAt)) {
         unitReadings.set(reading.unitId, reading);
       }
     }
@@ -188,7 +174,7 @@ export async function ingestBulkReadings(
  * @returns Array of matching readings
  */
 export async function queryReadings(
-  params: ReadingQuery & { organizationId: string }
+  params: ReadingQuery & { organizationId: string },
 ): Promise<ReadingResponse[]> {
   const { unitId, start, end, limit, offset, organizationId } = params;
 
@@ -243,15 +229,13 @@ export async function queryReadings(
 /**
  * Create a manual temperature reading record
  */
-export async function createManualReading(
-  data: {
-    unitId: string,
-    profileId: string,
-    temperature: number,
-    notes?: string,
-    recordedAt: Date
-  }
-) {
+export async function createManualReading(data: {
+  unitId: string;
+  profileId: string;
+  temperature: number;
+  notes?: string;
+  recordedAt: Date;
+}) {
   const [result] = await db
     .insert(manualTemperatureLogs)
     .values({
@@ -262,23 +246,21 @@ export async function createManualReading(
       recordedAt: data.recordedAt,
     })
     .returning();
-    
+
   return result;
 }
 
 /**
  * Query manual temperature logs with filters
  */
-export async function queryManualLogs(
-  params: {
-    unitId?: string;
-    organizationId: string;
-    start?: string;
-    end?: string;
-    limit?: number;
-    offset?: number;
-  }
-) {
+export async function queryManualLogs(params: {
+  unitId?: string;
+  organizationId: string;
+  start?: string;
+  end?: string;
+  limit?: number;
+  offset?: number;
+}) {
   const { unitId, organizationId, start, end, limit = 50, offset = 0 } = params;
 
   // Verify unit belongs to org if unitId provided
@@ -303,13 +285,15 @@ export async function queryManualLogs(
     .innerJoin(units, eq(manualTemperatureLogs.unitId, units.id))
     .innerJoin(areas, eq(units.areaId, areas.id))
     .innerJoin(sites, eq(areas.siteId, sites.id))
-    .where(and(
-      eq(sites.organizationId, organizationId),
-      unitId ? eq(manualTemperatureLogs.unitId, unitId) : undefined,
-      start ? gte(manualTemperatureLogs.recordedAt, new Date(start)) : undefined,
-      end ? lte(manualTemperatureLogs.recordedAt, new Date(end)) : undefined,
-      eq(units.isActive, true),
-    ))
+    .where(
+      and(
+        eq(sites.organizationId, organizationId),
+        unitId ? eq(manualTemperatureLogs.unitId, unitId) : undefined,
+        start ? gte(manualTemperatureLogs.recordedAt, new Date(start)) : undefined,
+        end ? lte(manualTemperatureLogs.recordedAt, new Date(end)) : undefined,
+        eq(units.isActive, true),
+      ),
+    )
     .orderBy(desc(manualTemperatureLogs.recordedAt))
     .limit(limit)
     .offset(offset);
@@ -317,22 +301,20 @@ export async function queryManualLogs(
   const results = await query;
 
   // Convert temperature string to number
-  return results.map(r => ({
+  return results.map((r) => ({
     ...r,
-    temperature: parseFloat(r.temperature)
+    temperature: parseFloat(r.temperature),
   }));
 }
 
 /**
  * Query door events for a unit
  */
-export async function queryDoorEvents(
-  params: {
-    unitId?: string;
-    organizationId: string;
-    limit?: number;
-  }
-) {
+export async function queryDoorEvents(params: {
+  unitId?: string;
+  organizationId: string;
+  limit?: number;
+}) {
   const { unitId, organizationId, limit = 10 } = params;
 
   // Use dynamic import for doorEvents to avoid circular dependencies if any
@@ -347,10 +329,12 @@ export async function queryDoorEvents(
     .innerJoin(units, eq(doorEvents.unitId, units.id))
     .innerJoin(areas, eq(units.areaId, areas.id))
     .innerJoin(sites, eq(areas.siteId, sites.id))
-    .where(and(
-      eq(sites.organizationId, organizationId),
-      unitId ? eq(doorEvents.unitId, unitId) : undefined,
-    ))
+    .where(
+      and(
+        eq(sites.organizationId, organizationId),
+        unitId ? eq(doorEvents.unitId, unitId) : undefined,
+      ),
+    )
     .orderBy(desc(doorEvents.timestamp))
     .limit(limit);
 

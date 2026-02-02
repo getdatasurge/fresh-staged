@@ -58,9 +58,7 @@ export const paymentsRouter = router({
     .input(OrgInput)
     .output(SubscriptionResponseSchema.nullable())
     .query(async ({ ctx }) => {
-      const subscription = await checkoutService.getSubscription(
-        ctx.user.organizationId
-      );
+      const subscription = await checkoutService.getSubscription(ctx.user.organizationId);
 
       return subscription;
     }),
@@ -80,7 +78,7 @@ export const paymentsRouter = router({
         const session = await checkoutService.createCheckoutSession(
           ctx.user.organizationId,
           ctx.user.id,
-          input.data
+          input.data,
         );
 
         return session;
@@ -112,7 +110,7 @@ export const paymentsRouter = router({
       try {
         const session = await checkoutService.createPortalSession(
           ctx.user.organizationId,
-          input.data
+          input.data,
         );
 
         return session;

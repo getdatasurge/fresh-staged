@@ -1,13 +1,13 @@
-import { useCallback, useMemo, useState } from "react";
-import GridLayout, { Layout } from "react-grid-layout";
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
-import type { LayoutConfig, WidgetPosition } from "../types";
-import { GRID_CONFIG } from "../types";
-import { WIDGET_REGISTRY } from "../registry/widgetRegistry";
-import { WidgetWrapper } from "./WidgetWrapper";
-import { GridOverlay } from "./GridOverlay";
-import { ResizeSizeLabel } from "./ResizeSizeLabel";
+import { useCallback, useMemo, useState } from 'react';
+import GridLayout, { Layout } from 'react-grid-layout';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
+import type { LayoutConfig, WidgetPosition } from '../types';
+import { GRID_CONFIG } from '../types';
+import { WIDGET_REGISTRY } from '../registry/widgetRegistry';
+import { WidgetWrapper } from './WidgetWrapper';
+import { GridOverlay } from './GridOverlay';
+import { ResizeSizeLabel } from './ResizeSizeLabel';
 
 interface GridCanvasProps {
   layout: LayoutConfig;
@@ -40,7 +40,7 @@ export function GridCanvas({
   // Filter out hidden widgets
   const visibleWidgets = useMemo(
     () => layout.widgets.filter((w) => !hiddenWidgets.includes(w.i)),
-    [layout.widgets, hiddenWidgets]
+    [layout.widgets, hiddenWidgets],
   );
 
   // Convert to react-grid-layout format
@@ -58,7 +58,7 @@ export function GridCanvas({
         maxH: widget.maxH,
         static: !isCustomizing,
       })),
-    [visibleWidgets, isCustomizing]
+    [visibleWidgets, isCustomizing],
   );
 
   const handleLayoutChange = useCallback(
@@ -80,12 +80,10 @@ export function GridCanvas({
       });
 
       // Add back hidden widgets (preserve their positions)
-      const hiddenPositions = layout.widgets.filter((w) =>
-        hiddenWidgets.includes(w.i)
-      );
+      const hiddenPositions = layout.widgets.filter((w) => hiddenWidgets.includes(w.i));
       onLayoutChange([...positions, ...hiddenPositions]);
     },
-    [layout.widgets, hiddenWidgets, onLayoutChange]
+    [layout.widgets, hiddenWidgets, onLayoutChange],
   );
 
   // Check if widget can be hidden (not mandatory)
@@ -95,21 +93,15 @@ export function GridCanvas({
   }, []);
 
   // Resize lifecycle handlers
-  const handleResizeStart = useCallback(
-    (_layout: Layout[], _oldItem: Layout, newItem: Layout) => {
-      setIsResizing(true);
-      setActiveItemId(newItem.i);
-      setResizeSize({ w: newItem.w, h: newItem.h });
-    },
-    []
-  );
+  const handleResizeStart = useCallback((_layout: Layout[], _oldItem: Layout, newItem: Layout) => {
+    setIsResizing(true);
+    setActiveItemId(newItem.i);
+    setResizeSize({ w: newItem.w, h: newItem.h });
+  }, []);
 
-  const handleResize = useCallback(
-    (_layout: Layout[], _oldItem: Layout, newItem: Layout) => {
-      setResizeSize({ w: newItem.w, h: newItem.h });
-    },
-    []
-  );
+  const handleResize = useCallback((_layout: Layout[], _oldItem: Layout, newItem: Layout) => {
+    setResizeSize({ w: newItem.w, h: newItem.h });
+  }, []);
 
   const handleResizeStop = useCallback(() => {
     setIsResizing(false);
@@ -118,13 +110,10 @@ export function GridCanvas({
   }, []);
 
   // Drag lifecycle handlers
-  const handleDragStart = useCallback(
-    (_layout: Layout[], _oldItem: Layout, newItem: Layout) => {
-      setIsDragging(true);
-      setActiveItemId(newItem.i);
-    },
-    []
-  );
+  const handleDragStart = useCallback((_layout: Layout[], _oldItem: Layout, newItem: Layout) => {
+    setIsDragging(true);
+    setActiveItemId(newItem.i);
+  }, []);
 
   const handleDragStop = useCallback(() => {
     setIsDragging(false);
@@ -132,16 +121,9 @@ export function GridCanvas({
   }, []);
 
   return (
-    <div
-      className={`grid-canvas relative ${
-        isCustomizing ? "customizing" : ""
-      }`}
-    >
+    <div className={`grid-canvas relative ${isCustomizing ? 'customizing' : ''}`}>
       {/* Grid overlay - visible during resize/drag */}
-      <GridOverlay 
-        containerWidth={containerWidth} 
-        isVisible={isInteracting}
-      />
+      <GridOverlay containerWidth={containerWidth} isVisible={isInteracting} />
 
       {/* Size label during resize */}
       <ResizeSizeLabel

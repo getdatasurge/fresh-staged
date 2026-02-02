@@ -5,9 +5,9 @@
  * Simplified from migration-specific to generic error fallback.
  */
 
-import { AlertTriangle, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface MigrationErrorFallbackProps {
   error: Error | null;
@@ -23,7 +23,7 @@ export function MigrationErrorFallback({ error, onRetry }: MigrationErrorFallbac
           <CardTitle className="text-lg">Something Went Wrong</CardTitle>
         </div>
         <CardDescription>
-          {error?.message || "An unexpected error occurred. Please try again."}
+          {error?.message || 'An unexpected error occurred. Please try again.'}
         </CardDescription>
       </CardHeader>
       {onRetry && (

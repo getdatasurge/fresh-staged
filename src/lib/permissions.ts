@@ -217,7 +217,7 @@ export function can(role: Role | null | undefined, permission: Permission): bool
  * @returns boolean - Whether the role has at least one permission
  */
 export function canAny(role: Role | null | undefined, permissions: Permission[]): boolean {
-  return permissions.some(permission => can(role, permission));
+  return permissions.some((permission) => can(role, permission));
 }
 
 /**
@@ -227,7 +227,7 @@ export function canAny(role: Role | null | undefined, permissions: Permission[])
  * @returns boolean - Whether the role has all permissions
  */
 export function canAll(role: Role | null | undefined, permissions: Permission[]): boolean {
-  return permissions.every(permission => can(role, permission));
+  return permissions.every((permission) => can(role, permission));
 }
 
 /**
@@ -296,7 +296,7 @@ export function getAssignableRoles(role: Role | null | undefined): Role[] {
 export class PermissionDeniedError extends Error {
   constructor(
     public permission: Permission,
-    public role: Role | null | undefined
+    public role: Role | null | undefined,
   ) {
     super(`Permission denied: ${permission} requires higher privileges than ${role || 'none'}`);
     this.name = 'PermissionDeniedError';
@@ -378,13 +378,57 @@ export function getPermissionDescription(permission: Permission): string {
  * Group permissions by category for display purposes
  */
 export const PERMISSION_CATEGORIES = {
-  organization: ['org.update', 'org.delete', 'org.transfer_ownership', 'org.manage_billing', 'org.view_audit_logs'] as Permission[],
+  organization: [
+    'org.update',
+    'org.delete',
+    'org.transfer_ownership',
+    'org.manage_billing',
+    'org.view_audit_logs',
+  ] as Permission[],
   users: ['users.view', 'users.invite', 'users.update_role', 'users.remove'] as Permission[],
-  sites: ['sites.create', 'sites.update', 'sites.delete', 'areas.create', 'areas.update', 'areas.delete'] as Permission[],
-  units: ['units.create', 'units.update', 'units.delete', 'units.edit_temp_limits', 'units.edit_compliance_settings'] as Permission[],
+  sites: [
+    'sites.create',
+    'sites.update',
+    'sites.delete',
+    'areas.create',
+    'areas.update',
+    'areas.delete',
+  ] as Permission[],
+  units: [
+    'units.create',
+    'units.update',
+    'units.delete',
+    'units.edit_temp_limits',
+    'units.edit_compliance_settings',
+  ] as Permission[],
   devices: ['devices.manage', 'sensors.manage', 'gateways.manage'] as Permission[],
-  operations: ['temps.log_manual', 'temps.view', 'alerts.view', 'alerts.acknowledge', 'alerts.resolve', 'alerts.configure_rules'] as Permission[],
-  dashboard: ['dashboard.view', 'dashboard.customize', 'layouts.create', 'layouts.update', 'layouts.delete', 'widgets.create', 'widgets.update', 'widgets.delete', 'annotations.create', 'annotations.update', 'annotations.delete'] as Permission[],
+  operations: [
+    'temps.log_manual',
+    'temps.view',
+    'alerts.view',
+    'alerts.acknowledge',
+    'alerts.resolve',
+    'alerts.configure_rules',
+  ] as Permission[],
+  dashboard: [
+    'dashboard.view',
+    'dashboard.customize',
+    'layouts.create',
+    'layouts.update',
+    'layouts.delete',
+    'widgets.create',
+    'widgets.update',
+    'widgets.delete',
+    'annotations.create',
+    'annotations.update',
+    'annotations.delete',
+  ] as Permission[],
   reports: ['reports.view', 'reports.export'] as Permission[],
-  admin: ['entities.delete', 'entities.restore', 'entities.permanently_delete', 'developer.view', 'developer.manage_ttn'] as Permission[],
+  admin: [
+    'entities.delete',
+    'entities.restore',
+    'entities.permanently_delete',
+    'developer.view',
+    'developer.manage_ttn',
+  ] as Permission[],
 };

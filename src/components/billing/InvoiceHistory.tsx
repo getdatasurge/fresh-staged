@@ -1,6 +1,6 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { FileText, ExternalLink } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { FileText, ExternalLink } from 'lucide-react';
 
 interface InvoiceHistoryProps {
   subscriptionId: string;
@@ -22,9 +22,7 @@ export const InvoiceHistory = ({ subscriptionId, onOpenPortal }: InvoiceHistoryP
           <FileText className="w-5 h-5" />
           Invoice History
         </CardTitle>
-        <CardDescription>
-          View and download past invoices
-        </CardDescription>
+        <CardDescription>View and download past invoices</CardDescription>
       </CardHeader>
       <CardContent>
         <p className="text-muted-foreground text-center py-4">

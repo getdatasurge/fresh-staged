@@ -15,9 +15,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - '5432:5432'
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U frostguard -d frostguard"]
+      test: ['CMD-SHELL', 'pg_isready -U frostguard -d frostguard']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -56,9 +56,9 @@ services:
     volumes:
       - redis_data:/data
     ports:
-      - "6379:6379"
+      - '6379:6379'
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 3s
       retries: 5
@@ -77,10 +77,10 @@ services:
     volumes:
       - minio_data:/data
     ports:
-      - "9200:9000"   # S3 API
-      - "9201:9001"   # Console
+      - '9200:9000' # S3 API
+      - '9201:9001' # Console
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
       interval: 10s
       timeout: 5s
       retries: 3
@@ -110,13 +110,13 @@ services:
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: frostguard-pgadmin
-    profiles: ["admin"]
+    profiles: ['admin']
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@frostguard.local
       PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
     ports:
-      - "5050:80"
+      - '5050:80'
     depends_on:
       - postgres
     restart: unless-stopped
@@ -124,11 +124,11 @@ services:
   redis-commander:
     image: rediscommander/redis-commander:latest
     container_name: frostguard-redis-commander
-    profiles: ["admin"]
+    profiles: ['admin']
     environment:
       REDIS_HOSTS: local:redis:6379
     ports:
-      - "8081:8081"
+      - '8081:8081'
     depends_on:
       - redis
     restart: unless-stopped

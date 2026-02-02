@@ -1,4 +1,4 @@
-import { GRID_CONFIG } from "../types";
+import { GRID_CONFIG } from '../types';
 
 interface GridOverlayProps {
   containerWidth: number;
@@ -14,54 +14,50 @@ export function GridOverlay({ containerWidth, isVisible }: GridOverlayProps) {
 
   const { cols, rowHeight, margin } = GRID_CONFIG;
   const colWidth = containerWidth / cols;
-  
+
   // Calculate enough rows to cover typical dashboard content
   const numRows = 20;
   const totalHeight = numRows * rowHeight;
 
   return (
-    <div 
+    <div
       className="absolute inset-0 pointer-events-none z-[5] animate-in fade-in duration-150"
       aria-hidden="true"
     >
-      <svg 
-        className="w-full" 
-        style={{ height: totalHeight }}
-        preserveAspectRatio="none"
-      >
+      <svg className="w-full" style={{ height: totalHeight }} preserveAspectRatio="none">
         <defs>
-          <pattern 
-            id="grid-pattern" 
-            width={colWidth} 
-            height={rowHeight} 
+          <pattern
+            id="grid-pattern"
+            width={colWidth}
+            height={rowHeight}
             patternUnits="userSpaceOnUse"
           >
             {/* Vertical lines */}
-            <line 
-              x1={margin[0] / 2} 
-              y1="0" 
-              x2={margin[0] / 2} 
-              y2={rowHeight} 
-              stroke="hsl(var(--accent))" 
-              strokeWidth="1" 
+            <line
+              x1={margin[0] / 2}
+              y1="0"
+              x2={margin[0] / 2}
+              y2={rowHeight}
+              stroke="hsl(var(--accent))"
+              strokeWidth="1"
               strokeOpacity="0.25"
               strokeDasharray="4 4"
             />
             {/* Horizontal lines */}
-            <line 
-              x1="0" 
-              y1={margin[1] / 2} 
-              x2={colWidth} 
-              y2={margin[1] / 2} 
-              stroke="hsl(var(--accent))" 
-              strokeWidth="1" 
+            <line
+              x1="0"
+              y1={margin[1] / 2}
+              x2={colWidth}
+              y2={margin[1] / 2}
+              stroke="hsl(var(--accent))"
+              strokeWidth="1"
               strokeOpacity="0.25"
               strokeDasharray="4 4"
             />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#grid-pattern)" />
-        
+
         {/* Column boundary lines (solid, more visible) */}
         {Array.from({ length: cols + 1 }).map((_, i) => (
           <line
@@ -75,7 +71,7 @@ export function GridOverlay({ containerWidth, isVisible }: GridOverlayProps) {
             strokeOpacity="0.15"
           />
         ))}
-        
+
         {/* Row boundary lines (solid, more visible) */}
         {Array.from({ length: numRows + 1 }).map((_, i) => (
           <line

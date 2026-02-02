@@ -1,9 +1,9 @@
 /**
  * update-sensor-assignment: API-key-only endpoint for Project 2 (Emulator) to update sensor assignments
- * 
+ *
  * Authentication: Uses PROJECT2_SYNC_API_KEY (no JWT, no service role key)
  * Headers accepted: Authorization: Bearer <key> OR X-Sync-API-Key: <key>
- * 
+ *
  * Usage:
  * curl -X POST "https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/update-sensor-assignment" \
  *   -H "Content-Type: application/json" \
@@ -11,20 +11,21 @@
  *   -d '{"org_id": "...", "sensor_id": "...", "site_id": "...", "unit_id": "..."}'
  */
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
-import { 
-  validateProject2SyncApiKey, 
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import {
+  validateProject2SyncApiKey,
   structuredErrorResponse,
-  uuidSchema 
-} from "../_shared/validation.ts";
+  uuidSchema,
+} from '../_shared/validation.ts';
 
-const VERSION = "1.0.0";
+const VERSION = '1.0.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-sync-api-key, x-debug',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type, x-sync-api-key, x-debug',
 };
 
 // Input schema for sensor assignment
@@ -41,10 +42,15 @@ function generateRequestId(): string {
   return crypto.randomUUID();
 }
 
-function log(requestId: string, level: 'info' | 'warn' | 'error', message: string, data?: Record<string, unknown>) {
+function log(
+  requestId: string,
+  level: 'info' | 'warn' | 'error',
+  message: string,
+  data?: Record<string, unknown>,
+) {
   const prefix = `[update-sensor-assignment][${requestId}]`;
   const logData = data ? ` ${JSON.stringify(data)}` : '';
-  
+
   if (level === 'error') {
     console.error(`${prefix} ${message}${logData}`);
   } else if (level === 'warn') {
@@ -57,7 +63,7 @@ function log(requestId: string, level: 'info' | 'warn' | 'error', message: strin
 serve(async (req) => {
   const requestId = generateRequestId();
   const startTime = Date.now();
-  
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -72,28 +78,31 @@ serve(async (req) => {
       'Only POST method is accepted',
       requestId,
       corsHeaders,
-      { hint: 'Use POST method with JSON body' }
+      { hint: 'Use POST method with JSON body' },
     );
   }
 
   // Authenticate with Project 2 API key
   const authResult = validateProject2SyncApiKey(req);
-  
+
   if (!authResult.valid) {
-    log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Authentication failed', { error: authResult.error });
-    
+    log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Authentication failed', {
+      error: authResult.error,
+    });
+
     const status = authResult.errorCode === 'NOT_CONFIGURED' ? 500 : 401;
-    const hint = authResult.errorCode === 'NOT_CONFIGURED' 
-      ? 'Contact FrostGuard admin to configure PROJECT2_SYNC_API_KEY'
-      : 'Provide valid API key via Authorization: Bearer <key> or X-Sync-API-Key header';
-    
+    const hint =
+      authResult.errorCode === 'NOT_CONFIGURED'
+        ? 'Contact FrostGuard admin to configure PROJECT2_SYNC_API_KEY'
+        : 'Provide valid API key via Authorization: Bearer <key> or X-Sync-API-Key header';
+
     return structuredErrorResponse(
       status,
       authResult.errorCode || 'UNAUTHORIZED',
       authResult.error || 'Authentication failed',
       requestId,
       corsHeaders,
-      { hint }
+      { hint },
     );
   }
 
@@ -102,15 +111,15 @@ serve(async (req) => {
   try {
     const rawBody = await req.json();
     const parsed = assignmentRequestSchema.safeParse(rawBody);
-    
+
     if (!parsed.success) {
-      const issues = parsed.error.issues.map(i => ({
+      const issues = parsed.error.issues.map((i) => ({
         path: i.path.join('.'),
         message: i.message,
       }));
-      
+
       log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Invalid request body', { issues });
-      
+
       return structuredErrorResponse(
         400,
         'VALIDATION_ERROR',
@@ -119,26 +128,28 @@ serve(async (req) => {
         corsHeaders,
         {
           hint: 'Ensure org_id and sensor_id are valid UUIDs, and site_id/unit_id are valid UUIDs or null',
-          details: { validation_errors: issues }
-        }
+          details: { validation_errors: issues },
+        },
       );
     }
-    
+
     body = parsed.data;
   } catch (error) {
-    log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Failed to parse JSON body', { error: String(error) });
+    log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Failed to parse JSON body', {
+      error: String(error),
+    });
     return structuredErrorResponse(
       400,
       'INVALID_JSON',
       'Failed to parse request body as JSON',
       requestId,
       corsHeaders,
-      { hint: 'Ensure request body is valid JSON' }
+      { hint: 'Ensure request body is valid JSON' },
     );
   }
 
   const { org_id, sensor_id, site_id, unit_id } = body;
-  
+
   log(requestId, 'info', 'ASSIGNMENT_INBOUND_REQUEST', {
     org_id,
     sensor_id,
@@ -167,10 +178,10 @@ serve(async (req) => {
         'Organization not found',
         requestId,
         corsHeaders,
-        { 
+        {
           hint: 'Verify the organization ID is correct',
-          details: { org_id }
-        }
+          details: { org_id },
+        },
       );
     }
 
@@ -182,10 +193,10 @@ serve(async (req) => {
         'Organization has been deleted',
         requestId,
         corsHeaders,
-        { 
+        {
           hint: 'Cannot assign sensors to deleted organizations',
-          details: { org_id }
-        }
+          details: { org_id },
+        },
       );
     }
 
@@ -204,18 +215,18 @@ serve(async (req) => {
         'Sensor not found',
         requestId,
         corsHeaders,
-        { 
+        {
           hint: 'Verify the sensor ID is correct',
-          details: { sensor_id }
-        }
+          details: { sensor_id },
+        },
       );
     }
 
     if (sensor.organization_id !== org_id) {
-      log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Sensor does not belong to org', { 
-        sensor_id, 
-        sensor_org: sensor.organization_id, 
-        requested_org: org_id 
+      log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Sensor does not belong to org', {
+        sensor_id,
+        sensor_org: sensor.organization_id,
+        requested_org: org_id,
       });
       return structuredErrorResponse(
         400,
@@ -223,10 +234,10 @@ serve(async (req) => {
         'Sensor does not belong to the specified organization',
         requestId,
         corsHeaders,
-        { 
+        {
           hint: 'Ensure the sensor and organization IDs match',
-          details: { sensor_id, org_id }
-        }
+          details: { sensor_id, org_id },
+        },
       );
     }
 
@@ -245,25 +256,27 @@ serve(async (req) => {
         .single();
 
       if (siteError || !site) {
-        log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Site not found', { site_id: resolvedSiteId });
+        log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Site not found', {
+          site_id: resolvedSiteId,
+        });
         return structuredErrorResponse(
           404,
           'SITE_NOT_FOUND',
           'Site not found',
           requestId,
           corsHeaders,
-          { 
+          {
             hint: 'Verify the site ID is correct',
-            details: { site_id: resolvedSiteId }
-          }
+            details: { site_id: resolvedSiteId },
+          },
         );
       }
 
       if (site.organization_id !== org_id) {
-        log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Site does not belong to org', { 
-          site_id: resolvedSiteId, 
-          site_org: site.organization_id, 
-          org_id 
+        log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Site does not belong to org', {
+          site_id: resolvedSiteId,
+          site_org: site.organization_id,
+          org_id,
         });
         return structuredErrorResponse(
           400,
@@ -271,25 +284,27 @@ serve(async (req) => {
           'Site does not belong to the specified organization',
           requestId,
           corsHeaders,
-          { 
+          {
             hint: 'Ensure the site belongs to the same organization as the sensor',
-            details: { site_id: resolvedSiteId, org_id }
-          }
+            details: { site_id: resolvedSiteId, org_id },
+          },
         );
       }
 
       if (site.deleted_at) {
-        log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Site is deleted', { site_id: resolvedSiteId });
+        log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Site is deleted', {
+          site_id: resolvedSiteId,
+        });
         return structuredErrorResponse(
           400,
           'SITE_DELETED',
           'Cannot assign sensor to a deleted site',
           requestId,
           corsHeaders,
-          { 
+          {
             hint: 'Select an active site',
-            details: { site_id: resolvedSiteId }
-          }
+            details: { site_id: resolvedSiteId },
+          },
         );
       }
     }
@@ -298,7 +313,8 @@ serve(async (req) => {
     if (resolvedUnitId) {
       const { data: unit, error: unitError } = await supabase
         .from('units')
-        .select(`
+        .select(
+          `
           id, name, area_id, deleted_at,
           areas!inner (
             id, site_id, deleted_at,
@@ -306,29 +322,32 @@ serve(async (req) => {
               id, organization_id, deleted_at
             )
           )
-        `)
+        `,
+        )
         .eq('id', resolvedUnitId)
         .single();
 
       if (unitError || !unit) {
-        log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Unit not found', { unit_id: resolvedUnitId });
+        log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Unit not found', {
+          unit_id: resolvedUnitId,
+        });
         return structuredErrorResponse(
           404,
           'UNIT_NOT_FOUND',
           'Unit not found',
           requestId,
           corsHeaders,
-          { 
+          {
             hint: 'Verify the unit ID is correct',
-            details: { unit_id: resolvedUnitId }
-          }
+            details: { unit_id: resolvedUnitId },
+          },
         );
       }
 
       // Type assertion for nested data
-      const areas = unit.areas as unknown as { 
-        id: string; 
-        site_id: string; 
+      const areas = unit.areas as unknown as {
+        id: string;
+        site_id: string;
         deleted_at: string | null;
         sites: { id: string; organization_id: string; deleted_at: string | null };
       };
@@ -336,10 +355,10 @@ serve(async (req) => {
       const unitOrgId = areas.sites.organization_id;
 
       if (unitOrgId !== org_id) {
-        log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Unit does not belong to org', { 
-          unit_id: resolvedUnitId, 
-          unit_org: unitOrgId, 
-          org_id 
+        log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Unit does not belong to org', {
+          unit_id: resolvedUnitId,
+          unit_org: unitOrgId,
+          org_id,
         });
         return structuredErrorResponse(
           400,
@@ -347,33 +366,35 @@ serve(async (req) => {
           'Unit does not belong to the specified organization',
           requestId,
           corsHeaders,
-          { 
+          {
             hint: 'Ensure the unit belongs to the same organization',
-            details: { unit_id: resolvedUnitId, org_id }
-          }
+            details: { unit_id: resolvedUnitId, org_id },
+          },
         );
       }
 
       if (unit.deleted_at || areas.deleted_at || areas.sites.deleted_at) {
-        log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Unit or parent is deleted', { unit_id: resolvedUnitId });
+        log(requestId, 'warn', 'ASSIGNMENT_VALIDATION_FAIL: Unit or parent is deleted', {
+          unit_id: resolvedUnitId,
+        });
         return structuredErrorResponse(
           400,
           'UNIT_DELETED',
           'Cannot assign sensor to a deleted unit or unit with deleted parent',
           requestId,
           corsHeaders,
-          { 
+          {
             hint: 'Select an active unit with active parent area and site',
-            details: { unit_id: resolvedUnitId }
-          }
+            details: { unit_id: resolvedUnitId },
+          },
         );
       }
 
       // If site_id was also provided, verify it matches unit's actual site
       if (resolvedSiteId && resolvedSiteId !== unitSiteId) {
-        log(requestId, 'info', 'Site/unit mismatch - using unit\'s actual site', {
+        log(requestId, 'info', "Site/unit mismatch - using unit's actual site", {
           provided_site_id: resolvedSiteId,
-          unit_site_id: unitSiteId
+          unit_site_id: unitSiteId,
         });
         // Auto-correct to unit's actual site
         resolvedSiteId = unitSiteId;
@@ -388,10 +409,12 @@ serve(async (req) => {
       // Check if the current unit belongs to the new site
       const { data: currentUnit } = await supabase
         .from('units')
-        .select(`
+        .select(
+          `
           id, 
           areas!inner (site_id)
-        `)
+        `,
+        )
         .eq('id', sensor.unit_id)
         .single();
 
@@ -404,7 +427,7 @@ serve(async (req) => {
           log(requestId, 'info', 'Clearing unit_id due to site change', {
             previous_unit_id: sensor.unit_id,
             previous_site_id: currentUnitSiteId,
-            new_site_id: resolvedSiteId
+            new_site_id: resolvedSiteId,
           });
         }
       }
@@ -415,7 +438,7 @@ serve(async (req) => {
       resolved_site_id: resolvedSiteId,
       resolved_unit_id: resolvedUnitId,
       site_auto_resolved: siteAutoResolved,
-      unit_cleared: unitCleared
+      unit_cleared: unitCleared,
     });
 
     // 5. Update the sensor record
@@ -445,9 +468,9 @@ serve(async (req) => {
           hint: 'An internal error occurred while updating the database',
           details: {
             error_code: updateError.code,
-            error_message: updateError.message
-          }
-        }
+            error_message: updateError.message,
+          },
+        },
       );
     }
 
@@ -474,20 +497,19 @@ serve(async (req) => {
           unit_cleared: unitCleared,
           duration_ms: durationMs,
           version: VERSION,
-        }
+        },
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
-
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
-    
-    log(requestId, 'error', 'ASSIGNMENT_DB_UPDATE_FAIL: Unexpected error', { 
+
+    log(requestId, 'error', 'ASSIGNMENT_DB_UPDATE_FAIL: Unexpected error', {
       error_message: errorMessage,
-      error_stack: errorStack
+      error_stack: errorStack,
     });
-    
+
     return structuredErrorResponse(
       500,
       'INTERNAL_ERROR',
@@ -498,9 +520,9 @@ serve(async (req) => {
         hint: 'Export a support snapshot if this error persists',
         details: {
           error_type: error instanceof Error ? error.constructor.name : typeof error,
-          error_message: errorMessage
-        }
-      }
+          error_message: errorMessage,
+        },
+      },
     );
   }
 });

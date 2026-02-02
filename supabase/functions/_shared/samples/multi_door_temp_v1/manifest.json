@@ -15,10 +15,7 @@
       "door": { "type": "boolean" },
       "battery_level": { "type": "integer", "minimum": 0, "maximum": 100 }
     },
-    "anyOf": [
-      { "required": ["door_status"] },
-      { "required": ["door"] }
-    ]
+    "anyOf": [{ "required": ["door_status"] }, { "required": ["door"] }]
   },
   "discriminators": {
     "primary": ["temperature", "door_status"],

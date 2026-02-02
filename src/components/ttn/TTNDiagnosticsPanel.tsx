@@ -1,23 +1,15 @@
 /**
  * TTN Diagnostics Panel
- * 
+ *
  * Shows cluster info, API URLs, and connection diagnostics for debugging.
  * NAM1 ONLY - standardized cluster for all organizations.
  */
 
-import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { 
-  ChevronDown, 
-  Server, 
-  Globe, 
-  CheckCircle2, 
-  XCircle,
-  Info,
-  Wifi
-} from "lucide-react";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown, Server, Globe, CheckCircle2, XCircle, Info, Wifi } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface TTNDiagnosticsData {
   ttn_region: string | null;
@@ -38,38 +30,38 @@ interface TTNDiagnosticsPanelProps {
 }
 
 // SINGLE CLUSTER - NAM1 is the only allowed endpoint
-const CLUSTER_BASE_URL = "https://nam1.cloud.thethings.network";
-const CLUSTER_HOST = "nam1.cloud.thethings.network";
+const CLUSTER_BASE_URL = 'https://nam1.cloud.thethings.network';
+const CLUSTER_HOST = 'nam1.cloud.thethings.network';
 
 const CLUSTER_CONFIG = {
-  label: "NAM1 (North America)",
+  label: 'NAM1 (North America)',
   baseUrl: CLUSTER_BASE_URL,
   host: CLUSTER_HOST,
-  consoleUrl: "https://nam1.cloud.thethings.network/console",
-  frequencyPlan: "US_902_928_FSB_2",
+  consoleUrl: 'https://nam1.cloud.thethings.network/console',
+  frequencyPlan: 'US_902_928_FSB_2',
 };
 
 export function TTNDiagnosticsPanel({ data, className }: TTNDiagnosticsPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentCluster = data.ttn_region || "nam1";
-  const isProvisioned = data.provisioning_status === "ready";
-  const lastHttpOk = data.last_http_status && data.last_http_status >= 200 && data.last_http_status < 300;
-  
+  const currentCluster = data.ttn_region || 'nam1';
+  const isProvisioned = data.provisioning_status === 'ready';
+  const lastHttpOk =
+    data.last_http_status && data.last_http_status >= 200 && data.last_http_status < 300;
+
   // Verify cluster host matches expected
-  const clusterHostMatches = currentCluster.toLowerCase() === "nam1";
+  const clusterHostMatches = currentCluster.toLowerCase() === 'nam1';
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className={className}>
       <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full py-2">
         <Info className="h-4 w-4" />
         <span>TTN Diagnostics</span>
-        <ChevronDown className={cn(
-          "h-4 w-4 ml-auto transition-transform",
-          isOpen && "rotate-180"
-        )} />
+        <ChevronDown
+          className={cn('h-4 w-4 ml-auto transition-transform', isOpen && 'rotate-180')}
+        />
       </CollapsibleTrigger>
-      
+
       <CollapsibleContent>
         <div className="mt-3 p-4 rounded-lg border bg-muted/30 space-y-4">
           {/* Single Cluster Info */}
@@ -101,9 +93,7 @@ export function TTNDiagnosticsPanel({ data, className }: TTNDiagnosticsPanelProp
 
             <span className="text-muted-foreground">Host (all planes):</span>
             <div className="flex items-center gap-2">
-              <code className="text-xs font-mono text-foreground/80">
-                {CLUSTER_CONFIG.host}
-              </code>
+              <code className="text-xs font-mono text-foreground/80">{CLUSTER_CONFIG.host}</code>
               <Badge variant="outline" className="bg-safe/10 text-safe border-safe/30 text-xs">
                 IS/JS/NS/AS ✓
               </Badge>
@@ -133,7 +123,9 @@ export function TTNDiagnosticsPanel({ data, className }: TTNDiagnosticsPanelProp
                 ) : (
                   <>
                     <XCircle className="h-3.5 w-3.5 text-warning" />
-                    <span className="text-warning text-xs">{data.provisioning_status || "Unknown"}</span>
+                    <span className="text-warning text-xs">
+                      {data.provisioning_status || 'Unknown'}
+                    </span>
                   </>
                 )}
               </div>
@@ -150,7 +142,10 @@ export function TTNDiagnosticsPanel({ data, className }: TTNDiagnosticsPanelProp
                     {data.last_http_status} OK
                   </Badge>
                 ) : (
-                  <Badge variant="outline" className="bg-alarm/10 text-alarm border-alarm/30 text-xs">
+                  <Badge
+                    variant="outline"
+                    className="bg-alarm/10 text-alarm border-alarm/30 text-xs"
+                  >
                     {data.last_http_status} Error
                   </Badge>
                 )}
@@ -181,9 +176,7 @@ export function TTNDiagnosticsPanel({ data, className }: TTNDiagnosticsPanelProp
               {data.webhook_secret_last4 && (
                 <>
                   <span className="text-muted-foreground">Secret:</span>
-                  <span className="text-xs">
-                    ••••{data.webhook_secret_last4}
-                  </span>
+                  <span className="text-xs">••••{data.webhook_secret_last4}</span>
                 </>
               )}
 
@@ -201,7 +194,7 @@ export function TTNDiagnosticsPanel({ data, className }: TTNDiagnosticsPanelProp
           {/* Console Link */}
           <div className="pt-2 border-t">
             <a
-              href={`${CLUSTER_CONFIG.consoleUrl}/applications/${data.ttn_application_id || ""}`}
+              href={`${CLUSTER_CONFIG.consoleUrl}/applications/${data.ttn_application_id || ''}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-primary hover:underline"

@@ -11,6 +11,7 @@
 **Core Purpose:** Real-time temperature monitoring for refrigeration units with automated alerts, HACCP compliance tracking, and multi-level escalation notifications.
 
 **What This App Does:**
+
 - Monitors refrigeration units via IoT sensors (LoRa/TTN-based)
 - Detects temperature excursions, door events, and sensor faults
 - Sends automated alerts via email, SMS, and push notifications
@@ -19,6 +20,7 @@
 - Manages multi-tenant organizations with hierarchical structure (Org → Site → Area → Unit)
 
 **What This App Is NOT:**
+
 - Not a consumer/home refrigerator app
 - Not a general IoT platform
 - Not a food inventory/ordering system
@@ -74,6 +76,7 @@
 ### Decision Framework
 
 When making implementation decisions:
+
 1. Will this affect alert reliability? → Add tests, get review
 2. Does this touch alert rules cascade? → Verify with `get_effective_alert_rules`
 3. Is this user-facing text? → Use consistent terminology (see Terminology section)
@@ -87,18 +90,21 @@ When making implementation decisions:
 
 **Role:** Food Safety Coordinator at a restaurant chain or food processing facility
 **Goals:**
+
 - Ensure all refrigeration units maintain safe temperatures
 - Respond quickly to temperature excursions
 - Generate compliance reports for health inspections
 - Manage multiple sites from a single dashboard
 
 **Pain Points:**
+
 - Manually checking temperatures is time-consuming and error-prone
 - Late discovery of temperature violations leads to spoiled food
 - Paper-based logging is tedious and hard to audit
 - Different sites have different equipment and requirements
 
 **Behaviors:**
+
 - Checks dashboard first thing in morning and before leaving
 - Wants push notifications for critical alerts immediately
 - Needs to delegate acknowledgment to shift managers
@@ -110,17 +116,20 @@ When making implementation decisions:
 
 **Role:** Manages facilities, equipment, and staff schedules
 **Goals:**
+
 - Minimize equipment downtime
 - Predict maintenance needs before failures
 - Optimize staff response to alerts
 - Control costs while maintaining compliance
 
 **Pain Points:**
+
 - Unexpected equipment failures are expensive
 - Hard to know which alerts need immediate vs. scheduled attention
 - Managing escalation contacts across shifts is complex
 
 **Behaviors:**
+
 - Focuses on trends and patterns over individual readings
 - Wants battery forecasts and calibration reminders
 - Configures escalation policies by shift and severity
@@ -132,16 +141,19 @@ When making implementation decisions:
 
 **Role:** Line cook, prep worker, or shift lead
 **Goals:**
+
 - Log manual temperatures quickly between tasks
 - Acknowledge alerts when on shift
 - Understand which units need attention
 
 **Pain Points:**
+
 - Hands are often wet/dirty; needs quick mobile interactions
 - Doesn't want to log in repeatedly
 - Confused by complex interfaces
 
 **Behaviors:**
+
 - Uses mobile exclusively, often in a hurry
 - Scans quickly for red/warning indicators
 - Prefers large touch targets and simple flows
@@ -152,12 +164,14 @@ When making implementation decisions:
 
 **Role:** Sets up sensors, manages integrations, troubleshoots
 **Goals:**
+
 - Provision and configure LoRa sensors
 - Monitor sensor connectivity and battery health
 - Debug issues when alerts aren't working
 - Manage user access and permissions
 
 **Behaviors:**
+
 - Uses Inspector/debug tools
 - Configures TTN connections and webhooks
 - Reviews event logs and sensor diagnostics
@@ -171,19 +185,19 @@ When making implementation decisions:
 ### Color Palette
 
 **Brand Colors:**
+
 ```css
---primary: #1e3a5f        /* Deep navy blue - trust, professionalism */
---primary-foreground: #ffffff
---accent: #34d399         /* Cyan/teal - ice, cold, freshness */
+--primary: #1e3a5f /* Deep navy blue - trust, professionalism */ --primary-foreground: #ffffff
+  --accent: #34d399 /* Cyan/teal - ice, cold, freshness */;
 ```
 
 **Status Colors (Critical - use consistently):**
+
 ```css
---safe: hsl(152, 69%, 40%)        /* Green - normal operation */
---warning: hsl(38, 92%, 50%)      /* Orange - needs attention */
---alarm: hsl(0, 84%, 60%)         /* Red - immediate action required */
---excursion: hsl(25, 95%, 53%)    /* Orange-red - temperature out of range */
---offline: hsl(215, 16%, 47%)     /* Gray - no communication */
+--safe: hsl(152, 69%, 40%) /* Green - normal operation */ --warning: hsl(38, 92%, 50%)
+  /* Orange - needs attention */ --alarm: hsl(0, 84%, 60%) /* Red - immediate action required */
+  --excursion: hsl(25, 95%, 53%) /* Orange-red - temperature out of range */
+  --offline: hsl(215, 16%, 47%) /* Gray - no communication */;
 ```
 
 **Severity Mapping:**
@@ -194,6 +208,7 @@ When making implementation decisions:
 | Critical | Red | Immediate action required, food safety risk |
 
 **Status Priority Order (highest to lowest):**
+
 1. `alarm_active` (Critical)
 2. `temp_excursion` (Critical)
 3. `monitoring_interrupted` (Warning)
@@ -204,11 +219,11 @@ When making implementation decisions:
 ### Typography
 
 ```css
---font-sans: 'Inter', system-ui, sans-serif
---font-mono: 'JetBrains Mono', monospace
+--font-sans: 'Inter', system-ui, sans-serif --font-mono: 'JetBrains Mono', monospace;
 ```
 
 **Hierarchy:**
+
 - Page titles: `text-2xl font-bold` or `text-3xl font-bold`
 - Section headers: `text-lg font-semibold` or `text-xl font-semibold`
 - Card titles: `text-base font-medium`
@@ -216,6 +231,7 @@ When making implementation decisions:
 - Labels/captions: `text-xs text-muted-foreground`
 
 **Temperature Readings:**
+
 - Current temperature: Large, bold, color indicates status
 - Limits: Smaller, muted, show thresholds
 - Always include unit (°F or °C based on org settings)
@@ -223,30 +239,32 @@ When making implementation decisions:
 ### Layout Patterns
 
 **Dashboard Layout:**
+
 - Sidebar navigation (collapsible on mobile)
 - Main content area with breadcrumb hierarchy
 - Card-based unit displays
 - Status badges prominent
 
 **Card Structure:**
+
 ```jsx
 <Card>
   <CardHeader>
     <CardTitle>{unit.name}</CardTitle>
     <CardDescription>Status and last reading</CardDescription>
   </CardHeader>
-  <CardContent>
-    {/* Temperature display, alerts, actions */}
-  </CardContent>
+  <CardContent>{/* Temperature display, alerts, actions */}</CardContent>
 </Card>
 ```
 
 **Modal Patterns:**
+
 - Use `Dialog` from shadcn/ui for all modals
 - Confirmation dialogs for destructive actions
 - Form modals for data entry (LogTempModal pattern)
 
 **Table Patterns:**
+
 - Use `Table` components for lists
 - Sortable columns for key fields
 - Status badges in first or second column
@@ -255,6 +273,7 @@ When making implementation decisions:
 ### Iconography
 
 **Use Lucide React icons exclusively.** Common icons:
+
 - `Thermometer` - temperature readings
 - `AlertTriangle` - warnings
 - `AlertCircle` - critical alerts
@@ -270,12 +289,14 @@ When making implementation decisions:
 ### Animation
 
 **Use sparingly for meaningful feedback:**
+
 - `pulse-glow` - Active critical alerts (draws attention)
 - `fade-in` - Page/component entry
 - `slide-in-from-right` - Drawer/panel animations
 - Framer Motion for complex transitions
 
 **Avoid:**
+
 - Gratuitous animations that distract
 - Animations on critical status indicators (may obscure reading)
 
@@ -304,17 +325,20 @@ src/
 ### Naming Conventions
 
 **Files:**
+
 - Components: `PascalCase.tsx` (e.g., `UnitCard.tsx`)
 - Hooks: `camelCase.ts` with `use` prefix (e.g., `useUnitStatus.ts`)
 - Utilities: `camelCase.ts` (e.g., `alertConfig.ts`)
 - Types: `camelCase.ts` (e.g., `ttn.ts`)
 
 **Components:**
+
 - PascalCase for component names
 - Props interfaces: `ComponentNameProps`
 - Destructure props in function signature
 
 **Variables:**
+
 - camelCase for variables and functions
 - SCREAMING_SNAKE_CASE for constants/configs
 - Prefix boolean variables with `is`, `has`, `can`, `should`
@@ -322,22 +346,22 @@ src/
 ### TypeScript Patterns
 
 **Always type function parameters and returns:**
+
 ```typescript
-function computeUnitStatus(
-  info: UnitStatusInfo,
-  rules: AlertRules
-): ComputedUnitStatus {
+function computeUnitStatus(info: UnitStatusInfo, rules: AlertRules): ComputedUnitStatus {
   // ...
 }
 ```
 
 **Use database types from Supabase:**
+
 ```typescript
 import type { Database } from '@/integrations/supabase/types';
 type Unit = Database['public']['Tables']['units']['Row'];
 ```
 
 **Extend for frontend needs:**
+
 ```typescript
 interface UnitWithAlerts extends Unit {
   activeAlerts: Alert[];
@@ -348,28 +372,23 @@ interface UnitWithAlerts extends Unit {
 ### React Query Patterns
 
 **Query key structure:**
+
 ```typescript
 // Entity queries
-['units', unitId]
-['alerts', { organizationId, status: 'active' }]
-['alert-rules', { unitId }]
-
-// List queries
-['sites', { organizationId }]
-['areas', { siteId }]
+['units', unitId][('alerts', { organizationId, status: 'active' })][('alert-rules', { unitId })][
+  // List queries
+  ('sites', { organizationId })
+][('areas', { siteId })];
 ```
 
 **Standard hook pattern:**
+
 ```typescript
 export function useUnit(unitId: string) {
   return useQuery({
     queryKey: ['units', unitId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('units')
-        .select('*')
-        .eq('id', unitId)
-        .single();
+      const { data, error } = await supabase.from('units').select('*').eq('id', unitId).single();
       if (error) throw error;
       return data;
     },
@@ -379,6 +398,7 @@ export function useUnit(unitId: string) {
 ```
 
 **Mutation pattern:**
+
 ```typescript
 export function useUpdateUnit() {
   const queryClient = useQueryClient();
@@ -408,6 +428,7 @@ export function useUpdateUnit() {
 ### Component Patterns
 
 **Use shadcn/ui components as base:**
+
 ```typescript
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -415,6 +436,7 @@ import { Badge } from '@/components/ui/badge';
 ```
 
 **Compose over customize:**
+
 ```typescript
 // Good - compose shadcn components
 function StatusBadge({ status }: { status: UnitStatus }) {
@@ -430,6 +452,7 @@ function StatusBadge({ status }: { status: UnitStatus }) {
 ```
 
 **Use config objects for display logic:**
+
 ```typescript
 import { ALERT_TYPE_CONFIG } from '@/lib/alertConfig';
 
@@ -443,6 +466,7 @@ function AlertIcon({ type }: { type: AlertType }) {
 ### Form Patterns
 
 **Use React Hook Form + Zod:**
+
 ```typescript
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -477,6 +501,7 @@ function LogTempForm() {
 ### Error Handling
 
 **Toast notifications for user feedback:**
+
 ```typescript
 import { toast } from 'sonner';
 
@@ -491,6 +516,7 @@ toast.warning('Offline - will sync when connected');
 ```
 
 **Log errors for debugging:**
+
 ```typescript
 try {
   await someOperation();
@@ -547,6 +573,7 @@ try {
 ### Input Validation
 
 **Always validate user input:**
+
 ```typescript
 import { temperatureLogSchema, emailSchema, phoneSchema } from '@/lib/validation';
 
@@ -556,6 +583,7 @@ import { temperatureLogSchema, emailSchema, phoneSchema } from '@/lib/validation
 ```
 
 **Sanitize strings:**
+
 ```typescript
 import { sanitizeString } from '@/lib/validation';
 const cleanInput = sanitizeString(userInput);
@@ -594,12 +622,14 @@ const cleanInput = sanitizeString(userInput);
 ### Audit Trail Requirements
 
 **All significant events logged to `event_logs`:**
+
 - Alert created, acknowledged, resolved
 - Temperature logged (manual and automatic)
 - Settings changed
 - User actions (login, permission changes)
 
 **Event log structure:**
+
 ```typescript
 {
   event_type: 'alert_created' | 'temperature_logged' | 'setting_changed' | ...,
@@ -620,21 +650,21 @@ const cleanInput = sanitizeString(userInput);
 
 Use these terms consistently throughout the application:
 
-| Correct Term | Avoid | Context |
-|--------------|-------|---------|
-| Unit | Fridge, Refrigerator, Equipment | A monitored refrigeration unit |
-| Excursion | Violation, Out of range | Temperature outside limits |
-| Alarm | Alert (when referring to active) | Active critical condition |
-| Alert | Notification, Warning | Any condition notification |
-| Reading | Data point, Sample | Single temperature measurement |
-| Manual log | Hand log, Check | User-entered temperature |
-| Sensor | Device, Probe | Physical IoT device |
-| Gateway | Hub, Base station | LoRa gateway device |
-| Area | Zone, Section | Logical grouping within site |
-| Site | Location, Facility | Physical building/address |
-| Escalation | Notification chain | Alert severity progression |
-| Acknowledge | Dismiss, Accept | User confirms alert receipt |
-| Resolve | Close, Clear | Alert condition ended |
+| Correct Term | Avoid                            | Context                        |
+| ------------ | -------------------------------- | ------------------------------ |
+| Unit         | Fridge, Refrigerator, Equipment  | A monitored refrigeration unit |
+| Excursion    | Violation, Out of range          | Temperature outside limits     |
+| Alarm        | Alert (when referring to active) | Active critical condition      |
+| Alert        | Notification, Warning            | Any condition notification     |
+| Reading      | Data point, Sample               | Single temperature measurement |
+| Manual log   | Hand log, Check                  | User-entered temperature       |
+| Sensor       | Device, Probe                    | Physical IoT device            |
+| Gateway      | Hub, Base station                | LoRa gateway device            |
+| Area         | Zone, Section                    | Logical grouping within site   |
+| Site         | Location, Facility               | Physical building/address      |
+| Escalation   | Notification chain               | Alert severity progression     |
+| Acknowledge  | Dismiss, Accept                  | User confirms alert receipt    |
+| Resolve      | Close, Clear                     | Alert condition ended          |
 
 ---
 
@@ -642,51 +672,51 @@ Use these terms consistently throughout the application:
 
 ### Status Codes
 
-| Status | Meaning | Color | Priority |
-|--------|---------|-------|----------|
-| `alarm_active` | Critical temperature alarm | Red | 1 (highest) |
-| `temp_excursion` | Temperature out of range | Orange-red | 2 |
-| `monitoring_interrupted` | No sensor data | Gray | 3 |
-| `manual_required` | Manual log overdue | Orange | 4 |
-| `ok` | Normal operation | Green | 5 |
-| `offline` | Sensor offline | Gray | 6 |
+| Status                   | Meaning                    | Color      | Priority    |
+| ------------------------ | -------------------------- | ---------- | ----------- |
+| `alarm_active`           | Critical temperature alarm | Red        | 1 (highest) |
+| `temp_excursion`         | Temperature out of range   | Orange-red | 2           |
+| `monitoring_interrupted` | No sensor data             | Gray       | 3           |
+| `manual_required`        | Manual log overdue         | Orange     | 4           |
+| `ok`                     | Normal operation           | Green      | 5           |
+| `offline`                | Sensor offline             | Gray       | 6           |
 
 ### Alert Types
 
-| Type | Description | Default Severity |
-|------|-------------|------------------|
-| `alarm_active` | Confirmed temperature alarm | Critical |
-| `temp_excursion` | Temperature excursion detected | Critical |
-| `monitoring_interrupted` | Sensor not reporting | Warning |
-| `missed_manual_entry` | Manual log overdue | Warning |
-| `door_open` | Door open too long | Warning |
-| `low_battery` | Sensor battery low | Info |
-| `sensor_fault` | Sensor malfunction | Warning |
-| `calibration_due` | Calibration reminder | Info |
-| `suspected_cooling_failure` | Possible equipment failure | Critical |
+| Type                        | Description                    | Default Severity |
+| --------------------------- | ------------------------------ | ---------------- |
+| `alarm_active`              | Confirmed temperature alarm    | Critical         |
+| `temp_excursion`            | Temperature excursion detected | Critical         |
+| `monitoring_interrupted`    | Sensor not reporting           | Warning          |
+| `missed_manual_entry`       | Manual log overdue             | Warning          |
+| `door_open`                 | Door open too long             | Warning          |
+| `low_battery`               | Sensor battery low             | Info             |
+| `sensor_fault`              | Sensor malfunction             | Warning          |
+| `calibration_due`           | Calibration reminder           | Info             |
+| `suspected_cooling_failure` | Possible equipment failure     | Critical         |
 
 ### Key Edge Functions
 
-| Function | Purpose |
-|----------|---------|
-| `process-unit-states` | Creates/resolves alerts (SSOT) |
-| `process-escalations` | Sends notifications |
-| `ingest-readings` | Receives sensor data |
-| `send-sms-alert` | Sends SMS via Telnyx |
-| `ttn-webhook` | Receives TTN uplinks |
-| `ttn-provision-device` | Provisions LoRa devices |
-| `telnyx-webhook` | Receives SMS delivery status webhooks |
-| `telnyx-verification-status` | Checks toll-free verification status |
-| `telnyx-configure-webhook` | Automates Telnyx webhook setup |
+| Function                     | Purpose                               |
+| ---------------------------- | ------------------------------------- |
+| `process-unit-states`        | Creates/resolves alerts (SSOT)        |
+| `process-escalations`        | Sends notifications                   |
+| `ingest-readings`            | Receives sensor data                  |
+| `send-sms-alert`             | Sends SMS via Telnyx                  |
+| `ttn-webhook`                | Receives TTN uplinks                  |
+| `ttn-provision-device`       | Provisions LoRa devices               |
+| `telnyx-webhook`             | Receives SMS delivery status webhooks |
+| `telnyx-verification-status` | Checks toll-free verification status  |
+| `telnyx-configure-webhook`   | Automates Telnyx webhook setup        |
 
 ---
 
 ## Change Log
 
-| Date | Change | Author |
-|------|--------|--------|
+| Date       | Change                         | Author     |
+| ---------- | ------------------------------ | ---------- |
 | 2024-12-31 | Initial knowledge base created | Lovable AI |
 
 ---
 
-*Keep this document current as the project evolves. Update it when adding major features, changing conventions, or modifying the data model.*
+_Keep this document current as the project evolves. Update it when adding major features, changing conventions, or modifying the data model._

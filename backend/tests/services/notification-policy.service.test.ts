@@ -146,9 +146,7 @@ describe('Notification Policy Service', () => {
     it('should parse escalation_steps from JSON string', async () => {
       const policyWithSteps = {
         ...mockOrgPolicy,
-        escalation_steps: JSON.stringify([
-          { delay_minutes: 15, channels: ['SMS'], repeat: false },
-        ]),
+        escalation_steps: JSON.stringify([{ delay_minutes: 15, channels: ['SMS'], repeat: false }]),
       };
       const mockExecute = db.execute as ReturnType<typeof vi.fn>;
       mockExecute.mockResolvedValue({ rows: [policyWithSteps] });
@@ -169,9 +167,9 @@ describe('Notification Policy Service', () => {
           innerJoin: vi.fn().mockReturnValue({
             innerJoin: vi.fn().mockReturnValue({
               where: vi.fn().mockReturnValue({
-                limit: vi.fn().mockResolvedValue([
-                  { unitId, areaId, siteId, organizationId: orgId },
-                ]),
+                limit: vi
+                  .fn()
+                  .mockResolvedValue([{ unitId, areaId, siteId, organizationId: orgId }]),
               }),
             }),
           }),
@@ -281,11 +279,10 @@ describe('Notification Policy Service', () => {
       const mockExecute = db.execute as ReturnType<typeof vi.fn>;
       mockExecute.mockResolvedValue({ rows: [mockOrgPolicy] });
 
-      const result = await upsertNotificationPolicy(
-        { organization_id: orgId },
-        'temp_excursion',
-        { requires_ack: true, initial_channels: ['EMAIL'] }
-      );
+      const result = await upsertNotificationPolicy({ organization_id: orgId }, 'temp_excursion', {
+        requires_ack: true,
+        initial_channels: ['EMAIL'],
+      });
 
       expect(result.organization_id).toBe(orgId);
       expect(mockExecute).toHaveBeenCalled();
@@ -295,11 +292,9 @@ describe('Notification Policy Service', () => {
       const mockExecute = db.execute as ReturnType<typeof vi.fn>;
       mockExecute.mockResolvedValue({ rows: [mockSitePolicy] });
 
-      const result = await upsertNotificationPolicy(
-        { site_id: siteId },
-        'temp_excursion',
-        { severity_threshold: 'CRITICAL' }
-      );
+      const result = await upsertNotificationPolicy({ site_id: siteId }, 'temp_excursion', {
+        severity_threshold: 'CRITICAL',
+      });
 
       expect(result.site_id).toBe(siteId);
       expect(mockExecute).toHaveBeenCalled();
@@ -309,11 +304,9 @@ describe('Notification Policy Service', () => {
       const mockExecute = db.execute as ReturnType<typeof vi.fn>;
       mockExecute.mockResolvedValue({ rows: [mockUnitPolicy] });
 
-      const result = await upsertNotificationPolicy(
-        { unit_id: unitId },
-        'temp_excursion',
-        { requires_ack: false }
-      );
+      const result = await upsertNotificationPolicy({ unit_id: unitId }, 'temp_excursion', {
+        requires_ack: false,
+      });
 
       expect(result.unit_id).toBe(unitId);
       expect(mockExecute).toHaveBeenCalled();
@@ -321,7 +314,7 @@ describe('Notification Policy Service', () => {
 
     it('should throw error when no scope provided', async () => {
       await expect(
-        upsertNotificationPolicy({}, 'temp_excursion', { requires_ack: true })
+        upsertNotificationPolicy({}, 'temp_excursion', { requires_ack: true }),
       ).rejects.toThrow('Must provide organization_id, site_id, or unit_id');
     });
 
@@ -329,15 +322,9 @@ describe('Notification Policy Service', () => {
       const mockExecute = db.execute as ReturnType<typeof vi.fn>;
       mockExecute.mockResolvedValue({ rows: [mockOrgPolicy] });
 
-      await upsertNotificationPolicy(
-        { organization_id: orgId },
-        'temp_excursion',
-        {
-          escalation_steps: [
-            { delay_minutes: 15, channels: ['SMS'], repeat: false },
-          ],
-        }
-      );
+      await upsertNotificationPolicy({ organization_id: orgId }, 'temp_excursion', {
+        escalation_steps: [{ delay_minutes: 15, channels: ['SMS'], repeat: false }],
+      });
 
       expect(mockExecute).toHaveBeenCalled();
     });
@@ -348,10 +335,7 @@ describe('Notification Policy Service', () => {
       const mockExecute = db.execute as ReturnType<typeof vi.fn>;
       mockExecute.mockResolvedValue({ rowCount: 1 });
 
-      const result = await deleteNotificationPolicy(
-        { organization_id: orgId },
-        'temp_excursion'
-      );
+      const result = await deleteNotificationPolicy({ organization_id: orgId }, 'temp_excursion');
 
       expect(result).toBe(true);
       expect(mockExecute).toHaveBeenCalled();
@@ -361,10 +345,7 @@ describe('Notification Policy Service', () => {
       const mockExecute = db.execute as ReturnType<typeof vi.fn>;
       mockExecute.mockResolvedValue({ rowCount: 0 });
 
-      const result = await deleteNotificationPolicy(
-        { organization_id: orgId },
-        'nonexistent_type'
-      );
+      const result = await deleteNotificationPolicy({ organization_id: orgId }, 'nonexistent_type');
 
       expect(result).toBe(false);
     });
@@ -373,10 +354,7 @@ describe('Notification Policy Service', () => {
       const mockExecute = db.execute as ReturnType<typeof vi.fn>;
       mockExecute.mockResolvedValue({ rowCount: 1 });
 
-      const result = await deleteNotificationPolicy(
-        { site_id: siteId },
-        'temp_excursion'
-      );
+      const result = await deleteNotificationPolicy({ site_id: siteId }, 'temp_excursion');
 
       expect(result).toBe(true);
       expect(mockExecute).toHaveBeenCalled();
@@ -386,10 +364,7 @@ describe('Notification Policy Service', () => {
       const mockExecute = db.execute as ReturnType<typeof vi.fn>;
       mockExecute.mockResolvedValue({ rowCount: 1 });
 
-      const result = await deleteNotificationPolicy(
-        { unit_id: unitId },
-        'temp_excursion'
-      );
+      const result = await deleteNotificationPolicy({ unit_id: unitId }, 'temp_excursion');
 
       expect(result).toBe(true);
       expect(mockExecute).toHaveBeenCalled();

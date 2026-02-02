@@ -6,6 +6,7 @@ plan: research
 # RESEARCH: TTN SDK Integration
 
 ## Goal
+
 Determine the best way to integrate The Things Network (TTN) stack into the Fastify/Node.js backend to replace Supabase Edge Functions.
 
 ## Findings
@@ -28,12 +29,15 @@ Determine the best way to integrate The Things Network (TTN) stack into the Fast
    - **Router**: `backend/src/routers/ttnSettings.ts` exposing these capabilities to the frontend.
 
 ## Migration Strategy
+
 We will "lift and shift" the TypeScript logic from `supabase/functions/_shared` and `supabase/functions/ttn-*` into the backend, adapting it for:
+
 - Node.js `fetch` (native).
 - Drizzle ORM (replacing Supabase client).
 - Fastify/tRPC context (replacing `Deno.serve`).
 
 ## Plan structure
+
 - 27-01: Foundation (Client & Base Logic)
 - 27-02: Bootstrap Service (Provisioning)
 - 27-03: Settings Service (CRUD & Test)

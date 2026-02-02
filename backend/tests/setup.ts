@@ -63,7 +63,9 @@ vi.mock('stripe', () => ({
   default: class MockStripe {
     checkout = {
       sessions: {
-        create: vi.fn().mockResolvedValue({ id: 'cs_mock', url: 'https://checkout.stripe.com/mock' }),
+        create: vi
+          .fn()
+          .mockResolvedValue({ id: 'cs_mock', url: 'https://checkout.stripe.com/mock' }),
       },
     };
     billingPortal = {

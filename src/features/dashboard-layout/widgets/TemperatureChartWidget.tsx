@@ -1,11 +1,11 @@
 /**
  * Temperature Chart Widget
- * 
+ *
  * Displays temperature readings over time with comparison overlay support.
  * Note: Card wrapper is provided by WidgetWrapper.
  */
 
-import { useMemo } from "react";
+import { useMemo } from 'react';
 import {
   ComposedChart,
   Area,
@@ -16,10 +16,10 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
-} from "recharts";
-import { format } from "date-fns";
-import { Activity } from "lucide-react";
-import type { TimelineState } from "../types";
+} from 'recharts';
+import { format } from 'date-fns';
+import { Activity } from 'lucide-react';
+import type { TimelineState } from '../types';
 
 interface SensorReading {
   id: string;
@@ -53,8 +53,8 @@ export function TemperatureChartWidget({
   const chartData = useMemo(() => {
     // Build base chart data
     const baseData = readings.map((r, index) => ({
-      time: format(new Date(r.recorded_at), "HH:mm"),
-      fullTime: format(new Date(r.recorded_at), "MMM d, HH:mm"),
+      time: format(new Date(r.recorded_at), 'HH:mm'),
+      fullTime: format(new Date(r.recorded_at), 'MMM d, HH:mm'),
       temperature: r.temperature,
       humidity: r.humidity,
       // Comparison data aligned by index
@@ -64,7 +64,8 @@ export function TemperatureChartWidget({
     return baseData;
   }, [readings, comparisonReadings]);
 
-  const showComparison = timelineState.compare !== null && comparisonReadings && comparisonReadings.length > 0;
+  const showComparison =
+    timelineState.compare !== null && comparisonReadings && comparisonReadings.length > 0;
 
   if (readings.length === 0) {
     return (
@@ -115,33 +116,33 @@ export function TemperatureChartWidget({
               stroke="hsl(var(--muted-foreground))"
               fontSize={isCompact ? 10 : 12}
               tickLine={false}
-              domain={["auto", "auto"]}
+              domain={['auto', 'auto']}
               tickFormatter={(v) => `${v}°`}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "8px",
+                backgroundColor: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '8px',
               }}
-              labelFormatter={(_, payload) => payload[0]?.payload?.fullTime || ""}
+              labelFormatter={(_, payload) => payload[0]?.payload?.fullTime || ''}
               formatter={(value: number, name: string) => [
-                `${value?.toFixed(1) ?? "--"}°F`,
-                name === "comparisonTemp" ? "Previous Period" : "Temperature",
+                `${value?.toFixed(1) ?? '--'}°F`,
+                name === 'comparisonTemp' ? 'Previous Period' : 'Temperature',
               ]}
             />
             <ReferenceLine
               y={tempLimitHigh}
               stroke="hsl(var(--alarm))"
               strokeDasharray="5 5"
-              label={{ value: `Limit: ${tempLimitHigh}°F`, fill: "hsl(var(--alarm))", fontSize: 11 }}
+              label={{
+                value: `Limit: ${tempLimitHigh}°F`,
+                fill: 'hsl(var(--alarm))',
+                fontSize: 11,
+              }}
             />
             {tempLimitLow !== null && (
-              <ReferenceLine
-                y={tempLimitLow}
-                stroke="hsl(var(--accent))"
-                strokeDasharray="5 5"
-              />
+              <ReferenceLine y={tempLimitLow} stroke="hsl(var(--accent))" strokeDasharray="5 5" />
             )}
             <Area
               type="monotone"
@@ -157,7 +158,7 @@ export function TemperatureChartWidget({
               stroke="hsl(var(--accent))"
               strokeWidth={2}
               dot={false}
-              activeDot={{ r: 4, fill: "hsl(var(--accent))" }}
+              activeDot={{ r: 4, fill: 'hsl(var(--accent))' }}
               connectNulls={true}
             />
             {/* Comparison overlay line (dashed) */}
@@ -169,7 +170,7 @@ export function TemperatureChartWidget({
                 strokeWidth={2}
                 strokeDasharray="5 5"
                 dot={false}
-                activeDot={{ r: 3, fill: "hsl(var(--muted-foreground))" }}
+                activeDot={{ r: 3, fill: 'hsl(var(--muted-foreground))' }}
                 connectNulls={true}
               />
             )}

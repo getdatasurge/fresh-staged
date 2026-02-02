@@ -118,7 +118,7 @@ describe('Readings API', () => {
   function mockInvalidApiKey(errorMessage: string = 'Invalid API key') {
     mockRequireApiKey.mockImplementation(async (request, reply) => {
       return reply.code(401).send({
-        error: { code: 'UNAUTHORIZED', message: errorMessage }
+        error: { code: 'UNAUTHORIZED', message: errorMessage },
       });
     });
   }
@@ -213,9 +213,7 @@ describe('Readings API', () => {
 
     it('should return 403 when unit does not belong to API key org', async () => {
       mockValidApiKey();
-      mockIngestBulkReadings.mockRejectedValue(
-        new Error('No valid units found for organization')
-      );
+      mockIngestBulkReadings.mockRejectedValue(new Error('No valid units found for organization'));
 
       const response = await app.inject({
         method: 'POST',
@@ -270,7 +268,9 @@ describe('Readings API', () => {
 
     it('should return 401 without JWT', async () => {
       mockRequireAuth.mockImplementation(async (request, reply) => {
-        return reply.code(401).send({ error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } });
+        return reply
+          .code(401)
+          .send({ error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } });
       });
 
       const response = await app.inject({
@@ -299,9 +299,7 @@ describe('Readings API', () => {
       mockRequireOrgContext.mockImplementation(async (request, reply) => {
         // noop - let handler continue
       });
-      mockQueryReadings.mockRejectedValue(
-        new Error('Unit not found or access denied')
-      );
+      mockQueryReadings.mockRejectedValue(new Error('Unit not found or access denied'));
 
       const response = await app.inject({
         method: 'GET',

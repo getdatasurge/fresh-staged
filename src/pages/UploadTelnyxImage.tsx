@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useTRPC } from "@/lib/trpc";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { ExternalLink, Copy, RefreshCw, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useTRPC } from '@/lib/trpc';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { ExternalLink, Copy, RefreshCw, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 
 /**
  * Utility page to view and verify the Telnyx opt-in verification image.
  * The image is hosted in the public folder and auto-deployed with the app.
  */
 export default function UploadTelnyxImage() {
-  const [publicUrl, setPublicUrl] = useState<string>("");
+  const [publicUrl, setPublicUrl] = useState<string>('');
   const trpc = useTRPC();
 
   useEffect(() => {
@@ -25,15 +25,15 @@ export default function UploadTelnyxImage() {
     trpc.telnyx.verifyPublicAsset.mutationOptions({
       onSuccess: (data) => {
         if (data.accessible) {
-          toast.success("URL is publicly accessible!");
+          toast.success('URL is publicly accessible!');
         } else {
-          toast.error(`URL check failed: ${data.error || "Not accessible"}`);
+          toast.error(`URL check failed: ${data.error || 'Not accessible'}`);
         }
       },
       onError: (error) => {
         toast.error(`Verification failed: ${error.message}`);
       },
-    })
+    }),
   );
 
   const verifyUrl = async () => {
@@ -43,7 +43,7 @@ export default function UploadTelnyxImage() {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(publicUrl);
-    toast.success("URL copied to clipboard!");
+    toast.success('URL copied to clipboard!');
   };
 
   const verificationResult = verifyMutation.data;
@@ -55,8 +55,8 @@ export default function UploadTelnyxImage() {
         <CardHeader>
           <CardTitle>Telnyx Opt-In Verification Image</CardTitle>
           <CardDescription>
-            The opt-in verification image is automatically hosted with your app.
-            Copy the URL below and paste it into your Telnyx toll-free verification form.
+            The opt-in verification image is automatically hosted with your app. Copy the URL below
+            and paste it into your Telnyx toll-free verification form.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -67,15 +67,10 @@ export default function UploadTelnyxImage() {
               <p className="text-sm font-medium">Public URL:</p>
             </div>
             <code className="block p-2 bg-background rounded border text-xs break-all">
-              {publicUrl || "Loading..."}
+              {publicUrl || 'Loading...'}
             </code>
             <div className="flex gap-2 mt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={copyToClipboard}
-                disabled={!publicUrl}
-              >
+              <Button variant="outline" size="sm" onClick={copyToClipboard} disabled={!publicUrl}>
                 <Copy className="mr-2 h-3 w-3" />
                 Copy URL
               </Button>
@@ -92,11 +87,7 @@ export default function UploadTelnyxImage() {
                 )}
                 Verify Accessibility
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-              >
+              <Button variant="outline" size="sm" asChild>
                 <a href={publicUrl} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="mr-2 h-3 w-3" />
                   Open
@@ -107,16 +98,20 @@ export default function UploadTelnyxImage() {
 
           {/* Verification Result */}
           {verificationResult && (
-            <div className={`p-4 rounded-lg border ${
-              verificationResult.accessible
-                ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
-                : "bg-destructive/10 border-destructive/20"
-            }`}>
+            <div
+              className={`p-4 rounded-lg border ${
+                verificationResult.accessible
+                  ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
+                  : 'bg-destructive/10 border-destructive/20'
+              }`}
+            >
               <div className="flex items-center gap-2 mb-2">
                 {verificationResult.accessible ? (
                   <>
                     <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    <span className="font-medium text-green-800 dark:text-green-200">URL is Publicly Accessible</span>
+                    <span className="font-medium text-green-800 dark:text-green-200">
+                      URL is Publicly Accessible
+                    </span>
                     <Badge className="bg-green-500">200 OK</Badge>
                   </>
                 ) : (
@@ -153,9 +148,9 @@ export default function UploadTelnyxImage() {
           {/* Instructions */}
           <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
             <p className="text-sm text-blue-800 dark:text-blue-200">
-              <strong>Next Step:</strong> Copy the URL above and paste it into your Telnyx
-              toll-free verification form. The image is automatically deployed with your app,
-              so no manual upload is needed.
+              <strong>Next Step:</strong> Copy the URL above and paste it into your Telnyx toll-free
+              verification form. The image is automatically deployed with your app, so no manual
+              upload is needed.
             </p>
           </div>
         </CardContent>

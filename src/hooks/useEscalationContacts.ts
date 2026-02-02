@@ -4,12 +4,12 @@
  * Migrated to tRPC in Phase 21
  * Uses escalationContacts router for CRUD operations
  */
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUser } from "@stackframe/react";
-import { useTRPCClient } from "@/lib/trpc";
-import { qk } from "@/lib/queryKeys";
-import { invalidateEscalationContacts } from "@/lib/invalidation";
-import { useOrgScope } from "@/hooks/useOrgScope";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useUser } from '@stackframe/react';
+import { useTRPCClient } from '@/lib/trpc';
+import { qk } from '@/lib/queryKeys';
+import { invalidateEscalationContacts } from '@/lib/invalidation';
+import { useOrgScope } from '@/hooks/useOrgScope';
 
 export interface EscalationContact {
   id: string;
@@ -57,7 +57,7 @@ export function useCreateEscalationContact() {
   const client = useTRPCClient();
 
   return useMutation({
-    mutationFn: async (contact: Omit<EscalationContact, "id" | "created_at">) => {
+    mutationFn: async (contact: Omit<EscalationContact, 'id' | 'created_at'>) => {
       if (!orgId || !user) throw new Error('Not authenticated');
 
       return client.escalationContacts.create.mutate({

@@ -29,8 +29,9 @@ const NUM_DEVICES = 30; // Simulating 20-50 sensors
 const TIME_RANGE_DAYS = 30; // 30 days of historical data
 
 // Device ID format: sensor-001 through sensor-030
-const DEVICE_IDS = Array.from({ length: NUM_DEVICES }, (_, i) =>
-  `sensor-${String(i + 1).padStart(3, '0')}`
+const DEVICE_IDS = Array.from(
+  { length: NUM_DEVICES },
+  (_, i) => `sensor-${String(i + 1).padStart(3, '0')}`,
 );
 
 /**
@@ -73,7 +74,7 @@ function generateTimestamp(daysAgo: number): Date {
 async function confirm(message: string): Promise<boolean> {
   const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   });
 
   return new Promise((resolve) => {
@@ -89,7 +90,7 @@ async function confirm(message: string): Promise<boolean> {
  */
 async function checkExistingData(): Promise<number> {
   const result = await db.execute<{ count: string }>(
-    sql`SELECT COUNT(*) as count FROM ${sensorReadings}`
+    sql`SELECT COUNT(*) as count FROM ${sensorReadings}`,
   );
   return parseInt(result.rows[0]?.count || '0', 10);
 }
@@ -99,7 +100,7 @@ async function checkExistingData(): Promise<number> {
  */
 async function getRandomUnitId(): Promise<string | null> {
   const result = await db.execute<{ id: string }>(
-    sql`SELECT id FROM ${units} ORDER BY RANDOM() LIMIT 1`
+    sql`SELECT id FROM ${units} ORDER BY RANDOM() LIMIT 1`,
   );
   return result.rows[0]?.id || null;
 }
@@ -123,7 +124,7 @@ async function main() {
 
   if (existingCount > 0 && !skipConfirmation) {
     const shouldContinue = await confirm(
-      '\nData already exists in sensor_readings table. Continue anyway?'
+      '\nData already exists in sensor_readings table. Continue anyway?',
     );
     if (!shouldContinue) {
       console.log('Cancelled.');
@@ -146,7 +147,7 @@ async function main() {
   // Safety confirmation
   if (!skipConfirmation) {
     const shouldProceed = await confirm(
-      `\nThis will insert ${TARGET_RECORDS.toLocaleString()} records. Continue?`
+      `\nThis will insert ${TARGET_RECORDS.toLocaleString()} records. Continue?`,
     );
     if (!shouldProceed) {
       console.log('Cancelled.');
@@ -193,13 +194,13 @@ async function main() {
 
     const batchDuration = Date.now() - batchStart;
     const totalInserted = (batchNum + 1) * BATCH_SIZE;
-    const progress = Math.min(100, ((totalInserted / TARGET_RECORDS) * 100));
+    const progress = Math.min(100, (totalInserted / TARGET_RECORDS) * 100);
 
     console.log(
       `Batch ${batchNum + 1}/${numBatches} inserted ` +
-      `(${totalInserted.toLocaleString()} records, ` +
-      `${progress.toFixed(1)}%, ` +
-      `${batchDuration}ms)`
+        `(${totalInserted.toLocaleString()} records, ` +
+        `${progress.toFixed(1)}%, ` +
+        `${batchDuration}ms)`,
     );
   }
 

@@ -14,17 +14,17 @@ key-files:
   modified: []
 decisions:
   - id: DEPLOY-01
-    choice: "Call deploy.sh via exec instead of duplicating Docker Compose commands"
-    reason: "Avoids code duplication, maintains single source of truth for deployment logic"
+    choice: 'Call deploy.sh via exec instead of duplicating Docker Compose commands'
+    reason: 'Avoids code duplication, maintains single source of truth for deployment logic'
   - id: DEPLOY-02
-    choice: "Use DEPLOY_SCRIPT_DIR instead of SCRIPT_DIR to avoid variable collision with libraries"
-    reason: "Libraries redefine SCRIPT_DIR when sourced, causing path resolution failures"
+    choice: 'Use DEPLOY_SCRIPT_DIR instead of SCRIPT_DIR to avoid variable collision with libraries'
+    reason: 'Libraries redefine SCRIPT_DIR when sourced, causing path resolution failures'
   - id: DEPLOY-03
     choice: "Use descriptive checkpoint names with 'deploy-' prefix"
-    reason: "Prevents collision with checkpoint names from individual library functions"
+    reason: 'Prevents collision with checkpoint names from individual library functions'
 metrics:
-  duration: "~10 minutes"
-  completed: "2026-01-25"
+  duration: '~10 minutes'
+  completed: '2026-01-25'
 ---
 
 # Phase 25 Plan 01: Deployment Orchestrator Summary
@@ -53,29 +53,31 @@ Created `scripts/deploy-automated.sh` - a thin deployment orchestrator that:
 
 ## Verification Results
 
-| Check | Result |
-|-------|--------|
-| File exists and executable | PASS (`-rwxr-xr-x`) |
-| Bash syntax valid | PASS |
-| Sources 3 library files | PASS (3) |
-| Uses run_step 4 times | PASS (4) |
-| Calls deploy.sh | PASS (`exec "${DEPLOY_SCRIPT_DIR}/deploy.sh"`) |
-| No docker compose duplication | PASS |
-| Line count 100-180 | PASS (177 lines) |
-| --help works | PASS |
-| -h works | PASS |
+| Check                         | Result                                         |
+| ----------------------------- | ---------------------------------------------- |
+| File exists and executable    | PASS (`-rwxr-xr-x`)                            |
+| Bash syntax valid             | PASS                                           |
+| Sources 3 library files       | PASS (3)                                       |
+| Uses run_step 4 times         | PASS (4)                                       |
+| Calls deploy.sh               | PASS (`exec "${DEPLOY_SCRIPT_DIR}/deploy.sh"`) |
+| No docker compose duplication | PASS                                           |
+| Line count 100-180            | PASS (177 lines)                               |
+| --help works                  | PASS                                           |
+| -h works                      | PASS                                           |
 
 ## Deviations from Plan
 
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] CRLF line endings**
+
 - **Found during:** Initial syntax check
 - **Issue:** File had Windows-style line endings causing bash parse error
 - **Fix:** `sed -i 's/\r$//'` to convert to Unix line endings
 - **Files modified:** scripts/deploy-automated.sh
 
 **2. [Rule 3 - Blocking] SCRIPT_DIR collision with libraries**
+
 - **Found during:** --help test execution
 - **Issue:** prereq-lib.sh redefines SCRIPT_DIR when sourced, breaking path resolution
 - **Fix:** Use DEPLOY_SCRIPT_DIR for main script, LIB_DIR for library path
@@ -83,13 +85,14 @@ Created `scripts/deploy-automated.sh` - a thin deployment orchestrator that:
 
 ## Commits
 
-| Task | Commit | Description |
-|------|--------|-------------|
-| 1-2 | aa4d797 | Create thin deployment orchestrator script |
+| Task | Commit  | Description                                |
+| ---- | ------- | ------------------------------------------ |
+| 1-2  | aa4d797 | Create thin deployment orchestrator script |
 
 ## Key Code Patterns
 
 ### Library Sourcing (avoid variable collision)
+
 ```bash
 DEPLOY_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$DEPLOY_SCRIPT_DIR/.." && pwd)"
@@ -101,6 +104,7 @@ source "${LIB_DIR}/config-lib.sh"
 ```
 
 ### Deployment Phase Wrapper
+
 ```bash
 do_deployment() {
     step "Executing deploy.sh..."
@@ -110,6 +114,7 @@ do_deployment() {
 ```
 
 ### Checkpoint-tracked Orchestration
+
 ```bash
 run_step "deploy-preflight" do_preflight
 run_step "deploy-prerequisites" do_prerequisites
@@ -120,6 +125,7 @@ run_step "deploy-deployment" do_deployment
 ## Next Phase Readiness
 
 Plan 25-02 can proceed. The orchestrator is complete and ready for:
+
 - Health verification testing
 - End-to-end deployment validation
 - Documentation of completion summary

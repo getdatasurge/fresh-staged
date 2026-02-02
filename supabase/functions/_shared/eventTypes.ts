@@ -1,6 +1,6 @@
 /**
  * FrostGuard Event Types
- * 
+ *
  * Canonical event envelope that wraps all incoming sensor payloads,
  * providing a unified structure for processing regardless of source.
  */
@@ -27,32 +27,32 @@ export interface InferenceReason {
 
 /**
  * Result of payload type inference.
- * 
+ *
  * IMPORTANT: payloadType is now versioned (e.g., "door_v1", "temp_rh_v1").
  * sensorType is derived from the payload type manifest at runtime.
  */
 export interface InferenceResult {
   /** Versioned payload type (e.g., "door_v1", "temp_rh_v1", "unclassified") */
   payloadType: string;
-  
+
   /** Inferred device model (e.g., "LDS02") - metadata only */
   model: string | null;
-  
+
   /** Derived sensor type (e.g., "door", "temperature") - from manifest */
   sensorType: string;
-  
+
   /** Overall confidence score (0-1) */
   confidence: number;
-  
+
   /** Explainable chain of inference reasons */
   reasons: InferenceReason[];
-  
+
   /** True if multiple types match with similar confidence */
   isAmbiguous: boolean;
-  
+
   /** Other possible payload types if ambiguous */
   alternates: string[];
-  
+
   /** Schema version of the payload type manifest */
   schemaVersion: string;
 }
@@ -74,68 +74,68 @@ export interface FrostGuardEvent {
   // --------------------------------------------------------------------------
   // Envelope Metadata
   // --------------------------------------------------------------------------
-  
+
   /** Unique event identifier (UUID) */
   eventId: string;
-  
+
   /** ISO timestamp when event was received */
   receivedAt: string;
-  
+
   /** Source of this event */
   source: EventSource;
-  
+
   /** Version of the source handler (e.g., "ttn-webhook/1.0") */
   sourceVersion: string;
-  
+
   // --------------------------------------------------------------------------
   // Device Identity
   // --------------------------------------------------------------------------
-  
+
   /** Device EUI (8-byte hex string) */
   devEui: string;
-  
+
   /** TTN device_id if available */
   deviceId?: string;
-  
+
   /** Organization ID this device belongs to */
   organizationId?: string;
-  
+
   /** Sensor ID in our database (if resolved) */
   sensorId?: string;
-  
+
   // --------------------------------------------------------------------------
   // Payload Data
   // --------------------------------------------------------------------------
-  
+
   /** Base64-encoded raw payload bytes (if available) */
   rawPayload?: string;
-  
+
   /** Decoded payload object from decoder/source */
   decodedPayload: Record<string, unknown>;
-  
+
   /** Port number for LoRaWAN payloads */
   fPort?: number;
-  
+
   // --------------------------------------------------------------------------
   // Network Metadata
   // --------------------------------------------------------------------------
-  
+
   /** Frame counter (for deduplication) */
   fCnt?: number;
-  
+
   /** Gateway ID that received this uplink */
   gatewayId?: string;
-  
+
   /** RSSI signal strength */
   rssi?: number;
-  
+
   /** SNR value */
   snr?: number;
-  
+
   // --------------------------------------------------------------------------
   // Inference Result
   // --------------------------------------------------------------------------
-  
+
   /** Populated after payload classification */
   inference?: InferenceResult;
 }
@@ -198,14 +198,14 @@ function nowISO(): string {
  */
 export function normalizeFromTTN(
   webhook: TTNWebhookPayload,
-  sourceVersion = 'ttn-webhook/1.0'
+  sourceVersion = 'ttn-webhook/1.0',
 ): FrostGuardEvent {
   const uplink = webhook.uplink_message;
   const deviceIds = webhook.end_device_ids;
-  
+
   // Extract gateway info from first rx_metadata entry
   const rxMeta = uplink?.rx_metadata?.[0];
-  
+
   return {
     eventId: generateEventId(),
     receivedAt: webhook.received_at || nowISO(),
@@ -238,7 +238,7 @@ export interface EmulatorSensorInput {
  */
 export function normalizeFromEmulator(
   input: EmulatorSensorInput,
-  sourceVersion = 'emulator-sync/1.0'
+  sourceVersion = 'emulator-sync/1.0',
 ): FrostGuardEvent {
   return {
     eventId: generateEventId(),
@@ -265,7 +265,7 @@ export interface SimulatorPayload {
  */
 export function normalizeFromSimulator(
   input: SimulatorPayload,
-  sourceVersion = 'simulator/1.0'
+  sourceVersion = 'simulator/1.0',
 ): FrostGuardEvent {
   return {
     eventId: generateEventId(),
@@ -285,7 +285,7 @@ export function createFrostGuardEvent(
   devEui: string,
   decodedPayload: Record<string, unknown>,
   source: EventSource = 'api',
-  options: Partial<FrostGuardEvent> = {}
+  options: Partial<FrostGuardEvent> = {},
 ): FrostGuardEvent {
   return {
     eventId: generateEventId(),

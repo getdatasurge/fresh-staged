@@ -1,15 +1,15 @@
-import { Lock, Star, Plus, ChevronDown } from "lucide-react";
+import { Lock, Star, Plus, ChevronDown } from 'lucide-react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { DEFAULT_LAYOUT_ID, MAX_CUSTOM_LAYOUTS } from "../types";
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { DEFAULT_LAYOUT_ID, MAX_CUSTOM_LAYOUTS } from '../types';
 
 interface LayoutOption {
   id: string;
@@ -51,9 +51,7 @@ export function LayoutSelector({
               {activeLayoutId === DEFAULT_LAYOUT_ID && (
                 <Lock className="h-3 w-3 text-muted-foreground" />
               )}
-              <span className="truncate">
-                {activeLayout?.name || "Select layout"}
-              </span>
+              <span className="truncate">{activeLayout?.name || 'Select layout'}</span>
               {isDirty && (
                 <Badge variant="secondary" className="ml-1 text-xs px-1">
                   Unsaved

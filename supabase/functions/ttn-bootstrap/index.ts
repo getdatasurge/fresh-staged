@@ -17,20 +17,20 @@
  * - Start Fresh with org_id rotation on failure
  */
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // ============================================================================
 // CONSTANTS
 // ============================================================================
 
-const TTN_BASE_URL = "https://eu1.cloud.thethings.network";
-const TTN_REGION = "eu1"; // Default region
-const FUNCTION_VERSION = "ttn-bootstrap-v2.9-region-param-20260108";
+const TTN_BASE_URL = 'https://eu1.cloud.thethings.network';
+const TTN_REGION = 'eu1'; // Default region
+const FUNCTION_VERSION = 'ttn-bootstrap-v2.9-region-param-20260108';
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 // ============================================================================
@@ -38,7 +38,7 @@ const corsHeaders = {
 // ============================================================================
 
 interface ProvisioningRequest {
-  action: "preflight" | "provision" | "start_fresh" | "status" | "validate_only";
+  action: 'preflight' | 'provision' | 'start_fresh' | 'status' | 'validate_only';
   org_id: string;
   organization_id?: string;
   cluster?: string;
@@ -72,18 +72,18 @@ interface ProvisioningResult {
 }
 
 type ErrorCategory =
-  | "ORGANIZATION_OWNERSHIP_ISSUE"
-  | "APPLICATION_OWNERSHIP_ISSUE"
-  | "WRONG_REGION"
-  | "INVALID_CREDENTIALS"
-  | "RATE_LIMITED"
-  | "NETWORK_ERROR"
-  | "UNKNOWN";
+  | 'ORGANIZATION_OWNERSHIP_ISSUE'
+  | 'APPLICATION_OWNERSHIP_ISSUE'
+  | 'WRONG_REGION'
+  | 'INVALID_CREDENTIALS'
+  | 'RATE_LIMITED'
+  | 'NETWORK_ERROR'
+  | 'UNKNOWN';
 
 interface TtnAuthInfo {
   rights: string[];
   userId?: string;
-  entityType: "user" | "organization" | "application" | "gateway" | "unknown";
+  entityType: 'user' | 'organization' | 'application' | 'gateway' | 'unknown';
   entityId?: string;
 }
 
@@ -103,19 +103,19 @@ interface TtnAuthInfo {
 function sanitizeTtnId(input: string): string {
   let sanitized = input
     .toLowerCase()
-    .replace(/@ttn$/i, "")           // Remove @ttn suffix
-    .replace(/[^a-z0-9-]/g, "-")     // Replace invalid chars with hyphen
-    .replace(/-+/g, "-")              // Collapse consecutive hyphens
-    .replace(/^-+|-+$/g, "");         // Trim leading/trailing hyphens
+    .replace(/@ttn$/i, '') // Remove @ttn suffix
+    .replace(/[^a-z0-9-]/g, '-') // Replace invalid chars with hyphen
+    .replace(/-+/g, '-') // Collapse consecutive hyphens
+    .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
 
   // Ensure max length of 36 chars (TTN limit)
   if (sanitized.length > 36) {
-    sanitized = sanitized.substring(0, 36).replace(/-+$/, "");
+    sanitized = sanitized.substring(0, 36).replace(/-+$/, '');
   }
 
   // Ensure it starts with a letter (TTN requirement)
   if (!/^[a-z]/.test(sanitized)) {
-    sanitized = "fg-" + sanitized;
+    sanitized = 'fg-' + sanitized;
   }
 
   return sanitized;
@@ -134,10 +134,10 @@ function generateSuffix(): string {
 async function ttnRequest<T = unknown>(
   endpoint: string,
   options: {
-    method?: "GET" | "POST" | "PUT" | "DELETE";
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
     apiKey: string;
     body?: Record<string, unknown>;
-  }
+  },
 ): Promise<{
   ok: boolean;
   status: number;
@@ -146,7 +146,7 @@ async function ttnRequest<T = unknown>(
   errorCode?: string;
   errorCategory: ErrorCategory;
 }> {
-  const { method = "GET", apiKey, body } = options;
+  const { method = 'GET', apiKey, body } = options;
 
   const url = `${TTN_BASE_URL}${endpoint}`;
   console.log(`[TTN] ${method} ${url}`);
@@ -156,8 +156,8 @@ async function ttnRequest<T = unknown>(
       method,
       headers: {
         Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "User-Agent": `FrostGuard/${FUNCTION_VERSION}`,
+        'Content-Type': 'application/json',
+        'User-Agent': `FrostGuard/${FUNCTION_VERSION}`,
       },
       body: body ? JSON.stringify(body) : undefined,
     });
@@ -181,23 +181,29 @@ async function ttnRequest<T = unknown>(
     }
 
     // Classify error category
-    let errorCategory: ErrorCategory = "UNKNOWN";
+    let errorCategory: ErrorCategory = 'UNKNOWN';
     if (response.ok) {
-      errorCategory = "UNKNOWN"; // Not an error
-    } else if (response.status === 404 && responseText.includes("route_not_found")) {
-      errorCategory = "WRONG_REGION";
+      errorCategory = 'UNKNOWN'; // Not an error
+    } else if (response.status === 404 && responseText.includes('route_not_found')) {
+      errorCategory = 'WRONG_REGION';
     } else if (response.status === 403) {
-      if (errorMessage?.includes("no_organization_rights") || errorCode === "no_organization_rights") {
-        errorCategory = "ORGANIZATION_OWNERSHIP_ISSUE";
-      } else if (errorMessage?.includes("no_application_rights") || errorCode === "no_application_rights") {
-        errorCategory = "APPLICATION_OWNERSHIP_ISSUE";
+      if (
+        errorMessage?.includes('no_organization_rights') ||
+        errorCode === 'no_organization_rights'
+      ) {
+        errorCategory = 'ORGANIZATION_OWNERSHIP_ISSUE';
+      } else if (
+        errorMessage?.includes('no_application_rights') ||
+        errorCode === 'no_application_rights'
+      ) {
+        errorCategory = 'APPLICATION_OWNERSHIP_ISSUE';
       } else {
-        errorCategory = "INVALID_CREDENTIALS";
+        errorCategory = 'INVALID_CREDENTIALS';
       }
     } else if (response.status === 401) {
-      errorCategory = "INVALID_CREDENTIALS";
+      errorCategory = 'INVALID_CREDENTIALS';
     } else if (response.status === 429) {
-      errorCategory = "RATE_LIMITED";
+      errorCategory = 'RATE_LIMITED';
     }
 
     return {
@@ -213,8 +219,8 @@ async function ttnRequest<T = unknown>(
     return {
       ok: false,
       status: 0,
-      error: err instanceof Error ? err.message : "Network error",
-      errorCategory: "NETWORK_ERROR",
+      error: err instanceof Error ? err.message : 'Network error',
+      errorCategory: 'NETWORK_ERROR',
     };
   }
 }
@@ -250,7 +256,7 @@ async function ttnRequest<T = unknown>(
  */
 function parseAuthInfo(data: Record<string, unknown>): TtnAuthInfo {
   let rights: string[] = [];
-  let entityType: TtnAuthInfo["entityType"] = "unknown";
+  let entityType: TtnAuthInfo['entityType'] = 'unknown';
   let entityId: string | undefined;
   let userId: string | undefined;
 
@@ -270,20 +276,20 @@ function parseAuthInfo(data: Record<string, unknown>): TtnAuthInfo {
     if (entityIds) {
       if (entityIds.user_ids) {
         const userIds = entityIds.user_ids as Record<string, string>;
-        entityType = "user";
+        entityType = 'user';
         userId = userIds.user_id;
         entityId = userIds.user_id;
       } else if (entityIds.organization_ids) {
         const orgIds = entityIds.organization_ids as Record<string, string>;
-        entityType = "organization";
+        entityType = 'organization';
         entityId = orgIds.organization_id;
       } else if (entityIds.application_ids) {
         const appIds = entityIds.application_ids as Record<string, string>;
-        entityType = "application";
+        entityType = 'application';
         entityId = appIds.application_id;
       } else if (entityIds.gateway_ids) {
         const gwIds = entityIds.gateway_ids as Record<string, string>;
-        entityType = "gateway";
+        entityType = 'gateway';
         entityId = gwIds.gateway_id;
       }
     }
@@ -294,7 +300,9 @@ function parseAuthInfo(data: Record<string, unknown>): TtnAuthInfo {
     rights = data.universal_rights as string[];
   }
 
-  console.log(`[AuthInfo] Parsed: entityType=${entityType}, entityId=${entityId}, rights=${rights.length}`);
+  console.log(
+    `[AuthInfo] Parsed: entityType=${entityType}, entityId=${entityId}, rights=${rights.length}`,
+  );
 
   return { rights, userId, entityType, entityId };
 }
@@ -310,14 +318,14 @@ async function validateApiKey(apiKey: string): Promise<{
   error?: string;
   errorCategory?: ErrorCategory;
 }> {
-  const result = await ttnRequest<Record<string, unknown>>("/api/v3/auth_info", {
+  const result = await ttnRequest<Record<string, unknown>>('/api/v3/auth_info', {
     apiKey,
   });
 
   if (!result.ok) {
     return {
       valid: false,
-      error: result.error || "Failed to validate API key",
+      error: result.error || 'Failed to validate API key',
       errorCategory: result.errorCategory,
     };
   }
@@ -325,18 +333,18 @@ async function validateApiKey(apiKey: string): Promise<{
   const authInfo = parseAuthInfo(result.data!);
 
   // Personal keys are scoped to user_ids - this is EXPECTED and VALID
-  if (authInfo.entityType === "user") {
+  if (authInfo.entityType === 'user') {
     // Check for required rights
     const hasOrgCreate =
-      authInfo.rights.includes("RIGHT_USER_ALL") ||
-      authInfo.rights.includes("RIGHT_USER_ORGANIZATIONS_CREATE");
+      authInfo.rights.includes('RIGHT_USER_ALL') ||
+      authInfo.rights.includes('RIGHT_USER_ORGANIZATIONS_CREATE');
 
     if (!hasOrgCreate) {
       return {
         valid: false,
         authInfo,
-        error: "API key lacks RIGHT_USER_ORGANIZATIONS_CREATE permission",
-        errorCategory: "INVALID_CREDENTIALS",
+        error: 'API key lacks RIGHT_USER_ORGANIZATIONS_CREATE permission',
+        errorCategory: 'INVALID_CREDENTIALS',
       };
     }
 
@@ -344,30 +352,30 @@ async function validateApiKey(apiKey: string): Promise<{
   }
 
   // REJECT keys scoped to other entity types
-  if (authInfo.entityType === "organization") {
+  if (authInfo.entityType === 'organization') {
     return {
       valid: false,
       authInfo,
-      error: "API key is scoped to an organization. Use a personal (user-scoped) API key.",
-      errorCategory: "INVALID_CREDENTIALS",
+      error: 'API key is scoped to an organization. Use a personal (user-scoped) API key.',
+      errorCategory: 'INVALID_CREDENTIALS',
     };
   }
 
-  if (authInfo.entityType === "application") {
+  if (authInfo.entityType === 'application') {
     return {
       valid: false,
       authInfo,
-      error: "API key is scoped to an application. Use a personal (user-scoped) API key.",
-      errorCategory: "INVALID_CREDENTIALS",
+      error: 'API key is scoped to an application. Use a personal (user-scoped) API key.',
+      errorCategory: 'INVALID_CREDENTIALS',
     };
   }
 
-  if (authInfo.entityType === "gateway") {
+  if (authInfo.entityType === 'gateway') {
     return {
       valid: false,
       authInfo,
-      error: "API key is scoped to a gateway. Use a personal (user-scoped) API key.",
-      errorCategory: "INVALID_CREDENTIALS",
+      error: 'API key is scoped to a gateway. Use a personal (user-scoped) API key.',
+      errorCategory: 'INVALID_CREDENTIALS',
     };
   }
 
@@ -379,8 +387,8 @@ async function validateApiKey(apiKey: string): Promise<{
   return {
     valid: false,
     authInfo,
-    error: "Could not determine API key scope",
-    errorCategory: "INVALID_CREDENTIALS",
+    error: 'Could not determine API key scope',
+    errorCategory: 'INVALID_CREDENTIALS',
   };
 }
 
@@ -391,7 +399,7 @@ async function validateApiKey(apiKey: string): Promise<{
  */
 async function verifyOrgOwnership(
   orgId: string,
-  apiKey: string
+  apiKey: string,
 ): Promise<{
   verified: boolean;
   error?: string;
@@ -401,10 +409,9 @@ async function verifyOrgOwnership(
   console.log(`[Verify] Checking ownership of org: ${orgId}`);
 
   // Step 1: Check org exists and we can access it
-  const orgResult = await ttnRequest<Record<string, unknown>>(
-    `/api/v3/organizations/${orgId}`,
-    { apiKey }
-  );
+  const orgResult = await ttnRequest<Record<string, unknown>>(`/api/v3/organizations/${orgId}`, {
+    apiKey,
+  });
 
   if (!orgResult.ok) {
     console.log(`[Verify] Org GET failed: ${orgResult.status} ${orgResult.error}`);
@@ -418,7 +425,7 @@ async function verifyOrgOwnership(
   // Step 2: Check we have required rights
   const rightsResult = await ttnRequest<{ rights?: string[] }>(
     `/api/v3/organizations/${orgId}/rights`,
-    { apiKey }
+    { apiKey },
   );
 
   if (!rightsResult.ok) {
@@ -431,18 +438,18 @@ async function verifyOrgOwnership(
   }
 
   const rights = rightsResult.data?.rights || [];
-  console.log(`[Verify] Org rights: ${rights.join(", ")}`);
+  console.log(`[Verify] Org rights: ${rights.join(', ')}`);
 
   // Check for required rights to create API keys
   const hasApiKeyRight =
-    rights.includes("RIGHT_ORGANIZATION_ALL") ||
-    rights.includes("RIGHT_ORGANIZATION_SETTINGS_API_KEYS");
+    rights.includes('RIGHT_ORGANIZATION_ALL') ||
+    rights.includes('RIGHT_ORGANIZATION_SETTINGS_API_KEYS');
 
   if (!hasApiKeyRight) {
     return {
       verified: false,
       error: `Missing RIGHT_ORGANIZATION_SETTINGS_API_KEYS for ${orgId}`,
-      errorCategory: "ORGANIZATION_OWNERSHIP_ISSUE",
+      errorCategory: 'ORGANIZATION_OWNERSHIP_ISSUE',
       rights,
     };
   }
@@ -455,7 +462,7 @@ async function verifyOrgOwnership(
  */
 async function verifyAppOwnership(
   appId: string,
-  apiKey: string
+  apiKey: string,
 ): Promise<{
   verified: boolean;
   error?: string;
@@ -464,10 +471,9 @@ async function verifyAppOwnership(
 }> {
   console.log(`[Verify] Checking ownership of app: ${appId}`);
 
-  const appResult = await ttnRequest<Record<string, unknown>>(
-    `/api/v3/applications/${appId}`,
-    { apiKey }
-  );
+  const appResult = await ttnRequest<Record<string, unknown>>(`/api/v3/applications/${appId}`, {
+    apiKey,
+  });
 
   if (!appResult.ok) {
     return {
@@ -479,7 +485,7 @@ async function verifyAppOwnership(
 
   const rightsResult = await ttnRequest<{ rights?: string[] }>(
     `/api/v3/applications/${appId}/rights`,
-    { apiKey }
+    { apiKey },
   );
 
   if (!rightsResult.ok) {
@@ -492,15 +498,15 @@ async function verifyAppOwnership(
 
   const rights = rightsResult.data?.rights || [];
   const hasRequired =
-    rights.includes("RIGHT_APPLICATION_ALL") ||
-    (rights.includes("RIGHT_APPLICATION_SETTINGS_API_KEYS") &&
-      rights.includes("RIGHT_APPLICATION_TRAFFIC_READ"));
+    rights.includes('RIGHT_APPLICATION_ALL') ||
+    (rights.includes('RIGHT_APPLICATION_SETTINGS_API_KEYS') &&
+      rights.includes('RIGHT_APPLICATION_TRAFFIC_READ'));
 
   if (!hasRequired) {
     return {
       verified: false,
       error: `Missing required rights for ${appId}`,
-      errorCategory: "APPLICATION_OWNERSHIP_ISSUE",
+      errorCategory: 'APPLICATION_OWNERSHIP_ISSUE',
       rights,
     };
   }
@@ -518,23 +524,26 @@ async function verifyAppOwnership(
 async function createOrganization(
   orgId: string,
   apiKey: string,
-  userId: string
+  userId: string,
 ): Promise<StepResult> {
   const sanitizedOrgId = sanitizeTtnId(orgId);
   console.log(`[Step1] Creating org: ${sanitizedOrgId} (original: ${orgId}) under user: ${userId}`);
 
   // TTN requires user-scoped endpoint for organization creation
-  const createResult = await ttnRequest<Record<string, unknown>>(`/api/v3/users/${userId}/organizations`, {
-    method: "POST",
-    apiKey,
-    body: {
-      organization: {
-        ids: { organization_id: sanitizedOrgId },
-        name: `FrostGuard - ${sanitizedOrgId}`,
-        description: `Auto-provisioned by FrostGuard for customer monitoring`,
+  const createResult = await ttnRequest<Record<string, unknown>>(
+    `/api/v3/users/${userId}/organizations`,
+    {
+      method: 'POST',
+      apiKey,
+      body: {
+        organization: {
+          ids: { organization_id: sanitizedOrgId },
+          name: `FrostGuard - ${sanitizedOrgId}`,
+          description: `Auto-provisioned by FrostGuard for customer monitoring`,
+        },
       },
     },
-  });
+  );
 
   // Handle response status codes STRICTLY
   if (createResult.status === 201) {
@@ -544,17 +553,17 @@ async function createOrganization(
 
     if (!verify.verified) {
       return {
-        step: "1_create_org",
+        step: '1_create_org',
         success: false,
         message: `Organization created but ownership verification failed: ${verify.error}`,
-        error_code: "VERIFY_FAILED",
+        error_code: 'VERIFY_FAILED',
         error_category: verify.errorCategory,
         data: { org_id: sanitizedOrgId },
       };
     }
 
     return {
-      step: "1_create_org",
+      step: '1_create_org',
       success: true,
       message: `Organization ${sanitizedOrgId} created and verified`,
       data: { org_id: sanitizedOrgId, rights: verify.rights },
@@ -568,17 +577,17 @@ async function createOrganization(
 
     if (!verify.verified) {
       return {
-        step: "1_create_org",
+        step: '1_create_org',
         success: false,
         message: `Organization ${sanitizedOrgId} exists but you don't own it: ${verify.error}`,
-        error_code: "NOT_OWNER",
+        error_code: 'NOT_OWNER',
         error_category: verify.errorCategory,
         data: { org_id: sanitizedOrgId },
       };
     }
 
     return {
-      step: "1_create_org",
+      step: '1_create_org',
       success: true,
       message: `Organization ${sanitizedOrgId} already exists and ownership verified`,
       data: { org_id: sanitizedOrgId, rights: verify.rights, existed: true },
@@ -587,7 +596,7 @@ async function createOrganization(
 
   // Any other status = FAIL
   return {
-    step: "1_create_org",
+    step: '1_create_org',
     success: false,
     message: `Failed to create organization: ${createResult.error}`,
     error_code: createResult.errorCode || `HTTP_${createResult.status}`,
@@ -601,7 +610,7 @@ async function createOrganization(
  */
 async function createOrgApiKey(
   orgId: string,
-  apiKey: string
+  apiKey: string,
 ): Promise<StepResult & { orgApiKey?: string }> {
   const sanitizedOrgId = sanitizeTtnId(orgId);
   console.log(`[Step1B] Creating API key for org: ${sanitizedOrgId}`);
@@ -611,22 +620,19 @@ async function createOrgApiKey(
   const result = await ttnRequest<{ api_key?: string; key?: string }>(
     `/api/v3/organizations/${sanitizedOrgId}/api-keys`,
     {
-      method: "POST",
+      method: 'POST',
       apiKey,
       body: {
         name: keyName,
-        rights: [
-          "RIGHT_ORGANIZATION_ALL",
-          "RIGHT_APPLICATION_ALL",
-        ],
+        rights: ['RIGHT_ORGANIZATION_ALL', 'RIGHT_APPLICATION_ALL'],
         expires_at: null, // No expiration
       },
-    }
+    },
   );
 
   if (!result.ok) {
     return {
-      step: "1b_create_org_api_key",
+      step: '1b_create_org_api_key',
       success: false,
       message: `Failed to create org API key: ${result.error}`,
       error_code: result.errorCode,
@@ -640,17 +646,17 @@ async function createOrgApiKey(
 
   if (!orgApiKey) {
     return {
-      step: "1b_create_org_api_key",
+      step: '1b_create_org_api_key',
       success: false,
-      message: "API key created but key value not returned",
-      error_code: "NO_KEY_RETURNED",
-      error_category: "UNKNOWN",
+      message: 'API key created but key value not returned',
+      error_code: 'NO_KEY_RETURNED',
+      error_category: 'UNKNOWN',
       data: { org_id: sanitizedOrgId },
     };
   }
 
   return {
-    step: "1b_create_org_api_key",
+    step: '1b_create_org_api_key',
     success: true,
     message: `Organization API key created: ${keyName}`,
     data: { org_id: sanitizedOrgId, key_name: keyName },
@@ -664,7 +670,7 @@ async function createOrgApiKey(
 async function createApplication(
   orgId: string,
   appId: string,
-  apiKey: string
+  apiKey: string,
 ): Promise<StepResult> {
   const sanitizedOrgId = sanitizeTtnId(orgId);
   const sanitizedAppId = sanitizeTtnId(appId);
@@ -673,16 +679,16 @@ async function createApplication(
   const createResult = await ttnRequest<Record<string, unknown>>(
     `/api/v3/organizations/${sanitizedOrgId}/applications`,
     {
-      method: "POST",
+      method: 'POST',
       apiKey,
       body: {
         application: {
           ids: { application_id: sanitizedAppId },
           name: `FrostGuard App - ${sanitizedAppId}`,
-          description: "Temperature monitoring application",
+          description: 'Temperature monitoring application',
         },
       },
-    }
+    },
   );
 
   if (createResult.status === 201) {
@@ -690,17 +696,17 @@ async function createApplication(
     const verify = await verifyAppOwnership(sanitizedAppId, apiKey);
     if (!verify.verified) {
       return {
-        step: "2_create_app",
+        step: '2_create_app',
         success: false,
         message: `Application created but verification failed: ${verify.error}`,
-        error_code: "VERIFY_FAILED",
+        error_code: 'VERIFY_FAILED',
         error_category: verify.errorCategory,
         data: { org_id: sanitizedOrgId, app_id: sanitizedAppId },
       };
     }
 
     return {
-      step: "2_create_app",
+      step: '2_create_app',
       success: true,
       message: `Application ${sanitizedAppId} created and verified`,
       data: { org_id: sanitizedOrgId, app_id: sanitizedAppId },
@@ -712,17 +718,17 @@ async function createApplication(
     const verify = await verifyAppOwnership(sanitizedAppId, apiKey);
     if (!verify.verified) {
       return {
-        step: "2_create_app",
+        step: '2_create_app',
         success: false,
         message: `Application ${sanitizedAppId} exists but you don't own it: ${verify.error}`,
-        error_code: "NOT_OWNER",
+        error_code: 'NOT_OWNER',
         error_category: verify.errorCategory,
         data: { org_id: sanitizedOrgId, app_id: sanitizedAppId },
       };
     }
 
     return {
-      step: "2_create_app",
+      step: '2_create_app',
       success: true,
       message: `Application ${sanitizedAppId} already exists and ownership verified`,
       data: { org_id: sanitizedOrgId, app_id: sanitizedAppId, existed: true },
@@ -730,7 +736,7 @@ async function createApplication(
   }
 
   return {
-    step: "2_create_app",
+    step: '2_create_app',
     success: false,
     message: `Failed to create application: ${createResult.error}`,
     error_code: createResult.errorCode || `HTTP_${createResult.status}`,
@@ -744,7 +750,7 @@ async function createApplication(
  */
 async function createAppApiKey(
   appId: string,
-  apiKey: string
+  apiKey: string,
 ): Promise<StepResult & { appApiKey?: string }> {
   const sanitizedAppId = sanitizeTtnId(appId);
   console.log(`[Step2B] Creating API key for app: ${sanitizedAppId}`);
@@ -754,21 +760,19 @@ async function createAppApiKey(
   const result = await ttnRequest<{ api_key?: string; key?: string }>(
     `/api/v3/applications/${sanitizedAppId}/api-keys`,
     {
-      method: "POST",
+      method: 'POST',
       apiKey,
       body: {
         name: keyName,
-        rights: [
-          "RIGHT_APPLICATION_ALL",
-        ],
+        rights: ['RIGHT_APPLICATION_ALL'],
         expires_at: null,
       },
-    }
+    },
   );
 
   if (!result.ok) {
     return {
-      step: "2b_create_app_api_key",
+      step: '2b_create_app_api_key',
       success: false,
       message: `Failed to create app API key: ${result.error}`,
       error_code: result.errorCode,
@@ -781,17 +785,17 @@ async function createAppApiKey(
 
   if (!appApiKey) {
     return {
-      step: "2b_create_app_api_key",
+      step: '2b_create_app_api_key',
       success: false,
-      message: "API key created but key value not returned",
-      error_code: "NO_KEY_RETURNED",
-      error_category: "UNKNOWN",
+      message: 'API key created but key value not returned',
+      error_code: 'NO_KEY_RETURNED',
+      error_category: 'UNKNOWN',
       data: { app_id: sanitizedAppId },
     };
   }
 
   return {
-    step: "2b_create_app_api_key",
+    step: '2b_create_app_api_key',
     success: true,
     message: `Application API key created: ${keyName}`,
     data: { app_id: sanitizedAppId, key_name: keyName },
@@ -805,24 +809,23 @@ async function createAppApiKey(
 async function createWebhook(
   appId: string,
   apiKey: string,
-  webhookUrl: string
+  webhookUrl: string,
 ): Promise<StepResult & { webhookId?: string; webhookSecret?: string }> {
   const sanitizedAppId = sanitizeTtnId(appId);
   const webhookId = `frostguard-webhook`;
-  const webhookSecret = crypto.randomUUID().replace(/-/g, "");
+  const webhookSecret = crypto.randomUUID().replace(/-/g, '');
 
   console.log(`[Step3] Creating webhook for app: ${sanitizedAppId}`);
 
   // First, check if webhook exists and delete it
-  const existingCheck = await ttnRequest(
-    `/api/v3/as/webhooks/${sanitizedAppId}/${webhookId}`,
-    { apiKey }
-  );
+  const existingCheck = await ttnRequest(`/api/v3/as/webhooks/${sanitizedAppId}/${webhookId}`, {
+    apiKey,
+  });
 
   if (existingCheck.ok) {
     console.log(`[Step3] Existing webhook found, deleting...`);
     await ttnRequest(`/api/v3/as/webhooks/${sanitizedAppId}/${webhookId}`, {
-      method: "DELETE",
+      method: 'DELETE',
       apiKey,
     });
   }
@@ -831,7 +834,7 @@ async function createWebhook(
   const result = await ttnRequest<Record<string, unknown>>(
     `/api/v3/as/webhooks/${sanitizedAppId}`,
     {
-      method: "POST",
+      method: 'POST',
       apiKey,
       body: {
         webhook: {
@@ -840,45 +843,45 @@ async function createWebhook(
             webhook_id: webhookId,
           },
           base_url: webhookUrl,
-          format: "json",
+          format: 'json',
           headers: {
-            "X-Webhook-Secret": webhookSecret,
+            'X-Webhook-Secret': webhookSecret,
           },
           uplink_message: {
-            path: "",
+            path: '',
           },
           join_accept: {
-            path: "/join",
+            path: '/join',
           },
           downlink_ack: {
-            path: "/ack",
+            path: '/ack',
           },
           downlink_nack: {
-            path: "/nack",
+            path: '/nack',
           },
           downlink_sent: {
-            path: "/sent",
+            path: '/sent',
           },
           downlink_failed: {
-            path: "/failed",
+            path: '/failed',
           },
           downlink_queued: {
-            path: "/queued",
+            path: '/queued',
           },
           location_solved: {
-            path: "/location",
+            path: '/location',
           },
           service_data: {
-            path: "/service",
+            path: '/service',
           },
         },
       },
-    }
+    },
   );
 
   if (!result.ok) {
     return {
-      step: "3_create_webhook",
+      step: '3_create_webhook',
       success: false,
       message: `Failed to create webhook: ${result.error}`,
       error_code: result.errorCode,
@@ -888,7 +891,7 @@ async function createWebhook(
   }
 
   return {
-    step: "3_create_webhook",
+    step: '3_create_webhook',
     success: true,
     message: `Webhook ${webhookId} created successfully`,
     data: { app_id: sanitizedAppId, webhook_id: webhookId },
@@ -904,8 +907,8 @@ async function createWebhook(
 async function runProvisioning(
   request: ProvisioningRequest,
   adminApiKey: string,
-  supabaseClient: any,  // Type relaxed to avoid strict typing issues with dynamic tables
-  webhookBaseUrl: string
+  supabaseClient: any, // Type relaxed to avoid strict typing issues with dynamic tables
+  webhookBaseUrl: string,
 ): Promise<ProvisioningResult> {
   const steps: StepResult[] = [];
   let currentOrgId = request.org_id;
@@ -921,9 +924,9 @@ async function runProvisioning(
       success: false,
       steps: [
         {
-          step: "0_preflight",
+          step: '0_preflight',
           success: false,
-          message: validation.error || "API key validation failed",
+          message: validation.error || 'API key validation failed',
           error_category: validation.errorCategory,
         },
       ],
@@ -931,7 +934,7 @@ async function runProvisioning(
     };
   }
 
-  const userId = validation.authInfo?.userId || "frostguard101";
+  const userId = validation.authInfo?.userId || 'frostguard101';
 
   //                                                                          
   // STEP 1: Create Organization
@@ -941,8 +944,7 @@ async function runProvisioning(
   // If step 1 fails with ownership issue, try rotating org_id (Start Fresh logic)
   if (
     !step1.success &&
-    (step1.error_category === "ORGANIZATION_OWNERSHIP_ISSUE" ||
-      step1.error_code === "NOT_OWNER") &&
+    (step1.error_category === 'ORGANIZATION_OWNERSHIP_ISSUE' || step1.error_code === 'NOT_OWNER') &&
     !request.force_new_org
   ) {
     console.log(`[Provision] Step 1 failed, rotating org_id...`);
@@ -987,8 +989,10 @@ async function runProvisioning(
   //                                                                          
   // Use orgApiKey if available (has RIGHT_APPLICATION_ALL), fallback to adminApiKey
   const appCreationKey = orgApiKey || adminApiKey;
-  console.log(`[Step2] Using credential: ${orgApiKey ? 'org_api_key' : 'admin_api_key'} (key_last4: ${appCreationKey.slice(-4)})`);
-  
+  console.log(
+    `[Step2] Using credential: ${orgApiKey ? 'org_api_key' : 'admin_api_key'} (key_last4: ${appCreationKey.slice(-4)})`,
+  );
+
   const appId = `${currentOrgId}-app`;
   const step2 = await createApplication(currentOrgId, appId, appCreationKey);
   steps.push(step2);
@@ -1010,8 +1014,10 @@ async function runProvisioning(
   //                                                                          
   // CRITICAL: Use orgApiKey here - it has RIGHT_APPLICATION_ALL needed to create app keys
   const appKeyCreationKey = orgApiKey || adminApiKey;
-  console.log(`[Step2B] Using credential: ${orgApiKey ? 'org_api_key' : 'admin_api_key'} (key_last4: ${appKeyCreationKey.slice(-4)})`);
-  
+  console.log(
+    `[Step2B] Using credential: ${orgApiKey ? 'org_api_key' : 'admin_api_key'} (key_last4: ${appKeyCreationKey.slice(-4)})`,
+  );
+
   const step2b = await createAppApiKey(sanitizedAppId, appKeyCreationKey);
   steps.push(step2b);
 
@@ -1032,8 +1038,10 @@ async function runProvisioning(
   // STEP 3: Create Webhook
   //                                                                          
   const webhookCreationKey = orgApiKey || adminApiKey;
-  console.log(`[Step3] Using credential: ${orgApiKey ? 'org_api_key' : 'admin_api_key'} (key_last4: ${webhookCreationKey.slice(-4)})`);
-  
+  console.log(
+    `[Step3] Using credential: ${orgApiKey ? 'org_api_key' : 'admin_api_key'} (key_last4: ${webhookCreationKey.slice(-4)})`,
+  );
+
   const webhookUrl = `${webhookBaseUrl}/functions/v1/ttn-webhook`;
   const step3 = await createWebhook(sanitizedAppId, webhookCreationKey, webhookUrl);
   steps.push(step3);
@@ -1063,7 +1071,7 @@ async function runProvisioning(
   try {
     // Note: ttn_settings table may not exist - this is a legacy reference
     // The primary storage is ttn_connections managed by manage-ttn-settings
-    const { error: dbError } = await (supabaseClient as any).from("ttn_settings").upsert(
+    const { error: dbError } = await (supabaseClient as any).from('ttn_settings').upsert(
       {
         org_id: request.customer_id || currentOrgId,
         site_id: request.site_id || null,
@@ -1076,7 +1084,7 @@ async function runProvisioning(
         last_test_success: true,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: "org_id" }
+      { onConflict: 'org_id' },
     );
 
     if (dbError) {
@@ -1088,8 +1096,10 @@ async function runProvisioning(
     // device provisioning will use the wrong cluster (default) causing
     // split-cluster bugs where IS records are on eu1 but JS/NS/AS go elsewhere.
     if (request.customer_id) {
-      const encryptionSalt = Deno.env.get("TTN_ENCRYPTION_SALT") ||
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.slice(0, 32) || "";
+      const encryptionSalt =
+        Deno.env.get('TTN_ENCRYPTION_SALT') ||
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')?.slice(0, 32) ||
+        '';
 
       // Simple XOR obfuscation for API key storage
       const obfuscateKey = (key: string, salt: string): string => {
@@ -1101,42 +1111,46 @@ async function runProvisioning(
       };
 
       const { error: connError } = await supabaseClient
-        .from("ttn_connections")
+        .from('ttn_connections')
         .update({
-          ttn_region: TTN_REGION,  // CRITICAL: Set region to eu1
+          ttn_region: TTN_REGION, // CRITICAL: Set region to eu1
           ttn_organization_id: currentOrgId,
           ttn_application_id: sanitizedAppId,
           ttn_api_key_encrypted: appApiKey ? obfuscateKey(appApiKey, encryptionSalt) : null,
           ttn_api_key_last4: appApiKey ? appApiKey.slice(-4) : null,
-          ttn_webhook_secret_encrypted: webhookSecret ? obfuscateKey(webhookSecret, encryptionSalt) : null,
+          ttn_webhook_secret_encrypted: webhookSecret
+            ? obfuscateKey(webhookSecret, encryptionSalt)
+            : null,
           ttn_webhook_secret_last4: webhookSecret ? webhookSecret.slice(-4) : null,
-          provisioning_status: "ready",
+          provisioning_status: 'ready',
           provisioning_error: null,
           is_enabled: true,
           updated_at: new Date().toISOString(),
         })
-        .eq("organization_id", request.customer_id);
+        .eq('organization_id', request.customer_id);
 
       if (connError) {
         console.error(`[DB] Failed to update ttn_connections:`, connError);
         steps.push({
-          step: "4_save_settings",
+          step: '4_save_settings',
           success: false,
           message: `TTN provisioning succeeded but failed to save ttn_connections: ${connError.message}`,
         });
       } else {
-        console.log(`[DB] Updated ttn_connections for org ${request.customer_id} with region=${TTN_REGION}`);
+        console.log(
+          `[DB] Updated ttn_connections for org ${request.customer_id} with region=${TTN_REGION}`,
+        );
         steps.push({
-          step: "4_save_settings",
+          step: '4_save_settings',
           success: true,
           message: `Settings saved to database (region=${TTN_REGION})`,
         });
       }
     } else {
       steps.push({
-        step: "4_save_settings",
+        step: '4_save_settings',
         success: !dbError,
-        message: dbError ? `Failed: ${dbError.message}` : "Settings saved to ttn_settings",
+        message: dbError ? `Failed: ${dbError.message}` : 'Settings saved to ttn_settings',
       });
     }
   } catch (err) {
@@ -1163,17 +1177,17 @@ async function runProvisioning(
 
 serve(async (req: Request) => {
   // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   // Health check endpoint (GET request)
-  if (req.method === "GET") {
+  if (req.method === 'GET') {
     return new Response(
       JSON.stringify({
         ok: true,
-        status: "ok",
-        function: "ttn-bootstrap",
+        status: 'ok',
+        function: 'ttn-bootstrap',
         version: FUNCTION_VERSION,
         capabilities: {
           validate_only: true,
@@ -1184,43 +1198,43 @@ serve(async (req: Request) => {
         },
         timestamp: new Date().toISOString(),
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }
 
   // Handle POST with empty body as health check (diagnostics tool may send POST)
-  const contentLength = req.headers.get("content-length");
-  if (req.method === "POST" && (!contentLength || contentLength === "0")) {
+  const contentLength = req.headers.get('content-length');
+  if (req.method === 'POST' && (!contentLength || contentLength === '0')) {
     return new Response(
       JSON.stringify({
         ok: true,
-        status: "healthy",
-        function: "ttn-bootstrap",
+        status: 'healthy',
+        function: 'ttn-bootstrap',
         version: FUNCTION_VERSION,
-        hint: "POST with empty body treated as health check",
+        hint: 'POST with empty body treated as health check',
         timestamp: new Date().toISOString(),
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }
 
   try {
     // Get environment variables
-    const adminApiKey = Deno.env.get("TTN_ADMIN_API_KEY")?.trim();
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const adminApiKey = Deno.env.get('TTN_ADMIN_API_KEY')?.trim();
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!adminApiKey) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "TTN_ADMIN_API_KEY not configured",
+          error: 'TTN_ADMIN_API_KEY not configured',
           version: FUNCTION_VERSION,
         }),
         {
           status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
       );
     }
 
@@ -1228,13 +1242,13 @@ serve(async (req: Request) => {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Supabase environment variables not configured",
+          error: 'Supabase environment variables not configured',
           version: FUNCTION_VERSION,
         }),
         {
           status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
       );
     }
 
@@ -1245,13 +1259,13 @@ serve(async (req: Request) => {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Missing action parameter",
+          error: 'Missing action parameter',
           version: FUNCTION_VERSION,
         }),
         {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
       );
     }
 
@@ -1260,14 +1274,12 @@ serve(async (req: Request) => {
 
     // Handle different actions
     switch (body.action) {
-      case "preflight": {
+      case 'preflight': {
         const validation = await validateApiKey(adminApiKey);
         return new Response(
           JSON.stringify({
             success: validation.valid,
-            message: validation.valid
-              ? "API key validated successfully"
-              : validation.error,
+            message: validation.valid ? 'API key validated successfully' : validation.error,
             auth_info: validation.authInfo,
             region: TTN_REGION,
             base_url: TTN_BASE_URL,
@@ -1275,46 +1287,41 @@ serve(async (req: Request) => {
           }),
           {
             status: validation.valid ? 200 : 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          },
         );
       }
 
-      case "provision":
-      case "start_fresh": {
+      case 'provision':
+      case 'start_fresh': {
         if (!body.org_id) {
           return new Response(
             JSON.stringify({
               success: false,
-              error: "Missing org_id parameter",
+              error: 'Missing org_id parameter',
               version: FUNCTION_VERSION,
             }),
             {
               status: 400,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            }
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            },
           );
         }
 
         // For start_fresh, force a new org_id suffix
-        if (body.action === "start_fresh") {
+        if (body.action === 'start_fresh') {
           body.org_id = `${sanitizeTtnId(body.org_id)}-${generateSuffix()}`;
         }
 
-        const result = await runProvisioning(
-          body,
-          adminApiKey,
-          supabase,
-          supabaseUrl
-        );
+        const result = await runProvisioning(body, adminApiKey, supabase, supabaseUrl);
 
         return new Response(JSON.stringify(result), {
           status: result.success ? 200 : 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      case "status": {
+      case 'status': {
         // Return current deployment status and diagnostics
         const validation = await validateApiKey(adminApiKey);
         return new Response(
@@ -1330,18 +1337,20 @@ serve(async (req: Request) => {
           }),
           {
             status: 200,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          },
         );
       }
 
-      case "validate_only": {
+      case 'validate_only': {
         // Validate API key and application access without provisioning
-        console.log(`[validate_only] Validating configuration for org: ${body.organization_id || body.org_id}`);
-        
+        console.log(
+          `[validate_only] Validating configuration for org: ${body.organization_id || body.org_id}`,
+        );
+
         const apiKeyToValidate = body.api_key || adminApiKey;
         const validation = await validateApiKey(apiKeyToValidate);
-        
+
         if (!validation.valid) {
           return new Response(
             JSON.stringify({
@@ -1353,17 +1362,17 @@ serve(async (req: Request) => {
             }),
             {
               status: 200, // Return 200 with valid=false for application-level errors
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            }
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            },
           );
         }
-        
+
         // Return successful validation with permissions info
         return new Response(
           JSON.stringify({
             valid: true,
             ok: true,
-            message: "Configuration validated successfully",
+            message: 'Configuration validated successfully',
             permissions: {
               rights: validation.authInfo?.rights || [],
               entity_type: validation.authInfo?.entityType,
@@ -1376,8 +1385,8 @@ serve(async (req: Request) => {
           }),
           {
             status: 200,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          },
         );
       }
 
@@ -1390,8 +1399,8 @@ serve(async (req: Request) => {
           }),
           {
             status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          },
         );
     }
   } catch (err) {
@@ -1399,13 +1408,13 @@ serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: err instanceof Error ? err.message : "Internal error",
+        error: err instanceof Error ? err.message : 'Internal error',
         version: FUNCTION_VERSION,
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      },
     );
   }
 });

@@ -2,15 +2,15 @@
 // Central logging module with redaction, ring buffer, correlation IDs, and entity-aware logging
 
 export type DebugLogLevel = 'debug' | 'info' | 'warn' | 'error';
-export type DebugLogCategory = 
-  | 'ui' 
-  | 'routing' 
-  | 'db' 
-  | 'sync' 
-  | 'ttn' 
-  | 'provisioning' 
-  | 'edge' 
-  | 'network' 
+export type DebugLogCategory =
+  | 'ui'
+  | 'routing'
+  | 'db'
+  | 'sync'
+  | 'ttn'
+  | 'provisioning'
+  | 'edge'
+  | 'network'
   | 'auth'
   | 'crud'
   | 'realtime'
@@ -18,7 +18,14 @@ export type DebugLogCategory =
   | 'query';
 
 export type EntityType = 'sensor' | 'gateway' | 'unit' | 'area' | 'site' | 'alert' | 'device';
-export type CrudAction = 'create' | 'update' | 'delete' | 'assign' | 'unassign' | 'provision' | 'deprovision';
+export type CrudAction =
+  | 'create'
+  | 'update'
+  | 'delete'
+  | 'assign'
+  | 'unassign'
+  | 'provision'
+  | 'deprovision';
 
 export interface DebugLogEntry {
   id: string;
@@ -56,7 +63,14 @@ const SENSITIVE_PATTERNS = [
 ];
 
 // Fields that should show last4 instead of full redaction
-const LAST4_FIELDS = ['ttn_api_key', 'api_key', 'webhook_secret', 'dev_eui', 'app_eui', 'gateway_eui'];
+const LAST4_FIELDS = [
+  'ttn_api_key',
+  'api_key',
+  'webhook_secret',
+  'dev_eui',
+  'app_eui',
+  'gateway_eui',
+];
 
 // LocalStorage keys for debug settings
 const LS_DEBUG_ENABLED = 'fg.debug.enabled';
@@ -90,18 +104,18 @@ class DebugLogger {
 
   private loadSettings() {
     if (typeof window === 'undefined') return;
-    
+
     try {
       const enabled = localStorage.getItem(LS_DEBUG_ENABLED);
       if (enabled === 'true') {
         this.enabled = true;
       }
-      
+
       const level = localStorage.getItem(LS_DEBUG_LEVEL);
       if (level) {
         this.levelFilter = level as DebugLogLevel;
       }
-      
+
       const filters = localStorage.getItem(LS_DEBUG_FILTERS);
       if (filters) {
         this.categoryFilters = JSON.parse(filters);
@@ -113,7 +127,7 @@ class DebugLogger {
 
   private saveSettings() {
     if (typeof window === 'undefined') return;
-    
+
     try {
       localStorage.setItem(LS_DEBUG_ENABLED, String(this.enabled));
       if (this.levelFilter) {
@@ -174,11 +188,13 @@ class DebugLogger {
   }
 
   getLogsByCorrelationId(correlationId: string): DebugLogEntry[] {
-    return this.buffer.filter(entry => entry.correlationId === correlationId);
+    return this.buffer.filter((entry) => entry.correlationId === correlationId);
   }
 
   getLogsByEntity(entityType: EntityType, entityId: string): DebugLogEntry[] {
-    return this.buffer.filter(entry => entry.entityType === entityType && entry.entityId === entityId);
+    return this.buffer.filter(
+      (entry) => entry.entityType === entityType && entry.entityId === entityId,
+    );
   }
 
   clearLogs() {
@@ -195,23 +211,23 @@ class DebugLogger {
 
   private redactValue(key: string, value: unknown): unknown {
     if (value === null || value === undefined) return value;
-    
+
     const keyLower = key.toLowerCase();
-    
+
     // Check if this is a sensitive field
-    const isSensitive = SENSITIVE_PATTERNS.some(pattern => pattern.test(key));
-    
+    const isSensitive = SENSITIVE_PATTERNS.some((pattern) => pattern.test(key));
+
     if (isSensitive) {
       if (typeof value === 'string' && value.length > 0) {
         // Show last4 for specific fields
-        if (LAST4_FIELDS.some(f => keyLower.includes(f.toLowerCase()))) {
+        if (LAST4_FIELDS.some((f) => keyLower.includes(f.toLowerCase()))) {
           return `****${value.slice(-4)}`;
         }
         return `[REDACTED]`;
       }
       return '[REDACTED]';
     }
-    
+
     // Recursively handle objects
     if (typeof value === 'object' && value !== null) {
       if (Array.isArray(value)) {
@@ -219,17 +235,17 @@ class DebugLogger {
       }
       return this.redactObject(value as Record<string, unknown>);
     }
-    
+
     return value;
   }
 
   private redactObject(obj: Record<string, unknown>): Record<string, unknown> {
     const result: Record<string, unknown> = {};
-    
+
     for (const [key, value] of Object.entries(obj)) {
       result[key] = this.redactValue(key, value);
     }
-    
+
     return result;
   }
 
@@ -242,7 +258,7 @@ class DebugLogger {
     duration?: number,
     correlationId?: string,
     entityType?: EntityType,
-    entityId?: string
+    entityId?: string,
   ): DebugLogEntry {
     return {
       id: generateId(),
@@ -263,14 +279,14 @@ class DebugLogger {
     if (!this.enabled || this.paused) return;
 
     this.buffer.push(entry);
-    
+
     // Trim buffer if exceeds max size
     if (this.buffer.length > this.maxBufferSize) {
       this.buffer = this.buffer.slice(-this.maxBufferSize);
     }
 
     // Notify subscribers
-    this.subscribers.forEach(callback => {
+    this.subscribers.forEach((callback) => {
       try {
         callback(entry);
       } catch (e) {
@@ -288,17 +304,29 @@ class DebugLogger {
     duration?: number,
     correlationId?: string,
     entityType?: EntityType,
-    entityId?: string
+    entityId?: string,
   ) {
     if (!this.enabled) return;
-    
-    const entry = this.createEntry(level, category, message, payload, source, duration, correlationId, entityType, entityId);
+
+    const entry = this.createEntry(
+      level,
+      category,
+      message,
+      payload,
+      source,
+      duration,
+      correlationId,
+      entityType,
+      entityId,
+    );
     this.addEntry(entry);
-    
+
     // Also log to console in development
     if (import.meta.env.DEV) {
       const consoleMethod = level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'log';
-      const prefix = correlationId ? `[${category.toUpperCase()}][${correlationId.slice(-8)}]` : `[${category.toUpperCase()}]`;
+      const prefix = correlationId
+        ? `[${category.toUpperCase()}][${correlationId.slice(-8)}]`
+        : `[${category.toUpperCase()}]`;
       console[consoleMethod](`${prefix} ${message}`, payload || '');
     }
   }
@@ -333,7 +361,7 @@ class DebugLogger {
       metadata,
     };
     this.activeOperations.set(correlationId, tracker);
-    
+
     this.log('debug', 'db', `[START] ${operation}`, metadata, undefined, undefined, correlationId);
     return correlationId;
   }
@@ -342,29 +370,29 @@ class DebugLogger {
    * End a tracked operation
    */
   endOperation(
-    correlationId: string, 
-    status: 'success' | 'error', 
-    result?: Record<string, unknown>
+    correlationId: string,
+    status: 'success' | 'error',
+    result?: Record<string, unknown>,
   ) {
     const tracker = this.activeOperations.get(correlationId);
     if (!tracker) {
       this.warn('db', `Unknown operation ended: ${correlationId}`, result);
       return;
     }
-    
+
     const duration = Date.now() - tracker.startTime;
     const level: DebugLogLevel = status === 'error' ? 'error' : 'info';
-    
+
     this.log(
-      level, 
-      'db', 
-      `[END] ${tracker.operation} (${status})`, 
-      { ...tracker.metadata, ...result, duration_ms: duration }, 
-      undefined, 
-      duration, 
-      correlationId
+      level,
+      'db',
+      `[END] ${tracker.operation} (${status})`,
+      { ...tracker.metadata, ...result, duration_ms: duration },
+      undefined,
+      duration,
+      correlationId,
     );
-    
+
     this.activeOperations.delete(correlationId);
   }
 
@@ -378,7 +406,7 @@ class DebugLogger {
     entityType: EntityType,
     entityId: string | null,
     payload?: Record<string, unknown>,
-    correlationId?: string
+    correlationId?: string,
   ) {
     const message = `${action.toUpperCase()} ${entityType}${entityId ? ` (${entityId.slice(0, 8)})` : ''}`;
     this.log(
@@ -390,7 +418,7 @@ class DebugLogger {
       undefined,
       correlationId,
       entityType,
-      entityId || undefined
+      entityId || undefined,
     );
   }
 
@@ -403,10 +431,18 @@ class DebugLogger {
     operation: 'select' | 'insert' | 'update' | 'delete' | 'rpc',
     table: string,
     payload?: Record<string, unknown>,
-    correlationId?: string
+    correlationId?: string,
   ) {
     const message = `DB ${operation.toUpperCase()} on ${table}`;
-    this.log('debug', 'db', message, { table, operation, ...payload }, table, undefined, correlationId);
+    this.log(
+      'debug',
+      'db',
+      message,
+      { table, operation, ...payload },
+      table,
+      undefined,
+      correlationId,
+    );
   }
 
   /**
@@ -418,13 +454,21 @@ class DebugLogger {
     success: boolean,
     payload?: Record<string, unknown>,
     duration?: number,
-    correlationId?: string
+    correlationId?: string,
   ) {
     const level: DebugLogLevel = success ? 'info' : 'error';
-    const message = success 
-      ? `DB ${operation} on ${table} completed` 
+    const message = success
+      ? `DB ${operation} on ${table} completed`
       : `DB ${operation} on ${table} failed`;
-    this.log(level, 'db', message, { table, operation, success, ...payload }, table, duration, correlationId);
+    this.log(
+      level,
+      'db',
+      message,
+      { table, operation, success, ...payload },
+      table,
+      duration,
+      correlationId,
+    );
   }
 
   // ============ REALTIME SUBSCRIPTION LOGGING ============
@@ -435,9 +479,10 @@ class DebugLogger {
   realtime(
     event: 'subscribe' | 'unsubscribe' | 'message' | 'error',
     channel: string,
-    payload?: Record<string, unknown>
+    payload?: Record<string, unknown>,
   ) {
-    const level: DebugLogLevel = event === 'error' ? 'error' : event === 'message' ? 'debug' : 'info';
+    const level: DebugLogLevel =
+      event === 'error' ? 'error' : event === 'message' ? 'debug' : 'info';
     const message = `REALTIME ${event.toUpperCase()}: ${channel}`;
     this.log(level, 'realtime', message, { channel, event, ...payload });
   }
@@ -449,15 +494,17 @@ class DebugLogger {
     status: 'start' | 'success' | 'error',
     payload?: Record<string, unknown>,
     duration?: number,
-    correlationId?: string
+    correlationId?: string,
   ) {
-    const level: DebugLogLevel = status === 'error' ? 'error' : status === 'start' ? 'debug' : 'info';
-    const message = status === 'start' 
-      ? `Calling ${functionName}` 
-      : status === 'success'
-      ? `${functionName} completed`
-      : `${functionName} failed`;
-    
+    const level: DebugLogLevel =
+      status === 'error' ? 'error' : status === 'start' ? 'debug' : 'info';
+    const message =
+      status === 'start'
+        ? `Calling ${functionName}`
+        : status === 'success'
+          ? `${functionName} completed`
+          : `${functionName} failed`;
+
     this.log(level, 'edge', message, payload, functionName, duration, correlationId);
   }
 
@@ -476,7 +523,7 @@ class DebugLogger {
   queryEvent(
     queryKey: string,
     status: 'loading' | 'success' | 'error' | 'invalidate',
-    payload?: Record<string, unknown>
+    payload?: Record<string, unknown>,
   ) {
     const level: DebugLogLevel = status === 'error' ? 'error' : 'debug';
     this.log(level, 'query', `Query ${queryKey}: ${status}`, { queryKey, status, ...payload });
@@ -486,14 +533,23 @@ class DebugLogger {
     mutationKey: string,
     status: 'start' | 'success' | 'error',
     payload?: Record<string, unknown>,
-    correlationId?: string
+    correlationId?: string,
   ) {
-    const level: DebugLogLevel = status === 'error' ? 'error' : status === 'start' ? 'debug' : 'info';
-    this.log(level, 'mutation', `Mutation ${mutationKey}: ${status}`, { mutationKey, status, ...payload }, undefined, undefined, correlationId);
+    const level: DebugLogLevel =
+      status === 'error' ? 'error' : status === 'start' ? 'debug' : 'info';
+    this.log(
+      level,
+      'mutation',
+      `Mutation ${mutationKey}: ${status}`,
+      { mutationKey, status, ...payload },
+      undefined,
+      undefined,
+      correlationId,
+    );
   }
 
   exportLogs(): string {
-    const logs = this.getLogs().map(entry => ({
+    const logs = this.getLogs().map((entry) => ({
       ...entry,
       timestamp: entry.timestamp.toISOString(),
     }));
@@ -511,7 +567,7 @@ class DebugLogger {
         max_buffer_size: this.maxBufferSize,
         active_operations: this.activeOperations.size,
       },
-      logs: this.getLogs().map(entry => ({
+      logs: this.getLogs().map((entry) => ({
         ...entry,
         timestamp: entry.timestamp.toISOString(),
       })),

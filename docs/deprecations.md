@@ -6,36 +6,36 @@
 
 ### Edge Functions
 
-| Item | Status | Reason | Removal Date |
-|------|--------|--------|--------------|
-| `check-missed-logs` | **DELETED** | Functionality consolidated into `process-unit-states` | 2025-12-29 |
+| Item                | Status      | Reason                                                | Removal Date |
+| ------------------- | ----------- | ----------------------------------------------------- | ------------ |
+| `check-missed-logs` | **DELETED** | Functionality consolidated into `process-unit-states` | 2025-12-29   |
 
 ### Database Tables / Columns
 
-| Item | Status | Reason | Notes |
-|------|--------|--------|-------|
+| Item                                 | Status     | Reason                                                   | Notes                                                        |
+| ------------------------------------ | ---------- | -------------------------------------------------------- | ------------------------------------------------------------ |
 | `notification_settings.recipients[]` | DEPRECATED | Replaced by role-based system in `notification_policies` | Keep for rollback capability; do not add new recipients here |
 
 ### Frontend Components
 
-| Item | Status | Reason | Notes |
-|------|--------|--------|-------|
-| Inline `statusConfig` objects | **REMOVED** | Consolidated to `src/lib/statusConfig.ts` | All pages now import from shared module |
-| Inline `alertTypeConfig` objects | **REMOVED** | Consolidated to `src/lib/alertConfig.ts` | All components now import from shared module |
+| Item                             | Status      | Reason                                    | Notes                                        |
+| -------------------------------- | ----------- | ----------------------------------------- | -------------------------------------------- |
+| Inline `statusConfig` objects    | **REMOVED** | Consolidated to `src/lib/statusConfig.ts` | All pages now import from shared module      |
+| Inline `alertTypeConfig` objects | **REMOVED** | Consolidated to `src/lib/alertConfig.ts`  | All components now import from shared module |
 
 ### Hooks & Utilities (Deleted 2026-01-01)
 
-| Item | Status | Reason | Notes |
-|------|--------|--------|-------|
-| `src/hooks/useSlugAvailability.ts` | **DELETED** | Zero imports, never integrated | Edge function `check-slug-available` exists for future use |
-| `src/hooks/useCoolingFailureDetection.ts` | **DELETED** | Zero imports, orphaned feature | Detection logic preserved in git history |
-| `src/lib/ingestTypes.ts` | **DELETED** | Duplicate types | Superseded by `supabase/functions/_shared/validation.ts` |
-| `src/components/ui/use-toast.ts` | **DELETED** | Redundant re-export | Use `@/hooks/use-toast` directly |
+| Item                                      | Status      | Reason                         | Notes                                                      |
+| ----------------------------------------- | ----------- | ------------------------------ | ---------------------------------------------------------- |
+| `src/hooks/useSlugAvailability.ts`        | **DELETED** | Zero imports, never integrated | Edge function `check-slug-available` exists for future use |
+| `src/hooks/useCoolingFailureDetection.ts` | **DELETED** | Zero imports, orphaned feature | Detection logic preserved in git history                   |
+| `src/lib/ingestTypes.ts`                  | **DELETED** | Duplicate types                | Superseded by `supabase/functions/_shared/validation.ts`   |
+| `src/components/ui/use-toast.ts`          | **DELETED** | Redundant re-export            | Use `@/hooks/use-toast` directly                           |
 
 ### Edge Functions (Deleted 2026-01-01)
 
-| Item | Status | Reason | Notes |
-|------|--------|--------|-------|
+| Item                           | Status      | Reason            | Notes                                                                   |
+| ------------------------------ | ----------- | ----------------- | ----------------------------------------------------------------------- |
 | `get-ttn-integration-snapshot` | **DELETED** | Legacy TTN lookup | Replaced by user_sync as single source of truth for Emulator TTN config |
 
 ## Migration Notes
@@ -43,12 +43,14 @@
 ### notification_settings → notification_policies
 
 The legacy `notification_settings` table provided simple email recipient lists. The new `notification_policies` table provides:
+
 - Per-alert-type configuration
 - Role-based recipient selection
 - Escalation step definitions
 - Quiet hours support
 
 **Migration path:**
+
 1. Keep `notification_settings` readable for backward compatibility
 2. New notification logic reads from `notification_policies` only
 3. UI only shows `notification_policies` editor

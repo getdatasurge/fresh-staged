@@ -16,6 +16,7 @@ This playbook guides the staging migration test for converting `sensor_readings`
 5. Rollback procedure works within 1 hour
 
 **Critical Success Criteria**:
+
 - Zero data loss (pre-migration count = post-migration count)
 - Partition pruning verified via EXPLAIN ANALYZE
 - All tRPC procedures function correctly
@@ -38,6 +39,7 @@ This playbook guides the staging migration test for converting `sensor_readings`
 ## Data Preparation
 
 ### Objective
+
 Populate staging with production-like data volume (1M+ rows across 12 months) to validate migration performance and partition pruning.
 
 ### Procedure
@@ -65,8 +67,8 @@ Populate staging with production-like data volume (1M+ rows across 12 months) to
        process.exit(1);
      }
 
-     const unitIds = units.rows.map(r => r.id);
-     const deviceIds = devices.rows.map(r => r.id);
+     const unitIds = units.rows.map((r) => r.id);
+     const deviceIds = devices.rows.map((r) => r.id);
 
      let inserted = 0;
      const startTime = Date.now();
@@ -76,8 +78,7 @@ Populate staging with production-like data volume (1M+ rows across 12 months) to
 
        for (let i = 0; i < BATCH_SIZE; i++) {
          const randomDate = new Date(
-           START_DATE.getTime() +
-           Math.random() * (END_DATE.getTime() - START_DATE.getTime())
+           START_DATE.getTime() + Math.random() * (END_DATE.getTime() - START_DATE.getTime()),
          );
 
          batch.push({
@@ -101,24 +102,28 @@ Populate staging with production-like data volume (1M+ rows across 12 months) to
          const rate = inserted / elapsed;
          console.log(
            `Inserted ${inserted.toLocaleString()}/${TARGET_COUNT.toLocaleString()} ` +
-           `(${rate.toFixed(0)} rows/sec)`
+             `(${rate.toFixed(0)} rows/sec)`,
          );
        }
      }
 
-     console.log(`\nGeneration complete: ${inserted.toLocaleString()} rows in ${((Date.now() - startTime) / 1000).toFixed(1)}s`);
+     console.log(
+       `\nGeneration complete: ${inserted.toLocaleString()} rows in ${((Date.now() - startTime) / 1000).toFixed(1)}s`,
+     );
    }
 
    generateSyntheticReadings().catch(console.error);
    ```
 
 2. **Run data generation**:
+
    ```bash
    cd backend
    tsx scripts/generate-synthetic-readings.ts
    ```
 
 3. **Verify data distribution**:
+
    ```sql
    SELECT
      DATE_TRUNC('month', recorded_at) AS month,
@@ -131,6 +136,7 @@ Populate staging with production-like data volume (1M+ rows across 12 months) to
    Expected: ~80K-100K rows per month across 12 months.
 
 4. **Capture baseline metrics**:
+
    ```sql
    -- Total row count
    SELECT COUNT(*) FROM sensor_readings;
@@ -158,11 +164,13 @@ Populate staging with production-like data volume (1M+ rows across 12 months) to
 ### Step 1: Pre-Migration Snapshot
 
 1. **Create database backup**:
+
    ```bash
    pg_dump $STAGING_DATABASE_URL > staging_backup_$(date +%Y%m%d_%H%M%S).dump
    ```
 
 2. **Record pre-migration metrics**:
+
    ```sql
    -- Save to temp table for validation
    CREATE TEMP TABLE pre_migration_stats AS
@@ -178,6 +186,7 @@ Populate staging with production-like data volume (1M+ rows across 12 months) to
    ```
 
 3. **Benchmark query performance** (last 7 days):
+
    ```sql
    \timing on
    EXPLAIN ANALYZE
@@ -192,6 +201,7 @@ Populate staging with production-like data volume (1M+ rows across 12 months) to
 ### Step 2: Execute Migration
 
 1. **Run migration script**:
+
    ```bash
    psql $STAGING_DATABASE_URL -f backend/drizzle/0006_partition_sensor_readings.sql 2>&1 | tee migration_output.log
    ```
@@ -207,6 +217,7 @@ Populate staging with production-like data volume (1M+ rows across 12 months) to
 ### Step 3: Post-Migration Validation
 
 1. **Verify row count match**:
+
    ```sql
    -- Compare with pre_migration_stats
    SELECT
@@ -218,6 +229,7 @@ Populate staging with production-like data volume (1M+ rows across 12 months) to
    Expected output: `match = true`
 
 2. **Verify partition count**:
+
    ```sql
    SELECT COUNT(*) AS partition_count
    FROM pg_tables
@@ -227,6 +239,7 @@ Populate staging with production-like data volume (1M+ rows across 12 months) to
    Expected: 24-30 partitions (12 months historical + current + 3 future).
 
 3. **Verify default partition is empty**:
+
    ```sql
    SELECT COUNT(*) FROM sensor_readings_default;
    ```
@@ -234,6 +247,7 @@ Populate staging with production-like data volume (1M+ rows across 12 months) to
    Expected: 0 rows (no NULL or out-of-range dates).
 
 4. **Verify indexes exist on partitions**:
+
    ```sql
    SELECT
      tablename,
@@ -247,6 +261,7 @@ Populate staging with production-like data volume (1M+ rows across 12 months) to
    Expected: Each partition has 3 indexes (unit_time, device, recorded).
 
 5. **Verify foreign key constraints**:
+
    ```sql
    -- Test join with units table
    SELECT COUNT(*)
@@ -262,11 +277,13 @@ Populate staging with production-like data volume (1M+ rows across 12 months) to
 ## Partition Pruning Verification
 
 ### Objective
+
 Confirm PostgreSQL query planner only scans relevant partitions for time-range queries.
 
 ### Procedure
 
 1. **Test "last 7 days" query** (should scan 1 partition):
+
    ```sql
    EXPLAIN (ANALYZE, BUFFERS, VERBOSE)
    SELECT * FROM sensor_readings
@@ -276,6 +293,7 @@ Confirm PostgreSQL query planner only scans relevant partitions for time-range q
    ```
 
    **Expected output**:
+
    ```
    -> Seq Scan on sensor_readings_y2026m02
    Partitions scanned: 1
@@ -283,6 +301,7 @@ Confirm PostgreSQL query planner only scans relevant partitions for time-range q
    ```
 
 2. **Test "last 30 days" query** (should scan 1-2 partitions):
+
    ```sql
    EXPLAIN (ANALYZE, BUFFERS, VERBOSE)
    SELECT * FROM sensor_readings
@@ -294,6 +313,7 @@ Confirm PostgreSQL query planner only scans relevant partitions for time-range q
    **Expected output**: Partitions scanned = 1 or 2 (depending on month boundary).
 
 3. **Test specific month query**:
+
    ```sql
    EXPLAIN ANALYZE
    SELECT COUNT(*)
@@ -306,7 +326,7 @@ Confirm PostgreSQL query planner only scans relevant partitions for time-range q
 4. **Document performance improvement**:
    - Pre-partitioning: X ms
    - Post-partitioning: Y ms
-   - Speedup: (X - Y) / X * 100%
+   - Speedup: (X - Y) / X \* 100%
 
    Target: ≥50% improvement.
 
@@ -315,11 +335,13 @@ Confirm PostgreSQL query planner only scans relevant partitions for time-range q
 ## Application Compatibility Testing
 
 ### Objective
+
 Verify all application code functions correctly with partitioned table.
 
 ### Procedure
 
 1. **Test tRPC procedures** that query `sensor_readings`:
+
    ```bash
    # List all procedures querying sensor_readings
    grep -r "sensorReadings" backend/src/routers/ backend/src/services/
@@ -332,6 +354,7 @@ Verify all application code functions correctly with partitioned table.
    - `alerts.evaluate` - Alert rule evaluation
 
 2. **Manual API testing**:
+
    ```bash
    # Example: Get recent readings via tRPC
    curl -X POST http://localhost:3000/trpc/readings.recent \
@@ -360,11 +383,13 @@ Verify all application code functions correctly with partitioned table.
 ## Automated Partition Lifecycle Testing
 
 ### Objective
+
 Verify BullMQ jobs for partition creation and retention function correctly.
 
 ### Procedure
 
 1. **Trigger partition creation job manually**:
+
    ```bash
    # Via BullMQ dashboard or CLI
    npx bullmq add partition-management partition:create \
@@ -372,6 +397,7 @@ Verify BullMQ jobs for partition creation and retention function correctly.
    ```
 
 2. **Verify future partitions created**:
+
    ```sql
    SELECT tablename
    FROM pg_tables
@@ -384,6 +410,7 @@ Verify BullMQ jobs for partition creation and retention function correctly.
    Expected: 3 future partitions.
 
 3. **Trigger partition retention job manually** (dry-run with short retention):
+
    ```bash
    # Test with 12-month retention (not 24) to see deletion behavior
    npx bullmq add partition-management partition:retention \
@@ -391,6 +418,7 @@ Verify BullMQ jobs for partition creation and retention function correctly.
    ```
 
 4. **Verify old partitions dropped**:
+
    ```sql
    SELECT COUNT(*) FROM pg_tables
    WHERE schemaname = 'public' AND tablename LIKE 'sensor_readings_y%';
@@ -408,16 +436,19 @@ Verify BullMQ jobs for partition creation and retention function correctly.
 ## Rollback Test
 
 ### Objective
+
 Validate rollback procedure works within 1 hour in case of migration failure.
 
 ### Procedure
 
 1. **Simulate migration failure** (assume validation detected row count mismatch):
+
    ```
    ERROR: Row count mismatch (old=1000000, new=999950)
    ```
 
 2. **Execute rollback**:
+
    ```sql
    -- Drop partitioned table
    DROP TABLE IF EXISTS sensor_readings CASCADE;
@@ -431,6 +462,7 @@ Validate rollback procedure works within 1 hour in case of migration failure.
    ```
 
 3. **Verify service recovery**:
+
    ```sql
    SELECT COUNT(*) FROM sensor_readings;
    ```
@@ -468,6 +500,7 @@ Validate rollback procedure works within 1 hour in case of migration failure.
 ## Go/No-Go Decision Criteria
 
 **Proceed to production migration if**:
+
 - [x] All checklist items passed
 - [x] Partition pruning confirmed working
 - [x] Performance improvement ≥50%
@@ -476,6 +509,7 @@ Validate rollback procedure works within 1 hour in case of migration failure.
 - [x] Team confidence high
 
 **Do NOT proceed if**:
+
 - [ ] Row count mismatch detected
 - [ ] Partition pruning not working
 - [ ] Application errors observed
@@ -518,5 +552,6 @@ After successful staging migration:
 5. Prepare rollback plan for production (same procedure as staging)
 
 **Related Playbooks**:
+
 - Production Migration Playbook: `production-migration-playbook.md`
 - Partition Management Runbook: `partition-management.md`

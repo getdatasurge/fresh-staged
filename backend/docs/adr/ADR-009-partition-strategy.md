@@ -12,11 +12,13 @@
 The `sensor_readings` table stores high-volume time-series IoT temperature data from LoRa sensors. As the platform scales to support multiple organizations with 50+ devices each sending 4 readings/hour, the table will accumulate millions of rows within the first year of full adoption.
 
 **Growth Projection**:
+
 - 50 devices × 4 readings/hour × 24 hours × 365 days = 1.75M rows/year per 50-device deployment
 - 10 organizations × 1.75M rows = 17.5M rows/year
 - 2-year retention = 35M+ rows
 
 **Pain Points**:
+
 1. Time-range queries (last 7 days, last 30 days) scan entire table despite indexes
 2. Index bloat increases proportionally with row count
 3. VACUUM operations lock full table, blocking sensor data ingestion
@@ -31,6 +33,7 @@ This ADR documents the decision to implement PostgreSQL native table partitionin
 We will implement **monthly RANGE partitioning** on the `sensor_readings` table using the `recorded_at` column as the partition key.
 
 **Partition Strategy**:
+
 - **Partitioning Method**: PostgreSQL declarative partitioning (PARTITION BY RANGE)
 - **Partition Key**: `recorded_at` (timestamp column representing sensor reading time)
 - **Partition Granularity**: Monthly boundaries (1st day of month at 00:00:00 UTC)
@@ -67,10 +70,12 @@ We will implement **monthly RANGE partitioning** on the `sensor_readings` table 
 **Partition Granularity**: Weekly instead of monthly
 
 **Pros**:
+
 - Finer-grained partition pruning for sub-weekly queries
 - Smaller individual partition sizes (~200K rows vs ~1.5M rows)
 
 **Cons**:
+
 - 52 partitions/year × 2 years = 104 partitions (vs 24 monthly)
 - Increased management complexity (more partitions to monitor)
 - Higher overhead for query planner (more partition metadata)
@@ -85,10 +90,12 @@ We will implement **monthly RANGE partitioning** on the `sensor_readings` table 
 **Partition Granularity**: Daily instead of monthly
 
 **Pros**:
+
 - Maximum partition pruning granularity
 - Very small individual partition sizes (~5K rows)
 
 **Cons**:
+
 - 365 partitions/year × 2 years = 730 partitions (excessive)
 - Query planner overhead increases with partition count
 - Management complexity (daily partition creation)
@@ -103,10 +110,12 @@ We will implement **monthly RANGE partitioning** on the `sensor_readings` table 
 **Partition Key**: Multi-dimensional partitioning on `organization_id` and `recorded_at`
 
 **Pros**:
+
 - Organization-scoped queries benefit from pruning on both dimensions
 - Natural tenant isolation at partition level
 
 **Cons**:
+
 - Partition count = organizations × months (10 orgs × 24 months = 240 partitions)
 - Complexity in managing per-organization partition lifecycle
 - Organization-scoped queries already efficient with `WHERE organization_id` filters
@@ -121,12 +130,14 @@ We will implement **monthly RANGE partitioning** on the `sensor_readings` table 
 **Lifecycle Management**: Use pg_partman PostgreSQL extension for automated partition management
 
 **Pros**:
+
 - Battle-tested solution used in production at scale
 - Handles edge cases (month boundaries, timezone handling)
 - Community support and documentation
 - Built-in retention policy enforcement
 
 **Cons**:
+
 - Requires PostgreSQL extension installation (superuser access needed)
 - Infrastructure team blocked extension installation in production
 - Additional dependency outside application codebase
@@ -141,11 +152,13 @@ We will implement **monthly RANGE partitioning** on the `sensor_readings` table 
 **Partitioning Method**: Specialized time-series database or distributed PostgreSQL
 
 **Pros**:
+
 - Purpose-built for time-series data
 - Automatic compression and retention policies
 - Advanced query optimization
 
 **Cons**:
+
 - Major infrastructure change (new database deployment)
 - Learning curve for team
 - Citus requires horizontal scaling (not needed yet)
@@ -161,11 +174,13 @@ We will implement **monthly RANGE partitioning** on the `sensor_readings` table 
 **Migration Approach**: Dual-write strategy with triggers during transition (zero downtime)
 
 **Pros**:
+
 - Zero downtime during migration
 - Gradual data migration in background
 - No maintenance window required
 
 **Cons**:
+
 - Higher implementation complexity (trigger synchronization)
 - Risk of dual-write inconsistencies during migration
 - Longer migration window (hours vs minutes)
@@ -180,10 +195,12 @@ We will implement **monthly RANGE partitioning** on the `sensor_readings` table 
 **Implementation**: Application code manually routes queries to monthly tables
 
 **Pros**:
+
 - No PostgreSQL version dependency (works on any version)
 - Full control over partitioning logic in application code
 
 **Cons**:
+
 - Manual query routing in every service/router
 - Breaking change to ORM usage (cannot use `db.query.sensorReadings.findMany()`)
 - No partition pruning optimization (PostgreSQL unaware of partitioning)
@@ -226,6 +243,7 @@ We will implement **monthly RANGE partitioning** on the `sensor_readings` table 
 **Migration Strategy**: Low-traffic window (2-6 AM UTC)
 
 **Deliverables**:
+
 1. Custom migration script: `backend/drizzle/0006_partition_sensor_readings.sql`
 2. Partition service: `backend/src/services/partition.service.ts`
 3. BullMQ processors: `partition-create.processor.ts`, `partition-retention.processor.ts`
@@ -233,6 +251,7 @@ We will implement **monthly RANGE partitioning** on the `sensor_readings` table 
 5. Runbooks: Partition management, staging playbook, production playbook
 
 **Validation**:
+
 - Staging migration test with 1M+ synthetic rows
 - Row count match verification
 - Partition pruning validation via EXPLAIN ANALYZE
@@ -240,6 +259,7 @@ We will implement **monthly RANGE partitioning** on the `sensor_readings` table 
 - Rollback procedure tested (<1 hour recovery)
 
 **Success Criteria**:
+
 - Zero data loss (pre-migration count = post-migration count)
 - Partition pruning working (queries scan 1-2 partitions, not all)
 - Dashboard performance maintained (<2s loads)
@@ -262,6 +282,7 @@ We will implement **monthly RANGE partitioning** on the `sensor_readings` table 
 ## Review & Approval
 
 **Reviewed By**:
+
 - Backend Engineering Lead: [Name]
 - DevOps Lead: [Name]
 - Product Owner: [Name]
@@ -269,4 +290,5 @@ We will implement **monthly RANGE partitioning** on the `sensor_readings` table 
 **Approval Date**: 2026-02-01
 
 **Revision History**:
+
 - 2026-02-01: Initial decision documented

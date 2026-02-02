@@ -26,12 +26,12 @@ key-files:
     - src/pages/Onboarding.tsx
 
 key-decisions:
-  - "Database trigger handles initial TTN provisioning, frontend just polls for status"
-  - "Use interval-based polling with cleanup on unmount for Onboarding status checks"
+  - 'Database trigger handles initial TTN provisioning, frontend just polls for status'
+  - 'Use interval-based polling with cleanup on unmount for Onboarding status checks'
 
 patterns-established:
-  - "tRPC query with enabled:false for imperative status polling"
-  - "Derive component state from query data instead of manual state management"
+  - 'tRPC query with enabled:false for imperative status polling'
+  - 'Derive component state from query data instead of manual state management'
 
 # Metrics
 duration: 5min
@@ -51,6 +51,7 @@ completed: 2026-01-29
 - **Files modified:** 2
 
 ## Accomplishments
+
 - Removed all supabase.functions.invoke calls from EmulatorTTNRoutingCard.tsx
 - Removed all supabase.functions.invoke calls from Onboarding.tsx
 - Both files now use type-safe tRPC procedures for TTN operations
@@ -72,10 +73,12 @@ Each task was committed atomically:
    - Added cleanup for polling interval on unmount
 
 ## Files Created/Modified
+
 - `src/components/admin/EmulatorTTNRoutingCard.tsx` - TTN routing card for emulator, now uses tRPC for settings and connection testing
 - `src/pages/Onboarding.tsx` - Organization onboarding flow, now uses tRPC for TTN provisioning status polling
 
 ## Decisions Made
+
 - Database trigger `queue_tts_provisioning` handles initial provisioning when org is created, so Onboarding only needs to poll for status (not explicitly invoke provisioning)
 - Used interval-based polling with Promise wrapper for async status updates in Onboarding
 - Kept state derivation pattern from TTNCredentialsPanel for consistency
@@ -85,6 +88,7 @@ Each task was committed atomically:
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 None
 
 ## User Setup Required
@@ -92,10 +96,12 @@ None
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - TTN domain edge function calls fully migrated
 - Pattern established for remaining edge function migrations in plans 02-04
 - Both components ready for production use with tRPC backend
 
 ---
-*Phase: 32-remaining-edge-function-migration*
-*Completed: 2026-01-29*
+
+_Phase: 32-remaining-edge-function-migration_
+_Completed: 2026-01-29_

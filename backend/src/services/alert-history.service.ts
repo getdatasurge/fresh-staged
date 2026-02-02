@@ -1,7 +1,7 @@
-import { and, desc, eq } from 'drizzle-orm'
-import { db } from '../db/client.js'
-import { alertRules, alertRulesHistory } from '../db/schema/alerts.js'
-import { profiles } from '../db/schema/users.js'
+import { and, desc, eq } from 'drizzle-orm';
+import { db } from '../db/client.js';
+import { alertRules, alertRulesHistory } from '../db/schema/alerts.js';
+import { profiles } from '../db/schema/users.js';
 
 export interface AlertHistoryEntry {
   id: string;
@@ -17,7 +17,7 @@ export interface AlertHistoryEntry {
 
 export async function getAlertHistory(
   scope: { organizationId?: string; siteId?: string; unitId?: string },
-  limit: number = 20
+  limit: number = 20,
 ): Promise<AlertHistoryEntry[]> {
   const conditions = [];
 
@@ -46,7 +46,7 @@ export async function getAlertHistory(
 
   const results = await query;
 
-  return results.map(r => ({
+  return results.map((r) => ({
     ...r,
     userName: r.userName || 'System',
   }));
@@ -63,14 +63,14 @@ export async function createHistory(
     oldValues?: any;
     newValues: any;
     note?: string; // Not in schema? Check schema
-  }
+  },
 ) {
   // Check schema for 'note', 'organizationId' etc.
   // pgTable alertRulesHistory only has: alertRuleId, changedBy, changeType, oldValues, newValues, changedAt.
   // It does NOT have organizationId, siteId, unitId, note.
   // So we can only insert what matches table.
   // If useAlertRulesHistory tries to insert orgId/note, they are dropped or stored in values?
-  
+
   // Checking schema again:
   /*
   export const alertRulesHistory = pgTable('alert_rules_history', {
@@ -83,9 +83,9 @@ export async function createHistory(
   // If Supabase allows this, then DB schema has these columns but Drizzle doesn't.
   // Or Supabase insert fails silently?
   // Or I am looking at outdated schema.
-  
+
   // I will act according to Drizzle schema.
-  
+
   await db.insert(alertRulesHistory).values({
     alertRuleId: data.alertRuleId,
     changedBy: userId,

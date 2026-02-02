@@ -24,8 +24,8 @@
  * ```
  */
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTRPC, useTRPCClient } from "@/lib/trpc";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTRPC, useTRPCClient } from '@/lib/trpc';
 
 /**
  * Digest preferences shape from backend

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 export interface BatteryDataPoint {
   battery_level: number;
@@ -7,7 +7,7 @@ export interface BatteryDataPoint {
 
 export interface BatteryForecast {
   currentLevel: number | null;
-  trend: "stable" | "declining" | "unknown";
+  trend: 'stable' | 'declining' | 'unknown';
   estimatedMonthsRemaining: number | null;
   dataPoints: BatteryDataPoint[];
   hasEnoughData: boolean;
@@ -28,7 +28,7 @@ export function useBatteryForecast(deviceId: string | null): {
 } {
   const [forecast, setForecast] = useState<BatteryForecast>({
     currentLevel: null,
-    trend: "unknown",
+    trend: 'unknown',
     estimatedMonthsRemaining: null,
     dataPoints: [],
     hasEnoughData: false,
@@ -41,7 +41,7 @@ export function useBatteryForecast(deviceId: string | null): {
     if (!deviceId) {
       setForecast({
         currentLevel: null,
-        trend: "unknown",
+        trend: 'unknown',
         estimatedMonthsRemaining: null,
         dataPoints: [],
         hasEnoughData: false,
@@ -57,43 +57,42 @@ export function useBatteryForecast(deviceId: string | null): {
   const loadBatteryData = async () => {
     setForecast({
       currentLevel: null,
-      trend: "unknown",
+      trend: 'unknown',
       estimatedMonthsRemaining: null,
       dataPoints: [],
       hasEnoughData: false,
       dailyDecayRate: null,
     });
     setLoading(false);
-    setError("Battery forecast unavailable during Supabase removal.");
+    setError('Battery forecast unavailable during Supabase removal.');
   };
-
 
   return { forecast, loading, error };
 }
 
 export function formatBatteryEstimate(forecast: BatteryForecast): string {
   if (!forecast.hasEnoughData) {
-    return "Estimating...";
+    return 'Estimating...';
   }
 
-  if (forecast.trend === "stable") {
-    return "Stable";
+  if (forecast.trend === 'stable') {
+    return 'Stable';
   }
 
   if (forecast.estimatedMonthsRemaining === null) {
-    return "Not enough data";
+    return 'Not enough data';
   }
 
   if (forecast.estimatedMonthsRemaining === 0) {
-    return "Replace soon";
+    return 'Replace soon';
   }
 
   if (forecast.estimatedMonthsRemaining === 1) {
-    return "~1 month";
+    return '~1 month';
   }
 
   if (forecast.estimatedMonthsRemaining > 12) {
-    return "12+ months";
+    return '12+ months';
   }
 
   return `~${forecast.estimatedMonthsRemaining} months`;

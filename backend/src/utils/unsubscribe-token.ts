@@ -17,7 +17,7 @@ const getUnsubscribeSecret = () => {
   const secret = process.env.UNSUBSCRIBE_SECRET || process.env.JWT_SECRET;
   if (!secret) {
     throw new Error(
-      '[UnsubscribeToken] No secret configured. Set UNSUBSCRIBE_SECRET or JWT_SECRET.'
+      '[UnsubscribeToken] No secret configured. Set UNSUBSCRIBE_SECRET or JWT_SECRET.',
     );
   }
   return new TextEncoder().encode(secret);
@@ -40,7 +40,7 @@ export interface UnsubscribePayload extends JWTPayload {
  */
 export async function generateUnsubscribeToken(
   userId: string,
-  type: 'daily' | 'weekly' | 'all'
+  type: 'daily' | 'weekly' | 'all',
 ): Promise<string> {
   const secret = getUnsubscribeSecret();
 
@@ -57,9 +57,7 @@ export async function generateUnsubscribeToken(
  * @param token - JWT token to verify
  * @returns Decoded payload or null if invalid/expired
  */
-export async function verifyUnsubscribeToken(
-  token: string
-): Promise<UnsubscribePayload | null> {
+export async function verifyUnsubscribeToken(token: string): Promise<UnsubscribePayload | null> {
   try {
     const secret = getUnsubscribeSecret();
     const { payload } = await jwtVerify(token, secret);

@@ -94,14 +94,15 @@ graph TB
 
 ### Frontend Container
 
-| Property | Value |
-|----------|-------|
+| Property   | Value                          |
+| ---------- | ------------------------------ |
 | Technology | React 18.3.1, TypeScript, Vite |
-| Build | `npm run build` → `dist/` |
-| Hosting | Lovable platform (CDN) |
-| Port | 8080 (development) |
+| Build      | `npm run build` → `dist/`      |
+| Hosting    | Lovable platform (CDN)         |
+| Port       | 8080 (development)             |
 
 **Responsibilities**:
+
 - User interface rendering
 - Client-side routing
 - Form handling and validation
@@ -110,13 +111,14 @@ graph TB
 
 ### Auth Container
 
-| Property | Value |
-|----------|-------|
+| Property   | Value                  |
+| ---------- | ---------------------- |
 | Technology | Supabase Auth (GoTrue) |
-| Protocol | JWT (HS256) |
-| Session | localStorage |
+| Protocol   | JWT (HS256)            |
+| Session    | localStorage           |
 
 **Responsibilities**:
+
 - User authentication
 - Session management
 - Password reset
@@ -124,13 +126,14 @@ graph TB
 
 ### Database Container
 
-| Property | Value |
-|----------|-------|
-| Technology | PostgreSQL 14.1 |
-| Tables | 60+ |
+| Property       | Value              |
+| -------------- | ------------------ |
+| Technology     | PostgreSQL 14.1    |
+| Tables         | 60+                |
 | Access Control | Row-Level Security |
 
 **Key Features**:
+
 - RLS policies for multi-tenancy
 - Database functions (RPC)
 - Triggers for event handling
@@ -138,10 +141,10 @@ graph TB
 
 ### Edge Functions Container
 
-| Property | Value |
-|----------|-------|
-| Runtime | Deno |
-| Functions | 33 |
+| Property   | Value           |
+| ---------- | --------------- |
+| Runtime    | Deno            |
+| Functions  | 33              |
 | Invocation | HTTP, Scheduled |
 
 **Function Categories**:
@@ -212,15 +215,15 @@ sequenceDiagram
 
 ### Protocols
 
-| From | To | Protocol | Auth |
-|------|----|---------|----- |
-| SPA | Gateway | HTTPS | JWT |
-| SPA | Auth | HTTPS | API Key |
-| TTN | ttn-webhook | HTTPS | Webhook Secret |
-| Stripe | stripe-webhook | HTTPS | Signature |
-| Edge → Database | TCP | Service Role Key |
-| Edge → Telnyx | HTTPS | API Credentials |
-| Edge → TTN | HTTPS | Org API Key |
+| From            | To             | Protocol         | Auth           |
+| --------------- | -------------- | ---------------- | -------------- |
+| SPA             | Gateway        | HTTPS            | JWT            |
+| SPA             | Auth           | HTTPS            | API Key        |
+| TTN             | ttn-webhook    | HTTPS            | Webhook Secret |
+| Stripe          | stripe-webhook | HTTPS            | Signature      |
+| Edge → Database | TCP            | Service Role Key |
+| Edge → Telnyx   | HTTPS          | API Credentials  |
+| Edge → TTN      | HTTPS          | Org API Key      |
 
 ### Internal Communication
 
@@ -267,12 +270,12 @@ graph TB
 
 ## Scalability Considerations
 
-| Component | Scaling Method |
-|-----------|----------------|
-| SPA | CDN distribution |
-| Edge Functions | Auto-scaling workers |
-| Database | Vertical scaling, read replicas |
-| Auth | Managed by Supabase |
+| Component      | Scaling Method                  |
+| -------------- | ------------------------------- |
+| SPA            | CDN distribution                |
+| Edge Functions | Auto-scaling workers            |
+| Database       | Vertical scaling, read replicas |
+| Auth           | Managed by Supabase             |
 
 ---
 

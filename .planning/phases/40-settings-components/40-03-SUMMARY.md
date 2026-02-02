@@ -1,29 +1,29 @@
 ---
 phase: 40-settings-components
 plan: 03
-name: "CRUD Settings Components Migration"
+name: 'CRUD Settings Components Migration'
 subsystem: ui
 tags: [trpc, tanstack-query, react, settings, mutations]
 
 dependency-graph:
   requires:
     - phase: 39-dashboard-widgets
-      provides: "tRPC migration patterns for components"
+      provides: 'tRPC migration patterns for components'
   provides:
-    - "NotificationSettingsCard using tRPC CRUD"
-    - "EmulatorResyncCard using tRPC mutations"
+    - 'NotificationSettingsCard using tRPC CRUD'
+    - 'EmulatorResyncCard using tRPC mutations'
   affects:
-    - "40-04, 40-05 (remaining settings migrations)"
-    - "43-cleanup (supabase removal verification)"
+    - '40-04, 40-05 (remaining settings migrations)'
+    - '43-cleanup (supabase removal verification)'
 
 tech-stack:
   added:
     - notification_settings table (Drizzle schema)
     - user_sync_log table (Drizzle schema)
   patterns:
-    - "useTRPC() + queryOptions + useQuery for settings data"
-    - "useMutation with tRPCClient for save/update operations"
-    - "Local state synchronized from tRPC query via useEffect"
+    - 'useTRPC() + queryOptions + useQuery for settings data'
+    - 'useMutation with tRPCClient for save/update operations'
+    - 'Local state synchronized from tRPC query via useEffect'
 
 key-files:
   created: []
@@ -36,13 +36,13 @@ key-files:
     - src/components/settings/EmulatorResyncCard.tsx
 
 key-decisions:
-  - "Store recipients as JSON string in notification_settings table"
-  - "Use upsert pattern for notification settings (insert if not exists, update if exists)"
-  - "Parse JSON payload in backend procedures, return typed objects to frontend"
+  - 'Store recipients as JSON string in notification_settings table'
+  - 'Use upsert pattern for notification settings (insert if not exists, update if exists)'
+  - 'Parse JSON payload in backend procedures, return typed objects to frontend'
 
 patterns-established:
-  - "CRUD settings pattern: query to load, mutation to save, useEffect to sync state"
-  - "Backend upsert procedure: check existing, update or insert based on result"
+  - 'CRUD settings pattern: query to load, mutation to save, useEffect to sync state'
+  - 'Backend upsert procedure: check existing, update or insert based on result'
 
 metrics:
   duration: 8min
@@ -110,5 +110,6 @@ None - no external service configuration required.
 - TypeScript compiles without errors
 
 ---
-*Phase: 40-settings-components*
-*Completed: 2026-01-29*
+
+_Phase: 40-settings-components_
+_Completed: 2026-01-29_

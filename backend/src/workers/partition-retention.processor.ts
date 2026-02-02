@@ -1,8 +1,8 @@
-import type { Job } from 'bullmq'
-import type { PartitionRetentionJobData } from '../jobs/index.js'
-import { enforceRetentionPolicy, listPartitions } from '../services/partition.service.js'
-import { sql } from 'drizzle-orm'
-import { db } from '../db/client.js'
+import type { Job } from 'bullmq';
+import type { PartitionRetentionJobData } from '../jobs/index.js';
+import { enforceRetentionPolicy, listPartitions } from '../services/partition.service.js';
+import { sql } from 'drizzle-orm';
+import { db } from '../db/client.js';
 
 /**
  * Partition retention processor for sensor_readings table
@@ -41,21 +41,19 @@ import { db } from '../db/client.js'
  * @throws Error if backups are not current or verification fails
  */
 async function verifyBackupsExist(job: Job): Promise<void> {
-	const skipVerification = process.env.BACKUP_VERIFICATION_ENABLED === 'false'
-	const maxBackupAgeHours = parseInt(process.env.BACKUP_MAX_AGE_HOURS || '24', 10)
+  const skipVerification = process.env.BACKUP_VERIFICATION_ENABLED === 'false';
+  const maxBackupAgeHours = parseInt(process.env.BACKUP_MAX_AGE_HOURS || '24', 10);
 
-	if (skipVerification) {
-		await job.log(
-			'⚠️  BACKUP VERIFICATION DISABLED - Proceeding without backup check (HIGH RISK)',
-		)
-		return
-	}
+  if (skipVerification) {
+    await job.log('⚠️  BACKUP VERIFICATION DISABLED - Proceeding without backup check (HIGH RISK)');
+    return;
+  }
 
-	await job.log('Verifying database backups before dropping partitions...')
+  await job.log('Verifying database backups before dropping partitions...');
 
-	// Check PostgreSQL WAL archiving status (pg_stat_archiver)
-	try {
-		const [archiveStatus] = await db.execute(sql`
+  // Check PostgreSQL WAL archiving status (pg_stat_archiver)
+  try {
+    const [archiveStatus] = await db.execute(sql`
 			SELECT
 				last_archived_time,
 				EXTRACT(EPOCH FROM (now() - last_archived_time)) / 3600 AS hours_since_last_archive,
@@ -63,120 +61,106 @@ async function verifyBackupsExist(job: Job): Promise<void> {
 				last_failed_wal,
 				last_failed_time
 			FROM pg_stat_archiver
-		`)
+		`);
 
-		if (!archiveStatus) {
-			throw new Error('Unable to query pg_stat_archiver - backup verification failed')
-		}
+    if (!archiveStatus) {
+      throw new Error('Unable to query pg_stat_archiver - backup verification failed');
+    }
 
-		const hoursSinceArchive = archiveStatus.hours_since_last_archive as number | null
+    const hoursSinceArchive = archiveStatus.hours_since_last_archive as number | null;
 
-		if (hoursSinceArchive === null) {
-			throw new Error(
-				'No WAL archive history found - ensure continuous archiving is configured',
-			)
-		}
+    if (hoursSinceArchive === null) {
+      throw new Error('No WAL archive history found - ensure continuous archiving is configured');
+    }
 
-		if (hoursSinceArchive > maxBackupAgeHours) {
-			throw new Error(
-				`Last WAL archive is ${hoursSinceArchive.toFixed(1)} hours old (max: ${maxBackupAgeHours}h) - backups may be stale`,
-			)
-		}
+    if (hoursSinceArchive > maxBackupAgeHours) {
+      throw new Error(
+        `Last WAL archive is ${hoursSinceArchive.toFixed(1)} hours old (max: ${maxBackupAgeHours}h) - backups may be stale`,
+      );
+    }
 
-		if (archiveStatus.last_failed_wal) {
-			await job.log(
-				`⚠️  Warning: WAL archive failure detected at ${archiveStatus.last_failed_time}`,
-			)
-		}
+    if (archiveStatus.last_failed_wal) {
+      await job.log(
+        `⚠️  Warning: WAL archive failure detected at ${archiveStatus.last_failed_time}`,
+      );
+    }
 
-		await job.log(
-			`✓ Backup verification passed - Last WAL archive: ${hoursSinceArchive.toFixed(1)} hours ago`,
-		)
-	} catch (error) {
-		const errorMessage =
-			error instanceof Error ? error.message : 'Unknown backup verification error'
-		await job.log(`❌ Backup verification FAILED: ${errorMessage}`)
-		throw new Error(
-			`Partition retention aborted due to backup verification failure: ${errorMessage}`,
-		)
-	}
+    await job.log(
+      `✓ Backup verification passed - Last WAL archive: ${hoursSinceArchive.toFixed(1)} hours ago`,
+    );
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown backup verification error';
+    await job.log(`❌ Backup verification FAILED: ${errorMessage}`);
+    throw new Error(
+      `Partition retention aborted due to backup verification failure: ${errorMessage}`,
+    );
+  }
 }
 
 /**
  * Log partitions that will be dropped for audit purposes
  */
-async function logPartitionsToBeDropped(
-	job: Job,
-	retentionMonths: number,
-): Promise<string[]> {
-	const allPartitions = await listPartitions()
-	const cutoffDate = new Date()
-	cutoffDate.setMonth(cutoffDate.getMonth() - retentionMonths)
+async function logPartitionsToBeDropped(job: Job, retentionMonths: number): Promise<string[]> {
+  const allPartitions = await listPartitions();
+  const cutoffDate = new Date();
+  cutoffDate.setMonth(cutoffDate.getMonth() - retentionMonths);
 
-	const partitionsToBeDropped = allPartitions.filter((partition) => {
-		if (!partition.toValue) return false
-		return partition.toValue < cutoffDate
-	})
+  const partitionsToBeDropped = allPartitions.filter((partition) => {
+    if (!partition.toValue) return false;
+    return partition.toValue < cutoffDate;
+  });
 
-	if (partitionsToBeDropped.length > 0) {
-		await job.log(`Partitions eligible for deletion (${partitionsToBeDropped.length}):`)
-		for (const partition of partitionsToBeDropped) {
-			await job.log(
-				`  - ${partition.partitionName} (${partition.fromValue.toISOString().split('T')[0]} to ${partition.toValue.toISOString().split('T')[0]}, ${partition.rowCount} rows)`,
-			)
-		}
+  if (partitionsToBeDropped.length > 0) {
+    await job.log(`Partitions eligible for deletion (${partitionsToBeDropped.length}):`);
+    for (const partition of partitionsToBeDropped) {
+      await job.log(
+        `  - ${partition.partitionName} (${partition.fromValue.toISOString().split('T')[0]} to ${partition.toValue.toISOString().split('T')[0]}, ${partition.rowCount} rows)`,
+      );
+    }
 
-		const totalRows = partitionsToBeDropped.reduce(
-			(sum, p) => sum + p.rowCount,
-			0,
-		)
-		await job.log(
-			`⚠️  TOTAL DATA TO BE DELETED: ${totalRows.toLocaleString()} sensor readings`,
-		)
-	}
+    const totalRows = partitionsToBeDropped.reduce((sum, p) => sum + p.rowCount, 0);
+    await job.log(`⚠️  TOTAL DATA TO BE DELETED: ${totalRows.toLocaleString()} sensor readings`);
+  }
 
-	return partitionsToBeDropped.map((p) => p.partitionName)
+  return partitionsToBeDropped.map((p) => p.partitionName);
 }
 
-export async function processPartitionRetention(
-	job: Job<PartitionRetentionJobData>,
-) {
-	const { retentionMonths = 24 } = job.data
+export async function processPartitionRetention(job: Job<PartitionRetentionJobData>) {
+  const { retentionMonths = 24 } = job.data;
 
-	await job.log(`Enforcing retention policy (${retentionMonths} months)`)
+  await job.log(`Enforcing retention policy (${retentionMonths} months)`);
 
-	// SAFETY CHECK 1: Verify backups exist
-	await verifyBackupsExist(job)
+  // SAFETY CHECK 1: Verify backups exist
+  await verifyBackupsExist(job);
 
-	// SAFETY CHECK 2: Log what will be dropped
-	const partitionsToBeDropped = await logPartitionsToBeDropped(job, retentionMonths)
+  // SAFETY CHECK 2: Log what will be dropped
+  const partitionsToBeDropped = await logPartitionsToBeDropped(job, retentionMonths);
 
-	if (partitionsToBeDropped.length === 0) {
-		await job.log('No partitions eligible for deletion')
-		return { droppedPartitions: [] }
-	}
+  if (partitionsToBeDropped.length === 0) {
+    await job.log('No partitions eligible for deletion');
+    return { droppedPartitions: [] };
+  }
 
-	// Execute retention policy (respects active overrides in partition_retention_overrides table)
-	const droppedPartitions = await enforceRetentionPolicy(retentionMonths)
+  // Execute retention policy (respects active overrides in partition_retention_overrides table)
+  const droppedPartitions = await enforceRetentionPolicy(retentionMonths);
 
-	const skippedCount = partitionsToBeDropped.length - droppedPartitions.length
-	if (skippedCount > 0) {
-		await job.log(
-			`ℹ️  ${skippedCount} partition(s) skipped due to active retention overrides`,
-		)
-	}
+  const skippedCount = partitionsToBeDropped.length - droppedPartitions.length;
+  if (skippedCount > 0) {
+    await job.log(`ℹ️  ${skippedCount} partition(s) skipped due to active retention overrides`);
+  }
 
-	if (droppedPartitions.length > 0) {
-		for (const dropped of droppedPartitions) {
-			await job.log(
-				`  ✓ Dropped ${dropped.partitionName} (${dropped.rowCount.toLocaleString()} rows, ${dropped.fromValue.toISOString().split('T')[0]} to ${dropped.toValue.toISOString().split('T')[0]})`,
-			)
-		}
-		const totalDroppedRows = droppedPartitions.reduce((sum, p) => sum + p.rowCount, 0)
-		await job.log(
-			`✓ Successfully dropped ${droppedPartitions.length} partitions (${totalDroppedRows.toLocaleString()} total rows)`,
-		)
-	}
+  if (droppedPartitions.length > 0) {
+    for (const dropped of droppedPartitions) {
+      await job.log(
+        `  ✓ Dropped ${dropped.partitionName} (${dropped.rowCount.toLocaleString()} rows, ${dropped.fromValue.toISOString().split('T')[0]} to ${dropped.toValue.toISOString().split('T')[0]})`,
+      );
+    }
+    const totalDroppedRows = droppedPartitions.reduce((sum, p) => sum + p.rowCount, 0);
+    await job.log(
+      `✓ Successfully dropped ${droppedPartitions.length} partitions (${totalDroppedRows.toLocaleString()} total rows)`,
+    );
+  }
 
-	return { droppedPartitions: droppedPartitions.map((p) => p.partitionName) }
+  return { droppedPartitions: droppedPartitions.map((p) => p.partitionName) };
 }

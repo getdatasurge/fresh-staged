@@ -47,15 +47,17 @@ export function perfEnd(name: string, additionalMetadata?: Record<string, unknow
   activeMarks.delete(name);
 
   const allMetadata = { ...mark.metadata, ...additionalMetadata };
-  const metaStr = Object.keys(allMetadata).length > 0
-    ? ` ${JSON.stringify(allMetadata)}`
-    : '';
+  const metaStr = Object.keys(allMetadata).length > 0 ? ` ${JSON.stringify(allMetadata)}` : '';
 
   // Color-code by duration
-  const color = elapsed > 500 ? 'color: red'
-    : elapsed > 200 ? 'color: orange'
-    : elapsed > 100 ? 'color: yellow'
-    : 'color: green';
+  const color =
+    elapsed > 500
+      ? 'color: red'
+      : elapsed > 200
+        ? 'color: orange'
+        : elapsed > 100
+          ? 'color: yellow'
+          : 'color: green';
 
   console.log(`%c[PERF] ${name}: ${elapsed}ms${metaStr}`, color);
 
@@ -68,7 +70,7 @@ export function perfEnd(name: string, additionalMetadata?: Record<string, unknow
 export async function perfMeasure<T>(
   name: string,
   fn: () => Promise<T>,
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>,
 ): Promise<T> {
   perfStart(name, metadata);
   try {
@@ -86,7 +88,7 @@ export async function perfMeasure<T>(
  */
 export async function timedQuery<T>(
   queryName: string,
-  queryFn: () => Promise<{ data: T; error: unknown }>
+  queryFn: () => Promise<{ data: T; error: unknown }>,
 ): Promise<{ data: T; error: unknown; durationMs: number }> {
   const startTime = performance.now();
   const result = await queryFn();
@@ -94,9 +96,8 @@ export async function timedQuery<T>(
 
   if (DEV) {
     const status = result.error ? '❌' : '✓';
-    const color = durationMs > 500 ? 'color: red'
-      : durationMs > 200 ? 'color: orange'
-      : 'color: green';
+    const color =
+      durationMs > 500 ? 'color: red' : durationMs > 200 ? 'color: orange' : 'color: green';
     console.log(`%c[DB] ${status} ${queryName}: ${durationMs}ms`, color);
   }
 
@@ -112,9 +113,7 @@ export function logRealtimeLatency(eventName: string, recordedAt: string | Date)
   const recordedTime = new Date(recordedAt).getTime();
   const latency = Date.now() - recordedTime;
 
-  const color = latency > 2000 ? 'color: red'
-    : latency > 1000 ? 'color: orange'
-    : 'color: green';
+  const color = latency > 2000 ? 'color: red' : latency > 1000 ? 'color: orange' : 'color: green';
 
   console.log(`%c[RT-LATENCY] ${eventName}: ${latency}ms from recorded_at`, color);
 }

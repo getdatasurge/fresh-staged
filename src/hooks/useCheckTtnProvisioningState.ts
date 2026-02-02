@@ -22,19 +22,19 @@
  * Estimated effort: Medium (requires TTN API integration)
  * Priority: Medium (used for sensor status validation)
  */
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUser } from "@stackframe/react";
-import { toast } from "sonner";
-import { qk } from "@/lib/queryKeys";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useUser } from '@stackframe/react';
+import { toast } from 'sonner';
+import { qk } from '@/lib/queryKeys';
 
 export type TtnProvisioningState =
-  | "not_configured"
-  | "unknown"
-  | "exists_in_ttn"
-  | "missing_in_ttn"
-  | "error";
+  | 'not_configured'
+  | 'unknown'
+  | 'exists_in_ttn'
+  | 'missing_in_ttn'
+  | 'error';
 
-export type ProvisionedSource = "emulator" | "app" | "unknown" | "manual";
+export type ProvisionedSource = 'emulator' | 'app' | 'unknown' | 'manual';
 
 export interface CheckTtnResult {
   sensor_id: string;
@@ -64,37 +64,41 @@ export function useCheckTtnProvisioningState() {
   return useMutation({
     mutationFn: async (sensorIds: string[]): Promise<CheckTtnResponse> => {
       if (sensorIds.length === 0) {
-        throw new Error("No sensor IDs provided");
+        throw new Error('No sensor IDs provided');
       }
 
-      if (!user) throw new Error("Not authenticated");
+      if (!user) throw new Error('Not authenticated');
 
-      throw new Error("TTN provisioning checks unavailable during Supabase removal");
+      throw new Error('TTN provisioning checks unavailable during Supabase removal');
     },
     onSuccess: (data) => {
       // Invalidate sensor queries using correct org-scoped keys
-      const orgIds = [...new Set(data.results.map(r => r.organization_id).filter(Boolean))];
-      orgIds.forEach(orgId => {
+      const orgIds = [...new Set(data.results.map((r) => r.organization_id).filter(Boolean))];
+      orgIds.forEach((orgId) => {
         queryClient.invalidateQueries({ queryKey: qk.org(orgId).loraSensors() });
       });
       // Also invalidate legacy flat key for backwards compatibility
-      queryClient.invalidateQueries({ queryKey: ["lora-sensors"] });
+      queryClient.invalidateQueries({ queryKey: ['lora-sensors'] });
 
       // Show summary toast
-      const existsCount = data.results.filter((r) => r.provisioning_state === "exists_in_ttn").length;
-      const missingCount = data.results.filter((r) => r.provisioning_state === "missing_in_ttn").length;
-      const errorCount = data.results.filter((r) => r.provisioning_state === "error").length;
+      const existsCount = data.results.filter(
+        (r) => r.provisioning_state === 'exists_in_ttn',
+      ).length;
+      const missingCount = data.results.filter(
+        (r) => r.provisioning_state === 'missing_in_ttn',
+      ).length;
+      const errorCount = data.results.filter((r) => r.provisioning_state === 'error').length;
 
       if (data.checked_count === 1) {
         const result = data.results[0];
-        if (result.provisioning_state === "exists_in_ttn") {
-          toast.success("Device found in TTN", { description: "Sensor is provisioned" });
-        } else if (result.provisioning_state === "missing_in_ttn") {
-          toast.info("Device not in TTN", { description: "Sensor can be provisioned" });
-        } else if (result.provisioning_state === "error") {
-          toast.error("Check failed", { description: result.error });
+        if (result.provisioning_state === 'exists_in_ttn') {
+          toast.success('Device found in TTN', { description: 'Sensor is provisioned' });
+        } else if (result.provisioning_state === 'missing_in_ttn') {
+          toast.info('Device not in TTN', { description: 'Sensor can be provisioned' });
+        } else if (result.provisioning_state === 'error') {
+          toast.error('Check failed', { description: result.error });
         } else {
-          toast.warning("Not configured", { description: result.error });
+          toast.warning('Not configured', { description: result.error });
         }
       } else {
         const parts: string[] = [];
@@ -102,12 +106,12 @@ export function useCheckTtnProvisioningState() {
         if (missingCount > 0) parts.push(`${missingCount} not in TTN`);
         if (errorCount > 0) parts.push(`${errorCount} errors`);
         toast.success(`Checked ${data.checked_count} sensors`, {
-          description: parts.join(", "),
+          description: parts.join(', '),
         });
       }
     },
     onError: (error: Error) => {
-      toast.error("Failed to check TTN status", { description: error.message });
+      toast.error('Failed to check TTN status', { description: error.message });
     },
   });
 }

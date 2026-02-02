@@ -7,7 +7,7 @@
       "description": "Position fix",
       "decoded_payload": {
         "latitude": 40.7128,
-        "longitude": -74.0060,
+        "longitude": -74.006,
         "battery_level": 75
       }
     }

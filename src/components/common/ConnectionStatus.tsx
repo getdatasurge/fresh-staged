@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Wifi, WifiOff, Loader2 } from 'lucide-react';
 import { useRealtimeStatus } from '@/providers/RealtimeProvider';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 export function ConnectionStatus() {
@@ -56,13 +51,7 @@ export function ConnectionStatus() {
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center">
-            <Icon
-              className={cn(
-                'w-4 h-4',
-                config.color,
-                config.animate && 'animate-spin'
-              )}
-            />
+            <Icon className={cn('w-4 h-4', config.color, config.animate && 'animate-spin')} />
           </div>
         </TooltipTrigger>
         <TooltipContent>

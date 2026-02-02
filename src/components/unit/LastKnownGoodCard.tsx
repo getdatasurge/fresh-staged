@@ -1,12 +1,12 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, ThermometerSnowflake, Clock, AlertCircle } from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, ThermometerSnowflake, Clock, AlertCircle } from 'lucide-react';
+import { formatDistanceToNow, format } from 'date-fns';
 
 interface LastKnownGoodCardProps {
   lastValidTemp: number | null;
   lastValidAt: string | null;
-  source: "sensor" | "manual" | null;
+  source: 'sensor' | 'manual' | null;
   tempLimitHigh: number;
   tempLimitLow: number | null;
   isCurrentlyOnline: boolean;
@@ -26,17 +26,18 @@ const LastKnownGoodCard = ({
     return null;
   }
 
-  const isInRange = lastValidTemp !== null && 
-    lastValidTemp <= tempLimitHigh && 
+  const isInRange =
+    lastValidTemp !== null &&
+    lastValidTemp <= tempLimitHigh &&
     (tempLimitLow === null || lastValidTemp >= tempLimitLow);
 
   const formatTime = (timestamp: string | null) => {
-    if (!timestamp) return "Never";
+    if (!timestamp) return 'Never';
     try {
       const date = new Date(timestamp);
-      return `${formatDistanceToNow(date, { addSuffix: true })} (${format(date, "MMM d, h:mm a")})`;
+      return `${formatDistanceToNow(date, { addSuffix: true })} (${format(date, 'MMM d, h:mm a')})`;
     } catch {
-      return "Unknown";
+      return 'Unknown';
     }
   };
 
@@ -52,8 +53,8 @@ const LastKnownGoodCard = ({
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            No valid temperature readings have been recorded for this unit yet.
-            Wait for sensor data or log a manual temperature reading.
+            No valid temperature readings have been recorded for this unit yet. Wait for sensor data
+            or log a manual temperature reading.
           </p>
         </CardContent>
       </Card>
@@ -72,7 +73,7 @@ const LastKnownGoodCard = ({
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className={`text-3xl font-bold ${isInRange ? "text-safe" : "text-alarm"}`}>
+              <span className={`text-3xl font-bold ${isInRange ? 'text-safe' : 'text-alarm'}`}>
                 {lastValidTemp.toFixed(1)}°F
               </span>
               {isInRange ? (
@@ -92,15 +93,15 @@ const LastKnownGoodCard = ({
               <span>{formatTime(lastValidAt)}</span>
               {source && (
                 <Badge variant="outline" className="text-xs">
-                  {source === "sensor" ? "Sensor" : "Manual Log"}
+                  {source === 'sensor' ? 'Sensor' : 'Manual Log'}
                 </Badge>
               )}
             </div>
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-3">
-          This was the last valid temperature before the sensor went offline.
-          Monitor this unit and log manual readings until the sensor reconnects.
+          This was the last valid temperature before the sensor went offline. Monitor this unit and
+          log manual readings until the sensor reconnects.
         </p>
       </CardContent>
     </Card>

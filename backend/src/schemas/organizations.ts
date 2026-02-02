@@ -1,5 +1,5 @@
-import { z } from 'zod'
-import { OrgParamsSchema, TimestampSchema, UuidSchema } from './common.js'
+import { z } from 'zod';
+import { OrgParamsSchema, TimestampSchema, UuidSchema } from './common.js';
 
 // Compliance mode enum matching database
 const ComplianceModeSchema = z.enum(['standard', 'haccp']);
@@ -73,7 +73,7 @@ export const OrganizationStatsSchema = z.object({
 });
 
 // Re-export params for routes
-export { OrgParamsSchema }
+export { OrgParamsSchema };
 
 // Type exports
 export type OrganizationResponse = z.infer<typeof OrganizationSchema>;

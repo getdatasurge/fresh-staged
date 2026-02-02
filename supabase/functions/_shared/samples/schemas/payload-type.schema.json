@@ -4,7 +4,15 @@
   "title": "Payload Type Manifest",
   "description": "Schema for payload type manifest files that define payload classification rules",
   "type": "object",
-  "required": ["payloadType", "version", "displayName", "sensorType", "capabilities", "schema", "discriminators"],
+  "required": [
+    "payloadType",
+    "version",
+    "displayName",
+    "sensorType",
+    "capabilities",
+    "schema",
+    "discriminators"
+  ],
   "properties": {
     "payloadType": {
       "type": "string",
@@ -26,14 +34,36 @@
     },
     "sensorType": {
       "type": "string",
-      "enum": ["temperature", "door", "air_quality", "leak", "motion", "gps", "metering", "multi_sensor", "unknown"],
+      "enum": [
+        "temperature",
+        "door",
+        "air_quality",
+        "leak",
+        "motion",
+        "gps",
+        "metering",
+        "multi_sensor",
+        "unknown"
+      ],
       "description": "Maps to lora_sensor_type enum value"
     },
     "capabilities": {
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["temperature", "humidity", "door", "motion", "leak", "co2", "tvoc", "pm", "gps", "pulse", "battery"]
+        "enum": [
+          "temperature",
+          "humidity",
+          "door",
+          "motion",
+          "leak",
+          "co2",
+          "tvoc",
+          "pm",
+          "gps",
+          "pulse",
+          "battery"
+        ]
       },
       "minItems": 1,
       "description": "Capabilities provided by this payload type"

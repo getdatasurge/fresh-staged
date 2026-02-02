@@ -1,16 +1,16 @@
 /**
  * Site Location Modal
- * 
+ *
  * Reusable modal for editing site latitude, longitude, and timezone.
  * Features address geocoding search and static map preview.
  * Used by the External Weather widget for inline location configuration.
  */
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { MapPin, Globe, ExternalLink, Info, Search } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { MapPin, Globe, ExternalLink, Info, Search } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -18,17 +18,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Form,
   FormControl,
@@ -36,25 +36,25 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useSiteLocationMutation } from "@/hooks/useSiteLocationMutation";
-import { Link } from "react-router-dom";
-import { AddressSearchInput } from "./AddressSearchInput";
-import { StaticMapPreview } from "./StaticMapPreview";
-import { GeocodingResult } from "@/lib/geocoding/geocodingService";
+} from '@/components/ui/form';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useSiteLocationMutation } from '@/hooks/useSiteLocationMutation';
+import { Link } from 'react-router-dom';
+import { AddressSearchInput } from './AddressSearchInput';
+import { StaticMapPreview } from './StaticMapPreview';
+import { GeocodingResult } from '@/lib/geocoding/geocodingService';
 
 const timezones = [
-  { value: "America/New_York", label: "Eastern Time (ET)" },
-  { value: "America/Chicago", label: "Central Time (CT)" },
-  { value: "America/Denver", label: "Mountain Time (MT)" },
-  { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
-  { value: "America/Anchorage", label: "Alaska Time (AKT)" },
-  { value: "Pacific/Honolulu", label: "Hawaii Time (HT)" },
-  { value: "Europe/London", label: "London (GMT)" },
-  { value: "Europe/Paris", label: "Paris (CET)" },
-  { value: "Asia/Tokyo", label: "Tokyo (JST)" },
-  { value: "Australia/Sydney", label: "Sydney (AEST)" },
+  { value: 'America/New_York', label: 'Eastern Time (ET)' },
+  { value: 'America/Chicago', label: 'Central Time (CT)' },
+  { value: 'America/Denver', label: 'Mountain Time (MT)' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+  { value: 'America/Anchorage', label: 'Alaska Time (AKT)' },
+  { value: 'Pacific/Honolulu', label: 'Hawaii Time (HT)' },
+  { value: 'Europe/London', label: 'London (GMT)' },
+  { value: 'Europe/Paris', label: 'Paris (CET)' },
+  { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
+  { value: 'Australia/Sydney', label: 'Sydney (AEST)' },
 ];
 
 /**
@@ -63,29 +63,35 @@ const timezones = [
  */
 function estimateTimezoneFromLongitude(longitude: number): string {
   // Rough timezone zones by longitude
-  if (longitude >= -180 && longitude < -150) return "Pacific/Honolulu";
-  if (longitude >= -150 && longitude < -135) return "America/Anchorage";
-  if (longitude >= -135 && longitude < -115) return "America/Los_Angeles";
-  if (longitude >= -115 && longitude < -100) return "America/Denver";
-  if (longitude >= -100 && longitude < -85) return "America/Chicago";
-  if (longitude >= -85 && longitude < -60) return "America/New_York";
-  if (longitude >= -10 && longitude < 5) return "Europe/London";
-  if (longitude >= 5 && longitude < 30) return "Europe/Paris";
-  if (longitude >= 120 && longitude < 150) return "Asia/Tokyo";
-  if (longitude >= 150 && longitude <= 180) return "Australia/Sydney";
-  return "America/New_York"; // Default fallback
+  if (longitude >= -180 && longitude < -150) return 'Pacific/Honolulu';
+  if (longitude >= -150 && longitude < -135) return 'America/Anchorage';
+  if (longitude >= -135 && longitude < -115) return 'America/Los_Angeles';
+  if (longitude >= -115 && longitude < -100) return 'America/Denver';
+  if (longitude >= -100 && longitude < -85) return 'America/Chicago';
+  if (longitude >= -85 && longitude < -60) return 'America/New_York';
+  if (longitude >= -10 && longitude < 5) return 'Europe/London';
+  if (longitude >= 5 && longitude < 30) return 'Europe/Paris';
+  if (longitude >= 120 && longitude < 150) return 'Asia/Tokyo';
+  if (longitude >= 150 && longitude <= 180) return 'Australia/Sydney';
+  return 'America/New_York'; // Default fallback
 }
 
 const locationSchema = z.object({
   latitude: z
-    .number({ required_error: "Latitude is required", invalid_type_error: "Latitude must be a number" })
-    .min(-90, "Latitude must be between -90 and 90")
-    .max(90, "Latitude must be between -90 and 90"),
+    .number({
+      required_error: 'Latitude is required',
+      invalid_type_error: 'Latitude must be a number',
+    })
+    .min(-90, 'Latitude must be between -90 and 90')
+    .max(90, 'Latitude must be between -90 and 90'),
   longitude: z
-    .number({ required_error: "Longitude is required", invalid_type_error: "Longitude must be a number" })
-    .min(-180, "Longitude must be between -180 and 180")
-    .max(180, "Longitude must be between -180 and 180"),
-  timezone: z.string().min(1, "Timezone is required"),
+    .number({
+      required_error: 'Longitude is required',
+      invalid_type_error: 'Longitude must be a number',
+    })
+    .min(-180, 'Longitude must be between -180 and 180')
+    .max(180, 'Longitude must be between -180 and 180'),
+  timezone: z.string().min(1, 'Timezone is required'),
 });
 
 type LocationFormData = z.infer<typeof locationSchema>;
@@ -118,16 +124,16 @@ export function SiteLocationModal({
     defaultValues: {
       latitude: currentLatitude ?? undefined,
       longitude: currentLongitude ?? undefined,
-      timezone: currentTimezone || "America/New_York",
+      timezone: currentTimezone || 'America/New_York',
     },
   });
 
   // Watch form values for map preview
-  const watchedLatitude = form.watch("latitude");
-  const watchedLongitude = form.watch("longitude");
+  const watchedLatitude = form.watch('latitude');
+  const watchedLongitude = form.watch('longitude');
   const hasValidCoordinates =
-    typeof watchedLatitude === "number" &&
-    typeof watchedLongitude === "number" &&
+    typeof watchedLatitude === 'number' &&
+    typeof watchedLongitude === 'number' &&
     !isNaN(watchedLatitude) &&
     !isNaN(watchedLongitude);
 
@@ -137,18 +143,18 @@ export function SiteLocationModal({
       form.reset({
         latitude: currentLatitude ?? undefined,
         longitude: currentLongitude ?? undefined,
-        timezone: currentTimezone || "America/New_York",
+        timezone: currentTimezone || 'America/New_York',
       });
     }
   }, [open, currentLatitude, currentLongitude, currentTimezone, form]);
 
   const handleAddressSelect = (result: GeocodingResult) => {
-    form.setValue("latitude", result.latitude, { shouldValidate: true });
-    form.setValue("longitude", result.longitude, { shouldValidate: true });
-    
+    form.setValue('latitude', result.latitude, { shouldValidate: true });
+    form.setValue('longitude', result.longitude, { shouldValidate: true });
+
     // Auto-suggest timezone based on longitude
     const suggestedTimezone = estimateTimezoneFromLongitude(result.longitude);
-    form.setValue("timezone", suggestedTimezone);
+    form.setValue('timezone', suggestedTimezone);
   };
 
   const onSubmit = async (data: LocationFormData) => {
@@ -171,15 +177,13 @@ export function SiteLocationModal({
               <MapPin className="h-5 w-5" />
               Site Location
             </DialogTitle>
-            <DialogDescription>
-              Location configuration for weather data
-            </DialogDescription>
+            <DialogDescription>Location configuration for weather data</DialogDescription>
           </DialogHeader>
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              You don't have permission to edit site location. Please contact
-              your administrator to update this setting.
+              You don't have permission to edit site location. Please contact your administrator to
+              update this setting.
             </AlertDescription>
           </Alert>
           <DialogFooter>
@@ -240,11 +244,9 @@ export function SiteLocationModal({
                           className="w-full"
                           {...field}
                           onChange={(e) =>
-                            field.onChange(
-                              e.target.value ? parseFloat(e.target.value) : undefined
-                            )
+                            field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)
                           }
-                          value={field.value ?? ""}
+                          value={field.value ?? ''}
                         />
                       </FormControl>
                       <FormMessage />
@@ -265,11 +267,9 @@ export function SiteLocationModal({
                           className="w-full"
                           {...field}
                           onChange={(e) =>
-                            field.onChange(
-                              e.target.value ? parseFloat(e.target.value) : undefined
-                            )
+                            field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)
                           }
-                          value={field.value ?? ""}
+                          value={field.value ?? ''}
                         />
                       </FormControl>
                       <FormMessage />
@@ -288,10 +288,7 @@ export function SiteLocationModal({
                       <Globe className="w-4 h-4 text-muted-foreground" />
                       Timezone
                     </FormLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
+                    <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select timezone" />
@@ -313,9 +310,7 @@ export function SiteLocationModal({
               {/* Map Preview */}
               {hasValidCoordinates && (
                 <div className="space-y-2 min-w-0">
-                  <Label className="text-xs text-muted-foreground">
-                    Location Preview
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">Location Preview</Label>
                   <StaticMapPreview
                     latitude={watchedLatitude}
                     longitude={watchedLongitude}
@@ -326,27 +321,17 @@ export function SiteLocationModal({
             </div>
 
             <DialogFooter className="flex-shrink-0 flex-col sm:flex-row gap-2 pt-4">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                asChild
-                className="sm:mr-auto"
-              >
+              <Button type="button" variant="ghost" size="sm" asChild className="sm:mr-auto">
                 <Link to={`/sites/${siteId}?tab=settings`}>
                   <ExternalLink className="h-3 w-3 mr-1" />
                   Open Site Settings
                 </Link>
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={mutation.isPending}>
-                {mutation.isPending ? "Saving..." : "Save Location"}
+                {mutation.isPending ? 'Saving...' : 'Save Location'}
               </Button>
             </DialogFooter>
           </form>

@@ -20,16 +20,16 @@ autonomous: true
 
 must_haves:
   truths:
-    - "21 additional skills installed and available in .skills directory"
-    - "Skills organized by vendor/repo structure"
-    - "Existing stripe/ai and wshobson/agents skills preserved"
+    - '21 additional skills installed and available in .skills directory'
+    - 'Skills organized by vendor/repo structure'
+    - 'Existing stripe/ai and wshobson/agents skills preserved'
   artifacts:
-    - path: ".skills/subsy/ralph-tui"
-      provides: "ralph-tui-create-beads, ralph-tui-create-json, ralph-tui-prd"
-    - path: ".skills/cloudai-x/threejs-skills"
-      provides: "6 Three.js skills"
-    - path: ".skills/davila7/claude-code-templates"
-      provides: "senior-backend, senior-frontend"
+    - path: '.skills/subsy/ralph-tui'
+      provides: 'ralph-tui-create-beads, ralph-tui-create-json, ralph-tui-prd'
+    - path: '.skills/cloudai-x/threejs-skills'
+      provides: '6 Three.js skills'
+    - path: '.skills/davila7/claude-code-templates'
+      provides: 'senior-backend, senior-frontend'
   key_links: []
 ---
 
@@ -78,9 +78,9 @@ wait
 ```
 
 Use --depth 1 for shallow clones to minimize download time.
-  </action>
-  <verify>All 11 directories exist in /tmp/skills-repos/</verify>
-  <done>All skill repositories cloned successfully</done>
+</action>
+<verify>All 11 directories exist in /tmp/skills-repos/</verify>
+<done>All skill repositories cloned successfully</done>
 </task>
 
 <task type="auto">
@@ -138,9 +138,11 @@ cp -r /tmp/skills-repos/composiohq-awesome-claude-skills .skills/composiohq/awes
 ```
 
 Remove .git directories from copied skills:
+
 ```bash
 find .skills -name ".git" -type d -exec rm -rf {} + 2>/dev/null || true
 ```
+
   </action>
   <verify>ls -la .skills/ shows all vendor directories; find .skills -name "*.md" | wc -l shows skill files present</verify>
   <done>All 21 skills copied to .skills/ with proper vendor organization</done>
@@ -163,15 +165,18 @@ See subdirectories for individual skill documentation.
 ```
 
 Clean up temp directory:
+
 ```bash
 rm -rf /tmp/skills-repos
 ```
 
 Verify final structure:
+
 ```bash
 ls -la .skills/
 find .skills -maxdepth 3 -type d | head -50
 ```
+
   </action>
   <verify>Each vendor directory has CLAUDE.md; temp directory removed; .skills/ contains 12 vendor directories total</verify>
   <done>Vendor index files created, temp files cleaned up, skills installation complete</done>
@@ -187,12 +192,13 @@ find .skills -maxdepth 3 -type d | head -50
 </verification>
 
 <success_criteria>
+
 - 21 new skills installed across 11 repositories
 - Skills organized by vendor/repo structure
 - Existing skills preserved (stripe/ai, wshobson/agents)
 - No .git directories in .skills/
 - Each vendor has CLAUDE.md index file
-</success_criteria>
+  </success_criteria>
 
 <output>
 After completion, create `.planning/quick/003-install-21-additional-skills-from-skills/003-SUMMARY.md`

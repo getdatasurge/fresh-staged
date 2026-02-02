@@ -70,7 +70,7 @@ describe('TTN Service', () => {
           headers: expect.objectContaining({
             Authorization: 'Bearer NNSXS.TEST-API-KEY.SECRET',
           }),
-        })
+        }),
       );
       expect(devices).toHaveLength(1);
       expect(devices[0].ids.device_id).toBe('my-sensor-001');
@@ -131,7 +131,7 @@ describe('TTN Service', () => {
         'https://nam1.cloud.thethings.network/api/v3/applications/test-app/devices/my-sensor-001',
         expect.objectContaining({
           method: 'GET',
-        })
+        }),
       );
       expect(device?.ids.device_id).toBe('my-sensor-001');
     });
@@ -196,7 +196,10 @@ describe('TTN Service', () => {
 
     it('should use default frequency plan if not specified', async () => {
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ ids: { device_id: 'test' } }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ ids: { device_id: 'test' } }),
+        })
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) })
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) })
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) });
@@ -211,7 +214,10 @@ describe('TTN Service', () => {
 
     it('should normalize EUI values to uppercase', async () => {
       mockFetch
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ ids: { device_id: 'test' } }) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ ids: { device_id: 'test' } }),
+        })
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) })
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) })
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) });
@@ -258,7 +264,7 @@ describe('TTN Service', () => {
         'https://nam1.cloud.thethings.network/api/v3/applications/test-app/devices/my-sensor-001',
         expect.objectContaining({
           method: 'PUT',
-        })
+        }),
       );
       expect(device.name).toBe('Updated Name');
     });

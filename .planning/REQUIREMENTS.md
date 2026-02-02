@@ -42,36 +42,38 @@ Fix known skipped tests and restore test coverage across backend and frontend. F
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
+| Feature                    | Reason                                               |
+| -------------------------- | ---------------------------------------------------- |
 | Coverage thresholds (80%+) | Fixing known failures, not chasing arbitrary numbers |
-| E2E test expansion | Current 2 E2E files are sufficient for smoke testing |
-| New test infrastructure | Using existing Vitest + Playwright setup |
-| Performance testing | Separate concern, not test debt |
-| Backend code changes | Tests should test existing behavior, not modify it |
+| E2E test expansion         | Current 2 E2E files are sufficient for smoke testing |
+| New test infrastructure    | Using existing Vitest + Playwright setup             |
+| Performance testing        | Separate concern, not test debt                      |
+| Backend code changes       | Tests should test existing behavior, not modify it   |
 
 ## Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| TTN-01 | Phase 52 | Pending |
-| TTN-02 | Phase 52 | Pending |
-| ALERT-01 | Phase 53 | Pending |
-| ALERT-02 | Phase 53 | Pending |
-| READ-01 | Phase 53 | Pending |
-| READ-02 | Phase 53 | Pending |
-| SITE-01 | Phase 53 | Pending |
-| FE-01 | Phase 54 | Pending |
-| FE-02 | Phase 54 | Pending |
-| FE-03 | Phase 54 | Pending |
-| HEALTH-01 | Phase 55 | Pending |
-| HEALTH-02 | Phase 55 | Pending |
+| Requirement | Phase    | Status  |
+| ----------- | -------- | ------- |
+| TTN-01      | Phase 52 | Pending |
+| TTN-02      | Phase 52 | Pending |
+| ALERT-01    | Phase 53 | Pending |
+| ALERT-02    | Phase 53 | Pending |
+| READ-01     | Phase 53 | Pending |
+| READ-02     | Phase 53 | Pending |
+| SITE-01     | Phase 53 | Pending |
+| FE-01       | Phase 54 | Pending |
+| FE-02       | Phase 54 | Pending |
+| FE-03       | Phase 54 | Pending |
+| HEALTH-01   | Phase 55 | Pending |
+| HEALTH-02   | Phase 55 | Pending |
 
 **Coverage:**
+
 - v2.9 requirements: 12 total
 - Mapped to phases: 12
 - Unmapped: 0
 
 ---
-*Requirements defined: 2026-01-30*
-*Last updated: 2026-01-30 -- Traceability updated with phase assignments*
+
+_Requirements defined: 2026-01-30_
+_Last updated: 2026-01-30 -- Traceability updated with phase assignments_

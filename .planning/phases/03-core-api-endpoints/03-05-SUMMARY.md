@@ -73,12 +73,14 @@ decisions:
 ## What Was Built
 
 ### Unit Service Layer
+
 - **Full hierarchy validation:** `verifyAreaAccess()` validates org → site → area chain via innerJoin before any operation
 - **CRUD operations:** listUnits, getUnit, createUnit, updateUnit, deleteUnit (soft delete)
 - **Tenant isolation:** All queries validate complete hierarchy to prevent BOLA attacks
 - **Silent filtering:** Invalid hierarchy returns null (no information disclosure)
 
 ### Zod Validation Schemas
+
 - **UnitTypeSchema:** Enum for fridge, freezer, display_case, walk_in_cooler, walk_in_freezer, blast_chiller
 - **UnitStatusSchema:** Enum for ok, excursion, alarm_active, monitoring_interrupted, manual_required, restoring, offline
 - **TempUnitSchema:** Enum for F (Fahrenheit) or C (Celsius)
@@ -86,6 +88,7 @@ decisions:
 - **Conditional refinement:** UpdateUnitSchema only validates temp range when both values provided
 
 ### REST API Endpoints
+
 - **GET /api/orgs/:orgId/sites/:siteId/areas/:areaId/units** - List units in area (auth + org-context)
 - **POST /api/orgs/:orgId/sites/:siteId/areas/:areaId/units** - Create unit (manager+ required)
 - **GET /api/orgs/:orgId/sites/:siteId/areas/:areaId/units/:unitId** - Get unit details
@@ -93,13 +96,16 @@ decisions:
 - **DELETE /api/orgs/:orgId/sites/:siteId/areas/:areaId/units/:unitId** - Soft-delete unit (manager+)
 
 ### Database Schema Enhancement
+
 - **tempUnitEnum:** Added pgEnum('temp_unit', ['F', 'C']) for type-safe temperature units
 - **hierarchy.ts update:** Changed tempUnit from varchar(1) to tempUnitEnum for TypeScript inference
 
 ## Execution Flow
 
 ### Task 1: Unit Service (commit 3592da1)
+
 Created `backend/src/services/unit.service.ts` with:
+
 - `verifyAreaAccess(areaId, siteId, organizationId)` - Validates area belongs to site and site belongs to org via innerJoin
 - `listUnits()` - Returns active units in area after hierarchy validation
 - `getUnit()` - Retrieves single unit with full hierarchy check
@@ -110,7 +116,9 @@ Created `backend/src/services/unit.service.ts` with:
 Updated `backend/src/services/index.ts` to export unitService namespace.
 
 ### Task 2: Unit Schemas (commit 931185e)
+
 Created `backend/src/schemas/units.ts` with:
+
 - Enum schemas matching database (UnitTypeSchema, UnitStatusSchema, TempUnitSchema)
 - UnitRequiredParamsSchema extending AreaParamsSchema with unitId
 - UnitSchema for full response validation
@@ -122,7 +130,9 @@ Created `backend/src/schemas/units.ts` with:
 Updated `backend/src/schemas/index.ts` to export units schemas.
 
 ### Task 3: Unit Routes (commit 1c9baea)
+
 Created `backend/src/routes/units.ts` with:
+
 - Five REST endpoints using ZodTypeProvider
 - Manager role requirement for mutations (not admin - equipment is manager domain)
 - Full hierarchy validation via service layer
@@ -130,10 +140,12 @@ Created `backend/src/routes/units.ts` with:
 - 201 status for creation, 204 for deletion
 
 Updated `backend/src/app.ts` to:
+
 - Import unitRoutes
 - Register at prefix `/api/orgs/:organizationId/sites/:siteId/areas/:areaId/units`
 
 Fixed database schema:
+
 - Added tempUnitEnum to enums.ts
 - Updated hierarchy.ts to use tempUnitEnum instead of varchar(1)
 - Ensures TypeScript infers 'F' | 'C' instead of string
@@ -153,6 +165,7 @@ Fixed database schema:
 ### Auto-fixed Issues
 
 **1. [Rule 2 - Missing Critical] Added tempUnitEnum to database schema**
+
 - **Found during:** Task 3 TypeScript compilation
 - **Issue:** Database schema used varchar(1) for tempUnit, causing TypeScript to infer 'string' instead of '"F" | "C"', resulting in type mismatch with Zod schema
 - **Fix:** Created tempUnitEnum pgEnum in enums.ts and updated hierarchy.ts to use it
@@ -163,27 +176,33 @@ Fixed database schema:
 ## Decisions Made
 
 ### Manager Role for Unit Operations
+
 **Decision:** Units require manager role (not admin) for create/update/delete operations
 
 **Rationale:**
+
 - Equipment management is a manager responsibility in organizational hierarchy
 - Admins handle organizational settings, managers handle operational equipment
 - Aligns with real-world restaurant/facility management patterns
 
 **Impact:**
+
 - Phase 4 (Device Management): Sensor pairing may also use manager role
 - Phase 5 (Telemetry): Manual readings may use manager role
 - Consistent with organizational role hierarchy established in Phase 2
 
 ### Temperature Unit Enum
+
 **Decision:** Created tempUnitEnum pgEnum instead of varchar(1)
 
 **Rationale:**
+
 - Provides TypeScript type safety matching Zod schema
 - Prevents invalid values at database level
 - Enables compile-time checking for temperature unit handling
 
 **Impact:**
+
 - Database migration required to add enum and alter column
 - All future temperature handling has type-safe unit awareness
 - Zod schemas and database schemas perfectly aligned
@@ -202,12 +221,14 @@ Fixed database schema:
 ## Performance & Security Notes
 
 ### Security
+
 - **BOLA prevention:** verifyAreaAccess validates full hierarchy with innerJoin
 - **Tenant isolation:** All queries filter by organizationId through hierarchy
 - **Silent filtering:** Cross-org attempts return 404, no information disclosure
 - **Role enforcement:** Manager+ required for mutations, prevents unauthorized equipment changes
 
 ### Performance
+
 - **Single query validation:** verifyAreaAccess uses single innerJoin instead of multiple queries
 - **Indexed queries:** Database indexes on units.areaId, units.isActive support fast filtering
 - **Hierarchy indexes:** Existing indexes on areas.siteId and sites.organizationId enable fast joins
@@ -215,16 +236,19 @@ Fixed database schema:
 ## Next Phase Readiness
 
 ### For Phase 4 (Device Management)
+
 - ✅ Units table ready for device pairing
 - ✅ Unit service provides getUnit for device-to-unit association
 - ⚠️ Consider: Will device pairing also require manager role (consistency)?
 
 ### For Phase 5 (Telemetry Ingestion)
+
 - ✅ Units are the target for temperature readings
 - ✅ lastReadingAt and lastTemperature fields ready for updates
 - ✅ tempMin/tempMax thresholds available for alarm detection
 
 ### For Phase 6 (Alert Rules)
+
 - ✅ Unit hierarchy enables rule inheritance (org → site → unit)
 - ✅ Unit status field ready for alert-triggered updates
 - ✅ manualMonitoringRequired field ready for missed-entry alerts
@@ -232,9 +256,11 @@ Fixed database schema:
 ## Technical Debt & Follow-up
 
 ### Database Migration Required
+
 **Impact:** Schema change for tempUnitEnum requires migration
 
 **Action needed:**
+
 ```sql
 -- Create enum type
 CREATE TYPE temp_unit AS ENUM ('F', 'C');

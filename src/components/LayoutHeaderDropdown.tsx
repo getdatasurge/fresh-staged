@@ -7,23 +7,23 @@
  * Permission-gated: Layout creation requires 'layouts.create' permission.
  */
 
-import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { Layout, Lock, Star, ChevronDown, Plus, Loader2 } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { Layout, Lock, Star, ChevronDown, Plus, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useQuickCreateEntityLayout } from "@/hooks/useQuickCreateEntityLayout";
-import { useCan } from "@/hooks/useCan";
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { useQuickCreateEntityLayout } from '@/hooks/useQuickCreateEntityLayout';
+import { useCan } from '@/hooks/useCan';
 
 interface LayoutHeaderDropdownProps {
-  entityType: "site" | "unit";
+  entityType: 'site' | 'unit';
   entityId: string;
   organizationId: string;
   currentLayoutKey: string; // 'default' or layoutId
@@ -48,16 +48,16 @@ export function LayoutHeaderDropdown({
 
   // Fetch layouts for this entity
   const { data: layouts = [], isLoading } = useQuery({
-    queryKey: ["entity-layouts-header", entityType, entityId],
+    queryKey: ['entity-layouts-header', entityType, entityId],
     queryFn: async () => [] as LayoutRecord[],
     enabled: !!entityId,
     staleTime: 1000 * 30,
   });
 
-  const basePath = entityType === "site" ? `/sites/${entityId}` : `/units/${entityId}`;
+  const basePath = entityType === 'site' ? `/sites/${entityId}` : `/units/${entityId}`;
 
-  const handleSelectLayout = (layoutId: string | "default") => {
-    if (layoutId === "default") {
+  const handleSelectLayout = (layoutId: string | 'default') => {
+    if (layoutId === 'default') {
       navigate(basePath);
     } else {
       navigate(`${basePath}/layout/${layoutId}`);
@@ -66,7 +66,7 @@ export function LayoutHeaderDropdown({
 
   const handleCreateLayout = async () => {
     // Find next available slot
-    const usedSlots = new Set(layouts.map(l => l.slot_number));
+    const usedSlots = new Set(layouts.map((l) => l.slot_number));
     let nextSlot: 1 | 2 | 3 = 1;
     if (usedSlots.has(1)) nextSlot = 2;
     if (usedSlots.has(2)) nextSlot = 3;
@@ -81,13 +81,13 @@ export function LayoutHeaderDropdown({
       });
       navigate(`${basePath}/layout/${result.id}?customize=true`);
     } catch (error) {
-      console.error("Failed to create layout:", error);
+      console.error('Failed to create layout:', error);
     }
   };
 
-  const isDefault = currentLayoutKey === "default";
-  const currentLayout = layouts.find(l => l.id === currentLayoutKey);
-  const currentName = isDefault ? "Default" : (currentLayout?.name || "Layout");
+  const isDefault = currentLayoutKey === 'default';
+  const currentLayout = layouts.find((l) => l.id === currentLayoutKey);
+  const currentName = isDefault ? 'Default' : currentLayout?.name || 'Layout';
   // Only show create option if user has permission AND slots available
   const canCreateMore = false;
 
@@ -107,8 +107,8 @@ export function LayoutHeaderDropdown({
       <DropdownMenuContent align="start" className="w-48">
         {/* Default Layout */}
         <DropdownMenuItem
-          onClick={() => handleSelectLayout("default")}
-          className={cn(isDefault && "bg-accent/10")}
+          onClick={() => handleSelectLayout('default')}
+          className={cn(isDefault && 'bg-accent/10')}
         >
           <Lock className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
           <span>Default</span>
@@ -120,7 +120,7 @@ export function LayoutHeaderDropdown({
           <DropdownMenuItem
             key={layout.id}
             onClick={() => handleSelectLayout(layout.id)}
-            className={cn(currentLayoutKey === layout.id && "bg-accent/10")}
+            className={cn(currentLayoutKey === layout.id && 'bg-accent/10')}
           >
             <Layout className="w-3.5 h-3.5 mr-2" />
             <span className="truncate flex-1">{layout.name}</span>

@@ -22,11 +22,11 @@ affects: [13-e2e-validation-cutover, production-validation, deployment-automatio
 tech-stack:
   added: []
   patterns:
-    - "Bash-based E2E testing with curl and jq"
-    - "Colored output for test results (red/green/yellow/blue)"
-    - "Environment variable configuration pattern"
-    - "Idempotent test execution with unique device IDs"
-    - "Pre-flight health check pattern"
+    - 'Bash-based E2E testing with curl and jq'
+    - 'Colored output for test results (red/green/yellow/blue)'
+    - 'Environment variable configuration pattern'
+    - 'Idempotent test execution with unique device IDs'
+    - 'Pre-flight health check pattern'
 
 key-files:
   created:
@@ -35,17 +35,17 @@ key-files:
     - scripts/test/README.md
 
 key-decisions:
-  - "Bash-based testing instead of Jest/Playwright for deployment portability"
-  - "Direct API ingestion endpoint (/api/ingest/readings) instead of TTN webhook for simpler testing"
-  - "Unique device IDs per test run for idempotent execution"
-  - "Optional TEST_JWT allows partial testing without authentication"
-  - "10-second default timeout for alert processing (async evaluation)"
+  - 'Bash-based testing instead of Jest/Playwright for deployment portability'
+  - 'Direct API ingestion endpoint (/api/ingest/readings) instead of TTN webhook for simpler testing'
+  - 'Unique device IDs per test run for idempotent execution'
+  - 'Optional TEST_JWT allows partial testing without authentication'
+  - '10-second default timeout for alert processing (async evaluation)'
 
 patterns-established:
-  - "E2E test scripts use environment variables for configuration (BASE_URL, TTN_WEBHOOK_SECRET, TEST_JWT)"
-  - "Color-coded output: GREEN for success, RED for failure, YELLOW for steps, BLUE for info"
-  - "Pre-flight checks validate backend health and database connectivity before tests"
-  - "Test summary shows passed/failed counts with exit code 0 on success, 1 on failure"
+  - 'E2E test scripts use environment variables for configuration (BASE_URL, TTN_WEBHOOK_SECRET, TEST_JWT)'
+  - 'Color-coded output: GREEN for success, RED for failure, YELLOW for steps, BLUE for info'
+  - 'Pre-flight checks validate backend health and database connectivity before tests'
+  - 'Test summary shows passed/failed counts with exit code 0 on success, 1 on failure'
 
 # Metrics
 duration: 5min
@@ -164,6 +164,7 @@ Each task was committed atomically:
 None - no external service configuration required.
 
 The test script requires:
+
 1. Backend API running (local or deployed)
 2. TTN_WEBHOOK_SECRET environment variable (from backend .env)
 3. Optional TEST_JWT for full testing (extracted from browser or Stack Auth)
@@ -171,22 +172,26 @@ The test script requires:
 ## Next Phase Readiness
 
 **Ready for:**
+
 - Phase 13-02: Additional E2E tests (alert notifications, TTN integration)
 - Production validation workflows using e2e-sensor-pipeline.sh
 - Deployment automation with automated testing
 
 **Deliverables:**
+
 - ✅ TEST-01 requirement addressed (sensor data ingestion validated)
 - ✅ Executable test script with clear pass/fail output
 - ✅ Comprehensive documentation for local and production usage
 - ✅ Troubleshooting guide for common errors
 
 **Potential enhancements (future phases):**
+
 - Additional test scripts: e2e-alert-notifications.sh (mentioned in existing README)
 - TTN webhook integration test (end-to-end via actual TTN network)
 - Performance/load testing for sensor ingestion
 - Automated test execution in deployment pipelines (see README CI/CD section)
 
 ---
-*Phase: 13-e2e-validation-cutover*
-*Completed: 2026-01-24*
+
+_Phase: 13-e2e-validation-cutover_
+_Completed: 2026-01-24_

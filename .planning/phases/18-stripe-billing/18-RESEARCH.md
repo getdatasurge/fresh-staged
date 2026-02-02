@@ -9,6 +9,7 @@
 This phase extends the existing Stripe integration (checkout, webhooks, portal) to add **usage-based metering** for active sensors and temperature readings. The project already has Stripe v20.2.0 installed with working checkout flows, webhook signature verification, and Customer Portal integration.
 
 The key additions are:
+
 1. **Billing Meters** - Stripe's new metering API (replaces deprecated usage records) to track active sensors and reading volume
 2. **Meter Events** - Reporting usage to Stripe at key points (reading ingestion, sensor activation)
 3. **Subscription Enforcement** - Middleware to check subscription status and enforce limits
@@ -19,20 +20,21 @@ The key additions are:
 
 ### Core
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| stripe | ^20.2.0 | Stripe API client | Already installed, official SDK |
-| bullmq | ^5.67.0 | Background job queue | Already in use for SMS/email jobs |
+| Library | Version | Purpose              | Why Standard                      |
+| ------- | ------- | -------------------- | --------------------------------- |
+| stripe  | ^20.2.0 | Stripe API client    | Already installed, official SDK   |
+| bullmq  | ^5.67.0 | Background job queue | Already in use for SMS/email jobs |
 
 ### Supporting
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| ioredis | ^5.9.2 | Redis client for BullMQ | Already in use |
+| Library | Version | Purpose                 | When to Use    |
+| ------- | ------- | ----------------------- | -------------- |
+| ioredis | ^5.9.2  | Redis client for BullMQ | Already in use |
 
 ### No New Dependencies
 
 The existing stack covers all requirements:
+
 - `stripe` for Meter Events API
 - `bullmq` for batched usage reporting jobs
 - `ioredis` for job queue persistence
@@ -66,11 +68,13 @@ backend/src/
 **When to use:** For any usage-based billing (per-sensor, per-reading, per-API-call).
 
 **Key Concepts:**
+
 - **Meter:** Configuration defining how to aggregate events (sum, count, last)
 - **Meter Event:** Individual usage report sent to Stripe
 - **Meter Event Session:** High-throughput authentication (10,000 events/sec)
 
 **Example:**
+
 ```typescript
 // Source: https://docs.stripe.com/billing/subscriptions/usage-based/recording-usage-api
 
@@ -79,7 +83,7 @@ const meterEvent = await stripe.billing.meterEvents.create({
   event_name: 'temperature_readings',
   payload: {
     stripe_customer_id: customerId,
-    value: '150',  // Must be string, whole numbers only
+    value: '150', // Must be string, whole numbers only
   },
 });
 
@@ -99,6 +103,7 @@ const meterEvent = await stripe.billing.meterEvents.create({
 **What:** Choose the right aggregation based on the metric type.
 
 **For Active Sensors (BILL-02: last_during_period):**
+
 ```typescript
 // Use 'last' aggregation - bills based on final sensor count
 // Report periodically (e.g., hourly) with current active sensor count
@@ -114,6 +119,7 @@ const meterEvent = await stripe.billing.meterEvents.create({
 ```
 
 **For Temperature Readings (BILL-03: sum):**
+
 ```typescript
 // Use 'sum' aggregation - accumulates all readings
 // Report batched (e.g., after each ingestion batch or hourly rollup)
@@ -135,6 +141,7 @@ const meterEvent = await stripe.billing.meterEvents.create({
 **When to use:** High-volume ingestion (this project ingests readings frequently).
 
 **Example:**
+
 ```typescript
 // Job types (add to backend/src/jobs/index.ts)
 export interface MeterReportJobData extends BaseJobData {
@@ -147,13 +154,13 @@ export interface MeterReportJobData extends BaseJobData {
 export const QueueNames = {
   SMS_NOTIFICATIONS: 'sms-notifications',
   EMAIL_DIGESTS: 'email-digests',
-  METER_REPORTING: 'meter-reporting',  // NEW
+  METER_REPORTING: 'meter-reporting', // NEW
 } as const;
 
 export const JobNames = {
   SMS_SEND: 'sms:send',
   EMAIL_DIGEST: 'email:digest',
-  METER_REPORT: 'meter:report',  // NEW
+  METER_REPORT: 'meter:report', // NEW
 } as const;
 ```
 
@@ -164,6 +171,7 @@ export const JobNames = {
 **When to use:** Any route that should be gated by subscription status.
 
 **Example:**
+
 ```typescript
 // Source: Project pattern from existing rbac.ts middleware
 
@@ -174,7 +182,7 @@ import { eq } from 'drizzle-orm';
 
 export async function requireActiveSubscription(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   const organizationId = request.user?.organizationId;
   if (!organizationId) {
@@ -200,7 +208,7 @@ export async function requireActiveSubscription(
 
 export async function requireSensorCapacity(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   const organizationId = request.user?.organizationId;
   if (!organizationId) {
@@ -238,13 +246,13 @@ export async function requireSensorCapacity(
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Webhook signature verification | Custom HMAC | `stripe.webhooks.constructEvent()` | Timing-safe comparison, handles versioning |
-| Raw body parsing for webhooks | Custom parser | Fastify `addContentTypeParser` with `parseAs: 'buffer'` | Already implemented in project |
-| Usage aggregation | Custom tracking DB | Stripe Billing Meters | Handles proration, currency, invoicing automatically |
-| Customer portal | Custom billing UI | Stripe Customer Portal | PCI compliant, handles all edge cases |
-| Idempotency | Custom dedup logic | Store and check Stripe event IDs | Stripe retries for 3 days with exponential backoff |
+| Problem                        | Don't Build        | Use Instead                                             | Why                                                  |
+| ------------------------------ | ------------------ | ------------------------------------------------------- | ---------------------------------------------------- |
+| Webhook signature verification | Custom HMAC        | `stripe.webhooks.constructEvent()`                      | Timing-safe comparison, handles versioning           |
+| Raw body parsing for webhooks  | Custom parser      | Fastify `addContentTypeParser` with `parseAs: 'buffer'` | Already implemented in project                       |
+| Usage aggregation              | Custom tracking DB | Stripe Billing Meters                                   | Handles proration, currency, invoicing automatically |
+| Customer portal                | Custom billing UI  | Stripe Customer Portal                                  | PCI compliant, handles all edge cases                |
+| Idempotency                    | Custom dedup logic | Store and check Stripe event IDs                        | Stripe retries for 3 days with exponential backoff   |
 
 **Key insight:** Stripe handles the hard billing problems (proration, currency conversion, tax calculation, dunning). Your job is to report accurate usage and respond to subscription status changes.
 
@@ -265,6 +273,7 @@ export async function requireSensorCapacity(
 **Warning signs:** Duplicate entries in database, users charged twice
 
 **Implementation:**
+
 ```typescript
 // Add to database schema
 export const stripeEvents = pgTable('stripe_events', {
@@ -302,12 +311,20 @@ await db.insert(stripeEvents).values({
 
 ```typescript
 // WRONG
-payload: { value: 12.5 }  // Floats not allowed
-payload: { value: 12 }    // Numbers not allowed
+payload: {
+  value: 12.5;
+} // Floats not allowed
+payload: {
+  value: 12;
+} // Numbers not allowed
 
 // CORRECT
-payload: { value: '12' }  // String of whole number
-payload: { value: Math.floor(value).toString() }
+payload: {
+  value: '12';
+} // String of whole number
+payload: {
+  value: Math.floor(value).toString();
+}
 ```
 
 ### Pitfall 4: Meter Events Rate Limiting
@@ -345,10 +362,7 @@ export class StripeMeterService {
    * Report active sensor count for an organization
    * Uses 'last' aggregation - only the final value in period is billed
    */
-  async reportActiveSensors(
-    organizationId: string,
-    sensorCount: number
-  ): Promise<void> {
+  async reportActiveSensors(organizationId: string, sensorCount: number): Promise<void> {
     const customerId = await this.getStripeCustomerId(organizationId);
     if (!customerId) {
       console.warn(`[Meter] No Stripe customer for org ${organizationId}`);
@@ -368,10 +382,7 @@ export class StripeMeterService {
    * Report temperature reading volume for an organization
    * Uses 'sum' aggregation - all values in period are added together
    */
-  async reportReadingVolume(
-    organizationId: string,
-    readingCount: number
-  ): Promise<void> {
+  async reportReadingVolume(organizationId: string, readingCount: number): Promise<void> {
     const customerId = await this.getStripeCustomerId(organizationId);
     if (!customerId) {
       console.warn(`[Meter] No Stripe customer for org ${organizationId}`);
@@ -409,10 +420,7 @@ import Stripe from 'stripe';
 let meterEventSession: { authentication_token: string; expires_at: number } | null = null;
 
 async function refreshMeterEventSession(): Promise<void> {
-  if (
-    meterEventSession === null ||
-    new Date(meterEventSession.expires_at * 1000) <= new Date()
-  ) {
+  if (meterEventSession === null || new Date(meterEventSession.expires_at * 1000) <= new Date()) {
     const client = new Stripe(process.env.STRIPE_SECRET_KEY!);
     meterEventSession = await client.v2.billing.meterEventSession.create();
   }
@@ -422,7 +430,7 @@ async function sendHighThroughputMeterEvents(
   events: Array<{
     event_name: string;
     payload: { stripe_customer_id: string; value: string };
-  }>
+  }>,
 ): Promise<void> {
   await refreshMeterEventSession();
 
@@ -444,7 +452,7 @@ import { eq } from 'drizzle-orm';
 
 export async function processWebhookIdempotently(
   event: Stripe.Event,
-  handler: () => Promise<void>
+  handler: () => Promise<void>,
 ): Promise<boolean> {
   // Check if already processed
   const [existing] = await db
@@ -486,7 +494,7 @@ export async function ingestReadingsWithMetering(
   // ... other params
 ): Promise<IngestionResult> {
   // Existing ingestion logic
-  const result = await ingestReadings(readings, organizationId, /* ... */);
+  const result = await ingestReadings(readings, organizationId /* ... */);
 
   // Queue meter event for reading count
   const queueService = getQueueService();
@@ -499,7 +507,7 @@ export async function ingestReadingsWithMetering(
         stripeCustomerId: '', // Resolved by processor
         eventName: 'temperature_readings',
         value: result.insertedCount,
-      }
+      },
     );
   }
 
@@ -509,13 +517,14 @@ export async function ingestReadingsWithMetering(
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Usage Records API | Billing Meters API | 2024-09 (v2024-09-30.acacia) | Legacy API removed in 2025-03-31.basil |
-| `subscription_items/:id/usage_records` | `billing/meter_events` | 2024 | New aggregation options, higher throughput |
-| Manual proration | Automatic via meters | 2024 | Stripe handles mid-cycle changes |
+| Old Approach                           | Current Approach       | When Changed                 | Impact                                     |
+| -------------------------------------- | ---------------------- | ---------------------------- | ------------------------------------------ |
+| Usage Records API                      | Billing Meters API     | 2024-09 (v2024-09-30.acacia) | Legacy API removed in 2025-03-31.basil     |
+| `subscription_items/:id/usage_records` | `billing/meter_events` | 2024                         | New aggregation options, higher throughput |
+| Manual proration                       | Automatic via meters   | 2024                         | Stripe handles mid-cycle changes           |
 
 **Deprecated/outdated:**
+
 - `aggregate_usage` on prices: Replaced by meter `default_aggregation.formula`
 - Usage records API: Removed in API version 2025-03-31.basil
 - Manual usage reporting timestamps: Now optional (defaults to current time)
@@ -540,6 +549,7 @@ export async function ingestReadingsWithMetering(
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Stripe Official Documentation - Usage-Based Billing: https://docs.stripe.com/billing/subscriptions/usage-based
 - Stripe Official Documentation - Recording Usage API: https://docs.stripe.com/billing/subscriptions/usage-based/recording-usage-api
 - Stripe Official Documentation - Meter Configuration: https://docs.stripe.com/billing/subscriptions/usage-based/meters/configure
@@ -550,16 +560,19 @@ export async function ingestReadingsWithMetering(
 - Stripe Official Documentation - Idempotent Requests: https://docs.stripe.com/api/idempotent_requests
 
 ### Secondary (MEDIUM confidence)
+
 - Stripe Webhook Best Practices (Stigg): https://www.stigg.io/blog-posts/best-practices-i-wish-we-knew-when-integrating-stripe-webhooks
 - Fastify Raw Body for Stripe Webhooks (GitHub Issue): https://github.com/fastify/fastify/issues/1965
 - Medium Article on Webhook Idempotency: https://medium.com/@sohail_saifii/handling-payment-webhooks-reliably-idempotency-retries-validation-69b762720bf5
 
 ### Tertiary (LOW confidence)
+
 - None - all critical claims verified with official documentation
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - Already installed and verified in package.json
 - Architecture: HIGH - Follows existing project patterns, verified with Stripe docs
 - Pitfalls: HIGH - Documented in official Stripe docs and verified with project code
@@ -574,16 +587,19 @@ export async function ingestReadingsWithMetering(
 The project already has substantial Stripe integration:
 
 **Files to extend (not replace):**
+
 - `backend/src/services/checkout.service.ts` - Has `createCheckoutSession`, `createPortalSession`, `getSubscription`
 - `backend/src/services/stripe-webhook.service.ts` - Has webhook handlers for checkout, subscription updates
 - `backend/src/routes/stripe-webhooks.ts` - Raw body parsing already configured
 - `backend/src/routes/payments.ts` - Payment routes with auth middleware
 
 **Database schema (already exists):**
+
 - `subscriptions` table with `stripeCustomerId`, `stripeSubscriptionId`, `status`, `plan`
 - `organizations` table with `sensorLimit`
 
 **What needs to be added:**
+
 1. New `stripeEvents` table for idempotency
 2. New meter reporting service
 3. New meter reporting BullMQ queue/worker

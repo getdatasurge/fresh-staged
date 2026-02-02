@@ -1,21 +1,21 @@
-import { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useUser, SignIn, SignUp } from "@stackframe/react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Thermometer } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useUser, SignIn, SignUp } from '@stackframe/react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Thermometer } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const user = useUser();
-  const mode = searchParams.get("mode") === "signup" ? "signup" : "signin";
+  const mode = searchParams.get('mode') === 'signup' ? 'signup' : 'signin';
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
     if (user) {
-      navigate("/auth/callback", { replace: true });
+      navigate('/auth/callback', { replace: true });
     }
   }, [user, navigate]);
 
@@ -36,9 +36,7 @@ const Auth = () => {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Welcome</CardTitle>
-          <CardDescription>
-            Sign in to your account or create a new one
-          </CardDescription>
+          <CardDescription>Sign in to your account or create a new one</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue={mode}>

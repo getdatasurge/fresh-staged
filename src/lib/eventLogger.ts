@@ -1,5 +1,5 @@
-import type { EventCategory, EventSeverity } from "./eventTypeMapper";
-import { createTRPCClientInstance } from "./trpc";
+import type { EventCategory, EventSeverity } from './eventTypeMapper';
+import { createTRPCClientInstance } from './trpc';
 
 export interface ImpersonationContext {
   isImpersonating: boolean;
@@ -17,7 +17,7 @@ export interface LogEventParams {
   area_id?: string | null;
   unit_id?: string | null;
   actor_id?: string | null;
-  actor_type?: "user" | "system" | "impersonated";
+  actor_type?: 'user' | 'system' | 'impersonated';
   event_data?: Record<string, any>;
   /** Optional: Pass impersonation context to use server-side audited logging */
   impersonationContext?: ImpersonationContext;
@@ -25,15 +25,18 @@ export interface LogEventParams {
 
 /**
  * Log an event to the event_logs table for audit trail.
- * 
+ *
  * Uses tRPC to communicate with the backend.
  * Requires accessToken for authentication.
  */
-export async function logEvent(params: LogEventParams, accessToken?: string): Promise<{ error: Error | null }> {
+export async function logEvent(
+  params: LogEventParams,
+  accessToken?: string,
+): Promise<{ error: Error | null }> {
   try {
     if (!accessToken) {
-      console.warn("logEvent called without accessToken - skipping audit log");
-      return { error: new Error("Authentication required for audit logging") };
+      console.warn('logEvent called without accessToken - skipping audit log');
+      return { error: new Error('Authentication required for audit logging') };
     }
 
     const trpc = createTRPCClientInstance(async () => accessToken);
@@ -55,8 +58,8 @@ export async function logEvent(params: LogEventParams, accessToken?: string): Pr
 
     return { error: null };
   } catch (err) {
-    console.error("Failed to log event:", err);
-    return { error: err instanceof Error ? err : new Error("Unknown error") };
+    console.error('Failed to log event:', err);
+    return { error: err instanceof Error ? err : new Error('Unknown error') };
   }
 }
 
@@ -64,7 +67,7 @@ export async function logEvent(params: LogEventParams, accessToken?: string): Pr
  * Log an alert lifecycle event
  */
 export async function logAlertEvent(
-  action: "created" | "activated" | "acknowledged" | "resolved" | "escalated",
+  action: 'created' | 'activated' | 'acknowledged' | 'resolved' | 'escalated',
   alertId: string,
   alertType: string,
   organizationId: string,
@@ -72,35 +75,35 @@ export async function logAlertEvent(
   siteId?: string | null,
   areaId?: string | null,
   actorId?: string | null,
-  additionalData?: Record<string, any>
+  additionalData?: Record<string, any>,
 ): Promise<void> {
   const actionLabels: Record<string, string> = {
-    created: "Alert Created",
-    activated: "Alert Activated",
-    acknowledged: "Alert Acknowledged",
-    resolved: "Alert Resolved",
-    escalated: "Alert Escalated",
+    created: 'Alert Created',
+    activated: 'Alert Activated',
+    acknowledged: 'Alert Acknowledged',
+    resolved: 'Alert Resolved',
+    escalated: 'Alert Escalated',
   };
 
   const severityMap: Record<string, EventSeverity> = {
-    created: "warning",
-    activated: "critical",
-    acknowledged: "info",
-    resolved: "success",
-    escalated: "critical",
+    created: 'warning',
+    activated: 'critical',
+    acknowledged: 'info',
+    resolved: 'success',
+    escalated: 'critical',
   };
 
   await logEvent({
     event_type: `alert_${action}`,
-    category: "alert",
-    severity: severityMap[action] || "info",
+    category: 'alert',
+    severity: severityMap[action] || 'info',
     title: actionLabels[action] || `Alert ${action}`,
     organization_id: organizationId,
     site_id: siteId,
     area_id: areaId,
     unit_id: unitId,
     actor_id: actorId,
-    actor_type: actorId ? "user" : "system",
+    actor_type: actorId ? 'user' : 'system',
     event_data: {
       alert_id: alertId,
       alert_type: alertType,
@@ -120,19 +123,19 @@ export async function logManualTempEvent(
   siteId?: string | null,
   areaId?: string | null,
   actorId?: string | null,
-  isInRange?: boolean
+  isInRange?: boolean,
 ): Promise<void> {
   await logEvent({
-    event_type: "manual_temp_logged",
-    category: "compliance",
-    severity: isInRange === false ? "warning" : "success",
+    event_type: 'manual_temp_logged',
+    category: 'compliance',
+    severity: isInRange === false ? 'warning' : 'success',
     title: `Temperature Logged: ${temperature}°F`,
     organization_id: organizationId,
     site_id: siteId,
     area_id: areaId,
     unit_id: unitId,
     actor_id: actorId,
-    actor_type: "user",
+    actor_type: 'user',
     event_data: {
       temperature,
       unit_name: unitName,
@@ -145,32 +148,32 @@ export async function logManualTempEvent(
  * Log a settings change event
  */
 export async function logSettingsEvent(
-  settingsType: "unit" | "alert_rules" | "notification" | "thresholds",
+  settingsType: 'unit' | 'alert_rules' | 'notification' | 'thresholds',
   organizationId: string,
   actorId: string,
   changes: Record<string, { from: unknown; to: unknown }>,
   unitId?: string | null,
   siteId?: string | null,
-  areaId?: string | null
+  areaId?: string | null,
 ): Promise<void> {
   const typeLabels: Record<string, string> = {
-    unit: "Unit Settings Updated",
-    alert_rules: "Alert Rules Updated",
-    notification: "Notification Settings Updated",
-    thresholds: "Temperature Thresholds Updated",
+    unit: 'Unit Settings Updated',
+    alert_rules: 'Alert Rules Updated',
+    notification: 'Notification Settings Updated',
+    thresholds: 'Temperature Thresholds Updated',
   };
 
   await logEvent({
     event_type: `${settingsType}_settings_updated`,
-    category: "settings",
-    severity: "info",
-    title: typeLabels[settingsType] || "Settings Updated",
+    category: 'settings',
+    severity: 'info',
+    title: typeLabels[settingsType] || 'Settings Updated',
     organization_id: organizationId,
     site_id: siteId,
     area_id: areaId,
     unit_id: unitId,
     actor_id: actorId,
-    actor_type: "user",
+    actor_type: 'user',
     event_data: { changes },
   });
 }

@@ -1,13 +1,22 @@
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useTRPC } from "@/lib/trpc";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { RefreshCw, ChevronDown, ChevronRight, Clock, CheckCircle, XCircle, AlertTriangle, SkipForward } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useTRPC } from '@/lib/trpc';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  RefreshCw,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  SkipForward,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { formatDistanceToNow } from 'date-fns';
 
 interface ProvisioningLog {
   id: string;
@@ -29,29 +38,29 @@ interface TTNProvisioningLogsProps {
 }
 
 const stepLabels: Record<string, string> = {
-  preflight: "Preflight Check",
-  create_organization: "Create Organization",
-  create_org_api_key: "Create Org API Key",
-  create_application: "Create Application",
-  verify_application_rights: "Verify App Rights",
-  create_api_key: "Create API Key",
-  create_app_api_key: "Create App API Key",
-  create_gateway_key: "Create Gateway Key",
-  create_webhook: "Configure Webhook",
-  delete_application: "Delete Application",
-  delete_organization: "Delete Organization",
-  delete_unowned_app: "Delete Unowned App",
-  rotate_app_id: "Rotate App ID",
-  complete: "Complete",
-  finalize: "Finalize",
-  error: "Error",
+  preflight: 'Preflight Check',
+  create_organization: 'Create Organization',
+  create_org_api_key: 'Create Org API Key',
+  create_application: 'Create Application',
+  verify_application_rights: 'Verify App Rights',
+  create_api_key: 'Create API Key',
+  create_app_api_key: 'Create App API Key',
+  create_gateway_key: 'Create Gateway Key',
+  create_webhook: 'Configure Webhook',
+  delete_application: 'Delete Application',
+  delete_organization: 'Delete Organization',
+  delete_unowned_app: 'Delete Unowned App',
+  rotate_app_id: 'Rotate App ID',
+  complete: 'Complete',
+  finalize: 'Finalize',
+  error: 'Error',
 };
 
 const statusConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
-  started: { icon: Clock, color: "text-blue-500", label: "Started" },
-  success: { icon: CheckCircle, color: "text-green-500", label: "Success" },
-  failed: { icon: XCircle, color: "text-red-500", label: "Failed" },
-  skipped: { icon: SkipForward, color: "text-yellow-500", label: "Skipped" },
+  started: { icon: Clock, color: 'text-blue-500', label: 'Started' },
+  success: { icon: CheckCircle, color: 'text-green-500', label: 'Success' },
+  failed: { icon: XCircle, color: 'text-red-500', label: 'Failed' },
+  skipped: { icon: SkipForward, color: 'text-yellow-500', label: 'Skipped' },
 };
 
 export function TTNProvisioningLogs({ organizationId }: TTNProvisioningLogsProps) {
@@ -63,13 +72,17 @@ export function TTNProvisioningLogs({ organizationId }: TTNProvisioningLogsProps
     limit: 50,
   });
 
-  const { data: trpcLogs, isLoading, refetch } = useQuery({
+  const {
+    data: trpcLogs,
+    isLoading,
+    refetch,
+  } = useQuery({
     ...queryOptions,
     enabled: !!organizationId,
   });
 
   // Transform tRPC response to match component's expected snake_case format
-  const logs: ProvisioningLog[] = (trpcLogs ?? []).map(log => ({
+  const logs: ProvisioningLog[] = (trpcLogs ?? []).map((log) => ({
     id: log.id,
     created_at: log.createdAt.toISOString(),
     step: log.step,
@@ -85,7 +98,7 @@ export function TTNProvisioningLogs({ organizationId }: TTNProvisioningLogsProps
   }));
 
   const toggleExpanded = (logId: string) => {
-    setExpandedLogs(prev => {
+    setExpandedLogs((prev) => {
       const next = new Set(prev);
       if (next.has(logId)) {
         next.delete(logId);
@@ -108,7 +121,7 @@ export function TTNProvisioningLogs({ organizationId }: TTNProvisioningLogsProps
           <CardDescription>Recent TTN provisioning activity</CardDescription>
         </div>
         <Button variant="ghost" size="sm" onClick={() => refetch()} disabled={isLoading}>
-          <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+          <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
         </Button>
       </CardHeader>
       <CardContent>
@@ -126,12 +139,16 @@ export function TTNProvisioningLogs({ organizationId }: TTNProvisioningLogsProps
               const isExpanded = expandedLogs.has(log.id);
 
               return (
-                <Collapsible key={log.id} open={isExpanded} onOpenChange={() => toggleExpanded(log.id)}>
+                <Collapsible
+                  key={log.id}
+                  open={isExpanded}
+                  onOpenChange={() => toggleExpanded(log.id)}
+                >
                   <div className="border rounded-lg p-2">
                     <CollapsibleTrigger className="w-full">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <StatusIcon className={cn("h-4 w-4 shrink-0", config.color)} />
+                          <StatusIcon className={cn('h-4 w-4 shrink-0', config.color)} />
                           <span className="font-medium text-sm truncate">
                             {stepLabels[log.step] || log.step}
                           </span>
@@ -163,14 +180,18 @@ export function TTNProvisioningLogs({ organizationId }: TTNProvisioningLogsProps
                         )}
                         {log.error_category && (
                           <p className="text-xs">
-                            <span className="font-medium text-muted-foreground">Error type:</span>{" "}
+                            <span className="font-medium text-muted-foreground">Error type:</span>{' '}
                             <span className="text-destructive">{log.error_category}</span>
                           </p>
                         )}
                         {log.ttn_http_status && (
                           <p className="text-xs">
-                            <span className="font-medium text-muted-foreground">HTTP Status:</span>{" "}
-                            <span className={log.ttn_http_status >= 400 ? "text-destructive" : "text-safe"}>
+                            <span className="font-medium text-muted-foreground">HTTP Status:</span>{' '}
+                            <span
+                              className={
+                                log.ttn_http_status >= 400 ? 'text-destructive' : 'text-safe'
+                              }
+                            >
                               {log.ttn_http_status}
                             </span>
                           </p>

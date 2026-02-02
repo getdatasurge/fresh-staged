@@ -24,12 +24,12 @@ key-files:
   modified: [src/lib/supabase-placeholder.ts]
 
 key-decisions:
-  - "Use TypeScript class for error with isSupabaseMigration flag for cross-module detection"
-  - "Include function name in both error message and __unavailable property for UI flexibility"
+  - 'Use TypeScript class for error with isSupabaseMigration flag for cross-module detection'
+  - 'Include function name in both error message and __unavailable property for UI flexibility'
 
 patterns-established:
-  - "SupabaseMigrationError: Use for any migration-related unavailable features"
-  - "isSupabaseMigrationError helper: Check for migration errors across module boundaries"
+  - 'SupabaseMigrationError: Use for any migration-related unavailable features'
+  - 'isSupabaseMigrationError helper: Check for migration errors across module boundaries'
 
 # Metrics
 duration: 1min
@@ -49,10 +49,11 @@ completed: 2026-01-29
 - **Files modified:** 1
 
 ## Accomplishments
+
 - Added SupabaseMigrationError typed error class for clear error identification
 - Added isSupabaseMigrationError helper that works across module boundaries
 - Updated functions.invoke to return structured error with function name
-- Updated rpc to return structured error with __unavailable marker
+- Updated rpc to return structured error with \_\_unavailable marker
 
 ## Task Commits
 
@@ -61,11 +62,13 @@ Each task was committed atomically:
 1. **Task 1: Enhance supabase-placeholder with structured error responses** - `6cae7ba` (feat)
 
 ## Files Created/Modified
+
 - `src/lib/supabase-placeholder.ts` - Enhanced with SupabaseMigrationError class, isSupabaseMigrationError helper, and structured error responses in functions.invoke and rpc
 
 ## Decisions Made
+
 - Used a TypeScript class extending Error with `isSupabaseMigration` flag for reliable cross-module error detection (instanceof can fail across module boundaries)
-- Included function name in both error.message and __unavailable property to give UI components flexibility in how to display unavailability
+- Included function name in both error.message and \_\_unavailable property to give UI components flexibility in how to display unavailability
 
 ## Deviations from Plan
 
@@ -80,10 +83,12 @@ None
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Placeholder now provides structured errors for UI consumption
 - UI components can use isSupabaseMigrationError to detect migration-related failures
-- Feature names are available via error.featureName or __unavailable property
+- Feature names are available via error.featureName or \_\_unavailable property
 
 ---
-*Phase: 30-system-hardening*
-*Completed: 2026-01-29*
+
+_Phase: 30-system-hardening_
+_Completed: 2026-01-29_

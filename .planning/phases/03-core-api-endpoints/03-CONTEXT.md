@@ -14,17 +14,21 @@ REST API for organizational hierarchy CRUD operations. Endpoints for organizatio
 ## Implementation Decisions
 
 ### Response format
+
 - Direct data responses (no envelope wrapper)
 - Structured errors with code: `{ error: { code: "INVALID_INPUT", message: "...", details: [...] } }`
 - Include DOM context for debugging in error responses
 
 ### Endpoint design
+
 - POST/create endpoints return the full created resource (saves extra GET)
 
 ### Authorization behavior
+
 - List endpoints filter silently — return only what user can access, no indication of hidden items
 
 ### Claude's Discretion
+
 - Pagination style (offset vs cursor) based on data characteristics
 - Related data embedding strategy (IDs only vs embed vs ?expand param)
 - Nested vs flat route structure based on API clarity
@@ -57,5 +61,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 03-core-api-endpoints*
-*Context gathered: 2026-01-23*
+_Phase: 03-core-api-endpoints_
+_Context gathered: 2026-01-23_

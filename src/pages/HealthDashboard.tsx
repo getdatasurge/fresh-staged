@@ -17,14 +17,8 @@ export default function HealthDashboard() {
   const { effectiveOrgId, isInitialized } = useEffectiveIdentity();
   const [activeCategory, setActiveCategory] = useState<HealthCategory | 'all'>('all');
 
-  const {
-    systemHealth,
-    isChecking,
-    lastError,
-    runCheck,
-    toggleAutoRefresh,
-    autoRefreshEnabled,
-  } = useHealthCheck(effectiveOrgId);
+  const { systemHealth, isChecking, lastError, runCheck, toggleAutoRefresh, autoRefreshEnabled } =
+    useHealthCheck(effectiveOrgId);
 
   // Run initial check when org is loaded
   useEffect(() => {
@@ -42,15 +36,16 @@ export default function HealthDashboard() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 {systemHealth && (
-                  <HealthStatusBadge 
-                    status={systemHealth.overall} 
+                  <HealthStatusBadge
+                    status={systemHealth.overall}
                     isChecking={isChecking}
                     size="lg"
                   />
                 )}
                 {systemHealth?.lastCheckedAt && (
                   <span className="text-sm text-muted-foreground">
-                    Last checked {formatDistanceToNow(systemHealth.lastCheckedAt, { addSuffix: true })}
+                    Last checked{' '}
+                    {formatDistanceToNow(systemHealth.lastCheckedAt, { addSuffix: true })}
                   </span>
                 )}
               </div>
@@ -67,11 +62,7 @@ export default function HealthDashboard() {
                   </Label>
                 </div>
 
-                <Button 
-                  onClick={runCheck} 
-                  disabled={isChecking}
-                  className="gap-2"
-                >
+                <Button onClick={runCheck} disabled={isChecking} className="gap-2">
                   <RefreshCw className={`h-4 w-4 ${isChecking ? 'animate-spin' : ''}`} />
                   {isChecking ? 'Checking...' : 'Run All Checks'}
                 </Button>
@@ -97,7 +88,7 @@ export default function HealthDashboard() {
 
         {/* Summary Cards */}
         {systemHealth && (
-          <OverallHealthSummary 
+          <OverallHealthSummary
             health={systemHealth}
             onCategoryClick={setActiveCategory}
             activeCategory={activeCategory}
@@ -109,14 +100,13 @@ export default function HealthDashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">
-                {activeCategory === 'all' ? 'All Checks' : `${activeCategory.replace('_', ' ')} Checks`}
+                {activeCategory === 'all'
+                  ? 'All Checks'
+                  : `${activeCategory.replace('_', ' ')} Checks`}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <HealthCheckList 
-                checks={systemHealth.checks}
-                categoryFilter={activeCategory}
-              />
+              <HealthCheckList checks={systemHealth.checks} categoryFilter={activeCategory} />
             </CardContent>
           </Card>
         )}
@@ -128,9 +118,7 @@ export default function HealthDashboard() {
               <p className="text-muted-foreground mb-4">
                 No health check data yet. Run a check to see system status.
               </p>
-              <Button onClick={runCheck}>
-                Run Health Check
-              </Button>
+              <Button onClick={runCheck}>Run Health Check</Button>
             </CardContent>
           </Card>
         )}
@@ -138,10 +126,12 @@ export default function HealthDashboard() {
         {/* Info Footer */}
         <div className="text-xs text-muted-foreground text-center space-y-1">
           <p>
-            Health checks verify Edge Function availability, database connectivity, and TTN configuration.
+            Health checks verify Edge Function availability, database connectivity, and TTN
+            configuration.
           </p>
           <p>
-            Some functions are skipped because they require authentication or would trigger side effects.
+            Some functions are skipped because they require authentication or would trigger side
+            effects.
           </p>
         </div>
       </div>

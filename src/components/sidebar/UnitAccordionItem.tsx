@@ -1,10 +1,10 @@
-import { ChevronRight, Thermometer, Snowflake, Sun, Box } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { LayoutLinksGroup } from "./LayoutLinksGroup";
-import type { UnitNavItem } from "@/hooks/useNavTree";
-import { useQuickCreateEntityLayout } from "@/hooks/useQuickCreateEntityLayout";
-import { useParams } from "react-router-dom";
+import { ChevronRight, Thermometer, Snowflake, Sun, Box } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { LayoutLinksGroup } from './LayoutLinksGroup';
+import type { UnitNavItem } from '@/hooks/useNavTree';
+import { useQuickCreateEntityLayout } from '@/hooks/useQuickCreateEntityLayout';
+import { useParams } from 'react-router-dom';
 
 interface UnitAccordionItemProps {
   unit: UnitNavItem;
@@ -15,11 +15,15 @@ interface UnitAccordionItemProps {
 
 function getUnitIcon(unitType: string) {
   switch (unitType) {
-    case "freezer": return Snowflake;
-    case "cooler":
-    case "refrigerator": return Thermometer;
-    case "hot_holding": return Sun;
-    default: return Box;
+    case 'freezer':
+      return Snowflake;
+    case 'cooler':
+    case 'refrigerator':
+      return Thermometer;
+    case 'hot_holding':
+      return Sun;
+    default:
+      return Box;
   }
 }
 
@@ -46,14 +50,18 @@ export function UnitAccordionItem({
   return (
     <Collapsible open={isExpanded} onOpenChange={onToggle}>
       <CollapsibleTrigger className="w-full">
-        <div className={cn(
-          "flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent/50 transition-colors group",
-          isActive && "bg-accent"
-        )}>
-          <ChevronRight className={cn(
-            "w-4 h-4 text-muted-foreground transition-transform shrink-0",
-            isExpanded && "rotate-90"
-          )} />
+        <div
+          className={cn(
+            'flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent/50 transition-colors group',
+            isActive && 'bg-accent',
+          )}
+        >
+          <ChevronRight
+            className={cn(
+              'w-4 h-4 text-muted-foreground transition-transform shrink-0',
+              isExpanded && 'rotate-90',
+            )}
+          />
           <UnitIcon className="w-4 h-4 text-muted-foreground shrink-0" />
           <span className="text-sm font-medium truncate flex-1 text-left">{unit.unitName}</span>
           {unit.sensorCount > 0 && (

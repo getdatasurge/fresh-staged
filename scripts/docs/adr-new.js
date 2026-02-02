@@ -27,9 +27,9 @@ function toSlug(title) {
   return title
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-')          // Replace spaces with hyphens
-    .replace(/-+/g, '-')           // Remove multiple hyphens
-    .replace(/^-|-$/g, '');        // Remove leading/trailing hyphens
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Remove multiple hyphens
+    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
 }
 
 /**
@@ -39,14 +39,14 @@ function getNextAdrNumber() {
   const files = fs.readdirSync(ADR_DIR);
 
   // Filter ADR files (NNNN-YYYY-MM-DD-*.md pattern)
-  const adrFiles = files.filter(f => /^\d{4}-\d{4}-\d{2}-\d{2}-.+\.md$/.test(f));
+  const adrFiles = files.filter((f) => /^\d{4}-\d{4}-\d{2}-\d{2}-.+\.md$/.test(f));
 
   if (adrFiles.length === 0) {
     return 1;
   }
 
   // Extract numbers and find max
-  const numbers = adrFiles.map(f => parseInt(f.substring(0, 4), 10));
+  const numbers = adrFiles.map((f) => parseInt(f.substring(0, 4), 10));
   return Math.max(...numbers) + 1;
 }
 
@@ -72,7 +72,10 @@ function createAdrContent(number, date, title) {
   template = template.replace('ADR-NNNN', `ADR-${formattedNumber}`);
   template = template.replace('[Title]', title);
   template = template.replace('YYYY-MM-DD', date);
-  template = template.replace('Proposed | Accepted | Rejected | Deprecated | Superseded', 'Proposed');
+  template = template.replace(
+    'Proposed | Accepted | Rejected | Deprecated | Superseded',
+    'Proposed',
+  );
 
   return template;
 }

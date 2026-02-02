@@ -30,6 +30,7 @@ User Action → React State → Supabase Query → Database → Response → Rea
 ```
 
 **Ask yourself:**
+
 1. Where does the data enter the system?
 2. Where does it transform?
 3. Where does it render?
@@ -79,6 +80,7 @@ psql "postgresql://postgres:postgres@localhost:54322/postgres" -c "SELECT 1"
 ### React DevTools
 
 Install the React DevTools browser extension. It lets you:
+
 - Inspect component hierarchy
 - View props and state
 - See what triggered re-renders
@@ -86,6 +88,7 @@ Install the React DevTools browser extension. It lets you:
 ### TanStack Query DevTools
 
 The app includes TanStack Query DevTools (in development mode):
+
 - See all cached queries
 - Inspect query states (loading, error, success)
 - Manually invalidate queries
@@ -110,6 +113,7 @@ FreshTrack Pro has a built-in debug mode:
 **Cause:** Query cache not invalidated.
 
 **Solution:**
+
 ```typescript
 // In your mutation
 onSuccess: () => {
@@ -124,10 +128,11 @@ onSuccess: () => {
 **Cause:** Dependency array issue in useEffect or useMemo.
 
 **Debug:**
+
 ```typescript
 // Add logging to see what's changing
 useEffect(() => {
-  console.log("Effect ran", { dep1, dep2 });
+  console.log('Effect ran', { dep1, dep2 });
 }, [dep1, dep2]);
 ```
 
@@ -140,6 +145,7 @@ useEffect(() => {
 **Cause:** Data not loaded yet, or null check missing.
 
 **Solution:**
+
 ```typescript
 // Add loading state check
 if (isLoading) return <Spinner />;
@@ -154,12 +160,13 @@ const value = data?.nested?.property;
 **Symptom:** Action completes but no feedback.
 
 **Solution:**
+
 ```typescript
-import { toast } from "@/hooks/use-toast";
+import { toast } from '@/hooks/use-toast';
 
 toast({
-  title: "Success",
-  description: "Your action completed.",
+  title: 'Success',
+  description: 'Your action completed.',
 });
 ```
 
@@ -181,7 +188,7 @@ supabase functions serve
 
 ```typescript
 // In edge functions
-console.log("Debug:", JSON.stringify({ variable, anotherVariable }));
+console.log('Debug:', JSON.stringify({ variable, anotherVariable }));
 
 // These appear in:
 // - Terminal (local development)
@@ -208,13 +215,18 @@ curl -X POST http://localhost:54321/functions/v1/my-function \
 **Cause:** Missing or invalid auth token.
 
 **Debug:**
+
 ```typescript
 // Log the auth state
-const { data: { user }, error } = await supabase.auth.getUser();
-console.log("Auth:", { user: user?.id, error });
+const {
+  data: { user },
+  error,
+} = await supabase.auth.getUser();
+console.log('Auth:', { user: user?.id, error });
 ```
 
 **Solutions:**
+
 - Ensure frontend passes auth header
 - Check if user is logged in
 - Verify JWT hasn't expired
@@ -222,15 +234,15 @@ console.log("Auth:", { user: user?.id, error });
 #### Issue: Function returns 500 Internal Server Error
 
 **Debug:**
+
 ```typescript
 try {
   // Your code
 } catch (error) {
-  console.error("Function error:", error);
-  return new Response(
-    JSON.stringify({ error: error.message, stack: error.stack }),
-    { status: 500 }
-  );
+  console.error('Function error:', error);
+  return new Response(JSON.stringify({ error: error.message, stack: error.stack }), {
+    status: 500,
+  });
 }
 ```
 
@@ -239,17 +251,18 @@ try {
 **Symptom:** "Access-Control-Allow-Origin" error in console.
 
 **Solution:** Ensure you return CORS headers:
+
 ```typescript
-import { corsHeaders } from "../_shared/cors.ts";
+import { corsHeaders } from '../_shared/cors.ts';
 
 // For preflight
-if (req.method === "OPTIONS") {
-  return new Response("ok", { headers: corsHeaders });
+if (req.method === 'OPTIONS') {
+  return new Response('ok', { headers: corsHeaders });
 }
 
 // For all responses
 return new Response(JSON.stringify(data), {
-  headers: { ...corsHeaders, "Content-Type": "application/json" }
+  headers: { ...corsHeaders, 'Content-Type': 'application/json' },
 });
 ```
 
@@ -274,12 +287,14 @@ RLS issues are silent — you get empty results, not errors.
 **Debug approach:**
 
 1. **Test as service role (bypasses RLS):**
+
 ```sql
 -- In Supabase Studio SQL editor
 SELECT * FROM units;  -- Service role bypasses RLS
 ```
 
 2. **Test as user:**
+
 ```sql
 -- Simulate RLS as a specific user
 SET request.jwt.claim.sub = 'user-uuid-here';
@@ -287,6 +302,7 @@ SELECT * FROM units;
 ```
 
 3. **Check the policy:**
+
 ```sql
 -- View policies on a table
 SELECT * FROM pg_policies WHERE tablename = 'units';
@@ -299,6 +315,7 @@ SELECT * FROM pg_policies WHERE tablename = 'units';
 **Cause:** RLS policy blocks the operation.
 
 **Debug:**
+
 ```sql
 -- Check if user has organization access
 SELECT organization_id FROM profiles WHERE id = 'user-uuid';
@@ -312,8 +329,9 @@ SELECT organization_id FROM units WHERE id = 'unit-uuid';
 **Cause:** `get_effective_*` RPC not being used.
 
 **Solution:** Always use the RPC for settings that cascade:
+
 ```typescript
-const { data } = await supabase.rpc("get_effective_alert_rules", {
+const { data } = await supabase.rpc('get_effective_alert_rules', {
   p_unit_id: unitId,
 });
 ```
@@ -321,6 +339,7 @@ const { data } = await supabase.rpc("get_effective_alert_rules", {
 #### Issue: Migration fails
 
 **Debug:**
+
 ```bash
 # See migration status
 supabase migration list
@@ -342,18 +361,19 @@ DevEUIs must be normalized (uppercase, no separators):
 
 ```typescript
 // Correct
-const devEUI = "70B3D57ED005A123";
+const devEUI = '70B3D57ED005A123';
 
 // Incorrect (will fail to match)
-const devEUI = "70:B3:D5:7E:D0:05:A1:23";  // Has colons
-const devEUI = "70b3d57ed005a123";          // Lowercase
+const devEUI = '70:B3:D5:7E:D0:05:A1:23'; // Has colons
+const devEUI = '70b3d57ed005a123'; // Lowercase
 ```
 
 **Debug:**
+
 ```typescript
 // In ttn-webhook
-console.log("Raw DevEUI:", payload.end_device_ids.dev_eui);
-console.log("Normalized:", normalizeDevEUI(payload.end_device_ids.dev_eui));
+console.log('Raw DevEUI:', payload.end_device_ids.dev_eui);
+console.log('Normalized:', normalizeDevEUI(payload.end_device_ids.dev_eui));
 ```
 
 ### Webhook Not Receiving Data
@@ -368,6 +388,7 @@ console.log("Normalized:", normalizeDevEUI(payload.end_device_ids.dev_eui));
    - Must match what's configured in our database
 
 3. **Check function logs:**
+
 ```bash
 supabase functions logs ttn-webhook --follow
 ```
@@ -386,12 +407,14 @@ supabase functions logs ttn-webhook --follow
 ### Sensor Shows "Offline"
 
 **Possible causes:**
+
 - Device battery dead
 - Device out of range
 - Gateway offline
 - Webhook not processing
 
 **Debug path:**
+
 1. Check TTN Console for recent uplinks
 2. Check `sensor_readings` table for recent data
 3. Check `lora_sensors` table for `last_seen_at`
@@ -417,6 +440,7 @@ curl -X POST http://localhost:54321/functions/v1/process-unit-states \
 ```
 
 **Common causes:**
+
 - Confirm time not elapsed (needs X minutes of excursion)
 - Alert rule not applied (check `get_effective_alert_rules`)
 - Unit status already in alarm state
@@ -424,6 +448,7 @@ curl -X POST http://localhost:54321/functions/v1/process-unit-states \
 ### Alerts Not Resolving
 
 **Check:**
+
 1. Temperature returned to safe range?
 2. Clear condition met (in `alertConfig.ts`)?
 3. `process-unit-states` running on schedule?
@@ -433,6 +458,7 @@ curl -X POST http://localhost:54321/functions/v1/process-unit-states \
 The SSOT for notifications is `process-escalations`.
 
 **Check:**
+
 1. Notification policy configured?
 2. User has valid contact (email/phone)?
 3. Escalation delay elapsed?
@@ -448,6 +474,7 @@ supabase functions logs process-escalations --follow
 ### "TypeError: Cannot read properties of null"
 
 **Pattern:**
+
 ```
 TypeError: Cannot read properties of null (reading 'map')
 ```
@@ -455,6 +482,7 @@ TypeError: Cannot read properties of null (reading 'map')
 **Cause:** Trying to iterate over null/undefined data.
 
 **Fix:**
+
 ```typescript
 // Before
 {data.map(item => ...)}
@@ -468,13 +496,14 @@ TypeError: Cannot read properties of null (reading 'map')
 **Pattern:** Async operation fails without being caught.
 
 **Fix:**
+
 ```typescript
 // Add error handling
 try {
   await someAsyncOperation();
 } catch (error) {
-  console.error("Operation failed:", error);
-  toast({ title: "Error", description: error.message, variant: "destructive" });
+  console.error('Operation failed:', error);
+  toast({ title: 'Error', description: error.message, variant: 'destructive' });
 }
 ```
 
@@ -489,6 +518,7 @@ try {
 **Cause:** Edge function not running or network issue.
 
 **Check:**
+
 1. Function is deployed/serving
 2. URL is correct
 3. No CORS issues
@@ -500,11 +530,13 @@ try {
 ### Slow Initial Load
 
 **Diagnose:**
+
 1. Check Network tab for slow requests
 2. Look for large bundle sizes
 3. Check for unnecessary data fetching
 
 **Solutions:**
+
 - Use React.lazy for code splitting
 - Limit initial data fetch (pagination)
 - Check for N+1 query patterns
@@ -512,12 +544,14 @@ try {
 ### Slow Database Queries
 
 **Diagnose:**
+
 ```sql
 -- Find slow queries
 SELECT * FROM pg_stat_statements ORDER BY total_time DESC LIMIT 10;
 ```
 
 **Solutions:**
+
 - Add indexes for frequently filtered columns
 - Use `.select()` to limit returned columns
 - Add pagination
@@ -527,17 +561,19 @@ SELECT * FROM pg_stat_statements ORDER BY total_time DESC LIMIT 10;
 **Symptoms:** App slows down over time.
 
 **Common causes:**
+
 - Subscriptions not cleaned up
 - Timers not cleared
 - Event listeners not removed
 
 **Fix:**
+
 ```typescript
 useEffect(() => {
   const subscription = supabase.channel('...').subscribe();
 
   return () => {
-    subscription.unsubscribe();  // Cleanup!
+    subscription.unsubscribe(); // Cleanup!
   };
 }, []);
 ```
@@ -551,7 +587,7 @@ useEffect(() => {
 DevEUIs from different sources may have different cases. Always normalize:
 
 ```typescript
-import { normalizeDevEUI } from "@/lib/ttnConfig";
+import { normalizeDevEUI } from '@/lib/ttnConfig';
 const normalized = normalizeDevEUI(rawDevEUI);
 ```
 
@@ -561,10 +597,10 @@ All timestamps are stored in UTC. Display conversion happens on frontend:
 
 ```typescript
 // Database stores UTC
-created_at: "2026-01-12T10:00:00Z"
+created_at: '2026-01-12T10:00:00Z';
 
 // Display in user's timezone
-new Date(created_at).toLocaleString()
+new Date(created_at).toLocaleString();
 ```
 
 ### 3. RLS Doesn't Error, It Filters
@@ -599,8 +635,8 @@ If query keys don't match between fetch and invalidation, cache updates won't wo
 
 ```typescript
 // These must match!
-useQuery({ queryKey: ["units", orgId] })  // Fetch
-queryClient.invalidateQueries({ queryKey: ["units", orgId] })  // Invalidate
+useQuery({ queryKey: ['units', orgId] }); // Fetch
+queryClient.invalidateQueries({ queryKey: ['units', orgId] }); // Invalidate
 ```
 
 ---

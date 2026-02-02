@@ -1,24 +1,24 @@
-import { useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { useTRPC } from "@/lib/trpc";
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity";
-import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Building2, 
-  MapPin, 
-  Thermometer, 
-  AlertTriangle, 
+import { useMemo } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { useTRPC } from '@/lib/trpc';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import DashboardLayout from '@/components/DashboardLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Building2,
+  MapPin,
+  Thermometer,
+  AlertTriangle,
   CheckCircle2,
   ChevronRight,
-  TrendingUp
-} from "lucide-react";
-import { computeUnitAlerts, UnitAlertsSummary } from "@/hooks/useUnitAlerts";
-import { UnitStatusInfo } from "@/hooks/useUnitStatus";
+  TrendingUp,
+} from 'lucide-react';
+import { computeUnitAlerts, UnitAlertsSummary } from '@/hooks/useUnitAlerts';
+import { UnitStatusInfo } from '@/hooks/useUnitStatus';
 
 interface SiteData {
   id: string;
@@ -46,31 +46,31 @@ const OrganizationDashboard = () => {
 
   // Redirect to onboarding if no org
   if (isInitialized && !effectiveOrgId) {
-    navigate("/onboarding");
+    navigate('/onboarding');
   }
 
   // Fetch organization details via tRPC
   const orgQuery = useQuery(
     trpc.organizations.get.queryOptions(
-      { organizationId: effectiveOrgId || "" },
-      { enabled: isInitialized && !!effectiveOrgId }
-    )
+      { organizationId: effectiveOrgId || '' },
+      { enabled: isInitialized && !!effectiveOrgId },
+    ),
   );
 
   // Fetch sites via tRPC
   const sitesQuery = useQuery(
     trpc.sites.list.queryOptions(
-      { organizationId: effectiveOrgId || "" },
-      { enabled: isInitialized && !!effectiveOrgId }
-    )
+      { organizationId: effectiveOrgId || '' },
+      { enabled: isInitialized && !!effectiveOrgId },
+    ),
   );
 
   // Fetch units via tRPC
   const unitsQuery = useQuery(
     trpc.units.listByOrg.queryOptions(
-      { organizationId: effectiveOrgId || "" },
-      { enabled: isInitialized && !!effectiveOrgId }
-    )
+      { organizationId: effectiveOrgId || '' },
+      { enabled: isInitialized && !!effectiveOrgId },
+    ),
   );
 
   // Process sites and compute compliance using useMemo
@@ -81,7 +81,7 @@ const OrganizationDashboard = () => {
 
     // Transform units to UnitStatusInfo format and group by siteId
     const unitsBySiteId: Record<string, UnitStatusInfo[]> = {};
-    unitsQuery.data.forEach(u => {
+    unitsQuery.data.forEach((u) => {
       if (!unitsBySiteId[u.siteId]) {
         unitsBySiteId[u.siteId] = [];
       }
@@ -109,15 +109,17 @@ const OrganizationDashboard = () => {
       const alertSummary = computeUnitAlerts(siteUnits);
 
       // Compliance = units without CRITICAL alerts / total units
-      const unitsWithCritical = alertSummary.alerts.filter(a => a.severity === "critical")
+      const unitsWithCritical = alertSummary.alerts
+        .filter((a) => a.severity === 'critical')
         .reduce((acc, alert) => {
           acc.add(alert.unit_id);
           return acc;
         }, new Set<string>()).size;
 
-      const complianceScore = siteUnits.length > 0
-        ? Math.round(((siteUnits.length - unitsWithCritical) / siteUnits.length) * 100)
-        : 100;
+      const complianceScore =
+        siteUnits.length > 0
+          ? Math.round(((siteUnits.length - unitsWithCritical) / siteUnits.length) * 100)
+          : 100;
 
       return {
         id: site.id,
@@ -137,14 +139,18 @@ const OrganizationDashboard = () => {
     // Calculate org-wide summary
     const totalUnits = processedSites.reduce((sum, s) => sum + s.units.length, 0);
     const totalAlerts = processedSites.reduce((sum, s) => sum + s.alertSummary.criticalCount, 0);
-    const overallCompliance = totalUnits > 0
-      ? Math.round(processedSites.reduce((sum, s) => sum + s.complianceScore * s.units.length, 0) / totalUnits)
-      : 100;
+    const overallCompliance =
+      totalUnits > 0
+        ? Math.round(
+            processedSites.reduce((sum, s) => sum + s.complianceScore * s.units.length, 0) /
+              totalUnits,
+          )
+        : 100;
 
     return {
       sites: processedSites,
       orgSummary: {
-        name: orgQuery.data?.name || "Organization",
+        name: orgQuery.data?.name || 'Organization',
         totalSites: processedSites.length,
         totalUnits,
         totalAlerts,
@@ -156,15 +162,15 @@ const OrganizationDashboard = () => {
   const loading = !isInitialized || sitesQuery.isLoading || unitsQuery.isLoading;
 
   const getComplianceColor = (score: number) => {
-    if (score >= 95) return "text-safe";
-    if (score >= 80) return "text-warning";
-    return "text-alarm";
+    if (score >= 95) return 'text-safe';
+    if (score >= 80) return 'text-warning';
+    return 'text-alarm';
   };
 
   const getComplianceBg = (score: number) => {
-    if (score >= 95) return "bg-safe";
-    if (score >= 80) return "bg-warning";
-    return "bg-alarm";
+    if (score >= 95) return 'bg-safe';
+    if (score >= 80) return 'bg-warning';
+    return 'bg-alarm';
   };
 
   if (loading) {
@@ -236,11 +242,17 @@ const OrganizationDashboard = () => {
           <Card className="stat-card">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${getComplianceBg(orgSummary.overallCompliance)}/10`}>
-                  <TrendingUp className={`w-5 h-5 ${getComplianceColor(orgSummary.overallCompliance)}`} />
+                <div
+                  className={`p-2 rounded-lg ${getComplianceBg(orgSummary.overallCompliance)}/10`}
+                >
+                  <TrendingUp
+                    className={`w-5 h-5 ${getComplianceColor(orgSummary.overallCompliance)}`}
+                  />
                 </div>
                 <div>
-                  <p className={`text-2xl font-bold ${getComplianceColor(orgSummary.overallCompliance)}`}>
+                  <p
+                    className={`text-2xl font-bold ${getComplianceColor(orgSummary.overallCompliance)}`}
+                  >
                     {orgSummary.overallCompliance}%
                   </p>
                   <p className="text-sm text-muted-foreground">Compliance</p>
@@ -262,9 +274,7 @@ const OrganizationDashboard = () => {
           <Card className="p-8 text-center">
             <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-medium text-foreground mb-2">No sites yet</h3>
-            <p className="text-muted-foreground">
-              Add your first site to start monitoring.
-            </p>
+            <p className="text-muted-foreground">Add your first site to start monitoring.</p>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -277,7 +287,7 @@ const OrganizationDashboard = () => {
                         <CardTitle className="text-lg">{site.name}</CardTitle>
                         {(site.city || site.state) && (
                           <p className="text-sm text-muted-foreground">
-                            {[site.city, site.state].filter(Boolean).join(", ")}
+                            {[site.city, site.state].filter(Boolean).join(', ')}
                           </p>
                         )}
                       </div>
@@ -299,7 +309,10 @@ const OrganizationDashboard = () => {
                         </Badge>
                       )}
                       {site.alertSummary.warningCount > 0 && (
-                        <Badge variant="outline" className="border-warning text-warning flex items-center gap-1">
+                        <Badge
+                          variant="outline"
+                          className="border-warning text-warning flex items-center gap-1"
+                        >
                           {site.alertSummary.warningCount} warnings
                         </Badge>
                       )}
@@ -309,13 +322,15 @@ const OrganizationDashboard = () => {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">Compliance</span>
-                        <span className={`font-semibold ${getComplianceColor(site.complianceScore)}`}>
+                        <span
+                          className={`font-semibold ${getComplianceColor(site.complianceScore)}`}
+                        >
                           {site.complianceScore}%
                         </span>
                       </div>
-                      <Progress 
-                        value={site.complianceScore} 
-                        className={`h-2 ${site.complianceScore >= 95 ? "[&>div]:bg-safe" : site.complianceScore >= 80 ? "[&>div]:bg-warning" : "[&>div]:bg-alarm"}`}
+                      <Progress
+                        value={site.complianceScore}
+                        className={`h-2 ${site.complianceScore >= 95 ? '[&>div]:bg-safe' : site.complianceScore >= 80 ? '[&>div]:bg-warning' : '[&>div]:bg-alarm'}`}
                       />
                     </div>
 

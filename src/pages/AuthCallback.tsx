@@ -1,7 +1,7 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Loader2, Thermometer } from "lucide-react";
-import { useAuthAndOnboarding } from "@/hooks/useAuthAndOnboarding";
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Loader2, Thermometer } from 'lucide-react';
+import { useAuthAndOnboarding } from '@/hooks/useAuthAndOnboarding';
 
 /**
  * Auth callback page - handles post-authentication routing.
@@ -10,20 +10,21 @@ import { useAuthAndOnboarding } from "@/hooks/useAuthAndOnboarding";
  */
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const { isInitializing, isAuthenticated, isOnboardingComplete, isSuperAdmin } = useAuthAndOnboarding();
+  const { isInitializing, isAuthenticated, isOnboardingComplete, isSuperAdmin } =
+    useAuthAndOnboarding();
 
   useEffect(() => {
     if (isInitializing) return;
 
     if (!isAuthenticated) {
-      navigate("/auth", { replace: true });
+      navigate('/auth', { replace: true });
     } else if (isSuperAdmin) {
       // Super admins go directly to platform admin
-      navigate("/platform", { replace: true });
+      navigate('/platform', { replace: true });
     } else if (!isOnboardingComplete) {
-      navigate("/onboarding", { replace: true });
+      navigate('/onboarding', { replace: true });
     } else {
-      navigate("/dashboard", { replace: true });
+      navigate('/dashboard', { replace: true });
     }
   }, [isInitializing, isAuthenticated, isOnboardingComplete, isSuperAdmin, navigate]);
 
@@ -35,7 +36,7 @@ const AuthCallback = () => {
         </div>
         <span className="text-2xl font-bold text-foreground">FrostGuard</span>
       </div>
-      
+
       <div className="text-center">
         <Loader2 className="w-8 h-8 animate-spin mx-auto text-accent" />
         <p className="mt-4 text-muted-foreground">Finishing sign-in...</p>

@@ -27,13 +27,13 @@ key-files:
     - scripts/deploy-automated.sh
 
 key-decisions:
-  - "Changed exec to regular call in do_deployment() to allow continuation"
-  - "Health checks use docker compose file layering"
-  - "display_completion_summary not checkpointed (always shows on success)"
+  - 'Changed exec to regular call in do_deployment() to allow continuation'
+  - 'Health checks use docker compose file layering'
+  - 'display_completion_summary not checkpointed (always shows on success)'
 
 patterns-established:
-  - "Health verification pattern: check services in criticality order (postgres -> redis -> backend -> caddy)"
-  - "Completion summary pattern: read DOMAIN from env or .env.production"
+  - 'Health verification pattern: check services in criticality order (postgres -> redis -> backend -> caddy)'
+  - 'Completion summary pattern: read DOMAIN from env or .env.production'
 
 # Metrics
 duration: 2min
@@ -53,6 +53,7 @@ completed: 2026-01-25
 - **Files modified:** 1
 
 ## Accomplishments
+
 - Added wait_for_all_services_healthy() function that checks 4 critical services in sequence
 - Added display_completion_summary() with access URLs, service status, and helpful commands
 - Updated main() to run 5 deployment phases with checkpoint tracking
@@ -69,9 +70,11 @@ Each task was committed atomically:
 _Note: All 3 tasks were implemented together as they modify the same file with interdependent changes_
 
 ## Files Created/Modified
+
 - `scripts/deploy-automated.sh` - Added wait_for_all_services_healthy() and display_completion_summary() functions, updated main() to include 5th run_step
 
 ## Decisions Made
+
 - **Changed exec to regular call:** The original script used `exec "${DEPLOY_SCRIPT_DIR}/deploy.sh"` which would replace the process, preventing any code after it from running. Changed to regular call so health verification and completion summary can execute after deploy.sh completes.
 - **Health check order:** Services checked in criticality order (postgres -> redis -> backend -> caddy) to fail fast on database issues.
 - **Completion summary not checkpointed:** display_completion_summary() is called directly, not via run_step, so it always shows on successful completion regardless of checkpoint state.
@@ -81,6 +84,7 @@ _Note: All 3 tasks were implemented together as they modify the same file with i
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Fixed exec preventing continuation**
+
 - **Found during:** Task 1 (reviewing existing script structure)
 - **Issue:** do_deployment() used `exec` which replaces the shell process, meaning no code after it would ever run
 - **Fix:** Changed `exec "${DEPLOY_SCRIPT_DIR}/deploy.sh"` to just `"${DEPLOY_SCRIPT_DIR}/deploy.sh"`
@@ -94,12 +98,15 @@ _Note: All 3 tasks were implemented together as they modify the same file with i
 **Impact on plan:** Essential fix for correct operation. Without this change, the health verification and completion summary would never run.
 
 ## Issues Encountered
+
 None - plan executed successfully after fixing the exec issue.
 
 ## User Setup Required
+
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Phase 25 (Deployment Orchestration) now complete
 - Ready for Phase 26 (Verification & Completion) which will add:
   - End-to-end deployment testing
@@ -107,5 +114,6 @@ None - no external service configuration required.
   - Documentation updates
 
 ---
-*Phase: 25-deployment-orchestration*
-*Completed: 2026-01-25*
+
+_Phase: 25-deployment-orchestration_
+_Completed: 2026-01-25_

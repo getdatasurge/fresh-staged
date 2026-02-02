@@ -42,14 +42,14 @@ export function validateStackAuthConfig(): StackAuthEnvConfig {
   if (!projectId) {
     throw new Error(
       'STACK_AUTH_PROJECT_ID environment variable is required. ' +
-        'Get this from Stack Auth Dashboard -> Project Settings -> Project ID'
+        'Get this from Stack Auth Dashboard -> Project Settings -> Project ID',
     );
   }
 
   if (!/^[a-zA-Z0-9_-]+$/.test(projectId)) {
     throw new Error(
       'STACK_AUTH_PROJECT_ID has invalid format. ' +
-        'Expected alphanumeric characters, underscores, or hyphens.'
+        'Expected alphanumeric characters, underscores, or hyphens.',
     );
   }
 
@@ -82,7 +82,7 @@ export async function checkJwksReachable(jwksUrl: string): Promise<boolean> {
     const response = await fetch(jwksUrl, { method: 'GET' });
     if (!response.ok) {
       console.warn(
-        `JWKS endpoint returned ${response.status}. Stack Auth may not be configured correctly.`
+        `JWKS endpoint returned ${response.status}. Stack Auth may not be configured correctly.`,
       );
       return false;
     }

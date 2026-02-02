@@ -81,10 +81,7 @@ export const smsConfigRouter = router({
       }
 
       try {
-        const config = await smsConfigService.upsertSmsConfig(
-          ctx.user.organizationId,
-          input.data
-        );
+        const config = await smsConfigService.upsertSmsConfig(ctx.user.organizationId, input.data);
 
         return config;
       } catch (error) {
@@ -103,22 +100,28 @@ export const smsConfigRouter = router({
    * Returns recent SMS alerts sent for the organization
    */
   listAlertHistory: orgProcedure
-    .input(z.object({
-      organizationId: z.string().uuid(),
-      limit: z.number().int().min(1).max(100).optional().default(20),
-    }))
-    .output(z.array(z.object({
-      id: z.string().uuid(),
-      phoneNumber: z.string(),
-      fromNumber: z.string().nullable(),
-      alertType: z.string(),
-      message: z.string(),
-      status: z.string(),
-      createdAt: z.date(),
-      errorMessage: z.string().nullable(),
-      providerMessageId: z.string().nullable(),
-      deliveryUpdatedAt: z.date().nullable(),
-    })))
+    .input(
+      z.object({
+        organizationId: z.string().uuid(),
+        limit: z.number().int().min(1).max(100).optional().default(20),
+      }),
+    )
+    .output(
+      z.array(
+        z.object({
+          id: z.string().uuid(),
+          phoneNumber: z.string(),
+          fromNumber: z.string().nullable(),
+          alertType: z.string(),
+          message: z.string(),
+          status: z.string(),
+          createdAt: z.date(),
+          errorMessage: z.string().nullable(),
+          providerMessageId: z.string().nullable(),
+          deliveryUpdatedAt: z.date().nullable(),
+        }),
+      ),
+    )
     .query(async ({ ctx, input }) => {
       // Query sms_alert_log table directly via raw SQL since it's not in Drizzle schema
       const logs = await db.execute(sql`

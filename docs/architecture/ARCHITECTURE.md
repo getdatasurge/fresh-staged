@@ -5,6 +5,7 @@
 > **Architecture Migration in Progress**
 >
 > This documentation describes the original Supabase-based architecture. The project is migrating to:
+>
 > - **Authentication**: Stack Auth (replacing Supabase Auth)
 > - **Backend API**: Fastify 5 with Drizzle ORM (replacing Edge Functions)
 > - **Database**: PostgreSQL (Supabase or self-hosted)
@@ -30,6 +31,7 @@
 ## Architecture Overview
 
 FreshTrack Pro follows a modern Jamstack architecture with:
+
 - **React SPA** for the frontend
 - **Supabase** for backend (PostgreSQL + Edge Functions + Auth)
 - **Event-driven processing** for sensor data and alerts
@@ -61,15 +63,15 @@ FreshTrack Pro follows a modern Jamstack architecture with:
 
 ### Technology Stack
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| Framework | React 18.3.1 | UI components and state |
-| Routing | React Router 6.30.1 | Client-side navigation |
-| State | TanStack Query 5.83.0 | Server state management |
-| Forms | React Hook Form + Zod | Form handling and validation |
-| Styling | Tailwind CSS 3.4.17 | Utility-first CSS |
-| Components | shadcn/ui (Radix) | Accessible component library |
-| Build | Vite 5.4.19 | Fast development and bundling |
+| Layer      | Technology            | Purpose                       |
+| ---------- | --------------------- | ----------------------------- |
+| Framework  | React 18.3.1          | UI components and state       |
+| Routing    | React Router 6.30.1   | Client-side navigation        |
+| State      | TanStack Query 5.83.0 | Server state management       |
+| Forms      | React Hook Form + Zod | Form handling and validation  |
+| Styling    | Tailwind CSS 3.4.17   | Utility-first CSS             |
+| Components | shadcn/ui (Radix)     | Accessible component library  |
+| Build      | Vite 5.4.19           | Fast development and bundling |
 
 ### Component Architecture
 
@@ -114,10 +116,9 @@ graph LR
 ### Key Patterns
 
 1. **Query Keys**: Structured for cache invalidation
+
    ```typescript
-   ['units', unitId]
-   ['alerts', { organizationId, status: 'active' }]
-   ['alert-rules', { unitId }]
+   ['units', unitId][('alerts', { organizationId, status: 'active' })][('alert-rules', { unitId })];
    ```
 
 2. **Component Composition**: Use shadcn components as building blocks
@@ -132,61 +133,67 @@ graph LR
 The backend consists of 33 Deno-based edge functions organized by purpose:
 
 #### Data Ingestion (3 functions)
-| Function | Purpose | Trigger |
-|----------|---------|---------|
-| `ttn-webhook` | Receive TTN uplink messages | HTTP POST from TTN |
-| `ingest-readings` | Generic sensor data ingestion | HTTP POST |
-| `sensor-simulator` | Generate test data | HTTP POST |
+
+| Function           | Purpose                       | Trigger            |
+| ------------------ | ----------------------------- | ------------------ |
+| `ttn-webhook`      | Receive TTN uplink messages   | HTTP POST from TTN |
+| `ingest-readings`  | Generic sensor data ingestion | HTTP POST          |
+| `sensor-simulator` | Generate test data            | HTTP POST          |
 
 #### Alert Processing (2 functions)
-| Function | Purpose | Trigger |
-|----------|---------|---------|
-| `process-unit-states` | Evaluate unit states, create/resolve alerts | Called after ingestion |
-| `process-escalations` | Send notifications per policy | Called after state changes |
+
+| Function              | Purpose                                     | Trigger                    |
+| --------------------- | ------------------------------------------- | -------------------------- |
+| `process-unit-states` | Evaluate unit states, create/resolve alerts | Called after ingestion     |
+| `process-escalations` | Send notifications per policy               | Called after state changes |
 
 #### TTN Management (12 functions)
-| Function | Purpose |
-|----------|---------|
-| `ttn-bootstrap` | Auto-configure webhooks |
-| `ttn-manage-application` | Create/update TTN apps |
-| `ttn-provision-device` | Register sensors with TTN |
-| `ttn-provision-gateway` | Register gateways with TTN |
-| `ttn-provision-org` | Provision org in TTN |
-| `ttn-provision-worker` | Background provisioning |
-| `ttn-list-devices` | List TTN devices |
-| `ttn-gateway-preflight` | Validate gateway permissions |
+
+| Function                 | Purpose                       |
+| ------------------------ | ----------------------------- |
+| `ttn-bootstrap`          | Auto-configure webhooks       |
+| `ttn-manage-application` | Create/update TTN apps        |
+| `ttn-provision-device`   | Register sensors with TTN     |
+| `ttn-provision-gateway`  | Register gateways with TTN    |
+| `ttn-provision-org`      | Provision org in TTN          |
+| `ttn-provision-worker`   | Background provisioning       |
+| `ttn-list-devices`       | List TTN devices              |
+| `ttn-gateway-preflight`  | Validate gateway permissions  |
 | `ttn-deprovision-worker` | Cleanup deprovisioned devices |
-| `update-ttn-webhook` | Update webhook config |
-| `manage-ttn-settings` | TTN settings CRUD |
-| `sync-ttn-settings` | Sync from emulator |
+| `update-ttn-webhook`     | Update webhook config         |
+| `manage-ttn-settings`    | TTN settings CRUD             |
+| `sync-ttn-settings`      | Sync from emulator            |
 
 #### User & Data Management (6 functions)
-| Function | Purpose |
-|----------|---------|
-| `user-sync-emitter` | User sync events |
-| `cleanup-user-sensors` | User data cleanup |
-| `update-sensor-assignment` | Sensor assignment |
-| `account-deletion-jobs` | GDPR deletion |
-| `export-temperature-logs` | Compliance data export |
-| `check-password-breach` | Password security |
+
+| Function                   | Purpose                |
+| -------------------------- | ---------------------- |
+| `user-sync-emitter`        | User sync events       |
+| `cleanup-user-sensors`     | User data cleanup      |
+| `update-sensor-assignment` | Sensor assignment      |
+| `account-deletion-jobs`    | GDPR deletion          |
+| `export-temperature-logs`  | Compliance data export |
+| `check-password-breach`    | Password security      |
 
 #### Billing (3 functions)
-| Function | Purpose |
-|----------|---------|
+
+| Function          | Purpose                  |
+| ----------------- | ------------------------ |
 | `stripe-checkout` | Create checkout sessions |
-| `stripe-portal` | Customer portal access |
-| `stripe-webhook` | Handle Stripe events |
+| `stripe-portal`   | Customer portal access   |
+| `stripe-webhook`  | Handle Stripe events     |
 
 #### Utilities (7 functions)
-| Function | Purpose |
-|----------|---------|
-| `health-check` | System health monitoring |
-| `check-slug-available` | Org slug validation |
-| `send-sms-alert` | Telnyx SMS delivery |
-| `org-state-api` | Pull-based state API |
-| `fetch-org-state` | Org TTN state |
-| `emulator-sync` | Emulator integration |
-| `run-simulator-heartbeats` | Simulated heartbeats |
+
+| Function                   | Purpose                  |
+| -------------------------- | ------------------------ |
+| `health-check`             | System health monitoring |
+| `check-slug-available`     | Org slug validation      |
+| `send-sms-alert`           | Telnyx SMS delivery      |
+| `org-state-api`            | Pull-based state API     |
+| `fetch-org-state`          | Org TTN state            |
+| `emulator-sync`            | Emulator integration     |
+| `run-simulator-heartbeats` | Simulated heartbeats     |
 
 ### Data Processing Pipeline
 
@@ -211,12 +218,12 @@ graph TD
 
 ### Function Security
 
-| Security Level | Functions | Auth Method |
-|----------------|-----------|-------------|
-| Public | Health check endpoints | None |
-| User Auth | Most API endpoints | JWT (Supabase Auth) |
-| Internal Only | process-unit-states, process-escalations | INTERNAL_API_KEY header |
-| Webhook | ttn-webhook, stripe-webhook | Webhook secret |
+| Security Level | Functions                                | Auth Method             |
+| -------------- | ---------------------------------------- | ----------------------- |
+| Public         | Health check endpoints                   | None                    |
+| User Auth      | Most API endpoints                       | JWT (Supabase Auth)     |
+| Internal Only  | process-unit-states, process-escalations | INTERNAL_API_KEY header |
+| Webhook        | ttn-webhook, stripe-webhook              | Webhook secret          |
 
 ---
 
@@ -227,6 +234,7 @@ graph TD
 The database contains 60+ tables organized by domain:
 
 #### Hierarchy Tables
+
 ```
 organizations
     └── sites
@@ -236,24 +244,26 @@ organizations
 
 #### Core Tables by Domain
 
-| Domain | Tables |
-|--------|--------|
-| Hierarchy | organizations, sites, areas, units |
-| Sensors | lora_sensors, gateways, devices (legacy), sensor_readings |
-| Alerts | alerts, alert_rules, alert_rules_history |
+| Domain        | Tables                                                          |
+| ------------- | --------------------------------------------------------------- |
+| Hierarchy     | organizations, sites, areas, units                              |
+| Sensors       | lora_sensors, gateways, devices (legacy), sensor_readings       |
+| Alerts        | alerts, alert_rules, alert_rules_history                        |
 | Notifications | notification_policies, notification_events, escalation_contacts |
-| Compliance | corrective_actions, calibration_records, event_logs |
-| TTN | ttn_connections, ttn_provisioning_queue, ttn_provisioning_logs |
-| Users | profiles, user_roles, user_sync_log |
-| Billing | subscriptions, invoices |
+| Compliance    | corrective_actions, calibration_records, event_logs             |
+| TTN           | ttn_connections, ttn_provisioning_queue, ttn_provisioning_logs  |
+| Users         | profiles, user_roles, user_sync_log                             |
+| Billing       | subscriptions, invoices                                         |
 
 ### Row-Level Security (RLS)
 
 All tables enforce RLS policies based on:
+
 - User's organization membership (`user_roles`)
 - Data ownership chain (units → areas → sites → organizations)
 
 Example policy pattern:
+
 ```sql
 -- Users can only see units in their organization
 CREATE POLICY "Users can view org units" ON units
@@ -271,14 +281,14 @@ CREATE POLICY "Users can view org units" ON units
 
 ### Key RPC Functions
 
-| Function | Purpose |
-|----------|---------|
-| `get_effective_alert_rules(p_unit_id)` | Resolve cascaded alert rules |
+| Function                                 | Purpose                              |
+| ---------------------------------------- | ------------------------------------ |
+| `get_effective_alert_rules(p_unit_id)`   | Resolve cascaded alert rules         |
 | `get_effective_notification_policy(...)` | Resolve cascaded notification policy |
-| `create_organization_with_owner(...)` | Atomic org creation |
-| `user_belongs_to_org(...)` | Access check |
-| `has_role(...)` | Role authorization |
-| `enqueue_deprovision_jobs_for_unit(...)` | TTN cleanup queue |
+| `create_organization_with_owner(...)`    | Atomic org creation                  |
+| `user_belongs_to_org(...)`               | Access check                         |
+| `has_role(...)`                          | Role authorization                   |
+| `enqueue_deprovision_jobs_for_unit(...)` | TTN cleanup queue                    |
 
 ---
 
@@ -303,18 +313,19 @@ sequenceDiagram
 ```
 
 ### Session Management
+
 - JWT tokens via Supabase Auth
 - Automatic token refresh
 - Session stored in localStorage
 
 ### Authorization Model
 
-| Role | Capabilities |
-|------|--------------|
-| `owner` | Full org control, billing, user management |
-| `manager` | Settings, alerts, reports |
-| `operator` | Manual logging, alert acknowledgment |
-| `viewer` | Read-only dashboard access |
+| Role       | Capabilities                               |
+| ---------- | ------------------------------------------ |
+| `owner`    | Full org control, billing, user management |
+| `manager`  | Settings, alerts, reports                  |
+| `operator` | Manual logging, alert acknowledgment       |
+| `viewer`   | Read-only dashboard access                 |
 
 ### Permission Checks
 
@@ -336,11 +347,13 @@ SELECT has_role(auth.uid(), 'manager', org_id);
 **Purpose**: LoRa sensor network connectivity
 
 **Architecture**:
+
 - Per-organization TTN Application
 - Webhook-based uplink reception
 - Device provisioning via TTN API
 
 **Data Flow**:
+
 ```
 Sensor → LoRa Gateway → TTN → ttn-webhook → Database
 ```
@@ -352,6 +365,7 @@ Sensor → LoRa Gateway → TTN → ttn-webhook → Database
 **Purpose**: Subscription billing
 
 **Architecture**:
+
 - Checkout sessions for new subscriptions
 - Customer portal for management
 - Webhook for event processing
@@ -392,15 +406,16 @@ Sensor → LoRa Gateway → TTN → ttn-webhook → Database
 
 ### Environments
 
-| Environment | Purpose | Database | Edge Functions |
-|-------------|---------|----------|----------------|
-| Local | Development | Local Supabase | `supabase functions serve` |
-| Staging | Testing | Staging project | Deployed |
-| Production | Live users | Production project | Deployed |
+| Environment | Purpose     | Database           | Edge Functions             |
+| ----------- | ----------- | ------------------ | -------------------------- |
+| Local       | Development | Local Supabase     | `supabase functions serve` |
+| Staging     | Testing     | Staging project    | Deployed                   |
+| Production  | Live users  | Production project | Deployed                   |
 
 ### Environment Variables
 
 **Frontend (Vite)**:
+
 ```env
 VITE_SUPABASE_URL=https://xxx.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbG...
@@ -408,6 +423,7 @@ VITE_SUPABASE_PROJECT_ID=xxx
 ```
 
 **Edge Functions**:
+
 ```env
 SUPABASE_URL=<auto-injected>
 SUPABASE_SERVICE_ROLE_KEY=<auto-injected>
@@ -460,13 +476,13 @@ graph TB
 
 ### Data Security
 
-| Data Type | Protection |
-|-----------|------------|
-| User passwords | Bcrypt hash (Supabase Auth) |
-| TTN API keys | Encrypted at rest in database |
-| Webhook secrets | Hashed for comparison |
-| Session tokens | JWT with expiration |
-| Sensitive logs | Masked before logging |
+| Data Type       | Protection                    |
+| --------------- | ----------------------------- |
+| User passwords  | Bcrypt hash (Supabase Auth)   |
+| TTN API keys    | Encrypted at rest in database |
+| Webhook secrets | Hashed for comparison         |
+| Session tokens  | JWT with expiration           |
+| Sensitive logs  | Masked before logging         |
 
 ### Input Validation
 

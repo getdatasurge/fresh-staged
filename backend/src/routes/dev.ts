@@ -25,7 +25,7 @@ import { forbidden, serverError } from '../utils/errors.js';
 function requireDevelopmentMode(
   request: FastifyRequest,
   reply: FastifyReply,
-  done: (err?: Error) => void
+  done: (err?: Error) => void,
 ): void {
   if (process.env.NODE_ENV === 'production') {
     forbidden(reply, 'Development endpoints are not available in production');
@@ -74,7 +74,7 @@ export default async function devRoutes(app: FastifyInstance) {
             includeHumidity: body.includeHumidity,
             includeBattery: body.includeBattery,
           },
-          organizationId
+          organizationId,
         );
 
         return reply.code(200).send(result);

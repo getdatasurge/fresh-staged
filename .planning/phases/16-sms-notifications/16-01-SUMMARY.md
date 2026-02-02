@@ -19,13 +19,13 @@ key-files:
     - backend/src/jobs/index.ts
 decisions:
   - id: SMS-01
-    decision: "Use Telnyx SDK v5.11.0 with maxRetries: 0"
-    rationale: "BullMQ handles retries, SDK auto-retry would conflict"
+    decision: 'Use Telnyx SDK v5.11.0 with maxRetries: 0'
+    rationale: 'BullMQ handles retries, SDK auto-retry would conflict'
   - id: SMS-02
-    decision: "11 unrecoverable + 10 retryable error codes from Telnyx docs"
-    rationale: "Proper categorization prevents wasted retries on permanent failures"
+    decision: '11 unrecoverable + 10 retryable error codes from Telnyx docs'
+    rationale: 'Proper categorization prevents wasted retries on permanent failures'
   - id: SMS-03
-    decision: "Standard exponential backoff without jitter"
+    decision: 'Standard exponential backoff without jitter'
     rationale: "BullMQ doesn't natively support jitter; can add custom backoff if needed"
 metrics:
   duration: 5m 22s
@@ -59,18 +59,18 @@ metrics:
 
 ## Commits
 
-| Hash | Description |
-|------|-------------|
-| 7dc2afc | feat(16-01): install Telnyx SDK and create TelnyxService |
-| 90d4c46 | feat(16-01): add error categorization config and E.164 validation |
+| Hash    | Description                                                        |
+| ------- | ------------------------------------------------------------------ |
+| 7dc2afc | feat(16-01): install Telnyx SDK and create TelnyxService           |
+| 90d4c46 | feat(16-01): add error categorization config and E.164 validation  |
 | 2fcb1a3 | feat(16-01): add SMS-specific job options with exponential backoff |
 
 ## Decisions Made
 
-| ID | Decision | Rationale |
-|----|----------|-----------|
-| SMS-01 | Use Telnyx SDK v5.11.0 with maxRetries: 0 | BullMQ handles retries, SDK auto-retry would conflict |
-| SMS-02 | 11 unrecoverable + 10 retryable error codes | Proper categorization prevents wasted retries on permanent failures |
+| ID     | Decision                                    | Rationale                                                                |
+| ------ | ------------------------------------------- | ------------------------------------------------------------------------ |
+| SMS-01 | Use Telnyx SDK v5.11.0 with maxRetries: 0   | BullMQ handles retries, SDK auto-retry would conflict                    |
+| SMS-02 | 11 unrecoverable + 10 retryable error codes | Proper categorization prevents wasted retries on permanent failures      |
 | SMS-03 | Standard exponential backoff without jitter | BullMQ doesn't natively support jitter; can add custom backoff if needed |
 
 ## Deviations from Plan
@@ -88,15 +88,18 @@ None - plan executed exactly as written.
 ## Next Phase Readiness
 
 ### Blockers
+
 None
 
 ### Prerequisites for 16-02 (SMS Notification Processor)
+
 - [x] TelnyxService available for injection
 - [x] Error categorization ready for UnrecoverableError handling
 - [x] smsJobOptions ready for worker configuration
 - [ ] Telnyx environment variables configured (user setup)
 
 ### User Setup Required (before 16-02 testing)
+
 ```bash
 # .env variables needed
 TELNYX_API_KEY=key_...        # From Telnyx Dashboard -> API Keys

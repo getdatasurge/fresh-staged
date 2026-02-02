@@ -7,18 +7,18 @@
  * Allows managers/admins to delete annotations.
  */
 
-import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Textarea } from "@/components/ui/textarea";
-import { MessageSquare, Plus, Loader2, X, Trash2 } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTRPC, useTRPCClient } from "@/lib/trpc";
-import type { WidgetProps } from "../types";
-import { format } from "date-fns";
-import { toast } from "sonner";
-import { usePermissions } from "@/hooks/useUserRole";
+import { useMemo, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
+import { MessageSquare, Plus, Loader2, X, Trash2 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTRPC, useTRPCClient } from '@/lib/trpc';
+import type { WidgetProps } from '../types';
+import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { usePermissions } from '@/hooks/useUserRole';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,7 +28,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 interface Annotation {
   id: string;
@@ -45,7 +45,7 @@ interface Annotation {
 
 export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
   const [isAddingNote, setIsAddingNote] = useState(false);
-  const [noteText, setNoteText] = useState("");
+  const [noteText, setNoteText] = useState('');
   const [annotationToDelete, setAnnotationToDelete] = useState<Annotation | null>(null);
 
   const { canManageAnnotations } = usePermissions();
@@ -70,7 +70,7 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
   // Transform tRPC response to match expected Annotation interface
   const annotations = useMemo((): Annotation[] => {
     if (!rawAnnotations) return [];
-    return rawAnnotations.map(a => ({
+    return rawAnnotations.map((a) => ({
       id: a.id,
       title: a.title,
       event_data: (a.eventData ?? {}) as { note?: string; message?: string },
@@ -92,13 +92,13 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
       });
     },
     onSuccess: () => {
-      toast.success("Note added");
-      setNoteText("");
+      toast.success('Note added');
+      setNoteText('');
       setIsAddingNote(false);
       queryClient.invalidateQueries({ queryKey: queryOptions.queryKey });
     },
     onError: () => {
-      toast.error("Failed to add note");
+      toast.error('Failed to add note');
     },
   });
 
@@ -111,12 +111,12 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
       });
     },
     onSuccess: () => {
-      toast.success("Annotation deleted");
+      toast.success('Annotation deleted');
       setAnnotationToDelete(null);
       queryClient.invalidateQueries({ queryKey: queryOptions.queryKey });
     },
     onError: () => {
-      toast.error("Failed to delete annotation");
+      toast.error('Failed to delete annotation');
     },
   });
 
@@ -127,7 +127,7 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
 
   const handleCancel = () => {
     setIsAddingNote(false);
-    setNoteText("");
+    setNoteText('');
   };
 
   const handleDeleteAnnotation = () => {
@@ -142,15 +142,15 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
     if (annotation.author_email) {
       return annotation.author_email;
     }
-    return "Unknown user";
+    return 'Unknown user';
   };
 
   const formatTimestamp = (dateValue: string | Date): string => {
     try {
       const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
-      return format(date, "MMM d, yyyy · h:mm a");
+      return format(date, 'MMM d, yyyy · h:mm a');
     } catch {
-      return "Unknown time";
+      return 'Unknown time';
     }
   };
 
@@ -179,7 +179,12 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
             Annotations
           </CardTitle>
           {!isAddingNote && (
-            <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => setIsAddingNote(true)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2"
+              onClick={() => setIsAddingNote(true)}
+            >
               <Plus className="h-4 w-4" />
             </Button>
           )}
@@ -216,7 +221,7 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
                       Saving...
                     </>
                   ) : (
-                    "Save Note"
+                    'Save Note'
                   )}
                 </Button>
               </div>
@@ -227,7 +232,12 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
               <MessageSquare className="h-8 w-8 mb-2 opacity-50" />
               <p className="text-sm">No annotations yet</p>
-              <Button variant="outline" size="sm" className="mt-3" onClick={() => setIsAddingNote(true)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3"
+                onClick={() => setIsAddingNote(true)}
+              >
                 <Plus className="h-4 w-4 mr-1" />
                 Add Note
               </Button>
@@ -236,10 +246,11 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
             <ScrollArea className="flex-1">
               <div className="space-y-3">
                 {annotations.map((annotation) => {
-                  const noteContent = annotation.event_data?.note
-                    || annotation.event_data?.message
-                    || annotation.title
-                    || "No content";
+                  const noteContent =
+                    annotation.event_data?.note ||
+                    annotation.event_data?.message ||
+                    annotation.title ||
+                    'No content';
 
                   return (
                     <div
@@ -300,7 +311,7 @@ export function AnnotationsWidget({ entityId, organizationId }: WidgetProps) {
                   Deleting...
                 </>
               ) : (
-                "Delete"
+                'Delete'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

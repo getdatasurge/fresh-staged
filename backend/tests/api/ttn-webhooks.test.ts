@@ -170,7 +170,7 @@ describe('TTN Webhooks API', () => {
   function mockSuccessfulAlertEvaluation(alertTriggered: boolean = false) {
     mockEvaluateAlert.mockResolvedValue({
       stateChange: null,
-      alertCreated: alertTriggered ? { id: 'alert-id' } as any : null,
+      alertCreated: alertTriggered ? ({ id: 'alert-id' } as any) : null,
       alertResolved: null,
     });
   }

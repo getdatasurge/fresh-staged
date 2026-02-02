@@ -10,13 +10,13 @@
 
 FreshTrack Pro uses **Supabase Auth** for all user authentication:
 
-| Component | Technology |
-|-----------|------------|
-| Identity Provider | Supabase Auth (GoTrue) |
-| Token Format | JWT (RS256 signed) |
-| Session Storage | Browser localStorage |
-| Token Refresh | Automatic refresh before expiry |
-| Password Hashing | bcrypt (Supabase managed) |
+| Component         | Technology                      |
+| ----------------- | ------------------------------- |
+| Identity Provider | Supabase Auth (GoTrue)          |
+| Token Format      | JWT (RS256 signed)              |
+| Session Storage   | Browser localStorage            |
+| Token Refresh     | Automatic refresh before expiry |
+| Password Hashing  | bcrypt (Supabase managed)       |
 
 ### Authentication Flow
 
@@ -57,21 +57,21 @@ sequenceDiagram
 
 ### Session Management
 
-| Aspect | Configuration |
-|--------|---------------|
-| Access token lifetime | 1 hour (Supabase default) |
-| Refresh token lifetime | 7 days |
-| Concurrent sessions | Unlimited |
-| Session invalidation | On password change, manual logout |
+| Aspect                 | Configuration                     |
+| ---------------------- | --------------------------------- |
+| Access token lifetime  | 1 hour (Supabase default)         |
+| Refresh token lifetime | 7 days                            |
+| Concurrent sessions    | Unlimited                         |
+| Session invalidation   | On password change, manual logout |
 
 ### Authentication Endpoints
 
-| Endpoint | Purpose | Rate Limited |
-|----------|---------|--------------|
-| `/auth/v1/signup` | User registration | Yes |
-| `/auth/v1/token` | Login, refresh | Yes |
-| `/auth/v1/logout` | Session termination | No |
-| `/auth/v1/recover` | Password reset | Yes |
+| Endpoint           | Purpose             | Rate Limited |
+| ------------------ | ------------------- | ------------ |
+| `/auth/v1/signup`  | User registration   | Yes          |
+| `/auth/v1/token`   | Login, refresh      | Yes          |
+| `/auth/v1/logout`  | Session termination | No           |
+| `/auth/v1/recover` | Password reset      | Yes          |
 
 ---
 
@@ -151,20 +151,20 @@ FreshTrack Pro implements a **role-based access control (RBAC)** model:
 
 ### Role Permissions Matrix
 
-| Permission | Owner | Admin | Manager | Staff | Viewer | Inspector |
-|------------|:-----:|:-----:|:-------:|:-----:|:------:|:---------:|
-| View dashboard | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| View alerts | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Acknowledge alerts | ✓ | ✓ | ✓ | - | - | - |
-| Log temperatures | ✓ | ✓ | ✓ | ✓ | - | - |
-| Edit temperature limits | ✓ | ✓ | ✓ | - | - | - |
-| Manage sites/areas/units | ✓ | ✓ | ✓ | - | - | - |
-| Configure TTN | ✓ | ✓ | - | - | - | - |
-| Manage sensors/gateways | ✓ | ✓ | - | - | - | - |
-| Manage users | ✓ | ✓ | - | - | - | - |
-| Export reports | ✓ | ✓ | ✓ | - | - | ✓ |
-| Access billing | ✓ | - | - | - | - | - |
-| Delete organization | ✓ | - | - | - | - | - |
+| Permission               | Owner | Admin | Manager | Staff | Viewer | Inspector |
+| ------------------------ | :---: | :---: | :-----: | :---: | :----: | :-------: |
+| View dashboard           |   ✓   |   ✓   |    ✓    |   ✓   |   ✓    |     ✓     |
+| View alerts              |   ✓   |   ✓   |    ✓    |   ✓   |   ✓    |     ✓     |
+| Acknowledge alerts       |   ✓   |   ✓   |    ✓    |   -   |   -    |     -     |
+| Log temperatures         |   ✓   |   ✓   |    ✓    |   ✓   |   -    |     -     |
+| Edit temperature limits  |   ✓   |   ✓   |    ✓    |   -   |   -    |     -     |
+| Manage sites/areas/units |   ✓   |   ✓   |    ✓    |   -   |   -    |     -     |
+| Configure TTN            |   ✓   |   ✓   |    -    |   -   |   -    |     -     |
+| Manage sensors/gateways  |   ✓   |   ✓   |    -    |   -   |   -    |     -     |
+| Manage users             |   ✓   |   ✓   |    -    |   -   |   -    |     -     |
+| Export reports           |   ✓   |   ✓   |    ✓    |   -   |   -    |     ✓     |
+| Access billing           |   ✓   |   -   |    -    |   -   |   -    |     -     |
+| Delete organization      |   ✓   |   -   |    -    |   -   |   -    |     -     |
 
 ### Role Assignment
 
@@ -191,12 +191,12 @@ const { role, permissions } = useUserRole();
 
 // Check specific permission
 if (permissions.canManageSites) {
-    // Show site management UI
+  // Show site management UI
 }
 
 // Check role directly
 if (role === 'owner' || role === 'admin') {
-    // Show admin features
+  // Show admin features
 }
 ```
 
@@ -204,16 +204,12 @@ if (role === 'owner' || role === 'admin') {
 
 ```typescript
 // Edge function pattern
-const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
+const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
 
 if (!['owner', 'admin'].includes(profile.role)) {
-    return new Response(JSON.stringify({ error: 'Forbidden' }), {
-        status: 403
-    });
+  return new Response(JSON.stringify({ error: 'Forbidden' }), {
+    status: 403,
+  });
 }
 ```
 
@@ -295,20 +291,17 @@ $$ LANGUAGE sql SECURITY DEFINER;
 
 ```typescript
 // Every data query includes organization scope
-const { data } = await supabase
-    .from('units')
-    .select('*')
-    .eq('organization_id', organizationId);  // Explicit scope
+const { data } = await supabase.from('units').select('*').eq('organization_id', organizationId); // Explicit scope
 ```
 
 ### Cross-Organization Protection
 
-| Scenario | Protection Mechanism |
-|----------|---------------------|
-| User A queries Org B data | RLS returns empty result |
-| User A's token used with Org B ID | RLS blocks + function validation |
-| DevEUI registered in both orgs | `UNIQUE (organization_id, dev_eui)` constraint |
-| Webhook for wrong org | Webhook secret lookup isolates |
+| Scenario                          | Protection Mechanism                           |
+| --------------------------------- | ---------------------------------------------- |
+| User A queries Org B data         | RLS returns empty result                       |
+| User A's token used with Org B ID | RLS blocks + function validation               |
+| DevEUI registered in both orgs    | `UNIQUE (organization_id, dev_eui)` constraint |
+| Webhook for wrong org             | Webhook secret lookup isolates                 |
 
 ---
 
@@ -316,10 +309,10 @@ const { data } = await supabase
 
 ### Token Storage
 
-| Token Type | Storage Location | Security Consideration |
-|------------|-----------------|----------------------|
-| Access token | localStorage | XSS vulnerable, short-lived |
-| Refresh token | localStorage | Longer-lived, rotated on use |
+| Token Type    | Storage Location | Security Consideration       |
+| ------------- | ---------------- | ---------------------------- |
+| Access token  | localStorage     | XSS vulnerable, short-lived  |
+| Refresh token | localStorage     | Longer-lived, rotated on use |
 
 ### Token Refresh Flow
 
@@ -335,12 +328,12 @@ const { data, error } = await supabase.auth.refreshSession();
 
 ### Session Invalidation
 
-| Event | Action |
-|-------|--------|
-| User logout | Clear localStorage, server-side session invalidation |
-| Password change | All sessions invalidated |
-| Account deletion | All sessions and data deleted |
-| Admin revocation | Session invalidated on next request |
+| Event            | Action                                               |
+| ---------------- | ---------------------------------------------------- |
+| User logout      | Clear localStorage, server-side session invalidation |
+| Password change  | All sessions invalidated                             |
+| Account deletion | All sessions and data deleted                        |
+| Admin revocation | Session invalidated on next request                  |
 
 ---
 
@@ -360,25 +353,28 @@ verify_jwt = true  # Supabase verifies before function executes
 const authHeader = req.headers.get('Authorization');
 const token = authHeader?.replace('Bearer ', '');
 
-const { data: { user }, error } = await supabase.auth.getUser(token);
+const {
+  data: { user },
+  error,
+} = await supabase.auth.getUser(token);
 
 if (error || !user) {
-    return new Response('Unauthorized', { status: 401 });
+  return new Response('Unauthorized', { status: 401 });
 }
 ```
 
 ### Verification Matrix
 
-| Function | JWT Verification | Auth Method |
-|----------|-----------------|-------------|
-| `stripe-checkout` | Automatic | Supabase JWT |
-| `stripe-portal` | Automatic | Supabase JWT |
-| `sensor-simulator` | Automatic | Supabase JWT |
-| `ttn-webhook` | None | Webhook secret |
-| `stripe-webhook` | None | HMAC signature |
-| `manage-ttn-settings` | Manual | Bearer token |
-| `process-unit-states` | None | Internal API key |
-| `export-temperature-logs` | Manual | JWT or API key |
+| Function                  | JWT Verification | Auth Method      |
+| ------------------------- | ---------------- | ---------------- |
+| `stripe-checkout`         | Automatic        | Supabase JWT     |
+| `stripe-portal`           | Automatic        | Supabase JWT     |
+| `sensor-simulator`        | Automatic        | Supabase JWT     |
+| `ttn-webhook`             | None             | Webhook secret   |
+| `stripe-webhook`          | None             | HMAC signature   |
+| `manage-ttn-settings`     | Manual           | Bearer token     |
+| `process-unit-states`     | None             | Internal API key |
+| `export-temperature-logs` | Manual           | JWT or API key   |
 
 ---
 
@@ -420,13 +416,13 @@ Used by: Stripe webhooks
 
 ## Security Events Logged
 
-| Event | Logged Data | Table |
-|-------|-------------|-------|
-| Login success | user_id, IP, user_agent, timestamp | Supabase audit |
-| Login failure | email, IP, timestamp | Supabase audit |
-| Password change | user_id, timestamp | Supabase audit |
-| Role change | actor, target_user, old_role, new_role | event_logs |
-| Permission denied | user_id, resource, action, timestamp | Function logs |
+| Event             | Logged Data                            | Table          |
+| ----------------- | -------------------------------------- | -------------- |
+| Login success     | user_id, IP, user_agent, timestamp     | Supabase audit |
+| Login failure     | email, IP, timestamp                   | Supabase audit |
+| Password change   | user_id, timestamp                     | Supabase audit |
+| Role change       | actor, target_user, old_role, new_role | event_logs     |
+| Permission denied | user_id, resource, action, timestamp   | Function logs  |
 
 ---
 
@@ -443,13 +439,13 @@ Used by: Stripe webhooks
 
 ### Recommended Enhancements
 
-| Enhancement | Priority | Status |
-|-------------|----------|--------|
-| Multi-factor authentication (MFA) | High | TBD |
-| Session timeout configuration | Medium | TBD |
-| Login anomaly detection | Medium | TBD |
-| API key rotation workflow | Medium | TBD |
-| OAuth/SSO integration | Low | TBD |
+| Enhancement                       | Priority | Status |
+| --------------------------------- | -------- | ------ |
+| Multi-factor authentication (MFA) | High     | TBD    |
+| Session timeout configuration     | Medium   | TBD    |
+| Login anomaly detection           | Medium   | TBD    |
+| API key rotation workflow         | Medium   | TBD    |
+| OAuth/SSO integration             | Low      | TBD    |
 
 ---
 

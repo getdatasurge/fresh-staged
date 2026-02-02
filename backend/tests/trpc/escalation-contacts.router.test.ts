@@ -74,7 +74,8 @@ describe('Escalation Contacts tRPC Router', () => {
 
     // Import the mocked modules to get references to mocked functions
     const userService = await import('../../src/services/user.service.js');
-    const escalationContactsService = await import('../../src/services/escalation-contacts.service.js');
+    const escalationContactsService =
+      await import('../../src/services/escalation-contacts.service.js');
 
     mockGetUserRoleInOrg = userService.getUserRoleInOrg as any;
     mockGetOrCreateProfile = userService.getOrCreateProfile as any;
@@ -105,7 +106,12 @@ describe('Escalation Contacts tRPC Router', () => {
     it('should return contacts ordered by priority', async () => {
       const mockContacts = [
         { ...mockContact, priority: 1 },
-        { ...mockContact, id: '323e4567-e89b-12d3-a456-426614174002', priority: 2, name: 'Secondary Contact' },
+        {
+          ...mockContact,
+          id: '323e4567-e89b-12d3-a456-426614174002',
+          priority: 2,
+          name: 'Secondary Contact',
+        },
       ];
       mockListEscalationContacts.mockResolvedValue(mockContacts);
 
@@ -239,11 +245,7 @@ describe('Escalation Contacts tRPC Router', () => {
       const result = await caller.update(updateInput);
 
       expect(result).toEqual({ success: true });
-      expect(mockUpdateEscalationContact).toHaveBeenCalledWith(
-        contactId,
-        orgId,
-        updateInput.data
-      );
+      expect(mockUpdateEscalationContact).toHaveBeenCalledWith(contactId, orgId, updateInput.data);
     });
 
     it('should update contact when user is admin', async () => {

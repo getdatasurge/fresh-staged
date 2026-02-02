@@ -36,14 +36,9 @@ function secureCompare(a: string, b: string): boolean {
  *
  * Usage: Apply as preHandler to routes requiring API key authentication
  */
-export async function requireApiKey(
-  request: FastifyRequest,
-  reply: FastifyReply
-): Promise<void> {
+export async function requireApiKey(request: FastifyRequest, reply: FastifyReply): Promise<void> {
   // Extract API key from headers
-  const providedKey =
-    request.headers['x-api-key'] ||
-    request.headers['x-webhook-secret'];
+  const providedKey = request.headers['x-api-key'] || request.headers['x-webhook-secret'];
 
   if (!providedKey || typeof providedKey !== 'string') {
     return reply.code(401).send({
@@ -64,13 +59,11 @@ export async function requireApiKey(
       webhookSecret: ttnConnections.webhookSecret,
     })
     .from(ttnConnections)
-    .where(and(
-      eq(ttnConnections.isActive, true)
-    ));
+    .where(and(eq(ttnConnections.isActive, true)));
 
   // Find matching connection using constant-time comparison
   const matchingConnection = connections.find((conn) =>
-    secureCompare(conn.webhookSecret, providedKey)
+    secureCompare(conn.webhookSecret, providedKey),
   );
 
   if (!matchingConnection) {

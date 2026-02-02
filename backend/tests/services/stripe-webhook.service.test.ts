@@ -144,8 +144,9 @@ describe('Stripe Webhook Service', () => {
         metadata: {},
       } as unknown as Stripe.Checkout.Session;
 
-      await expect(stripeWebhookService.handleCheckoutCompleted(session))
-        .rejects.toThrow(stripeWebhookService.WebhookError);
+      await expect(stripeWebhookService.handleCheckoutCompleted(session)).rejects.toThrow(
+        stripeWebhookService.WebhookError,
+      );
     });
 
     it('should throw WebhookError when customer ID is missing', async () => {
@@ -156,8 +157,9 @@ describe('Stripe Webhook Service', () => {
         metadata: { organizationId: TEST_ORG_ID },
       } as unknown as Stripe.Checkout.Session;
 
-      await expect(stripeWebhookService.handleCheckoutCompleted(session))
-        .rejects.toThrow(stripeWebhookService.WebhookError);
+      await expect(stripeWebhookService.handleCheckoutCompleted(session)).rejects.toThrow(
+        stripeWebhookService.WebhookError,
+      );
     });
   });
 
@@ -234,7 +236,7 @@ describe('Stripe Webhook Service', () => {
 
       expect(mockDb.update).toHaveBeenCalled();
       expect(mockUpdateChain.set).toHaveBeenCalledWith(
-        expect.objectContaining({ status: 'past_due' })
+        expect.objectContaining({ status: 'past_due' }),
       );
     });
 
@@ -302,7 +304,7 @@ describe('Stripe Webhook Service', () => {
         expect.objectContaining({
           status: 'canceled',
           canceledAt: expect.any(Date),
-        })
+        }),
       );
     });
 
@@ -368,7 +370,7 @@ describe('Stripe Webhook Service', () => {
 
       expect(mockDb.update).toHaveBeenCalled();
       expect(mockUpdateChain.set).toHaveBeenCalledWith(
-        expect.objectContaining({ status: 'past_due' })
+        expect.objectContaining({ status: 'past_due' }),
       );
 
       // Check notification was created
@@ -424,8 +426,9 @@ describe('Stripe Webhook Service', () => {
         currency: 'usd',
       } as unknown as Stripe.Invoice;
 
-      await expect(stripeWebhookService.handleInvoicePaymentFailed(invoice))
-        .rejects.toThrow(stripeWebhookService.WebhookError);
+      await expect(stripeWebhookService.handleInvoicePaymentFailed(invoice)).rejects.toThrow(
+        stripeWebhookService.WebhookError,
+      );
     });
   });
 

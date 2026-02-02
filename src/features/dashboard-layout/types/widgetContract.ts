@@ -1,11 +1,11 @@
 /**
  * Widget Data Contract Types
- * 
+ *
  * Defines formal data contracts for widgets, specifying required fields,
  * fallback logic, system dependencies, and capability requirements.
  */
 
-import type { DeviceCapability } from "@/lib/registry/capabilityRegistry";
+import type { DeviceCapability } from '@/lib/registry/capabilityRegistry';
 
 /**
  * Data field definition with fallback behavior.
@@ -28,13 +28,13 @@ export interface WidgetFieldContract {
 /**
  * Dependency on external system layer.
  */
-export type PipelineLayer = 
-  | 'sensor' 
-  | 'gateway' 
-  | 'ttn' 
-  | 'decoder' 
-  | 'webhook' 
-  | 'database' 
+export type PipelineLayer =
+  | 'sensor'
+  | 'gateway'
+  | 'ttn'
+  | 'decoder'
+  | 'webhook'
+  | 'database'
   | 'external_api';
 
 export interface WidgetDependency {
@@ -73,16 +73,16 @@ export interface WidgetDataContract {
  */
 export function getWidgetIncompatibilityReason(
   contract: WidgetDataContract,
-  availableCapabilities: DeviceCapability[]
+  availableCapabilities: DeviceCapability[],
 ): string | null {
   const missing = contract.requiredCapabilities.filter(
-    cap => !availableCapabilities.includes(cap)
+    (cap) => !availableCapabilities.includes(cap),
   );
-  
+
   if (missing.length === 0) {
     return null;
   }
-  
+
   return `Requires ${missing.join(', ')} capability${missing.length > 1 ? 'ies' : ''}`;
 }
 
@@ -110,7 +110,7 @@ export const WIDGET_CONTRACTS: Record<string, WidgetDataContract> = {
     minimumDataPoints: 2,
     timeRangeRequired: true,
   },
-  
+
   current_temp: {
     widgetId: 'current_temp',
     version: '1.0',
@@ -125,13 +125,17 @@ export const WIDGET_CONTRACTS: Record<string, WidgetDataContract> = {
       { layer: 'gateway', required: true, description: 'Gateway must relay sensor data' },
     ],
   },
-  
+
   battery_health: {
     widgetId: 'battery_health',
     version: '1.0',
     requiredCapabilities: ['battery'],
     fields: [
-      { field: 'battery_level', required: true, validator: (v) => typeof v === 'number' && v >= 0 && v <= 100 },
+      {
+        field: 'battery_level',
+        required: true,
+        validator: (v) => typeof v === 'number' && v >= 0 && v <= 100,
+      },
       { field: 'last_seen', required: false },
       { field: 'forecast', required: false },
     ],
@@ -139,7 +143,7 @@ export const WIDGET_CONTRACTS: Record<string, WidgetDataContract> = {
       { layer: 'sensor', required: true, description: 'Sensor must report battery level' },
     ],
   },
-  
+
   door_activity: {
     widgetId: 'door_activity',
     version: '1.0',
@@ -155,7 +159,7 @@ export const WIDGET_CONTRACTS: Record<string, WidgetDataContract> = {
       { layer: 'gateway', required: true, description: 'Gateway must relay door events' },
     ],
   },
-  
+
   external_weather: {
     widgetId: 'external_weather',
     version: '1.0',
@@ -170,7 +174,7 @@ export const WIDGET_CONTRACTS: Record<string, WidgetDataContract> = {
       { layer: 'external_api', required: true, description: 'Weather API must be reachable' },
     ],
   },
-  
+
   gateway_health: {
     widgetId: 'gateway_health',
     version: '1.0',
@@ -185,7 +189,7 @@ export const WIDGET_CONTRACTS: Record<string, WidgetDataContract> = {
       { layer: 'ttn', required: true, description: 'TTN must report gateway status' },
     ],
   },
-  
+
   humidity_chart: {
     widgetId: 'humidity_chart',
     version: '1.0',
@@ -216,30 +220,30 @@ export function getWidgetContract(widgetId: string): WidgetDataContract | undefi
  * Check if a widget has all required fields.
  */
 export function validateWidgetData(
-  widgetId: string, 
-  data: Record<string, unknown>
+  widgetId: string,
+  data: Record<string, unknown>,
 ): { valid: boolean; missingFields: string[]; invalidFields: string[] } {
   const contract = getWidgetContract(widgetId);
-  
+
   if (!contract) {
     return { valid: true, missingFields: [], invalidFields: [] };
   }
-  
+
   const missingFields: string[] = [];
   const invalidFields: string[] = [];
-  
+
   for (const field of contract.fields) {
     const value = data[field.field];
-    
+
     if (field.required && (value === undefined || value === null)) {
       missingFields.push(field.field);
     }
-    
+
     if (value !== undefined && value !== null && field.validator && !field.validator(value)) {
       invalidFields.push(field.field);
     }
   }
-  
+
   return {
     valid: missingFields.length === 0 && invalidFields.length === 0,
     missingFields,

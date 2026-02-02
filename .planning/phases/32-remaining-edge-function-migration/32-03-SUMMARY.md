@@ -31,13 +31,13 @@ key-files:
     - src/pages/UploadTelnyxImage.tsx
 
 key-decisions:
-  - "verificationStatus uses publicProcedure since status is read-only"
-  - "configureWebhook uses orgProcedure with admin/owner role check"
-  - "verifyPublicAsset uses publicProcedure - public URL validation needs no auth"
+  - 'verificationStatus uses publicProcedure since status is read-only'
+  - 'configureWebhook uses orgProcedure with admin/owner role check'
+  - 'verifyPublicAsset uses publicProcedure - public URL validation needs no auth'
 
 patterns-established:
-  - "tRPC mutation for URL verification: HEAD request pattern"
-  - "useMutation for on-demand verification (not auto-fetch)"
+  - 'tRPC mutation for URL verification: HEAD request pattern'
+  - 'useMutation for on-demand verification (not auto-fetch)'
 
 # Metrics
 duration: 5min
@@ -57,6 +57,7 @@ completed: 2026-01-29
 - **Files modified:** 5
 
 ## Accomplishments
+
 - Created telnyx.router.ts with 3 type-safe tRPC procedures
 - Migrated TollFreeVerificationCard to use tRPC query
 - Migrated WebhookStatusCard to use tRPC mutation
@@ -71,6 +72,7 @@ Each task was committed atomically:
 2. **Task 2: Migrate frontend Telnyx calls** - `0ddda1e` (feat)
 
 ## Files Created/Modified
+
 - `backend/src/routers/telnyx.router.ts` - Telnyx tRPC router with 3 procedures
 - `backend/src/trpc/router.ts` - Registered telnyxRouter in appRouter
 - `src/components/settings/TollFreeVerificationCard.tsx` - Uses trpc.telnyx.verificationStatus
@@ -79,6 +81,7 @@ Each task was committed atomically:
 - `src/pages/UploadTelnyxImage.tsx` - Uses trpc.telnyx.verifyPublicAsset
 
 ## Decisions Made
+
 - Used publicProcedure for verificationStatus (read-only status check, no auth needed)
 - Used orgProcedure for configureWebhook (requires admin/owner role for org)
 - Used publicProcedure for verifyPublicAsset (public URL HEAD check, no auth needed)
@@ -97,10 +100,12 @@ None - plan executed exactly as written.
 None - no external service configuration required.
 
 ## Next Phase Readiness
+
 - Telnyx edge function calls fully migrated to tRPC
 - WebhookStatusCard still uses supabase for config/stats queries (not edge functions - database reads)
 - Ready for 32-04 which handles remaining edge function migrations
 
 ---
-*Phase: 32-remaining-edge-function-migration*
-*Completed: 2026-01-29*
+
+_Phase: 32-remaining-edge-function-migration_
+_Completed: 2026-01-29_

@@ -66,7 +66,7 @@ export const QueueNames = {
   PARTITION_MANAGEMENT: 'partition-management',
 } as const;
 
-export type QueueName = typeof QueueNames[keyof typeof QueueNames];
+export type QueueName = (typeof QueueNames)[keyof typeof QueueNames];
 
 // Job name constants
 export const JobNames = {
@@ -78,7 +78,7 @@ export const JobNames = {
   PARTITION_RETENTION: 'partition:retention',
 } as const;
 
-export type JobName = typeof JobNames[keyof typeof JobNames];
+export type JobName = (typeof JobNames)[keyof typeof JobNames];
 
 // Type helpers for strongly-typed job handling
 export type SmsNotificationJob = Job<SmsNotificationJobData>;

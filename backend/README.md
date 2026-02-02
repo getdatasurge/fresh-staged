@@ -31,12 +31,14 @@ npm run build
 The `sensor_readings` table uses PostgreSQL native table partitioning to manage time-series data efficiently.
 
 **Strategy**:
+
 - **Monthly RANGE partitions** on `recorded_at` column
 - **Automated lifecycle**: BullMQ jobs create future partitions and enforce retention
 - **24-month retention**: Old partitions automatically dropped (with backup verification)
 - **3-month future buffer**: Ensures writes never hit default partition
 
 **Automated Jobs**:
+
 - `partition:create` - Weekly (Sunday 2 AM UTC) - Creates 3-month future buffer
 - `partition:retention` - Monthly (1st at 3 AM UTC) - Drops partitions older than 24 months
 
@@ -45,6 +47,7 @@ The `sensor_readings` table uses PostgreSQL native table partitioning to manage 
 #### Manual Operations
 
 **List partitions**:
+
 ```sql
 SELECT tablename, pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size
 FROM pg_tables
@@ -53,13 +56,15 @@ ORDER BY tablename DESC;
 ```
 
 **Create partition** (if automation fails):
+
 ```sql
 -- Example: Create April 2026 partition
 CREATE TABLE sensor_readings_y2026m04 PARTITION OF sensor_readings
 FOR VALUES FROM ('2026-04-01 00:00:00+00') TO ('2026-05-01 00:00:00+00');
 ```
 
-**Drop partition manually** (⚠️  DESTRUCTIVE):
+**Drop partition manually** (⚠️ DESTRUCTIVE):
+
 ```sql
 -- CRITICAL: Verify backups exist before dropping
 -- Check pg_stat_archiver for backup status
@@ -70,6 +75,7 @@ DROP TABLE IF EXISTS sensor_readings_y2024m01;
 ```
 
 **Verify partition health**:
+
 ```sql
 -- Check for data in default partition (should be empty or minimal)
 SELECT COUNT(*) FROM sensor_readings_default;
@@ -89,6 +95,7 @@ ORDER BY tablename DESC;
 **Grafana Dashboard**: `backend/docs/grafana/partition-health-dashboard.json`
 
 Key metrics:
+
 - Partition count gauge (target: 27-30 partitions)
 - Future buffer gauge (target: ≥3 months)
 - Default partition row count (target: 0 rows)
@@ -98,6 +105,7 @@ Key metrics:
 **Prometheus Alerts**: `backend/docs/prometheus/partition-alerts.yml`
 
 Critical alerts:
+
 - Missing future partitions (fires when buffer < 2 months)
 - Partition job failures
 - Data in default partition detected
@@ -112,7 +120,8 @@ The partition retention job includes automatic backup verification via `pg_stat_
 3. Total row count impact is logged for audit
 
 **Environment Variables**:
-- `BACKUP_VERIFICATION_ENABLED`: Set to `false` to skip verification (⚠️  NOT RECOMMENDED)
+
+- `BACKUP_VERIFICATION_ENABLED`: Set to `false` to skip verification (⚠️ NOT RECOMMENDED)
 - `BACKUP_MAX_AGE_HOURS`: Maximum age of last backup in hours (default: 24)
 
 #### Troubleshooting
@@ -122,6 +131,7 @@ The partition retention job includes automatic backup verification via `pg_stat_
 **Cause**: `recorded_at` value is NULL or outside defined partition ranges
 
 **Fix**:
+
 ```sql
 -- Find rows in default partition
 SELECT id, unit_id, recorded_at, received_at
@@ -139,6 +149,7 @@ WHERE recorded_at IS NULL AND received_at IS NOT NULL;
 **Symptoms**: `partition:create` job status = failed, future buffer < 3 months
 
 **Resolution**:
+
 1. Check BullMQ logs: `docker logs <backend-container> | grep partition:create`
 2. Verify PostgreSQL permissions: User needs `CREATE TABLE` privilege
 3. Manually create missing partitions (see Manual Operations above)
@@ -149,12 +160,14 @@ WHERE recorded_at IS NULL AND received_at IS NOT NULL;
 **Symptoms**: Partition count > 30, partitions older than 24 months exist
 
 **Resolution**:
+
 1. Check if `BACKUP_VERIFICATION_ENABLED=false` is blocking drops
 2. Verify `pg_stat_archiver` shows recent backups
 3. Check retention job logs for errors
 4. Manually drop old partitions if backups confirmed
 
 For complete operational procedures, see:
+
 - **Partition Management Runbook**: `backend/docs/runbooks/partition-management.md`
 - **Staging Migration Playbook**: `backend/docs/runbooks/staging-migration-playbook.md`
 - **Production Migration Playbook**: `backend/docs/runbooks/production-migration-playbook.md`
@@ -197,6 +210,7 @@ backend/
 See `.env.example` for complete configuration reference.
 
 Critical variables:
+
 - `DATABASE_URL`: PostgreSQL connection string
 - `REDIS_URL`: Redis connection for BullMQ
 - `STACK_PROJECT_ID`: Stack Auth project ID
@@ -229,6 +243,7 @@ npm start
 ```
 
 **Docker**:
+
 ```bash
 # Build image
 docker build -t freshstaged-backend .

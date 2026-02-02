@@ -54,7 +54,7 @@ const smsWorker = new Worker(
   {
     connection,
     concurrency: 5, // Process up to 5 SMS jobs concurrently
-  }
+  },
 );
 
 // Email digest worker
@@ -67,18 +67,14 @@ const emailWorker = new Worker(
   {
     connection,
     concurrency: 2, // Email processing is slower, limit concurrency
-  }
+  },
 );
 
 // Meter reporting worker (Stripe billing meters)
-const meterWorker = new Worker(
-  QueueNames.METER_REPORTING,
-  createMeterReportingProcessor(),
-  {
-    connection,
-    concurrency: 5, // Handle multiple orgs in parallel
-  }
-);
+const meterWorker = new Worker(QueueNames.METER_REPORTING, createMeterReportingProcessor(), {
+  connection,
+  concurrency: 5, // Handle multiple orgs in parallel
+});
 
 // Event handlers for all workers
 const workers = [smsWorker, emailWorker, meterWorker];
@@ -110,8 +106,8 @@ const shutdown = async (signal: string) => {
     workers.map((worker) =>
       worker.close().catch((err) => {
         console.error(`[Worker] Error closing worker ${worker.name}:`, err);
-      })
-    )
+      }),
+    ),
   );
 
   // Close Redis connection
@@ -127,4 +123,6 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
 console.log('[Worker] Started and ready to process jobs');
-console.log(`[Worker] Registered queues: ${QueueNames.SMS_NOTIFICATIONS}, ${QueueNames.EMAIL_DIGESTS}, ${QueueNames.METER_REPORTING}`);
+console.log(
+  `[Worker] Registered queues: ${QueueNames.SMS_NOTIFICATIONS}, ${QueueNames.EMAIL_DIGESTS}, ${QueueNames.METER_REPORTING}`,
+);

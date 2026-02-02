@@ -50,7 +50,7 @@ export class StripeMeterService {
    */
   async reportActiveSensors(
     organizationId: string,
-    sensorCount: number
+    sensorCount: number,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const customerId = await this.getStripeCustomerId(organizationId);
@@ -86,7 +86,7 @@ export class StripeMeterService {
    */
   async reportReadingVolume(
     organizationId: string,
-    readingCount: number
+    readingCount: number,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const customerId = await this.getStripeCustomerId(organizationId);
@@ -123,7 +123,7 @@ export class StripeMeterService {
   async reportActiveSensorsWithTimestamp(
     organizationId: string,
     sensorCount: number,
-    timestamp: number
+    timestamp: number,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const customerId = await this.getStripeCustomerId(organizationId);

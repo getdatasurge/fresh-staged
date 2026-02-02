@@ -21,12 +21,7 @@ interface DailyDigestProps {
   dashboardUrl: string;
 }
 
-export function DailyDigest({
-  userName,
-  digest,
-  unsubscribeUrl,
-  dashboardUrl,
-}: DailyDigestProps) {
+export function DailyDigest({ userName, digest, unsubscribeUrl, dashboardUrl }: DailyDigestProps) {
   const { sites, summary, organizationName } = digest;
 
   return (
@@ -286,8 +281,7 @@ export function DailyDigest({
                 lineHeight: '1.5',
               }}
             >
-              You're receiving this because you have email digest notifications
-              enabled.
+              You're receiving this because you have email digest notifications enabled.
               <br />
               <Link
                 href={unsubscribeUrl}

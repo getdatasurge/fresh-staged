@@ -1,35 +1,35 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
 serve(async (req) => {
   // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   const startTime = Date.now();
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseKey) {
       return new Response(
         JSON.stringify({
-          status: "error",
-          error: "Missing environment configuration",
-          hint: "SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set",
+          status: 'error',
+          error: 'Missing environment configuration',
+          hint: 'SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set',
         }),
         {
           status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
       );
     }
 
@@ -37,16 +37,13 @@ serve(async (req) => {
 
     // Test 1: Basic database connectivity
     const queryStart = Date.now();
-    const { error: queryError } = await supabase
-      .from("organizations")
-      .select("id")
-      .limit(1);
+    const { error: queryError } = await supabase.from('organizations').select('id').limit(1);
     const queryLatency = Date.now() - queryStart;
 
     if (queryError) {
       return new Response(
         JSON.stringify({
-          status: "degraded",
+          status: 'degraded',
           database: {
             connected: false,
             error: queryError.message,
@@ -57,17 +54,17 @@ serve(async (req) => {
         }),
         {
           status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
       );
     }
 
     // Test 2: Check critical tables exist
-    const tablesToCheck = ["organizations", "sites", "units", "alerts", "lora_sensors"];
+    const tablesToCheck = ['organizations', 'sites', 'units', 'alerts', 'lora_sensors'];
     const tableResults: Record<string, boolean> = {};
 
     for (const table of tablesToCheck) {
-      const { error } = await supabase.from(table).select("id").limit(1);
+      const { error } = await supabase.from(table).select('id').limit(1);
       tableResults[table] = !error;
     }
 
@@ -75,8 +72,8 @@ serve(async (req) => {
 
     // Test 3: Check RPC function availability
     const rpcStart = Date.now();
-    const { error: rpcError } = await supabase.rpc("check_slug_available", {
-      p_slug: "__health_check_test__",
+    const { error: rpcError } = await supabase.rpc('check_slug_available', {
+      p_slug: '__health_check_test__',
     });
     const rpcLatency = Date.now() - rpcStart;
 
@@ -88,7 +85,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        status: isHealthy ? "ok" : isDegraded ? "degraded" : "error",
+        status: isHealthy ? 'ok' : isDegraded ? 'degraded' : 'error',
         database: {
           connected: true,
           queryLatencyMs: queryLatency,
@@ -98,27 +95,27 @@ serve(async (req) => {
         },
         timestamp: new Date().toISOString(),
         totalLatencyMs: Date.now() - startTime,
-        version: "1.0.0",
+        version: '1.0.0',
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      },
     );
   } catch (err) {
-    console.error("[health-check] Error:", err);
+    console.error('[health-check] Error:', err);
 
     return new Response(
       JSON.stringify({
-        status: "error",
-        error: err instanceof Error ? err.message : "Unknown error",
+        status: 'error',
+        error: err instanceof Error ? err.message : 'Unknown error',
         timestamp: new Date().toISOString(),
         totalLatencyMs: Date.now() - startTime,
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      },
     );
   }
 });

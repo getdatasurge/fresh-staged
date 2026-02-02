@@ -116,11 +116,7 @@ export class MockWorker {
   processor: (job: MockJob) => Promise<unknown>;
   private opts: unknown;
 
-  constructor(
-    name: string,
-    processor: (job: MockJob) => Promise<unknown>,
-    opts?: unknown
-  ) {
+  constructor(name: string, processor: (job: MockJob) => Promise<unknown>, opts?: unknown) {
     this.name = name;
     this.processor = processor;
     this.opts = opts;
@@ -173,7 +169,7 @@ export class MockQueueEvents {
     const existing = this.listeners.get(event) || [];
     this.listeners.set(
       event,
-      existing.filter((cb) => cb !== callback)
+      existing.filter((cb) => cb !== callback),
     );
     return this;
   }

@@ -1,8 +1,8 @@
-import { corsHeaders, handleCorsPreflightRequest } from "../_shared/cors.ts";
+import { corsHeaders, handleCorsPreflightRequest } from '../_shared/cors.ts';
 
 /**
  * Verify Public Asset Edge Function
- * 
+ *
  * Performs a HEAD request to verify a URL is publicly accessible.
  * Returns status code, content type, and any errors.
  * This avoids CORS issues with browser-only checks.
@@ -10,23 +10,23 @@ import { corsHeaders, handleCorsPreflightRequest } from "../_shared/cors.ts";
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
-  if (req.method === "OPTIONS") {
+  if (req.method === 'OPTIONS') {
     return handleCorsPreflightRequest();
   }
 
   try {
     const { url } = await req.json();
 
-    if (!url || typeof url !== "string") {
+    if (!url || typeof url !== 'string') {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: "Missing or invalid 'url' parameter",
-          accessible: false 
+          accessible: false,
         }),
         {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
       );
     }
 
@@ -36,28 +36,28 @@ Deno.serve(async (req) => {
       parsedUrl = new URL(url);
     } catch {
       return new Response(
-        JSON.stringify({ 
-          error: "Invalid URL format",
-          accessible: false 
+        JSON.stringify({
+          error: 'Invalid URL format',
+          accessible: false,
         }),
         {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
       );
     }
 
     // Only allow HTTPS URLs for security
-    if (parsedUrl.protocol !== "https:") {
+    if (parsedUrl.protocol !== 'https:') {
       return new Response(
-        JSON.stringify({ 
-          error: "Only HTTPS URLs are allowed",
-          accessible: false 
+        JSON.stringify({
+          error: 'Only HTTPS URLs are allowed',
+          accessible: false,
         }),
         {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
       );
     }
 
@@ -69,18 +69,18 @@ Deno.serve(async (req) => {
 
     try {
       const response = await fetch(url, {
-        method: "HEAD",
+        method: 'HEAD',
         signal: controller.signal,
         headers: {
-          "User-Agent": "FreshTrackPro/1.0 (URL Verification)"
-        }
+          'User-Agent': 'FreshTrackPro/1.0 (URL Verification)',
+        },
       });
 
       clearTimeout(timeoutId);
 
-      const contentType = response.headers.get("content-type") || "unknown";
-      const contentLength = response.headers.get("content-length");
-      const isImage = contentType.startsWith("image/");
+      const contentType = response.headers.get('content-type') || 'unknown';
+      const contentLength = response.headers.get('content-length');
+      const isImage = contentType.startsWith('image/');
       const isAccessible = response.ok && response.status === 200;
 
       console.log(`[verify-public-asset] Result:`, {
@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
         contentType,
         contentLength,
         isImage,
-        isAccessible
+        isAccessible,
       });
 
       return new Response(
@@ -101,18 +101,18 @@ Deno.serve(async (req) => {
           contentLength: contentLength ? parseInt(contentLength) : null,
           isImage,
           checkedAt: new Date().toISOString(),
-          error: !isAccessible ? `HTTP ${response.status}: ${response.statusText}` : null
+          error: !isAccessible ? `HTTP ${response.status}: ${response.statusText}` : null,
         }),
         {
           status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
       );
     } catch (fetchError) {
       clearTimeout(timeoutId);
-      
-      const errorMessage = fetchError instanceof Error ? fetchError.message : "Unknown fetch error";
-      const isTimeout = errorMessage.includes("abort") || errorMessage.includes("timeout");
+
+      const errorMessage = fetchError instanceof Error ? fetchError.message : 'Unknown fetch error';
+      const isTimeout = errorMessage.includes('abort') || errorMessage.includes('timeout');
 
       console.error(`[verify-public-asset] Fetch error:`, errorMessage);
 
@@ -123,27 +123,27 @@ Deno.serve(async (req) => {
           contentType: null,
           isImage: false,
           checkedAt: new Date().toISOString(),
-          error: isTimeout ? "Request timed out (10s)" : errorMessage
+          error: isTimeout ? 'Request timed out (10s)' : errorMessage,
         }),
         {
           status: 200, // Still return 200 since the function worked, just the URL check failed
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
       );
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error("[verify-public-asset] Error:", errorMessage);
-    
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[verify-public-asset] Error:', errorMessage);
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: errorMessage,
-        accessible: false 
+        accessible: false,
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      },
     );
   }
 });

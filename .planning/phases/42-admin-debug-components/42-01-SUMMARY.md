@@ -68,11 +68,11 @@ completed: 2026-01-29
 
 ## Decisions Made
 
-| ID | Decision | Rationale |
-|----|----------|-----------|
-| DEC-42-01-A | Replace supabase RPC calls with static values in RBACDebugPanel | Debug panel still useful for showing context state without live RPC |
+| ID          | Decision                                                        | Rationale                                                             |
+| ----------- | --------------------------------------------------------------- | --------------------------------------------------------------------- |
+| DEC-42-01-A | Replace supabase RPC calls with static values in RBACDebugPanel | Debug panel still useful for showing context state without live RPC   |
 | DEC-42-01-B | Show unavailable toast for sensor simulator edge function calls | Edge function removed during migration, direct API alternative exists |
-| DEC-42-01-C | Replace RLS check with user auth check in UnitDebugBanner | Supabase RLS no longer used, Stack Auth provides auth state |
+| DEC-42-01-C | Replace RLS check with user auth check in UnitDebugBanner       | Supabase RLS no longer used, Stack Auth provides auth state           |
 
 ## Deviations from Plan
 

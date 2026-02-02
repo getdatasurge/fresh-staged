@@ -38,6 +38,7 @@ metrics:
 ### New Hook Files (5 files created)
 
 **src/hooks/useSites.ts**
+
 - `useSites(organizationId, options?)` - List sites for organization
 - `useSite(organizationId, siteId, options?)` - Get single site
 - `useCreateSite()` - Create site mutation (admin/owner)
@@ -45,6 +46,7 @@ metrics:
 - `useDeleteSite()` - Delete site mutation (admin/owner)
 
 **src/hooks/useAreas.ts**
+
 - `useAreas(organizationId, siteId, options?)` - List areas for site
 - `useArea(organizationId, siteId, areaId, options?)` - Get single area
 - `useCreateArea()` - Create area mutation (admin/owner)
@@ -52,6 +54,7 @@ metrics:
 - `useDeleteArea()` - Delete area mutation (admin/owner)
 
 **src/hooks/useUnits.ts**
+
 - `useUnits(organizationId, siteId, areaId, options?)` - List units for area
 - `useUnit(organizationId, siteId, areaId, unitId, options?)` - Get single unit
 - `useCreateUnit()` - Create unit mutation (manager/admin/owner)
@@ -59,10 +62,12 @@ metrics:
 - `useDeleteUnit()` - Delete unit mutation (manager/admin/owner)
 
 **src/hooks/useReadings.ts**
+
 - `useReadings(organizationId, unitId, filters?, options?)` - Query readings with pagination/date filters
 - `useLatestReading(organizationId, unitId, options?)` - Get most recent reading
 
 **src/hooks/useAlerts.ts**
+
 - `useAlerts(organizationId, filters?, options?)` - List alerts with status/severity/unit/site filters
 - `useAlert(organizationId, alertId, options?)` - Get single alert
 - `useAcknowledgeAlert()` - Acknowledge alert mutation (staff+)
@@ -72,6 +77,7 @@ metrics:
 ### API Wrappers Deprecated (5 files updated)
 
 All functions in the following files now have `@deprecated` JSDoc tags with migration instructions:
+
 - `src/lib/api/sites.ts` - sitesApi (5 methods)
 - `src/lib/api/areas.ts` - areasApi (5 methods)
 - `src/lib/api/units.ts` - unitsApi (5 methods)
@@ -83,10 +89,7 @@ All functions in the following files now have `@deprecated` JSDoc tags with migr
 ### Hook Structure (consistent across all domains)
 
 ```typescript
-export function useSites(
-  organizationId: string | undefined,
-  options?: { enabled?: boolean }
-) {
+export function useSites(organizationId: string | undefined, options?: { enabled?: boolean }) {
   const trpc = useTRPC();
 
   const queryOptions = trpc.sites.list.queryOptions({
@@ -95,7 +98,7 @@ export function useSites(
 
   return useQuery({
     ...queryOptions,
-    enabled: !!organizationId && (options?.enabled !== false),
+    enabled: !!organizationId && options?.enabled !== false,
     staleTime: 60_000,
     gcTime: 5 * 60_000,
   });
@@ -132,21 +135,21 @@ export function useUpdateSite() {
 
 ### Stale Time by Domain
 
-| Domain | staleTime | gcTime | Notes |
-|--------|-----------|--------|-------|
-| Sites | 60s | 5m | Changes infrequently |
-| Areas | 60s | 5m | Changes infrequently |
-| Units | 60s | 5m | Changes infrequently |
-| Readings | 30s | 2m | Real-time data, frequent updates |
-| Alerts | 30s | 2m | Time-sensitive, refetchOnWindowFocus |
+| Domain   | staleTime | gcTime | Notes                                |
+| -------- | --------- | ------ | ------------------------------------ |
+| Sites    | 60s       | 5m     | Changes infrequently                 |
+| Areas    | 60s       | 5m     | Changes infrequently                 |
+| Units    | 60s       | 5m     | Changes infrequently                 |
+| Readings | 30s       | 2m     | Real-time data, frequent updates     |
+| Alerts   | 30s       | 2m     | Time-sensitive, refetchOnWindowFocus |
 
 ## Commits
 
-| Commit | Description |
-|--------|-------------|
-| 493e848 | feat(20-03): create sites and areas tRPC hooks |
+| Commit  | Description                                       |
+| ------- | ------------------------------------------------- |
+| 493e848 | feat(20-03): create sites and areas tRPC hooks    |
 | 84189b2 | feat(20-03): create units and readings tRPC hooks |
-| 1d1d771 | feat(20-03): create alerts tRPC hooks |
+| 1d1d771 | feat(20-03): create alerts tRPC hooks             |
 
 ## Verification Results
 

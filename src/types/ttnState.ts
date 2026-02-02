@@ -11,12 +11,7 @@
  * - drifted: Local config differs from canonical (potential conflict)
  * - invalid: Failed validation, cannot be used
  */
-export type TTNConfigState = 
-  | 'local_draft'
-  | 'validated'
-  | 'canonical'
-  | 'drifted'
-  | 'invalid';
+export type TTNConfigState = 'local_draft' | 'validated' | 'canonical' | 'drifted' | 'invalid';
 
 /**
  * Source of the TTN configuration
@@ -114,10 +109,7 @@ export const TTN_STATE_TRANSITIONS = {
 /**
  * Check if a state transition is valid
  */
-export function isValidStateTransition(
-  from: TTNConfigState, 
-  to: TTNConfigState
-): boolean {
+export function isValidStateTransition(from: TTNConfigState, to: TTNConfigState): boolean {
   const allowed = TTN_STATE_TRANSITIONS[from] as readonly TTNConfigState[];
   return allowed.includes(to);
 }
@@ -132,12 +124,12 @@ export function hashConfigValues(values: Partial<TTNConfigValues>): string {
     api_key_last4: values.api_key_last4 || '',
     is_enabled: values.is_enabled || false,
   });
-  
+
   // Simple hash for drift detection (not cryptographic)
   let hash = 0;
   for (let i = 0; i < normalized.length; i++) {
     const char = normalized.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
   return hash.toString(16);

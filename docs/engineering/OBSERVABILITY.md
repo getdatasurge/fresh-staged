@@ -34,10 +34,10 @@ debugLog('Component', 'Action description', { data });
 
 #### Console Patterns
 
-| Level | Usage |
-|-------|-------|
-| `console.log` | General information |
-| `console.warn` | Non-critical issues |
+| Level           | Usage                      |
+| --------------- | -------------------------- |
+| `console.log`   | General information        |
+| `console.warn`  | Non-critical issues        |
 | `console.error` | Errors requiring attention |
 
 #### Route Logging
@@ -69,6 +69,7 @@ console.error(`[FUNCTION-NAME] ${requestId} | Error:`, error);
 ```
 
 Example:
+
 ```
 [TTN-WEBHOOK] a1b2c3d4 | Uplink: device=sensor-001, dev_eui=0004a30b001c1234, app=freshtrack-org
 [TTN-WEBHOOK] a1b2c3d4 | Found sensor by ttn_device_id: Walk-in Cooler
@@ -78,15 +79,16 @@ Example:
 ### Sensitive Data Handling
 
 **Never log**:
+
 - Full phone numbers (mask: `+1555***4567`)
 - API keys
 - Passwords
 - Full webhook secrets
 
 **Masking pattern**:
+
 ```typescript
-const maskPhone = (phone: string) =>
-  phone.slice(0, 5) + '***' + phone.slice(-4);
+const maskPhone = (phone: string) => phone.slice(0, 5) + '***' + phone.slice(-4);
 ```
 
 ---
@@ -135,16 +137,16 @@ try {
 
 ```typescript
 // Success
-return new Response(
-  JSON.stringify({ success: true, data }),
-  { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-);
+return new Response(JSON.stringify({ success: true, data }), {
+  status: 200,
+  headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+});
 
 // Error
-return new Response(
-  JSON.stringify({ error: errorMessage, code: 'ERROR_CODE' }),
-  { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-);
+return new Response(JSON.stringify({ error: errorMessage, code: 'ERROR_CODE' }), {
+  status: 500,
+  headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+});
 ```
 
 #### Webhook Error Handling
@@ -155,7 +157,7 @@ For TTN webhooks, always return 2xx to prevent retries:
 // Unknown device - accept but don't process
 return new Response(
   JSON.stringify({ accepted: true, processed: false, reason: 'Unknown device' }),
-  { status: 202, headers: corsHeaders }
+  { status: 202, headers: corsHeaders },
 );
 ```
 
@@ -168,6 +170,7 @@ return new Response(
 **Enable**: Settings → Debug toggle (or `localStorage.setItem('debug', 'true')`)
 
 **Features**:
+
 - Route logging
 - API call logging
 - Component state display
@@ -178,6 +181,7 @@ return new Response(
 **File**: `src/components/debug/DebugTerminal.tsx`
 
 Access via debug mode. Shows:
+
 - Recent API calls
 - Route changes
 - Error logs
@@ -188,6 +192,7 @@ Access via debug mode. Shows:
 **Route**: `/inspector`
 
 Features:
+
 - View raw database records
 - Examine sensor states
 - Check TTN configuration
@@ -198,6 +203,7 @@ Features:
 **File**: `src/components/debug/EdgeFunctionDiagnostics.tsx`
 
 Shows:
+
 - Function health status
 - Recent invocation logs
 - Error counts
@@ -207,6 +213,7 @@ Shows:
 **File**: `src/components/ttn/TTNDiagnosticsDownload.tsx`
 
 Downloads diagnostic bundle containing:
+
 - TTN connection status
 - Sensor inventory
 - Recent webhook logs
@@ -246,6 +253,7 @@ Downloads diagnostic bundle containing:
 **Route**: `/admin/health`
 
 Checks:
+
 - Database connectivity
 - Edge function availability
 - TTN webhook status
@@ -276,6 +284,7 @@ Displays:
 ### Automated Checks
 
 **TBD**: Configure Supabase cron jobs for:
+
 - Periodic health checks
 - Alert on failures
 - Metrics collection
@@ -286,35 +295,35 @@ Displays:
 
 ### TTN Webhook Failures
 
-| Scenario | Symptoms | Resolution |
-|----------|----------|------------|
-| Invalid secret | 401 responses | Regenerate secret, update TTN |
+| Scenario         | Symptoms              | Resolution                    |
+| ---------------- | --------------------- | ----------------------------- |
+| Invalid secret   | 401 responses         | Regenerate secret, update TTN |
 | Function timeout | Incomplete processing | Check function logs, optimize |
-| Database error | 202 responses | Check Supabase status |
+| Database error   | 202 responses         | Check Supabase status         |
 
 ### Alert Processing Failures
 
-| Scenario | Symptoms | Resolution |
-|----------|----------|------------|
-| Function not triggered | No state changes | Check cron/trigger setup |
-| RPC error | Cascade not working | Check `get_effective_alert_rules` |
-| Missing org_id | Alert creation fails | Verify unit hierarchy |
+| Scenario               | Symptoms             | Resolution                        |
+| ---------------------- | -------------------- | --------------------------------- |
+| Function not triggered | No state changes     | Check cron/trigger setup          |
+| RPC error              | Cascade not working  | Check `get_effective_alert_rules` |
+| Missing org_id         | Alert creation fails | Verify unit hierarchy             |
 
 ### Notification Failures
 
-| Scenario | Symptoms | Resolution |
-|----------|----------|------------|
-| SMS delivery failed | `notification_events.status = 'failed'` | Check Telnyx portal |
-| Email bounced | Delivery log shows bounce | Verify email address |
-| Rate limited | Notifications delayed | Check escalation timing |
+| Scenario            | Symptoms                                | Resolution              |
+| ------------------- | --------------------------------------- | ----------------------- |
+| SMS delivery failed | `notification_events.status = 'failed'` | Check Telnyx portal     |
+| Email bounced       | Delivery log shows bounce               | Verify email address    |
+| Rate limited        | Notifications delayed                   | Check escalation timing |
 
 ### Sensor Offline
 
-| Scenario | Symptoms | Resolution |
-|----------|----------|------------|
-| Gateway offline | All sensors show offline | Check gateway power/network |
-| Sensor battery | Single sensor offline | Replace battery |
-| TTN issue | Multiple sensors affected | Check TTN status page |
+| Scenario        | Symptoms                  | Resolution                  |
+| --------------- | ------------------------- | --------------------------- |
+| Gateway offline | All sensors show offline  | Check gateway power/network |
+| Sensor battery  | Single sensor offline     | Replace battery             |
+| TTN issue       | Multiple sensors affected | Check TTN status page       |
 
 ---
 
@@ -325,6 +334,7 @@ Displays:
 **Symptoms**: All sensors in an organization show offline status
 
 **Steps**:
+
 1. Check `/admin/health` for system status
 2. Verify TTN webhook status
 3. Check TTN console for gateway status
@@ -332,6 +342,7 @@ Displays:
 5. Verify `ttn_connections.webhook_secret` is correct
 
 **Resolution**:
+
 - If webhook issue: Regenerate secret, update TTN
 - If gateway issue: Power cycle gateway
 - If TTN outage: Wait for TTN recovery
@@ -341,6 +352,7 @@ Displays:
 **Symptoms**: Temperature excursions not creating alerts
 
 **Steps**:
+
 1. Check unit has sensor assigned
 2. Verify sensor is receiving data (check `sensor_readings`)
 3. Check `process-unit-states` function logs
@@ -348,6 +360,7 @@ Displays:
 5. Check unit `temp_limit_high` and `temp_limit_low`
 
 **Resolution**:
+
 - If no readings: Debug sensor connection
 - If function error: Check function deployment
 - If rules missing: Create default rules
@@ -357,6 +370,7 @@ Displays:
 **Symptoms**: Alerts created but no notifications received
 
 **Steps**:
+
 1. Check `notification_policies` for alert type
 2. Verify `escalation_contacts` exist
 3. Check `notification_events` for delivery status
@@ -364,6 +378,7 @@ Displays:
 5. Verify Telnyx/email credentials
 
 **Resolution**:
+
 - If policy disabled: Enable notification policy
 - If no contacts: Add escalation contacts
 - If delivery failed: Check credential configuration
@@ -373,6 +388,7 @@ Displays:
 **Symptoms**: Slow queries, timeouts
 
 **Steps**:
+
 1. Check Supabase dashboard for metrics
 2. Review recent migrations
 3. Check for missing indexes
@@ -380,6 +396,7 @@ Displays:
 5. Check for runaway queries
 
 **Resolution**:
+
 - Add missing indexes
 - Implement data archival
 - Optimize slow queries
@@ -389,12 +406,14 @@ Displays:
 **Symptoms**: Subscriptions not updating after payment
 
 **Steps**:
+
 1. Check Stripe dashboard for webhook deliveries
 2. Verify `stripe-webhook` function logs
 3. Check `subscriptions` table for updates
 4. Verify webhook secret is correct
 
 **Resolution**:
+
 - Resend failed webhooks from Stripe
 - Update webhook secret if needed
 - Manually sync subscription status
@@ -409,16 +428,16 @@ Displays:
 
 All significant events are logged:
 
-| Event Type | Category | Description |
-|------------|----------|-------------|
-| `unit_state_change` | unit | Status transitions |
-| `alert_created` | alert | New alert |
-| `alert_acknowledged` | alert | Alert acknowledged |
-| `alert_resolved` | alert | Alert resolved |
-| `temperature_logged` | temperature | Manual log |
-| `sensor_reading` | temperature | Auto reading |
-| `setting_changed` | configuration | Config update |
-| `user_login` | user | Auth event |
+| Event Type           | Category      | Description        |
+| -------------------- | ------------- | ------------------ |
+| `unit_state_change`  | unit          | Status transitions |
+| `alert_created`      | alert         | New alert          |
+| `alert_acknowledged` | alert         | Alert acknowledged |
+| `alert_resolved`     | alert         | Alert resolved     |
+| `temperature_logged` | temperature   | Manual log         |
+| `sensor_reading`     | temperature   | Auto reading       |
+| `setting_changed`    | configuration | Config update      |
+| `user_login`         | user          | Auth event         |
 
 ### Event Structure
 
@@ -449,6 +468,7 @@ All significant events are logged:
 **Route**: `/events`
 
 Features:
+
 - Filterable by event type, category, severity
 - Date range selection
 - Export functionality
@@ -456,6 +476,7 @@ Features:
 ### Log Retention
 
 **TBD**: Configure retention policy:
+
 - Temperature readings: [configurable]
 - Event logs: 2 years (compliance)
 - Alert history: Indefinite
@@ -463,6 +484,7 @@ Features:
 ### Compliance Requirements
 
 For HACCP compliance:
+
 - All temperature logs retained
 - Alert history with acknowledgment
 - Corrective action documentation
@@ -474,17 +496,18 @@ For HACCP compliance:
 
 ### Key Metrics
 
-| Metric | Source | Alert Threshold |
-|--------|--------|-----------------|
-| Sensor uptime | `lora_sensors.last_seen_at` | < 95% |
-| Alert response time | `alerts.acknowledged_at - triggered_at` | > 30 min |
-| Webhook latency | Edge function logs | > 5 sec |
-| Failed notifications | `notification_events` | > 10% |
-| Database response time | Supabase metrics | > 1 sec |
+| Metric                 | Source                                  | Alert Threshold |
+| ---------------------- | --------------------------------------- | --------------- |
+| Sensor uptime          | `lora_sensors.last_seen_at`             | < 95%           |
+| Alert response time    | `alerts.acknowledged_at - triggered_at` | > 30 min        |
+| Webhook latency        | Edge function logs                      | > 5 sec         |
+| Failed notifications   | `notification_events`                   | > 10%           |
+| Database response time | Supabase metrics                        | > 1 sec         |
 
 ### Dashboard Recommendations
 
 **TBD**: Implement metrics dashboard showing:
+
 - Active alerts by severity
 - Sensor health overview
 - Response time trends

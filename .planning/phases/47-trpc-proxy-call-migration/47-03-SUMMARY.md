@@ -4,12 +4,12 @@ plan: 03
 subsystem: frontend-trpc
 tags: [trpc, proxy-migration, useTRPCClient, v11]
 depends_on:
-  requires: ["47-01", "47-02"]
-  provides: ["complete-trpc-proxy-migration", "zero-proxy-misuse"]
-  affects: ["48-production-redeploy"]
+  requires: ['47-01', '47-02']
+  provides: ['complete-trpc-proxy-migration', 'zero-proxy-misuse']
+  affects: ['48-production-redeploy']
 tech-stack:
   added: []
-  patterns: ["useTRPCClient-for-imperative-calls", "useTRPC-for-queryOptions-mutationOptions"]
+  patterns: ['useTRPCClient-for-imperative-calls', 'useTRPC-for-queryOptions-mutationOptions']
 key-files:
   created: []
   modified:
@@ -19,8 +19,8 @@ key-files:
     - src/features/dashboard-layout/widgets/AlertHistoryWidget.tsx
 decisions: []
 metrics:
-  duration: "3 minutes"
-  completed: "2026-01-29"
+  duration: '3 minutes'
+  completed: '2026-01-29'
 ---
 
 # Phase 47 Plan 03: Remaining Page/Widget tRPC Proxy Call Migration Summary
@@ -32,6 +32,7 @@ metrics:
 ### Task 1: Fix .mutate()/.query() calls in 4 files
 
 **Inspector.tsx** (1 .mutate() + 4 .query() calls):
+
 - Added `useTRPCClient` import alongside existing `useTRPC`
 - Added `const trpcClient = useTRPCClient()` alongside existing `const trpc = useTRPC()`
 - Migrated `trpc.inspector.validateSession.mutate()` to `trpcClient`
@@ -39,18 +40,21 @@ metrics:
 - Preserved `trpc.reports.export.mutationOptions()` on proxy (correct pattern)
 
 **PilotSetup.tsx** (2 .query() calls):
+
 - Added `useTRPCClient` import alongside existing `useTRPC`
 - Added `const trpcClient = useTRPCClient()`
 - Migrated `trpc.sites.list.query()` and `trpc.organizations.stats.query()` to `trpcClient`
 - Preserved `trpc.pilotFeedback.upsert.mutationOptions()` on proxy (correct pattern)
 
 **SiteAlertsSummaryWidget.tsx** (1 .query() call):
+
 - Replaced `useTRPC` import with `useTRPCClient` (no proxy patterns needed)
 - Changed `const trpc = useTRPC()` to `const trpcClient = useTRPCClient()`
 - Migrated `trpc.alerts.list.query()` to `trpcClient`
 - Updated useEffect dependency array
 
 **AlertHistoryWidget.tsx** (1 .query() call):
+
 - Replaced `useTRPC` import with `useTRPCClient` (no proxy patterns needed)
 - Changed `const trpc = useTRPC()` to `const trpcClient = useTRPCClient()`
 - Migrated `trpc.alerts.list.query()` to `trpcClient`
@@ -70,13 +74,14 @@ None - plan executed exactly as written.
 
 ## Commits
 
-| Task | Commit | Description |
-|------|--------|-------------|
-| 1 | c177d25 | feat(47-03): migrate remaining page/widget files to useTRPCClient |
+| Task | Commit  | Description                                                       |
+| ---- | ------- | ----------------------------------------------------------------- |
+| 1    | c177d25 | feat(47-03): migrate remaining page/widget files to useTRPCClient |
 
 ## Phase 47 Completion Status
 
 All 3 plans in phase 47 are now complete:
+
 - **47-01**: Hook file migrations (useAlertRules, useAlertRulesHistory, useOfflineSync, useTTNApiKey, useUnitAlerts)
 - **47-02**: Page file migrations (Dashboard, Areas, AreaDetail, SiteDetail, Units, DataMaintenance, EventHistory, Onboarding, PlatformAuditLog, PlatformDeveloperTools, PlatformOrganizationDetail, PlatformOrganizations, PlatformUserDetail, PlatformUsers, ComplianceReportCard, TTNCredentialsPanel)
 - **47-03**: Remaining page/widget migrations (Inspector, PilotSetup, SiteAlertsSummaryWidget, AlertHistoryWidget) + full codebase verification

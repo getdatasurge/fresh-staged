@@ -10,28 +10,28 @@
 
 These are alerts visible to customers in the FreshTrack Pro application:
 
-| Alert Type | Description | Severity |
-|------------|-------------|----------|
-| `temp_excursion` | Temperature outside safe range | Warning → Critical |
-| `temp_high` | Temperature above max threshold | Warning → Critical |
-| `temp_low` | Temperature below min threshold | Warning → Critical |
-| `monitoring_interrupted` | No readings received | Warning → Critical |
-| `door_open` | Door open too long | Warning |
-| `low_battery` | Sensor battery low | Warning |
-| `sensor_offline` | Sensor not reporting | Warning |
-| `gateway_offline` | Gateway not reporting | Warning |
+| Alert Type               | Description                     | Severity           |
+| ------------------------ | ------------------------------- | ------------------ |
+| `temp_excursion`         | Temperature outside safe range  | Warning → Critical |
+| `temp_high`              | Temperature above max threshold | Warning → Critical |
+| `temp_low`               | Temperature below min threshold | Warning → Critical |
+| `monitoring_interrupted` | No readings received            | Warning → Critical |
+| `door_open`              | Door open too long              | Warning            |
+| `low_battery`            | Sensor battery low              | Warning            |
+| `sensor_offline`         | Sensor not reporting            | Warning            |
+| `gateway_offline`        | Gateway not reporting           | Warning            |
 
 ### System Alerts (Operations)
 
 These require operational attention:
 
-| Alert Type | Description | Severity |
-|------------|-------------|----------|
-| Health check failure | System component unhealthy | Critical |
-| High error rate | Edge function errors > threshold | High |
-| Integration failure | TTN/Stripe/notification failure | High |
-| Database latency | Query time > threshold | Medium |
-| Capacity warning | Storage/connections nearing limit | Medium |
+| Alert Type           | Description                       | Severity |
+| -------------------- | --------------------------------- | -------- |
+| Health check failure | System component unhealthy        | Critical |
+| High error rate      | Edge function errors > threshold  | High     |
+| Integration failure  | TTN/Stripe/notification failure   | High     |
+| Database latency     | Query time > threshold            | Medium   |
+| Capacity warning     | Storage/connections nearing limit | Medium   |
 
 ---
 
@@ -53,13 +53,13 @@ stateDiagram-v2
 
 ### State Definitions
 
-| State | Description | Actions Available |
-|-------|-------------|-------------------|
-| **Triggered** | Condition detected, waiting confirm time | Auto-resolve if clears |
-| **Activated** | Confirmed, notifications sent | Acknowledge, auto-resolve |
-| **Escalated** | Escalation level increased | Acknowledge |
-| **Acknowledged** | User has responded | Wait for resolution |
-| **Resolved** | Condition cleared | View history |
+| State            | Description                              | Actions Available         |
+| ---------------- | ---------------------------------------- | ------------------------- |
+| **Triggered**    | Condition detected, waiting confirm time | Auto-resolve if clears    |
+| **Activated**    | Confirmed, notifications sent            | Acknowledge, auto-resolve |
+| **Escalated**    | Escalation level increased               | Acknowledge               |
+| **Acknowledged** | User has responded                       | Wait for resolution       |
+| **Resolved**     | Condition cleared                        | View history              |
 
 ---
 
@@ -67,20 +67,20 @@ stateDiagram-v2
 
 ### Application Severity
 
-| Level | Color | Description | Example |
-|-------|-------|-------------|---------|
-| **Critical** | Red | Immediate action required | Temp > 45°F for >15min |
-| **Warning** | Orange | Attention needed | Temp slightly out of range |
-| **Info** | Blue | Informational | System status update |
+| Level        | Color  | Description               | Example                    |
+| ------------ | ------ | ------------------------- | -------------------------- |
+| **Critical** | Red    | Immediate action required | Temp > 45°F for >15min     |
+| **Warning**  | Orange | Attention needed          | Temp slightly out of range |
+| **Info**     | Blue   | Informational             | System status update       |
 
 ### Operational Severity
 
-| Level | Response Time | Description |
-|-------|---------------|-------------|
-| **P1 - Critical** | < 15 minutes | Service down, data at risk |
-| **P2 - High** | < 1 hour | Significant degradation |
-| **P3 - Medium** | < 4 hours | Minor impact |
-| **P4 - Low** | < 24 hours | Informational |
+| Level             | Response Time | Description                |
+| ----------------- | ------------- | -------------------------- |
+| **P1 - Critical** | < 15 minutes  | Service down, data at risk |
+| **P2 - High**     | < 1 hour      | Significant degradation    |
+| **P3 - Medium**   | < 4 hours     | Minor impact               |
+| **P4 - Low**      | < 24 hours    | Informational              |
 
 ---
 
@@ -192,21 +192,21 @@ Level 3 (After 2x delay)
 
 Stored in `notification_policies` table:
 
-| Field | Description |
-|-------|-------------|
-| `escalation_delay_minutes` | Time before escalation |
-| `escalation_contacts` | Contact IDs per level |
-| `quiet_hours_start/end` | Suppress non-critical during hours |
-| `channels` | email, sms, push |
+| Field                      | Description                        |
+| -------------------------- | ---------------------------------- |
+| `escalation_delay_minutes` | Time before escalation             |
+| `escalation_contacts`      | Contact IDs per level              |
+| `quiet_hours_start/end`    | Suppress non-critical during hours |
+| `channels`                 | email, sms, push                   |
 
 ### Operational Escalation
 
-| Level | Time | Contacts | Actions |
-|-------|------|----------|---------|
-| L1 | 0 min | On-call engineer | Investigate |
-| L2 | 15 min | Engineering lead | Join investigation |
-| L3 | 30 min | Engineering manager | Incident command |
-| L4 | 60 min | CTO/Leadership | Executive awareness |
+| Level | Time   | Contacts            | Actions             |
+| ----- | ------ | ------------------- | ------------------- |
+| L1    | 0 min  | On-call engineer    | Investigate         |
+| L2    | 15 min | Engineering lead    | Join investigation  |
+| L3    | 30 min | Engineering manager | Incident command    |
+| L4    | 60 min | CTO/Leadership      | Executive awareness |
 
 ---
 
@@ -235,12 +235,12 @@ Stored in `notification_policies` table:
 
 ### Notification Status
 
-| Status | Description |
-|--------|-------------|
-| `queued` | Waiting to send |
-| `sent` | Successfully dispatched |
-| `delivered` | Confirmed delivery |
-| `failed` | Delivery failed |
+| Status       | Description             |
+| ------------ | ----------------------- |
+| `queued`     | Waiting to send         |
+| `sent`       | Successfully dispatched |
+| `delivered`  | Confirmed delivery      |
+| `failed`     | Delivery failed         |
 | `suppressed` | Quiet hours or disabled |
 
 ---
@@ -277,10 +277,10 @@ sequenceDiagram
 
 ### Processing Functions
 
-| Function | Purpose | Trigger |
-|----------|---------|---------|
+| Function              | Purpose                        | Trigger                 |
+| --------------------- | ------------------------------ | ----------------------- |
 | `process-unit-states` | Evaluate alerts, update status | After reading ingestion |
-| `process-escalations` | Send notifications, escalate | Alert state changes |
+| `process-escalations` | Send notifications, escalate   | Alert state changes     |
 
 ---
 
@@ -289,6 +289,7 @@ sequenceDiagram
 ### Current State
 
 FreshTrack Pro does not currently have automated operational alerting. Monitoring is through:
+
 - Health Dashboard (manual check)
 - Supabase Dashboard (platform metrics)
 - Debug Terminal (application logs)
@@ -297,23 +298,23 @@ FreshTrack Pro does not currently have automated operational alerting. Monitorin
 
 #### Integration with External Service
 
-| Service | Use Case | Integration Method |
-|---------|----------|-------------------|
-| PagerDuty | On-call management | Webhook from health check |
-| Opsgenie | Incident management | API integration |
-| Slack | Team notifications | Webhook |
-| Email | Backup notifications | SMTP |
+| Service   | Use Case             | Integration Method        |
+| --------- | -------------------- | ------------------------- |
+| PagerDuty | On-call management   | Webhook from health check |
+| Opsgenie  | Incident management  | API integration           |
+| Slack     | Team notifications   | Webhook                   |
+| Email     | Backup notifications | SMTP                      |
 
 #### Recommended Alert Rules
 
-| Condition | Threshold | Severity |
-|-----------|-----------|----------|
-| Health check returns error | Any check failed | P2 |
-| Health check returns degraded | >3 checks degraded | P3 |
-| Edge function error rate | >5% in 5 minutes | P2 |
-| Database latency | >500ms avg | P3 |
-| TTN webhook failures | >10% in 1 hour | P2 |
-| No readings received | 0 in 15 minutes | P1 |
+| Condition                     | Threshold          | Severity |
+| ----------------------------- | ------------------ | -------- |
+| Health check returns error    | Any check failed   | P2       |
+| Health check returns degraded | >3 checks degraded | P3       |
+| Edge function error rate      | >5% in 5 minutes   | P2       |
+| Database latency              | >500ms avg         | P3       |
+| TTN webhook failures          | >10% in 1 hour     | P2       |
+| No readings received          | 0 in 15 minutes    | P1       |
 
 #### Implementation Approach
 
@@ -329,9 +330,9 @@ if (overallStatus === 'error') {
         summary: 'FreshTrack Pro health check failed',
         severity: 'critical',
         source: 'health-check',
-        custom_details: checkResults
-      }
-    })
+        custom_details: checkResults,
+      },
+    }),
   });
 }
 ```
@@ -342,21 +343,21 @@ if (overallStatus === 'error') {
 
 ### Per-Organization Settings
 
-| Setting | Location | Description |
-|---------|----------|-------------|
-| Alert rules | `alert_rules` table | Thresholds per unit/site |
-| Notification policy | `notification_policies` | Channels, contacts |
-| Escalation contacts | `escalation_contacts` | Contact hierarchy |
-| Quiet hours | `notification_policies` | Suppress timing |
+| Setting             | Location                | Description              |
+| ------------------- | ----------------------- | ------------------------ |
+| Alert rules         | `alert_rules` table     | Thresholds per unit/site |
+| Notification policy | `notification_policies` | Channels, contacts       |
+| Escalation contacts | `escalation_contacts`   | Contact hierarchy        |
+| Quiet hours         | `notification_policies` | Suppress timing          |
 
 ### Default Thresholds
 
-| Unit Type | Min Temp | Max Temp | Confirm Time |
-|-----------|----------|----------|--------------|
-| Cooler | 33°F | 40°F | 5 min |
-| Freezer | -10°F | 0°F | 5 min |
-| Walk-in Cooler | 35°F | 41°F | 10 min |
-| Prep Station | 35°F | 40°F | 5 min |
+| Unit Type      | Min Temp | Max Temp | Confirm Time |
+| -------------- | -------- | -------- | ------------ |
+| Cooler         | 33°F     | 40°F     | 5 min        |
+| Freezer        | -10°F    | 0°F      | 5 min        |
+| Walk-in Cooler | 35°F     | 41°F     | 10 min       |
+| Prep Station   | 35°F     | 40°F     | 5 min        |
 
 ### Alert Rule Cascade
 
@@ -383,11 +384,11 @@ Resolved via `get_effective_alert_rules` RPC.
 
 ### Manual Suppression
 
-| Action | Effect | Duration |
-|--------|--------|----------|
-| Acknowledge alert | Stops escalation | Until resolved |
-| Disable unit monitoring | No alerts | Until re-enabled |
-| Contact opt-out | Skip contact | Permanent |
+| Action                  | Effect           | Duration         |
+| ----------------------- | ---------------- | ---------------- |
+| Acknowledge alert       | Stops escalation | Until resolved   |
+| Disable unit monitoring | No alerts        | Until re-enabled |
+| Contact opt-out         | Skip contact     | Permanent        |
 
 ### Maintenance Windows
 
@@ -400,13 +401,13 @@ Recommended: Scheduled suppression windows (to implement)
 
 ### What's Logged
 
-| Event | Logged Data |
-|-------|-------------|
-| Alert created | Type, severity, unit, timestamp |
-| Alert acknowledged | User, timestamp, note |
-| Alert resolved | Timestamp, auto/manual |
-| Notification sent | Channel, recipient, status |
-| Escalation triggered | Level, contacts notified |
+| Event                | Logged Data                     |
+| -------------------- | ------------------------------- |
+| Alert created        | Type, severity, unit, timestamp |
+| Alert acknowledged   | User, timestamp, note           |
+| Alert resolved       | Timestamp, auto/manual          |
+| Notification sent    | Channel, recipient, status      |
+| Escalation triggered | Level, contacts notified        |
 
 ### Audit Queries
 

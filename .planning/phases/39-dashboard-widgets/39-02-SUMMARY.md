@@ -7,26 +7,26 @@ tags: [trpc, react-query, dashboard, widgets, useQueries]
 # Dependency graph
 requires:
   - phase: 38-test-infrastructure
-    provides: "tRPC mock patterns and queryOptions pattern"
+    provides: 'tRPC mock patterns and queryOptions pattern'
   - phase: 39-01
-    provides: "Simple widget migration patterns"
+    provides: 'Simple widget migration patterns'
 provides:
-  - "UnitComparisonWidget using tRPC"
-  - "UnitComplianceScoreWidget using tRPC"
-  - "SiteActivityGraphWidget using tRPC"
-  - "DowntimeTrackerWidget using tRPC"
-  - "useQueries pattern for parallel unit readings"
+  - 'UnitComparisonWidget using tRPC'
+  - 'UnitComplianceScoreWidget using tRPC'
+  - 'SiteActivityGraphWidget using tRPC'
+  - 'DowntimeTrackerWidget using tRPC'
+  - 'useQueries pattern for parallel unit readings'
 affects:
-  - "39-03 (complex widget migration)"
-  - "40-settings (component migration)"
+  - '39-03 (complex widget migration)'
+  - '40-settings (component migration)'
 
 # Tech tracking
 tech-stack:
   added: []
   patterns:
-    - "useQueries for parallel per-unit readings fetches"
-    - "Client-side filtering of units.listByOrg by siteId"
-    - "Multi-query compliance calculation from readings+logs+alerts"
+    - 'useQueries for parallel per-unit readings fetches'
+    - 'Client-side filtering of units.listByOrg by siteId'
+    - 'Multi-query compliance calculation from readings+logs+alerts'
 
 key-files:
   created: []
@@ -37,14 +37,14 @@ key-files:
     - src/features/dashboard-layout/widgets/DowntimeTrackerWidget.tsx
 
 key-decisions:
-  - "Use units.listByOrg + client-side filter for site-scoped widgets"
-  - "Use useQueries for parallel readings fetches across units"
-  - "Replace useEffect+setState with useMemo+useQuery pattern"
+  - 'Use units.listByOrg + client-side filter for site-scoped widgets'
+  - 'Use useQueries for parallel readings fetches across units'
+  - 'Replace useEffect+setState with useMemo+useQuery pattern'
 
 patterns-established:
-  - "useQueries: Parallel queries when fetching readings for multiple units"
-  - "Site filtering: Filter units.listByOrg response by siteId client-side"
-  - "Compliance calculation: Combine readings.list + readings.listManual + alerts.list"
+  - 'useQueries: Parallel queries when fetching readings for multiple units'
+  - 'Site filtering: Filter units.listByOrg response by siteId client-side'
+  - 'Compliance calculation: Combine readings.list + readings.listManual + alerts.list'
 
 # Metrics
 duration: 8min
@@ -64,6 +64,7 @@ completed: 2026-01-29
 - **Files modified:** 4
 
 ## Accomplishments
+
 - UnitComparisonWidget now uses trpc.units.listByOrg with site filtering
 - UnitComplianceScoreWidget uses 3 parallel queries for compliance calculation
 - SiteActivityGraphWidget uses useQueries for parallel per-unit readings
@@ -105,5 +106,6 @@ None - all widgets migrated cleanly following the established patterns.
 - Ready for 39-03 complex widget migration
 
 ---
-*Phase: 39-dashboard-widgets*
-*Completed: 2026-01-29*
+
+_Phase: 39-dashboard-widgets_
+_Completed: 2026-01-29_

@@ -20,12 +20,12 @@
 
 ### Minimum Hardware Requirements
 
-| Resource | Minimum | Recommended |
-|----------|---------|-------------|
-| CPU | 2 vCPU | 4 vCPU |
-| RAM | 4 GB | 8 GB |
-| Storage | 40 GB SSD | 100 GB SSD |
-| Network | 1 Gbps | 1 Gbps |
+| Resource | Minimum   | Recommended |
+| -------- | --------- | ----------- |
+| CPU      | 2 vCPU    | 4 vCPU      |
+| RAM      | 4 GB      | 8 GB        |
+| Storage  | 40 GB SSD | 100 GB SSD  |
+| Network  | 1 Gbps    | 1 Gbps      |
 
 ### Operating System
 
@@ -179,10 +179,10 @@ TTN_WEBHOOK_SECRET=your-secret
 
 Create the following DNS records pointing to your VPS IP:
 
-| Type | Name | Value |
-|------|------|-------|
-| A | app.yourdomain.com | YOUR_VPS_IP |
-| A | traefik.yourdomain.com | YOUR_VPS_IP (optional, for dashboard) |
+| Type | Name                   | Value                                 |
+| ---- | ---------------------- | ------------------------------------- |
+| A    | app.yourdomain.com     | YOUR_VPS_IP                           |
+| A    | traefik.yourdomain.com | YOUR_VPS_IP (optional, for dashboard) |
 
 ### Step 5: Deploy Services
 
@@ -253,12 +253,12 @@ The deployment is fully automated via GitHub Actions.
 
 Configure these in **Settings → Secrets and variables → Actions**:
 
-| Secret | Description |
-|--------|-------------|
-| `VPS_HOST` | VPS IP address or hostname |
-| `VPS_USER` | SSH username (e.g., `deploy`) |
+| Secret        | Description                    |
+| ------------- | ------------------------------ |
+| `VPS_HOST`    | VPS IP address or hostname     |
+| `VPS_USER`    | SSH username (e.g., `deploy`)  |
 | `VPS_SSH_KEY` | SSH private key for VPS access |
-| `VPS_PORT` | SSH port (default: 22) |
+| `VPS_PORT`    | SSH port (default: 22)         |
 
 ### Image Tagging Strategy
 
@@ -753,4 +753,4 @@ sudo reboot
 
 ---
 
-*Last Updated: January 2026*
+_Last Updated: January 2026_

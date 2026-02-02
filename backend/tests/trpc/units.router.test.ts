@@ -100,7 +100,10 @@ describe('Units tRPC Router', () => {
 
   describe('list', () => {
     it('should list units for area', async () => {
-      const mockUnits = [mockUnit, { ...mockUnit, id: '523e4567-e89b-12d3-a456-426614174004', name: 'Freezer 1' }];
+      const mockUnits = [
+        mockUnit,
+        { ...mockUnit, id: '523e4567-e89b-12d3-a456-426614174004', name: 'Freezer 1' },
+      ];
       mockListUnits.mockResolvedValue(mockUnits);
 
       const ctx = createOrgContext();
@@ -118,13 +121,11 @@ describe('Units tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.list({ organizationId: orgId, siteId, areaId })
-      ).rejects.toThrow(TRPCError);
+      await expect(caller.list({ organizationId: orgId, siteId, areaId })).rejects.toThrow(
+        TRPCError,
+      );
 
-      await expect(
-        caller.list({ organizationId: orgId, siteId, areaId })
-      ).rejects.toMatchObject({
+      await expect(caller.list({ organizationId: orgId, siteId, areaId })).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Area not found',
       });
@@ -161,12 +162,12 @@ describe('Units tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.get({ organizationId: orgId, siteId, areaId, unitId })
-      ).rejects.toThrow(TRPCError);
+      await expect(caller.get({ organizationId: orgId, siteId, areaId, unitId })).rejects.toThrow(
+        TRPCError,
+      );
 
       await expect(
-        caller.get({ organizationId: orgId, siteId, areaId, unitId })
+        caller.get({ organizationId: orgId, siteId, areaId, unitId }),
       ).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Unit not found',
@@ -206,7 +207,7 @@ describe('Units tRPC Router', () => {
           tempMin: 32,
           tempMax: 40,
           tempUnit: 'F',
-        })
+        }),
       );
     });
 
@@ -271,7 +272,7 @@ describe('Units tRPC Router', () => {
             tempMin: 32,
             tempMax: 40,
           },
-        })
+        }),
       ).rejects.toThrow(TRPCError);
 
       await expect(
@@ -285,7 +286,7 @@ describe('Units tRPC Router', () => {
             tempMin: 32,
             tempMax: 40,
           },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -308,7 +309,7 @@ describe('Units tRPC Router', () => {
             tempMin: 32,
             tempMax: 40,
           },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -332,7 +333,7 @@ describe('Units tRPC Router', () => {
             tempMin: 32,
             tempMax: 40,
           },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Area not found',
@@ -358,13 +359,9 @@ describe('Units tRPC Router', () => {
       });
 
       expect(result).toEqual(updatedUnit);
-      expect(mockUpdateUnit).toHaveBeenCalledWith(
-        unitId,
-        areaId,
-        siteId,
-        orgId,
-        { name: 'Updated Cooler' }
-      );
+      expect(mockUpdateUnit).toHaveBeenCalledWith(unitId, areaId, siteId, orgId, {
+        name: 'Updated Cooler',
+      });
     });
 
     it('should throw FORBIDDEN when staff tries to update', async () => {
@@ -380,7 +377,7 @@ describe('Units tRPC Router', () => {
           areaId,
           unitId,
           data: { name: 'Updated Cooler' },
-        })
+        }),
       ).rejects.toThrow(TRPCError);
 
       await expect(
@@ -390,7 +387,7 @@ describe('Units tRPC Router', () => {
           areaId,
           unitId,
           data: { name: 'Updated Cooler' },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -410,7 +407,7 @@ describe('Units tRPC Router', () => {
           areaId,
           unitId,
           data: { name: 'Updated Cooler' },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Unit not found',
@@ -462,11 +459,11 @@ describe('Units tRPC Router', () => {
       const caller = createCaller(ctx);
 
       await expect(
-        caller.delete({ organizationId: orgId, siteId, areaId, unitId })
+        caller.delete({ organizationId: orgId, siteId, areaId, unitId }),
       ).rejects.toThrow(TRPCError);
 
       await expect(
-        caller.delete({ organizationId: orgId, siteId, areaId, unitId })
+        caller.delete({ organizationId: orgId, siteId, areaId, unitId }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -480,7 +477,7 @@ describe('Units tRPC Router', () => {
       const caller = createCaller(ctx);
 
       await expect(
-        caller.delete({ organizationId: orgId, siteId, areaId, unitId })
+        caller.delete({ organizationId: orgId, siteId, areaId, unitId }),
       ).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Unit not found',

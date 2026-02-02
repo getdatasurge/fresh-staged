@@ -18,24 +18,28 @@ Implement JWT-based authentication using Stack Auth and role-based access contro
 User delegated all implementation decisions to Claude. The following areas should be researched and implemented using best practices for this codebase:
 
 **JWT Validation:**
+
 - Token validation strategy (signature, expiration, claims)
 - Handling expired/invalid tokens
 - Clock skew tolerance
 - Refresh token handling (if applicable)
 
 **Role Hierarchy:**
+
 - Role definitions and hierarchy (owner > admin > manager > viewer)
 - Permission mapping per role
 - Role inheritance behavior
 - Middleware enforcement pattern
 
 **Organization Context:**
+
 - How requests identify target organization
 - Multi-org user handling
 - Tenant isolation enforcement
 - Cross-org request prevention
 
 **Error Responses:**
+
 - Auth error verbosity (security vs debugging balance)
 - Rate limiting on auth failures
 - Audit logging for security events
@@ -60,5 +64,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 02-authentication-rbac*
-*Context gathered: 2026-01-23*
+_Phase: 02-authentication-rbac_
+_Context gathered: 2026-01-23_

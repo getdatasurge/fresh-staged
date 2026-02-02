@@ -58,7 +58,7 @@ export interface WebhookProcessResult {
  */
 export async function handleMessageSent(
   messageId: string,
-  sentAt?: string
+  sentAt?: string,
 ): Promise<WebhookProcessResult> {
   const timestamp = sentAt ? new Date(sentAt) : new Date();
 
@@ -82,7 +82,7 @@ export async function handleMessageSent(
   }
 
   console.log(
-    `[TelnyxWebhook] Updated delivery ${result[0].id} to 'sent' for messageId: ${messageId}`
+    `[TelnyxWebhook] Updated delivery ${result[0].id} to 'sent' for messageId: ${messageId}`,
   );
 
   return {
@@ -99,7 +99,7 @@ export async function handleMessageSent(
  */
 export async function handleMessageDelivered(
   messageId: string,
-  deliveredAt?: string
+  deliveredAt?: string,
 ): Promise<WebhookProcessResult> {
   const timestamp = deliveredAt ? new Date(deliveredAt) : new Date();
 
@@ -123,7 +123,7 @@ export async function handleMessageDelivered(
   }
 
   console.log(
-    `[TelnyxWebhook] Updated delivery ${result[0].id} to 'delivered' for messageId: ${messageId}`
+    `[TelnyxWebhook] Updated delivery ${result[0].id} to 'delivered' for messageId: ${messageId}`,
   );
 
   return {
@@ -140,7 +140,7 @@ export async function handleMessageDelivered(
  */
 export async function handleMessageFailed(
   messageId: string,
-  errors?: Array<{ code: string; title: string; detail?: string }>
+  errors?: Array<{ code: string; title: string; detail?: string }>,
 ): Promise<WebhookProcessResult> {
   const timestamp = new Date();
 
@@ -180,11 +180,11 @@ export async function handleMessageFailed(
     const category = categorizeError(errorCode);
     console.log(
       `[TelnyxWebhook] Delivery ${result[0].id} failed - ` +
-      `Code: ${errorCode}, Category: ${category}, Message: ${errorMessage}`
+        `Code: ${errorCode}, Category: ${category}, Message: ${errorMessage}`,
     );
   } else {
     console.log(
-      `[TelnyxWebhook] Updated delivery ${result[0].id} to 'failed' for messageId: ${messageId}`
+      `[TelnyxWebhook] Updated delivery ${result[0].id} to 'failed' for messageId: ${messageId}`,
     );
   }
 
@@ -205,7 +205,7 @@ export async function handleMessageFailed(
  * @throws TelnyxWebhookError on invalid events
  */
 export async function handleTelnyxWebhookEvent(
-  event: TelnyxWebhookEvent
+  event: TelnyxWebhookEvent,
 ): Promise<WebhookProcessResult> {
   const eventType = event.data.event_type;
   const messageId = event.data.payload.id;
@@ -214,9 +214,7 @@ export async function handleTelnyxWebhookEvent(
     throw new TelnyxWebhookError('Missing message ID in webhook payload');
   }
 
-  console.log(
-    `[TelnyxWebhook] Processing event: ${eventType} for messageId: ${messageId}`
-  );
+  console.log(`[TelnyxWebhook] Processing event: ${eventType} for messageId: ${messageId}`);
 
   switch (eventType) {
     case 'message.sent': {
@@ -226,9 +224,7 @@ export async function handleTelnyxWebhookEvent(
 
     case 'message.delivered': {
       const deliveredAt =
-        event.data.payload.completed_at ||
-        event.data.payload.received_at ||
-        event.data.occurred_at;
+        event.data.payload.completed_at || event.data.payload.received_at || event.data.occurred_at;
       return handleMessageDelivered(messageId, deliveredAt);
     }
 

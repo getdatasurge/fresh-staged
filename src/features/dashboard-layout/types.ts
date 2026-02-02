@@ -1,11 +1,11 @@
 /**
  * Dashboard Layout Types
- * 
+ *
  * Types for customizable unit/site dashboard layouts with drag-and-drop widgets.
  */
 
-import type { LucideIcon } from "lucide-react";
-import type { DeviceCapability } from "@/lib/registry/capabilityRegistry";
+import type { LucideIcon } from 'lucide-react';
+import type { DeviceCapability } from '@/lib/registry/capabilityRegistry';
 // ============================================================================
 // Layout Configuration
 // ============================================================================
@@ -78,13 +78,13 @@ export interface WidgetPreferences {
  */
 export interface TimelineState {
   /** Quick range selection */
-  range: "1h" | "6h" | "24h" | "7d" | "30d" | "custom";
+  range: '1h' | '6h' | '24h' | '7d' | '30d' | 'custom';
   /** Custom range start (ISO string) */
   customFrom?: string;
   /** Custom range end (ISO string) */
   customTo?: string;
   /** Comparison mode */
-  compare: null | "previous_period" | { from: string; to: string };
+  compare: null | 'previous_period' | { from: string; to: string };
   /** Zoom level (1 = default) */
   zoomLevel: number;
 }
@@ -98,7 +98,7 @@ export type EntityType = 'unit' | 'site';
  * Preview modes for layout customization.
  * Allows users to see how the dashboard looks in different data states.
  */
-export type PreviewMode = "live" | "no_data" | "offline" | "alerting" | "normal";
+export type PreviewMode = 'live' | 'no_data' | 'offline' | 'alerting' | 'normal';
 
 /**
  * Saved layout record from the database.
@@ -172,7 +172,7 @@ export interface WidgetUnit {
   temp_limit_low: number | null;
   last_temp_reading: number | null;
   last_reading_at: string | null;
-  door_state?: "open" | "closed" | "unknown" | null;
+  door_state?: 'open' | 'closed' | 'unknown' | null;
   door_last_changed_at?: string | null;
 }
 
@@ -228,7 +228,7 @@ export interface WidgetDerivedStatus {
   statusLabel: string;
   statusColor: string;
   statusBgColor: string;
-  offlineSeverity: "none" | "warning" | "critical";
+  offlineSeverity: 'none' | 'warning' | 'critical';
   missedCheckins: number;
   lastSeenAt: string | null;
   lastReadingAt: string | null;
@@ -240,7 +240,7 @@ export interface WidgetDerivedStatus {
 export interface WidgetLastKnownGood {
   temp: number | null;
   at: string | null;
-  source: "sensor" | "manual" | null;
+  source: 'sensor' | 'manual' | null;
 }
 
 /**
@@ -249,7 +249,7 @@ export interface WidgetLastKnownGood {
 export interface WidgetAlert {
   id: string;
   type: string;
-  severity: "critical" | "warning" | "info";
+  severity: 'critical' | 'warning' | 'info';
   title: string;
   message: string;
   clearCondition: string;
@@ -341,24 +341,24 @@ export interface WidgetProps {
  * Data source category for a widget.
  */
 export type WidgetDataCategory =
-  | "sensor"      // Data from LoRa sensors
-  | "gateway"     // Data from LoRa gateways
-  | "system"      // System-generated data (alerts, events)
-  | "calculated"  // Derived/computed metrics
-  | "manual"      // User-entered data
-  | "external";   // External APIs (weather)
+  | 'sensor' // Data from LoRa sensors
+  | 'gateway' // Data from LoRa gateways
+  | 'system' // System-generated data (alerts, events)
+  | 'calculated' // Derived/computed metrics
+  | 'manual' // User-entered data
+  | 'external'; // External APIs (weather)
 
 /**
  * Sensor types for data binding validation.
  */
-export type SensorTypeRequirement = "temperature" | "door" | "humidity" | "motion";
+export type SensorTypeRequirement = 'temperature' | 'door' | 'humidity' | 'motion';
 
 /**
  * Required data source for a widget.
  */
 export interface WidgetRequiredDataSource {
   /** Type of data source required */
-  type: "sensor" | "gateway" | "manual_log" | "weather" | "none";
+  type: 'sensor' | 'gateway' | 'manual_log' | 'weather' | 'none';
   /** Specific sensor types required (only for type: 'sensor') */
   sensorTypes?: SensorTypeRequirement[];
   /** Message to show when data source is missing */
@@ -390,7 +390,7 @@ export interface WidgetDefinition {
   /** Default height in grid units */
   defaultH: number;
   /** Widget category for grouping */
-  category: "monitoring" | "alerts" | "device" | "compliance" | "utility";
+  category: 'monitoring' | 'alerts' | 'device' | 'compliance' | 'utility';
   /** Icon component from lucide-react */
   icon: LucideIcon;
   /** Whether this widget supports timeline controls */
@@ -468,7 +468,7 @@ export interface LayoutManagerActions {
 // ============================================================================
 
 /** Default layout ID (not stored in database) */
-export const DEFAULT_LAYOUT_ID = "__default__";
+export const DEFAULT_LAYOUT_ID = '__default__';
 
 /** Maximum number of custom layouts per user per entity */
 export const MAX_CUSTOM_LAYOUTS = 3;

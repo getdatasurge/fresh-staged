@@ -1,8 +1,24 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, AlertTriangle, Server, Key, Radio, Database, Loader2, RefreshCw } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Server,
+  Key,
+  Radio,
+  Database,
+  Loader2,
+  RefreshCw,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface TtnDiagnoseResult {
   success: boolean;
@@ -35,20 +51,20 @@ interface TtnDiagnoseModalProps {
   sensorName?: string;
 }
 
-const CheckRow = ({ 
-  label, 
-  icon: Icon, 
-  check 
-}: { 
-  label: string; 
+const CheckRow = ({
+  label,
+  icon: Icon,
+  check,
+}: {
+  label: string;
   icon: React.ElementType;
   check: { ok: boolean; status: number; error?: string } | undefined;
 }) => {
   if (!check) return null;
-  
+
   const is404 = check.status === 404;
   const isOk = check.ok;
-  
+
   return (
     <div className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
       <div className="flex items-center gap-2">
@@ -56,12 +72,12 @@ const CheckRow = ({
         <span className="text-sm font-medium">{label}</span>
       </div>
       <div className="flex items-center gap-2">
-        <Badge 
-          variant={isOk ? "default" : is404 ? "secondary" : "destructive"}
+        <Badge
+          variant={isOk ? 'default' : is404 ? 'secondary' : 'destructive'}
           className={cn(
-            "text-xs",
-            isOk && "bg-safe text-safe-foreground",
-            is404 && "bg-muted text-muted-foreground"
+            'text-xs',
+            isOk && 'bg-safe text-safe-foreground',
+            is404 && 'bg-muted text-muted-foreground',
           )}
         >
           {check.status}
@@ -78,25 +94,25 @@ const CheckRow = ({
   );
 };
 
-export function TtnDiagnoseModal({ 
-  open, 
-  onOpenChange, 
-  result, 
+export function TtnDiagnoseModal({
+  open,
+  onOpenChange,
+  result,
   isLoading,
   onRetry,
-  sensorName 
+  sensorName,
 }: TtnDiagnoseModalProps) {
   const getDiagnosisBadge = (diagnosis: string) => {
     switch (diagnosis) {
-      case "fully_provisioned":
+      case 'fully_provisioned':
         return <Badge className="bg-safe text-safe-foreground">Fully Provisioned</Badge>;
-      case "not_provisioned":
+      case 'not_provisioned':
         return <Badge variant="secondary">Not Provisioned</Badge>;
-      case "split_brain_no_keys":
+      case 'split_brain_no_keys':
         return <Badge className="bg-alarm text-alarm-foreground">Split Brain (No Keys)</Badge>;
-      case "split_brain_orphaned":
+      case 'split_brain_orphaned':
         return <Badge className="bg-alarm text-alarm-foreground">Split Brain (Orphaned)</Badge>;
-      case "partial":
+      case 'partial':
         return <Badge className="bg-warning text-warning-foreground">Partial</Badge>;
       default:
         return <Badge variant="outline">{diagnosis}</Badge>;
@@ -110,19 +126,19 @@ export function TtnDiagnoseModal({
           <DialogTitle className="flex items-center gap-2">
             TTN Device Diagnostics
             {result && onRetry && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-6 w-6" 
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
                 onClick={onRetry}
                 disabled={isLoading}
               >
-                <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+                <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
               </Button>
             )}
           </DialogTitle>
           <DialogDescription>
-            {sensorName || result?.sensorName || "Sensor"} TTN registration status
+            {sensorName || result?.sensorName || 'Sensor'} TTN registration status
           </DialogDescription>
         </DialogHeader>
 
@@ -154,7 +170,9 @@ export function TtnDiagnoseModal({
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Base URL</span>
-                <span className="font-mono text-xs truncate max-w-[200px]">{result.clusterBaseUrl}</span>
+                <span className="font-mono text-xs truncate max-w-[200px]">
+                  {result.clusterBaseUrl}
+                </span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">App ID</span>
@@ -171,11 +189,9 @@ export function TtnDiagnoseModal({
               <span className="text-sm font-medium">Diagnosis</span>
               {getDiagnosisBadge(result.diagnosis)}
             </div>
-            
+
             {result.hint && (
-              <p className="text-sm text-muted-foreground bg-muted/30 p-2 rounded">
-                {result.hint}
-              </p>
+              <p className="text-sm text-muted-foreground bg-muted/30 p-2 rounded">{result.hint}</p>
             )}
 
             {/* Plane Checks */}

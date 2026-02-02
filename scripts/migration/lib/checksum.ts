@@ -5,8 +5,8 @@
  * source (Supabase) and target (new PostgreSQL) databases after migration.
  */
 
-import pg from "pg";
-import { logger } from "./logger.js";
+import pg from 'pg';
+import { logger } from './logger.js';
 
 /**
  * Result of comparing a table between source and target
@@ -27,7 +27,7 @@ export interface TableComparison {
   /** Whether checksums match (null if either checksum couldn't be computed) */
   checksumMatch: boolean | null;
   /** Overall status: pass, fail, or warn (if checksum couldn't be computed) */
-  status: "pass" | "fail" | "warn";
+  status: 'pass' | 'fail' | 'warn';
 }
 
 /**
@@ -41,14 +41,12 @@ export interface TableComparison {
 export async function getTableRowCount(
   pool: pg.Pool,
   tableName: string,
-  schema: string = "public"
+  schema: string = 'public',
 ): Promise<number> {
   const client = await pool.connect();
   try {
     // Use identifier quoting to prevent SQL injection
-    const result = await client.query(
-      `SELECT COUNT(*) as count FROM "${schema}"."${tableName}"`
-    );
+    const result = await client.query(`SELECT COUNT(*) as count FROM "${schema}"."${tableName}"`);
     return parseInt(result.rows[0].count, 10);
   } finally {
     client.release();
@@ -66,7 +64,7 @@ export async function getTableRowCount(
 async function getTableColumns(
   pool: pg.Pool,
   tableName: string,
-  schema: string = "public"
+  schema: string = 'public',
 ): Promise<string[]> {
   const client = await pool.connect();
   try {
@@ -77,7 +75,7 @@ async function getTableColumns(
       WHERE table_schema = $1 AND table_name = $2
       ORDER BY ordinal_position
       `,
-      [schema, tableName]
+      [schema, tableName],
     );
     return result.rows.map((r) => r.column_name);
   } finally {
@@ -96,7 +94,7 @@ async function getTableColumns(
 async function getPrimaryKeyColumns(
   pool: pg.Pool,
   tableName: string,
-  schema: string = "public"
+  schema: string = 'public',
 ): Promise<string[]> {
   const client = await pool.connect();
   try {
@@ -109,16 +107,16 @@ async function getPrimaryKeyColumns(
         AND i.indisprimary
       ORDER BY array_position(i.indkey, a.attnum)
       `,
-      [`"${schema}"."${tableName}"`]
+      [`"${schema}"."${tableName}"`],
     );
     if (result.rows.length > 0) {
       return result.rows.map((r) => r.column_name);
     }
     // Fallback to 'id' if no primary key found
-    return ["id"];
+    return ['id'];
   } catch {
     // If table lookup fails, default to id
-    return ["id"];
+    return ['id'];
   } finally {
     client.release();
   }
@@ -139,13 +137,13 @@ async function getPrimaryKeyColumns(
 export async function computeTableChecksum(
   pool: pg.Pool,
   tableName: string,
-  schema: string = "public"
+  schema: string = 'public',
 ): Promise<string | null> {
   const client = await pool.connect();
   try {
     // Get primary key for deterministic ordering
     const pkColumns = await getPrimaryKeyColumns(pool, tableName, schema);
-    const orderBy = pkColumns.map((col) => `"${col}"`).join(", ");
+    const orderBy = pkColumns.map((col) => `"${col}"`).join(', ');
 
     // Compute checksum by hashing each row, sorting hashes, then aggregating
     // This ensures consistent results regardless of physical row order
@@ -161,7 +159,7 @@ export async function computeTableChecksum(
     const checksum = result.rows[0]?.checksum;
     if (!checksum) {
       // Table might be empty
-      logger.debug({ tableName }, "Table empty or no checksum computed");
+      logger.debug({ tableName }, 'Table empty or no checksum computed');
       return null;
     }
 
@@ -170,7 +168,7 @@ export async function computeTableChecksum(
     // Table might have columns that don't cast to text well (e.g., complex JSONB)
     logger.warn(
       { tableName, error: (err as Error).message },
-      "Checksum computation failed, falling back to row count only"
+      'Checksum computation failed, falling back to row count only',
     );
     return null;
   } finally {
@@ -194,7 +192,7 @@ export async function computeChecksumExcludingColumns(
   pool: pg.Pool,
   tableName: string,
   excludeColumns: string[],
-  schema: string = "public"
+  schema: string = 'public',
 ): Promise<string | null> {
   const client = await pool.connect();
   try {
@@ -202,26 +200,19 @@ export async function computeChecksumExcludingColumns(
     const allColumns = await getTableColumns(pool, tableName, schema);
 
     // Filter out excluded columns
-    const columnsToInclude = allColumns.filter(
-      (col) => !excludeColumns.includes(col)
-    );
+    const columnsToInclude = allColumns.filter((col) => !excludeColumns.includes(col));
 
     if (columnsToInclude.length === 0) {
-      logger.warn(
-        { tableName, excludeColumns },
-        "All columns excluded, cannot compute checksum"
-      );
+      logger.warn({ tableName, excludeColumns }, 'All columns excluded, cannot compute checksum');
       return null;
     }
 
     // Get primary key for deterministic ordering
     const pkColumns = await getPrimaryKeyColumns(pool, tableName, schema);
-    const orderBy = pkColumns.map((col) => `"${col}"`).join(", ");
+    const orderBy = pkColumns.map((col) => `"${col}"`).join(', ');
 
     // Build column list for checksum (excluding specified columns)
-    const columnList = columnsToInclude
-      .map((col) => `"${col}"::text`)
-      .join(" || '|' || ");
+    const columnList = columnsToInclude.map((col) => `"${col}"::text`).join(" || '|' || ");
 
     // Compute checksum by concatenating included columns, hashing each row, then aggregating
     const result = await client.query(`
@@ -235,23 +226,20 @@ export async function computeChecksumExcludingColumns(
 
     const checksum = result.rows[0]?.checksum;
     if (!checksum) {
-      logger.debug(
-        { tableName },
-        "Table empty or no checksum computed (with exclusions)"
-      );
+      logger.debug({ tableName }, 'Table empty or no checksum computed (with exclusions)');
       return null;
     }
 
     logger.debug(
       { tableName, excludedColumns: excludeColumns, includedCount: columnsToInclude.length },
-      "Computed checksum with column exclusions"
+      'Computed checksum with column exclusions',
     );
 
     return checksum;
   } catch (err) {
     logger.warn(
       { tableName, excludeColumns, error: (err as Error).message },
-      "Checksum computation with exclusions failed"
+      'Checksum computation with exclusions failed',
     );
     return null;
   } finally {
@@ -279,7 +267,7 @@ export async function compareTableStats(
   tableName: string,
   excludeColumns: string[] = [],
   skipChecksum: boolean = false,
-  schema: string = "public"
+  schema: string = 'public',
 ): Promise<TableComparison> {
   // Get row counts from both databases
   const [sourceRowCount, targetRowCount] = await Promise.all([
@@ -316,15 +304,15 @@ export async function compareTableStats(
   }
 
   // Determine overall status
-  let status: "pass" | "fail" | "warn" = "pass";
+  let status: 'pass' | 'fail' | 'warn' = 'pass';
 
   if (!rowCountMatch) {
-    status = "fail";
+    status = 'fail';
   } else if (checksumMatch === false) {
-    status = "fail";
+    status = 'fail';
   } else if (!skipChecksum && checksumMatch === null) {
     // Checksum couldn't be computed but row counts match
-    status = "warn";
+    status = 'warn';
   }
 
   return {

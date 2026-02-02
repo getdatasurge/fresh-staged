@@ -49,6 +49,7 @@ metrics:
 Migrated 6 pages from Supabase auth to Stack Auth:
 
 ### Task 1: Alerts, RecentlyDeleted, TTNCleanup
+
 - **Alerts.tsx** (2 auth calls → useUser):
   - Replaced session state management with `useUser()`
   - Replaced auth calls in acknowledge and resolve handlers
@@ -66,6 +67,7 @@ Migrated 6 pages from Supabase auth to Stack Auth:
   - Database calls preserved (profiles, TTN jobs)
 
 ### Task 2: PilotSetup, AreaDetail, Inspector
+
 - **PilotSetup.tsx** (1 auth call → useUser):
   - Replaced `getSession()` in feedback submission
   - Updated to use `user.id` directly
@@ -84,6 +86,7 @@ Migrated 6 pages from Supabase auth to Stack Auth:
 ## Migration Patterns Applied
 
 ### Pattern 1: Session State Replacement
+
 ```typescript
 // BEFORE
 const [session, setSession] = useState<Session | null>(null);
@@ -98,9 +101,12 @@ const user = useUser();
 ```
 
 ### Pattern 2: User ID Retrieval
+
 ```typescript
 // BEFORE
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 const userId = user.id;
 
 // AFTER
@@ -109,12 +115,15 @@ const userId = user?.id;
 ```
 
 ### Pattern 3: Query Integration
+
 ```typescript
 // BEFORE
 const { data: profile } = useQuery({
-  queryKey: ["user-profile"],
+  queryKey: ['user-profile'],
   queryFn: async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return null;
     // fetch profile
   },
@@ -123,7 +132,7 @@ const { data: profile } = useQuery({
 // AFTER
 const user = useUser();
 const { data: profile } = useQuery({
-  queryKey: ["user-profile", user?.id],
+  queryKey: ['user-profile', user?.id],
   queryFn: async () => {
     if (!user) return null;
     // fetch profile
@@ -140,6 +149,7 @@ const { data: profile } = useQuery({
 ✅ All database calls preserved (no data access changes)
 
 Verification commands:
+
 ```bash
 grep -c "supabase.auth" src/pages/{Alerts,RecentlyDeleted,TTNCleanup,PilotSetup,AreaDetail,Inspector}.tsx
 # All returned: 0
@@ -155,6 +165,7 @@ None - plan executed exactly as written.
 ## Technical Details
 
 ### Files Modified
+
 1. **src/pages/Alerts.tsx** (810 lines)
    - Removed: Session state, onAuthStateChange listener
    - Added: useUser import and hook
@@ -186,7 +197,9 @@ None - plan executed exactly as written.
    - Changed: Initialization and export handlers
 
 ### Database Operations Preserved
+
 All pages maintain their existing database calls:
+
 - Supabase queries (from, select, insert, update, delete)
 - RPC calls (create_unit_for_area)
 - Edge function invocations (export-temperature-logs)
@@ -195,13 +208,16 @@ All pages maintain their existing database calls:
 ## Next Phase Readiness
 
 ### For 08-05 (Complex Pages Migration)
+
 ✅ Simple auth pattern established and proven
 ✅ Query integration pattern demonstrated
 ✅ TypeScript compilation confirmed
 ⚠️ Complex pages will need token handling (getAuthJson)
 
 ### Remaining Work
+
 After this plan, estimated remaining pages:
+
 - ~24 pages still using Supabase auth (from tech debt FE-03)
 - Next plan will handle pages with complex auth patterns
 - Subsequent plans will handle remaining simple pages
@@ -209,6 +225,7 @@ After this plan, estimated remaining pages:
 ## Testing Notes
 
 **Manual testing recommended:**
+
 1. Alerts page - verify acknowledge and resolve actions
 2. RecentlyDeleted page - verify restore and delete
 3. TTNCleanup page - verify scan and cleanup operations
@@ -221,6 +238,7 @@ All pages should work identically to before migration.
 ## Performance Impact
 
 No performance changes expected:
+
 - useUser() is synchronous after initial load
 - No additional network requests
 - Same database query patterns

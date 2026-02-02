@@ -77,7 +77,7 @@ export class TelnyxService {
     if (!apiKey) {
       console.warn(
         '[TelnyxService] TELNYX_API_KEY not configured - SMS sending disabled. ' +
-        'Set environment variable for SMS functionality.'
+          'Set environment variable for SMS functionality.',
       );
       this.enabled = false;
       return;
@@ -121,7 +121,7 @@ export class TelnyxService {
     // Check if service is enabled
     if (!this.enabled || !this.client) {
       throw new Error(
-        '[TelnyxService] Service not configured - set TELNYX_API_KEY environment variable'
+        '[TelnyxService] Service not configured - set TELNYX_API_KEY environment variable',
       );
     }
 
@@ -131,15 +131,14 @@ export class TelnyxService {
     if (!fromNumber) {
       throw new Error(
         '[TelnyxService] TELNYX_PHONE_NUMBER not configured. ' +
-        'Set environment variable with source phone number.'
+          'Set environment variable with source phone number.',
       );
     }
 
     const profileId = messagingProfileId || process.env.TELNYX_MESSAGING_PROFILE_ID;
 
     console.log(
-      `[TelnyxService] Sending SMS from ${fromNumber.slice(0, 5)}*** ` +
-      `to ${to.slice(0, 5)}***`
+      `[TelnyxService] Sending SMS from ${fromNumber.slice(0, 5)}*** ` + `to ${to.slice(0, 5)}***`,
     );
 
     // Build request payload
@@ -170,8 +169,7 @@ export class TelnyxService {
     const status = data?.to?.[0]?.status || 'queued';
 
     console.log(
-      `[TelnyxService] SMS sent successfully. ` +
-      `MessageId: ${messageId}, Status: ${status}`
+      `[TelnyxService] SMS sent successfully. ` + `MessageId: ${messageId}, Status: ${status}`,
     );
 
     return {

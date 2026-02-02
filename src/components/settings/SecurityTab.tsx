@@ -8,7 +8,14 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -112,7 +119,9 @@ export function SecurityTab({ currentRole, organizationId }: SecurityTabProps) {
         <CardContent>
           {currentRole && currentRoleConfig ? (
             <div className="flex items-start gap-4">
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${currentRoleConfig.color}`}>
+              <div
+                className={`w-12 h-12 rounded-lg flex items-center justify-center ${currentRoleConfig.color}`}
+              >
                 <CurrentRoleIcon className="w-6 h-6" />
               </div>
               <div className="flex-1">
@@ -122,9 +131,7 @@ export function SecurityTab({ currentRole, organizationId }: SecurityTabProps) {
                     Active
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {currentRoleConfig.description}
-                </p>
+                <p className="text-sm text-muted-foreground">{currentRoleConfig.description}</p>
               </div>
             </div>
           ) : (
@@ -144,7 +151,8 @@ export function SecurityTab({ currentRole, organizationId }: SecurityTabProps) {
             Role Permissions Matrix
           </CardTitle>
           <CardDescription>
-            Overview of what each role can do in the system. This helps understand access levels when assigning roles to team members.
+            Overview of what each role can do in the system. This helps understand access levels
+            when assigning roles to team members.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -154,10 +162,14 @@ export function SecurityTab({ currentRole, organizationId }: SecurityTabProps) {
               <TabsTrigger value="all" className="text-xs">
                 All
               </TabsTrigger>
-              {Object.keys(PERMISSION_CATEGORIES).map(category => {
+              {Object.keys(PERMISSION_CATEGORIES).map((category) => {
                 const CategoryIcon = categoryIcons[category] || Settings;
                 return (
-                  <TabsTrigger key={category} value={category} className="text-xs flex items-center gap-1">
+                  <TabsTrigger
+                    key={category}
+                    value={category}
+                    className="text-xs flex items-center gap-1"
+                  >
                     <CategoryIcon className="h-3 w-3" />
                     <span className="hidden sm:inline">{categoryNames[category]}</span>
                   </TabsTrigger>
@@ -171,8 +183,10 @@ export function SecurityTab({ currentRole, organizationId }: SecurityTabProps) {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[200px] sticky left-0 bg-background">Permission</TableHead>
-                        {ROLE_HIERARCHY.map(role => {
+                        <TableHead className="w-[200px] sticky left-0 bg-background">
+                          Permission
+                        </TableHead>
+                        {ROLE_HIERARCHY.map((role) => {
                           const RoleIcon = roleIcons[role];
                           const config = ROLE_CONFIG[role];
                           const isCurrentRole = role === currentRole;
@@ -185,8 +199,12 @@ export function SecurityTab({ currentRole, organizationId }: SecurityTabProps) {
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <div className="flex flex-col items-center gap-1">
-                                      <RoleIcon className={`h-4 w-4 ${isCurrentRole ? 'text-accent' : ''}`} />
-                                      <span className={`text-xs ${isCurrentRole ? 'font-bold' : ''}`}>
+                                      <RoleIcon
+                                        className={`h-4 w-4 ${isCurrentRole ? 'text-accent' : ''}`}
+                                      />
+                                      <span
+                                        className={`text-xs ${isCurrentRole ? 'font-bold' : ''}`}
+                                      >
                                         {config.label}
                                       </span>
                                       {isCurrentRole && (
@@ -207,7 +225,7 @@ export function SecurityTab({ currentRole, organizationId }: SecurityTabProps) {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {getFilteredPermissions().map(permission => (
+                      {getFilteredPermissions().map((permission) => (
                         <TableRow key={permission}>
                           <TableCell className="font-medium sticky left-0 bg-background">
                             <TooltipProvider>
@@ -215,7 +233,9 @@ export function SecurityTab({ currentRole, organizationId }: SecurityTabProps) {
                                 <TooltipTrigger asChild>
                                   <div className="flex items-center gap-2 cursor-help">
                                     <Info className="h-3 w-3 text-muted-foreground" />
-                                    <span className="text-sm">{getPermissionDescription(permission)}</span>
+                                    <span className="text-sm">
+                                      {getPermissionDescription(permission)}
+                                    </span>
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
@@ -224,7 +244,7 @@ export function SecurityTab({ currentRole, organizationId }: SecurityTabProps) {
                               </Tooltip>
                             </TooltipProvider>
                           </TableCell>
-                          {ROLE_HIERARCHY.map(role => {
+                          {ROLE_HIERARCHY.map((role) => {
                             const hasPermission = can(role, permission);
                             const isCurrentRole = role === currentRole;
                             const isCurrentPermission = currentRole && can(currentRole, permission);
@@ -299,14 +319,10 @@ export function SecurityTab({ currentRole, organizationId }: SecurityTabProps) {
                           </Badge>
                         )}
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        Level {index + 1}
-                      </span>
+                      <span className="text-xs text-muted-foreground">Level {index + 1}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {config.description}
-                  </p>
+                  <p className="text-xs text-muted-foreground line-clamp-2">{config.description}</p>
                 </div>
               );
             })}
@@ -327,25 +343,29 @@ export function SecurityTab({ currentRole, organizationId }: SecurityTabProps) {
             <li className="flex items-start gap-2">
               <CheckCircle2 className="h-4 w-4 text-safe mt-0.5 shrink-0" />
               <span>
-                <strong>Principle of Least Privilege:</strong> Assign users the lowest role that allows them to perform their job functions.
+                <strong>Principle of Least Privilege:</strong> Assign users the lowest role that
+                allows them to perform their job functions.
               </span>
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2 className="h-4 w-4 text-safe mt-0.5 shrink-0" />
               <span>
-                <strong>Regular Audits:</strong> Periodically review user roles and remove access for users who no longer need it.
+                <strong>Regular Audits:</strong> Periodically review user roles and remove access
+                for users who no longer need it.
               </span>
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2 className="h-4 w-4 text-safe mt-0.5 shrink-0" />
               <span>
-                <strong>Owner Succession:</strong> Ensure there is a succession plan for organization ownership in case the current owner becomes unavailable.
+                <strong>Owner Succession:</strong> Ensure there is a succession plan for
+                organization ownership in case the current owner becomes unavailable.
               </span>
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2 className="h-4 w-4 text-safe mt-0.5 shrink-0" />
               <span>
-                <strong>Use Inspector Role:</strong> For external auditors or compliance checks, use the Inspector role which provides read-only access with export capability.
+                <strong>Use Inspector Role:</strong> For external auditors or compliance checks, use
+                the Inspector role which provides read-only access with export capability.
               </span>
             </li>
           </ul>

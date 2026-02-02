@@ -97,6 +97,7 @@ Each task was committed atomically:
 ## Files Created/Modified
 
 ### Created
+
 - **scripts/test/generate-test-data.ts** (221 lines)
   - Generates 100K sensor readings with realistic distribution
   - 30 simulated devices (sensor-001 through sensor-030)
@@ -113,6 +114,7 @@ Each task was committed atomically:
   - Cleanup via trap EXIT (removes dump file, drops test database)
 
 ### Modified
+
 - **scripts/test/README.md** (+228 lines)
   - Migration Timing Validation section
   - Synthetic data generation usage and parameters
@@ -124,26 +126,31 @@ Each task was committed atomically:
 ## Decisions Made
 
 **1. Faker.js for realistic data distribution**
+
 - Rationale: Industry-standard library for generating realistic test data
 - Alternative: Random values - less realistic, harder to maintain
 - Impact: 7.5% temperature excursions create realistic alert data
 
 **2. Batch size 5000 records per transaction**
+
 - Rationale: Balance between performance and memory usage
 - 100K records = 20 batches, ~5 seconds per batch
 - Configurable via BATCH_SIZE env var
 
 **3. pg_dump custom format (-Fc) with compression level 9**
+
 - Rationale: Optimal compression for migration file size
 - Trade-off: Higher CPU usage during dump, but smaller file transfer
 - Aligned with Phase 10 backup procedures
 
 **4. Test database pattern for restore validation**
+
 - Rationale: Non-destructive verification without affecting source
 - Creates frostguard_migration_test, compares row counts, then drops
 - Automatic cleanup via trap EXIT on success or failure
 
 **5. Warn if < 50,000 rows**
+
 - Rationale: Timing test needs representative data volume
 - Provides clear guidance to run generate-test-data.ts first
 - Continues anyway to allow partial testing
@@ -159,17 +166,20 @@ None - all scripts executed successfully on first attempt.
 ## User Setup Required
 
 None - scripts are self-contained and require only:
+
 - Docker with PostgreSQL container (for timing validation)
 - Backend database connection via DATABASE_URL (for data generation)
 
 ## Next Phase Readiness
 
 **Migration timing validation complete:**
+
 - Scripts ready for production migration planning
 - Documentation provides clear guidance for maintenance window estimation
 - TEST-03 requirement satisfied: Migration procedure tested with production-scale data
 
 **Production migration planning checklist:**
+
 1. Generate test data matching production volume (TARGET_RECORDS env var)
 2. Run timing validation multiple times for consistency
 3. Apply 1.5-2x safety margin to estimate
@@ -177,15 +187,18 @@ None - scripts are self-contained and require only:
 5. Document all steps for production execution
 
 **Scaling estimates documented:**
+
 - 100K records → ~30-60 seconds
 - 1M records → ~5-10 minutes (10x scale)
 - 10M records → ~50-100 minutes (100x scale)
 - pg_dump is single-threaded (linear scaling with row count)
 
 **Reference for production:**
+
 - docs/DATABASE.md - Full backup/restore procedures (Phase 10)
 - .planning/phases/10-database-production-readiness/ - RTO/RPO context
 
 ---
-*Phase: 13-e2e-validation-cutover*
-*Completed: 2026-01-24*
+
+_Phase: 13-e2e-validation-cutover_
+_Completed: 2026-01-24_

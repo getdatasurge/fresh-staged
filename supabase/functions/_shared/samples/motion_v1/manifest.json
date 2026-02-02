@@ -12,10 +12,7 @@
       "occupancy": { "type": "boolean" },
       "battery_level": { "type": "integer", "minimum": 0, "maximum": 100 }
     },
-    "oneOf": [
-      { "required": ["motion"] },
-      { "required": ["occupancy"] }
-    ]
+    "oneOf": [{ "required": ["motion"] }, { "required": ["occupancy"] }]
   },
   "discriminators": {
     "primary": ["motion", "occupancy"],

@@ -1,12 +1,11 @@
-
 // Unified alert type that works for both DB and computed alerts
 interface UnifiedAlert {
   id: string;
   title: string;
   message: string | null;
   alertType: string;
-  severity: "critical" | "warning" | "info";
-  status: "active" | "acknowledged" | "resolved";
+  severity: 'critical' | 'warning' | 'info';
+  status: 'active' | 'acknowledged' | 'resolved';
   unit_id: string;
   unit_name: string;
   site_name: string;

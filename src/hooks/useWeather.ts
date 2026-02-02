@@ -1,17 +1,17 @@
 /**
  * Weather Data Hooks
- * 
+ *
  * React Query hooks for weather data with caching.
  */
 
-import { useQuery } from "@tanstack/react-query";
-import { 
-  getCurrentWeather, 
+import { useQuery } from '@tanstack/react-query';
+import {
+  getCurrentWeather,
   getWeatherTimeseries,
   isValidLocation,
   type WeatherData,
-  type HourlyWeather
-} from "@/lib/weather/weatherService";
+  type HourlyWeather,
+} from '@/lib/weather/weatherService';
 
 /**
  * Hook to fetch current weather and hourly forecast
@@ -19,15 +19,15 @@ import {
 export function useWeather(
   lat: number | null | undefined,
   lon: number | null | undefined,
-  timezone?: string
+  timezone?: string,
 ) {
   const hasLocation = isValidLocation(lat, lon);
 
   return useQuery<WeatherData | null, Error>({
-    queryKey: ["weather", "current", lat, lon, timezone],
+    queryKey: ['weather', 'current', lat, lon, timezone],
     queryFn: async () => {
       if (!hasLocation || lat == null || lon == null) return null;
-      return getCurrentWeather(lat, lon, timezone ?? "auto");
+      return getCurrentWeather(lat, lon, timezone ?? 'auto');
     },
     enabled: hasLocation,
     staleTime: 15 * 60 * 1000, // 15 minutes
@@ -46,20 +46,20 @@ export function useWeatherHistory(
   lon: number | null | undefined,
   timezone: string,
   startDate: Date | null,
-  endDate: Date | null
+  endDate: Date | null,
 ) {
   const hasLocation = isValidLocation(lat, lon);
   const hasDateRange = startDate != null && endDate != null;
 
   return useQuery<HourlyWeather[], Error>({
     queryKey: [
-      "weather", 
-      "history", 
-      lat, 
-      lon, 
-      timezone, 
-      startDate?.toISOString(), 
-      endDate?.toISOString()
+      'weather',
+      'history',
+      lat,
+      lon,
+      timezone,
+      startDate?.toISOString(),
+      endDate?.toISOString(),
     ],
     queryFn: async () => {
       if (!hasLocation || lat == null || lon == null) return [];

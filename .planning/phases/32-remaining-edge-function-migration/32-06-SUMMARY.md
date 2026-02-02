@@ -27,12 +27,12 @@ key-files:
     - backend/src/routers/telnyx.router.ts
 
 key-decisions:
-  - "Use messagingTollfree.verification.requests.list API for toll-free status"
-  - "Use messagingProfiles.update API for webhook configuration"
-  - "Map Telnyx statuses (Verified/Rejected/Waiting For *) to simplified enum (approved/pending/rejected/unknown)"
+  - 'Use messagingTollfree.verification.requests.list API for toll-free status'
+  - 'Use messagingProfiles.update API for webhook configuration'
+  - 'Map Telnyx statuses (Verified/Rejected/Waiting For *) to simplified enum (approved/pending/rejected/unknown)'
 
 patterns-established:
-  - "getTelnyxClient pattern: Return null if API key not configured, let caller handle"
+  - 'getTelnyxClient pattern: Return null if API key not configured, let caller handle'
   - "Graceful degradation: Return 'unknown' status with error details instead of throwing"
 
 # Metrics
@@ -53,6 +53,7 @@ completed: 2026-01-29
 - **Files modified:** 1
 
 ## Accomplishments
+
 - verificationStatus now queries Telnyx messagingTollfree.verification.requests.list API for real status
 - configureWebhook now calls Telnyx messagingProfiles.update API to register webhook URL
 - Both procedures handle missing API keys and configuration gracefully
@@ -66,11 +67,13 @@ Both tasks modified the same file, committed together:
 1. **Task 1 & 2: verificationStatus + configureWebhook implementation** - `a97ed38` (feat)
 
 ## Files Created/Modified
+
 - `backend/src/routers/telnyx.router.ts` - Added Telnyx SDK imports, getTelnyxClient helper, mapVerificationStatus, real API calls for both procedures
 
 ## Decisions Made
+
 - **Telnyx SDK initialization:** Create new client per request (no singleton) since router procedures are stateless
-- **Status mapping:** Map Telnyx 'Verified' -> 'approved', 'Rejected' -> 'rejected', all 'Waiting For *' and 'In Progress' -> 'pending'
+- **Status mapping:** Map Telnyx 'Verified' -> 'approved', 'Rejected' -> 'rejected', all 'Waiting For \*' and 'In Progress' -> 'pending'
 - **Async iterator handling:** Use for-await-of with break to get first verification result from paginated response
 - **Webhook API version:** Use '2' for webhook_api_version (latest Telnyx webhook format)
 
@@ -85,6 +88,7 @@ None - straightforward implementation using Telnyx SDK v5.11.0.
 ## User Setup Required
 
 For the Telnyx integration to work, these environment variables must be configured:
+
 - `TELNYX_API_KEY` - Telnyx API key from Mission Control
 - `TELNYX_PHONE_NUMBER` - Toll-free number to check verification status for
 - `TELNYX_MESSAGING_PROFILE_ID` - Messaging profile ID to configure webhooks on
@@ -93,10 +97,12 @@ For the Telnyx integration to work, these environment variables must be configur
 Without these, procedures return graceful error messages rather than crashing.
 
 ## Next Phase Readiness
+
 - Telnyx router now has full API integration (Gap 2 and Gap 3 from 32-VERIFICATION.md closed)
 - Phase 32 gap closure complete
 - Ready for Phase 33 (Error Handling UI Integration)
 
 ---
-*Phase: 32-remaining-edge-function-migration*
-*Completed: 2026-01-29*
+
+_Phase: 32-remaining-edge-function-migration_
+_Completed: 2026-01-29_

@@ -6,31 +6,33 @@
 
 ## Runbook Index
 
-| ID | Runbook | Severity | Trigger |
-|----|---------|----------|---------|
-| RB-001 | [Health Check Failure](#rb-001-health-check-failure) | P2 | Health dashboard red |
-| RB-002 | [TTN Webhook Not Receiving](#rb-002-ttn-webhook-not-receiving) | P1 | No sensor readings |
-| RB-003 | [Sensor Offline](#rb-003-sensor-offline) | P3 | Sensor status offline |
-| RB-004 | [Gateway Offline](#rb-004-gateway-offline) | P2 | Gateway not reporting |
-| RB-005 | [Alert Processing Failure](#rb-005-alert-processing-failure) | P1 | Alerts not triggering |
-| RB-006 | [Notification Delivery Failure](#rb-006-notification-delivery-failure) | P2 | Notifications not sent |
-| RB-007 | [Database Latency High](#rb-007-database-latency-high) | P3 | Slow queries |
-| RB-008 | [Stripe Webhook Failure](#rb-008-stripe-webhook-failure) | P2 | Payment issues |
-| RB-009 | [Simulator Not Running](#rb-009-simulator-not-running) | P4 | Test data not generating |
-| RB-010 | [User Cannot Login](#rb-010-user-cannot-login) | P3 | Auth failures |
-| RB-011 | [TTN Provisioning Failure](#rb-011-ttn-provisioning-failure) | P3 | Device registration fails |
-| RB-012 | [Data Ingestion Backlog](#rb-012-data-ingestion-backlog) | P2 | Processing delays |
+| ID     | Runbook                                                                | Severity | Trigger                   |
+| ------ | ---------------------------------------------------------------------- | -------- | ------------------------- |
+| RB-001 | [Health Check Failure](#rb-001-health-check-failure)                   | P2       | Health dashboard red      |
+| RB-002 | [TTN Webhook Not Receiving](#rb-002-ttn-webhook-not-receiving)         | P1       | No sensor readings        |
+| RB-003 | [Sensor Offline](#rb-003-sensor-offline)                               | P3       | Sensor status offline     |
+| RB-004 | [Gateway Offline](#rb-004-gateway-offline)                             | P2       | Gateway not reporting     |
+| RB-005 | [Alert Processing Failure](#rb-005-alert-processing-failure)           | P1       | Alerts not triggering     |
+| RB-006 | [Notification Delivery Failure](#rb-006-notification-delivery-failure) | P2       | Notifications not sent    |
+| RB-007 | [Database Latency High](#rb-007-database-latency-high)                 | P3       | Slow queries              |
+| RB-008 | [Stripe Webhook Failure](#rb-008-stripe-webhook-failure)               | P2       | Payment issues            |
+| RB-009 | [Simulator Not Running](#rb-009-simulator-not-running)                 | P4       | Test data not generating  |
+| RB-010 | [User Cannot Login](#rb-010-user-cannot-login)                         | P3       | Auth failures             |
+| RB-011 | [TTN Provisioning Failure](#rb-011-ttn-provisioning-failure)           | P3       | Device registration fails |
+| RB-012 | [Data Ingestion Backlog](#rb-012-data-ingestion-backlog)               | P2       | Processing delays         |
 
 ---
 
 ## RB-001: Health Check Failure
 
 ### Symptoms
+
 - Health Dashboard shows red status
 - `/functions/v1/health-check` returns error status
 - One or more checks failing
 
 ### Severity
+
 P2 - High
 
 ### Initial Assessment
@@ -79,6 +81,7 @@ curl https://your-project.supabase.co/functions/v1/health-check
 4. See [RB-002](#rb-002-ttn-webhook-not-receiving)
 
 ### Escalation
+
 - If unresolved after 15 minutes: Escalate to Engineering Lead
 - If affecting customer data: Escalate immediately
 
@@ -87,11 +90,13 @@ curl https://your-project.supabase.co/functions/v1/health-check
 ## RB-002: TTN Webhook Not Receiving
 
 ### Symptoms
+
 - No new sensor readings appearing
 - `sensor_readings` table not updating
 - TTN Console shows uplinks but no delivery
 
 ### Severity
+
 P1 - Critical (data not being collected)
 
 ### Diagnosis
@@ -164,11 +169,13 @@ WHERE UPPER(REPLACE(dev_eui, ':', '')) = 'AABBCCDDEEFF0011';
 ```
 
 If not found:
+
 - DevEUI may be formatted differently
 - Sensor may not be registered
 - Check both `lora_sensors` and legacy `devices` table
 
 ### Escalation
+
 - Immediate if no data for >15 minutes across all orgs
 - Engineering Lead + on-call
 
@@ -177,11 +184,13 @@ If not found:
 ## RB-003: Sensor Offline
 
 ### Symptoms
+
 - Sensor status shows "offline"
 - No recent readings from sensor
 - Customer reports unit not updating
 
 ### Severity
+
 P3 - Medium
 
 ### Diagnosis
@@ -254,11 +263,13 @@ contact support with the sensor location details.
 ## RB-004: Gateway Offline
 
 ### Symptoms
+
 - Gateway status shows "offline"
 - Multiple sensors behind gateway not reporting
 - TTN Console shows gateway disconnected
 
 ### Severity
+
 P2 - High (affects multiple sensors)
 
 ### Diagnosis
@@ -282,6 +293,7 @@ GROUP BY g.id;
 #### Step 1: Verify Physical Gateway
 
 Contact customer to verify:
+
 - Gateway is powered on
 - Network cable connected (if ethernet)
 - LED status indicates online
@@ -302,6 +314,7 @@ Contact customer to verify:
 #### Step 4: Re-register if Needed
 
 If gateway won't reconnect:
+
 1. Delete from TTN Console
 2. Re-provision via FreshTrack Pro
 3. Factory reset physical gateway
@@ -311,11 +324,13 @@ If gateway won't reconnect:
 ## RB-005: Alert Processing Failure
 
 ### Symptoms
+
 - Temperature out of range but no alert
 - `process-unit-states` not updating unit status
 - Alerts not being created
 
 ### Severity
+
 P1 - Critical (safety-critical functionality)
 
 ### Diagnosis
@@ -375,6 +390,7 @@ WHERE id = 'unit-uuid';
 ```
 
 ### Escalation
+
 - Immediate to Engineering Lead
 - This is safety-critical functionality
 
@@ -383,11 +399,13 @@ WHERE id = 'unit-uuid';
 ## RB-006: Notification Delivery Failure
 
 ### Symptoms
+
 - Alerts triggered but no notifications sent
 - Customer reports not receiving emails/SMS
 - Notification status shows "failed"
 
 ### Severity
+
 P2 - High
 
 ### Diagnosis
@@ -448,11 +466,13 @@ AND is_active = true;
 #### Step 4: Check SMS Service (Telnyx)
 
 **Telnyx Configuration:**
+
 - Messaging Profile: `frost guard`
 - Profile ID: `40019baa-aa62-463c-b254-463c66f4b2d3`
 - Toll-Free Number: `+18889890560`
 
 **Portal Steps:**
+
 1. Login to Telnyx Mission Control portal (telnyx.com)
 2. Navigate to Messaging → Messaging Profiles → "frost guard"
 3. Check message logs for delivery status
@@ -460,6 +480,7 @@ AND is_active = true;
 5. Check account balance if applicable
 
 **Verify Secrets:**
+
 ```sql
 -- Secrets should be set (check via Supabase dashboard)
 -- TELNYX_API_KEY
@@ -469,6 +490,7 @@ AND is_active = true;
 ```
 
 **Check Webhook Configuration:**
+
 - Webhook URL: `https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/telnyx-webhook`
 - Event types: `message.sent`, `message.delivered`, `message.failed`, `message.received`
 
@@ -516,24 +538,26 @@ curl -X POST https://api.resend.com/emails \
 
 ### Common Telnyx Error Codes
 
-| Code | Meaning | Resolution |
-|------|---------|------------|
-| 10009 | Auth failed | Check `TELNYX_API_KEY` |
-| 40001 | Landline | Use mobile number |
-| 40300 | Opted out | User replies START |
-| 40310 | Invalid number | Check E.164 format |
-| 40008 | Toll-free unverified | Complete verification |
+| Code  | Meaning              | Resolution             |
+| ----- | -------------------- | ---------------------- |
+| 10009 | Auth failed          | Check `TELNYX_API_KEY` |
+| 40001 | Landline             | Use mobile number      |
+| 40300 | Opted out            | User replies START     |
+| 40310 | Invalid number       | Check E.164 format     |
+| 40008 | Toll-free unverified | Complete verification  |
 
 ---
 
 ## RB-007: Database Latency High
 
 ### Symptoms
+
 - Health check shows degraded database
 - Slow page loads
 - Query timeouts
 
 ### Severity
+
 P3 - Medium
 
 ### Diagnosis
@@ -583,11 +607,13 @@ WHERE pid = <pid-from-above>;
 ## RB-008: Stripe Webhook Failure
 
 ### Symptoms
+
 - Payments not reflected in app
 - Subscription changes not syncing
 - Stripe Dashboard shows webhook failures
 
 ### Severity
+
 P2 - High
 
 ### Diagnosis
@@ -639,11 +665,13 @@ WHERE stripe_customer_id = 'cus_xxx';
 ## RB-009: Simulator Not Running
 
 ### Symptoms
+
 - Test sensors not generating data
 - Simulator status shows inactive
 - No synthetic readings
 
 ### Severity
+
 P4 - Low (development/testing only)
 
 ### Resolution Steps
@@ -661,6 +689,7 @@ AND organization_id = 'org-uuid';
 #### Step 2: Verify Scheduler
 
 Check if `run-simulator-heartbeats` is scheduled:
+
 1. Check pg_cron configuration
 2. Or verify external scheduler (if used)
 
@@ -689,11 +718,13 @@ WHERE id = 'simulation-uuid';
 ## RB-010: User Cannot Login
 
 ### Symptoms
+
 - User reports login failure
 - "Invalid credentials" error
 - Account locked
 
 ### Severity
+
 P3 - Medium
 
 ### Resolution Steps
@@ -715,6 +746,7 @@ WHERE email = 'user@example.com';
 #### Step 2: Check for Ban
 
 If `banned_until` is set:
+
 ```sql
 -- Remove ban
 UPDATE auth.users
@@ -752,11 +784,13 @@ WHERE user_id = 'user-uuid';
 ## RB-011: TTN Provisioning Failure
 
 ### Symptoms
+
 - Device/gateway provisioning fails
 - Error in provisioning UI
 - Device not appearing in TTN Console
 
 ### Severity
+
 P3 - Medium
 
 ### Diagnosis
@@ -786,6 +820,7 @@ WHERE organization_id = 'org-uuid';
 #### Step 2: Validate API Key
 
 Run preflight check:
+
 ```bash
 curl -X POST \
   https://your-project.supabase.co/functions/v1/ttn-gateway-preflight \
@@ -803,6 +838,7 @@ curl -X POST \
 #### Step 4: Manual Registration
 
 If automated fails:
+
 1. Register device manually in TTN Console
 2. Update local database to match
 3. Investigate automation failure
@@ -812,11 +848,13 @@ If automated fails:
 ## RB-012: Data Ingestion Backlog
 
 ### Symptoms
+
 - Readings delayed
 - Processing queue growing
 - Dashboard showing stale data
 
 ### Severity
+
 P2 - High
 
 ### Diagnosis
@@ -847,6 +885,7 @@ supabase functions logs process-unit-states --limit 50
 #### Step 2: Scale if Possible
 
 Contact Supabase support for:
+
 - Increased function concurrency
 - Database performance tier
 
@@ -862,6 +901,7 @@ WHERE status = 'alarm_active';
 #### Step 4: Clear Backlog
 
 May need to:
+
 - Temporarily skip non-critical processing
 - Increase batch sizes
 - Add processing capacity
@@ -870,13 +910,13 @@ May need to:
 
 ## Emergency Contacts
 
-| Role | Contact | When to Use |
-|------|---------|-------------|
-| On-Call Engineer | See PagerDuty/Opsgenie | P1-P2 incidents |
-| Engineering Lead | See team directory | Escalation |
-| Supabase Support | support@supabase.io | Platform issues |
-| TTN Support | support@thethings.network | TTN issues |
-| Stripe Support | Stripe Dashboard | Payment issues |
+| Role             | Contact                   | When to Use     |
+| ---------------- | ------------------------- | --------------- |
+| On-Call Engineer | See PagerDuty/Opsgenie    | P1-P2 incidents |
+| Engineering Lead | See team directory        | Escalation      |
+| Supabase Support | support@supabase.io       | Platform issues |
+| TTN Support      | support@thethings.network | TTN issues      |
+| Stripe Support   | Stripe Dashboard          | Payment issues  |
 
 ---
 

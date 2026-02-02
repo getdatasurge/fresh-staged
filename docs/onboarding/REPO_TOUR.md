@@ -30,6 +30,7 @@ The React single-page application.
 ### `/src/App.tsx`
 
 **The entry point.** This file defines:
+
 - All routes (23 pages)
 - Provider hierarchy (QueryClient, Tooltip, Debug, TTN contexts)
 - Global components (Toasters, Debug terminal)
@@ -47,19 +48,19 @@ The React single-page application.
 
 **Route-level components.** One file per page:
 
-| File | Route | Purpose |
-|------|-------|---------|
-| `Index.tsx` | `/` | Landing page |
-| `Auth.tsx` | `/auth` | Sign in/sign up |
-| `Dashboard.tsx` | `/dashboard` | Main monitoring view |
-| `Settings.tsx` | `/settings` | Multi-tab settings |
-| `UnitDetail.tsx` | `/units/:unitId` | Unit monitoring detail |
-| `Alerts.tsx` | `/alerts` | Alert management |
-| `Reports.tsx` | `/reports` | Compliance reporting |
-| `ManualLog.tsx` | `/manual-log` | Manual temp logging |
-| `SiteDetail.tsx` | `/sites/:siteId` | Site view |
-| `AreaDetail.tsx` | `/sites/:siteId/areas/:areaId` | Area view |
-| `HealthDashboard.tsx` | `/admin/health` | System health |
+| File                  | Route                          | Purpose                |
+| --------------------- | ------------------------------ | ---------------------- |
+| `Index.tsx`           | `/`                            | Landing page           |
+| `Auth.tsx`            | `/auth`                        | Sign in/sign up        |
+| `Dashboard.tsx`       | `/dashboard`                   | Main monitoring view   |
+| `Settings.tsx`        | `/settings`                    | Multi-tab settings     |
+| `UnitDetail.tsx`      | `/units/:unitId`               | Unit monitoring detail |
+| `Alerts.tsx`          | `/alerts`                      | Alert management       |
+| `Reports.tsx`         | `/reports`                     | Compliance reporting   |
+| `ManualLog.tsx`       | `/manual-log`                  | Manual temp logging    |
+| `SiteDetail.tsx`      | `/sites/:siteId`               | Site view              |
+| `AreaDetail.tsx`      | `/sites/:siteId/areas/:areaId` | Area view              |
+| `HealthDashboard.tsx` | `/admin/health`                | System health          |
 
 **Pattern:** Pages compose components from `/src/components/`.
 
@@ -91,6 +92,7 @@ components/
 **`/src/components/ui/`** — shadcn/ui base components. **Do not modify these directly.** They're generated from the shadcn CLI.
 
 **`/src/components/settings/`** — Most of the application complexity:
+
 - `SensorManager.tsx` — LoRa sensor CRUD
 - `GatewayManager.tsx` — Gateway CRUD
 - `TTNConnectionSettings.tsx` — TTN configuration
@@ -98,6 +100,7 @@ components/
 - `NotificationPolicyEditor.tsx` — Notification settings
 
 **`/src/components/unit/`** — Unit detail page components:
+
 - `UnitAlertsBanner.tsx` — Active alerts display
 - `UnitSensorsCard.tsx` — Assigned sensors
 - `BatteryHealthCard.tsx` — Battery status
@@ -109,23 +112,23 @@ components/
 
 **Custom React hooks** (25 files). These encapsulate data fetching and business logic:
 
-| Hook | Purpose |
-|------|---------|
-| `useUnitStatus.ts` | Compute unit status (mirrors backend logic) |
-| `useAlertRules.ts` | Fetch/update alert rules |
-| `useNotificationPolicies.ts` | Notification policy CRUD |
-| `useLoraSensors.ts` | LoRa sensor data |
-| `useGateways.ts` | Gateway data |
-| `useAuthAndOnboarding.ts` | Auth state + onboarding flow |
-| `useUserRole.ts` | Role-based access checking |
-| `useTTNSetupWizard.ts` | TTN onboarding flow |
-| `useOfflineSync.ts` | Offline data sync |
-| `useHealthCheck.ts` | System health monitoring |
+| Hook                         | Purpose                                     |
+| ---------------------------- | ------------------------------------------- |
+| `useUnitStatus.ts`           | Compute unit status (mirrors backend logic) |
+| `useAlertRules.ts`           | Fetch/update alert rules                    |
+| `useNotificationPolicies.ts` | Notification policy CRUD                    |
+| `useLoraSensors.ts`          | LoRa sensor data                            |
+| `useGateways.ts`             | Gateway data                                |
+| `useAuthAndOnboarding.ts`    | Auth state + onboarding flow                |
+| `useUserRole.ts`             | Role-based access checking                  |
+| `useTTNSetupWizard.ts`       | TTN onboarding flow                         |
+| `useOfflineSync.ts`          | Offline data sync                           |
+| `useHealthCheck.ts`          | System health monitoring                    |
 
 **Pattern:** Hooks use TanStack Query for caching. Query keys follow pattern:
+
 ```typescript
-['units', unitId]
-['alerts', { organizationId, status: 'active' }]
+['units', unitId][('alerts', { organizationId, status: 'active' })];
 ```
 
 ---
@@ -134,16 +137,16 @@ components/
 
 **Utilities and configuration:**
 
-| File | Purpose |
-|------|---------|
-| `alertConfig.ts` | Alert type definitions, icons, colors |
-| `statusConfig.ts` | Unit status definitions, priorities |
-| `entityStatusConfig.ts` | Entity-level status config |
-| `validation.ts` | Zod validation schemas |
-| `eventLogger.ts` | Event logging utility |
-| `offlineStorage.ts` | IndexedDB for offline sync |
-| `utils.ts` | General utilities (cn, etc.) |
-| `stripe.ts` | Stripe plan configuration |
+| File                    | Purpose                               |
+| ----------------------- | ------------------------------------- |
+| `alertConfig.ts`        | Alert type definitions, icons, colors |
+| `statusConfig.ts`       | Unit status definitions, priorities   |
+| `entityStatusConfig.ts` | Entity-level status config            |
+| `validation.ts`         | Zod validation schemas                |
+| `eventLogger.ts`        | Event logging utility                 |
+| `offlineStorage.ts`     | IndexedDB for offline sync            |
+| `utils.ts`              | General utilities (cn, etc.)          |
+| `stripe.ts`             | Stripe plan configuration             |
 
 **Key file: `alertConfig.ts`** — Defines all alert types, their icons, colors, and clear conditions. Reference this when working with alerts.
 
@@ -155,10 +158,10 @@ components/
 
 **TypeScript type definitions:**
 
-| File | Purpose |
-|------|---------|
-| `ttn.ts` | TTN/LoRa types (Gateway, LoraSensor, permissions) |
-| `ttnState.ts` | TTN config state machine types |
+| File          | Purpose                                           |
+| ------------- | ------------------------------------------------- |
+| `ttn.ts`      | TTN/LoRa types (Gateway, LoraSensor, permissions) |
+| `ttnState.ts` | TTN config state machine types                    |
 
 Most types are auto-generated in `/src/integrations/supabase/types.ts`.
 
@@ -168,9 +171,9 @@ Most types are auto-generated in `/src/integrations/supabase/types.ts`.
 
 **React context providers:**
 
-| Context | Purpose |
-|---------|---------|
-| `DebugContext.tsx` | Debug mode global state |
+| Context                | Purpose                 |
+| ---------------------- | ----------------------- |
+| `DebugContext.tsx`     | Debug mode global state |
 | `TTNConfigContext.tsx` | TTN configuration state |
 
 ---
@@ -242,13 +245,13 @@ functions/
 
 Shared utilities used across functions:
 
-| File | Purpose |
-|------|---------|
-| `ttnConfig.ts` | DevEUI normalization, TTN helpers |
-| `ttnPermissions.ts` | API key permission validation |
-| `validation.ts` | Request validation, auth helpers |
-| `response.ts` | Standardized response helpers |
-| `cors.ts` | CORS headers |
+| File                | Purpose                           |
+| ------------------- | --------------------------------- |
+| `ttnConfig.ts`      | DevEUI normalization, TTN helpers |
+| `ttnPermissions.ts` | API key permission validation     |
+| `validation.ts`     | Request validation, auth helpers  |
+| `response.ts`       | Standardized response helpers     |
+| `cors.ts`           | CORS headers                      |
 
 ---
 
@@ -265,6 +268,7 @@ Files are named with timestamps: `20260112001512_name.sql`
 ### `/supabase/config.toml`
 
 **Supabase configuration.** Defines:
+
 - Edge function settings
 - JWT verification requirements
 - CORS configuration
@@ -305,38 +309,38 @@ public/
 
 ### Configuration Files
 
-| File | Purpose |
-|------|---------|
-| `package.json` | NPM dependencies and scripts |
-| `vite.config.ts` | Vite build config, PWA plugin, test setup |
-| `tailwind.config.ts` | Tailwind CSS customization |
-| `tsconfig.json` | TypeScript compiler options |
-| `components.json` | shadcn/ui configuration |
-| `.env` | Environment variables (not in git) |
+| File                 | Purpose                                   |
+| -------------------- | ----------------------------------------- |
+| `package.json`       | NPM dependencies and scripts              |
+| `vite.config.ts`     | Vite build config, PWA plugin, test setup |
+| `tailwind.config.ts` | Tailwind CSS customization                |
+| `tsconfig.json`      | TypeScript compiler options               |
+| `components.json`    | shadcn/ui configuration                   |
+| `.env`               | Environment variables (not in git)        |
 
 ### Critical Logic Files
 
-| File | What It Does |
-|------|--------------|
+| File                                              | What It Does                                   |
+| ------------------------------------------------- | ---------------------------------------------- |
 | `supabase/functions/process-unit-states/index.ts` | THE alert engine. Creates/resolves all alerts. |
-| `supabase/functions/ttn-webhook/index.ts` | Receives all sensor data from TTN. |
-| `src/hooks/useUnitStatus.ts` | Frontend status computation (mirrors backend). |
-| `src/lib/alertConfig.ts` | Alert type definitions and display config. |
+| `supabase/functions/ttn-webhook/index.ts`         | Receives all sensor data from TTN.             |
+| `src/hooks/useUnitStatus.ts`                      | Frontend status computation (mirrors backend). |
+| `src/lib/alertConfig.ts`                          | Alert type definitions and display config.     |
 
 ---
 
 ## Where to Find Things
 
-| I need to... | Look in... |
-|--------------|------------|
-| Add a new page | `src/pages/` + `src/App.tsx` |
-| Add a component | `src/components/{feature}/` |
-| Add a data hook | `src/hooks/` |
-| Change alert logic | `supabase/functions/process-unit-states/` |
-| Change TTN handling | `supabase/functions/ttn-webhook/` |
-| Add a database table | `supabase/migrations/` |
-| Change validation | `src/lib/validation.ts` |
-| Add an edge function | `supabase/functions/{new-function}/` |
+| I need to...         | Look in...                                |
+| -------------------- | ----------------------------------------- |
+| Add a new page       | `src/pages/` + `src/App.tsx`              |
+| Add a component      | `src/components/{feature}/`               |
+| Add a data hook      | `src/hooks/`                              |
+| Change alert logic   | `supabase/functions/process-unit-states/` |
+| Change TTN handling  | `supabase/functions/ttn-webhook/`         |
+| Add a database table | `supabase/migrations/`                    |
+| Change validation    | `src/lib/validation.ts`                   |
+| Add an edge function | `supabase/functions/{new-function}/`      |
 
 ---
 

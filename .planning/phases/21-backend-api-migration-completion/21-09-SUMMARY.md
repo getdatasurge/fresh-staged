@@ -21,9 +21,9 @@ affects: [future-ttn-backend-phase, backend-api-migration]
 tech-stack:
   added: []
   patterns:
-    - "BLOCKED status header format for unmigrated hooks"
-    - "Inline TODO with required procedure specification"
-    - "Edge function dependency documentation"
+    - 'BLOCKED status header format for unmigrated hooks'
+    - 'Inline TODO with required procedure specification'
+    - 'Edge function dependency documentation'
 
 key-files:
   created: []
@@ -36,13 +36,13 @@ key-files:
     - src/hooks/useTTNDeprovision.ts
 
 key-decisions:
-  - "HOOKS-03: Mark 6 TTN hooks as BLOCKED requiring backend TTN SDK integration"
-  - "HOOKS-04: Document direct DB access in useTTNDeprovision (ttn_deprovision_jobs table)"
+  - 'HOOKS-03: Mark 6 TTN hooks as BLOCKED requiring backend TTN SDK integration'
+  - 'HOOKS-04: Document direct DB access in useTTNDeprovision (ttn_deprovision_jobs table)'
 
 patterns-established:
   - "BLOCKED status: Use 'Status: BLOCKED - Requires backend implementation' header format"
-  - "Edge function docs: List all edge functions used with their actions"
-  - "Migration path: Numbered steps outlining backend work required"
+  - 'Edge function docs: List all edge functions used with their actions'
+  - 'Migration path: Numbered steps outlining backend work required'
 
 # Metrics
 duration: 5min
@@ -62,6 +62,7 @@ completed: 2026-01-25
 - **Files modified:** 6
 
 ## Accomplishments
+
 - All 6 TTN hooks now have clear "BLOCKED - Requires backend implementation" headers
 - Edge function dependencies documented in each hook header
 - Inline TODOs added before all edge function invocations and direct DB queries
@@ -86,21 +87,23 @@ Each task was committed atomically:
 
 ## Edge Functions Documented
 
-| Hook | Edge Functions | Direct DB Access |
-|------|----------------|------------------|
-| useTTNApiKey | ttn-bootstrap | None |
-| useTTNWebhook | update-ttn-webhook, ttn-provision-org | None |
-| useTTNSetupWizard | manage-ttn-settings | None |
-| useCheckTtnProvisioningState | check-ttn-device-exists | None |
-| useGatewayProvisioningPreflight | ttn-gateway-preflight | None |
-| useTTNDeprovision | ttn-list-devices | ttn_deprovision_jobs table, get_deprovision_job_stats RPC |
+| Hook                            | Edge Functions                        | Direct DB Access                                          |
+| ------------------------------- | ------------------------------------- | --------------------------------------------------------- |
+| useTTNApiKey                    | ttn-bootstrap                         | None                                                      |
+| useTTNWebhook                   | update-ttn-webhook, ttn-provision-org | None                                                      |
+| useTTNSetupWizard               | manage-ttn-settings                   | None                                                      |
+| useCheckTtnProvisioningState    | check-ttn-device-exists               | None                                                      |
+| useGatewayProvisioningPreflight | ttn-gateway-preflight                 | None                                                      |
+| useTTNDeprovision               | ttn-list-devices                      | ttn_deprovision_jobs table, get_deprovision_job_stats RPC |
 
 ## Migration Blockers Summary
 
 All 6 hooks share a common blocker:
+
 - **Backend needs TTN SDK integration** (@ttn-lw/grpc-web-api-client or equivalent)
 
 Additional blockers by hook:
+
 - **useTTNApiKey**: API key validation, webhook configuration procedures
 - **useTTNWebhook**: Webhook update, secret regeneration procedures
 - **useTTNSetupWizard**: Partially migrated (settings CRUD done), needs API key validation
@@ -110,9 +113,9 @@ Additional blockers by hook:
 
 ## Decisions Made
 
-| ID | Decision | Rationale |
-|----|----------|-----------|
-| HOOKS-03 | Mark 6 TTN hooks as BLOCKED | Backend TTN SDK integration not yet available |
+| ID       | Decision                                       | Rationale                                             |
+| -------- | ---------------------------------------------- | ----------------------------------------------------- |
+| HOOKS-03 | Mark 6 TTN hooks as BLOCKED                    | Backend TTN SDK integration not yet available         |
 | HOOKS-04 | Document direct DB access in useTTNDeprovision | Table not in Drizzle schema, needs backend procedures |
 
 ## Deviations from Plan
@@ -133,6 +136,7 @@ None - plan executed exactly as written.
   - 8 edge functions to eventually deprecate
 
 ---
-*Phase: 21-backend-api-migration-completion*
-*Plan: 09*
-*Completed: 2026-01-25*
+
+_Phase: 21-backend-api-migration-completion_
+_Plan: 09_
+_Completed: 2026-01-25_

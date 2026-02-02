@@ -1,24 +1,20 @@
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
-} from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { 
-  Battery, 
-  Signal, 
-  Clock, 
-  Star, 
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import {
+  Battery,
+  Signal,
+  Clock,
+  Star,
   Unlink,
   CloudUpload,
   Loader2,
   DoorOpen,
   DoorClosed,
-} from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { LoraSensor } from "@/types/ttn";
+} from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { LoraSensor } from '@/types/ttn';
 
 interface SensorDetailsPopoverProps {
   sensor: LoraSensor;
@@ -34,7 +30,7 @@ interface SensorDetailsPopoverProps {
 }
 
 const formatEUI = (eui: string) => {
-  return eui.match(/.{1,2}/g)?.join(":") || eui;
+  return eui.match(/.{1,2}/g)?.join(':') || eui;
 };
 
 export function SensorDetailsPopover({
@@ -49,20 +45,16 @@ export function SensorDetailsPopover({
   doorState,
   doorLastChangedAt,
 }: SensorDetailsPopoverProps) {
-  const isDoorSensor = 
-    sensor.sensor_type === 'door' || 
-    sensor.sensor_type === 'contact';
-    
-  const canBePrimary = 
-    sensor.sensor_type === 'temperature' || 
-    sensor.sensor_type === 'temperature_humidity' || 
+  const isDoorSensor = sensor.sensor_type === 'door' || sensor.sensor_type === 'contact';
+
+  const canBePrimary =
+    sensor.sensor_type === 'temperature' ||
+    sensor.sensor_type === 'temperature_humidity' ||
     sensor.sensor_type === 'combo';
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        {children}
-      </PopoverTrigger>
+      <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="w-72" align="start">
         <div className="space-y-3">
           <div>
@@ -82,7 +74,7 @@ export function SensorDetailsPopover({
                 Battery
               </p>
               <p className="text-sm font-medium">
-                {sensor.battery_level !== null ? `${sensor.battery_level}%` : "—"}
+                {sensor.battery_level !== null ? `${sensor.battery_level}%` : '—'}
               </p>
             </div>
             <div className="space-y-1">
@@ -91,7 +83,7 @@ export function SensorDetailsPopover({
                 Signal
               </p>
               <p className="text-sm font-medium">
-                {sensor.signal_strength !== null ? `${sensor.signal_strength} dBm` : "—"}
+                {sensor.signal_strength !== null ? `${sensor.signal_strength} dBm` : '—'}
               </p>
             </div>
           </div>
@@ -103,10 +95,9 @@ export function SensorDetailsPopover({
               Last Seen
             </p>
             <p className="text-sm font-medium">
-              {sensor.last_seen_at 
+              {sensor.last_seen_at
                 ? formatDistanceToNow(new Date(sensor.last_seen_at), { addSuffix: true })
-                : "Never"
-              }
+                : 'Never'}
             </p>
           </div>
 
@@ -122,11 +113,12 @@ export function SensorDetailsPopover({
                 Door State
               </p>
               {doorState ? (
-                <Badge 
+                <Badge
                   variant="outline"
-                  className={doorState === 'open' 
-                    ? 'border-warning text-warning bg-warning/10' 
-                    : 'border-safe text-safe bg-safe/10'
+                  className={
+                    doorState === 'open'
+                      ? 'border-warning text-warning bg-warning/10'
+                      : 'border-safe text-safe bg-safe/10'
                   }
                 >
                   {doorState === 'open' ? 'Open' : 'Closed'}
@@ -153,12 +145,14 @@ export function SensorDetailsPopover({
           {/* Primary Status (only for temperature-capable sensors) */}
           {canBePrimary && (
             <div className="flex items-center gap-2">
-              <Star className={`w-4 h-4 ${sensor.is_primary ? 'text-accent fill-accent' : 'text-muted-foreground'}`} />
+              <Star
+                className={`w-4 h-4 ${sensor.is_primary ? 'text-accent fill-accent' : 'text-muted-foreground'}`}
+              />
               <span className="text-sm">
                 {sensor.is_primary ? (
                   <Badge className="bg-accent/20 text-accent border-0">Primary Sensor</Badge>
                 ) : (
-                  "Secondary Sensor"
+                  'Secondary Sensor'
                 )}
               </span>
             </div>
@@ -169,7 +163,7 @@ export function SensorDetailsPopover({
             <>
               <Separator />
               <div className="flex flex-col gap-2">
-                {sensor.status === "pending" && onProvision && (
+                {sensor.status === 'pending' && onProvision && (
                   <Button
                     variant="outline"
                     size="sm"

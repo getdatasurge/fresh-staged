@@ -1,18 +1,14 @@
 /**
  * Site Overview Widget
- * 
+ *
  * Displays summary statistics for a site including area count, unit count, and timezone.
  */
 
-import { Building2, LayoutGrid, Thermometer, Clock } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { WidgetProps } from "../types";
+import { Building2, LayoutGrid, Thermometer, Clock } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { WidgetProps } from '../types';
 
-export function SiteOverviewWidget({ 
-  site,
-  areas,
-  totalUnits,
-}: WidgetProps) {
+export function SiteOverviewWidget({ site, areas, totalUnits }: WidgetProps) {
   const areasCount = areas?.length ?? 0;
   const unitsCount = totalUnits ?? areas?.reduce((sum, a) => sum + (a.unitsCount || 0), 0) ?? 0;
 
@@ -54,7 +50,7 @@ export function SiteOverviewWidget({
               <Clock className="w-5 h-5 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-sm font-medium truncate">{site?.timezone || "UTC"}</p>
+              <p className="text-sm font-medium truncate">{site?.timezone || 'UTC'}</p>
               <p className="text-xs text-muted-foreground">Timezone</p>
             </div>
           </div>

@@ -7,18 +7,18 @@
 
 ### Services Deployed Successfully
 
-| Service | Status | Port |
-|---------|--------|------|
-| Backend API | healthy | 3000 |
-| PostgreSQL | healthy | 5432 |
-| Redis | healthy | 6379 |
-| MinIO | healthy | 9000, 9001 |
-| Grafana | running | 3001 |
-| Prometheus | running | 9090 |
-| Loki | ready | 3100 |
-| Promtail | running | - |
-| Node Exporter | running | 9100 |
-| Uptime Kuma | healthy | 3002 |
+| Service       | Status  | Port       |
+| ------------- | ------- | ---------- |
+| Backend API   | healthy | 3000       |
+| PostgreSQL    | healthy | 5432       |
+| Redis         | healthy | 6379       |
+| MinIO         | healthy | 9000, 9001 |
+| Grafana       | running | 3001       |
+| Prometheus    | running | 9090       |
+| Loki          | ready   | 3100       |
+| Promtail      | running | -          |
+| Node Exporter | running | 9100       |
+| Uptime Kuma   | healthy | 3002       |
 
 ### Endpoints Verified
 
@@ -30,19 +30,19 @@
 
 ### Issues Found and Fixed
 
-| Issue | Fix | Commit |
-|-------|-----|--------|
-| Invalid restart_policy with condition:any | Removed restart_policy blocks, use restart: unless-stopped | c0f99f6 |
-| Deploy script using npm instead of pnpm | Changed to pnpm db:migrate | 5f71ea4 |
-| Migration script name mismatch | Added db:migrate:prod script | ac2ce23 |
-| drizzle/ folder excluded by .dockerignore | Updated .dockerignore to include migrations | 8783b62 |
-| drizzle/meta/ excluded (needed for journal) | Removed meta exclusion | 93bbcd9 |
-| TypeScript output path (dist/src/ not dist/) | Fixed paths in package.json and Dockerfile | 7665565, cb7d494 |
-| Missing DATABASE_URL in compose | Added to backend environment | f82ac6b |
-| Missing Stack Auth env vars | Added placeholder values | dd7e3ca |
-| Loki WAL directory permission denied | Added wal.dir config | 0fc87b2 |
-| Grafana can't read secrets file | Use env var instead | 0fc87b2 |
-| Promtail pipeline_stages syntax error | Fixed YAML structure | 0fc87b2 |
+| Issue                                        | Fix                                                        | Commit           |
+| -------------------------------------------- | ---------------------------------------------------------- | ---------------- |
+| Invalid restart_policy with condition:any    | Removed restart_policy blocks, use restart: unless-stopped | c0f99f6          |
+| Deploy script using npm instead of pnpm      | Changed to pnpm db:migrate                                 | 5f71ea4          |
+| Migration script name mismatch               | Added db:migrate:prod script                               | ac2ce23          |
+| drizzle/ folder excluded by .dockerignore    | Updated .dockerignore to include migrations                | 8783b62          |
+| drizzle/meta/ excluded (needed for journal)  | Removed meta exclusion                                     | 93bbcd9          |
+| TypeScript output path (dist/src/ not dist/) | Fixed paths in package.json and Dockerfile                 | 7665565, cb7d494 |
+| Missing DATABASE_URL in compose              | Added to backend environment                               | f82ac6b          |
+| Missing Stack Auth env vars                  | Added placeholder values                                   | dd7e3ca          |
+| Loki WAL directory permission denied         | Added wal.dir config                                       | 0fc87b2          |
+| Grafana can't read secrets file              | Use env var instead                                        | 0fc87b2          |
+| Promtail pipeline_stages syntax error        | Fixed YAML structure                                       | 0fc87b2          |
 
 ## Production Readiness
 
@@ -90,6 +90,7 @@ When ready for production cutover:
 The production deployment infrastructure is fully validated. All services deploy correctly, health checks pass, and the observability stack is operational. The system is ready for production cutover once Supabase access is available for data migration.
 
 **Next Steps:**
+
 1. Obtain Supabase access
 2. Execute data migration
 3. Perform production cutover

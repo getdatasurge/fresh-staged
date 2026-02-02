@@ -6,10 +6,10 @@ import {
   text,
   timestamp,
   uuid,
-  varchar
-} from 'drizzle-orm/pg-core'
-import { organizations } from './tenancy.js'
-import { profiles } from './users.js'
+  varchar,
+} from 'drizzle-orm/pg-core';
+import { organizations } from './tenancy.js';
+import { profiles } from './users.js';
 
 // Event Logs - tamper-evident audit trail
 export const eventLogs = pgTable(
@@ -19,13 +19,13 @@ export const eventLogs = pgTable(
     organizationId: uuid('organization_id')
       .references(() => organizations.id, { onDelete: 'cascade' })
       .notNull(),
-    
+
     // Actor info
     actorId: uuid('actor_id').references(() => profiles.id, {
       onDelete: 'set null',
     }),
     actorType: varchar('actor_type', { length: 32 }).notNull(), // 'user', 'system', 'api'
-    
+
     // Event classification
     eventType: varchar('event_type', { length: 64 }).notNull(),
     category: varchar('category', { length: 64 }), // Note: column is 'category' not 'event_category' in DB
@@ -39,7 +39,7 @@ export const eventLogs = pgTable(
 
     // Event details
     eventData: jsonb('event_data'),
-    
+
     // Request context (legacy/standard)
     ipAddress: varchar('ip_address', { length: 45 }),
     userAgent: text('user_agent'),
@@ -68,11 +68,8 @@ export const eventLogs = pgTable(
     index('event_logs_type_idx').on(table.eventType),
     index('event_logs_recorded_idx').on(table.recordedAt),
     // Composite for audit queries
-    index('event_logs_org_date_idx').on(
-      table.organizationId,
-      table.recordedAt
-    ),
-  ]
+    index('event_logs_org_date_idx').on(table.organizationId, table.recordedAt),
+  ],
 );
 
 // Type exports

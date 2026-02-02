@@ -13,16 +13,10 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import {
-  S3Client,
-  PutObjectCommand,
-} from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { router } from '../trpc/index.js';
 import { orgProcedure } from '../trpc/procedures.js';
-import {
-  validateFile,
-  StorageConfigError,
-} from '../services/asset-storage.service.js';
+import { validateFile, StorageConfigError } from '../services/asset-storage.service.js';
 import { AssetTypeSchema } from '../schemas/assets.js';
 
 /**
@@ -94,7 +88,7 @@ function generateAssetKey(
   organizationId: string,
   assetType: string,
   entityId: string | undefined,
-  mimeType: string
+  mimeType: string,
 ): string {
   const extension = MIME_TO_EXTENSION[mimeType] || '';
   const timestamp = Date.now();

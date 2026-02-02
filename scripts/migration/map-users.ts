@@ -19,24 +19,24 @@
  *   STACK_AUTH_SECRET_KEY - Stack Auth server secret key
  */
 
-import "dotenv/config";
-import { Command } from "commander";
-import ora from "ora";
-import fs from "node:fs";
-import path from "node:path";
+import 'dotenv/config';
+import { Command } from 'commander';
+import ora from 'ora';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   saveMapping,
   type UserMapping,
   DEFAULT_MAPPING_PATH,
   MAPPING_RETENTION_DAYS,
-} from "./lib/user-mapping.js";
+} from './lib/user-mapping.js';
 import {
   logger,
   logMigrationStart,
   logMigrationComplete,
   logMigrationError,
   closeLogger,
-} from "./lib/logger.js";
+} from './lib/logger.js';
 
 /**
  * Supabase auth.users record structure (partial)
@@ -73,25 +73,25 @@ interface StackAuthListResponse {
  */
 async function fetchAllStackAuthUsers(
   projectId: string,
-  secretKey: string
+  secretKey: string,
 ): Promise<StackAuthUser[]> {
   const allUsers: StackAuthUser[] = [];
   let cursor: string | null = null;
   let hasMore = true;
 
   while (hasMore) {
-    const url = new URL("https://api.stack-auth.com/api/v1/users");
-    url.searchParams.set("limit", "100"); // Max per page
+    const url = new URL('https://api.stack-auth.com/api/v1/users');
+    url.searchParams.set('limit', '100'); // Max per page
     if (cursor) {
-      url.searchParams.set("cursor", cursor);
+      url.searchParams.set('cursor', cursor);
     }
 
     const response = await fetch(url.toString(), {
-      method: "GET",
+      method: 'GET',
       headers: {
-        "x-stack-access-type": "server",
-        "x-stack-project-id": projectId,
-        "x-stack-secret-server-key": secretKey,
+        'x-stack-access-type': 'server',
+        'x-stack-project-id': projectId,
+        'x-stack-secret-server-key': secretKey,
       },
     });
 
@@ -108,7 +108,7 @@ async function fetchAllStackAuthUsers(
 
     logger.debug(
       { fetched: data.items.length, total: allUsers.length, hasMore },
-      "Fetched Stack Auth users page"
+      'Fetched Stack Auth users page',
     );
   }
 
@@ -121,7 +121,7 @@ async function fetchAllStackAuthUsers(
 async function mapUsers(options: {
   supabaseExport: string;
   output: string;
-  matchBy: "email" | "metadata";
+  matchBy: 'email' | 'metadata';
 }): Promise<void> {
   const { supabaseExport, output, matchBy } = options;
 
@@ -131,12 +131,12 @@ async function mapUsers(options: {
 
   if (!projectId || !secretKey) {
     throw new Error(
-      "Missing required environment variables: STACK_AUTH_PROJECT_ID and STACK_AUTH_SECRET_KEY"
+      'Missing required environment variables: STACK_AUTH_PROJECT_ID and STACK_AUTH_SECRET_KEY',
     );
   }
 
-  if (matchBy !== "email") {
-    throw new Error("Currently only email matching is supported. Use --match-by email");
+  if (matchBy !== 'email') {
+    throw new Error('Currently only email matching is supported. Use --match-by email');
   }
 
   // Load Supabase users export
@@ -145,46 +145,44 @@ async function mapUsers(options: {
     throw new Error(`Supabase export file not found: ${inputPath}`);
   }
 
-  logMigrationStart("user-mapping-generation", {
+  logMigrationStart('user-mapping-generation', {
     supabaseExport: inputPath,
     outputFile: path.resolve(output),
     matchBy,
   });
 
-  const content = fs.readFileSync(inputPath, "utf-8");
+  const content = fs.readFileSync(inputPath, 'utf-8');
   let supabaseUsers: SupabaseUser[];
 
   try {
     supabaseUsers = JSON.parse(content);
     if (!Array.isArray(supabaseUsers)) {
-      throw new Error("Expected array of users");
+      throw new Error('Expected array of users');
     }
   } catch (err) {
-    throw new Error(
-      `Failed to parse Supabase export: ${err instanceof Error ? err.message : err}`
-    );
+    throw new Error(`Failed to parse Supabase export: ${err instanceof Error ? err.message : err}`);
   }
 
   logger.info(
     { count: supabaseUsers.length },
-    `Loaded ${supabaseUsers.length} users from Supabase export`
+    `Loaded ${supabaseUsers.length} users from Supabase export`,
   );
 
   // Fetch all Stack Auth users
-  const spinner = ora("Fetching users from Stack Auth...").start();
+  const spinner = ora('Fetching users from Stack Auth...').start();
   let stackAuthUsers: StackAuthUser[];
 
   try {
     stackAuthUsers = await fetchAllStackAuthUsers(projectId, secretKey);
     spinner.succeed(`Fetched ${stackAuthUsers.length} users from Stack Auth`);
   } catch (err) {
-    spinner.fail("Failed to fetch Stack Auth users");
+    spinner.fail('Failed to fetch Stack Auth users');
     throw err;
   }
 
   logger.info(
     { count: stackAuthUsers.length },
-    `Loaded ${stackAuthUsers.length} users from Stack Auth`
+    `Loaded ${stackAuthUsers.length} users from Stack Auth`,
   );
 
   // Build Stack Auth email -> user map (case-insensitive)
@@ -199,7 +197,7 @@ async function mapUsers(options: {
   const matchedMappings: UserMapping[] = [];
   const unmatchedSupabase: SupabaseUser[] = [];
 
-  spinner.start("Matching users by email...");
+  spinner.start('Matching users by email...');
 
   for (const supabaseUser of supabaseUsers) {
     const emailLower = supabaseUser.email.toLowerCase();
@@ -231,17 +229,17 @@ async function mapUsers(options: {
     console.log(`\nMapping file saved: ${path.resolve(output)}`);
     console.log(`  Retention period: ${MAPPING_RETENTION_DAYS} days`);
   } else {
-    console.log("\nNo matching users found. No mapping file generated.");
+    console.log('\nNo matching users found. No mapping file generated.');
   }
 
   // Report unmatched Supabase users
   if (unmatchedSupabase.length > 0) {
     logger.warn(
       { count: unmatchedSupabase.length },
-      "Supabase users with no Stack Auth match (need manual creation)"
+      'Supabase users with no Stack Auth match (need manual creation)',
     );
     console.log(`\nUnmatched Supabase users (${unmatchedSupabase.length}):`);
-    console.log("  These users need to be created in Stack Auth or migrated manually.");
+    console.log('  These users need to be created in Stack Auth or migrated manually.');
     for (const u of unmatchedSupabase.slice(0, 10)) {
       console.log(`  - ${u.email} (${u.id})`);
     }
@@ -251,7 +249,7 @@ async function mapUsers(options: {
 
     // Log all to file
     for (const u of unmatchedSupabase) {
-      logger.info({ supabaseId: u.id, email: u.email }, "Unmatched Supabase user");
+      logger.info({ supabaseId: u.id, email: u.email }, 'Unmatched Supabase user');
     }
   }
 
@@ -259,10 +257,10 @@ async function mapUsers(options: {
   if (unmatchedStackAuth.length > 0) {
     logger.info(
       { count: unmatchedStackAuth.length },
-      "Stack Auth users not in Supabase export (new registrations)"
+      'Stack Auth users not in Supabase export (new registrations)',
     );
     console.log(`\nStack Auth-only users (${unmatchedStackAuth.length}):`);
-    console.log("  These users registered after the Supabase export (no action needed).");
+    console.log('  These users registered after the Supabase export (no action needed).');
     for (const u of unmatchedStackAuth.slice(0, 5)) {
       console.log(`  - ${u.primary_email}`);
     }
@@ -272,7 +270,7 @@ async function mapUsers(options: {
   }
 
   // Summary
-  console.log("\n=== Mapping Summary ===");
+  console.log('\n=== Mapping Summary ===');
   console.log(`Supabase users:          ${supabaseUsers.length}`);
   console.log(`Stack Auth users:        ${stackAuthUsers.length}`);
   console.log(`Matched (mapped):        ${matchedMappings.length}`);
@@ -280,14 +278,12 @@ async function mapUsers(options: {
   console.log(`Unmatched (Stack Auth):  ${unmatchedStackAuth.length}`);
 
   if (unmatchedSupabase.length > 0) {
-    console.log("\nACTION REQUIRED:");
-    console.log(
-      `  ${unmatchedSupabase.length} Supabase users have no Stack Auth account.`
-    );
-    console.log("  Run migrate-users.ts to create them, or create manually.");
+    console.log('\nACTION REQUIRED:');
+    console.log(`  ${unmatchedSupabase.length} Supabase users have no Stack Auth account.`);
+    console.log('  Run migrate-users.ts to create them, or create manually.');
   }
 
-  logMigrationComplete("user-mapping-generation", 0, {
+  logMigrationComplete('user-mapping-generation', 0, {
     supabaseCount: supabaseUsers.length,
     stackAuthCount: stackAuthUsers.length,
     matchedCount: matchedMappings.length,
@@ -300,25 +296,25 @@ async function mapUsers(options: {
 const program = new Command();
 
 program
-  .name("map-users")
-  .description("Generate user ID mapping from existing users in both systems")
+  .name('map-users')
+  .description('Generate user ID mapping from existing users in both systems')
   .option(
-    "-s, --supabase-export <path>",
-    "Supabase auth_users.json export file",
-    "./migration-data/auth_users.json"
+    '-s, --supabase-export <path>',
+    'Supabase auth_users.json export file',
+    './migration-data/auth_users.json',
   )
-  .option("-o, --output <path>", "Output mapping file path", DEFAULT_MAPPING_PATH)
-  .option("-m, --match-by <method>", "Matching method: email | metadata", "email")
+  .option('-o, --output <path>', 'Output mapping file path', DEFAULT_MAPPING_PATH)
+  .option('-m, --match-by <method>', 'Matching method: email | metadata', 'email')
   .action(async (options) => {
     try {
       await mapUsers({
         supabaseExport: options.supabaseExport,
         output: options.output,
-        matchBy: options.matchBy as "email" | "metadata",
+        matchBy: options.matchBy as 'email' | 'metadata',
       });
     } catch (err) {
-      logMigrationError("map-users", err);
-      console.error("\nMapping failed:", err instanceof Error ? err.message : err);
+      logMigrationError('map-users', err);
+      console.error('\nMapping failed:', err instanceof Error ? err.message : err);
       process.exit(1);
     } finally {
       await closeLogger();

@@ -24,10 +24,10 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "API key authentication via webhook secret lookup with constant-time comparison"
-    - "Bulk database insert with batching (500 records per batch)"
-    - "Unit hierarchy validation via joined queries (unit -> area -> site -> org)"
-    - "Temperature precision handling: numeric(7,2) in DB, integer*100 in unit cache"
+    - 'API key authentication via webhook secret lookup with constant-time comparison'
+    - 'Bulk database insert with batching (500 records per batch)'
+    - 'Unit hierarchy validation via joined queries (unit -> area -> site -> org)'
+    - 'Temperature precision handling: numeric(7,2) in DB, integer*100 in unit cache'
 
 key-files:
   created:
@@ -40,17 +40,17 @@ key-files:
     - backend/src/db/schema/tenancy.ts
 
 key-decisions:
-  - "Store webhook secrets in ttnConnections table (per-org, not shared)"
-  - "Use constant-time comparison for API key validation (prevents timing attacks)"
-  - "Batch bulk inserts at 500 readings (PostgreSQL parameter limit safety)"
-  - "Temperature stored as numeric(7,2) in readings, integer*100 in unit.lastTemperature"
+  - 'Store webhook secrets in ttnConnections table (per-org, not shared)'
+  - 'Use constant-time comparison for API key validation (prevents timing attacks)'
+  - 'Batch bulk inserts at 500 readings (PostgreSQL parameter limit safety)'
+  - 'Temperature stored as numeric(7,2) in readings, integer*100 in unit.lastTemperature'
   - "Silent filtering for invalid units (return valid subset, don't fail entire batch)"
 
 patterns-established:
-  - "Pattern: requireApiKey middleware attaches orgContext to request"
-  - "Pattern: validateUnitsInOrg performs hierarchy joins for BOLA prevention"
-  - "Pattern: Bulk operations use Drizzle transactions for atomicity"
-  - "Pattern: Unit state updates happen within ingestion transaction"
+  - 'Pattern: requireApiKey middleware attaches orgContext to request'
+  - 'Pattern: validateUnitsInOrg performs hierarchy joins for BOLA prevention'
+  - 'Pattern: Bulk operations use Drizzle transactions for atomicity'
+  - 'Pattern: Unit state updates happen within ingestion transaction'
 
 # Metrics
 duration: 3min
@@ -99,7 +99,7 @@ Each task was committed atomically:
 1. **ttnConnections table placement**: Added to tenancy schema (org-scoped configuration) rather than creating separate integrations schema
 2. **Constant-time comparison**: Used crypto.timingSafeEqual to prevent timing attacks on webhook secret validation
 3. **Batch size of 500**: Conservative limit below PostgreSQL's 65,534 parameter limit for bulk inserts
-4. **Temperature precision handling**: Store as numeric(7,2) in sensorReadings table, convert to integer*100 for unit.lastTemperature cache
+4. **Temperature precision handling**: Store as numeric(7,2) in sensorReadings table, convert to integer\*100 for unit.lastTemperature cache
 5. **Silent unit filtering**: validateUnitsInOrg returns valid subset rather than throwing error, allowing partial batch success
 6. **Query ordering**: Readings ordered by recordedAt descending (newest first) for typical dashboard use case
 
@@ -108,6 +108,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Added ttnConnections table to tenancy schema**
+
 - **Found during:** Task 1 (API key middleware implementation)
 - **Issue:** Plan referenced ttnConnections table but it didn't exist in database schema
 - **Fix:** Added ttnConnections table to backend/src/db/schema/tenancy.ts with organizationId FK, webhookSecret, applicationId, isActive, and lastUsedAt fields
@@ -116,6 +117,7 @@ Each task was committed atomically:
 - **Committed in:** 94feb18 (Task 1 commit)
 
 **2. [Rule 2 - Missing Critical] Adjusted ReadingResponseSchema to match DB schema**
+
 - **Found during:** Task 2 (Zod schema creation)
 - **Issue:** Plan specified createdAt field but sensorReadings table only has recordedAt and receivedAt timestamps
 - **Fix:** Removed createdAt from ReadingResponseSchema, kept only recordedAt and receivedAt to match actual DB schema
@@ -139,25 +141,30 @@ None - no external service configuration required. This plan provides internal A
 ## Next Phase Readiness
 
 **Ready for next phase:**
+
 - API key authentication infrastructure complete
 - Readings service ready for route integration
 - Bulk ingestion supports up to 1000 readings per request
 - Unit hierarchy validation prevents BOLA vulnerabilities
 
 **For 04-02 (Readings Routes):**
+
 - Apply requireApiKey middleware to POST /api/ingest/readings endpoint
 - Use ingestBulkReadings service for bulk ingestion
 - Use queryReadings service for GET endpoints with pagination
 
 **For 04-03 (Alert Evaluation):**
+
 - Hook alert evaluator into ingestBulkReadings transaction
 - Increment alertsTriggered count in BulkIngestResponse
 
 **Known considerations:**
-- Temperature conversion between numeric and integer*100 must be consistent across codebase
+
+- Temperature conversion between numeric and integer\*100 must be consistent across codebase
 - Webhook secret rotation not yet implemented (add in future phase if needed)
 - Query performance on large reading datasets not yet profiled (add indexes if needed)
 
 ---
-*Phase: 04-sensor-data-alert-system*
-*Completed: 2026-01-23*
+
+_Phase: 04-sensor-data-alert-system_
+_Completed: 2026-01-23_

@@ -18,10 +18,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
+          cpus: '2.0'
           memory: 2048M
         reservations:
-          cpus: "1.0"
+          cpus: '1.0'
           memory: 1024M
       restart_policy:
         condition: on-failure
@@ -31,10 +31,10 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
-        loki-batch-size: "400"
-        loki-retries: "3"
-        loki-external-labels: "service={{.Name}},environment=production"
+        loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-retries: '3'
+        loki-external-labels: 'service={{.Name}},environment=production'
 
   # ===========================================
   # PgBouncer Connection Pooler
@@ -46,10 +46,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 256M
         reservations:
-          cpus: "0.25"
+          cpus: '0.25'
           memory: 128M
       restart_policy:
         condition: on-failure
@@ -59,10 +59,10 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
-        loki-batch-size: "400"
-        loki-retries: "3"
-        loki-external-labels: "service={{.Name}},environment=production"
+        loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-retries: '3'
+        loki-external-labels: 'service={{.Name}},environment=production'
 
   # ===========================================
   # PgBouncer Metrics Exporter
@@ -71,19 +71,19 @@ services:
     image: prometheuscommunity/pgbouncer-exporter:latest
     container_name: freshtrack-pgbouncer-exporter
     environment:
-      PGBOUNCER_EXPORTER_CONNECTION_STRING: "postgres://pgbouncer_exporter:exporter_password@pgbouncer:6432/pgbouncer?sslmode=disable"
+      PGBOUNCER_EXPORTER_CONNECTION_STRING: 'postgres://pgbouncer_exporter:exporter_password@pgbouncer:6432/pgbouncer?sslmode=disable'
     ports:
-      - "9127:9127"
+      - '9127:9127'
     depends_on:
       pgbouncer:
         condition: service_healthy
     deploy:
       resources:
         limits:
-          cpus: "0.25"
+          cpus: '0.25'
           memory: 128M
         reservations:
-          cpus: "0.1"
+          cpus: '0.1'
           memory: 64M
       restart_policy:
         condition: on-failure
@@ -91,17 +91,17 @@ services:
         max_attempts: 5
         window: 120s
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:9127/metrics"]
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:9127/metrics']
       interval: 10s
       timeout: 5s
       retries: 3
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
-        loki-batch-size: "400"
-        loki-retries: "3"
-        loki-external-labels: "service={{.Name}},environment=production"
+        loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-retries: '3'
+        loki-external-labels: 'service={{.Name}},environment=production'
 
   # ===========================================
   # Redis (Cache, Jobs, PubSub)
@@ -111,10 +111,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.0"
+          cpus: '1.0'
           memory: 768M
         reservations:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 512M
       restart_policy:
         condition: on-failure
@@ -124,10 +124,10 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
-        loki-batch-size: "400"
-        loki-retries: "3"
-        loki-external-labels: "service={{.Name}},environment=production"
+        loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-retries: '3'
+        loki-external-labels: 'service={{.Name}},environment=production'
 
   # ===========================================
   # MinIO (S3-Compatible Object Storage)
@@ -136,10 +136,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.0"
+          cpus: '1.0'
           memory: 2048M
         reservations:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 1024M
       restart_policy:
         condition: on-failure
@@ -149,10 +149,10 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
-        loki-batch-size: "400"
-        loki-retries: "3"
-        loki-external-labels: "service={{.Name}},environment=production"
+        loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-retries: '3'
+        loki-external-labels: 'service={{.Name}},environment=production'
 
   # ===========================================
   # Prometheus (Metrics Collection)
@@ -171,14 +171,14 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus/alerts:/etc/prometheus/alerts:ro
     ports:
-      - "9090:9090"
+      - '9090:9090'
     deploy:
       resources:
         limits:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 1024M
         reservations:
-          cpus: "0.25"
+          cpus: '0.25'
           memory: 512M
       restart_policy:
         condition: on-failure
@@ -186,17 +186,17 @@ services:
         max_attempts: 5
         window: 120s
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/healthy"]
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:9090/-/healthy']
       interval: 10s
       timeout: 5s
       retries: 3
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
-        loki-batch-size: "400"
-        loki-retries: "3"
-        loki-external-labels: "service={{.Name}},environment=production"
+        loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-retries: '3'
+        loki-external-labels: 'service={{.Name}},environment=production'
 
   # ===========================================
   # Grafana (Observability Dashboard)
@@ -206,23 +206,23 @@ services:
     container_name: freshtrack-grafana
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
-      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_USERS_ALLOW_SIGN_UP: 'false'
       GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3000}
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
     ports:
-      - "3000:3000"
+      - '3000:3000'
     depends_on:
       - prometheus
       - loki
     deploy:
       resources:
         limits:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 512M
         reservations:
-          cpus: "0.25"
+          cpus: '0.25'
           memory: 256M
       restart_policy:
         condition: on-failure
@@ -230,17 +230,17 @@ services:
         max_attempts: 5
         window: 120s
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health']
       interval: 10s
       timeout: 5s
       retries: 3
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
-        loki-batch-size: "400"
-        loki-retries: "3"
-        loki-external-labels: "service={{.Name}},environment=production"
+        loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-retries: '3'
+        loki-external-labels: 'service={{.Name}},environment=production'
 
   # ===========================================
   # Loki (Log Aggregation)
@@ -253,14 +253,14 @@ services:
       - loki_data:/loki
       - ./loki/loki-config.yaml:/etc/loki/local-config.yaml:ro
     ports:
-      - "3100:3100"
+      - '3100:3100'
     deploy:
       resources:
         limits:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 1024M
         reservations:
-          cpus: "0.25"
+          cpus: '0.25'
           memory: 512M
       restart_policy:
         condition: on-failure
@@ -268,15 +268,15 @@ services:
         max_attempts: 5
         window: 120s
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3100/ready"]
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3100/ready']
       interval: 10s
       timeout: 5s
       retries: 3
     logging:
       driver: json-file
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
   # ===========================================
   # Promtail (Log Collector - Optional)
@@ -294,10 +294,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.25"
+          cpus: '0.25'
           memory: 256M
         reservations:
-          cpus: "0.1"
+          cpus: '0.1'
           memory: 128M
       restart_policy:
         condition: on-failure
@@ -307,8 +307,8 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
   # ===========================================
   # Blackbox Exporter (SSL/HTTP Probing)
@@ -321,14 +321,14 @@ services:
     volumes:
       - ./blackbox/blackbox.yml:/etc/blackbox/blackbox.yml:ro
     ports:
-      - "9115:9115"
+      - '9115:9115'
     deploy:
       resources:
         limits:
-          cpus: "0.25"
+          cpus: '0.25'
           memory: 128M
         reservations:
-          cpus: "0.1"
+          cpus: '0.1'
           memory: 64M
       restart_policy:
         condition: on-failure
@@ -336,17 +336,17 @@ services:
         max_attempts: 5
         window: 120s
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:9115/metrics"]
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:9115/metrics']
       interval: 10s
       timeout: 5s
       retries: 3
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
-        loki-batch-size: "400"
-        loki-retries: "3"
-        loki-external-labels: "service={{.Name}},environment=production"
+        loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-retries: '3'
+        loki-external-labels: 'service={{.Name}},environment=production'
 
   # ===========================================
   # PostgreSQL Backup Service
@@ -356,7 +356,7 @@ services:
     container_name: freshtrack-postgres-backup
     environment:
       POSTGRES_HOST: postgres
-      POSTGRES_PORT: "5432"
+      POSTGRES_PORT: '5432'
       POSTGRES_DB: ${POSTGRES_DB:-freshtrack}
       POSTGRES_USER: ${POSTGRES_USER:-freshtrack_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -364,7 +364,7 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MINIO_BUCKET: postgres-backups
-      RETENTION_DAYS: "30"
+      RETENTION_DAYS: '30'
       WEBHOOK_URL: ${BACKUP_WEBHOOK_URL:-}
     volumes:
       - ./scripts/backup-postgres.sh:/usr/local/bin/backup-postgres.sh:ro
@@ -377,10 +377,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.5"
+          cpus: '0.5'
           memory: 512M
         reservations:
-          cpus: "0.25"
+          cpus: '0.25'
           memory: 256M
       restart_policy:
         condition: on-failure
@@ -390,10 +390,10 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://loki:3100/loki/api/v1/push"
-        loki-batch-size: "400"
-        loki-retries: "3"
-        loki-external-labels: "service={{.Name}},environment=production"
+        loki-url: 'http://loki:3100/loki/api/v1/push'
+        loki-batch-size: '400'
+        loki-retries: '3'
+        loki-external-labels: 'service={{.Name}},environment=production'
     entrypoint: /bin/sh
     command:
       - -c

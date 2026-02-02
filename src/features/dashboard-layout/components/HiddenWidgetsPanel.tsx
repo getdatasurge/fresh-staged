@@ -1,8 +1,8 @@
-import { Eye, EyeOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { WIDGET_REGISTRY } from "../registry/widgetRegistry";
+import { Eye, EyeOff } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { WIDGET_REGISTRY } from '../registry/widgetRegistry';
 
 interface HiddenWidgetsPanelProps {
   hiddenWidgetIds: string[];
@@ -28,12 +28,7 @@ export function HiddenWidgetsPanel({
             Hidden Widgets ({hiddenWidgetIds.length})
           </CardTitle>
           {hiddenWidgetIds.length > 1 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onRestoreAll}
-              className="text-xs"
-            >
+            <Button variant="ghost" size="sm" onClick={onRestoreAll} className="text-xs">
               Restore All
             </Button>
           )}
@@ -41,7 +36,7 @@ export function HiddenWidgetsPanel({
       </CardHeader>
       <CardContent className="py-2 px-4">
         <div className="flex flex-wrap gap-2">
-        {hiddenWidgetIds.map((id) => {
+          {hiddenWidgetIds.map((id) => {
             const widget = WIDGET_REGISTRY[id];
             const Icon = widget?.icon;
             return (

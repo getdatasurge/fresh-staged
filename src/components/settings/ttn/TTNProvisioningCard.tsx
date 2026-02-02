@@ -1,9 +1,9 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Radio, Loader2, XCircle, RefreshCw, Plus } from "lucide-react";
-import type { TTNSettings } from "@/hooks/useTTNSettings";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Radio, Loader2, XCircle, RefreshCw, Plus } from 'lucide-react';
+import type { TTNSettings } from '@/hooks/useTTNSettings';
 
 interface TTNProvisioningCardProps {
   settings: TTNSettings | null;
@@ -67,26 +67,29 @@ export function TTNProvisioningCard({
               <p className="text-sm text-muted-foreground mt-1">{settings?.provisioning_error}</p>
               {settings?.provisioning_last_step && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Failed at step: <span className="font-mono">{settings.provisioning_last_step}</span>
+                  Failed at step:{' '}
+                  <span className="font-mono">{settings.provisioning_last_step}</span>
                 </p>
               )}
             </div>
             <div className="flex items-center gap-2">
-              {!readOnly && settings?.provisioning_can_retry && settings?.provisioning_last_step && (
-                <Button
-                  onClick={() => onProvision(true, settings.provisioning_last_step!)}
-                  variant="outline"
-                  size="sm"
-                  disabled={isProvisioning}
-                >
-                  {isProvisioning ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                  )}
-                  Retry from {settings.provisioning_last_step}
-                </Button>
-              )}
+              {!readOnly &&
+                settings?.provisioning_can_retry &&
+                settings?.provisioning_last_step && (
+                  <Button
+                    onClick={() => onProvision(true, settings.provisioning_last_step!)}
+                    variant="outline"
+                    size="sm"
+                    disabled={isProvisioning}
+                  >
+                    {isProvisioning ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                    )}
+                    Retry from {settings.provisioning_last_step}
+                  </Button>
+                )}
               {!readOnly && (
                 <Button
                   onClick={() => onProvision(false)}

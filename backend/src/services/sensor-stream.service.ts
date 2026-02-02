@@ -102,10 +102,7 @@ export class SensorStreamService {
 
     // Update latest reading cache (for new client queries)
     const existingLatest = this.latestByUnit.get(reading.unitId);
-    if (
-      !existingLatest ||
-      reading.recordedAt > existingLatest.recordedAt
-    ) {
+    if (!existingLatest || reading.recordedAt > existingLatest.recordedAt) {
       this.latestByUnit.set(reading.unitId, reading);
     }
   }
@@ -142,7 +139,7 @@ export class SensorStreamService {
       // Prepare batch payload
       const batchPayload = {
         unitId,
-        readings: readings.map(r => ({
+        readings: readings.map((r) => ({
           id: r.id,
           temperature: r.temperature,
           humidity: r.humidity,
@@ -154,19 +151,10 @@ export class SensorStreamService {
       };
 
       // Broadcast to organization room (all clients in org)
-      this.socketService.emitToOrg(
-        organizationId,
-        'sensor:readings:batch',
-        batchPayload
-      );
+      this.socketService.emitToOrg(organizationId, 'sensor:readings:batch', batchPayload);
 
       // Also broadcast to unit-specific room (for clients subscribed to this unit)
-      this.socketService.emitToUnit(
-        organizationId,
-        unitId,
-        'sensor:readings:batch',
-        batchPayload
-      );
+      this.socketService.emitToUnit(organizationId, unitId, 'sensor:readings:batch', batchPayload);
 
       // Clear buffer for this key
       this.buffer.set(bufferKey, []);
@@ -174,7 +162,7 @@ export class SensorStreamService {
 
     // Log flush statistics
     console.log(
-      `[SensorStreamService] Flushed ${totalReadings} reading(s) for ${uniqueUnits.size} unit(s)`
+      `[SensorStreamService] Flushed ${totalReadings} reading(s) for ${uniqueUnits.size} unit(s)`,
     );
 
     // Clean up empty buffers to prevent memory leak

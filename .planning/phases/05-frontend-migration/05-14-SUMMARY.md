@@ -19,14 +19,14 @@ key-files:
     - src/hooks/useGatewayProvisioningPreflight.ts
 
 decisions:
-  - decision: "Pass Stack Auth token via x-stack-access-token header to edge functions"
-    rationale: "Consistent with Phase 5 hybrid pattern - edge functions validate token until Phase 6 backend migration"
-  - decision: "useTTNDeprovision already migrated in 05-13"
-    rationale: "Discovered during execution - file was part of broader device management hook migration"
+  - decision: 'Pass Stack Auth token via x-stack-access-token header to edge functions'
+    rationale: 'Consistent with Phase 5 hybrid pattern - edge functions validate token until Phase 6 backend migration'
+  - decision: 'useTTNDeprovision already migrated in 05-13'
+    rationale: 'Discovered during execution - file was part of broader device management hook migration'
 
 metrics:
   completed: 2026-01-23
-  duration: "6 minutes 8 seconds"
+  duration: '6 minutes 8 seconds'
   tasks_completed: 4/4
   commits: 3
 ---
@@ -134,10 +134,12 @@ All success criteria met:
 **Blockers:** None
 
 **Concerns:**
+
 - Edge functions still depend on Supabase session validation (to be replaced in Phase 6)
 - TTN wizard state management could be simplified in Phase 6 with backend job queue
 
 **Dependencies satisfied for:**
+
 - 05-15: Additional TTN/LoRa provisioning hooks can follow same pattern
 - Phase 6: Backend API can replace edge functions using same authentication flow
 
@@ -153,6 +155,7 @@ All success criteria met:
 All tasks completed successfully. Plan executed in 6 minutes 8 seconds.
 
 ---
-*Phase: 05-frontend-migration*
-*Plan: 14*
-*Completed: 2026-01-23*
+
+_Phase: 05-frontend-migration_
+_Plan: 14_
+_Completed: 2026-01-23_

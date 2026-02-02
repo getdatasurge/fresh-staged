@@ -23,11 +23,11 @@ This guide covers deploying FreshTrack Pro to DigitalOcean infrastructure, inclu
 
 FreshTrack Pro can be deployed to DigitalOcean in three primary configurations:
 
-| Mode | Database | Storage | Monthly Cost | Best For |
-|------|----------|---------|--------------|----------|
-| **Self-Hosted** | PostgreSQL container | MinIO container | ~$24-48/mo | Full control, cost optimization |
-| **Managed DB** | DO Managed PostgreSQL | MinIO container | ~$54-78/mo | Automated backups, reduced DB ops |
-| **Full Managed** | DO Managed PostgreSQL | DO Spaces | ~$59-83/mo | Minimal ops burden, enterprise-grade |
+| Mode             | Database              | Storage         | Monthly Cost | Best For                             |
+| ---------------- | --------------------- | --------------- | ------------ | ------------------------------------ |
+| **Self-Hosted**  | PostgreSQL container  | MinIO container | ~$24-48/mo   | Full control, cost optimization      |
+| **Managed DB**   | DO Managed PostgreSQL | MinIO container | ~$54-78/mo   | Automated backups, reduced DB ops    |
+| **Full Managed** | DO Managed PostgreSQL | DO Spaces       | ~$59-83/mo   | Minimal ops burden, enterprise-grade |
 
 The deployment script (`deploy-digitalocean.sh`) automates Droplet provisioning and supports all three modes through configuration flags.
 
@@ -98,12 +98,14 @@ The deployment script (`deploy-digitalocean.sh`) automates Droplet provisioning 
 Create an account at [digitalocean.com](https://www.digitalocean.com/).
 
 **Required:**
+
 - API token with read/write permissions
 - SSH key added to account
 - Payment method configured
 - Email address for billing notifications
 
 **Recommended:**
+
 - Enable 2FA for account security
 - Set up billing alerts to avoid unexpected charges
 
@@ -112,16 +114,19 @@ Create an account at [digitalocean.com](https://www.digitalocean.com/).
 The `doctl` command-line tool is required for API interaction.
 
 **macOS:**
+
 ```bash
 brew install doctl
 ```
 
 **Linux (snap):**
+
 ```bash
 sudo snap install doctl
 ```
 
 **Linux (manual):**
+
 ```bash
 cd ~
 wget https://github.com/digitalocean/doctl/releases/download/v1.98.0/doctl-1.98.0-linux-amd64.tar.gz
@@ -130,22 +135,26 @@ sudo mv doctl /usr/local/bin
 ```
 
 **Windows (Chocolatey):**
+
 ```powershell
 choco install doctl
 ```
 
 **Authenticate:**
+
 ```bash
 doctl auth init
 # Paste your API token when prompted
 ```
 
 Verify authentication:
+
 ```bash
 doctl account get
 ```
 
 Expected output:
+
 ```
 Email                       Droplet Limit    Email Verified
 your-email@example.com      25               true
@@ -166,6 +175,7 @@ doctl compute ssh-key create my-laptop-key --public-key "$(cat ~/.ssh/id_ed25519
 ```
 
 List available keys:
+
 ```bash
 doctl compute ssh-key list
 ```
@@ -177,6 +187,7 @@ doctl compute ssh-key list
 Create at: https://cloud.digitalocean.com/account/api/tokens
 
 **Steps:**
+
 1. Click "Generate New Token"
 2. Name: `freshtrack-deployment`
 3. Permissions: **Read and Write** (both required)
@@ -189,6 +200,7 @@ Save the token securely in a password manager.
 ### 5. External Services
 
 **Required:**
+
 - **Domain name** with DNS management access
 - **Stack Auth account** (https://app.stack-auth.com/)
   - Project ID
@@ -196,6 +208,7 @@ Save the token securely in a password manager.
   - Secret Key
 
 **Optional:**
+
 - **Telnyx account** for SMS notifications
 - **Slack/Discord webhook** for deployment notifications
 
@@ -217,10 +230,12 @@ cp scripts/deploy.config.example scripts/deploy.config
 ```
 
 **Deployment time:**
+
 - First deployment: 8-12 minutes
 - Subsequent deployments: 1-3 minutes
 
 The script will:
+
 1. Validate doctl authentication (10 seconds)
 2. Create or reuse VPC (20 seconds)
 3. Create or reuse Cloud Firewall (20 seconds)
@@ -258,6 +273,7 @@ POSTGRES_PASSWORD=<generate-strong-password>
 ```
 
 **Generate strong passwords:**
+
 ```bash
 # Database password
 openssl rand -base64 32
@@ -298,32 +314,33 @@ BACKUP_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 
 Choose the region closest to your users for minimal latency:
 
-| Region | Location | Latency from US East | Monthly Cost |
-|--------|----------|----------------------|--------------|
-| nyc1, nyc3 | New York, USA | ~5ms | Standard |
-| sfo3 | San Francisco, USA | ~70ms | Standard |
-| tor1 | Toronto, Canada | ~15ms | Standard |
-| lon1 | London, UK | ~80ms | Standard |
-| fra1 | Frankfurt, Germany | ~90ms | Standard |
-| ams3 | Amsterdam, Netherlands | ~85ms | Standard |
-| sgp1 | Singapore | ~230ms | Standard |
-| blr1 | Bangalore, India | ~250ms | Standard |
-| syd1 | Sydney, Australia | ~200ms | Standard |
+| Region     | Location               | Latency from US East | Monthly Cost |
+| ---------- | ---------------------- | -------------------- | ------------ |
+| nyc1, nyc3 | New York, USA          | ~5ms                 | Standard     |
+| sfo3       | San Francisco, USA     | ~70ms                | Standard     |
+| tor1       | Toronto, Canada        | ~15ms                | Standard     |
+| lon1       | London, UK             | ~80ms                | Standard     |
+| fra1       | Frankfurt, Germany     | ~90ms                | Standard     |
+| ams3       | Amsterdam, Netherlands | ~85ms                | Standard     |
+| sgp1       | Singapore              | ~230ms               | Standard     |
+| blr1       | Bangalore, India       | ~250ms               | Standard     |
+| syd1       | Sydney, Australia      | ~200ms               | Standard     |
 
 **Recommendation:**
+
 - North America: `nyc3` (New York) or `sfo3` (San Francisco)
 - Europe: `fra1` (Frankfurt) or `lon1` (London)
 - Asia: `sgp1` (Singapore) or `blr1` (Bangalore)
 
 ### Droplet Sizes
 
-| Size | CPU | RAM | Storage | Transfer | Monthly | Best For |
-|------|-----|-----|---------|----------|---------|----------|
-| s-1vcpu-1gb | 1 | 1 GB | 25 GB | 1 TB | $6 | Development/testing |
-| s-2vcpu-2gb | 2 | 2 GB | 50 GB | 2 TB | $18 | Small production |
-| s-2vcpu-4gb | 2 | 4 GB | 80 GB | 4 TB | $24 | **Recommended** |
-| s-4vcpu-8gb | 4 | 8 GB | 160 GB | 5 TB | $48 | High traffic |
-| s-8vcpu-16gb | 8 | 16 GB | 320 GB | 6 TB | $96 | Enterprise |
+| Size         | CPU | RAM   | Storage | Transfer | Monthly | Best For            |
+| ------------ | --- | ----- | ------- | -------- | ------- | ------------------- |
+| s-1vcpu-1gb  | 1   | 1 GB  | 25 GB   | 1 TB     | $6      | Development/testing |
+| s-2vcpu-2gb  | 2   | 2 GB  | 50 GB   | 2 TB     | $18     | Small production    |
+| s-2vcpu-4gb  | 2   | 4 GB  | 80 GB   | 4 TB     | $24     | **Recommended**     |
+| s-4vcpu-8gb  | 4   | 8 GB  | 160 GB  | 5 TB     | $48     | High traffic        |
+| s-8vcpu-16gb | 8   | 16 GB | 320 GB  | 6 TB     | $96     | Enterprise          |
 
 **Recommended:** `s-2vcpu-4gb` for production deployments (good balance of cost and performance)
 
@@ -334,12 +351,14 @@ Choose the region closest to your users for minimal latency:
 All services run in Docker containers on the Droplet.
 
 **Configuration:**
+
 ```bash
 USE_MANAGED_DB=false
 USE_DO_SPACES=false
 ```
 
 **Services included:**
+
 - PostgreSQL 15 with PgBouncer connection pooling
 - Redis for caching and sessions
 - MinIO for S3-compatible object storage
@@ -347,6 +366,7 @@ USE_DO_SPACES=false
 - Automated daily backups to MinIO
 
 **Pros:**
+
 - Lowest monthly cost ($24-48/mo)
 - Full control over configuration
 - No external service dependencies
@@ -354,12 +374,14 @@ USE_DO_SPACES=false
 - Customizable backup retention policies
 
 **Cons:**
+
 - You manage backups and restoration
 - Manual database scaling and optimization
 - Database administration responsibility
 - More operational complexity
 
 **Best for:**
+
 - Teams with DevOps experience
 - Cost-sensitive deployments
 - Organizations requiring full data control
@@ -370,6 +392,7 @@ USE_DO_SPACES=false
 Use DigitalOcean Managed PostgreSQL with self-hosted storage.
 
 **Configuration:**
+
 ```bash
 USE_MANAGED_DB=true
 DO_DB_SIZE=db-s-1vcpu-2gb
@@ -377,6 +400,7 @@ USE_DO_SPACES=false
 ```
 
 **Managed PostgreSQL features:**
+
 - Automated daily backups (7-day retention)
 - Point-in-time recovery to any moment in last 7 days
 - Built-in connection pooling (25+ connections per GB RAM)
@@ -386,6 +410,7 @@ USE_DO_SPACES=false
 - 99.95% uptime SLA
 
 **Pros:**
+
 - Automated backups with point-in-time recovery
 - Professional database management
 - High availability options
@@ -393,12 +418,14 @@ USE_DO_SPACES=false
 - Dedicated database resources
 
 **Cons:**
+
 - Higher monthly cost (+$30-60/mo)
 - Less configuration flexibility
 - DigitalOcean vendor dependency
 - Cannot use custom PostgreSQL extensions
 
 **Best for:**
+
 - Production applications
 - Teams without dedicated DBA
 - Applications requiring high availability
@@ -409,12 +436,14 @@ USE_DO_SPACES=false
 Managed PostgreSQL + DigitalOcean Spaces for complete managed infrastructure.
 
 **Configuration:**
+
 ```bash
 USE_MANAGED_DB=true
 USE_DO_SPACES=true
 ```
 
 **Additional features (Spaces):**
+
 - S3-compatible API
 - Built-in CDN (DigitalOcean CDN included)
 - 250 GB storage + 1 TB bandwidth included
@@ -422,6 +451,7 @@ USE_DO_SPACES=true
 - 99.99% uptime SLA
 
 **Pros:**
+
 - Minimal operational burden
 - Enterprise-grade infrastructure
 - CDN acceleration for media files
@@ -429,12 +459,14 @@ USE_DO_SPACES=true
 - Professional monitoring and support
 
 **Cons:**
+
 - Highest monthly cost (~$100+/mo)
 - Vendor lock-in considerations
 - Less customization options
 - Data egress costs for high bandwidth usage
 
 **Best for:**
+
 - Production SaaS applications
 - Global user base (CDN benefits)
 - Teams focused on product development
@@ -475,6 +507,7 @@ Edit `deploy.config` with your values. **At minimum, configure:**
    - `POSTGRES_PASSWORD` - Strong password (32+ characters)
 
 **Configuration checklist:**
+
 - [ ] Domain configured and DNS accessible
 - [ ] DigitalOcean API token created
 - [ ] SSH key added to DigitalOcean account
@@ -540,6 +573,7 @@ Edit `deploy.config` with your values. **At minimum, configure:**
 **Total time: 8-12 minutes**
 
 **Example output:**
+
 ```
 ==> Loading configuration...
 ✓ Loaded configuration from scripts/deploy.config
@@ -579,6 +613,7 @@ Next Steps:
 After deployment completes, configure DNS records to point to your Droplet.
 
 **Droplet IP saved to:**
+
 ```bash
 cat .droplet-ip
 # Output: 123.45.67.89
@@ -586,10 +621,10 @@ cat .droplet-ip
 
 **In your DNS provider (Cloudflare, Route53, Namecheap, etc.):**
 
-| Type | Name | Value | TTL |
-|------|------|-------|-----|
-| A | @ | 123.45.67.89 | 300 |
-| A | www | 123.45.67.89 | 300 |
+| Type | Name | Value        | TTL |
+| ---- | ---- | ------------ | --- |
+| A    | @    | 123.45.67.89 | 300 |
+| A    | www  | 123.45.67.89 | 300 |
 
 **Optional subdomains:**
 | Type | Name | Value | TTL |
@@ -598,11 +633,13 @@ cat .droplet-ip
 | A | status | 123.45.67.89 | 300 |
 
 **DNS propagation time:**
+
 - Typical: 5-60 minutes
 - Worst case: up to 24 hours
 - Use `dig` to check status
 
 **Check DNS propagation:**
+
 ```bash
 # Your domain
 dig freshtrackpro.com +short
@@ -618,17 +655,20 @@ dig @1.1.1.1 freshtrackpro.com +short   # Cloudflare DNS
 ### Step 4: Verify Deployment
 
 **Check DNS resolution:**
+
 ```bash
 dig freshtrackpro.com +short
 # Should return your Droplet IP
 ```
 
 **Access your application:**
+
 ```
 https://freshtrackpro.com
 ```
 
 **Verify SSL certificate:**
+
 ```bash
 curl -I https://freshtrackpro.com
 # Should show: HTTP/2 200
@@ -636,12 +676,14 @@ curl -I https://freshtrackpro.com
 ```
 
 **SSH to Droplet:**
+
 ```bash
 ssh root@$(cat .droplet-ip)
 # Or: ssh root@123.45.67.89
 ```
 
 **Check Docker containers:**
+
 ```bash
 ssh root@$(cat .droplet-ip)
 cd /opt/freshtrack-pro
@@ -649,6 +691,7 @@ docker compose ps
 ```
 
 Expected services:
+
 - `freshtrack-caddy` - Running
 - `freshtrack-backend` - Running
 - `freshtrack-postgres` - Running (if self-hosted)
@@ -659,17 +702,20 @@ Expected services:
 - `loki` - Running
 
 **View logs:**
+
 ```bash
 docker compose logs -f backend
 # Press Ctrl+C to exit
 ```
 
 **Access Grafana:**
+
 ```
 https://freshtrackpro.com/grafana
 ```
 
 Default credentials (if not configured):
+
 - Username: `admin`
 - Password: Check `/opt/freshtrack-pro/secrets/grafana-password`
 
@@ -710,6 +756,7 @@ This creates the database cluster and outputs the connection string.
 **Manual configuration steps:**
 
 1. **Create database cluster:**
+
    ```bash
    doctl databases create freshtrack-db \
      --engine pg \
@@ -720,17 +767,20 @@ This creates the database cluster and outputs the connection string.
    ```
 
 2. **Wait for provisioning** (5-10 minutes):
+
    ```bash
    doctl databases get freshtrack-db
    # Wait until status: online
    ```
 
 3. **Get connection details:**
+
    ```bash
    doctl databases connection freshtrack-db --format URI
    ```
 
 4. **Update application:**
+
    ```bash
    # SSH to Droplet
    ssh root@$(cat .droplet-ip)
@@ -747,17 +797,21 @@ This creates the database cluster and outputs the connection string.
 Managed PostgreSQL provides two endpoints:
 
 **Direct connection (LIMITED):**
+
 ```
 postgresql://user:password@host.db.ondigitalocean.com:25060/defaultdb?sslmode=require
 ```
+
 - Use only for administration
 - Limited to 100 connections total
 - No connection pooling
 
 **Connection pooler (RECOMMENDED):**
+
 ```
 postgresql://user:password@host-pooler.db.ondigitalocean.com:25060/defaultdb?sslmode=require
 ```
+
 - Use for application connections
 - 25+ connections per GB RAM (50+ for 2GB tier)
 - Built-in PgBouncer pooling
@@ -767,15 +821,16 @@ postgresql://user:password@host-pooler.db.ondigitalocean.com:25060/defaultdb?ssl
 
 ### Database Tiers
 
-| Tier | CPU | RAM | Disk | Connections | Monthly Cost | Use Case |
-|------|-----|-----|------|-------------|--------------|----------|
-| db-s-1vcpu-1gb | 1 | 1 GB | 10 GB | 25 | $15 | Development |
-| db-s-1vcpu-2gb | 1 | 2 GB | 25 GB | 50 | $30 | Small production |
-| db-s-2vcpu-4gb | 2 | 4 GB | 38 GB | 100 | $60 | Production with HA |
-| db-s-4vcpu-8gb | 4 | 8 GB | 115 GB | 200 | $120 | High traffic |
-| db-s-6vcpu-16gb | 6 | 16 GB | 270 GB | 400 | $240 | Enterprise |
+| Tier            | CPU | RAM   | Disk   | Connections | Monthly Cost | Use Case           |
+| --------------- | --- | ----- | ------ | ----------- | ------------ | ------------------ |
+| db-s-1vcpu-1gb  | 1   | 1 GB  | 10 GB  | 25          | $15          | Development        |
+| db-s-1vcpu-2gb  | 1   | 2 GB  | 25 GB  | 50          | $30          | Small production   |
+| db-s-2vcpu-4gb  | 2   | 4 GB  | 38 GB  | 100         | $60          | Production with HA |
+| db-s-4vcpu-8gb  | 4   | 8 GB  | 115 GB | 200         | $120         | High traffic       |
+| db-s-6vcpu-16gb | 6   | 16 GB | 270 GB | 400         | $240         | Enterprise         |
 
 **Recommendation:**
+
 - Development: `db-s-1vcpu-1gb` ($15/mo)
 - Production: `db-s-1vcpu-2gb` ($30/mo)
 - High traffic: `db-s-2vcpu-4gb` with standby ($60/mo)
@@ -789,6 +844,7 @@ doctl databases configuration update freshtrack-db --num-nodes 2
 ```
 
 **Standby node benefits:**
+
 - Automatic failover (<30 seconds)
 - Read replicas for load distribution
 - Zero-downtime maintenance
@@ -811,6 +867,7 @@ Visit: https://cloud.digitalocean.com/account/api/spaces
 - Copy Access Key and Secret Key
 
 **2. Configure in deploy.config:**
+
 ```bash
 USE_DO_SPACES=true
 DO_SPACES_REGION=nyc3
@@ -820,16 +877,19 @@ DO_SPACES_SECRET_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 **3. Create Space (optional - script creates automatically):**
+
 ```bash
 doctl spaces create freshtrack-media --region nyc3
 ```
 
 **4. Enable CDN:**
+
 ```bash
 doctl spaces cdn enable freshtrack-media --region nyc3
 ```
 
 CDN endpoint format:
+
 ```
 https://freshtrack-media.nyc3.cdn.digitaloceanspaces.com
 ```
@@ -837,11 +897,13 @@ https://freshtrack-media.nyc3.cdn.digitaloceanspaces.com
 ### Spaces Pricing
 
 **Base tier:**
+
 - $5/month for 250 GB storage
 - 1 TB outbound bandwidth included
 - CDN included at no extra cost
 
 **Overages:**
+
 - Storage: $0.02/GB over 250 GB
 - Bandwidth: $0.01/GB over 1 TB
 
@@ -855,17 +917,20 @@ https://freshtrack-media.nyc3.cdn.digitaloceanspaces.com
 ### Spaces Features
 
 **S3 compatibility:**
+
 - Use standard S3 SDKs and tools
 - Works with `aws-sdk` in Node.js
 - Compatible with Terraform S3 backend
 
 **CDN acceleration:**
+
 - Automatic edge caching
 - Global points of presence
 - SSL included on CDN endpoints
 - Custom domain support
 
 **Access control:**
+
 - Public or private buckets
 - IAM-style permissions
 - CORS configuration
@@ -875,66 +940,66 @@ https://freshtrack-media.nyc3.cdn.digitaloceanspaces.com
 
 ### Monthly Infrastructure Costs
 
-| Component | Self-Hosted | Managed DB | Full Managed |
-|-----------|-------------|------------|--------------|
-| Droplet (2 vCPU, 4GB) | $24 | $24 | $24 |
-| PostgreSQL | $0 (container) | $30 (managed) | $30 (managed) |
-| MinIO/Storage | $0 (container) | $0 (container) | $5 (Spaces) |
-| Redis | $0 (container) | $0 (container) | $0 (container) |
-| Backups | ~$1 (Volumes) | $0 (included) | $0 (included) |
-| **Total** | **~$25/mo** | **~$54/mo** | **~$59/mo** |
+| Component             | Self-Hosted    | Managed DB     | Full Managed   |
+| --------------------- | -------------- | -------------- | -------------- |
+| Droplet (2 vCPU, 4GB) | $24            | $24            | $24            |
+| PostgreSQL            | $0 (container) | $30 (managed)  | $30 (managed)  |
+| MinIO/Storage         | $0 (container) | $0 (container) | $5 (Spaces)    |
+| Redis                 | $0 (container) | $0 (container) | $0 (container) |
+| Backups               | ~$1 (Volumes)  | $0 (included)  | $0 (included)  |
+| **Total**             | **~$25/mo**    | **~$54/mo**    | **~$59/mo**    |
 
 **High-traffic configuration:**
 
-| Component | Self-Hosted | Managed DB | Full Managed |
-|-----------|-------------|------------|--------------|
-| Droplet (4 vCPU, 8GB) | $48 | $48 | $48 |
-| PostgreSQL | $0 (container) | $60 (HA) | $60 (HA) |
-| MinIO/Storage | $0 (container) | $0 (container) | $15 (Spaces) |
-| Redis | $0 (container) | $0 (container) | $0 (container) |
-| Backups | ~$2 (Volumes) | $0 (included) | $0 (included) |
-| **Total** | **~$50/mo** | **~$108/mo** | **~$123/mo** |
+| Component             | Self-Hosted    | Managed DB     | Full Managed   |
+| --------------------- | -------------- | -------------- | -------------- |
+| Droplet (4 vCPU, 8GB) | $48            | $48            | $48            |
+| PostgreSQL            | $0 (container) | $60 (HA)       | $60 (HA)       |
+| MinIO/Storage         | $0 (container) | $0 (container) | $15 (Spaces)   |
+| Redis                 | $0 (container) | $0 (container) | $0 (container) |
+| Backups               | ~$2 (Volumes)  | $0 (included)  | $0 (included)  |
+| **Total**             | **~$50/mo**    | **~$108/mo**   | **~$123/mo**   |
 
 ### Operational Time Costs
 
-| Task | Self-Hosted | Managed DB | Full Managed |
-|------|-------------|------------|--------------|
-| Database backups | 2 hrs/mo | 0 hrs/mo | 0 hrs/mo |
-| Database optimization | 2 hrs/mo | 0 hrs/mo | 0 hrs/mo |
-| Security patches | 2 hrs/mo | 0.5 hrs/mo | 0.5 hrs/mo |
-| Monitoring setup | 2 hrs/mo | 1 hr/mo | 0.5 hrs/mo |
-| Storage management | 1 hr/mo | 1 hr/mo | 0 hrs/mo |
-| Incident response | 2 hrs/mo | 1 hr/mo | 0.5 hrs/mo |
-| **Total** | **11 hrs/mo** | **3.5 hrs/mo** | **1.5 hrs/mo** |
+| Task                  | Self-Hosted   | Managed DB     | Full Managed   |
+| --------------------- | ------------- | -------------- | -------------- |
+| Database backups      | 2 hrs/mo      | 0 hrs/mo       | 0 hrs/mo       |
+| Database optimization | 2 hrs/mo      | 0 hrs/mo       | 0 hrs/mo       |
+| Security patches      | 2 hrs/mo      | 0.5 hrs/mo     | 0.5 hrs/mo     |
+| Monitoring setup      | 2 hrs/mo      | 1 hr/mo        | 0.5 hrs/mo     |
+| Storage management    | 1 hr/mo       | 1 hr/mo        | 0 hrs/mo       |
+| Incident response     | 2 hrs/mo      | 1 hr/mo        | 0.5 hrs/mo     |
+| **Total**             | **11 hrs/mo** | **3.5 hrs/mo** | **1.5 hrs/mo** |
 
 ### Total Cost of Ownership
 
 At $100/hour engineer rate:
 
-| Mode | Infrastructure | Operations | **Total** |
-|------|----------------|------------|-----------|
-| Self-Hosted | $25/mo | $1,100/mo | **$1,125/mo** |
-| Managed DB | $54/mo | $350/mo | **$404/mo** |
-| Full Managed | $59/mo | $150/mo | **$209/mo** |
+| Mode         | Infrastructure | Operations | **Total**     |
+| ------------ | -------------- | ---------- | ------------- |
+| Self-Hosted  | $25/mo         | $1,100/mo  | **$1,125/mo** |
+| Managed DB   | $54/mo         | $350/mo    | **$404/mo**   |
+| Full Managed | $59/mo         | $150/mo    | **$209/mo**   |
 
 **At $150/hour engineer rate:**
 
-| Mode | Infrastructure | Operations | **Total** |
-|------|----------------|------------|-----------|
-| Self-Hosted | $25/mo | $1,650/mo | **$1,675/mo** |
-| Managed DB | $54/mo | $525/mo | **$579/mo** |
-| Full Managed | $59/mo | $225/mo | **$284/mo** |
+| Mode         | Infrastructure | Operations | **Total**     |
+| ------------ | -------------- | ---------- | ------------- |
+| Self-Hosted  | $25/mo         | $1,650/mo  | **$1,675/mo** |
+| Managed DB   | $54/mo         | $525/mo    | **$579/mo**   |
+| Full Managed | $59/mo         | $225/mo    | **$284/mo**   |
 
 ### Cost Analysis
 
 **Recommendation by team size:**
 
-| Team Size | Recommended Mode | Reasoning |
-|-----------|------------------|-----------|
-| Solo developer | Full Managed | Focus on product, not ops |
-| 2-5 engineers | Full Managed | Better ROI on feature development |
-| 5-10 engineers | Managed DB | Balance cost and operational control |
-| 10+ engineers | Self-Hosted | Dedicated DevOps team justifies savings |
+| Team Size      | Recommended Mode | Reasoning                               |
+| -------------- | ---------------- | --------------------------------------- |
+| Solo developer | Full Managed     | Focus on product, not ops               |
+| 2-5 engineers  | Full Managed     | Better ROI on feature development       |
+| 5-10 engineers | Managed DB       | Balance cost and operational control    |
+| 10+ engineers  | Self-Hosted      | Dedicated DevOps team justifies savings |
 
 **Break-even analysis:**
 
@@ -955,18 +1020,21 @@ At what point is self-hosted cheaper than managed?
 All resources are automatically placed in a Virtual Private Cloud (VPC).
 
 **VPC configuration:**
+
 - Name: `freshtrack-vpc`
 - IP range: `10.116.0.0/20` (4,096 IP addresses)
 - Region: Your selected region
 - Private network between Droplet and managed services
 
 **Benefits:**
+
 - No bandwidth charges for internal traffic
 - Reduced latency (~1ms vs 5-10ms public internet)
 - Enhanced security (services not exposed to internet)
 - Simplified firewall rules
 
 **Check VPC status:**
+
 ```bash
 doctl vpcs list
 ```
@@ -983,9 +1051,11 @@ The deployment script creates a Cloud Firewall with sensible defaults.
 | TCP | 443 | 0.0.0.0/0 | HTTPS (application traffic) |
 
 **Outbound rules:**
+
 - All protocols, all ports, all destinations (required for updates and external APIs)
 
 **Manage firewall:**
+
 ```bash
 # List firewalls
 doctl compute firewall list
@@ -1000,6 +1070,7 @@ doctl compute firewall remove-rules freshtrack-firewall \
 ```
 
 **Best practices:**
+
 - Keep SSH (22) open for administration
 - Consider restricting SSH to your office/VPN IP range
 - Never restrict HTTP (80) - required for SSL renewal
@@ -1010,12 +1081,14 @@ doctl compute firewall remove-rules freshtrack-firewall \
 UFW (Uncomplicated Firewall) is configured on the Droplet for defense-in-depth.
 
 **Check status:**
+
 ```bash
 ssh root@$(cat .droplet-ip)
 ufw status verbose
 ```
 
 **Expected output:**
+
 ```
 Status: active
 
@@ -1027,6 +1100,7 @@ To                         Action      From
 ```
 
 **Add custom rules:**
+
 ```bash
 # Allow PostgreSQL from specific IP
 ufw allow from 203.0.113.10 to any port 5432
@@ -1040,22 +1114,26 @@ ufw delete allow from 203.0.113.10 to any port 5432
 Protects SSH from brute force attacks by banning IPs after failed login attempts.
 
 **Check status:**
+
 ```bash
 ssh root@$(cat .droplet-ip)
 fail2ban-client status sshd
 ```
 
 **Configuration:**
+
 - Ban after 5 failed attempts
 - Ban duration: 10 minutes
 - Find time window: 10 minutes
 
 **View banned IPs:**
+
 ```bash
 fail2ban-client status sshd
 ```
 
 **Unban IP:**
+
 ```bash
 fail2ban-client set sshd unbanip 203.0.113.10
 ```
@@ -1063,12 +1141,14 @@ fail2ban-client set sshd unbanip 203.0.113.10
 ### Security Best Practices
 
 **1. Regular updates:**
+
 ```bash
 ssh root@$(cat .droplet-ip)
 apt update && apt upgrade -y
 ```
 
 **2. SSH key authentication only:**
+
 ```bash
 # Disable password authentication
 sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
@@ -1076,12 +1156,14 @@ systemctl restart sshd
 ```
 
 **3. Enable automatic security updates:**
+
 ```bash
 apt install unattended-upgrades
 dpkg-reconfigure -plow unattended-upgrades
 ```
 
 **4. Monitor security logs:**
+
 ```bash
 # View SSH authentication logs
 tail -f /var/log/auth.log
@@ -1091,6 +1173,7 @@ tail -f /var/log/fail2ban.log
 ```
 
 **5. Rotate secrets regularly:**
+
 - Database passwords every 90 days
 - API tokens every 180 days
 - SSL certificates auto-renewed by Let's Encrypt
@@ -1100,6 +1183,7 @@ tail -f /var/log/fail2ban.log
 ### doctl Authentication Failed
 
 **Error:**
+
 ```
 Error: Unable to authenticate
 ```
@@ -1107,23 +1191,27 @@ Error: Unable to authenticate
 **Cause:** Invalid or expired API token
 
 **Solution 1: Re-authenticate interactively**
+
 ```bash
 doctl auth init
 # Paste your API token when prompted
 ```
 
 **Solution 2: Use environment variable**
+
 ```bash
 export DIGITALOCEAN_TOKEN=dop_v1_your_token_here
 doctl account get
 ```
 
 **Solution 3: Check token permissions**
+
 - Visit: https://cloud.digitalocean.com/account/api/tokens
 - Verify token has "Read" and "Write" permissions
 - Generate new token if needed
 
 **Verify authentication:**
+
 ```bash
 doctl account get
 # Should show your email and account details
@@ -1132,6 +1220,7 @@ doctl account get
 ### Droplet Not Accessible via SSH
 
 **Error:**
+
 ```
 ssh: connect to host 123.45.67.89 port 22: Connection refused
 ```
@@ -1139,6 +1228,7 @@ ssh: connect to host 123.45.67.89 port 22: Connection refused
 **Possible causes and solutions:**
 
 **1. Cloud Firewall blocking SSH:**
+
 ```bash
 doctl compute firewall list
 doctl compute firewall get freshtrack-firewall
@@ -1146,6 +1236,7 @@ doctl compute firewall get freshtrack-firewall
 ```
 
 **2. Wrong SSH key:**
+
 ```bash
 # List keys in your DigitalOcean account
 doctl compute ssh-key list
@@ -1155,6 +1246,7 @@ doctl compute ssh-key create my-new-key --public-key "$(cat ~/.ssh/id_ed25519.pu
 ```
 
 **3. Droplet still provisioning:**
+
 ```bash
 # Check Droplet status
 doctl compute droplet list
@@ -1162,6 +1254,7 @@ doctl compute droplet list
 ```
 
 **4. Cloud-init not complete:**
+
 ```bash
 # Wait 5-10 minutes for initial setup
 # Check cloud-init status (if you can access console)
@@ -1169,6 +1262,7 @@ sudo cloud-init status --wait
 ```
 
 **5. Use DigitalOcean Console:**
+
 - Visit: https://cloud.digitalocean.com/droplets
 - Click on Droplet → Access → Launch Droplet Console
 - Debug from console access
@@ -1176,6 +1270,7 @@ sudo cloud-init status --wait
 ### DNS Not Resolving
 
 **Error:**
+
 ```bash
 dig freshtrackpro.com +short
 # Returns nothing or wrong IP
@@ -1184,6 +1279,7 @@ dig freshtrackpro.com +short
 **Solutions:**
 
 **1. Check DNS propagation:**
+
 ```bash
 # Check from different DNS servers
 dig @8.8.8.8 freshtrackpro.com +short   # Google
@@ -1192,11 +1288,13 @@ dig @8.8.4.4 freshtrackpro.com +short   # Google alternate
 ```
 
 **2. Verify A record in DNS provider:**
+
 - Log into your DNS provider (Cloudflare, Route53, etc.)
 - Verify A record exists: `freshtrackpro.com` → `123.45.67.89`
 - Check TTL is low (300 seconds) for faster propagation
 
 **3. Clear local DNS cache:**
+
 ```bash
 # macOS
 sudo dscacheutil -flushcache
@@ -1210,11 +1308,13 @@ ipconfig /flushdns
 ```
 
 **4. Wait for propagation:**
+
 - Typical: 5-60 minutes
 - Worst case: up to 48 hours
 - Use https://www.whatsmydns.net/ to check global propagation
 
 **5. Test with hosts file (temporary):**
+
 ```bash
 # Add to /etc/hosts (Linux/Mac) or C:\Windows\System32\drivers\etc\hosts (Windows)
 123.45.67.89 freshtrackpro.com
@@ -1223,6 +1323,7 @@ ipconfig /flushdns
 ### SSL Certificate Failed
 
 **Error in Caddy logs:**
+
 ```
 failed to obtain certificate: ACME server reported an error:
 connection refused
@@ -1231,12 +1332,14 @@ connection refused
 **Common causes and solutions:**
 
 **1. DNS not resolving:**
+
 ```bash
 dig freshtrackpro.com +short
 # MUST return Droplet IP before requesting SSL
 ```
 
 **2. Port 80 not open:**
+
 ```bash
 # Check Cloud Firewall
 doctl compute firewall get freshtrack-firewall
@@ -1247,17 +1350,20 @@ ufw status | grep 80
 ```
 
 **3. Domain pointing to wrong IP:**
+
 ```bash
 dig freshtrackpro.com +short
 # Should match: cat .droplet-ip
 ```
 
 **4. Let's Encrypt rate limits:**
+
 - 5 failures per hour per domain
 - 50 certificates per registered domain per week
 - Wait 1 hour if rate limited
 
 **5. View Caddy logs:**
+
 ```bash
 ssh root@$(cat .droplet-ip)
 docker logs freshtrack-caddy
@@ -1265,6 +1371,7 @@ docker logs freshtrack-caddy
 ```
 
 **6. Test certificate request manually:**
+
 ```bash
 ssh root@$(cat .droplet-ip)
 curl -I http://freshtrackpro.com
@@ -1272,6 +1379,7 @@ curl -I http://freshtrackpro.com
 ```
 
 **Recovery:**
+
 ```bash
 # Wait for DNS propagation
 # Clear failed attempts
@@ -1285,6 +1393,7 @@ docker compose up -d
 ### Database Connection Failed
 
 **Error in backend logs:**
+
 ```
 Error: connect ECONNREFUSED
 ```
@@ -1292,6 +1401,7 @@ Error: connect ECONNREFUSED
 **For self-hosted PostgreSQL:**
 
 **1. Check PostgreSQL container:**
+
 ```bash
 ssh root@$(cat .droplet-ip)
 docker compose ps postgres
@@ -1299,18 +1409,21 @@ docker compose ps postgres
 ```
 
 **2. Check PostgreSQL logs:**
+
 ```bash
 docker compose logs postgres
 # Look for errors during startup
 ```
 
 **3. Test connection manually:**
+
 ```bash
 docker compose exec postgres psql -U freshtrack_user -d freshtrack
 # Should connect successfully
 ```
 
 **4. Verify credentials:**
+
 ```bash
 cat /opt/freshtrack-pro/secrets/postgres-password
 # Should match POSTGRES_PASSWORD in config
@@ -1319,6 +1432,7 @@ cat /opt/freshtrack-pro/secrets/postgres-password
 **For managed PostgreSQL:**
 
 **1. Use pooler endpoint:**
+
 ```bash
 # Wrong:
 postgresql://user:pass@host.db.ondigitalocean.com:25060/db
@@ -1328,24 +1442,28 @@ postgresql://user:pass@host-pooler.db.ondigitalocean.com:25060/db
 ```
 
 **2. Verify SSL mode:**
+
 ```bash
 # Connection string MUST include sslmode=require
 postgresql://user:pass@host-pooler:25060/db?sslmode=require
 ```
 
 **3. Check trusted sources:**
+
 ```bash
 doctl databases firewalls list freshtrack-db
 # Should include Droplet's VPC or IP
 ```
 
 **4. Test connection from Droplet:**
+
 ```bash
 ssh root@$(cat .droplet-ip)
 psql "postgresql://user:pass@host-pooler:25060/db?sslmode=require"
 ```
 
 **5. Download CA certificate:**
+
 ```bash
 doctl databases ca-cert freshtrack-db > /opt/freshtrack-pro/secrets/db-ca.crt
 ```
@@ -1353,6 +1471,7 @@ doctl databases ca-cert freshtrack-db > /opt/freshtrack-pro/secrets/db-ca.crt
 ### Application Health Check Failing
 
 **Error during deployment:**
+
 ```
 Health check failed after 30 retries
 Rolling back to previous version...
@@ -1361,6 +1480,7 @@ Rolling back to previous version...
 **Debugging steps:**
 
 **1. Check backend logs:**
+
 ```bash
 ssh root@$(cat .droplet-ip)
 docker compose logs backend
@@ -1368,18 +1488,21 @@ docker compose logs backend
 ```
 
 **2. Test health endpoint manually:**
+
 ```bash
 curl http://localhost:3000/health
 # Should return: {"status":"ok"}
 ```
 
 **3. Check environment variables:**
+
 ```bash
 docker compose exec backend env | grep -E 'DATABASE_URL|STACK_AUTH'
 # Verify all required variables are set
 ```
 
 **4. Check Stack Auth credentials:**
+
 ```bash
 # Test Stack Auth API
 curl -H "Authorization: Bearer $STACK_AUTH_SECRET_KEY" \
@@ -1387,6 +1510,7 @@ curl -H "Authorization: Bearer $STACK_AUTH_SECRET_KEY" \
 ```
 
 **5. Check database connectivity:**
+
 ```bash
 docker compose exec backend node -e "
   require('pg').Pool({
@@ -1396,6 +1520,7 @@ docker compose exec backend node -e "
 ```
 
 **6. Increase health check timeout:**
+
 ```bash
 # In deploy.config
 HEALTH_CHECK_TIMEOUT=60
@@ -1406,6 +1531,7 @@ HEALTH_CHECK_RETRIES=60
 ### View Logs
 
 **All services:**
+
 ```bash
 ssh root@$(cat .droplet-ip)
 cd /opt/freshtrack-pro
@@ -1413,6 +1539,7 @@ docker compose logs -f
 ```
 
 **Specific service:**
+
 ```bash
 docker compose logs -f backend
 docker compose logs -f postgres
@@ -1420,17 +1547,20 @@ docker compose logs -f caddy
 ```
 
 **Tail last 100 lines:**
+
 ```bash
 docker compose logs --tail=100 backend
 ```
 
 **Filter by time:**
+
 ```bash
 docker compose logs --since=10m backend
 docker compose logs --since="2024-01-24T12:00:00" backend
 ```
 
 **Search logs:**
+
 ```bash
 docker compose logs backend | grep ERROR
 docker compose logs backend | grep -i "database"
@@ -1457,12 +1587,14 @@ git pull origin main
 ```
 
 **Update system packages:**
+
 ```bash
 ssh root@$(cat .droplet-ip)
 apt update && apt upgrade -y
 ```
 
 **Update Docker:**
+
 ```bash
 apt update
 apt install docker-ce docker-ce-cli containerd.io
@@ -1471,6 +1603,7 @@ systemctl restart docker
 
 **Zero-downtime updates:**
 The deployment script automatically:
+
 1. Pulls new Docker images
 2. Tags current deployment (for rollback)
 3. Starts new containers
@@ -1494,6 +1627,7 @@ docker compose exec postgres ls -lh /backups/
 ```
 
 **Manual backup:**
+
 ```bash
 ssh root@$(cat .droplet-ip)
 cd /opt/freshtrack-pro
@@ -1501,6 +1635,7 @@ docker compose exec postgres pg_dump -U freshtrack_user -Fc freshtrack > backup-
 ```
 
 **Test restoration:**
+
 ```bash
 # Run the test restore script
 ./scripts/test-restore.sh
@@ -1508,11 +1643,13 @@ docker compose exec postgres pg_dump -U freshtrack_user -Fc freshtrack > backup-
 ```
 
 **Download backup locally:**
+
 ```bash
 scp root@$(cat .droplet-ip):/opt/freshtrack-pro/backups/freshtrack-*.dump ./
 ```
 
 **Restore from backup:**
+
 ```bash
 # WARNING: This will replace current database
 ssh root@$(cat .droplet-ip)
@@ -1523,16 +1660,19 @@ docker compose exec -T postgres pg_restore -U freshtrack_user -d freshtrack --cl
 #### Managed PostgreSQL
 
 **Automated daily backups** (built-in):
+
 - 7-day retention
 - Point-in-time recovery
 - Managed by DigitalOcean
 
 **Create on-demand backup:**
+
 ```bash
 doctl databases backups create freshtrack-db
 ```
 
 **List backups:**
+
 ```bash
 doctl databases backups list freshtrack-db
 ```
@@ -1540,6 +1680,7 @@ doctl databases backups list freshtrack-db
 **Restore from backup:**
 
 **Option 1: Fork database (non-destructive):**
+
 ```bash
 # Creates new database from backup
 doctl databases fork freshtrack-db freshtrack-db-restored \
@@ -1547,6 +1688,7 @@ doctl databases fork freshtrack-db freshtrack-db-restored \
 ```
 
 **Option 2: Point-in-time recovery:**
+
 ```bash
 # Restore to specific timestamp
 doctl databases fork freshtrack-db freshtrack-db-restored \
@@ -1554,6 +1696,7 @@ doctl databases fork freshtrack-db freshtrack-db-restored \
 ```
 
 **Backup best practices:**
+
 - Test restoration monthly
 - Keep local copies of critical backups
 - Document restoration procedures
@@ -1564,6 +1707,7 @@ doctl databases fork freshtrack-db freshtrack-db-restored \
 #### Vertical Scaling (Resize Droplet)
 
 **Resize Droplet:**
+
 ```bash
 # List available sizes
 doctl compute size list
@@ -1583,6 +1727,7 @@ doctl compute droplet-action resize DROPLET_ID \
 **Downtime:** 1-5 minutes during resize
 
 **Resize managed database:**
+
 ```bash
 # List database sizes
 doctl databases options sizes
@@ -1598,6 +1743,7 @@ doctl databases resize freshtrack-db \
 #### High Availability
 
 **Add database standby nodes:**
+
 ```bash
 doctl databases resize freshtrack-db \
   --size db-s-2vcpu-4gb \
@@ -1605,11 +1751,13 @@ doctl databases resize freshtrack-db \
 ```
 
 Benefits:
+
 - Automatic failover (<30 seconds)
 - Read replicas for load distribution
 - Zero-downtime maintenance
 
 **Enable Droplet backups:**
+
 ```bash
 doctl compute droplet-action enable-backups DROPLET_ID
 ```
@@ -1621,6 +1769,7 @@ Cost: +20% of Droplet price
 For multi-Droplet deployments:
 
 1. **Add load balancer:**
+
    ```bash
    doctl compute load-balancer create \
      --name freshtrack-lb \
@@ -1635,11 +1784,13 @@ For multi-Droplet deployments:
 ### Monitoring
 
 **Access Grafana:**
+
 ```
 https://freshtrackpro.com/grafana
 ```
 
 **Default dashboards:**
+
 - System metrics (CPU, memory, disk, network)
 - PostgreSQL metrics (connections, queries, cache hit rate)
 - Application metrics (request rate, error rate, response time)
@@ -1660,12 +1811,14 @@ https://freshtrackpro.com/grafana
 Access at: https://cloud.digitalocean.com/droplets
 
 Built-in metrics:
+
 - CPU usage
 - Bandwidth usage
 - Disk I/O
 - Disk space
 
 **Set up billing alerts:**
+
 1. Visit: https://cloud.digitalocean.com/account/billing
 2. Click "Alerts"
 3. Set threshold (e.g., $100/month)
@@ -1674,6 +1827,7 @@ Built-in metrics:
 ### Performance Optimization
 
 **1. Enable Redis caching:**
+
 ```bash
 # Already configured in docker-compose.yml
 # Verify Redis is running
@@ -1681,6 +1835,7 @@ docker compose ps redis
 ```
 
 **2. Optimize PostgreSQL:**
+
 ```bash
 # Adjust PgBouncer pool size based on traffic
 # Edit: docker/pgbouncer/pgbouncer.ini
@@ -1692,6 +1847,7 @@ docker compose restart pgbouncer
 ```
 
 **3. Enable HTTP/2:**
+
 ```bash
 # Already enabled in Caddy configuration
 # Verify:
@@ -1699,11 +1855,13 @@ curl -I --http2 https://freshtrackpro.com
 ```
 
 **4. CDN for static assets:**
+
 - Enable DigitalOcean Spaces CDN
 - Configure Caddy to cache static files
 - Use `Cache-Control` headers appropriately
 
 **5. Database query optimization:**
+
 ```bash
 # Check slow queries
 docker compose exec postgres psql -U freshtrack_user -d freshtrack \
@@ -1746,22 +1904,26 @@ After successful deployment:
 ## Additional Resources
 
 **FreshTrack Pro Documentation:**
+
 - [Self-Hosted Deployment Guide](SELFHOSTED_DEPLOYMENT.md) - Detailed deployment procedures
 - [Database Documentation](DATABASE.md) - Database management and optimization
 - [SSL Certificates Guide](SSL_CERTIFICATES.md) - HTTP-01 and DNS-01 challenge methods
 
 **DigitalOcean Documentation:**
+
 - [Droplet Documentation](https://docs.digitalocean.com/products/droplets/)
 - [Managed PostgreSQL Guide](https://docs.digitalocean.com/products/databases/postgresql/)
 - [Spaces Documentation](https://docs.digitalocean.com/products/spaces/)
 - [VPC Networking](https://docs.digitalocean.com/products/networking/vpc/)
 
 **Docker and Orchestration:**
+
 - [Docker Compose Documentation](https://docs.docker.com/compose/)
 - [Caddy Web Server](https://caddyserver.com/docs/)
 - [PostgreSQL Official Docs](https://www.postgresql.org/docs/)
 
 **Monitoring and Observability:**
+
 - [Prometheus Documentation](https://prometheus.io/docs/)
 - [Grafana Documentation](https://grafana.com/docs/)
 - [Loki for Logs](https://grafana.com/docs/loki/latest/)
@@ -1769,10 +1931,12 @@ After successful deployment:
 ## Support
 
 **Community:**
+
 - GitHub Issues: https://github.com/yourusername/freshtrack-pro/issues
 - Discussions: https://github.com/yourusername/freshtrack-pro/discussions
 
 **Commercial Support:**
+
 - Email: support@freshtrackpro.com
 - Documentation: https://docs.freshtrackpro.com
 

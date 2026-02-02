@@ -9,6 +9,7 @@
 This runbook provides operational procedures for managing PostgreSQL partitions for the `sensor_readings` table. The table uses monthly RANGE partitioning on the `recorded_at` column with automated lifecycle management via BullMQ jobs.
 
 **Partition Strategy**:
+
 - **Naming**: `sensor_readings_y<YYYY>m<MM>` (e.g., `sensor_readings_y2026m02`)
 - **Boundaries**: First day of month at 00:00:00 UTC
 - **Future buffer**: 3 months ahead (maintained by weekly creation job)
@@ -16,6 +17,7 @@ This runbook provides operational procedures for managing PostgreSQL partitions 
 - **Default partition**: `sensor_readings_default` (catchall for NULL or out-of-range dates)
 
 **Related Files**:
+
 - Migration: `backend/drizzle/0006_partition_sensor_readings.sql`
 - Service: `backend/src/services/partition.service.ts`
 - Processors: `backend/src/workers/partition-create.processor.ts`, `partition-retention.processor.ts`
@@ -29,6 +31,7 @@ This runbook provides operational procedures for managing PostgreSQL partitions 
 **When to use**: Automated `partition:create` BullMQ job failed or future partition buffer dropped below 2 months.
 
 **Prerequisites**:
+
 - Database credentials with `CREATE TABLE` permission
 - Access to production PostgreSQL instance
 - Confirmation that partition does not already exist
@@ -36,11 +39,13 @@ This runbook provides operational procedures for managing PostgreSQL partitions 
 ### Procedure
 
 1. **Connect to PostgreSQL**:
+
    ```bash
    psql $DATABASE_URL
    ```
 
 2. **List existing partitions** to identify next month to create:
+
    ```sql
    SELECT tablename
    FROM pg_tables
@@ -51,6 +56,7 @@ This runbook provides operational procedures for managing PostgreSQL partitions 
    ```
 
 3. **Create partition for target month** (example: April 2026):
+
    ```sql
    CREATE TABLE sensor_readings_y2026m04 PARTITION OF sensor_readings
    FOR VALUES FROM ('2026-04-01 00:00:00+00') TO ('2026-05-01 00:00:00+00');
@@ -59,15 +65,17 @@ This runbook provides operational procedures for managing PostgreSQL partitions 
    **Important**:
    - Use UTC timezone (`+00`)
    - Start boundary: 1st day of month at midnight
-   - End boundary: 1st day of *next* month at midnight
+   - End boundary: 1st day of _next_ month at midnight
    - Naming format: `sensor_readings_y<YYYY>m<MM>` (zero-pad month)
 
 4. **Verify partition created**:
+
    ```sql
    SELECT tablename FROM pg_tables WHERE tablename = 'sensor_readings_y2026m04';
    ```
 
 5. **Test data routing** (insert test row):
+
    ```sql
    INSERT INTO sensor_readings (unit_id, temperature, recorded_at, received_at)
    VALUES (
@@ -80,15 +88,18 @@ This runbook provides operational procedures for managing PostgreSQL partitions 
    ```
 
 6. **Verify routing to correct partition**:
+
    ```sql
    SELECT tableoid::regclass, COUNT(*)
    FROM sensor_readings
    WHERE recorded_at >= '2026-04-01' AND recorded_at < '2026-05-01'
    GROUP BY tableoid;
    ```
+
    Expected output: `sensor_readings_y2026m04 | 1`
 
 7. **Delete test row** (if not using real unit_id):
+
    ```sql
    DELETE FROM sensor_readings
    WHERE recorded_at = '2026-04-15 12:00:00+00';
@@ -105,6 +116,7 @@ This runbook provides operational procedures for managing PostgreSQL partitions 
 **CRITICAL**: This is a **destructive operation**. Data is permanently deleted.
 
 **Prerequisites**:
+
 - Database credentials with `DROP TABLE` permission
 - Confirmation that partition is older than retention policy (24 months)
 - **Full database backup** completed within last 24 hours
@@ -113,11 +125,13 @@ This runbook provides operational procedures for managing PostgreSQL partitions 
 ### Procedure
 
 1. **Connect to PostgreSQL**:
+
    ```bash
    psql $DATABASE_URL
    ```
 
 2. **Identify partitions older than 24 months**:
+
    ```sql
    SELECT
      tablename,
@@ -137,6 +151,7 @@ This runbook provides operational procedures for managing PostgreSQL partitions 
    - Backup is current
 
 4. **Check row count and date range** (example: January 2024):
+
    ```sql
    SELECT
      COUNT(*) AS row_count,
@@ -146,14 +161,17 @@ This runbook provides operational procedures for managing PostgreSQL partitions 
    ```
 
 5. **Drop partition** (DESTRUCTIVE):
+
    ```sql
    DROP TABLE sensor_readings_y2024m01;
    ```
 
 6. **Verify deletion**:
+
    ```sql
    SELECT tablename FROM pg_tables WHERE tablename = 'sensor_readings_y2024m01';
    ```
+
    Expected output: 0 rows
 
 7. **Update monitoring**: Check Grafana partition dashboard shows updated partition count.
@@ -170,6 +188,7 @@ This runbook provides operational procedures for managing PostgreSQL partitions 
 ## Troubleshooting Partition Routing Failures
 
 **Symptoms**:
+
 - Sensor data not appearing in expected partition
 - Default partition (`sensor_readings_default`) receiving data
 - Insert errors referencing partition constraints
@@ -177,12 +196,14 @@ This runbook provides operational procedures for managing PostgreSQL partitions 
 ### Diagnostic Steps
 
 1. **Check default partition for unexpected data**:
+
    ```sql
    SELECT COUNT(*), MIN(recorded_at), MAX(recorded_at)
    FROM sensor_readings_default;
    ```
 
 2. **If default partition has rows, inspect data**:
+
    ```sql
    SELECT id, recorded_at, received_at, source
    FROM sensor_readings_default
@@ -208,6 +229,7 @@ Fix application code to ensure `recorded_at` is always populated with valid UTC 
 **Case 3: Timezone mismatch**
 
 Convert application timestamps to UTC before insertion:
+
 ```sql
 -- Correct: Explicit UTC timezone
 INSERT INTO sensor_readings (recorded_at, ...) VALUES ('2026-02-15 12:00:00+00', ...);
@@ -231,6 +253,7 @@ INSERT INTO sensor_readings SELECT * FROM moved;
 ```
 
 **Validation**:
+
 ```sql
 -- Verify default partition is empty (or has minimal rows)
 SELECT COUNT(*) FROM sensor_readings_default;
@@ -251,11 +274,13 @@ GROUP BY tableoid;
 ### Procedure
 
 1. **Connect to PostgreSQL**:
+
    ```bash
    psql $DATABASE_URL
    ```
 
 2. **Run EXPLAIN ANALYZE on typical time-range query** (last 7 days):
+
    ```sql
    EXPLAIN (ANALYZE, BUFFERS, VERBOSE)
    SELECT * FROM sensor_readings
@@ -265,6 +290,7 @@ GROUP BY tableoid;
    ```
 
 3. **Check output for partition pruning**:
+
    ```
    Expected output snippet:
    -> Seq Scan on sensor_readings_y2026m02
@@ -274,6 +300,7 @@ GROUP BY tableoid;
 4. **If all partitions are scanned** (no pruning):
    - **Cause**: Query missing WHERE clause on `recorded_at` partition key
    - **Fix**: Add explicit `recorded_at` filter:
+
      ```sql
      -- Good: Partition pruning works
      SELECT * FROM sensor_readings
@@ -297,14 +324,14 @@ GROUP BY tableoid;
 
 ### Key Metrics
 
-| Metric | Expected Value | Alert Threshold |
-|--------|---------------|----------------|
-| `sensor_readings_partition_count` | 24-27 partitions | N/A |
-| `sensor_readings_future_partition_count` | ≥2 partitions | <2 (warning) |
-| `sensor_readings_default_partition_rows` | 0 rows | >100 (warning) |
-| `sensor_readings_partition_healthy` | 1 (healthy) | 0 (critical) |
-| `sensor_readings_total_rows` | Growing | N/A |
-| `sensor_readings_total_size_bytes` | Growing | N/A |
+| Metric                                   | Expected Value   | Alert Threshold |
+| ---------------------------------------- | ---------------- | --------------- |
+| `sensor_readings_partition_count`        | 24-27 partitions | N/A             |
+| `sensor_readings_future_partition_count` | ≥2 partitions    | <2 (warning)    |
+| `sensor_readings_default_partition_rows` | 0 rows           | >100 (warning)  |
+| `sensor_readings_partition_healthy`      | 1 (healthy)      | 0 (critical)    |
+| `sensor_readings_total_rows`             | Growing          | N/A             |
+| `sensor_readings_total_size_bytes`       | Growing          | N/A             |
 
 ### Weekly Health Check
 
@@ -319,9 +346,11 @@ GROUP BY tableoid;
    - No failed jobs in history
 
 3. **Validate partition count**:
+
    ```sql
    SELECT COUNT(*) FROM pg_tables WHERE tablename LIKE 'sensor_readings_y%';
    ```
+
    Expected: 24-30 partitions (current + future buffer)
 
 4. **Verify oldest partition** within retention:
@@ -341,6 +370,7 @@ GROUP BY tableoid;
 **When to use**: Production migration failed or partitioning causing critical issues.
 
 **Prerequisites**:
+
 - Pre-migration database backup available
 - Downtime window approved
 - Root cause identified
@@ -348,16 +378,19 @@ GROUP BY tableoid;
 ### Procedure
 
 1. **Stop application services** to prevent writes:
+
    ```bash
    docker-compose stop backend
    ```
 
 2. **Drop partitioned table**:
+
    ```sql
    DROP TABLE IF EXISTS sensor_readings CASCADE;
    ```
 
 3. **Restore from backup**:
+
    ```bash
    # Option 1: Restore full database
    pg_restore -d $DATABASE_URL backup.dump
@@ -367,17 +400,20 @@ GROUP BY tableoid;
    ```
 
 4. **If `sensor_readings_old` exists, rename**:
+
    ```sql
    ALTER TABLE sensor_readings_old RENAME TO sensor_readings;
    ```
 
 5. **Verify data integrity**:
+
    ```sql
    SELECT COUNT(*) FROM sensor_readings;
    SELECT MIN(recorded_at), MAX(recorded_at) FROM sensor_readings;
    ```
 
 6. **Restart application services**:
+
    ```bash
    docker-compose start backend
    ```
@@ -401,6 +437,7 @@ GROUP BY tableoid;
 **Emergency**: On-call rotation (PagerDuty)
 
 **Related Documentation**:
+
 - ADR-009: Partition Strategy Decision
 - Migration Playbook: `staging-migration-playbook.md`
 - Production Migration Playbook: `production-migration-playbook.md`

@@ -54,30 +54,30 @@ graph TB
 
 #### Log Levels
 
-| Level | Color | Use Case |
-|-------|-------|----------|
-| `debug` | Gray | Verbose debugging |
-| `info` | Blue | Normal operations |
-| `warn` | Orange | Potential issues |
-| `error` | Red | Errors and failures |
+| Level   | Color  | Use Case            |
+| ------- | ------ | ------------------- |
+| `debug` | Gray   | Verbose debugging   |
+| `info`  | Blue   | Normal operations   |
+| `warn`  | Orange | Potential issues    |
+| `error` | Red    | Errors and failures |
 
 #### Log Categories
 
-| Category | Description | Examples |
-|----------|-------------|----------|
-| `ui` | User interface events | Button clicks, navigation |
-| `routing` | Route changes | Page transitions |
-| `db` | Database operations | Queries, mutations |
-| `sync` | Data synchronization | Offline sync, refresh |
-| `ttn` | TTN operations | Provisioning, webhooks |
-| `provisioning` | Device provisioning | Sensor/gateway setup |
-| `edge` | Edge function calls | API requests |
-| `network` | Network activity | Fetch, WebSocket |
-| `auth` | Authentication | Login, logout, token |
-| `crud` | CRUD operations | Create, update, delete |
-| `realtime` | Real-time updates | Subscriptions |
-| `mutation` | Data mutations | Form submissions |
-| `query` | Data queries | Data fetching |
+| Category       | Description           | Examples                  |
+| -------------- | --------------------- | ------------------------- |
+| `ui`           | User interface events | Button clicks, navigation |
+| `routing`      | Route changes         | Page transitions          |
+| `db`           | Database operations   | Queries, mutations        |
+| `sync`         | Data synchronization  | Offline sync, refresh     |
+| `ttn`          | TTN operations        | Provisioning, webhooks    |
+| `provisioning` | Device provisioning   | Sensor/gateway setup      |
+| `edge`         | Edge function calls   | API requests              |
+| `network`      | Network activity      | Fetch, WebSocket          |
+| `auth`         | Authentication        | Login, logout, token      |
+| `crud`         | CRUD operations       | Create, update, delete    |
+| `realtime`     | Real-time updates     | Subscriptions             |
+| `mutation`     | Data mutations        | Form submissions          |
+| `query`        | Data queries          | Data fetching             |
 
 #### Using the Debug Logger
 
@@ -98,7 +98,7 @@ try {
 
 // With correlation ID (for tracing related operations)
 debugLog.info('ttn', 'Starting TTN sync', {
-  correlationId: 'abc-123'
+  correlationId: 'abc-123',
 });
 ```
 
@@ -106,14 +106,14 @@ debugLog.info('ttn', 'Starting TTN sync', {
 
 The debug logger automatically redacts sensitive data:
 
-| Field Pattern | Redaction |
-|---------------|-----------|
-| `api_key`, `apiKey` | `[REDACTED]` |
-| `secret`, `password` | `[REDACTED]` |
-| `token`, `authorization` | `[REDACTED]` |
-| `private_key`, `credential` | `[REDACTED]` |
-| `ttn_api_key_last4` | Shows last 4 only |
-| `dev_eui`, `gateway_eui` | Shows last 4 only |
+| Field Pattern               | Redaction         |
+| --------------------------- | ----------------- |
+| `api_key`, `apiKey`         | `[REDACTED]`      |
+| `secret`, `password`        | `[REDACTED]`      |
+| `token`, `authorization`    | `[REDACTED]`      |
+| `private_key`, `credential` | `[REDACTED]`      |
+| `ttn_api_key_last4`         | Shows last 4 only |
+| `dev_eui`, `gateway_eui`    | Shows last 4 only |
 
 #### Exporting Logs
 
@@ -127,7 +127,7 @@ const jsonLogs = exportLogs();
 const snapshot = generateSnapshot({
   focusTimestamp: errorTime,
   includeNetwork: true,
-  maxLogs: 500
+  maxLogs: 500,
 });
 ```
 
@@ -149,7 +149,7 @@ logEvent({
   title: 'Unit settings changed',
   site_id: unit.site_id,
   unit_id: unit.id,
-  event_data: { changes: diff }
+  event_data: { changes: diff },
 });
 
 // Alert-specific logging
@@ -161,21 +161,21 @@ logManualTempEvent(unit, temperature, userId, { note: 'Visual check' });
 // Settings change logging
 logSettingsEvent('alert_rules', 'updated', userId, {
   before: oldRules,
-  after: newRules
+  after: newRules,
 });
 ```
 
 #### Event Types
 
-| Type Pattern | Description |
-|--------------|-------------|
-| `sensor.*` | Sensor events (paired, reading, offline) |
-| `alert.*` | Alert lifecycle (created, acknowledged, resolved) |
-| `compliance.*` | Compliance events (excursion, gap) |
-| `settings.*` | Configuration changes |
-| `notification.*` | Notification delivery |
-| `ttn.*` | TTN integration events |
-| `system.*` | System events (login, export) |
+| Type Pattern     | Description                                       |
+| ---------------- | ------------------------------------------------- |
+| `sensor.*`       | Sensor events (paired, reading, offline)          |
+| `alert.*`        | Alert lifecycle (created, acknowledged, resolved) |
+| `compliance.*`   | Compliance events (excursion, gap)                |
+| `settings.*`     | Configuration changes                             |
+| `notification.*` | Notification delivery                             |
+| `ttn.*`          | TTN integration events                            |
+| `system.*`       | System events (login, export)                     |
 
 ---
 
@@ -188,12 +188,12 @@ All edge functions use `console.log` with prefixes:
 ```typescript
 // Standard pattern
 console.log('[ttn-webhook] Received uplink', {
-  dev_eui: payload.end_device_ids.dev_eui
+  dev_eui: payload.end_device_ids.dev_eui,
 });
 
 // Error logging
 console.error('[ttn-webhook] Device not found', {
-  dev_eui: normalizedEui
+  dev_eui: normalizedEui,
 });
 
 // Timing
@@ -201,20 +201,20 @@ const startTime = Date.now();
 // ... operation ...
 console.log('[process-unit-states] Completed', {
   duration_ms: Date.now() - startTime,
-  units_processed: count
+  units_processed: count,
 });
 ```
 
 ### Function Log Prefixes
 
-| Function | Prefix |
-|----------|--------|
-| `ttn-webhook` | `[ttn-webhook]` |
-| `stripe-webhook` | `[stripe-webhook]` |
+| Function              | Prefix                  |
+| --------------------- | ----------------------- |
+| `ttn-webhook`         | `[ttn-webhook]`         |
+| `stripe-webhook`      | `[stripe-webhook]`      |
 | `process-unit-states` | `[process-unit-states]` |
 | `process-escalations` | `[process-escalations]` |
-| `ingest-readings` | `[ingest-readings]` |
-| `health-check` | `[health-check]` |
+| `ingest-readings`     | `[ingest-readings]`     |
+| `health-check`        | `[health-check]`        |
 
 ### Viewing Server Logs
 
@@ -243,25 +243,25 @@ supabase functions logs ttn-webhook --limit 100
 
 **Table:** `event_logs`
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `organization_id` | UUID | Tenant scope |
-| `event_type` | TEXT | Event identifier |
-| `category` | TEXT | Event category |
-| `severity` | TEXT | info/warning/critical |
-| `title` | TEXT | Human-readable title |
-| `actor_id` | UUID | User who triggered |
-| `actor_type` | TEXT | user/system |
-| `site_id` | UUID | Related site |
-| `area_id` | UUID | Related area |
-| `unit_id` | UUID | Related unit |
-| `event_data` | JSONB | Additional data |
-| `ip_address` | INET | Client IP |
-| `user_agent` | TEXT | Browser info |
-| `previous_hash` | TEXT | Hash chain |
-| `event_hash` | TEXT | Event hash |
-| `created_at` | TIMESTAMPTZ | Timestamp |
+| Column            | Type        | Description           |
+| ----------------- | ----------- | --------------------- |
+| `id`              | UUID        | Primary key           |
+| `organization_id` | UUID        | Tenant scope          |
+| `event_type`      | TEXT        | Event identifier      |
+| `category`        | TEXT        | Event category        |
+| `severity`        | TEXT        | info/warning/critical |
+| `title`           | TEXT        | Human-readable title  |
+| `actor_id`        | UUID        | User who triggered    |
+| `actor_type`      | TEXT        | user/system           |
+| `site_id`         | UUID        | Related site          |
+| `area_id`         | UUID        | Related area          |
+| `unit_id`         | UUID        | Related unit          |
+| `event_data`      | JSONB       | Additional data       |
+| `ip_address`      | INET        | Client IP             |
+| `user_agent`      | TEXT        | Browser info          |
+| `previous_hash`   | TEXT        | Hash chain            |
+| `event_hash`      | TEXT        | Event hash            |
+| `created_at`      | TIMESTAMPTZ | Timestamp             |
 
 ### Query Examples
 
@@ -295,20 +295,20 @@ ORDER BY created_at DESC;
 
 ### Current Retention
 
-| Log Type | Retention | Location |
-|----------|-----------|----------|
-| Debug logs | Session only | Browser memory |
-| Event logs | Permanent | Database |
-| Edge function logs | 7 days | Supabase |
-| Auth logs | 7 days | Supabase |
+| Log Type           | Retention    | Location       |
+| ------------------ | ------------ | -------------- |
+| Debug logs         | Session only | Browser memory |
+| Event logs         | Permanent    | Database       |
+| Edge function logs | 7 days       | Supabase       |
+| Auth logs          | 7 days       | Supabase       |
 
 ### Recommendations
 
-| Log Type | Recommended Retention | Reason |
-|----------|----------------------|--------|
-| Event logs | 2+ years | Compliance (HACCP) |
-| Edge function logs | 30 days | Debugging |
-| Auth logs | 90 days | Security |
+| Log Type           | Recommended Retention | Reason             |
+| ------------------ | --------------------- | ------------------ |
+| Event logs         | 2+ years              | Compliance (HACCP) |
+| Edge function logs | 30 days               | Debugging          |
+| Auth logs          | 90 days               | Security           |
 
 ---
 
@@ -457,7 +457,7 @@ const snapshot = generateSnapshot({
   focusTimestamp: errorTimestamp,
   includeNetwork: true,
   maxLogs: 500,
-  surroundingSeconds: 30
+  surroundingSeconds: 30,
 });
 ```
 
@@ -469,14 +469,10 @@ const snapshot = generateSnapshot({
 
 ```typescript
 // Find slow operations
-const slowOps = logs.filter(log =>
-  log.duration && log.duration > 1000
-);
+const slowOps = logs.filter((log) => log.duration && log.duration > 1000);
 
 // Find error patterns
-const errors = logs.filter(log =>
-  log.level === 'error'
-);
+const errors = logs.filter((log) => log.level === 'error');
 
 // Group by category
 const byCategory = logs.reduce((acc, log) => {
@@ -487,13 +483,13 @@ const byCategory = logs.reduce((acc, log) => {
 
 ### Common Patterns to Watch
 
-| Pattern | Indicates |
-|---------|-----------|
-| Repeated `401` errors | Auth issues |
+| Pattern                   | Indicates            |
+| ------------------------- | -------------------- |
+| Repeated `401` errors     | Auth issues          |
 | High `duration_ms` values | Performance problems |
-| `Device not found` | DevEUI mismatch |
-| `RLS policy violation` | Permission issue |
-| `Connection timeout` | Network problems |
+| `Device not found`        | DevEUI mismatch      |
+| `RLS policy violation`    | Permission issue     |
+| `Connection timeout`      | Network problems     |
 
 ---
 
@@ -502,6 +498,7 @@ const byCategory = logs.reduce((acc, log) => {
 ### Logging Guidelines
 
 1. **Always use structured logging**
+
    ```typescript
    // Good
    console.log('[function] Event', { key: value });
@@ -511,12 +508,13 @@ const byCategory = logs.reduce((acc, log) => {
    ```
 
 2. **Include context**
+
    ```typescript
    // Good
    console.log('[process] Completed', {
      duration_ms: Date.now() - start,
      items_processed: count,
-     errors: errorCount
+     errors: errorCount,
    });
    ```
 
@@ -527,6 +525,7 @@ const byCategory = logs.reduce((acc, log) => {
    - `error`: Failures
 
 4. **Never log secrets**
+
    ```typescript
    // Good
    console.log('Using key ending in', key.slice(-4));

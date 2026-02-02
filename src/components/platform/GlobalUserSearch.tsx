@@ -14,19 +14,8 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Search,
-  User,
-  Building2,
-  Eye,
-  ExternalLink,
-  Loader2,
-} from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Search, User, Building2, Eye, ExternalLink, Loader2 } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useState } from 'react';
 
@@ -42,11 +31,7 @@ interface SearchResult {
 export function GlobalUserSearch() {
   const navigate = useNavigate();
   const trpc = useTRPC();
-  const {
-    isSuperAdmin,
-    isSupportModeActive,
-    logSuperAdminAction
-  } = useSuperAdmin();
+  const { isSuperAdmin, isSupportModeActive, logSuperAdminAction } = useSuperAdmin();
   const { impersonateAndNavigate, isNavigating } = useImpersonateAndNavigate();
 
   const [open, setOpen] = useState(false);
@@ -60,8 +45,8 @@ export function GlobalUserSearch() {
       { query: debouncedQuery },
       {
         enabled: debouncedQuery.length >= 2 && isSuperAdmin && isSupportModeActive,
-      }
-    )
+      },
+    ),
   );
 
   // Transform results to match expected interface
@@ -76,7 +61,7 @@ export function GlobalUserSearch() {
       });
     }
 
-    return searchResults.map(u => ({
+    return searchResults.map((u) => ({
       user_id: u.userId,
       email: u.email,
       full_name: u.fullName,
@@ -162,12 +147,8 @@ export function GlobalUserSearch() {
                         <User className="w-4 h-4 text-muted-foreground" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">
-                          {user.full_name || user.email}
-                        </div>
-                        <div className="text-xs text-muted-foreground truncate">
-                          {user.email}
-                        </div>
+                        <div className="font-medium truncate">{user.full_name || user.email}</div>
+                        <div className="text-xs text-muted-foreground truncate">{user.email}</div>
                         {user.organization_name && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                             <Building2 className="w-3 h-3" />

@@ -35,12 +35,12 @@ FreshTrack Pro (internally codenamed **FrostGuard**) is a comprehensive IoT-base
 
 ### Target Users
 
-| Persona | Role | Primary Tasks |
-|---------|------|---------------|
-| Food Safety Manager | Strategic oversight | Dashboard review, report generation, policy configuration |
-| Operations Manager | Facilities management | Equipment monitoring, escalation setup, trend analysis |
-| Kitchen Staff | Day-to-day operations | Manual logging, alert acknowledgment, unit status checks |
-| IT Administrator | Technical setup | Sensor provisioning, TTN configuration, debugging |
+| Persona             | Role                  | Primary Tasks                                             |
+| ------------------- | --------------------- | --------------------------------------------------------- |
+| Food Safety Manager | Strategic oversight   | Dashboard review, report generation, policy configuration |
+| Operations Manager  | Facilities management | Equipment monitoring, escalation setup, trend analysis    |
+| Kitchen Staff       | Day-to-day operations | Manual logging, alert acknowledgment, unit status checks  |
+| IT Administrator    | Technical setup       | Sensor provisioning, TTN configuration, debugging         |
 
 ---
 
@@ -48,46 +48,46 @@ FreshTrack Pro (internally codenamed **FrostGuard**) is a comprehensive IoT-base
 
 ### Frontend
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| React | 18.3.1 | UI framework |
-| TypeScript | 5.8.3 | Type-safe JavaScript |
-| Vite | 5.4.19 | Build tool and dev server |
-| React Router | 6.30.1 | Client-side routing |
-| TanStack Query | 5.83.0 | Server state management |
-| React Hook Form | 7.61.1 | Form handling |
-| Zod | 3.25.76 | Schema validation |
-| Tailwind CSS | 3.4.17 | Utility-first styling |
-| shadcn/ui | - | Component library (Radix-based) |
-| Recharts | 2.15.4 | Data visualization |
-| Framer Motion | 12.23.26 | Animations |
-| Lucide React | 0.462.0 | Icons |
+| Technology      | Version  | Purpose                         |
+| --------------- | -------- | ------------------------------- |
+| React           | 18.3.1   | UI framework                    |
+| TypeScript      | 5.8.3    | Type-safe JavaScript            |
+| Vite            | 5.4.19   | Build tool and dev server       |
+| React Router    | 6.30.1   | Client-side routing             |
+| TanStack Query  | 5.83.0   | Server state management         |
+| React Hook Form | 7.61.1   | Form handling                   |
+| Zod             | 3.25.76  | Schema validation               |
+| Tailwind CSS    | 3.4.17   | Utility-first styling           |
+| shadcn/ui       | -        | Component library (Radix-based) |
+| Recharts        | 2.15.4   | Data visualization              |
+| Framer Motion   | 12.23.26 | Animations                      |
+| Lucide React    | 0.462.0  | Icons                           |
 
 ### Backend
 
-| Technology | Purpose |
-|------------|---------|
-| Supabase | PostgreSQL database, Auth, Edge Functions |
-| Deno | Edge function runtime |
-| PostgreSQL | 14.1 - Primary database |
-| Row-Level Security (RLS) | Data access control |
+| Technology               | Purpose                                   |
+| ------------------------ | ----------------------------------------- |
+| Supabase                 | PostgreSQL database, Auth, Edge Functions |
+| Deno                     | Edge function runtime                     |
+| PostgreSQL               | 14.1 - Primary database                   |
+| Row-Level Security (RLS) | Data access control                       |
 
 ### External Integrations
 
-| Service | Purpose |
-|---------|---------|
+| Service                  | Purpose             |
+| ------------------------ | ------------------- |
 | The Things Network (TTN) | LoRa sensor network |
-| Stripe | Payment processing |
-| Telnyx | SMS alert delivery |
+| Stripe                   | Payment processing  |
+| Telnyx                   | SMS alert delivery  |
 
 ### Development Tools
 
-| Tool | Purpose |
-|------|---------|
-| Vitest | Unit testing |
-| ESLint | Code linting |
-| Workbox | PWA service workers |
-| lovable-tagger | Deployment tagging |
+| Tool           | Purpose             |
+| -------------- | ------------------- |
+| Vitest         | Unit testing        |
+| ESLint         | Code linting        |
+| Workbox        | PWA service workers |
+| lovable-tagger | Deployment tagging  |
 
 ---
 
@@ -162,11 +162,11 @@ The app will be available at `http://localhost:8080`
 
 ### Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `VITE_SUPABASE_URL` | Supabase project URL |
+| Variable                        | Description                         |
+| ------------------------------- | ----------------------------------- |
+| `VITE_SUPABASE_URL`             | Supabase project URL                |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon key (safe for client) |
-| `VITE_SUPABASE_PROJECT_ID` | Supabase project ID |
+| `VITE_SUPABASE_PROJECT_ID`      | Supabase project ID                 |
 
 ### Running with Local Supabase
 

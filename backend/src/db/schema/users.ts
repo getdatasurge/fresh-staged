@@ -1,13 +1,13 @@
 import {
-    boolean,
-    index,
-    integer,
-    pgTable,
-    text,
-    timestamp,
-    uniqueIndex,
-    uuid,
-    varchar,
+  boolean,
+  index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+  varchar,
 } from 'drizzle-orm/pg-core';
 import { appRoleEnum } from './enums.js';
 import { organizations } from './tenancy.js';
@@ -51,9 +51,7 @@ export const profiles = pgTable(
     smsEnabled: boolean('sms_enabled').notNull().default(false),
     digestDaily: boolean('digest_daily').notNull().default(false),
     digestWeekly: boolean('digest_weekly').notNull().default(false),
-    digestDailyTime: varchar('digest_daily_time', { length: 5 })
-      .notNull()
-      .default('09:00'),
+    digestDailyTime: varchar('digest_daily_time', { length: 5 }).notNull().default('09:00'),
     digestSiteIds: text('digest_site_ids'),
     timezone: varchar('timezone', { length: 64 }).notNull().default('UTC'),
     ...timestamps,
@@ -62,7 +60,7 @@ export const profiles = pgTable(
     uniqueIndex('profiles_user_id_idx').on(table.userId),
     index('profiles_org_idx').on(table.organizationId),
     index('profiles_email_idx').on(table.email),
-  ]
+  ],
 );
 
 // User Roles - role assignments per organization
@@ -81,7 +79,7 @@ export const userRoles = pgTable(
     // Unique constraint: one role per user per org
     uniqueIndex('user_roles_user_org_idx').on(table.userId, table.organizationId),
     index('user_roles_org_idx').on(table.organizationId),
-  ]
+  ],
 );
 
 // Escalation Contacts - alert notification recipients
@@ -92,8 +90,7 @@ export const escalationContacts = pgTable(
     organizationId: uuid('organization_id')
       .references(() => organizations.id, { onDelete: 'cascade' })
       .notNull(),
-    profileId: uuid('profile_id')
-      .references(() => profiles.id, { onDelete: 'cascade' }),
+    profileId: uuid('profile_id').references(() => profiles.id, { onDelete: 'cascade' }),
     name: varchar('name', { length: 256 }).notNull(),
     phone: varchar('phone', { length: 50 }).notNull(),
     email: varchar('email', { length: 256 }),
@@ -104,11 +101,8 @@ export const escalationContacts = pgTable(
   (table) => [
     index('escalation_contacts_org_idx').on(table.organizationId),
     index('escalation_contacts_profile_idx').on(table.profileId),
-    index('escalation_contacts_priority_idx').on(
-      table.organizationId,
-      table.priority
-    ),
-  ]
+    index('escalation_contacts_priority_idx').on(table.organizationId, table.priority),
+  ],
 );
 
 // Platform Roles - global/platform-wide roles (Super Admins)
@@ -120,11 +114,8 @@ export const platformRoles = pgTable(
     role: varchar('role', { length: 50 }).notNull(), // 'SUPER_ADMIN'
     ...timestamps,
   },
-  (table) => [
-    uniqueIndex('platform_roles_user_role_idx').on(table.userId, table.role),
-  ]
+  (table) => [uniqueIndex('platform_roles_user_role_idx').on(table.userId, table.role)],
 );
-
 
 // User Sync Log - tracks user sync events to external systems (like Emulator)
 export const userSyncLog = pgTable(
@@ -147,7 +138,7 @@ export const userSyncLog = pgTable(
     index('user_sync_log_user_idx').on(table.userId),
     index('user_sync_log_status_idx').on(table.status),
     index('user_sync_log_created_idx').on(table.createdAt),
-  ]
+  ],
 );
 
 // Type exports

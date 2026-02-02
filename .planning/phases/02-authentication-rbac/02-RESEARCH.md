@@ -9,6 +9,7 @@
 This research covers implementing JWT-based authentication using Stack Auth and role-based access control (RBAC) middleware in a Fastify TypeScript backend. The project already has a database schema with `profiles` (referencing external Stack Auth user IDs), `user_roles` (with app_role enum: owner, admin, manager, staff, viewer), and `organizations` tables established in Phase 1.
 
 Key findings from 2026 research reveal:
+
 - Stack Auth uses the `jose` library for JWT verification with remote JWKS
 - JWT tokens include `sub` (user ID), `email`, `selected_team_id`, and standard claims
 - Fastify's decorator and hook patterns (not traditional Express middleware) are the standard approach
@@ -21,33 +22,35 @@ Key findings from 2026 research reveal:
 
 ### Core
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| jose | 5.x | JWT verification with JWKS | Official Stack Auth recommendation, universal JS/TS support, tree-shakeable, no native dependencies |
-| fastify | 4.x+ | Web framework | Already chosen in Phase 1, excellent TypeScript support |
-| fastify-plugin | 4.x | Plugin wrapper | Required for proper encapsulation of auth plugins |
+| Library        | Version | Purpose                    | Why Standard                                                                                        |
+| -------------- | ------- | -------------------------- | --------------------------------------------------------------------------------------------------- |
+| jose           | 5.x     | JWT verification with JWKS | Official Stack Auth recommendation, universal JS/TS support, tree-shakeable, no native dependencies |
+| fastify        | 4.x+    | Web framework              | Already chosen in Phase 1, excellent TypeScript support                                             |
+| fastify-plugin | 4.x     | Plugin wrapper             | Required for proper encapsulation of auth plugins                                                   |
 
 **Sources:**
-- [Stack Auth Backend Integration](https://github.com/stack-auth/stack-auth/blob/dev/docs/content/docs/(guides)/concepts/backend-integration.mdx) - Context7
+
+- [Stack Auth Backend Integration](<https://github.com/stack-auth/stack-auth/blob/dev/docs/content/docs/(guides)/concepts/backend-integration.mdx>) - Context7
 - [jose JWKS Documentation](https://github.com/panva/jose/blob/main/docs/jwks/remote/functions/createRemoteJWKSet.md) - Context7
 
 ### Supporting
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| @fastify/cookie | 9.x | Cookie parsing | If refresh tokens stored in HttpOnly cookies |
-| @fastify/cors | 9.x | CORS handling | For cross-origin requests from frontend |
-| drizzle-orm | 0.38+ | Database queries | Already installed, for profile/role lookups |
+| Library         | Version | Purpose          | When to Use                                  |
+| --------------- | ------- | ---------------- | -------------------------------------------- |
+| @fastify/cookie | 9.x     | Cookie parsing   | If refresh tokens stored in HttpOnly cookies |
+| @fastify/cors   | 9.x     | CORS handling    | For cross-origin requests from frontend      |
+| drizzle-orm     | 0.38+   | Database queries | Already installed, for profile/role lookups  |
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| jose | @fastify/jwt | @fastify/jwt is opinionated, less control over Stack Auth integration |
-| jose | jsonwebtoken | jsonwebtoken lacks built-in JWKS support, requires manual key management |
+| Instead of  | Could Use      | Tradeoff                                                                  |
+| ----------- | -------------- | ------------------------------------------------------------------------- |
+| jose        | @fastify/jwt   | @fastify/jwt is opinionated, less control over Stack Auth integration     |
+| jose        | jsonwebtoken   | jsonwebtoken lacks built-in JWKS support, requires manual key management  |
 | Custom RBAC | @rbac/rbac npm | External library adds dependency, custom is simpler for 5-level hierarchy |
 
 **Installation:**
+
 ```bash
 pnpm add jose fastify-plugin
 pnpm add -D @types/node
@@ -77,6 +80,7 @@ backend/
 ```
 
 **Rationale:**
+
 - Middleware separate from plugins allows unit testing
 - Types centralized for consistency
 - Services handle database interactions, middleware handles HTTP concerns
@@ -88,6 +92,7 @@ backend/
 **When to use:** Every protected API endpoint.
 
 **Example:**
+
 ```typescript
 // Source: Context7 /stack-auth/stack-auth + /panva/jose
 // src/utils/jwt.ts
@@ -100,20 +105,20 @@ const JWKS_URL = `https://api.stack-auth.com/api/v1/projects/${STACK_AUTH_PROJEC
 const jwks = jose.createRemoteJWKSet(new URL(JWKS_URL));
 
 export interface StackAuthJWTPayload {
-  sub: string;           // User ID (e.g., "user_123456")
-  iss: string;           // Issuer
-  aud: string;           // Audience (project ID)
-  exp: number;           // Expiration timestamp
-  iat: number;           // Issued at timestamp
-  email?: string;        // User email
+  sub: string; // User ID (e.g., "user_123456")
+  iss: string; // Issuer
+  aud: string; // Audience (project ID)
+  exp: number; // Expiration timestamp
+  iat: number; // Issued at timestamp
+  email?: string; // User email
   email_verified?: boolean;
-  name?: string;         // User display name
+  name?: string; // User display name
   selected_team_id?: string; // Currently selected team/org
   is_anonymous?: boolean;
 }
 
 export async function verifyAccessToken(
-  accessToken: string
+  accessToken: string,
 ): Promise<{ payload: StackAuthJWTPayload; userId: string }> {
   const { payload } = await jose.jwtVerify(accessToken, jwks, {
     audience: STACK_AUTH_PROJECT_ID,
@@ -127,6 +132,7 @@ export async function verifyAccessToken(
 ```
 
 **Key points:**
+
 - JWKS is cached automatically by jose with configurable cooldown
 - Audience validation ensures token is for this project
 - Expiration validated automatically by jose
@@ -140,18 +146,19 @@ export async function verifyAccessToken(
 **When to use:** Store authenticated user info for downstream handlers.
 
 **Example:**
+
 ```typescript
 // Source: Context7 /fastify/fastify
 // src/types/fastify.d.ts
 import { FastifyRequest } from 'fastify';
 
 export interface AuthUser {
-  id: string;              // Stack Auth user ID (sub claim)
-  profileId?: string;      // Local profile.id (UUID)
+  id: string; // Stack Auth user ID (sub claim)
+  profileId?: string; // Local profile.id (UUID)
   email?: string;
   name?: string;
   organizationId?: string; // Current org context
-  role?: AppRole;          // Role in current org
+  role?: AppRole; // Role in current org
 }
 
 declare module 'fastify' {
@@ -187,16 +194,14 @@ export default fp(authPlugin, {
 **When to use:** Protecting routes that require authentication.
 
 **Example:**
+
 ```typescript
 // Source: Context7 /fastify/fastify
 // src/middleware/auth.ts
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { verifyAccessToken } from '../utils/jwt.js';
 
-export async function requireAuth(
-  request: FastifyRequest,
-  reply: FastifyReply
-): Promise<void> {
+export async function requireAuth(request: FastifyRequest, reply: FastifyReply): Promise<void> {
   const authHeader = request.headers.authorization;
 
   if (!authHeader?.startsWith('Bearer ')) {
@@ -225,11 +230,15 @@ export async function requireAuth(
 }
 
 // Usage in route
-fastify.get('/protected', {
-  preHandler: [requireAuth],
-}, async (request, reply) => {
-  return { userId: request.user!.id };
-});
+fastify.get(
+  '/protected',
+  {
+    preHandler: [requireAuth],
+  },
+  async (request, reply) => {
+    return { userId: request.user!.id };
+  },
+);
 ```
 
 **Source:** [Fastify Hooks](https://github.com/fastify/fastify/blob/main/docs/Reference/Hooks.md)
@@ -241,6 +250,7 @@ fastify.get('/protected', {
 **When to use:** RBAC enforcement across all protected endpoints.
 
 **Example:**
+
 ```typescript
 // Source: Best practices from Logto/Permit.io patterns
 // src/middleware/rbac.ts
@@ -258,10 +268,7 @@ export const ROLE_HIERARCHY: Record<string, number> = {
 export type AppRole = keyof typeof ROLE_HIERARCHY;
 
 export function requireRole(minimumRole: AppRole) {
-  return async function (
-    request: FastifyRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  return async function (request: FastifyRequest, reply: FastifyReply): Promise<void> {
     if (!request.user) {
       return reply.code(401).send({
         error: 'Unauthorized',
@@ -289,9 +296,13 @@ export function requireRole(minimumRole: AppRole) {
 }
 
 // Usage
-fastify.delete('/users/:id', {
-  preHandler: [requireAuth, requireRole('admin')],
-}, handler);
+fastify.delete(
+  '/users/:id',
+  {
+    preHandler: [requireAuth, requireRole('admin')],
+  },
+  handler,
+);
 ```
 
 **Why numeric hierarchy:** Simple comparison, easy to extend, matches database enum order, clear semantics.
@@ -305,6 +316,7 @@ fastify.delete('/users/:id', {
 **When to use:** All multi-tenant endpoints (most of the API).
 
 **Example:**
+
 ```typescript
 // src/middleware/org-context.ts
 import { FastifyRequest, FastifyReply } from 'fastify';
@@ -318,7 +330,7 @@ interface OrgParams {
 
 export async function requireOrgContext(
   request: FastifyRequest<{ Params: OrgParams }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> {
   if (!request.user) {
     return reply.code(401).send({ error: 'Unauthorized' });
@@ -337,12 +349,7 @@ export async function requireOrgContext(
   const [role] = await db
     .select({ role: userRoles.role })
     .from(userRoles)
-    .where(
-      and(
-        eq(userRoles.userId, request.user.id),
-        eq(userRoles.organizationId, organizationId)
-      )
-    )
+    .where(and(eq(userRoles.userId, request.user.id), eq(userRoles.organizationId, organizationId)))
     .limit(1);
 
   if (!role) {
@@ -358,9 +365,13 @@ export async function requireOrgContext(
 }
 
 // Usage: /orgs/:organizationId/units
-fastify.get('/orgs/:organizationId/units', {
-  preHandler: [requireAuth, requireOrgContext],
-}, handler);
+fastify.get(
+  '/orgs/:organizationId/units',
+  {
+    preHandler: [requireAuth, requireOrgContext],
+  },
+  handler,
+);
 ```
 
 **Key insight:** Tenant isolation happens at the middleware layer, preventing cross-org data access before reaching business logic.
@@ -374,6 +385,7 @@ fastify.get('/orgs/:organizationId/units', {
 **When to use:** During authentication flow after JWT validation succeeds.
 
 **Example:**
+
 ```typescript
 // src/services/user.service.ts
 import { db } from '../db/client.js';
@@ -383,7 +395,7 @@ import { eq } from 'drizzle-orm';
 export async function getOrCreateProfile(
   stackAuthUserId: string,
   email?: string,
-  name?: string
+  name?: string,
 ): Promise<{ id: string; isNew: boolean }> {
   // Try to find existing profile
   const [existing] = await db
@@ -424,6 +436,7 @@ export async function getOrCreateProfile(
 - **Missing tenant context in queries:** Every database query must include organization filter
 
 **Sources:**
+
 - [Fastify Decorators Best Practices](https://github.com/fastify/fastify/blob/main/docs/Reference/Decorators.md)
 - [Multi-tenant security patterns](https://dev.to/rampa2510/guide-to-building-multi-tenant-architecture-in-nodejs-40og)
 
@@ -431,13 +444,13 @@ export async function getOrCreateProfile(
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| JWT signature verification | Manual crypto operations | jose library | Handles algorithm detection, key selection, timing attacks |
-| JWKS key caching | Custom cache with expiry | jose.createRemoteJWKSet | Built-in cooldown, automatic refresh, handles rotation |
-| Token extraction | Manual string parsing | Helper function with proper validation | Edge cases (multiple spaces, lowercase 'bearer', etc.) |
-| Session refresh | Custom refresh logic | Stack Auth's refresh endpoint | Handles rotation, revocation, expiry correctly |
-| Rate limiting on auth | Custom counters | @fastify/rate-limit | Production-tested, Redis support |
+| Problem                    | Don't Build              | Use Instead                            | Why                                                        |
+| -------------------------- | ------------------------ | -------------------------------------- | ---------------------------------------------------------- |
+| JWT signature verification | Manual crypto operations | jose library                           | Handles algorithm detection, key selection, timing attacks |
+| JWKS key caching           | Custom cache with expiry | jose.createRemoteJWKSet                | Built-in cooldown, automatic refresh, handles rotation     |
+| Token extraction           | Manual string parsing    | Helper function with proper validation | Edge cases (multiple spaces, lowercase 'bearer', etc.)     |
+| Session refresh            | Custom refresh logic     | Stack Auth's refresh endpoint          | Handles rotation, revocation, expiry correctly             |
+| Rate limiting on auth      | Custom counters          | @fastify/rate-limit                    | Production-tested, Redis support                           |
 
 **Key insight:** Authentication and cryptographic operations have subtle security implications. Use battle-tested libraries rather than rolling custom solutions.
 
@@ -450,12 +463,14 @@ Problems that look simple but have existing solutions:
 **Why it happens:** Hard dependency on external service for every request.
 
 **How to avoid:**
+
 1. Cache JWKS keys locally with longer TTL
 2. Use jose's built-in caching (cooldownDuration option)
 3. Consider fallback to REST API verification for critical paths
 4. Implement circuit breaker pattern for JWKS fetches
 
 **Warning signs:**
+
 - Sudden spike in 401 errors
 - Latency increase on protected endpoints
 - Error logs showing JWKS fetch failures
@@ -467,11 +482,13 @@ Problems that look simple but have existing solutions:
 **Why it happens:** JWT `exp` validation compares against server clock, which may differ from token issuer.
 
 **How to avoid:**
+
 1. jose has built-in clockTolerance option (default 0)
 2. Configure reasonable tolerance: `{ clockTolerance: '30 seconds' }`
 3. Ensure server time is synchronized (NTP)
 
 **Example:**
+
 ```typescript
 const { payload } = await jose.jwtVerify(token, jwks, {
   audience: PROJECT_ID,
@@ -488,12 +505,14 @@ const { payload } = await jose.jwtVerify(token, jwks, {
 **Why it happens:** Developer forgets to include organizationId in WHERE clause.
 
 **How to avoid:**
+
 1. Make organizationId required in service function signatures
 2. Create helper functions that always include tenant filter
 3. Use database views or row-level security as defense-in-depth
 4. Integration tests that verify cross-tenant isolation
 
 **Example:**
+
 ```typescript
 // BAD - No tenant filter
 const units = await db.select().from(units);
@@ -512,16 +531,18 @@ const units = await db
 **Why it happens:** Multiple developers, no enforced standard.
 
 **How to avoid:**
+
 1. Define error response schema upfront
 2. Create centralized error helpers
 3. Use Fastify's setErrorHandler for consistency
 
 **Recommended format:**
+
 ```typescript
 interface ApiError {
-  error: string;      // Error type (e.g., 'Unauthorized', 'Forbidden')
-  message: string;    // Human-readable description
-  code?: string;      // Machine-readable code (e.g., 'AUTH_001')
+  error: string; // Error type (e.g., 'Unauthorized', 'Forbidden')
+  message: string; // Human-readable description
+  code?: string; // Machine-readable code (e.g., 'AUTH_001')
 }
 ```
 
@@ -532,6 +553,7 @@ interface ApiError {
 **Why it happens:** Naive implementation queries DB in every auth middleware call.
 
 **How to avoid:**
+
 1. Include essential data in JWT custom claims (if Stack Auth supports)
 2. Use Redis cache for profile/role data with reasonable TTL
 3. Cache in request.user after first lookup within request lifecycle
@@ -557,7 +579,7 @@ const JWKS_URL = `https://api.stack-auth.com/api/v1/projects/${STACK_AUTH_PROJEC
 
 const jwks = jose.createRemoteJWKSet(new URL(JWKS_URL), {
   cooldownDuration: 30_000, // 30 seconds between refreshes
-  cacheMaxAge: 600_000,     // Cache for 10 minutes
+  cacheMaxAge: 600_000, // Cache for 10 minutes
 });
 
 async function authPlugin(fastify: FastifyInstance) {
@@ -565,10 +587,7 @@ async function authPlugin(fastify: FastifyInstance) {
   fastify.decorateRequest('user', null);
 
   // Export verification function for use in preHandler
-  fastify.decorate('verifyJWT', async function (
-    request: FastifyRequest,
-    reply: FastifyReply
-  ) {
+  fastify.decorate('verifyJWT', async function (request: FastifyRequest, reply: FastifyReply) {
     const authHeader = request.headers.authorization;
 
     if (!authHeader?.startsWith('Bearer ')) {
@@ -591,9 +610,7 @@ async function authPlugin(fastify: FastifyInstance) {
         name: payload.name as string | undefined,
       };
     } catch (error) {
-      const message = error instanceof jose.errors.JWTExpired
-        ? 'Token expired'
-        : 'Invalid token';
+      const message = error instanceof jose.errors.JWTExpired ? 'Token expired' : 'Invalid token';
 
       return reply.code(401).send({
         error: 'Unauthorized',
@@ -644,10 +661,7 @@ export const ROLE_HIERARCHY = {
 export type AppRole = keyof typeof ROLE_HIERARCHY;
 
 export function requireRole(minimumRole: AppRole): preHandlerHookHandler {
-  return async function (
-    request: FastifyRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  return async function (request: FastifyRequest, reply: FastifyReply): Promise<void> {
     // Ensure auth ran first
     if (!request.user) {
       return reply.code(401).send({
@@ -751,15 +765,16 @@ describe('Authentication Middleware', () => {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| express-jwt middleware | jose library + Fastify hooks | 2024+ | Better TypeScript support, framework-agnostic |
+| Old Approach           | Current Approach             | When Changed      | Impact                                        |
+| ---------------------- | ---------------------------- | ----------------- | --------------------------------------------- |
+| express-jwt middleware | jose library + Fastify hooks | 2024+             | Better TypeScript support, framework-agnostic |
 | Hardcoded signing keys | JWKS with automatic rotation | Standard practice | No key management, automatic rotation support |
-| String role comparison | Numeric hierarchy | Best practice | Simpler "X or higher" checks |
-| req.user mutation | decorateRequest + hooks | Fastify standard | Better V8 optimization, type safety |
-| Passport.js | Direct JWT verification | Modern APIs | Less abstraction, more control |
+| String role comparison | Numeric hierarchy            | Best practice     | Simpler "X or higher" checks                  |
+| req.user mutation      | decorateRequest + hooks      | Fastify standard  | Better V8 optimization, type safety           |
+| Passport.js            | Direct JWT verification      | Modern APIs       | Less abstraction, more control                |
 
 **Deprecated/outdated:**
+
 - **express-jwt:** Works but designed for Express, not Fastify-native
 - **Manual JWT parsing:** Use jose which handles all edge cases
 - **Session-based auth for APIs:** JWT is standard for stateless APIs
@@ -796,7 +811,7 @@ Things that couldn't be fully resolved:
 - **Stack Auth Documentation** - Context7 `/stack-auth/stack-auth` - JWT verification, backend integration, teams
 - **jose Library** - Context7 `/panva/jose` - JWKS handling, jwtVerify, error types
 - **Fastify Documentation** - Context7 `/fastify/fastify` - Hooks, decorators, TypeScript, testing
-- [Stack Auth JWT Payload Structure](https://github.com/stack-auth/stack-auth/blob/dev/docs/content/docs/(guides)/concepts/jwt.mdx) - Official JWT claims documentation
+- [Stack Auth JWT Payload Structure](<https://github.com/stack-auth/stack-auth/blob/dev/docs/content/docs/(guides)/concepts/jwt.mdx>) - Official JWT claims documentation
 
 ### Secondary (MEDIUM confidence)
 
@@ -813,6 +828,7 @@ Things that couldn't be fully resolved:
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - jose and Fastify hooks verified through official docs
 - Architecture: HIGH - Patterns from Context7 Fastify and Stack Auth documentation
 - RBAC: HIGH - Standard pattern verified across multiple sources
@@ -823,12 +839,14 @@ Things that couldn't be fully resolved:
 **Valid until:** 2026-03-23 (60 days - auth libraries are stable)
 
 **Key version assumptions:**
+
 - jose 5.x (current stable)
 - Fastify 4.x (already in project)
 - Stack Auth API v1 (current)
 - Node.js 20+ LTS
 
 **Re-research triggers:**
+
 - Stack Auth major version change
 - jose 6.x release with breaking changes
 - Fastify 5.x release

@@ -24,10 +24,7 @@ const CheckEmailInputSchema = z.object({
 });
 
 const CheckPhoneInputSchema = z.object({
-  phone: z
-    .string()
-    .min(10, 'Phone number too short')
-    .max(20, 'Phone number too long'),
+  phone: z.string().min(10, 'Phone number too short').max(20, 'Phone number too long'),
 });
 
 /**
@@ -63,9 +60,7 @@ export const availabilityRouter = router({
       const result = await checkEmailAvailability(input.email);
       return {
         available: result.available,
-        message: result.available
-          ? 'Email is available'
-          : 'Email is already registered',
+        message: result.available ? 'Email is available' : 'Email is already registered',
       };
     }),
 

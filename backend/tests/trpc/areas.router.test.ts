@@ -93,7 +93,12 @@ describe('Areas tRPC Router', () => {
     it('should list areas for site', async () => {
       const mockAreas = [
         mockArea,
-        { ...mockArea, id: '423e4567-e89b-12d3-a456-426614174003', name: 'Walk-in Cooler', sortOrder: 2 },
+        {
+          ...mockArea,
+          id: '423e4567-e89b-12d3-a456-426614174003',
+          name: 'Walk-in Cooler',
+          sortOrder: 2,
+        },
       ];
       mockListAreas.mockResolvedValue(mockAreas);
 
@@ -149,13 +154,11 @@ describe('Areas tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.get({ organizationId: orgId, siteId, areaId })
-      ).rejects.toThrow(TRPCError);
+      await expect(caller.get({ organizationId: orgId, siteId, areaId })).rejects.toThrow(
+        TRPCError,
+      );
 
-      await expect(
-        caller.get({ organizationId: orgId, siteId, areaId })
-      ).rejects.toMatchObject({
+      await expect(caller.get({ organizationId: orgId, siteId, areaId })).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Area not found',
       });
@@ -215,7 +218,7 @@ describe('Areas tRPC Router', () => {
           organizationId: orgId,
           siteId,
           data: { name: 'Walk-in Freezer' },
-        })
+        }),
       ).rejects.toThrow(TRPCError);
 
       await expect(
@@ -223,7 +226,7 @@ describe('Areas tRPC Router', () => {
           organizationId: orgId,
           siteId,
           data: { name: 'Walk-in Freezer' },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
         message: 'Only admins and owners can create areas',
@@ -241,7 +244,7 @@ describe('Areas tRPC Router', () => {
           organizationId: orgId,
           siteId,
           data: { name: 'Walk-in Freezer' },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -260,7 +263,7 @@ describe('Areas tRPC Router', () => {
           organizationId: orgId,
           siteId,
           data: { name: 'Walk-in Freezer' },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Site not found',
@@ -289,7 +292,7 @@ describe('Areas tRPC Router', () => {
         areaId,
         siteId,
         orgId,
-        expect.objectContaining({ name: 'Updated Freezer' })
+        expect.objectContaining({ name: 'Updated Freezer' }),
       );
     });
 
@@ -323,7 +326,7 @@ describe('Areas tRPC Router', () => {
           siteId,
           areaId,
           data: { name: 'Updated Freezer' },
-        })
+        }),
       ).rejects.toThrow(TRPCError);
 
       await expect(
@@ -332,7 +335,7 @@ describe('Areas tRPC Router', () => {
           siteId,
           areaId,
           data: { name: 'Updated Freezer' },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
         message: 'Only admins and owners can update areas',
@@ -352,7 +355,7 @@ describe('Areas tRPC Router', () => {
           siteId,
           areaId,
           data: { name: 'Updated Freezer' },
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Area not found',
@@ -391,13 +394,11 @@ describe('Areas tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.delete({ organizationId: orgId, siteId, areaId })
-      ).rejects.toThrow(TRPCError);
+      await expect(caller.delete({ organizationId: orgId, siteId, areaId })).rejects.toThrow(
+        TRPCError,
+      );
 
-      await expect(
-        caller.delete({ organizationId: orgId, siteId, areaId })
-      ).rejects.toMatchObject({
+      await expect(caller.delete({ organizationId: orgId, siteId, areaId })).rejects.toMatchObject({
         code: 'FORBIDDEN',
         message: 'Only admins and owners can delete areas',
       });
@@ -410,9 +411,7 @@ describe('Areas tRPC Router', () => {
       const ctx = createOrgContext();
       const caller = createCaller(ctx);
 
-      await expect(
-        caller.delete({ organizationId: orgId, siteId, areaId })
-      ).rejects.toMatchObject({
+      await expect(caller.delete({ organizationId: orgId, siteId, areaId })).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Area not found',
       });

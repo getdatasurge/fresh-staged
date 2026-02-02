@@ -1,17 +1,32 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, RefreshCw, Key, Building2, ExternalLink, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, PlayCircle, Info, Trash2, MapPin } from "lucide-react";
-import { useUser } from "@stackframe/react";
-import { useTRPC } from "@/lib/trpc";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { SecretField } from "./SecretField";
-import { TTNDiagnosticsPanel } from "@/components/ttn/TTNDiagnosticsPanel";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertTriangle,
+  RefreshCw,
+  Key,
+  Building2,
+  ExternalLink,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  PlayCircle,
+  Info,
+  Trash2,
+  MapPin,
+} from 'lucide-react';
+import { useUser } from '@stackframe/react';
+import { useTRPC } from '@/lib/trpc';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { SecretField } from './SecretField';
+import { TTNDiagnosticsPanel } from '@/components/ttn/TTNDiagnosticsPanel';
 
-type SecretStatus = "provisioned" | "missing" | "invalid" | "decryption_failed";
+type SecretStatus = 'provisioned' | 'missing' | 'invalid' | 'decryption_failed';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,9 +36,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+} from '@/components/ui/alert-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface TTNCredentials {
   organization_name: string;
@@ -70,16 +85,39 @@ interface TTNCredentialsPanelProps {
 // Define provisioning steps for step tracker (organization-based flow)
 const PROVISIONING_STEPS = [
   { id: 'preflight', label: 'Preflight Check', description: 'Verify TTN admin credentials' },
-  { id: 'create_organization', label: 'Create Organization', description: 'Create TTN organization for tenant isolation' },
-  { id: 'create_org_api_key', label: 'Create Org API Key', description: 'Create org-scoped API key' },
-  { id: 'create_application', label: 'Create Application', description: 'Create TTN application under org' },
-  { id: 'verify_application_rights', label: 'Verify App Rights', description: 'Check application ownership' },
-  { id: 'create_app_api_key', label: 'Create App API Key', description: 'Create application API key' },
+  {
+    id: 'create_organization',
+    label: 'Create Organization',
+    description: 'Create TTN organization for tenant isolation',
+  },
+  {
+    id: 'create_org_api_key',
+    label: 'Create Org API Key',
+    description: 'Create org-scoped API key',
+  },
+  {
+    id: 'create_application',
+    label: 'Create Application',
+    description: 'Create TTN application under org',
+  },
+  {
+    id: 'verify_application_rights',
+    label: 'Verify App Rights',
+    description: 'Check application ownership',
+  },
+  {
+    id: 'create_app_api_key',
+    label: 'Create App API Key',
+    description: 'Create application API key',
+  },
   { id: 'create_webhook', label: 'Create Webhook', description: 'Configure webhook endpoint' },
   { id: 'complete', label: 'Complete', description: 'Provisioning finished' },
 ];
 
-export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCredentialsPanelProps) {
+export function TTNCredentialsPanel({
+  organizationId,
+  readOnly = false,
+}: TTNCredentialsPanelProps) {
   const user = useUser();
   const trpc = useTRPC();
   const [credentials, setCredentials] = useState<TTNCredentials | null>(null);
@@ -94,7 +132,7 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
   const [showErrorDetails, setShowErrorDetails] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   // NAM1 ONLY - hardcoded cluster, no region selection
-  const targetRegion = "nam1";
+  const targetRegion = 'nam1';
 
   // Track the last known organizationId to prevent clearing credentials during transitional states
   const lastOrgIdRef = useRef<string | null>(null);
@@ -108,14 +146,14 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
   const getCredentialsQuery = useQuery(
     trpc.ttnSettings.getCredentials.queryOptions(
       { organizationId: organizationId || '' },
-      { enabled: false } // Manual fetch control
-    )
+      { enabled: false }, // Manual fetch control
+    ),
   );
   const getStatusQuery = useQuery(
     trpc.ttnSettings.getStatus.queryOptions(
       { organizationId: organizationId || '' },
-      { enabled: false }
-    )
+      { enabled: false },
+    ),
   );
   const provisionMutation = useMutation(trpc.ttnSettings.provision.mutationOptions());
   const startFreshMutation = useMutation(trpc.ttnSettings.startFresh.mutationOptions());
@@ -139,7 +177,9 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
 
     // If switching to a DIFFERENT org, clear old credentials first
     if (lastOrgIdRef.current && lastOrgIdRef.current !== organizationId) {
-      console.log(`[TTNCredentialsPanel] Org changed: ${lastOrgIdRef.current?.slice(0, 8)} → ${organizationId.slice(0, 8)}`);
+      console.log(
+        `[TTNCredentialsPanel] Org changed: ${lastOrgIdRef.current?.slice(0, 8)} → ${organizationId.slice(0, 8)}`,
+      );
       setCredentials(null);
     }
     lastOrgIdRef.current = organizationId;
@@ -150,7 +190,7 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
 
     try {
       if (!userRef.current) {
-        setFetchError("Session expired - please sign in again");
+        setFetchError('Session expired - please sign in again');
         return;
       }
 
@@ -162,14 +202,14 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
 
       const data = result.data;
       if (!data) {
-        throw new Error("No credentials data returned");
+        throw new Error('No credentials data returned');
       }
 
       setCredentials(data as TTNCredentials);
       hasShownErrorToastRef.current = false; // Reset error toast flag on success
     } catch (err: unknown) {
-      console.error("Failed to fetch TTN credentials:", err);
-      const message = err instanceof Error ? err.message : "Unable to load TTN settings";
+      console.error('Failed to fetch TTN credentials:', err);
+      const message = err instanceof Error ? err.message : 'Unable to load TTN settings';
       setFetchError(message);
       // Only toast on first error, not on repeated failures (prevents toast spam from 429s)
       if (!hasShownErrorToastRef.current) {
@@ -198,23 +238,23 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
     setIsRetrying(true);
     try {
       if (!user) {
-        toast.error("Session expired - please sign in again");
+        toast.error('Session expired - please sign in again');
         return;
       }
 
       const data = await provisionMutation.mutateAsync({
         organizationId,
-        action: 'retry'
+        action: 'retry',
       });
 
       // Handle structured responses (success:false)
       if (!data.success) {
         if (data.use_start_fresh) {
-          toast.error("Cannot retry - use Start Fresh", {
-            description: data.message || "Application is owned by different account",
+          toast.error('Cannot retry - use Start Fresh', {
+            description: data.message || 'Application is owned by different account',
           });
         } else {
-          toast.error(data.error || "Provisioning failed", {
+          toast.error(data.error || 'Provisioning failed', {
             description: data.message,
           });
         }
@@ -222,11 +262,11 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
         return;
       }
 
-      toast.success("Provisioning retry initiated");
+      toast.success('Provisioning retry initiated');
       setTimeout(fetchCredentials, 2000);
     } catch (err: unknown) {
-      console.error("Failed to retry provisioning:", err);
-      const message = err instanceof Error ? err.message : "Failed to retry provisioning";
+      console.error('Failed to retry provisioning:', err);
+      const message = err instanceof Error ? err.message : 'Failed to retry provisioning';
       toast.error(message);
     } finally {
       setIsRetrying(false);
@@ -239,31 +279,31 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
     setIsStartingFresh(true);
     try {
       if (!user) {
-        toast.error("Session expired - please sign in again");
+        toast.error('Session expired - please sign in again');
         return;
       }
 
       const data = await startFreshMutation.mutateAsync({
         organizationId,
-        region: "nam1", // NAM1 ONLY - hardcoded cluster
+        region: 'nam1', // NAM1 ONLY - hardcoded cluster
       });
 
       // Handle structured responses
       if (!data.success) {
-        toast.error(data.error || "Start Fresh failed", {
+        toast.error(data.error || 'Start Fresh failed', {
           description: data.message,
         });
         await fetchCredentials();
         return;
       }
 
-      toast.success("Start Fresh completed", {
-        description: "Provisioned on NAM1 cluster successfully",
+      toast.success('Start Fresh completed', {
+        description: 'Provisioned on NAM1 cluster successfully',
       });
       setTimeout(fetchCredentials, 2000);
     } catch (err: unknown) {
-      console.error("Failed to start fresh:", err);
-      const message = err instanceof Error ? err.message : "Failed to start fresh";
+      console.error('Failed to start fresh:', err);
+      const message = err instanceof Error ? err.message : 'Failed to start fresh';
       toast.error(message);
     } finally {
       setIsStartingFresh(false);
@@ -276,21 +316,21 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
     setIsDeepCleaning(true);
     try {
       if (!user) {
-        toast.error("Session expired - please sign in again");
+        toast.error('Session expired - please sign in again');
         return;
       }
 
       const data = await deepCleanMutation.mutateAsync({ organizationId });
 
       if (!data.success) {
-        toast.error(data.error || "Deep clean failed", {
+        toast.error(data.error || 'Deep clean failed', {
           description: data.message,
         });
         await fetchCredentials();
         return;
       }
 
-      toast.success("Deep clean completed", {
+      toast.success('Deep clean completed', {
         description: `Deleted ${data.deleted_devices || 0} devices. ${data.deleted_org ? 'Organization deleted.' : ''} Ready to provision on NAM1.`,
       });
 
@@ -299,8 +339,8 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
       setDeepCleanConfirmChecked(false);
       setTimeout(fetchCredentials, 2000);
     } catch (err: unknown) {
-      console.error("Failed to deep clean:", err);
-      const message = err instanceof Error ? err.message : "Failed to deep clean";
+      console.error('Failed to deep clean:', err);
+      const message = err instanceof Error ? err.message : 'Failed to deep clean';
       toast.error(message);
     } finally {
       setIsDeepCleaning(false);
@@ -310,16 +350,20 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
   // Check if the error indicates an unowned application
   const isUnownedAppError = () => {
     if (!credentials) return false;
-    return credentials.app_rights_check_status === "forbidden" ||
-           credentials.last_ttn_error_name === "no_application_rights" ||
-           credentials.last_http_body?.includes("no_application_rights");
+    return (
+      credentials.app_rights_check_status === 'forbidden' ||
+      credentials.last_ttn_error_name === 'no_application_rights' ||
+      credentials.last_http_body?.includes('no_application_rights')
+    );
   };
 
   // Check if the error indicates no organization rights
   const isNoOrgRightsError = () => {
     if (!credentials) return false;
-    return credentials.last_ttn_error_name === "no_organization_rights" ||
-           credentials.last_http_body?.includes("no_organization_rights");
+    return (
+      credentials.last_ttn_error_name === 'no_organization_rights' ||
+      credentials.last_http_body?.includes('no_organization_rights')
+    );
   };
 
   const handleCheckStatus = async () => {
@@ -329,10 +373,10 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
       await getStatusQuery.refetch();
       // Refresh full credentials after status check
       await fetchCredentials();
-      toast.success("Status refreshed");
+      toast.success('Status refreshed');
     } catch (err: unknown) {
-      console.error("Failed to check status:", err);
-      const message = err instanceof Error ? err.message : "Failed to check status";
+      console.error('Failed to check status:', err);
+      const message = err instanceof Error ? err.message : 'Failed to check status';
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -340,22 +384,22 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
   };
 
   const getOverallStatus = () => {
-    if (!credentials) return "missing";
-    
+    if (!credentials) return 'missing';
+
     const hasApp = Boolean(credentials.app_api_secret || credentials.app_api_secret_last4);
     const hasWebhook = Boolean(credentials.webhook_secret || credentials.webhook_secret_last4);
     const hasUrl = Boolean(credentials.webhook_url);
-    
-    if (hasApp && hasWebhook && hasUrl) return "provisioned";
-    if (hasApp || hasWebhook || hasUrl) return "partial";
-    return "missing";
+
+    if (hasApp && hasWebhook && hasUrl) return 'provisioned';
+    if (hasApp || hasWebhook || hasUrl) return 'partial';
+    return 'missing';
   };
 
   // Helper to determine secret field status based on decryption result
   const getSecretStatus = (
     value: string | null | undefined,
     last4: string | null | undefined,
-    decryptStatus?: 'empty' | 'decrypted' | 'failed'
+    decryptStatus?: 'empty' | 'decrypted' | 'failed',
   ): SecretStatus => {
     // If decryption explicitly failed but we have last4, show "decryption_failed"
     if (decryptStatus === 'failed' && last4) {
@@ -372,23 +416,47 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
   const getStatusBadge = () => {
     const status = credentials?.provisioning_status;
     if (status === 'provisioning') {
-      return <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">Provisioning...</Badge>;
+      return (
+        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+          Provisioning...
+        </Badge>
+      );
     }
     if (status === 'failed') {
-      return <Badge variant="outline" className="bg-alarm/10 text-alarm border-alarm/30">Failed</Badge>;
+      return (
+        <Badge variant="outline" className="bg-alarm/10 text-alarm border-alarm/30">
+          Failed
+        </Badge>
+      );
     }
     if (status === 'ready') {
-      return <Badge variant="outline" className="bg-safe/10 text-safe border-safe/30">Fully Provisioned</Badge>;
+      return (
+        <Badge variant="outline" className="bg-safe/10 text-safe border-safe/30">
+          Fully Provisioned
+        </Badge>
+      );
     }
-    
+
     const overallStatus = getOverallStatus();
     switch (overallStatus) {
-      case "provisioned":
-        return <Badge variant="outline" className="bg-safe/10 text-safe border-safe/30">Fully Provisioned</Badge>;
-      case "partial":
-        return <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">Partially Configured</Badge>;
-      case "missing":
-        return <Badge variant="outline" className="bg-alarm/10 text-alarm border-alarm/30">Not Configured</Badge>;
+      case 'provisioned':
+        return (
+          <Badge variant="outline" className="bg-safe/10 text-safe border-safe/30">
+            Fully Provisioned
+          </Badge>
+        );
+      case 'partial':
+        return (
+          <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
+            Partially Configured
+          </Badge>
+        );
+      case 'missing':
+        return (
+          <Badge variant="outline" className="bg-alarm/10 text-alarm border-alarm/30">
+            Not Configured
+          </Badge>
+        );
     }
   };
 
@@ -396,37 +464,37 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
     if (!credentials) return 'pending';
     const status = credentials.provisioning_status;
     const stepDetails = credentials.provisioning_step_details;
-    
+
     // If overall status is ready, all steps are complete
     if (status === 'ready' || status === 'completed') return 'success';
-    
+
     // Map step IDs to step_details keys
     const stepToDetailKey: Record<string, keyof NonNullable<typeof stepDetails>> = {
-      'preflight': 'preflight_done',
-      'create_organization': 'organization_created',
-      'create_org_api_key': 'org_api_key_created',
-      'create_application': 'application_created',
-      'verify_application_rights': 'app_rights_verified',
-      'create_app_api_key': 'app_api_key_created',
-      'create_webhook': 'webhook_created',
+      preflight: 'preflight_done',
+      create_organization: 'organization_created',
+      create_org_api_key: 'org_api_key_created',
+      create_application: 'application_created',
+      verify_application_rights: 'app_rights_verified',
+      create_app_api_key: 'app_api_key_created',
+      create_webhook: 'webhook_created',
     };
-    
+
     // Check step_details for completion status
     const detailKey = stepToDetailKey[stepId];
     if (detailKey && stepDetails?.[detailKey]) {
       return 'success';
     }
-    
+
     // 'complete' step is success only if overall status is ready
     if (stepId === 'complete') {
       return status === 'ready' ? 'success' : 'pending';
     }
-    
+
     // Check if this is the currently failing step
     const currentStep = credentials.provisioning_step;
     if (status === 'failed' && currentStep === stepId) return 'failed';
     if (status === 'provisioning' && currentStep === stepId) return 'running';
-    
+
     return 'pending';
   };
 
@@ -483,9 +551,14 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
             <div className="space-y-4">
               {/* Skeleton for Org Info section */}
               <Skeleton className="h-20 w-full rounded-lg" />
-              
+
               {/* Skeleton rows matching SecretField layout */}
-              {["Organization API Secret", "Application API Secret", "Webhook Secret", "Webhook URL"].map(renderCredentialSkeleton)}
+              {[
+                'Organization API Secret',
+                'Application API Secret',
+                'Webhook Secret',
+                'Webhook URL',
+              ].map(renderCredentialSkeleton)}
             </div>
           ) : (
             <>
@@ -511,7 +584,7 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
                     </div>
                     {credentials.ttn_application_id && (
                       <div className="text-sm text-muted-foreground mt-1">
-                        <span className="text-foreground">Application:</span>{" "}
+                        <span className="text-foreground">Application:</span>{' '}
                         <code className="bg-muted px-1.5 py-0.5 rounded text-xs">
                           {credentials.ttn_application_id}
                         </code>
@@ -523,7 +596,7 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
                   </div>
                 ) : (
                   <div className="flex-1 text-sm text-muted-foreground italic">
-                    {!organizationId ? "No organization selected" : "Organization info unavailable"}
+                    {!organizationId ? 'No organization selected' : 'Organization info unavailable'}
                   </div>
                 )}
               </div>
@@ -534,7 +607,11 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
                   label="Organization API Secret"
                   value={credentials?.org_api_secret ?? null}
                   last4={credentials?.org_api_secret_last4 ?? null}
-                  status={getSecretStatus(credentials?.org_api_secret, credentials?.org_api_secret_last4, credentials?.org_api_secret_status)}
+                  status={getSecretStatus(
+                    credentials?.org_api_secret,
+                    credentials?.org_api_secret_last4,
+                    credentials?.org_api_secret_status,
+                  )}
                   description="Used for gateway registry and organization-level operations"
                 />
 
@@ -542,7 +619,11 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
                   label="Application API Secret"
                   value={credentials?.app_api_secret ?? null}
                   last4={credentials?.app_api_secret_last4 ?? null}
-                  status={getSecretStatus(credentials?.app_api_secret, credentials?.app_api_secret_last4, credentials?.app_api_secret_status)}
+                  status={getSecretStatus(
+                    credentials?.app_api_secret,
+                    credentials?.app_api_secret_last4,
+                    credentials?.app_api_secret_status,
+                  )}
                   description="Used for device provisioning and application operations"
                 />
 
@@ -550,14 +631,18 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
                   label="Webhook Secret"
                   value={credentials?.webhook_secret ?? null}
                   last4={credentials?.webhook_secret_last4 ?? null}
-                  status={getSecretStatus(credentials?.webhook_secret, credentials?.webhook_secret_last4, credentials?.webhook_secret_status)}
+                  status={getSecretStatus(
+                    credentials?.webhook_secret,
+                    credentials?.webhook_secret_last4,
+                    credentials?.webhook_secret_status,
+                  )}
                   description="Used to verify incoming webhook payloads from TTN"
                 />
 
                 <SecretField
                   label="Webhook URL"
                   value={credentials?.webhook_url ?? null}
-                  status={credentials?.webhook_url ? "provisioned" : "missing"}
+                  status={credentials?.webhook_url ? 'provisioned' : 'missing'}
                   isSecret={false}
                   description="The endpoint TTN sends uplink messages to"
                 />
@@ -572,7 +657,7 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
 
               {/* TTN Diagnostics Panel */}
               {credentials && (
-                <TTNDiagnosticsPanel 
+                <TTNDiagnosticsPanel
                   data={{
                     ttn_region: credentials.ttn_region,
                     ttn_application_id: credentials.ttn_application_id,
@@ -600,11 +685,17 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
                 {organizationId && (
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                    <Badge
+                      variant="outline"
+                      className="bg-primary/10 text-primary border-primary/30"
+                    >
                       NAM1 (North America)
                     </Badge>
-                    {credentials?.ttn_region && credentials.ttn_region !== "nam1" && (
-                      <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
+                    {credentials?.ttn_region && credentials.ttn_region !== 'nam1' && (
+                      <Badge
+                        variant="outline"
+                        className="bg-warning/10 text-warning border-warning/30"
+                      >
                         Migrating from {credentials.ttn_region.toUpperCase()}
                       </Badge>
                     )}
@@ -612,56 +703,67 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
                 )}
 
                 {/* Show provisioning buttons when credentials missing or failed - only for admins/owners */}
-                {!readOnly && (!credentials || credentials?.provisioning_status === 'failed' || !credentials?.ttn_application_id) && organizationId && (
-                  <>
-                    {/* Primary action: Retry/Start Provisioning */}
-                    <Button
-                      variant="default"
-                      onClick={handleRetryProvisioning}
-                      disabled={isRetrying || isLoading || !organizationId}
-                      className="gap-2"
-                    >
-                      <PlayCircle className={`h-4 w-4 ${isRetrying ? "animate-spin" : ""}`} />
-                      {credentials?.ttn_application_id ? "Retry Provisioning" : "Start Provisioning"}
-                    </Button>
-                    
-                    {/* Always show Start Fresh as secondary option when there's existing data or failed status */}
-                    {(credentials?.ttn_application_id || credentials?.provisioning_status === 'failed') && (
+                {!readOnly &&
+                  (!credentials ||
+                    credentials?.provisioning_status === 'failed' ||
+                    !credentials?.ttn_application_id) &&
+                  organizationId && (
+                    <>
+                      {/* Primary action: Retry/Start Provisioning */}
                       <Button
-                        variant="outline"
-                        onClick={handleStartFresh}
-                        disabled={isStartingFresh || isLoading}
+                        variant="default"
+                        onClick={handleRetryProvisioning}
+                        disabled={isRetrying || isLoading || !organizationId}
                         className="gap-2"
                       >
-                        <RefreshCw className={`h-4 w-4 ${isStartingFresh ? "animate-spin" : ""}`} />
-                        Start Fresh
+                        <PlayCircle className={`h-4 w-4 ${isRetrying ? 'animate-spin' : ''}`} />
+                        {credentials?.ttn_application_id
+                          ? 'Retry Provisioning'
+                          : 'Start Provisioning'}
                       </Button>
-                    )}
-                  </>
-                )}
-                
+
+                      {/* Always show Start Fresh as secondary option when there's existing data or failed status */}
+                      {(credentials?.ttn_application_id ||
+                        credentials?.provisioning_status === 'failed') && (
+                        <Button
+                          variant="outline"
+                          onClick={handleStartFresh}
+                          disabled={isStartingFresh || isLoading}
+                          className="gap-2"
+                        >
+                          <RefreshCw
+                            className={`h-4 w-4 ${isStartingFresh ? 'animate-spin' : ''}`}
+                          />
+                          Start Fresh
+                        </Button>
+                      )}
+                    </>
+                  )}
+
                 <Button
                   variant="outline"
                   onClick={handleCheckStatus}
                   disabled={isLoading || !organizationId}
                   className="gap-2"
                 >
-                  <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                  <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                   Check Status
                 </Button>
 
                 {/* Start Fresh - always available when provisioned */}
-                {!readOnly && credentials?.ttn_application_id && credentials?.provisioning_status === 'ready' && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowConfirmDialog(true)}
-                    disabled={isStartingFresh || isLoading}
-                    className="gap-2"
-                  >
-                    <RefreshCw className={`h-4 w-4 ${isStartingFresh ? "animate-spin" : ""}`} />
-                    Start Fresh
-                  </Button>
-                )}
+                {!readOnly &&
+                  credentials?.ttn_application_id &&
+                  credentials?.provisioning_status === 'ready' && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowConfirmDialog(true)}
+                      disabled={isStartingFresh || isLoading}
+                      className="gap-2"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isStartingFresh ? 'animate-spin' : ''}`} />
+                      Start Fresh
+                    </Button>
+                  )}
 
                 {/* Deep Clean - nuclear option for cluster issues */}
                 {!readOnly && credentials?.ttn_application_id && (
@@ -672,18 +774,13 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
                     disabled={isDeepCleaning || isLoading}
                     className="gap-2"
                   >
-                    <Trash2 className={`h-4 w-4 ${isDeepCleaning ? "animate-spin" : ""}`} />
+                    <Trash2 className={`h-4 w-4 ${isDeepCleaning ? 'animate-spin' : ''}`} />
                     Deep Clean
                   </Button>
                 )}
 
                 {credentials?.ttn_application_id && credentials?.ttn_region && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    asChild
-                    className="gap-2 text-muted-foreground"
-                  >
+                  <Button variant="ghost" size="sm" asChild className="gap-2 text-muted-foreground">
                     <a
                       href={`https://${credentials.ttn_region}.cloud.thethings.network/console/applications/${credentials.ttn_application_id}`}
                       target="_blank"
@@ -697,31 +794,36 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
               </div>
 
               {/* Step Tracker - show when provisioning or failed */}
-              {credentials && (credentials.provisioning_status === 'provisioning' || credentials.provisioning_status === 'failed') && (
-                <div className="mt-4 p-4 bg-muted/30 rounded-lg border border-border/50">
-                  <h4 className="text-sm font-medium mb-3">Provisioning Steps</h4>
-                  <div className="space-y-2">
-                    {PROVISIONING_STEPS.map((step) => {
-                      const status = getStepStatus(step.id);
-                      return (
-                        <div key={step.id} className="flex items-center gap-3 text-sm">
-                          {renderStepIcon(status)}
-                          <span className={status === 'pending' ? 'text-muted-foreground' : ''}>{step.label}</span>
-                          {status === 'running' && (
-                            <span className="text-xs text-muted-foreground">(in progress)</span>
-                          )}
-                        </div>
-                      );
-                    })}
+              {credentials &&
+                (credentials.provisioning_status === 'provisioning' ||
+                  credentials.provisioning_status === 'failed') && (
+                  <div className="mt-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+                    <h4 className="text-sm font-medium mb-3">Provisioning Steps</h4>
+                    <div className="space-y-2">
+                      {PROVISIONING_STEPS.map((step) => {
+                        const status = getStepStatus(step.id);
+                        return (
+                          <div key={step.id} className="flex items-center gap-3 text-sm">
+                            {renderStepIcon(status)}
+                            <span className={status === 'pending' ? 'text-muted-foreground' : ''}>
+                              {step.label}
+                            </span>
+                            {status === 'running' && (
+                              <span className="text-xs text-muted-foreground">(in progress)</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {credentials.provisioning_attempt_count &&
+                      credentials.provisioning_attempt_count > 1 && (
+                        <p className="text-xs text-muted-foreground mt-3">
+                          Attempt {credentials.provisioning_attempt_count}
+                        </p>
+                      )}
                   </div>
-                  
-                  {credentials.provisioning_attempt_count && credentials.provisioning_attempt_count > 1 && (
-                    <p className="text-xs text-muted-foreground mt-3">
-                      Attempt {credentials.provisioning_attempt_count}
-                    </p>
-                  )}
-                </div>
-              )}
+                )}
 
               {/* Error Details - show when failed */}
               {credentials?.provisioning_status === 'failed' && credentials?.provisioning_error && (
@@ -731,66 +833,86 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
                       <AlertTriangle className="h-5 w-5 text-alarm flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-alarm">Provisioning Failed</p>
-                        <p className="text-sm text-muted-foreground mt-1">{credentials.provisioning_error}</p>
-                        
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {credentials.provisioning_error}
+                        </p>
+
                         {/* Special message for unowned app error */}
                         {isUnownedAppError() && !isNoOrgRightsError() && (
                           <div className="mt-3 p-3 bg-warning/10 rounded border border-warning/30 text-sm">
                             <p className="font-medium text-warning">Application Ownership Issue</p>
                             <p className="text-muted-foreground mt-1">
-                              This TTN application exists but the current provisioning key has no rights to it. 
-                              This commonly happens with legacy apps created under another account.
+                              This TTN application exists but the current provisioning key has no
+                              rights to it. This commonly happens with legacy apps created under
+                              another account.
                             </p>
                             <p className="text-foreground mt-2">
-                              Use <strong>Start Fresh</strong> to recreate or generate a new app ID under the current key.
+                              Use <strong>Start Fresh</strong> to recreate or generate a new app ID
+                              under the current key.
                             </p>
                           </div>
                         )}
-                        
+
                         {/* Special message for no organization rights */}
                         {isNoOrgRightsError() && (
                           <div className="mt-3 p-3 bg-alarm/10 rounded border border-alarm/30 text-sm">
                             <p className="font-medium text-alarm">No Organization Rights</p>
                             <p className="text-muted-foreground mt-1">
-                              The TTN organization exists but the current provisioning key has no rights to it. 
-                              This usually means the organization was created under another account or on a different cluster.
+                              The TTN organization exists but the current provisioning key has no
+                              rights to it. This usually means the organization was created under
+                              another account or on a different cluster.
                             </p>
                             <p className="text-foreground mt-2">
-                              Use <strong>Start Fresh</strong> to attempt with a new organization ID, or verify your TTN admin key has the correct rights.
+                              Use <strong>Start Fresh</strong> to attempt with a new organization
+                              ID, or verify your TTN admin key has the correct rights.
                             </p>
                           </div>
                         )}
-                        
-                        {(credentials.last_http_status || credentials.last_http_body || credentials.last_ttn_correlation_id) && (
+
+                        {(credentials.last_http_status ||
+                          credentials.last_http_body ||
+                          credentials.last_ttn_correlation_id) && (
                           <CollapsibleTrigger asChild>
-                            <Button variant="ghost" size="sm" className="mt-2 h-auto p-0 text-xs text-muted-foreground hover:text-foreground">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="mt-2 h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
+                            >
                               {showErrorDetails ? (
-                                <>Hide Details <ChevronUp className="h-3 w-3 ml-1" /></>
+                                <>
+                                  Hide Details <ChevronUp className="h-3 w-3 ml-1" />
+                                </>
                               ) : (
-                                <>Show Details <ChevronDown className="h-3 w-3 ml-1" /></>
+                                <>
+                                  Show Details <ChevronDown className="h-3 w-3 ml-1" />
+                                </>
                               )}
                             </Button>
                           </CollapsibleTrigger>
                         )}
-                        
+
                         <CollapsibleContent>
                           <div className="mt-3 p-3 bg-muted/50 rounded text-xs font-mono space-y-2">
                             {credentials.last_http_status && (
                               <div>
-                                <span className="text-muted-foreground">HTTP Status:</span>{" "}
+                                <span className="text-muted-foreground">HTTP Status:</span>{' '}
                                 <span className="text-alarm">{credentials.last_http_status}</span>
                               </div>
                             )}
                             {credentials.last_ttn_error_name && (
                               <div>
-                                <span className="text-muted-foreground">Error:</span>{" "}
-                                <span className="text-alarm">{credentials.last_ttn_error_name}</span>
+                                <span className="text-muted-foreground">Error:</span>{' '}
+                                <span className="text-alarm">
+                                  {credentials.last_ttn_error_name}
+                                </span>
                               </div>
                             )}
                             {credentials.last_ttn_correlation_id && (
                               <div>
-                                <span className="text-muted-foreground">Correlation ID:</span>{" "}
-                                <span className="text-foreground/70">{credentials.last_ttn_correlation_id}</span>
+                                <span className="text-muted-foreground">Correlation ID:</span>{' '}
+                                <span className="text-foreground/70">
+                                  {credentials.last_ttn_correlation_id}
+                                </span>
                               </div>
                             )}
                             {credentials.last_http_body && (
@@ -824,11 +946,13 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
             <AlertDialogDescription className="space-y-3">
               <p>This will deprovision and re-provision all TTN resources on NAM1. This action:</p>
               <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>Creates a new TTN application with fresh credentials on <strong>NAM1</strong></li>
+                <li>
+                  Creates a new TTN application with fresh credentials on <strong>NAM1</strong>
+                </li>
                 <li>Invalidates all existing API keys immediately</li>
                 <li>May temporarily interrupt active sensor connections</li>
                 <li>All devices will need to rejoin the new application</li>
-                {credentials?.ttn_region && credentials.ttn_region !== "nam1" && (
+                {credentials?.ttn_region && credentials.ttn_region !== 'nam1' && (
                   <li className="text-warning font-medium">
                     Migrates from {credentials.ttn_region.toUpperCase()} to NAM1 cluster
                   </li>
@@ -837,7 +961,7 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          {credentials?.ttn_region && credentials.ttn_region !== "nam1" && (
+          {credentials?.ttn_region && credentials.ttn_region !== 'nam1' && (
             <div className="flex items-center gap-2 p-3 bg-warning/10 rounded-lg border border-warning/30">
               <MapPin className="h-4 w-4 text-warning" />
               <span className="text-sm">
@@ -861,9 +985,7 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setConfirmChecked(false)}>
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setConfirmChecked(false)}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleStartFreshWithConfirm}
               disabled={!confirmChecked || isStartingFresh}
@@ -874,10 +996,10 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                   Starting Fresh...
                 </>
+              ) : credentials?.ttn_region && credentials.ttn_region !== 'nam1' ? (
+                'Migrate to NAM1'
               ) : (
-                credentials?.ttn_region && credentials.ttn_region !== "nam1" 
-                  ? "Migrate to NAM1"
-                  : "Start Fresh"
+                'Start Fresh'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -904,11 +1026,11 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
                 <li>Reset ALL sensors to 'pending' status</li>
                 <li>Clear ALL stored credentials</li>
               </ul>
-              <p className="text-sm mt-2">
-                After this, you will need to:
-              </p>
+              <p className="text-sm mt-2">After this, you will need to:</p>
               <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                <li>Click "Start Provisioning" to create new TTN resources on <strong>NAM1</strong></li>
+                <li>
+                  Click "Start Provisioning" to create new TTN resources on <strong>NAM1</strong>
+                </li>
                 <li>Re-provision all your sensors</li>
               </ul>
             </AlertDialogDescription>
@@ -920,11 +1042,9 @@ export function TTNCredentialsPanel({ organizationId, readOnly = false }: TTNCre
               checked={deepCleanConfirmChecked}
               onCheckedChange={(checked) => setDeepCleanConfirmChecked(checked === true)}
             />
-            <label
-              htmlFor="confirm-deep-clean"
-              className="text-sm cursor-pointer"
-            >
-              I understand this will <strong>permanently delete</strong> all TTN resources and I will need to re-provision all sensors
+            <label htmlFor="confirm-deep-clean" className="text-sm cursor-pointer">
+              I understand this will <strong>permanently delete</strong> all TTN resources and I
+              will need to re-provision all sensors
             </label>
           </div>
 

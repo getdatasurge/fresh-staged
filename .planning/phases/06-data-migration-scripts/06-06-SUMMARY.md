@@ -32,12 +32,12 @@ key-files:
     - scripts/migration/README.md
 
 key-decisions:
-  - "verify.ts documented as placeholder pending future implementation"
-  - "90-day mapping retention prominently documented for support scenarios"
+  - 'verify.ts documented as placeholder pending future implementation'
+  - '90-day mapping retention prominently documented for support scenarios'
 
 patterns-established:
-  - "Migration runbook structure: Prerequisites, Steps, Rollback, Troubleshooting"
-  - "CLI reference tables documenting all options with defaults"
+  - 'Migration runbook structure: Prerequisites, Steps, Rollback, Troubleshooting'
+  - 'CLI reference tables documenting all options with defaults'
 
 # Metrics
 duration: 2min
@@ -114,10 +114,12 @@ None - no external service configuration required. The runbook documents environ
 - Plan 06-06: Complete (this runbook)
 
 **For Production Cutover:**
+
 - Migration scripts are ready for testing against staging environment
 - verify.ts needs completion before production migration for automated data integrity checks
 - Recommend completing 06-05 Task 2 before production cutover
 
 ---
-*Phase: 06-data-migration-scripts*
-*Completed: 2026-01-23*
+
+_Phase: 06-data-migration-scripts_
+_Completed: 2026-01-23_

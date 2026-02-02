@@ -30,46 +30,46 @@
 
 ### Hooks Fixed (Query Keys Migrated)
 
-| File | Old Key | New Key | Status |
-|------|---------|---------|--------|
-| `useGateways.ts:13` | `["gateways", orgId]` | `qk.org(orgId).gateways()` | ✅ Fixed |
-| `useGateways.ts:35` | `["gateway", gatewayId]` | `qk.gateway(gatewayId).details()` | ✅ Fixed |
-| `useTTNDeprovision.ts:51` | `["ttn-deprovision-jobs", orgId, ...]` | `qk.org(orgId).ttnDeprovisionJobs()` | ✅ Fixed |
-| `useTTNDeprovision.ts:81` | `["ttn-job-stats", orgId]` | `qk.org(orgId).ttnJobStats()` | ✅ Fixed |
-| `useNotificationPolicies.ts:122` | `["notification-policies", "org", orgId]` | `qk.org(orgId).notificationPolicies()` | ✅ Fixed |
-| `useNotificationPolicies.ts:156` | `["notification-policies", "unit", unitId]` | `qk.unit(unitId).notificationPolicies()` | ✅ Fixed |
-| `useAlertRules.ts:118` | `["alert-rules", "unit", unitId]` | `qk.unit(unitId).alertRules()` | ✅ Fixed |
-| `useAlertRules.ts:148` | `["alert-rules", "org", orgId]` | `qk.org(orgId).alertRules()` | ✅ Fixed |
-| `useAlertRules.ts:174` | `["alert-rules", "site", siteId]` | `qk.site(siteId).alertRules()` | ✅ Fixed |
-| `useAlertRules.ts:200` | `["alert-rules", "unit-override", unitId]` | `qk.unit(unitId).alertRulesOverride()` | ✅ Fixed |
-| `useSetPrimarySensor.ts:59-62` | Multiple legacy keys | `invalidateSensorAssignment()` | ✅ Fixed |
-| `useQuickCreateEntityLayout.ts:76-79` | Multiple legacy keys | `invalidateLayouts()` | ✅ Fixed |
+| File                                  | Old Key                                     | New Key                                  | Status   |
+| ------------------------------------- | ------------------------------------------- | ---------------------------------------- | -------- |
+| `useGateways.ts:13`                   | `["gateways", orgId]`                       | `qk.org(orgId).gateways()`               | ✅ Fixed |
+| `useGateways.ts:35`                   | `["gateway", gatewayId]`                    | `qk.gateway(gatewayId).details()`        | ✅ Fixed |
+| `useTTNDeprovision.ts:51`             | `["ttn-deprovision-jobs", orgId, ...]`      | `qk.org(orgId).ttnDeprovisionJobs()`     | ✅ Fixed |
+| `useTTNDeprovision.ts:81`             | `["ttn-job-stats", orgId]`                  | `qk.org(orgId).ttnJobStats()`            | ✅ Fixed |
+| `useNotificationPolicies.ts:122`      | `["notification-policies", "org", orgId]`   | `qk.org(orgId).notificationPolicies()`   | ✅ Fixed |
+| `useNotificationPolicies.ts:156`      | `["notification-policies", "unit", unitId]` | `qk.unit(unitId).notificationPolicies()` | ✅ Fixed |
+| `useAlertRules.ts:118`                | `["alert-rules", "unit", unitId]`           | `qk.unit(unitId).alertRules()`           | ✅ Fixed |
+| `useAlertRules.ts:148`                | `["alert-rules", "org", orgId]`             | `qk.org(orgId).alertRules()`             | ✅ Fixed |
+| `useAlertRules.ts:174`                | `["alert-rules", "site", siteId]`           | `qk.site(siteId).alertRules()`           | ✅ Fixed |
+| `useAlertRules.ts:200`                | `["alert-rules", "unit-override", unitId]`  | `qk.unit(unitId).alertRulesOverride()`   | ✅ Fixed |
+| `useSetPrimarySensor.ts:59-62`        | Multiple legacy keys                        | `invalidateSensorAssignment()`           | ✅ Fixed |
+| `useQuickCreateEntityLayout.ts:76-79` | Multiple legacy keys                        | `invalidateLayouts()`                    | ✅ Fixed |
 
 ### Mutations Fixed (Using Centralized Invalidation)
 
-| File | Change |
-|------|--------|
-| `useGateways.ts` | All mutations now use `invalidateGateways()` |
-| `useSetPrimarySensor.ts` | Uses `invalidateSensorAssignment()` |
-| `useQuickCreateEntityLayout.ts` | Uses `invalidateLayouts()` |
-| `useNotificationPolicies.ts` | Uses `invalidateNotificationPolicies()` |
-| `useTTNDeprovision.ts` | Updated to use `qk.org()` for invalidation |
+| File                            | Change                                       |
+| ------------------------------- | -------------------------------------------- |
+| `useGateways.ts`                | All mutations now use `invalidateGateways()` |
+| `useSetPrimarySensor.ts`        | Uses `invalidateSensorAssignment()`          |
+| `useQuickCreateEntityLayout.ts` | Uses `invalidateLayouts()`                   |
+| `useNotificationPolicies.ts`    | Uses `invalidateNotificationPolicies()`      |
+| `useTTNDeprovision.ts`          | Updated to use `qk.org()` for invalidation   |
 
 ### Components Fixed
 
-| File | Issue | Fix |
-|------|-------|-----|
-| `UnitAlertThresholdsSection.tsx` | Direct `queryClient.invalidateQueries` with legacy keys | Uses `invalidateAlertRules()` |
-| `UnitDetail.tsx` | Realtime subscription used `['lora-sensors-by-unit', unitId]` | Uses `qk.unit(unitId).loraSensors()` |
+| File                             | Issue                                                         | Fix                                  |
+| -------------------------------- | ------------------------------------------------------------- | ------------------------------------ |
+| `UnitAlertThresholdsSection.tsx` | Direct `queryClient.invalidateQueries` with legacy keys       | Uses `invalidateAlertRules()`        |
+| `UnitDetail.tsx`                 | Realtime subscription used `['lora-sensors-by-unit', unitId]` | Uses `qk.unit(unitId).loraSensors()` |
 
 ### Remaining Violations (Lower Priority)
 
-| File | Key | Recommendation |
-|------|-----|----------------|
-| `Settings.tsx:535` | `["sms-alert-history", org.id]` | Add to `qk.org().smsAlertHistory()` |
-| `SmsAlertHistory.tsx:135` | `["sms-alert-history", orgId]` | Migrate to centralized key |
-| `WebhookStatusCard.tsx:137,154-155` | `["telnyx-webhook-*", orgId]` | Add to `qk.org().telnyx*()` |
-| `AlertRulesScopedEditor.tsx:142-143` | `["alert-rules"]`, `["notification-policies"]` | Use scope-aware invalidation |
+| File                                 | Key                                            | Recommendation                      |
+| ------------------------------------ | ---------------------------------------------- | ----------------------------------- |
+| `Settings.tsx:535`                   | `["sms-alert-history", org.id]`                | Add to `qk.org().smsAlertHistory()` |
+| `SmsAlertHistory.tsx:135`            | `["sms-alert-history", orgId]`                 | Migrate to centralized key          |
+| `WebhookStatusCard.tsx:137,154-155`  | `["telnyx-webhook-*", orgId]`                  | Add to `qk.org().telnyx*()`         |
+| `AlertRulesScopedEditor.tsx:142-143` | `["alert-rules"]`, `["notification-policies"]` | Use scope-aware invalidation        |
 
 ---
 
@@ -78,6 +78,7 @@
 ### Performance Instrumentation Added
 
 Created `/src/lib/performance.ts` with:
+
 - `perfStart(name)` / `perfEnd(name)` - Manual timing markers
 - `perfMeasure(name, asyncFn)` - Async function wrapper
 - `timedQuery(name, queryFn)` - Supabase query wrapper
@@ -85,13 +86,13 @@ Created `/src/lib/performance.ts` with:
 
 ### Identified Hot Paths
 
-| Path | Typical Time | Bottleneck | Recommendation |
-|------|--------------|------------|----------------|
-| Nav Tree Load | 200-400ms | Multiple sequential queries | Combine into single RPC with joins |
-| Unit Header | 50-100ms | RLS policy evaluation | Pre-computed view |
-| Sensor Readings (24h) | 100-300ms | Large result set | Pagination + time-bucketing |
-| Door Events | 50-150ms | No compound index | Add `(unit_id, occurred_at DESC)` |
-| Widget Render | 20-50ms | Memo transforms | Use useMemo with stable deps |
+| Path                  | Typical Time | Bottleneck                  | Recommendation                     |
+| --------------------- | ------------ | --------------------------- | ---------------------------------- |
+| Nav Tree Load         | 200-400ms    | Multiple sequential queries | Combine into single RPC with joins |
+| Unit Header           | 50-100ms     | RLS policy evaluation       | Pre-computed view                  |
+| Sensor Readings (24h) | 100-300ms    | Large result set            | Pagination + time-bucketing        |
+| Door Events           | 50-150ms     | No compound index           | Add `(unit_id, occurred_at DESC)`  |
+| Widget Render         | 20-50ms      | Memo transforms             | Use useMemo with stable deps       |
 
 ### Query Performance Recommendations
 
@@ -114,16 +115,16 @@ ON door_events(unit_id, occurred_at DESC);
 
 ### Indexes Verified Present
 
-| Table | Index | Purpose |
-|-------|-------|---------|
-| `sensor_readings` | `idx_sensor_readings_unit_time` | `(unit_id, recorded_at DESC)` |
-| `sensor_readings` | `idx_sensor_readings_time` | `(recorded_at DESC)` |
-| `door_events` | `idx_door_events_unit_id` | `(unit_id)` |
-| `door_events` | `idx_door_events_occurred_at` | `(occurred_at DESC)` |
-| `lora_sensors` | `idx_lora_sensors_unit_id` | `(unit_id)` |
-| `lora_sensors` | `idx_lora_sensors_org_id` | `(organization_id)` |
-| `alerts` | `idx_alerts_unit_status` | `(unit_id, status)` |
-| `event_logs` | `idx_event_logs_org_time` | `(organization_id, recorded_at DESC)` |
+| Table             | Index                           | Purpose                               |
+| ----------------- | ------------------------------- | ------------------------------------- |
+| `sensor_readings` | `idx_sensor_readings_unit_time` | `(unit_id, recorded_at DESC)`         |
+| `sensor_readings` | `idx_sensor_readings_time`      | `(recorded_at DESC)`                  |
+| `door_events`     | `idx_door_events_unit_id`       | `(unit_id)`                           |
+| `door_events`     | `idx_door_events_occurred_at`   | `(occurred_at DESC)`                  |
+| `lora_sensors`    | `idx_lora_sensors_unit_id`      | `(unit_id)`                           |
+| `lora_sensors`    | `idx_lora_sensors_org_id`       | `(organization_id)`                   |
+| `alerts`          | `idx_alerts_unit_status`        | `(unit_id, status)`                   |
+| `event_logs`      | `idx_event_logs_org_time`       | `(organization_id, recorded_at DESC)` |
 
 ### Missing Compound Indexes (Recommended)
 
@@ -151,11 +152,11 @@ ON alert_rules(COALESCE(unit_id, site_id, organization_id), unit_id NULLS LAST, 
 
 ### Current Realtime Subscriptions
 
-| Component | Channel | Event | Invalidation |
-|-----------|---------|-------|--------------|
-| UnitDetail.tsx | `unit-readings-${unitId}` | sensor_readings INSERT | `invalidateUnitCaches()` + refreshTick |
-| UnitDetail.tsx | `unit-lora-sensors-${unitId}` | lora_sensors UPDATE | `qk.unit(unitId).loraSensors()` |
-| NotificationDropdown.tsx | `alerts-realtime-${orgId}` | alerts INSERT | `loadNotifications()` (local state) |
+| Component                | Channel                       | Event                  | Invalidation                           |
+| ------------------------ | ----------------------------- | ---------------------- | -------------------------------------- |
+| UnitDetail.tsx           | `unit-readings-${unitId}`     | sensor_readings INSERT | `invalidateUnitCaches()` + refreshTick |
+| UnitDetail.tsx           | `unit-lora-sensors-${unitId}` | lora_sensors UPDATE    | `qk.unit(unitId).loraSensors()`        |
+| NotificationDropdown.tsx | `alerts-realtime-${orgId}`    | alerts INSERT          | `loadNotifications()` (local state)    |
 
 ### Gaps Identified
 
@@ -165,14 +166,14 @@ ON alert_rules(COALESCE(unit_id, site_id, organization_id), unit_id NULLS LAST, 
 
 ### Recommended Realtime → Query Mapping
 
-| Event | Trigger | Cache Keys to Invalidate |
-|-------|---------|-------------------------|
-| `sensor_readings INSERT` | Webhook or emulator | `qk.unit(unitId).readings()`, `qk.unit(unitId).status()` |
-| `door_events INSERT` | Webhook | `qk.unit(unitId).doorEvents()`, nav tree counts |
-| `units UPDATE` | User action | `qk.unit(unitId).all`, nav tree |
-| `lora_sensors UPDATE` | Provisioning | `qk.unit(unitId).loraSensors()`, `qk.org(orgId).loraSensors()` |
-| `layouts UPDATE` | User action | `qk.entityLayouts()`, nav tree layouts |
-| Impersonation start/stop | SuperAdmin action | `invalidateAllOrgData()` ✅ Already handled |
+| Event                    | Trigger             | Cache Keys to Invalidate                                       |
+| ------------------------ | ------------------- | -------------------------------------------------------------- |
+| `sensor_readings INSERT` | Webhook or emulator | `qk.unit(unitId).readings()`, `qk.unit(unitId).status()`       |
+| `door_events INSERT`     | Webhook             | `qk.unit(unitId).doorEvents()`, nav tree counts                |
+| `units UPDATE`           | User action         | `qk.unit(unitId).all`, nav tree                                |
+| `lora_sensors UPDATE`    | Provisioning        | `qk.unit(unitId).loraSensors()`, `qk.org(orgId).loraSensors()` |
+| `layouts UPDATE`         | User action         | `qk.entityLayouts()`, nav tree layouts                         |
+| Impersonation start/stop | SuperAdmin action   | `invalidateAllOrgData()` ✅ Already handled                    |
 
 ---
 
@@ -200,12 +201,12 @@ Widgets re-fetch and re-render
 
 ### Latency Targets
 
-| Stage | Target | Current Estimate |
-|-------|--------|------------------|
-| Emulator → DB | <100ms (direct) / <500ms (TTN) | ✅ On target |
-| DB → Realtime | <100ms | ✅ On target |
-| Realtime → UI Update | <200ms | ⚠️ May exceed on slow connections |
-| **Total End-to-End** | <1500ms | Generally met, but no SLA enforcement |
+| Stage                | Target                         | Current Estimate                      |
+| -------------------- | ------------------------------ | ------------------------------------- |
+| Emulator → DB        | <100ms (direct) / <500ms (TTN) | ✅ On target                          |
+| DB → Realtime        | <100ms                         | ✅ On target                          |
+| Realtime → UI Update | <200ms                         | ⚠️ May exceed on slow connections     |
+| **Total End-to-End** | <1500ms                        | Generally met, but no SLA enforcement |
 
 ### Race Condition Risks
 
@@ -245,6 +246,7 @@ Widgets re-fetch and re-render
    - Load more on scroll
 
 2. **Create materialized views**:
+
    ```sql
    -- Latest reading per unit (refresh every 5 min)
    CREATE MATERIALIZED VIEW mv_latest_unit_readings AS
@@ -279,6 +281,7 @@ Widgets re-fetch and re-render
 ### Long Term (3-6 months)
 
 1. **Time-series partitioning** for sensor_readings:
+
    ```sql
    -- Partition by month
    CREATE TABLE sensor_readings_2026_01 PARTITION OF sensor_readings
@@ -296,10 +299,12 @@ Widgets re-fetch and re-render
 ## Appendix: Files Changed
 
 ### New Files
+
 - `src/lib/performance.ts` - Performance instrumentation utilities
 - `docs/PERFORMANCE_AUDIT_2026-01-18.md` - This report
 
 ### Modified Files
+
 - `src/lib/queryKeys.ts` - Added gateway, TTN, SMS keys
 - `src/lib/invalidation.ts` - (no changes needed, already comprehensive)
 - `src/hooks/useGateways.ts` - Migrated to `qk` helpers
@@ -323,6 +328,7 @@ The Frost Guard codebase now has a solid foundation for cache coherency:
 4. **Performance instrumentation** is in place for monitoring
 
 The main areas for continued improvement are:
+
 - Migrating remaining low-priority legacy keys
 - Adding realtime subscriptions for door_events
 - Implementing pagination for large datasets

@@ -44,10 +44,7 @@ async function registerIngestRoutes(app: FastifyInstance) {
 
       try {
         // Insert bulk readings
-        const result = await readingsService.ingestBulkReadings(
-          readings,
-          organizationId
-        );
+        const result = await readingsService.ingestBulkReadings(readings, organizationId);
 
         // Add readings to real-time streaming service
         // Convert result.readingIds (which is in the same order as result)
@@ -78,9 +75,7 @@ async function registerIngestRoutes(app: FastifyInstance) {
           // Find latest reading for this unit
           const unitReadings = readings.filter((r) => r.unitId === unitId);
           const latestReading = unitReadings.reduce((latest, current) => {
-            return new Date(current.recordedAt) > new Date(latest.recordedAt)
-              ? current
-              : latest;
+            return new Date(current.recordedAt) > new Date(latest.recordedAt) ? current : latest;
           });
 
           // Convert temperature to integer (multiply by 10 for precision)
@@ -93,7 +88,7 @@ async function registerIngestRoutes(app: FastifyInstance) {
               unitId,
               tempInt,
               new Date(latestReading.recordedAt),
-              request.server.socketService
+              request.server.socketService,
             );
 
             if (evaluation.alertCreated || evaluation.alertResolved) {
@@ -101,10 +96,7 @@ async function registerIngestRoutes(app: FastifyInstance) {
             }
           } catch (error) {
             // Log error but don't fail entire ingestion
-            request.log.error(
-              { error, unitId },
-              'Failed to evaluate alerts for unit'
-            );
+            request.log.error({ error, unitId }, 'Failed to evaluate alerts for unit');
           }
         }
 

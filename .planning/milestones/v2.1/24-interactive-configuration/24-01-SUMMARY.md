@@ -27,13 +27,13 @@ key-files:
   modified: []
 
 key-decisions:
-  - "RFC 1123 compliant FQDN regex for domain validation"
-  - "MAX_INPUT_ATTEMPTS=5 default to prevent infinite input loops"
-  - "read -rsp for hidden secret key input (no terminal echo)"
+  - 'RFC 1123 compliant FQDN regex for domain validation'
+  - 'MAX_INPUT_ATTEMPTS=5 default to prevent infinite input loops'
+  - 'read -rsp for hidden secret key input (no terminal echo)'
 
 patterns-established:
-  - "Input validation: separate validate_* functions from prompt_* functions"
-  - "Prompt retry pattern: loop with attempt counter and clear error messages"
+  - 'Input validation: separate validate_* functions from prompt_* functions'
+  - 'Prompt retry pattern: loop with attempt counter and clear error messages'
 
 # Metrics
 duration: 2min
@@ -104,5 +104,6 @@ None - no external service configuration required.
 - Self-tests verify all functions work correctly
 
 ---
-*Phase: 24-interactive-configuration*
-*Completed: 2026-01-25*
+
+_Phase: 24-interactive-configuration_
+_Completed: 2026-01-25_

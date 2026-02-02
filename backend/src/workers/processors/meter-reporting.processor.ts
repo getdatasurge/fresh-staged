@@ -24,9 +24,7 @@ import { getStripeMeterService } from '../../services/stripe-meter.service.js';
  * @param job - BullMQ job containing MeterReportJobData
  * @throws Error if meter reporting fails (triggers BullMQ retry)
  */
-export async function processMeterReport(
-  job: Job<MeterReportJobData>
-): Promise<void> {
+export async function processMeterReport(job: Job<MeterReportJobData>): Promise<void> {
   const { organizationId, eventName, value, timestamp } = job.data;
 
   // Handle scheduler job - triggers batch reporting for all billable orgs
@@ -34,19 +32,18 @@ export async function processMeterReport(
   if (job.name === JobNames.SENSOR_COUNT_SCHEDULER) {
     console.log('[MeterProcessor] Processing scheduled sensor count reporting');
     // Import dynamically to avoid circular dependency
-    const { getSensorCountScheduler } = await import(
-      '../../services/sensor-count-scheduler.service.js'
-    );
+    const { getSensorCountScheduler } =
+      await import('../../services/sensor-count-scheduler.service.js');
     const scheduler = getSensorCountScheduler();
     const result = await scheduler.reportAllSensorCounts();
     console.log(
-      `[MeterProcessor] Scheduler completed: ${result.reported} reported, ${result.errors} errors`
+      `[MeterProcessor] Scheduler completed: ${result.reported} reported, ${result.errors} errors`,
     );
     return;
   }
 
   console.log(
-    `[MeterProcessor] Processing ${eventName} job for org ${organizationId}, value: ${value}`
+    `[MeterProcessor] Processing ${eventName} job for org ${organizationId}, value: ${value}`,
   );
 
   const meterService = getStripeMeterService();
@@ -58,7 +55,7 @@ export async function processMeterReport(
         result = await meterService.reportActiveSensorsWithTimestamp(
           organizationId,
           value,
-          timestamp
+          timestamp,
         );
       } else {
         result = await meterService.reportActiveSensors(organizationId, value);
@@ -78,9 +75,7 @@ export async function processMeterReport(
     throw new Error(`Meter reporting failed: ${result.error}`);
   }
 
-  console.log(
-    `[MeterProcessor] Successfully reported ${eventName} for org ${organizationId}`
-  );
+  console.log(`[MeterProcessor] Successfully reported ${eventName} for org ${organizationId}`);
 }
 
 /**

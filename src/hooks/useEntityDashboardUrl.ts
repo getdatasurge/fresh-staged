@@ -1,5 +1,5 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useCallback } from "react";
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useCallback } from 'react';
 
 export type EntityType = 'unit' | 'site';
 
@@ -25,7 +25,7 @@ export function useEntityDashboardUrl() {
       const base = type === 'site' ? `/sites/${id}` : `/units/${id}`;
       navigate(layout === 'default' ? base : `${base}/layout/${layout}`);
     },
-    [navigate]
+    [navigate],
   );
 
   /**
@@ -37,19 +37,16 @@ export function useEntityDashboardUrl() {
       const base = entityType === 'site' ? `/sites/${entityId}` : `/units/${entityId}`;
       navigate(layout === 'default' ? base : `${base}/layout/${layout}`, { replace: true });
     },
-    [entityType, entityId, navigate]
+    [entityType, entityId, navigate],
   );
 
   /**
    * Build URL for an entity layout (for NavLink href)
    */
-  const buildLayoutUrl = useCallback(
-    (type: EntityType, id: string, layout: string = 'default') => {
-      const base = type === 'site' ? `/sites/${id}` : `/units/${id}`;
-      return layout === 'default' ? base : `${base}/layout/${layout}`;
-    },
-    []
-  );
+  const buildLayoutUrl = useCallback((type: EntityType, id: string, layout: string = 'default') => {
+    const base = type === 'site' ? `/sites/${id}` : `/units/${id}`;
+    return layout === 'default' ? base : `${base}/layout/${layout}`;
+  }, []);
 
   /**
    * Check if a given entity/layout combo is currently active
@@ -60,7 +57,7 @@ export function useEntityDashboardUrl() {
       if (entityId !== id) return false;
       return layoutKey === layout;
     },
-    [entityType, entityId, layoutKey]
+    [entityType, entityId, layoutKey],
   );
 
   return {

@@ -68,7 +68,13 @@ export const WebhookResponseSchema = z.object({
 // --- Subscription Schemas ---
 
 // Subscription status enum
-export const SubscriptionStatusSchema = z.enum(['trial', 'active', 'past_due', 'canceled', 'paused']);
+export const SubscriptionStatusSchema = z.enum([
+  'trial',
+  'active',
+  'past_due',
+  'canceled',
+  'paused',
+]);
 
 // Subscription plan enum (includes enterprise for display, but not for checkout)
 export const SubscriptionPlanSchema = z.enum(['starter', 'pro', 'haccp', 'enterprise']);

@@ -56,7 +56,7 @@ export default async function telnyxWebhookRoutes(app: FastifyInstance) {
             messageId: event.data.payload.id,
             updated: result.updated,
           },
-          'Telnyx webhook processed'
+          'Telnyx webhook processed',
         );
 
         return reply.code(200).send({ received: true });
@@ -64,7 +64,7 @@ export default async function telnyxWebhookRoutes(app: FastifyInstance) {
         if (error instanceof telnyxWebhookService.TelnyxWebhookError) {
           request.log.warn(
             { error: error.message, eventType: event.data.event_type },
-            'Telnyx webhook validation error'
+            'Telnyx webhook validation error',
           );
           return reply.code(400).send({
             error: {
@@ -77,7 +77,7 @@ export default async function telnyxWebhookRoutes(app: FastifyInstance) {
         // Log and rethrow unexpected errors
         request.log.error(
           { error: error instanceof Error ? error.message : String(error) },
-          'Telnyx webhook processing error'
+          'Telnyx webhook processing error',
         );
         throw error;
       }

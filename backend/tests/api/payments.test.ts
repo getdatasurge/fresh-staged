@@ -132,7 +132,7 @@ describe('Payments API', () => {
       expect(mockCreateCheckoutSession).toHaveBeenCalledWith(
         TEST_ORG_ID,
         TEST_USER_ID,
-        expect.objectContaining({ plan: 'starter' })
+        expect.objectContaining({ plan: 'starter' }),
       );
     });
 
@@ -152,7 +152,7 @@ describe('Payments API', () => {
       expect(mockCreateCheckoutSession).toHaveBeenCalledWith(
         TEST_ORG_ID,
         TEST_USER_ID,
-        expect.objectContaining({ plan: 'pro' })
+        expect.objectContaining({ plan: 'pro' }),
       );
     });
 
@@ -172,7 +172,7 @@ describe('Payments API', () => {
       expect(mockCreateCheckoutSession).toHaveBeenCalledWith(
         TEST_ORG_ID,
         TEST_USER_ID,
-        expect.objectContaining({ plan: 'haccp' })
+        expect.objectContaining({ plan: 'haccp' }),
       );
     });
 
@@ -200,7 +200,7 @@ describe('Payments API', () => {
           plan: 'pro',
           successUrl: 'https://example.com/success',
           cancelUrl: 'https://example.com/cancel',
-        })
+        }),
       );
     });
 
@@ -313,7 +313,7 @@ describe('Payments API', () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('viewer');
       mockCreateCheckoutSession.mockRejectedValue(
-        new checkoutService.StripeConfigError('STRIPE_SECRET_KEY environment variable is not set')
+        new checkoutService.StripeConfigError('STRIPE_SECRET_KEY environment variable is not set'),
       );
 
       const response = await app.inject({
@@ -331,7 +331,7 @@ describe('Payments API', () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('viewer');
       mockCreateCheckoutSession.mockRejectedValue(
-        new checkoutService.CheckoutError('Organization not found')
+        new checkoutService.CheckoutError('Organization not found'),
       );
 
       const response = await app.inject({
@@ -349,7 +349,7 @@ describe('Payments API', () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('viewer');
       mockCreateCheckoutSession.mockRejectedValue(
-        new checkoutService.CheckoutError('Failed to create checkout session URL')
+        new checkoutService.CheckoutError('Failed to create checkout session URL'),
       );
 
       const response = await app.inject({
@@ -433,7 +433,7 @@ describe('Payments API', () => {
       expect(mockCreateCheckoutSession).toHaveBeenCalledWith(
         TEST_ORG_ID,
         'user_specific_123',
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -494,7 +494,7 @@ describe('Payments API', () => {
         TEST_ORG_ID,
         expect.objectContaining({
           returnUrl: 'https://example.com/billing',
-        })
+        }),
       );
     });
 
@@ -543,7 +543,7 @@ describe('Payments API', () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('viewer');
       mockCreatePortalSession.mockRejectedValue(
-        new checkoutService.PortalError('No subscription found for organization')
+        new checkoutService.PortalError('No subscription found for organization'),
       );
 
       const response = await app.inject({
@@ -561,7 +561,9 @@ describe('Payments API', () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('viewer');
       mockCreatePortalSession.mockRejectedValue(
-        new checkoutService.PortalError('No Stripe customer found for organization. Please complete a checkout first.')
+        new checkoutService.PortalError(
+          'No Stripe customer found for organization. Please complete a checkout first.',
+        ),
       );
 
       const response = await app.inject({
@@ -579,7 +581,7 @@ describe('Payments API', () => {
       mockValidAuth();
       mockGetRole.mockResolvedValue('viewer');
       mockCreatePortalSession.mockRejectedValue(
-        new checkoutService.StripeConfigError('STRIPE_SECRET_KEY environment variable is not set')
+        new checkoutService.StripeConfigError('STRIPE_SECRET_KEY environment variable is not set'),
       );
 
       const response = await app.inject({

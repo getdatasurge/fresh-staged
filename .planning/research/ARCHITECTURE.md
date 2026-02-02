@@ -62,13 +62,13 @@ This research focuses on how to structure automated deployment scripts for v2.1'
 
 ### Component Responsibilities
 
-| Component | Responsibility | Typical Implementation |
-|-----------|----------------|------------------------|
-| Entry Script | Single entry point, argument parsing, main flow control | `deploy-one-click.sh` with minimal logic, calls phases |
-| Phase Modules | Self-contained deployment phases with clear boundaries | Sourced libraries or separate scripts per phase |
-| Function Libraries | Reusable functions shared across phases | `scripts/lib/*.sh` sourced by phase modules |
-| State Manager | Track deployment progress, enable resume | `.deployment-state` file with checkpoint markers |
-| Integration Shim | Bridge to existing v1.1 scripts | Thin wrappers calling `deploy.sh`, `rollback.sh` |
+| Component          | Responsibility                                          | Typical Implementation                                 |
+| ------------------ | ------------------------------------------------------- | ------------------------------------------------------ |
+| Entry Script       | Single entry point, argument parsing, main flow control | `deploy-one-click.sh` with minimal logic, calls phases |
+| Phase Modules      | Self-contained deployment phases with clear boundaries  | Sourced libraries or separate scripts per phase        |
+| Function Libraries | Reusable functions shared across phases                 | `scripts/lib/*.sh` sourced by phase modules            |
+| State Manager      | Track deployment progress, enable resume                | `.deployment-state` file with checkpoint markers       |
+| Integration Shim   | Bridge to existing v1.1 scripts                         | Thin wrappers calling `deploy.sh`, `rollback.sh`       |
 
 ---
 
@@ -122,10 +122,12 @@ scripts/
 **What:** Break deployment into discrete phases with clear entry/exit contracts
 **When to use:** Complex deployments with multiple distinct stages
 **Trade-offs:**
+
 - Pro: Phases can be tested independently, resumed after failure
 - Con: More files to manage, complexity in inter-phase communication
 
 **Example:**
+
 ```bash
 #!/bin/bash
 # deploy-one-click.sh
@@ -176,10 +178,12 @@ main "$@"
 **What:** Track deployment progress in a state file to enable resume-on-failure
 **When to use:** Long-running deployments where re-running from scratch is expensive
 **Trade-offs:**
+
 - Pro: Can resume after network failures, user interrupts
 - Con: State file can become stale, need cleanup mechanism
 
 **Example:**
+
 ```bash
 # lib/state.sh
 
@@ -212,10 +216,12 @@ get_last_checkpoint() {
 **What:** Different error types trigger different recovery strategies
 **When to use:** Production deployments where some failures are recoverable
 **Trade-offs:**
+
 - Pro: Intelligent recovery, reduces operator intervention
 - Con: More complex logic, harder to reason about failure modes
 
 **Example:**
+
 ```bash
 # Error categories and responses
 handle_error() {
@@ -255,10 +261,12 @@ handle_error() {
 **What:** Multi-stage verification from fast checks to comprehensive validation
 **When to use:** Production deployments requiring confidence before declaring success
 **Trade-offs:**
+
 - Pro: Catches issues at appropriate level of granularity
 - Con: Adds deployment time, may need to balance thoroughness vs speed
 
 **Example:**
+
 ```bash
 # Verification pipeline (fast to slow)
 verify_deployment() {
@@ -381,16 +389,16 @@ Step  | Categorize Error  |
 
 ### Integration with Existing v1.1 Architecture
 
-| Component | Integration Pattern | Notes |
-|-----------|---------------------|-------|
-| `docker-compose.yml` | Use as base layer | No modifications needed |
-| `compose.production.yaml` | Apply as overlay | Contains resource limits, health checks |
-| `compose.selfhosted.yaml` | Apply for self-hosted | Localhost bindings, Infisical secrets |
-| `deploy.sh` | Call from one-click | Reuse for image builds, migrations |
-| `rollback.sh` | Call from recovery | Enhance with state awareness |
-| `health-check.sh` | Call from verify phase | Reuse pre-flight checks |
-| `scripts/test/e2e-*.sh` | Call from verify phase | Optional comprehensive validation |
-| `scripts/deploy/notify.sh` | Call at completion/failure | Already supports Slack webhooks |
+| Component                  | Integration Pattern        | Notes                                   |
+| -------------------------- | -------------------------- | --------------------------------------- |
+| `docker-compose.yml`       | Use as base layer          | No modifications needed                 |
+| `compose.production.yaml`  | Apply as overlay           | Contains resource limits, health checks |
+| `compose.selfhosted.yaml`  | Apply for self-hosted      | Localhost bindings, Infisical secrets   |
+| `deploy.sh`                | Call from one-click        | Reuse for image builds, migrations      |
+| `rollback.sh`              | Call from recovery         | Enhance with state awareness            |
+| `health-check.sh`          | Call from verify phase     | Reuse pre-flight checks                 |
+| `scripts/test/e2e-*.sh`    | Call from verify phase     | Optional comprehensive validation       |
+| `scripts/deploy/notify.sh` | Call at completion/failure | Already supports Slack webhooks         |
 
 ### Integration Diagram
 
@@ -424,23 +432,23 @@ deploy-one-click.sh
 
 ### External Service Integration
 
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| Let's Encrypt (via Caddy) | Automatic via ACME | DNS must resolve before deployment |
-| Stack Auth | API key in secrets | Project ID and keys required during config |
-| Stripe | API key in .env | Optional, graceful degradation if not set |
-| Telnyx | API key in .env | Optional, SMS disabled if not set |
-| Slack/Discord | Webhook URL | For deployment notifications |
+| Service                   | Integration Pattern | Notes                                      |
+| ------------------------- | ------------------- | ------------------------------------------ |
+| Let's Encrypt (via Caddy) | Automatic via ACME  | DNS must resolve before deployment         |
+| Stack Auth                | API key in secrets  | Project ID and keys required during config |
+| Stripe                    | API key in .env     | Optional, graceful degradation if not set  |
+| Telnyx                    | API key in .env     | Optional, SMS disabled if not set          |
+| Slack/Discord             | Webhook URL         | For deployment notifications               |
 
 ---
 
 ## Scaling Considerations
 
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| Single server | Current architecture sufficient |
-| 2-3 servers | Run script on each, coordinate manually |
-| 10+ servers | Switch to Ansible playbooks calling same logic |
+| Scale         | Architecture Adjustments                       |
+| ------------- | ---------------------------------------------- |
+| Single server | Current architecture sufficient                |
+| 2-3 servers   | Run script on each, coordinate manually        |
+| 10+ servers   | Switch to Ansible playbooks calling same logic |
 
 ### Scaling Priorities
 
@@ -494,35 +502,42 @@ deploy-one-click.sh
 Based on dependencies and risk, implement in this order:
 
 ### Phase 1: Foundation (Low Risk)
+
 1. **lib/common.sh** - Colors, logging, output helpers (extract from existing scripts)
 2. **lib/state.sh** - Checkpoint/state management (new)
 3. **Entry script skeleton** - Main flow with phase calls
 
 ### Phase 2: Pre-Flight (Medium Risk)
+
 4. **lib/system.sh** - OS detection, package installation (extract from deploy-selfhosted.sh)
 5. **phases/01-preflight.sh** - System requirements check
 6. **phases/02-install.sh** - Docker, firewall, fail2ban (extract from deploy-selfhosted.sh)
 
 ### Phase 3: Configuration (Medium Risk)
+
 7. **lib/config.sh** - Interactive prompting with validation
 8. **lib/secrets.sh** - Secret generation, file creation (extract from deploy-selfhosted.sh)
 9. **phases/03-configure.sh** - Full configuration flow
 
 ### Phase 4: Deployment (Higher Risk)
+
 10. **lib/docker.sh** - Docker Compose orchestration helpers
 11. **phases/04-deploy.sh** - Deploy with existing scripts integration
 
 ### Phase 5: Verification (Medium Risk)
+
 12. **lib/health.sh** - Health check functions
 13. **lib/verification.sh** - SSL, browser, E2E wrappers
 14. **phases/05-verify.sh** - Progressive verification pipeline
 
 ### Phase 6: Recovery (Higher Risk)
+
 15. **lib/rollback.sh** - Rollback and recovery functions
 16. **Error categorization** - Integrate with all phases
 17. **State-aware resume** - Resume from last checkpoint
 
 ### Phase 7: Polish
+
 18. **Documentation** - Inline help, troubleshooting guide
 19. **Testing** - Dry-run mode, local VM testing
 20. **Notifications** - Integration with existing notify.sh
@@ -531,19 +546,20 @@ Based on dependencies and risk, implement in this order:
 
 ## Confidence Assessment
 
-| Area | Confidence | Reason |
-|------|------------|--------|
-| Script Organization | HIGH | Existing codebase already uses modular pattern in lib/ |
-| Integration Points | HIGH | Analyzed all existing scripts and compose files |
-| Error Recovery | MEDIUM | General patterns clear, specific error codes need discovery |
-| Verification Pipeline | HIGH | E2E tests already exist, health endpoints documented |
-| Build Order | HIGH | Based on logical dependencies and risk assessment |
+| Area                  | Confidence | Reason                                                      |
+| --------------------- | ---------- | ----------------------------------------------------------- |
+| Script Organization   | HIGH       | Existing codebase already uses modular pattern in lib/      |
+| Integration Points    | HIGH       | Analyzed all existing scripts and compose files             |
+| Error Recovery        | MEDIUM     | General patterns clear, specific error codes need discovery |
+| Verification Pipeline | HIGH       | E2E tests already exist, health endpoints documented        |
+| Build Order           | HIGH       | Based on logical dependencies and risk assessment           |
 
 ---
 
 ## Sources
 
 **Industry Best Practices:**
+
 - [Building a Production-Grade Automated Deployment Script - DEV Community](https://dev.to/ursulaonyi/building-a-production-grade-automated-deployment-script-3fgj)
 - [Best practices we need to follow in Bash scripting in 2025 - Medium](https://medium.com/@prasanna.a1.usage/best-practices-we-need-to-follow-in-bash-scripting-in-2025-cebcdf254768)
 - [Managing Rollbacks in Continuous Deployment - Linux Bash](https://www.linuxbash.sh/post/managing-rollbacks-in-continuous-deployment)
@@ -551,19 +567,23 @@ Based on dependencies and risk, implement in this order:
 - [Handling Rollback Strategies for Failed Product Deployments - Agile Seekers](https://agileseekers.com/blog/handling-rollback-strategies-for-failed-product-deployments)
 
 **Docker Compose in Production:**
+
 - [Use Compose in production - Docker Docs](https://docs.docker.com/compose/production/)
 - [Docker Best Practices 2026 - Thinksys](https://thinksys.com/devops/docker-best-practices/)
 - [Best Practices Around Production Ready Web Apps with Docker Compose - Nick Janetakis](https://nickjanetakis.com/blog/best-practices-around-production-ready-web-apps-with-docker-compose)
 
 **Error Handling:**
+
 - [How to Handle Errors in Bash Scripts in 2025 - DEV Community](https://dev.to/rociogarciavf/how-to-handle-errors-in-bash-scripts-in-2025-3bo)
 - [Bash Coding Standard - GitHub](https://github.com/Open-Technology-Foundation/bash-coding-standard)
 
 **E2E Testing:**
+
 - [End-to-End Testing for Microservices: A 2025 Guide - Bunnyshell](https://www.bunnyshell.com/blog/end-to-end-testing-for-microservices-a-2025-guide/)
 - [Automation Pipeline and CI/CD: Testing Best Practices - BrowserStack](https://www.browserstack.com/guide/automation-pipeline)
 
 **Existing Codebase Analysis:**
+
 - `/home/skynet/freshtrack-pro-local/fresh-staged/scripts/deploy.sh` - Current deployment orchestration
 - `/home/skynet/freshtrack-pro-local/fresh-staged/scripts/deploy-selfhosted.sh` - Self-hosted deployment with installation
 - `/home/skynet/freshtrack-pro-local/fresh-staged/scripts/rollback.sh` - Rollback procedures
@@ -572,5 +592,6 @@ Based on dependencies and risk, implement in this order:
 - `/home/skynet/freshtrack-pro-local/fresh-staged/scripts/test/e2e-sensor-pipeline.sh` - E2E verification
 
 ---
-*Architecture research for: Automated Deployment Scripts (v2.1)*
-*Researched: 2026-01-25*
+
+_Architecture research for: Automated Deployment Scripts (v2.1)_
+_Researched: 2026-01-25_

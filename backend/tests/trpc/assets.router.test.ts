@@ -157,7 +157,7 @@ describe('Assets tRPC Router', () => {
           mimeType: 'application/pdf',
           assetType: 'site',
           entityId: entityId,
-        })
+        }),
       ).rejects.toThrow(TRPCError);
 
       await expect(
@@ -167,7 +167,7 @@ describe('Assets tRPC Router', () => {
           mimeType: 'application/pdf',
           assetType: 'site',
           entityId: entityId,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'BAD_REQUEST',
         message: 'Invalid file type: application/pdf',
@@ -190,7 +190,7 @@ describe('Assets tRPC Router', () => {
           mimeType: 'image/jpeg',
           assetType: 'site',
           entityId: entityId,
-        })
+        }),
       ).rejects.toThrow(TRPCError);
 
       await expect(
@@ -200,7 +200,7 @@ describe('Assets tRPC Router', () => {
           mimeType: 'image/jpeg',
           assetType: 'site',
           entityId: entityId,
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Storage service not configured',
@@ -217,7 +217,7 @@ describe('Assets tRPC Router', () => {
           filename: 'photo.jpg',
           mimeType: 'image/jpeg',
           assetType: 'site',
-        })
+        }),
       ).rejects.toThrow(TRPCError);
 
       await expect(
@@ -226,7 +226,7 @@ describe('Assets tRPC Router', () => {
           filename: 'photo.jpg',
           mimeType: 'image/jpeg',
           assetType: 'site',
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'UNAUTHORIZED',
       });
@@ -244,7 +244,7 @@ describe('Assets tRPC Router', () => {
           filename: 'photo.jpg',
           mimeType: 'image/jpeg',
           assetType: 'site',
-        })
+        }),
       ).rejects.toThrow(TRPCError);
 
       await expect(
@@ -253,7 +253,7 @@ describe('Assets tRPC Router', () => {
           filename: 'photo.jpg',
           mimeType: 'image/jpeg',
           assetType: 'site',
-        })
+        }),
       ).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });

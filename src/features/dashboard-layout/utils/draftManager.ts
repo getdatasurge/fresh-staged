@@ -1,12 +1,12 @@
 /**
  * Draft Manager Utility
- * 
+ *
  * Manages local draft persistence in localStorage for dashboard layouts.
  * Drafts persist across browser sessions with a 7-day TTL.
  */
 
-import type { LayoutConfig, TimelineState, WidgetPreferences } from "../types";
-import { LAYOUT_CONFIG_VERSION } from "../types";
+import type { LayoutConfig, TimelineState, WidgetPreferences } from '../types';
+import { LAYOUT_CONFIG_VERSION } from '../types';
 
 // ============================================================================
 // Types
@@ -15,7 +15,7 @@ import { LAYOUT_CONFIG_VERSION } from "../types";
 export interface DraftMetadata {
   version: 1;
   schemaVersion: number;
-  entityType: "site" | "unit";
+  entityType: 'site' | 'unit';
   entityId: string;
   layoutId: string;
   userId: string;
@@ -34,7 +34,7 @@ export interface StoredDraft {
 }
 
 export interface DraftKeyParams {
-  entityType: "site" | "unit";
+  entityType: 'site' | 'unit';
   entityId: string;
   layoutId: string;
   userId: string;
@@ -44,7 +44,7 @@ export interface DraftKeyParams {
 // Constants
 // ============================================================================
 
-const DRAFT_KEY_PREFIX = "frostguard:layoutDraft:v1";
+const DRAFT_KEY_PREFIX = 'frostguard:layoutDraft:v1';
 const DRAFT_TTL_DAYS = 7;
 const DRAFT_CURRENT_VERSION = 1;
 
@@ -80,7 +80,7 @@ export function saveDraft(params: DraftKeyParams, data: DraftData): void {
     };
     localStorage.setItem(key, JSON.stringify(draft));
   } catch (error) {
-    console.warn("[DraftManager] Failed to save draft:", error);
+    console.warn('[DraftManager] Failed to save draft:', error);
   }
 }
 
@@ -98,14 +98,14 @@ export function loadDraft(params: DraftKeyParams): StoredDraft | null {
 
     // Version check
     if (draft.meta.version !== DRAFT_CURRENT_VERSION) {
-      console.warn("[DraftManager] Draft version mismatch, clearing");
+      console.warn('[DraftManager] Draft version mismatch, clearing');
       clearDraft(params);
       return null;
     }
 
     // Schema version check
     if (draft.meta.schemaVersion !== LAYOUT_CONFIG_VERSION) {
-      console.warn("[DraftManager] Schema version mismatch, clearing draft");
+      console.warn('[DraftManager] Schema version mismatch, clearing draft');
       clearDraft(params);
       return null;
     }
@@ -113,14 +113,14 @@ export function loadDraft(params: DraftKeyParams): StoredDraft | null {
     // TTL check
     const age = getDraftAgeDays(draft.meta.updatedAt);
     if (age !== null && age > DRAFT_TTL_DAYS) {
-      console.info("[DraftManager] Draft expired, clearing");
+      console.info('[DraftManager] Draft expired, clearing');
       clearDraft(params);
       return null;
     }
 
     return draft;
   } catch (error) {
-    console.warn("[DraftManager] Failed to load draft:", error);
+    console.warn('[DraftManager] Failed to load draft:', error);
     return null;
   }
 }
@@ -133,7 +133,7 @@ export function clearDraft(params: DraftKeyParams): void {
     const key = getDraftKey(params);
     localStorage.removeItem(key);
   } catch (error) {
-    console.warn("[DraftManager] Failed to clear draft:", error);
+    console.warn('[DraftManager] Failed to clear draft:', error);
   }
 }
 
@@ -163,10 +163,10 @@ export function getDraftAgeDays(updatedAt: string): number | null {
  */
 export function isDraftNewerThanServer(
   draft: StoredDraft,
-  serverUpdatedAt: string | null
+  serverUpdatedAt: string | null,
 ): boolean {
   if (!serverUpdatedAt) return true;
-  
+
   try {
     const draftDate = new Date(draft.meta.updatedAt);
     const serverDate = new Date(serverUpdatedAt);
@@ -183,18 +183,18 @@ export function isDraftNewerThanServer(
 export function cleanupExpiredDrafts(): void {
   try {
     const keysToRemove: string[] = [];
-    
+
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (!key?.startsWith(DRAFT_KEY_PREFIX)) continue;
-      
+
       try {
         const stored = localStorage.getItem(key);
         if (!stored) continue;
-        
+
         const draft = JSON.parse(stored) as StoredDraft;
         const age = getDraftAgeDays(draft.meta.updatedAt);
-        
+
         if (age !== null && age > DRAFT_TTL_DAYS) {
           keysToRemove.push(key);
         }
@@ -203,27 +203,24 @@ export function cleanupExpiredDrafts(): void {
         keysToRemove.push(key);
       }
     }
-    
+
     keysToRemove.forEach((key) => localStorage.removeItem(key));
-    
+
     if (keysToRemove.length > 0) {
       console.info(`[DraftManager] Cleaned up ${keysToRemove.length} expired drafts`);
     }
   } catch (error) {
-    console.warn("[DraftManager] Failed to cleanup drafts:", error);
+    console.warn('[DraftManager] Failed to cleanup drafts:', error);
   }
 }
 
 /**
  * Get all draft keys for a specific entity (for debugging/listing).
  */
-export function getDraftKeysForEntity(
-  entityType: "site" | "unit",
-  entityId: string
-): string[] {
+export function getDraftKeysForEntity(entityType: 'site' | 'unit', entityId: string): string[] {
   const keys: string[] = [];
   const prefix = `${DRAFT_KEY_PREFIX}:${entityType}:${entityId}:`;
-  
+
   try {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -234,7 +231,7 @@ export function getDraftKeysForEntity(
   } catch {
     // Ignore errors
   }
-  
+
   return keys;
 }
 

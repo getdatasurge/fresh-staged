@@ -17,12 +17,12 @@ affects: [19-02, 19-03, 19-04, 19-05, 19-06, API migration phases]
 
 # Tech tracking
 tech-stack:
-  added: ["@trpc/server@11.8.1", "@trpc/server/adapters/fastify"]
+  added: ['@trpc/server@11.8.1', '@trpc/server/adapters/fastify']
   patterns:
-    - "tRPC router factory pattern"
-    - "Middleware-based authentication for tRPC"
-    - "Organization-scoped procedure middleware"
-    - "Context creation from Fastify request"
+    - 'tRPC router factory pattern'
+    - 'Middleware-based authentication for tRPC'
+    - 'Organization-scoped procedure middleware'
+    - 'Context creation from Fastify request'
 
 key-files:
   created:
@@ -36,16 +36,16 @@ key-files:
     - backend/package.json
 
 key-decisions:
-  - "Use tRPC v11 with Fastify adapter for type-safe API layer"
-  - "Reuse existing JWT verification from Stack Auth integration"
-  - "Create protectedProcedure and orgProcedure middleware patterns"
-  - "Support both x-stack-access-token and Authorization Bearer headers"
+  - 'Use tRPC v11 with Fastify adapter for type-safe API layer'
+  - 'Reuse existing JWT verification from Stack Auth integration'
+  - 'Create protectedProcedure and orgProcedure middleware patterns'
+  - 'Support both x-stack-access-token and Authorization Bearer headers'
 
 patterns-established:
-  - "Pattern 1: tRPC context creation extracts JWT from headers (same as REST middleware)"
-  - "Pattern 2: protectedProcedure narrows user type to non-null AuthUser"
-  - "Pattern 3: orgProcedure validates organization membership and attaches context"
-  - "Pattern 4: Empty app router pattern - domain routers added in subsequent plans"
+  - 'Pattern 1: tRPC context creation extracts JWT from headers (same as REST middleware)'
+  - 'Pattern 2: protectedProcedure narrows user type to non-null AuthUser'
+  - 'Pattern 3: orgProcedure validates organization membership and attaches context'
+  - 'Pattern 4: Empty app router pattern - domain routers added in subsequent plans'
 
 # Metrics
 duration: 6min
@@ -98,6 +98,7 @@ Each task was committed atomically:
 ## Files Created/Modified
 
 ### Created
+
 - `backend/src/trpc/index.ts` - tRPC instance initialization with t, router, publicProcedure exports
 - `backend/src/trpc/context.ts` - Context creation from Fastify request with JWT extraction
 - `backend/src/trpc/procedures.ts` - protectedProcedure and orgProcedure middleware
@@ -105,28 +106,34 @@ Each task was committed atomically:
 - `backend/tests/trpc/context.test.ts` - Context creation tests (6 test cases)
 
 ### Modified
+
 - `backend/src/app.ts` - Registered tRPC plugin, added maxParamLength config
 - `backend/package.json` - Added @trpc/server dependency
 
 ## Decisions Made
 
 **TRPC-01: Use tRPC v11 with Fastify adapter**
+
 - Rationale: Type-safe API layer with automatic client generation, native Fastify integration
 - Impact: All domain routers will use this infrastructure
 
 **TRPC-02: Reuse existing JWT verification from Stack Auth**
+
 - Rationale: Context creation uses same verifyAccessToken as REST middleware
 - Impact: Consistent authentication across REST and tRPC endpoints
 
 **TRPC-03: Support both auth header formats**
+
 - Rationale: x-stack-access-token (custom) and Authorization Bearer (standard)
 - Impact: Frontend can use either format, maintains compatibility
 
 **TRPC-04: Organization middleware validates membership**
+
 - Rationale: orgProcedure checks user role and creates/retrieves profile
 - Impact: All org-scoped procedures get organizationId, role, profileId in context
 
 **TRPC-05: Type narrowing via middleware composition**
+
 - Rationale: protectedProcedure narrows user to non-null, orgProcedure extends this
 - Impact: TypeScript knows user is authenticated in protected procedures
 
@@ -135,6 +142,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Fixed TypeScript type narrowing in orgProcedure**
+
 - **Found during:** Task 1 (procedures.ts compilation)
 - **Issue:** TypeScript couldn't infer ctx.user is non-null in hasOrgAccess middleware
 - **Fix:** Added explicit type assertion `const user = ctx.user as AuthUser` with comment explaining protectedProcedure guarantees this
@@ -158,24 +166,29 @@ None - no external service configuration required. tRPC uses existing Stack Auth
 ## Next Phase Readiness
 
 **Ready for Plan 02 (Organizations Router):**
+
 - tRPC infrastructure complete and tested
 - protectedProcedure and orgProcedure middleware working
 - Health check procedure verifies endpoint registration
 - Context correctly extracts JWT from headers
 
 **Test Coverage:**
+
 - Context creation: 6 test cases covering both header formats and error cases
 - Full test suite: 707 passing tests (1 pre-existing failure in TTN devices)
 
 **Known Limitations:**
+
 - Server startup requires STACK_AUTH_PROJECT_ID environment variable (pre-existing requirement)
 - Empty router returns 404 for non-existent procedures (expected until domain routers added)
 
 **Next Steps:**
+
 - Plan 02: Add organizations router with list/create/update procedures
 - Plan 03: Add sites, areas, units routers
 - Plan 04: Add readings and alerts routers
 
 ---
-*Phase: 19-backend-api-migration-foundation*
-*Completed: 2026-01-24*
+
+_Phase: 19-backend-api-migration-foundation_
+_Completed: 2026-01-24_

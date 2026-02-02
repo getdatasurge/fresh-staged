@@ -26,16 +26,16 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Use Ky HTTP client for lightweight fetch wrapper with built-in retry"
-  - "Manually define TypeScript types matching backend Zod schemas (no codegen for simplicity)"
-  - "Factory function pattern for token injection (not hooks in client)"
-  - "Discriminated union for ApiError types (network, validation, auth, server)"
-  - "Log errors to console AND throw for component handling"
+  - 'Use Ky HTTP client for lightweight fetch wrapper with built-in retry'
+  - 'Manually define TypeScript types matching backend Zod schemas (no codegen for simplicity)'
+  - 'Factory function pattern for token injection (not hooks in client)'
+  - 'Discriminated union for ApiError types (network, validation, auth, server)'
+  - 'Log errors to console AND throw for component handling'
 
 patterns-established:
-  - "Token injection: createAuthenticatedClient(token) extends base client with auth header"
-  - "Error visibility: Console logging + thrown errors for DOM display"
-  - "Retry strategy: 3 attempts on transient errors (408, 429, 5xx) with exponential backoff"
+  - 'Token injection: createAuthenticatedClient(token) extends base client with auth header'
+  - 'Error visibility: Console logging + thrown errors for DOM display'
+  - 'Retry strategy: 3 attempts on transient errors (408, 429, 5xx) with exponential backoff'
 
 # Metrics
 duration: 2min 10sec
@@ -102,11 +102,13 @@ None - no external service configuration required.
 ## Next Phase Readiness
 
 **Ready for Phase 05-02 (API endpoint functions):**
+
 - Base HTTP client available for all API calls
 - TypeScript types defined for request/response contracts
 - Authentication pattern established via createAuthenticatedClient
 
 **Foundation established:**
+
 - Retry logic handles transient network errors automatically
 - Error logging provides visibility in console and enables DOM error display
 - Type safety ensures frontend-backend contract alignment
@@ -114,5 +116,6 @@ None - no external service configuration required.
 **No blockers.** Ready to implement domain-specific API functions (organizations, sites, areas, units, readings, alerts).
 
 ---
-*Phase: 05-frontend-migration*
-*Completed: 2026-01-23*
+
+_Phase: 05-frontend-migration_
+_Completed: 2026-01-23_

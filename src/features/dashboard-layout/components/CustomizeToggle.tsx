@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { Settings2 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { useState } from 'react';
+import { Settings2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,13 +11,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from '@/components/ui/alert-dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface CustomizeToggleProps {
   isCustomizing: boolean;
@@ -63,11 +58,11 @@ export function CustomizeToggle({
       <Label
         htmlFor="customize-mode"
         className={`text-sm flex items-center gap-1 ${
-          disabled ? "text-muted-foreground cursor-not-allowed" : "cursor-pointer"
+          disabled ? 'text-muted-foreground cursor-not-allowed' : 'cursor-pointer'
         }`}
       >
         <Settings2 className="h-4 w-4" />
-        {isCustomizing ? "Customizing" : "Customize"}
+        {isCustomizing ? 'Customizing' : 'Customize'}
       </Label>
     </div>
   );
@@ -91,15 +86,13 @@ export function CustomizeToggle({
           <AlertDialogHeader>
             <AlertDialogTitle>Exit Customize Mode?</AlertDialogTitle>
             <AlertDialogDescription>
-              You have unsaved changes. Do you want to exit customize mode anyway?
-              Your changes will be preserved but not saved until you click Save.
+              You have unsaved changes. Do you want to exit customize mode anyway? Your changes will
+              be preserved but not saved until you click Save.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Keep Customizing</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirm}>
-              Exit Anyway
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleConfirm}>Exit Anyway</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

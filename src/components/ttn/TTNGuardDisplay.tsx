@@ -3,17 +3,13 @@
  * Shows blockers and warnings before TTN operations
  */
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { AlertTriangle, XCircle, ChevronDown, ExternalLink } from "lucide-react";
-import type { TTNGuardResult, TTNBlocker } from "@/lib/ttn/guards";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { AlertTriangle, XCircle, ChevronDown, ExternalLink } from 'lucide-react';
+import type { TTNGuardResult, TTNBlocker } from '@/lib/ttn/guards';
+import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 interface TTNGuardDisplayProps {
   result: TTNGuardResult;
@@ -21,11 +17,7 @@ interface TTNGuardDisplayProps {
   showWarnings?: boolean;
 }
 
-export function TTNGuardDisplay({
-  result,
-  className,
-  showWarnings = true,
-}: TTNGuardDisplayProps) {
+export function TTNGuardDisplay({ result, className, showWarnings = true }: TTNGuardDisplayProps) {
   const [expandedBlocker, setExpandedBlocker] = useState<number | null>(0);
 
   if (result.allowed && result.warnings.length === 0) {
@@ -33,7 +25,7 @@ export function TTNGuardDisplay({
   }
 
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={cn('space-y-2', className)}>
       {/* Blockers */}
       {result.blockers.map((blocker, index) => (
         <BlockerCard
@@ -79,7 +71,9 @@ function BlockerCard({
         <Collapsible open={expanded} onOpenChange={onToggle}>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="sm" className="h-6 px-2">
-              <ChevronDown className={cn("h-4 w-4 transition-transform", expanded && "rotate-180")} />
+              <ChevronDown
+                className={cn('h-4 w-4 transition-transform', expanded && 'rotate-180')}
+              />
             </Button>
           </CollapsibleTrigger>
         </Collapsible>
@@ -94,12 +88,7 @@ function BlockerCard({
               ))}
             </ol>
             {blocker.code.includes('TTN') && (
-              <Button
-                variant="link"
-                size="sm"
-                className="mt-2 h-auto p-0 text-primary"
-                asChild
-              >
+              <Button variant="link" size="sm" className="mt-2 h-auto p-0 text-primary" asChild>
                 <a
                   href="https://console.thethings.network"
                   target="_blank"
@@ -120,17 +109,15 @@ function BlockerCard({
 /**
  * Compact inline blocker display for button tooltips
  */
-export function TTNBlockerSummary({ 
-  blockers 
-}: { 
-  blockers: TTNBlocker[] 
-}) {
+export function TTNBlockerSummary({ blockers }: { blockers: TTNBlocker[] }) {
   if (blockers.length === 0) return null;
 
   return (
     <div className="text-sm space-y-1">
       {blockers.slice(0, 2).map((b, i) => (
-        <p key={i} className="text-destructive">{b.message}</p>
+        <p key={i} className="text-destructive">
+          {b.message}
+        </p>
       ))}
       {blockers.length > 2 && (
         <p className="text-muted-foreground">+{blockers.length - 2} more issues</p>

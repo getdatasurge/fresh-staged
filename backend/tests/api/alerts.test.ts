@@ -109,7 +109,10 @@ describe('Alerts API', () => {
   }
 
   // Helper to mock role-based access
-  function mockRoleCheck(allowedRole: 'staff' | 'manager' | 'admin' | 'owner', userRole: 'viewer' | 'staff' | 'manager' | 'admin' | 'owner') {
+  function mockRoleCheck(
+    allowedRole: 'staff' | 'manager' | 'admin' | 'owner',
+    userRole: 'viewer' | 'staff' | 'manager' | 'admin' | 'owner',
+  ) {
     const hierarchy = { viewer: 1, staff: 2, manager: 3, admin: 4, owner: 5 };
 
     mockRequireRole.mockImplementation((requiredRole: string) => {
@@ -119,7 +122,7 @@ describe('Alerts API', () => {
 
         if (userLevel < requiredLevel) {
           return reply.code(403).send({
-            error: { code: 'FORBIDDEN', message: 'Insufficient permissions' }
+            error: { code: 'FORBIDDEN', message: 'Insufficient permissions' },
           });
         }
       };
@@ -152,7 +155,7 @@ describe('Alerts API', () => {
     it('should return 401 without JWT', async () => {
       mockRequireAuth.mockImplementation(async (request, reply) => {
         return reply.code(401).send({
-          error: { code: 'UNAUTHORIZED', message: 'Not authenticated' }
+          error: { code: 'UNAUTHORIZED', message: 'Not authenticated' },
         });
       });
 
@@ -192,7 +195,7 @@ describe('Alerts API', () => {
       // Verify service was called with correct filter
       expect(mockListAlerts).toHaveBeenCalledWith(
         TEST_ORG_ID,
-        expect.objectContaining({ status: 'active' })
+        expect.objectContaining({ status: 'active' }),
       );
     });
 
@@ -209,7 +212,7 @@ describe('Alerts API', () => {
 
       expect(mockListAlerts).toHaveBeenCalledWith(
         TEST_ORG_ID,
-        expect.objectContaining({ severity: 'critical' })
+        expect.objectContaining({ severity: 'critical' }),
       );
     });
 
@@ -226,7 +229,7 @@ describe('Alerts API', () => {
 
       expect(mockListAlerts).toHaveBeenCalledWith(
         TEST_ORG_ID,
-        expect.objectContaining({ unitId: TEST_UNIT_ID })
+        expect.objectContaining({ unitId: TEST_UNIT_ID }),
       );
     });
 
@@ -243,7 +246,7 @@ describe('Alerts API', () => {
 
       expect(mockListAlerts).toHaveBeenCalledWith(
         TEST_ORG_ID,
-        expect.objectContaining({ limit: 50, offset: 10 })
+        expect.objectContaining({ limit: 50, offset: 10 }),
       );
     });
   });

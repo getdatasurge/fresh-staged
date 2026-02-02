@@ -30,11 +30,11 @@ key-files:
     - scripts/seed-demo-data.sh
 
 key-decisions:
-  - "post-deploy.sh follows verify-deployment.sh pattern for consistency"
-  - "pg_isready loop with 30s timeout for robust database waiting"
+  - 'post-deploy.sh follows verify-deployment.sh pattern for consistency'
+  - 'pg_isready loop with 30s timeout for robust database waiting'
 
 patterns-established:
-  - "POST script order: URLs -> credentials -> demo data -> dashboards -> next steps"
+  - 'POST script order: URLs -> credentials -> demo data -> dashboards -> next steps'
 
 # Metrics
 duration: 2min
@@ -97,5 +97,6 @@ None - no external service configuration required.
 - Deployment workflow now has complete: preflight -> deploy -> verify -> post-deploy chain
 
 ---
-*Phase: 36-post-deployment-setup*
-*Completed: 2026-01-29*
+
+_Phase: 36-post-deployment-setup_
+_Completed: 2026-01-29_

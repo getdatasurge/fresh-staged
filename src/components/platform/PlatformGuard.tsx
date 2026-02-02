@@ -10,7 +10,7 @@ interface PlatformGuardProps {
 
 /**
  * PlatformGuard - Protects platform routes with Super Admin check
- * 
+ *
  * Flow:
  * 1. While roleLoadStatus === 'loading': Show loading spinner
  * 2. When rolesLoaded && !isSuperAdmin: Redirect to /dashboard with toast
@@ -26,20 +26,20 @@ export function PlatformGuard({ children }: PlatformGuardProps) {
     // Only redirect once, when roles are loaded and user is not super admin
     if (rolesLoaded && !isSuperAdmin && !hasRedirected) {
       setHasRedirected(true);
-      
+
       console.log('[PlatformGuard] Access denied - redirecting to dashboard', {
         roleLoadStatus,
         isSuperAdmin,
         rolesLoaded,
       });
-      
+
       toast({
-        title: "Access Denied",
-        description: "Platform Admin access requires Super Admin privileges.",
-        variant: "destructive",
+        title: 'Access Denied',
+        description: 'Platform Admin access requires Super Admin privileges.',
+        variant: 'destructive',
       });
-      
-      navigate("/dashboard", { replace: true });
+
+      navigate('/dashboard', { replace: true });
     }
   }, [rolesLoaded, isSuperAdmin, hasRedirected, navigate, toast, roleLoadStatus]);
 

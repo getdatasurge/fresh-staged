@@ -38,7 +38,7 @@ export const availabilityRoutes: FastifyPluginAsync = async (fastify) => {
     async (request) => {
       const { email } = request.query;
       return checkEmailAvailability(email);
-    }
+    },
   );
 
   /**
@@ -60,7 +60,7 @@ export const availabilityRoutes: FastifyPluginAsync = async (fastify) => {
     async (request) => {
       const { phone } = request.query;
       return checkPhoneAvailability(phone);
-    }
+    },
   );
 };
 

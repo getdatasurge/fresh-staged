@@ -28,12 +28,12 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Used Prometheus datasource with fallback queries for flexibility"
-  - "Placed dashboard in same directory as freshtrack-overview.json for auto-provisioning"
+  - 'Used Prometheus datasource with fallback queries for flexibility'
+  - 'Placed dashboard in same directory as freshtrack-overview.json for auto-provisioning'
 
 patterns-established:
-  - "Sensor metrics queried via freshtrack_* Prometheus metrics with fallback to generic metrics"
-  - "Dashboard structure: stat row (h:8), timeseries full-width (h:10), details row (h:8)"
+  - 'Sensor metrics queried via freshtrack_* Prometheus metrics with fallback to generic metrics'
+  - 'Dashboard structure: stat row (h:8), timeseries full-width (h:10), details row (h:8)'
 
 # Metrics
 duration: 2min
@@ -53,6 +53,7 @@ completed: 2026-01-29
 - **Files created:** 1
 
 ## Accomplishments
+
 - Created freshtrack-sensors.json dashboard with 6 visualization panels
 - Active Sensors, Readings Today, Active Alerts stat panels in top row
 - Temperature time-series with celsius units, min/max/mean legend
@@ -70,9 +71,11 @@ Each task was committed atomically:
 **Plan metadata:** (pending)
 
 ## Files Created/Modified
+
 - `docker/grafana/dashboards/freshtrack-sensors.json` - 6-panel sensor metrics dashboard with temperature, battery, alerts, and reading rate visualization
 
 ## Decisions Made
+
 - Used Prometheus datasource with `or` fallback queries (e.g., `freshtrack_sensors_active or up{job="backend"}`) to gracefully degrade when FreshTrack-specific metrics are not yet available
 - Kept same schemaVersion (38) and structure as freshtrack-overview.json for consistency
 - Temperature thresholds: -20=blue, 0=green, 4=yellow, 10=red (cold storage focus)
@@ -92,11 +95,13 @@ None
 None - dashboard will be automatically provisioned when Grafana starts via the existing dashboards.yml configuration that watches `/var/lib/grafana/dashboards`.
 
 ## Next Phase Readiness
+
 - Sensor metrics dashboard ready for deployment
 - Dashboard will show "No data" for FreshTrack-specific metrics until backend exposes them
 - Ready for plan 36-03 (backup configuration)
 
 ---
-*Phase: 36-post-deployment-setup*
-*Plan: 02*
-*Completed: 2026-01-29*
+
+_Phase: 36-post-deployment-setup_
+_Plan: 02_
+_Completed: 2026-01-29_

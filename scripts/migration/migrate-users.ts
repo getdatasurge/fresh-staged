@@ -23,17 +23,17 @@
  *   STACK_AUTH_SECRET_KEY - Stack Auth server secret key
  */
 
-import "dotenv/config";
-import { Command } from "commander";
-import ora from "ora";
-import fs from "node:fs";
-import path from "node:path";
+import 'dotenv/config';
+import { Command } from 'commander';
+import ora from 'ora';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   saveMapping,
   type UserMapping,
   DEFAULT_MAPPING_PATH,
   MAPPING_RETENTION_DAYS,
-} from "./lib/user-mapping.js";
+} from './lib/user-mapping.js';
 import {
   logger,
   logMigrationStart,
@@ -41,7 +41,7 @@ import {
   logMigrationComplete,
   logMigrationError,
   closeLogger,
-} from "./lib/logger.js";
+} from './lib/logger.js';
 
 /**
  * Supabase auth.users record structure (partial - only fields we need)
@@ -94,15 +94,15 @@ interface MigrationResult {
 async function createStackAuthUser(
   userData: StackAuthUserCreate,
   projectId: string,
-  secretKey: string
+  secretKey: string,
 ): Promise<StackAuthUser> {
-  const response = await fetch("https://api.stack-auth.com/api/v1/users", {
-    method: "POST",
+  const response = await fetch('https://api.stack-auth.com/api/v1/users', {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
-      "x-stack-access-type": "server",
-      "x-stack-project-id": projectId,
-      "x-stack-secret-server-key": secretKey,
+      'Content-Type': 'application/json',
+      'x-stack-access-type': 'server',
+      'x-stack-project-id': projectId,
+      'x-stack-secret-server-key': secretKey,
     },
     body: JSON.stringify(userData),
   });
@@ -148,7 +148,7 @@ async function migrateUsers(options: {
 
   if (!dryRun && (!projectId || !secretKey)) {
     throw new Error(
-      "Missing required environment variables: STACK_AUTH_PROJECT_ID and STACK_AUTH_SECRET_KEY"
+      'Missing required environment variables: STACK_AUTH_PROJECT_ID and STACK_AUTH_SECRET_KEY',
     );
   }
 
@@ -158,20 +158,20 @@ async function migrateUsers(options: {
     throw new Error(`Input file not found: ${inputPath}`);
   }
 
-  logMigrationStart("user-migration", {
+  logMigrationStart('user-migration', {
     inputFile: inputPath,
     outputFile: path.resolve(output),
     dryRun,
     rateLimit,
   });
 
-  const content = fs.readFileSync(inputPath, "utf-8");
+  const content = fs.readFileSync(inputPath, 'utf-8');
   let users: SupabaseUser[];
 
   try {
     users = JSON.parse(content);
     if (!Array.isArray(users)) {
-      throw new Error("Expected array of users");
+      throw new Error('Expected array of users');
     }
   } catch (err) {
     throw new Error(`Failed to parse input file: ${err instanceof Error ? err.message : err}`);
@@ -180,8 +180,8 @@ async function migrateUsers(options: {
   logger.info({ userCount: users.length }, `Loaded ${users.length} users from Supabase export`);
 
   if (dryRun) {
-    console.log("\n=== DRY RUN MODE ===");
-    console.log("No users will be created in Stack Auth.\n");
+    console.log('\n=== DRY RUN MODE ===');
+    console.log('No users will be created in Stack Auth.\n');
   }
 
   const startTime = Date.now();
@@ -190,7 +190,7 @@ async function migrateUsers(options: {
 
   const spinner = ora({
     text: `Migrating users: 0/${users.length}`,
-    prefixText: dryRun ? "[DRY RUN] " : "",
+    prefixText: dryRun ? '[DRY RUN] ' : '',
   }).start();
 
   for (let i = 0; i < users.length; i++) {
@@ -214,7 +214,7 @@ async function migrateUsers(options: {
         result.stackAuthId = `dry-run-${user.id.substring(0, 8)}`;
         logger.debug(
           { supabaseId: user.id, email: user.email, userData },
-          "[DRY RUN] Would create user"
+          '[DRY RUN] Would create user',
         );
       } else {
         // Actually create user in Stack Auth
@@ -223,7 +223,7 @@ async function migrateUsers(options: {
         result.stackAuthId = stackAuthUser.id;
         logger.debug(
           { supabaseId: user.id, stackAuthId: stackAuthUser.id, email: user.email },
-          "Created user in Stack Auth"
+          'Created user in Stack Auth',
         );
       }
 
@@ -239,13 +239,13 @@ async function migrateUsers(options: {
       result.error = errorMessage;
 
       // Handle duplicate email gracefully
-      if (errorMessage.includes("already exists") || errorMessage.includes("duplicate")) {
+      if (errorMessage.includes('already exists') || errorMessage.includes('duplicate')) {
         logger.warn(
           { supabaseId: user.id, email: user.email, error: errorMessage },
-          "User may already exist in Stack Auth (duplicate email)"
+          'User may already exist in Stack Auth (duplicate email)',
         );
       } else {
-        logMigrationError("create-user", err, { supabaseId: user.id, email: user.email });
+        logMigrationError('create-user', err, { supabaseId: user.id, email: user.email });
       }
     }
 
@@ -257,7 +257,7 @@ async function migrateUsers(options: {
 
     // Log progress periodically
     if ((i + 1) % 100 === 0) {
-      logMigrationProgress("user-migration", i + 1, users.length, { successCount });
+      logMigrationProgress('user-migration', i + 1, users.length, { successCount });
     }
 
     // Rate limiting (skip for last user)
@@ -283,9 +283,9 @@ async function migrateUsers(options: {
   // Log failed users for manual resolution
   const failed = results.filter((r) => !r.success);
   if (failed.length > 0) {
-    logger.warn({ failedCount: failed.length }, "Some users failed to migrate:");
+    logger.warn({ failedCount: failed.length }, 'Some users failed to migrate:');
     for (const f of failed) {
-      logger.warn({ supabaseId: f.supabaseId, email: f.email, error: f.error }, "Failed user");
+      logger.warn({ supabaseId: f.supabaseId, email: f.email, error: f.error }, 'Failed user');
     }
     console.log(`\nFailed users (${failed.length}):`);
     for (const f of failed.slice(0, 10)) {
@@ -297,23 +297,23 @@ async function migrateUsers(options: {
   }
 
   // Summary
-  console.log("\n=== Migration Summary ===");
+  console.log('\n=== Migration Summary ===');
   console.log(`Total users:      ${users.length}`);
   console.log(`Successful:       ${successCount}`);
   console.log(`Failed:           ${failCount}`);
   console.log(`Duration:         ${(duration / 1000).toFixed(1)}s`);
 
   if (dryRun) {
-    console.log("\n[DRY RUN] No changes were made to Stack Auth.");
-    console.log("Remove --dry-run to perform actual migration.");
+    console.log('\n[DRY RUN] No changes were made to Stack Auth.');
+    console.log('Remove --dry-run to perform actual migration.');
   } else {
-    console.log("\n=== IMPORTANT: Password Reset Required ===");
-    console.log("Passwords cannot be migrated from Supabase to Stack Auth.");
+    console.log('\n=== IMPORTANT: Password Reset Required ===');
+    console.log('Passwords cannot be migrated from Supabase to Stack Auth.');
     console.log("Users must reset their passwords using the 'forgot password' flow.");
-    console.log("Consider sending password reset emails to all migrated users.");
+    console.log('Consider sending password reset emails to all migrated users.');
   }
 
-  logMigrationComplete("user-migration", duration, {
+  logMigrationComplete('user-migration', duration, {
     total: users.length,
     success: successCount,
     failed: failCount,
@@ -325,12 +325,16 @@ async function migrateUsers(options: {
 const program = new Command();
 
 program
-  .name("migrate-users")
-  .description("Create users in Stack Auth from Supabase auth.users export")
-  .option("-i, --input <path>", "Input JSON file with Supabase users", "./migration-data/auth_users.json")
-  .option("-o, --output <path>", "Output mapping file path", DEFAULT_MAPPING_PATH)
-  .option("-d, --dry-run", "Preview migration without creating users", false)
-  .option("-r, --rate-limit <ms>", "Milliseconds between API calls", "100")
+  .name('migrate-users')
+  .description('Create users in Stack Auth from Supabase auth.users export')
+  .option(
+    '-i, --input <path>',
+    'Input JSON file with Supabase users',
+    './migration-data/auth_users.json',
+  )
+  .option('-o, --output <path>', 'Output mapping file path', DEFAULT_MAPPING_PATH)
+  .option('-d, --dry-run', 'Preview migration without creating users', false)
+  .option('-r, --rate-limit <ms>', 'Milliseconds between API calls', '100')
   .action(async (options) => {
     try {
       await migrateUsers({
@@ -340,8 +344,8 @@ program
         rateLimit: parseInt(options.rateLimit, 10),
       });
     } catch (err) {
-      logMigrationError("migrate-users", err);
-      console.error("\nMigration failed:", err instanceof Error ? err.message : err);
+      logMigrationError('migrate-users', err);
+      console.error('\nMigration failed:', err instanceof Error ? err.message : err);
       process.exit(1);
     } finally {
       await closeLogger();

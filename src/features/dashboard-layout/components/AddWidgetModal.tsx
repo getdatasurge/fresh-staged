@@ -1,6 +1,6 @@
 /**
  * Add Widget Modal
- * 
+ *
  * Modal for selecting and adding widgets to a custom layout.
  * Supports category grouping, capability-based compatibility filtering,
  * and status indicators.
@@ -12,21 +12,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { WIDGET_REGISTRY, getWidgetsForEntity } from '../registry/widgetRegistry';
+import type { EntityType } from '../hooks/useEntityLayoutStorage';
+import type { DeviceCapability } from '@/lib/registry/capabilityRegistry';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { WIDGET_REGISTRY, getWidgetsForEntity } from "../registry/widgetRegistry";
-import type { EntityType } from "../hooks/useEntityLayoutStorage";
-import type { DeviceCapability } from "@/lib/registry/capabilityRegistry";
-import { checkWidgetCompatibility, checkWidgetCompatibilityBySensorType } from "../utils/compatibilityMatrix";
-import { cn } from "@/lib/utils";
-import { AlertTriangle, Ban } from "lucide-react";
+  checkWidgetCompatibility,
+  checkWidgetCompatibilityBySensorType,
+} from '../utils/compatibilityMatrix';
+import { cn } from '@/lib/utils';
+import { AlertTriangle, Ban } from 'lucide-react';
 
 interface AddWidgetModalProps {
   open: boolean;
@@ -59,35 +57,38 @@ export function AddWidgetModal({
 }: AddWidgetModalProps) {
   // Get widgets available for this entity type
   const availableWidgets = getWidgetsForEntity(entityType);
-  
+
   // Filter to only show widgets that are not already visible (or are hidden)
-  const addableWidgets = availableWidgets.filter(w => {
+  const addableWidgets = availableWidgets.filter((w) => {
     // Widget is addable if it's hidden OR not in the layout at all
     return hiddenWidgetIds.includes(w.id) || !visibleWidgetIds.includes(w.id);
   });
 
   // Group widgets by category
-  const widgetsByCategory = addableWidgets.reduce((acc, widget) => {
-    const category = widget.category || 'other';
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(widget);
-    return acc;
-  }, {} as Record<string, typeof addableWidgets>);
+  const widgetsByCategory = addableWidgets.reduce(
+    (acc, widget) => {
+      const category = widget.category || 'other';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(widget);
+      return acc;
+    },
+    {} as Record<string, typeof addableWidgets>,
+  );
 
   const categoryLabels: Record<string, string> = {
-    monitoring: "Monitoring",
-    alerts: "Alerts",
-    device: "Device & Sensors",
-    compliance: "Compliance",
-    utility: "Utility & Actions",
-    other: "Other",
+    monitoring: 'Monitoring',
+    alerts: 'Alerts',
+    device: 'Device & Sensors',
+    compliance: 'Compliance',
+    utility: 'Utility & Actions',
+    other: 'Other',
   };
 
-  const categoryOrder = ["monitoring", "alerts", "device", "compliance", "utility", "other"];
+  const categoryOrder = ['monitoring', 'alerts', 'device', 'compliance', 'utility', 'other'];
   const sortedCategories = Object.keys(widgetsByCategory).sort(
-    (a, b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b)
+    (a, b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b),
   );
 
   /**
@@ -148,7 +149,7 @@ export function AddWidgetModal({
                       {categoryLabels[category] || category}
                     </h4>
                     <div className="grid gap-2">
-                      {widgets.map(widget => {
+                      {widgets.map((widget) => {
                         const Icon = widget.icon;
                         const isHidden = hiddenWidgetIds.includes(widget.id);
                         const compatibility = getWidgetCompatibility(widget.id);
@@ -163,32 +164,38 @@ export function AddWidgetModal({
                                   onClick={() => !isIncompatible && handleAddWidget(widget.id)}
                                   disabled={isIncompatible}
                                   className={cn(
-                                    "flex items-start gap-3 p-3 rounded-lg border border-border",
-                                    "text-left w-full group transition-colors",
+                                    'flex items-start gap-3 p-3 rounded-lg border border-border',
+                                    'text-left w-full group transition-colors',
                                     isIncompatible
-                                      ? "opacity-50 cursor-not-allowed bg-muted/30"
-                                      : "hover:bg-accent/50 hover:border-accent cursor-pointer"
+                                      ? 'opacity-50 cursor-not-allowed bg-muted/30'
+                                      : 'hover:bg-accent/50 hover:border-accent cursor-pointer',
                                   )}
                                 >
-                                  <div className={cn(
-                                    "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                                    isIncompatible
-                                      ? "bg-muted"
-                                      : "bg-muted group-hover:bg-accent/20"
-                                  )}>
-                                    <Icon className={cn(
-                                      "w-5 h-5",
+                                  <div
+                                    className={cn(
+                                      'w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors',
                                       isIncompatible
-                                        ? "text-muted-foreground/50"
-                                        : "text-muted-foreground group-hover:text-accent-foreground"
-                                    )} />
+                                        ? 'bg-muted'
+                                        : 'bg-muted group-hover:bg-accent/20',
+                                    )}
+                                  >
+                                    <Icon
+                                      className={cn(
+                                        'w-5 h-5',
+                                        isIncompatible
+                                          ? 'text-muted-foreground/50'
+                                          : 'text-muted-foreground group-hover:text-accent-foreground',
+                                      )}
+                                    />
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      <p className={cn(
-                                        "font-medium text-sm",
-                                        isIncompatible && "text-muted-foreground"
-                                      )}>
+                                      <p
+                                        className={cn(
+                                          'font-medium text-sm',
+                                          isIncompatible && 'text-muted-foreground',
+                                        )}
+                                      >
                                         {widget.name}
                                       </p>
                                       {isHidden && (
@@ -202,24 +209,32 @@ export function AddWidgetModal({
                                         </Badge>
                                       )}
                                       {isIncompatible && (
-                                        <Badge variant="destructive" className="text-xs flex items-center gap-1">
+                                        <Badge
+                                          variant="destructive"
+                                          className="text-xs flex items-center gap-1"
+                                        >
                                           <Ban className="w-3 h-3" />
                                           Incompatible
                                         </Badge>
                                       )}
                                       {isPartial && !isIncompatible && (
-                                        <Badge variant="outline" className="text-xs text-warning border-warning/30">
+                                        <Badge
+                                          variant="outline"
+                                          className="text-xs text-warning border-warning/30"
+                                        >
                                           <AlertTriangle className="w-3 h-3 mr-1" />
                                           Partial
                                         </Badge>
                                       )}
                                     </div>
-                                    <p className={cn(
-                                      "text-xs mt-0.5 line-clamp-2",
-                                      isIncompatible
-                                        ? "text-muted-foreground/50"
-                                        : "text-muted-foreground"
-                                    )}>
+                                    <p
+                                      className={cn(
+                                        'text-xs mt-0.5 line-clamp-2',
+                                        isIncompatible
+                                          ? 'text-muted-foreground/50'
+                                          : 'text-muted-foreground',
+                                      )}
+                                    >
                                       {widget.description}
                                     </p>
                                     <p className="text-xs text-muted-foreground/60 mt-1">
@@ -231,11 +246,12 @@ export function AddWidgetModal({
                               {(isIncompatible || isPartial) && compatibility.reason && (
                                 <TooltipContent side="left" className="max-w-xs">
                                   <p className="text-sm">{compatibility.reason}</p>
-                                  {widget.requiredCapabilities && widget.requiredCapabilities.length > 0 && (
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      Requires: {widget.requiredCapabilities.join(', ')}
-                                    </p>
-                                  )}
+                                  {widget.requiredCapabilities &&
+                                    widget.requiredCapabilities.length > 0 && (
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        Requires: {widget.requiredCapabilities.join(', ')}
+                                      </p>
+                                    )}
                                 </TooltipContent>
                               )}
                             </Tooltip>

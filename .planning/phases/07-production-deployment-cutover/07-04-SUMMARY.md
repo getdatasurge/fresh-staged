@@ -100,7 +100,9 @@ metrics:
 Created three production-grade bash scripts for deployment operations:
 
 ### 1. Health Check Script (scripts/health-check.sh)
+
 Pre-flight validation script that checks system readiness before deployment:
+
 - **Disk space validation**: Ensures minimum 5GB available
 - **Docker availability**: Verifies Docker daemon running and Compose installed
 - **Compose file validation**: Checks existence and validates configuration
@@ -111,7 +113,9 @@ Pre-flight validation script that checks system readiness before deployment:
 - **Exit codes**: Returns 0 for all passed, 1 for any failures
 
 ### 2. Deployment Script (scripts/deploy.sh)
+
 Fully automated deployment process with 8 orchestrated steps:
+
 - **Step 1**: Pre-flight checks (invokes health-check.sh)
 - **Step 2**: Pull latest images from registry
 - **Step 3**: Build backend service (production target)
@@ -124,7 +128,9 @@ Fully automated deployment process with 8 orchestrated steps:
 - **Output**: Timestamped execution log with next steps guidance
 
 ### 3. Rollback Script (scripts/rollback.sh)
+
 Comprehensive rollback procedure with human oversight:
+
 - **Confirmation prompts**: Multiple confirms at critical steps (service stop, data export, DNS)
 - **Service shutdown**: Stops backend and Caddy reverse proxy gracefully
 - **Data export**: Exports post-cutover data (sensor_readings, alerts, user_profiles)
@@ -138,7 +144,9 @@ Comprehensive rollback procedure with human oversight:
 ## Technical Approach
 
 ### Pre-flight Validation Pattern
+
 Health check script validates all prerequisites before deployment starts:
+
 ```bash
 # Example checks
 - Disk space: df -BG . | awk 'NR==2 {print $4}'
@@ -149,7 +157,9 @@ Health check script validates all prerequisites before deployment starts:
 ```
 
 ### Health Check Polling with Retries
+
 Deployment script waits for services to become healthy:
+
 ```bash
 RETRIES=30
 until curl -f http://localhost:3000/health || [ $RETRIES -eq 0 ]; do
@@ -159,7 +169,9 @@ done
 ```
 
 ### Confirmation Prompt Pattern
+
 Rollback script uses consistent confirm() function:
+
 ```bash
 confirm() {
     if [ "$AUTO_CONFIRM" = true ]; then return 0; fi
@@ -169,7 +181,9 @@ confirm() {
 ```
 
 ### Data Export Automation
+
 Rollback exports data via PostgreSQL COPY command:
+
 ```bash
 docker compose exec -T postgres \
     psql -U postgres -d freshtrack -c \
@@ -181,6 +195,7 @@ docker compose exec -T postgres \
 ## Key Validations
 
 ### Health Check Script Validations
+
 - ✓ Disk space check (5GB minimum requirement)
 - ✓ Docker daemon running check
 - ✓ Docker Compose version check
@@ -195,6 +210,7 @@ docker compose exec -T postgres \
 - ✓ Required environment variables check
 
 ### Deployment Script Validations
+
 - ✓ Pre-flight health check invocation
 - ✓ PostgreSQL readiness polling (pg_isready)
 - ✓ Migration success verification
@@ -204,6 +220,7 @@ docker compose exec -T postgres \
 - ✓ Container status verification (docker compose ps)
 
 ### Rollback Script Safety Features
+
 - ✓ Initial confirmation before proceeding
 - ✓ Service stop confirmation
 - ✓ Data export confirmation
@@ -215,6 +232,7 @@ docker compose exec -T postgres \
 ## Files Created
 
 ### scripts/health-check.sh (199 lines)
+
 ```bash
 #!/bin/bash
 # Pre-flight validation for deployment readiness
@@ -223,6 +241,7 @@ docker compose exec -T postgres \
 ```
 
 ### scripts/deploy.sh (230 lines)
+
 ```bash
 #!/bin/bash
 # Automated production deployment
@@ -231,6 +250,7 @@ docker compose exec -T postgres \
 ```
 
 ### scripts/rollback.sh (366 lines)
+
 ```bash
 #!/bin/bash
 # Rollback to previous infrastructure
@@ -241,6 +261,7 @@ docker compose exec -T postgres \
 ## Integration Points
 
 ### Health Check ← Deployment
+
 ```bash
 # deploy.sh invokes health-check.sh
 if ./scripts/health-check.sh; then
@@ -252,18 +273,21 @@ fi
 ```
 
 ### Deployment → Compose
+
 ```bash
 # deploy.sh uses compose files from 07-01
 docker compose -f docker-compose.yml -f compose.production.yaml up -d
 ```
 
 ### Rollback → Database
+
 ```bash
 # rollback.sh exports data via pg_dump and COPY
 docker compose exec -T postgres pg_dump -U postgres -d freshtrack
 ```
 
 ### Rollback → Notification
+
 ```bash
 # rollback.sh sends Slack webhook if configured
 curl -X POST -H 'Content-type: application/json' \
@@ -273,6 +297,7 @@ curl -X POST -H 'Content-type: application/json' \
 ## Error Handling
 
 ### Deployment Script Error Handling
+
 - **Pre-flight failure**: Exits immediately with guidance to fix or use --skip-checks
 - **Image pull failure**: Warns but continues (may use cached images)
 - **Build failure**: Exits immediately (cannot deploy broken code)
@@ -282,12 +307,14 @@ curl -X POST -H 'Content-type: application/json' \
 - **Cleanup failure**: Warns but continues (not critical)
 
 ### Rollback Script Error Handling
+
 - **Service stop failure**: Reports error but continues (may already be stopped)
 - **Data export failure**: Warns but continues (operator decision)
 - **Notification failure**: Warns but continues (not critical for rollback)
 - **User cancellation**: Exits gracefully at any confirmation prompt
 
 ### Health Check Script Error Handling
+
 - **All checks continue**: Even if one fails, all checks run
 - **Summary at end**: Shows count of passed vs failed checks
 - **Exit code reflects status**: 0 if all passed, 1 if any failed
@@ -295,6 +322,7 @@ curl -X POST -H 'Content-type: application/json' \
 ## Usage Examples
 
 ### Standard Deployment
+
 ```bash
 # Full deployment with all checks
 ./scripts/deploy.sh
@@ -308,6 +336,7 @@ curl -X POST -H 'Content-type: application/json' \
 ```
 
 ### Quick Deployment (Skip Checks)
+
 ```bash
 # Skip pre-flight checks (not recommended)
 ./scripts/deploy.sh --skip-checks
@@ -317,6 +346,7 @@ curl -X POST -H 'Content-type: application/json' \
 ```
 
 ### Health Check Only
+
 ```bash
 # Run pre-flight validation standalone
 ./scripts/health-check.sh
@@ -326,6 +356,7 @@ echo $?  # 0 = passed, 1 = failed
 ```
 
 ### Interactive Rollback
+
 ```bash
 # Rollback with confirmations at each step
 ./scripts/rollback.sh
@@ -337,6 +368,7 @@ echo $?  # 0 = passed, 1 = failed
 ```
 
 ### Automated Rollback
+
 ```bash
 # Auto-confirm all prompts (for scripts/automation)
 ./scripts/rollback.sh --yes
@@ -348,6 +380,7 @@ CUTOVER_TIMESTAMP="2026-01-23 12:00:00" ./scripts/rollback.sh --yes
 ## Deployment Workflow Integration
 
 ### Standard Deployment Flow
+
 1. **Pre-deployment**: Run health-check.sh manually or via deploy.sh
 2. **Deployment**: Execute deploy.sh (invokes health-check automatically)
 3. **Verification**: Script checks health endpoints automatically
@@ -357,6 +390,7 @@ CUTOVER_TIMESTAMP="2026-01-23 12:00:00" ./scripts/rollback.sh --yes
 7. **Rollback if needed**: Execute rollback.sh with confirmations
 
 ### Rollback Flow
+
 1. **Decision**: Determine rollback is necessary
 2. **Execute**: Run rollback.sh (with or without --yes)
 3. **Service Stop**: Backend and Caddy stopped
@@ -369,17 +403,20 @@ CUTOVER_TIMESTAMP="2026-01-23 12:00:00" ./scripts/rollback.sh --yes
 ## Next Phase Readiness
 
 ### For 07-05 (Cutover Playbook):
+
 - ✓ Deployment automation ready for playbook integration
 - ✓ Health check script can be invoked by playbook
 - ✓ Rollback script documented for contingency section
 - ✓ Data export procedures established
 
 ### For 07-06 (Cutover Verification):
+
 - ✓ Health check endpoints can be tested
 - ✓ Deployment verification steps documented
 - ✓ Rollback procedure tested and documented
 
 ### For Future Operations:
+
 - ✓ Scripts can be integrated into CI/CD pipelines
 - ✓ Health checks can run on schedule for monitoring
 - ✓ Rollback procedures documented for operations team
@@ -391,6 +428,7 @@ None - plan executed exactly as written.
 ## Lessons Learned
 
 ### What Went Well
+
 1. **Comprehensive health checks**: Covering disk, Docker, secrets, ports, config prevents common deployment failures
 2. **Retry logic**: Health check polling with 30 retries handles slow service startup gracefully
 3. **Confirmation prompts**: Multiple confirms in rollback prevent accidental destructive actions
@@ -399,6 +437,7 @@ None - plan executed exactly as written.
 6. **Exit codes**: Proper exit code handling enables script composition and automation
 
 ### Technical Insights
+
 1. **Line ending handling**: Required sed -i 's/\r$//' to fix Windows line endings in scripts
 2. **Docker Compose syntax**: Modern syntax uses `docker compose` (space) not `docker-compose` (hyphen)
 3. **Health check timing**: 40s start_period in compose config matches 30 retries × 3s = 90s in deploy script
@@ -406,6 +445,7 @@ None - plan executed exactly as written.
 5. **Secrets validation**: Checking file existence AND non-empty prevents deployment with missing credentials
 
 ### Areas for Future Improvement
+
 1. **Frontend deployment**: Scripts currently focus on backend; frontend build/deployment could be added
 2. **Zero-downtime**: Could implement blue-green deployment pattern for zero-downtime cutover
 3. **Automated DNS**: Could integrate with DNS provider APIs (Cloudflare, Route53) for automated DNS changes
@@ -417,6 +457,7 @@ None - plan executed exactly as written.
 Successfully created production-ready deployment automation with comprehensive pre-flight validation, automated deployment orchestration, and safe rollback procedures. The three scripts provide end-to-end deployment lifecycle management with proper error handling, human oversight for critical actions, and data preservation during rollback.
 
 **Key achievements:**
+
 - ✓ 815 lines of production bash automation
 - ✓ 18 distinct validation checks in health-check.sh
 - ✓ 8-step deployment orchestration in deploy.sh

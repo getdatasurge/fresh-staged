@@ -51,42 +51,49 @@ export const UnitSchema = z.object({
 });
 
 // Create unit request body with temperature validation
-export const CreateUnitSchema = z.object({
-  name: z.string().min(1).max(256),
-  unitType: UnitTypeSchema,
-  status: UnitStatusSchema.optional().default('ok'),
-  tempMin: z.number().int(),
-  tempMax: z.number().int(),
-  tempUnit: TempUnitSchema.default('F'),
-  manualMonitoringRequired: z.boolean().default(false),
-  manualMonitoringInterval: z.number().int().min(1).nullable().optional(),
-  sortOrder: z.number().int().min(0).default(0),
-}).refine((data) => data.tempMin < data.tempMax, {
-  message: 'tempMin must be less than tempMax',
-  path: ['tempMax'],
-});
+export const CreateUnitSchema = z
+  .object({
+    name: z.string().min(1).max(256),
+    unitType: UnitTypeSchema,
+    status: UnitStatusSchema.optional().default('ok'),
+    tempMin: z.number().int(),
+    tempMax: z.number().int(),
+    tempUnit: TempUnitSchema.default('F'),
+    manualMonitoringRequired: z.boolean().default(false),
+    manualMonitoringInterval: z.number().int().min(1).nullable().optional(),
+    sortOrder: z.number().int().min(0).default(0),
+  })
+  .refine((data) => data.tempMin < data.tempMax, {
+    message: 'tempMin must be less than tempMax',
+    path: ['tempMax'],
+  });
 
 // Update unit request body (all fields optional, with same refinement)
-export const UpdateUnitSchema = z.object({
-  name: z.string().min(1).max(256).optional(),
-  unitType: UnitTypeSchema.optional(),
-  status: UnitStatusSchema.optional(),
-  tempMin: z.number().int().optional(),
-  tempMax: z.number().int().optional(),
-  tempUnit: TempUnitSchema.optional(),
-  manualMonitoringRequired: z.boolean().optional(),
-  manualMonitoringInterval: z.number().int().min(1).nullable().optional(),
-  sortOrder: z.number().int().min(0).optional(),
-}).refine((data) => {
-  // Only validate if both tempMin and tempMax are provided
-  if (data.tempMin !== undefined && data.tempMax !== undefined) {
-    return data.tempMin < data.tempMax;
-  }
-  return true;
-}, {
-  message: 'tempMin must be less than tempMax',
-  path: ['tempMax'],
-});
+export const UpdateUnitSchema = z
+  .object({
+    name: z.string().min(1).max(256).optional(),
+    unitType: UnitTypeSchema.optional(),
+    status: UnitStatusSchema.optional(),
+    tempMin: z.number().int().optional(),
+    tempMax: z.number().int().optional(),
+    tempUnit: TempUnitSchema.optional(),
+    manualMonitoringRequired: z.boolean().optional(),
+    manualMonitoringInterval: z.number().int().min(1).nullable().optional(),
+    sortOrder: z.number().int().min(0).optional(),
+  })
+  .refine(
+    (data) => {
+      // Only validate if both tempMin and tempMax are provided
+      if (data.tempMin !== undefined && data.tempMax !== undefined) {
+        return data.tempMin < data.tempMax;
+      }
+      return true;
+    },
+    {
+      message: 'tempMin must be less than tempMax',
+      path: ['tempMax'],
+    },
+  );
 
 // Units list response
 export const UnitsListSchema = z.array(UnitSchema);

@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useTRPC } from "@/lib/trpc";
+import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { useTRPC } from '@/lib/trpc';
 import {
   CheckCircle2,
   XCircle,
@@ -12,9 +12,9 @@ import {
   ExternalLink,
   ImageIcon,
   AlertTriangle,
-  Loader2
-} from "lucide-react";
-import { toast } from "sonner";
+  Loader2,
+} from 'lucide-react';
+import { toast } from 'sonner';
 
 // Expected public URL for the opt-in image (hosted in public folder, auto-deployed with app)
 const getExpectedImageUrl = () => {
@@ -22,7 +22,7 @@ const getExpectedImageUrl = () => {
   if (typeof window !== 'undefined') {
     return `${window.location.origin}/telnyx/opt-in-verification.png`;
   }
-  return "/telnyx/opt-in-verification.png";
+  return '/telnyx/opt-in-verification.png';
 };
 
 export function OptInImageStatusCard() {
@@ -35,17 +35,17 @@ export function OptInImageStatusCard() {
     trpc.telnyx.verifyPublicAsset.mutationOptions({
       onSuccess: (data) => {
         if (data.accessible && data.isImage) {
-          toast.success("Image is publicly accessible!");
+          toast.success('Image is publicly accessible!');
         } else if (data.accessible && !data.isImage) {
-          toast.warning("URL is accessible but content is not an image");
+          toast.warning('URL is accessible but content is not an image');
         } else {
-          toast.error(data.error || "Image not accessible");
+          toast.error(data.error || 'Image not accessible');
         }
       },
       onError: (error) => {
         toast.error(`Verification failed: ${error.message}`);
       },
-    })
+    }),
   );
 
   const handleRefresh = async () => {
@@ -59,11 +59,11 @@ export function OptInImageStatusCard() {
 
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(expectedImageUrl);
-    toast.success("URL copied to clipboard");
+    toast.success('URL copied to clipboard');
   };
 
   const formatBytes = (bytes: number | null) => {
-    if (bytes === null) return "Unknown";
+    if (bytes === null) return 'Unknown';
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -87,7 +87,11 @@ export function OptInImageStatusCard() {
       return <Badge className="bg-green-500 hover:bg-green-600">Accessible</Badge>;
     }
     if (data.accessible && !data.isImage) {
-      return <Badge variant="outline" className="border-yellow-500 text-yellow-600">Wrong Content Type</Badge>;
+      return (
+        <Badge variant="outline" className="border-yellow-500 text-yellow-600">
+          Wrong Content Type
+        </Badge>
+      );
     }
     return <Badge variant="destructive">Not Accessible</Badge>;
   };
@@ -115,9 +119,7 @@ export function OptInImageStatusCard() {
           </div>
           {getStatusBadge()}
         </div>
-        <CardDescription>
-          Image URL required for Telnyx toll-free verification
-        </CardDescription>
+        <CardDescription>Image URL required for Telnyx toll-free verification</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* URL Display */}
@@ -134,20 +136,20 @@ export function OptInImageStatusCard() {
         {data && (
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div className="text-muted-foreground">HTTP Status:</div>
-            <div className={data.accessible ? "text-green-600" : "text-destructive"}>
-              {data.status ? `${data.status} ${data.statusText || ""}` : "N/A"}
+            <div className={data.accessible ? 'text-green-600' : 'text-destructive'}>
+              {data.status ? `${data.status} ${data.statusText || ''}` : 'N/A'}
             </div>
 
             <div className="text-muted-foreground">Content Type:</div>
-            <div className={data.isImage ? "text-green-600" : "text-yellow-600"}>
-              {data.contentType || "Unknown"}
+            <div className={data.isImage ? 'text-green-600' : 'text-yellow-600'}>
+              {data.contentType || 'Unknown'}
             </div>
 
             <div className="text-muted-foreground">File Size:</div>
             <div>{formatBytes(data.contentLength)}</div>
 
             <div className="text-muted-foreground">Last Checked:</div>
-            <div>{data.checkedAt ? new Date(data.checkedAt).toLocaleTimeString() : "Never"}</div>
+            <div>{data.checkedAt ? new Date(data.checkedAt).toLocaleTimeString() : 'Never'}</div>
           </div>
         )}
 
@@ -160,7 +162,8 @@ export function OptInImageStatusCard() {
 
         {error && (
           <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive">
-            <strong>Verification check failed:</strong> {error instanceof Error ? error.message : "Unknown error"}
+            <strong>Verification check failed:</strong>{' '}
+            {error instanceof Error ? error.message : 'Unknown error'}
           </div>
         )}
 
@@ -168,8 +171,12 @@ export function OptInImageStatusCard() {
         {data && !data.accessible && (
           <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm">
             <p className="text-yellow-800 dark:text-yellow-200">
-              <strong>Action Required:</strong> The opt-in image is not publicly accessible.
-              Upload it using the <a href="/admin/upload-telnyx-image" className="underline">upload utility</a>.
+              <strong>Action Required:</strong> The opt-in image is not publicly accessible. Upload
+              it using the{' '}
+              <a href="/admin/upload-telnyx-image" className="underline">
+                upload utility
+              </a>
+              .
             </p>
           </div>
         )}
@@ -178,7 +185,8 @@ export function OptInImageStatusCard() {
         {data?.accessible && data?.isImage && (
           <div className="p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg text-sm">
             <p className="text-green-800 dark:text-green-200">
-              <strong>Ready for Telnyx:</strong> This URL is publicly accessible and can be used for toll-free verification.
+              <strong>Ready for Telnyx:</strong> This URL is publicly accessible and can be used for
+              toll-free verification.
             </p>
           </div>
         )}
@@ -191,38 +199,24 @@ export function OptInImageStatusCard() {
             onClick={handleRefresh}
             disabled={isRefreshing || isLoading}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             Verify Now
           </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCopyUrl}
-          >
+          <Button variant="outline" size="sm" onClick={handleCopyUrl}>
             <Copy className="mr-2 h-4 w-4" />
             Copy URL
           </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-          >
+          <Button variant="outline" size="sm" asChild>
             <a href={expectedImageUrl} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="mr-2 h-4 w-4" />
               Preview
             </a>
           </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-          >
-            <a href="/admin/upload-telnyx-image">
-              Upload New
-            </a>
+          <Button variant="outline" size="sm" asChild>
+            <a href="/admin/upload-telnyx-image">Upload New</a>
           </Button>
         </div>
       </CardContent>

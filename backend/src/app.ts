@@ -78,7 +78,12 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
     origin: corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-stack-access-token', 'x-stack-refresh-token'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'x-stack-access-token',
+      'x-stack-refresh-token',
+    ],
   });
 
   // Security headers via helmet
@@ -89,14 +94,14 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         connectSrc: [
           "'self'",
-          "https://api.stack-auth.com",
-          "https://*.thethings.network",
-          "wss://*",
-          "ws://*",
+          'https://api.stack-auth.com',
+          'https://*.thethings.network',
+          'wss://*',
+          'ws://*',
         ],
       },
     },
@@ -173,7 +178,9 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
   app.register(organizationRoutes, { prefix: '/api/orgs' });
   app.register(siteRoutes, { prefix: '/api/orgs/:organizationId/sites' });
   app.register(areaRoutes, { prefix: '/api/orgs/:organizationId/sites/:siteId/areas' });
-  app.register(unitRoutes, { prefix: '/api/orgs/:organizationId/sites/:siteId/areas/:areaId/units' });
+  app.register(unitRoutes, {
+    prefix: '/api/orgs/:organizationId/sites/:siteId/areas/:areaId/units',
+  });
 
   // Register readings routes (ingest and query endpoints)
   app.register(readingsRoutes, { prefix: '/api' });
@@ -221,11 +228,15 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
   app.register(unsubscribeRoutes, { prefix: '/unsubscribe' });
 
   // Example protected route for testing
-  app.get('/api/protected', {
-    preHandler: [requireAuth],
-  }, async (request) => {
-    return { userId: request.user!.id, email: request.user!.email };
-  });
+  app.get(
+    '/api/protected',
+    {
+      preHandler: [requireAuth],
+    },
+    async (request) => {
+      return { userId: request.user!.id, email: request.user!.email };
+    },
+  );
 
   // Example org-scoped route for testing
   app.get<{ Params: { organizationId: string } }>(
@@ -239,7 +250,7 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
         organizationId: request.user!.organizationId,
         role: request.user!.role,
       };
-    }
+    },
   );
 
   // Example admin-only route for testing
@@ -250,7 +261,7 @@ export function buildApp(opts: AppOptions = {}): FastifyInstance {
     },
     async (request) => {
       return { deleted: true };
-    }
+    },
   );
 
   return app;

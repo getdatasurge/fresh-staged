@@ -77,7 +77,7 @@ export async function isAlertInCooldown(alertId: string): Promise<boolean> {
   }
 
   const cooldownEnd = new Date(
-    alert.escalatedAt.getTime() + COOLDOWN_CONFIG.perAlertMinutes * 60 * 1000
+    alert.escalatedAt.getTime() + COOLDOWN_CONFIG.perAlertMinutes * 60 * 1000,
   );
 
   return new Date() < cooldownEnd;
@@ -90,9 +90,7 @@ export async function isAlertInCooldown(alertId: string): Promise<boolean> {
  * @returns True if user should not receive SMS
  */
 export async function isUserInSmsCooldown(userId: string): Promise<boolean> {
-  const cooldownStart = new Date(
-    Date.now() - COOLDOWN_CONFIG.perUserMinutes * 60 * 1000
-  );
+  const cooldownStart = new Date(Date.now() - COOLDOWN_CONFIG.perUserMinutes * 60 * 1000);
 
   const [recentSms] = await db
     .select({ id: notificationDeliveries.id })
@@ -102,8 +100,8 @@ export async function isUserInSmsCooldown(userId: string): Promise<boolean> {
         eq(notificationDeliveries.profileId, userId),
         eq(notificationDeliveries.channel, 'sms'),
         inArray(notificationDeliveries.status, ['sent', 'delivered', 'pending']),
-        gte(notificationDeliveries.scheduledAt, cooldownStart)
-      )
+        gte(notificationDeliveries.scheduledAt, cooldownStart),
+      ),
     )
     .limit(1);
 
@@ -116,12 +114,8 @@ export async function isUserInSmsCooldown(userId: string): Promise<boolean> {
  * @param organizationId - Organization to check
  * @returns True if org is rate limited
  */
-export async function isOrgSmsRateLimited(
-  organizationId: string
-): Promise<boolean> {
-  const windowStart = new Date(
-    Date.now() - COOLDOWN_CONFIG.orgWindowMinutes * 60 * 1000
-  );
+export async function isOrgSmsRateLimited(organizationId: string): Promise<boolean> {
+  const windowStart = new Date(Date.now() - COOLDOWN_CONFIG.orgWindowMinutes * 60 * 1000);
 
   // Count SMS sent in the rate limit window
   // Join through alerts -> units -> areas -> sites to get org
@@ -137,8 +131,8 @@ export async function isOrgSmsRateLimited(
         eq(sites.organizationId, organizationId),
         eq(notificationDeliveries.channel, 'sms'),
         inArray(notificationDeliveries.status, ['sent', 'delivered', 'pending']),
-        gte(notificationDeliveries.scheduledAt, windowStart)
-      )
+        gte(notificationDeliveries.scheduledAt, windowStart),
+      ),
     );
 
   const count = Number(result[0]?.count || 0);
@@ -154,7 +148,7 @@ export async function isOrgSmsRateLimited(
  */
 export async function getEscalationContacts(
   organizationId: string,
-  maxPriority: number
+  maxPriority: number,
 ): Promise<EscalationContact[]> {
   return db
     .select()
@@ -163,10 +157,8 @@ export async function getEscalationContacts(
       and(
         eq(escalationContacts.organizationId, organizationId),
         eq(escalationContacts.isActive, true),
-        maxPriority < 999
-          ? sql`${escalationContacts.priority} <= ${maxPriority}`
-          : sql`1=1` // Include all when maxPriority is 999
-      )
+        maxPriority < 999 ? sql`${escalationContacts.priority} <= ${maxPriority}` : sql`1=1`, // Include all when maxPriority is 999
+      ),
     )
     .orderBy(asc(escalationContacts.priority));
 }
@@ -211,8 +203,7 @@ export async function getAlertsReadyForEscalation(): Promise<
 
     // Calculate time since last escalation (or trigger if never escalated)
     const lastEscalationTime = alert.escalatedAt || alert.triggeredAt;
-    const timeSinceLastEscalation =
-      now.getTime() - lastEscalationTime.getTime();
+    const timeSinceLastEscalation = now.getTime() - lastEscalationTime.getTime();
     const escalationThresholdMs = rule.escalateAfterMinutes * 60 * 1000;
 
     // Check if enough time has passed
@@ -233,8 +224,7 @@ export async function getAlertsReadyForEscalation(): Promise<
  */
 function buildEscalationMessage(alert: Alert, level: number): string {
   const severityLabel = alert.severity.toUpperCase();
-  const levelLabel =
-    level === 1 ? '' : ` (Escalation Level ${level})`;
+  const levelLabel = level === 1 ? '' : ` (Escalation Level ${level})`;
 
   let message = `${severityLabel} ALERT${levelLabel}: `;
 
@@ -266,7 +256,7 @@ function buildEscalationMessage(alert: Alert, level: number): string {
  */
 export async function escalateAlert(
   alertId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<EscalationResult> {
   // Check per-alert cooldown
   if (await isAlertInCooldown(alertId)) {
@@ -291,11 +281,7 @@ export async function escalateAlert(
   }
 
   // Get current alert state
-  const [alert] = await db
-    .select()
-    .from(alerts)
-    .where(eq(alerts.id, alertId))
-    .limit(1);
+  const [alert] = await db.select().from(alerts).where(eq(alerts.id, alertId)).limit(1);
 
   if (!alert) {
     return {
@@ -366,14 +352,14 @@ export async function escalateAlert(
         organizationId,
         updatedAlert,
         newLevel,
-        priorityThreshold
+        priorityThreshold,
       );
     }
   }
 
   console.log(
     `[AlertEscalation] Alert ${alertId} escalated to level ${newLevel}. ` +
-    `SMS queued: ${smsQueued}`
+      `SMS queued: ${smsQueued}`,
   );
 
   return {
@@ -397,7 +383,7 @@ async function queueEscalationSms(
   organizationId: string,
   alert: Alert,
   level: number,
-  maxPriority: number
+  maxPriority: number,
 ): Promise<number> {
   const queueService = getQueueService();
   if (!queueService || !queueService.isRedisEnabled()) {
@@ -417,18 +403,14 @@ async function queueEscalationSms(
 
   for (const contact of contacts) {
     // Check per-user cooldown if contact has a linked profile
-    if (contact.profileId && await isUserInSmsCooldown(contact.profileId)) {
-      console.log(
-        `[AlertEscalation] User ${contact.profileId} in SMS cooldown - skipping`
-      );
+    if (contact.profileId && (await isUserInSmsCooldown(contact.profileId))) {
+      console.log(`[AlertEscalation] User ${contact.profileId} in SMS cooldown - skipping`);
       continue;
     }
 
     // Validate phone number format (E.164)
     if (!contact.phone.startsWith('+')) {
-      console.log(
-        `[AlertEscalation] Invalid phone format for contact ${contact.id} - skipping`
-      );
+      console.log(`[AlertEscalation] Invalid phone format for contact ${contact.id} - skipping`);
       continue;
     }
 
@@ -460,7 +442,7 @@ async function queueEscalationSms(
     // Log with masked phone number
     console.log(
       `[AlertEscalation] Queued SMS for contact ${contact.name} ` +
-      `(${contact.phone.slice(0, 5)}***${contact.phone.slice(-2)})`
+        `(${contact.phone.slice(0, 5)}***${contact.phone.slice(-2)})`,
     );
   }
 
@@ -490,9 +472,7 @@ export async function processEscalations(): Promise<{
 
   try {
     const alertsToEscalate = await getAlertsReadyForEscalation();
-    console.log(
-      `[AlertEscalation] Found ${alertsToEscalate.length} alerts ready for escalation`
-    );
+    console.log(`[AlertEscalation] Found ${alertsToEscalate.length} alerts ready for escalation`);
 
     for (const { alert, organizationId } of alertsToEscalate) {
       summary.processed++;
@@ -504,9 +484,7 @@ export async function processEscalations(): Promise<{
           summary.escalated++;
           summary.smsQueued += result.smsQueued;
         } else {
-          console.log(
-            `[AlertEscalation] Skipped alert ${alert.id}: ${result.skipReason}`
-          );
+          console.log(`[AlertEscalation] Skipped alert ${alert.id}: ${result.skipReason}`);
         }
       } catch (error) {
         console.error(`[AlertEscalation] Error escalating alert ${alert.id}:`, error);
@@ -520,8 +498,8 @@ export async function processEscalations(): Promise<{
 
   console.log(
     `[AlertEscalation] Processing complete. ` +
-    `Processed: ${summary.processed}, Escalated: ${summary.escalated}, ` +
-    `SMS queued: ${summary.smsQueued}, Errors: ${summary.errors}`
+      `Processed: ${summary.processed}, Escalated: ${summary.escalated}, ` +
+      `SMS queued: ${summary.smsQueued}, Errors: ${summary.errors}`,
   );
 
   return summary;
@@ -541,14 +519,10 @@ export async function processEscalations(): Promise<{
 export async function manualEscalate(
   alertId: string,
   organizationId: string,
-  targetLevel: number
+  targetLevel: number,
 ): Promise<EscalationResult> {
   // Get current alert
-  const [alert] = await db
-    .select()
-    .from(alerts)
-    .where(eq(alerts.id, alertId))
-    .limit(1);
+  const [alert] = await db.select().from(alerts).where(eq(alerts.id, alertId)).limit(1);
 
   if (!alert) {
     return {
@@ -630,14 +604,14 @@ export async function manualEscalate(
         organizationId,
         updatedAlert,
         clampedLevel,
-        priorityThreshold
+        priorityThreshold,
       );
     }
   }
 
   console.log(
     `[AlertEscalation] Alert ${alertId} manually escalated to level ${clampedLevel}. ` +
-    `SMS queued: ${smsQueued}`
+      `SMS queued: ${smsQueued}`,
   );
 
   return {
@@ -661,11 +635,7 @@ export async function getEscalationStatus(alertId: string): Promise<{
   nextEscalationAt: Date | null;
   inCooldown: boolean;
 } | null> {
-  const [alert] = await db
-    .select()
-    .from(alerts)
-    .where(eq(alerts.id, alertId))
-    .limit(1);
+  const [alert] = await db.select().from(alerts).where(eq(alerts.id, alertId)).limit(1);
 
   if (!alert) {
     return null;
@@ -683,16 +653,13 @@ export async function getEscalationStatus(alertId: string): Promise<{
   }
 
   const inCooldown = await isAlertInCooldown(alertId);
-  const canEscalate =
-    alert.escalationLevel < rule.maxLevel && !inCooldown;
+  const canEscalate = alert.escalationLevel < rule.maxLevel && !inCooldown;
 
   // Calculate next escalation time
   let nextEscalationAt: Date | null = null;
   if (canEscalate) {
     const lastEscalation = alert.escalatedAt || alert.triggeredAt;
-    nextEscalationAt = new Date(
-      lastEscalation.getTime() + rule.escalateAfterMinutes * 60 * 1000
-    );
+    nextEscalationAt = new Date(lastEscalation.getTime() + rule.escalateAfterMinutes * 60 * 1000);
   }
 
   return {

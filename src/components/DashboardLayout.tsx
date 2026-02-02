@@ -1,22 +1,22 @@
-import BrandedLogo from "@/components/BrandedLogo"
-import { ConnectionStatus } from "@/components/common/ConnectionStatus"
-import { MigrationErrorBoundary } from "@/components/errors/MigrationErrorBoundary"
-import NotificationDropdown from "@/components/NotificationDropdown"
-import { SupportDiagnosticsPanel } from "@/components/platform/SupportDiagnosticsPanel"
-import { ImpersonationBanner, SupportModeBanner } from "@/components/platform/SupportModeBanner"
-import { SidebarSitesAccordion, SidebarUnitsAccordion } from "@/components/sidebar"
-import ThemeToggle from "@/components/ThemeToggle"
-import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useSuperAdmin } from "@/contexts/SuperAdminContext"
-import { useToast } from "@/hooks/use-toast"
-import { useEffectiveIdentity } from "@/hooks/useEffectiveIdentity"
-import { usePermissions } from "@/hooks/useUserRole"
-import { clearOfflineStorage } from "@/lib/offlineStorage"
-import { useTRPC } from "@/lib/trpc"
-import { cn } from "@/lib/utils"
-import { useUser } from "@stackframe/react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import BrandedLogo from '@/components/BrandedLogo';
+import { ConnectionStatus } from '@/components/common/ConnectionStatus';
+import { MigrationErrorBoundary } from '@/components/errors/MigrationErrorBoundary';
+import NotificationDropdown from '@/components/NotificationDropdown';
+import { SupportDiagnosticsPanel } from '@/components/platform/SupportDiagnosticsPanel';
+import { ImpersonationBanner, SupportModeBanner } from '@/components/platform/SupportModeBanner';
+import { SidebarSitesAccordion, SidebarUnitsAccordion } from '@/components/sidebar';
+import ThemeToggle from '@/components/ThemeToggle';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useSuperAdmin } from '@/contexts/SuperAdminContext';
+import { useToast } from '@/hooks/use-toast';
+import { useEffectiveIdentity } from '@/hooks/useEffectiveIdentity';
+import { usePermissions } from '@/hooks/useUserRole';
+import { clearOfflineStorage } from '@/lib/offlineStorage';
+import { useTRPC } from '@/lib/trpc';
+import { cn } from '@/lib/utils';
+import { useUser } from '@stackframe/react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Building2,
   ChevronLeft,
@@ -26,10 +26,10 @@ import {
   Settings,
   Shield,
   Trash2,
-  X
-} from "lucide-react"
-import { ReactNode, useEffect, useRef, useState } from "react"
-import { Link, useLocation, useNavigate } from "react-router-dom"
+  X,
+} from 'lucide-react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -38,19 +38,19 @@ interface DashboardLayoutProps {
   backHref?: string;
 }
 
-import { AlertCircle, ClipboardList, FileBarChart } from "lucide-react"
+import { AlertCircle, ClipboardList, FileBarChart } from 'lucide-react';
 
 // Nav items - Sites and Units handled separately via accordions
 const navItemsBeforeAccordions = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
-  { href: "/organization", label: "Organization", icon: Building2 },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
+  { href: '/organization', label: 'Organization', icon: Building2 },
 ];
 
 const navItemsAfterAccordions = [
-  { href: "/manual-log", label: "Log Temps", icon: ClipboardList },
-  { href: "/alerts", label: "Alerts", icon: AlertCircle },
-  { href: "/reports", label: "Reports", icon: FileBarChart },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: '/manual-log', label: 'Log Temps', icon: ClipboardList },
+  { href: '/alerts', label: 'Alerts', icon: AlertCircle },
+  { href: '/reports', label: 'Reports', icon: FileBarChart },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayoutProps) => {
@@ -60,15 +60,23 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
   const queryClient = useQueryClient();
   const user = useUser();
   const { canDeleteEntities, isLoading: permissionsLoading } = usePermissions();
-  const { isSuperAdmin, isLoadingSuperAdmin, rolesLoaded, isSupportModeActive, impersonation, viewingOrg } = useSuperAdmin();
-  const { effectiveOrgId, effectiveOrgName, isImpersonating, isInitialized, impersonationChecked } = useEffectiveIdentity();
+  const {
+    isSuperAdmin,
+    isLoadingSuperAdmin,
+    rolesLoaded,
+    isSupportModeActive,
+    impersonation,
+    viewingOrg,
+  } = useSuperAdmin();
+  const { effectiveOrgId, effectiveOrgName, isImpersonating, isInitialized, impersonationChecked } =
+    useEffectiveIdentity();
   const trpc = useTRPC();
-  
+
   const alertsQuery = useQuery(
     trpc.alerts.listByOrg.queryOptions(
-      { organizationId: effectiveOrgId || "", status: "active", limit: 1 },
-      { enabled: !!effectiveOrgId }
-    )
+      { organizationId: effectiveOrgId || '', status: 'active', limit: 1 },
+      { enabled: !!effectiveOrgId },
+    ),
   );
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -89,7 +97,14 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
   const prevOrgIdRef = useRef<string | null>(null);
   useEffect(() => {
     if (prevOrgIdRef.current !== effectiveOrgId) {
-      console.warn('[DashboardLayout] Sidebar org:', sidebarOrgId, 'effectiveOrgId:', effectiveOrgId, 'isImpersonating:', isImpersonating);
+      console.warn(
+        '[DashboardLayout] Sidebar org:',
+        sidebarOrgId,
+        'effectiveOrgId:',
+        effectiveOrgId,
+        'isImpersonating:',
+        isImpersonating,
+      );
       prevOrgIdRef.current = effectiveOrgId;
     }
   }, [sidebarOrgId, effectiveOrgId, isImpersonating]);
@@ -98,7 +113,7 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
   useEffect(() => {
     // Wait for roles, effective identity, and impersonation check to complete
     if (!rolesLoaded || !isInitialized || !impersonationChecked) return;
-    
+
     // Add a small delay to allow impersonation state to propagate after navigation
     const timeoutId = setTimeout(() => {
       // Allow main app access if:
@@ -106,23 +121,34 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
       // 2. Support mode is active (viewing as org)
       // 3. Actively impersonating a user
       // 4. Viewing an org (even without full impersonation)
-      const hasOrgContext = isImpersonating || impersonation.isImpersonating || isSupportModeActive || viewingOrg.orgId;
-      
+      const hasOrgContext =
+        isImpersonating || impersonation.isImpersonating || isSupportModeActive || viewingOrg.orgId;
+
       if (isSuperAdmin && !hasOrgContext) {
         // Super admin accessing main app without any org context → redirect to platform
-        navigate("/platform", { replace: true });
+        navigate('/platform', { replace: true });
       }
     }, 50);
 
     return () => clearTimeout(timeoutId);
-  }, [rolesLoaded, isSuperAdmin, isImpersonating, impersonation.isImpersonating, isSupportModeActive, viewingOrg.orgId, isInitialized, impersonationChecked, navigate]);
+  }, [
+    rolesLoaded,
+    isSuperAdmin,
+    isImpersonating,
+    impersonation.isImpersonating,
+    isSupportModeActive,
+    viewingOrg.orgId,
+    isInitialized,
+    impersonationChecked,
+    navigate,
+  ]);
 
   // Stack Auth useUser() is reactive - it updates automatically on auth changes
   // No subscription needed - user object changes trigger re-renders
   useEffect(() => {
     if (!user) {
-      if (location.pathname !== "/auth" && !location.pathname.includes("unsubscribe")) {
-        navigate("/auth");
+      if (location.pathname !== '/auth' && !location.pathname.includes('unsubscribe')) {
+        navigate('/auth');
       }
     }
   }, [user, navigate, location.pathname]);
@@ -140,15 +166,15 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
         await user.signOut();
       }
 
-      toast({ title: "Signed out successfully" });
+      toast({ title: 'Signed out successfully' });
       // Stack Auth useUser() updates automatically, triggering navigation via useEffect
-      navigate("/");
+      navigate('/');
     } catch (err) {
       console.error('Sign out error:', err);
       toast({
-        title: "Sign out failed",
-        description: "An unexpected error occurred",
-        variant: "destructive"
+        title: 'Sign out failed',
+        description: 'An unexpected error occurred',
+        variant: 'destructive',
       });
     }
   };
@@ -168,7 +194,7 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
               <BrandedLogo showText={true} size="md" />
             </Link>
           </div>
-          
+
           {/* Right section - main content area header with matching gutters */}
           <div className="flex-1 flex items-center justify-between px-4 sm:px-6 lg:px-8">
             {/* Mobile: hamburger + logo */}
@@ -180,8 +206,8 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
                   </Button>
                 </Link>
               ) : (
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   className="shrink-0"
                   onClick={() => setMobileNavOpen(!mobileNavOpen)}
@@ -215,7 +241,7 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
             </div>
 
             {/* Frost Pill Divider - desktop only */}
-            <div 
+            <div
               className="hidden lg:block w-0.5 h-8 mx-4 rounded-full bg-muted-foreground/30 shadow-[0_0_8px_hsl(192_85%_45%/0.15)] transition-all duration-200 hover:bg-muted-foreground/50 hover:shadow-[0_0_12px_hsl(192_85%_45%/0.35)] motion-reduce:transition-none"
               aria-hidden="true"
             />
@@ -243,15 +269,16 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {/* Nav items before accordions */}
             {navItemsBeforeAccordions.map((item) => {
-              const isActive = location.pathname === item.href || 
-                (item.href !== "/dashboard" && location.pathname.startsWith(item.href));
+              const isActive =
+                location.pathname === item.href ||
+                (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
               return (
                 <Link key={item.href} to={item.href}>
                   <Button
-                    variant={isActive ? "secondary" : "ghost"}
+                    variant={isActive ? 'secondary' : 'ghost'}
                     className={cn(
-                      "w-full justify-start gap-3",
-                      isActive && "bg-accent/10 text-accent"
+                      'w-full justify-start gap-3',
+                      isActive && 'bg-accent/10 text-accent',
                     )}
                   >
                     <item.icon className="w-5 h-5" />
@@ -269,15 +296,16 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
 
             {/* Nav items after accordions */}
             {navItemsAfterAccordions.map((item) => {
-              const isActive = location.pathname === item.href || 
-                (item.href !== "/dashboard" && location.pathname.startsWith(item.href));
+              const isActive =
+                location.pathname === item.href ||
+                (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
               return (
                 <Link key={item.href} to={item.href}>
                   <Button
-                    variant={isActive ? "secondary" : "ghost"}
+                    variant={isActive ? 'secondary' : 'ghost'}
                     className={cn(
-                      "w-full justify-start gap-3",
-                      isActive && "bg-accent/10 text-accent"
+                      'w-full justify-start gap-3',
+                      isActive && 'bg-accent/10 text-accent',
                     )}
                   >
                     <item.icon className="w-5 h-5" />
@@ -290,10 +318,10 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
             {canDeleteEntities && !permissionsLoading && (
               <Link to="/admin/recently-deleted">
                 <Button
-                  variant={location.pathname === "/admin/recently-deleted" ? "secondary" : "ghost"}
+                  variant={location.pathname === '/admin/recently-deleted' ? 'secondary' : 'ghost'}
                   className={cn(
-                    "w-full justify-start gap-3 mt-4 pt-4 border-t border-border/50",
-                    location.pathname === "/admin/recently-deleted" && "bg-accent/10 text-accent"
+                    'w-full justify-start gap-3 mt-4 pt-4 border-t border-border/50',
+                    location.pathname === '/admin/recently-deleted' && 'bg-accent/10 text-accent',
                   )}
                 >
                   <Trash2 className="w-5 h-5" />
@@ -310,11 +338,12 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
             {rolesLoaded && isSuperAdmin && (
               <Link to="/platform">
                 <Button
-                  variant={location.pathname.startsWith("/platform") ? "secondary" : "ghost"}
+                  variant={location.pathname.startsWith('/platform') ? 'secondary' : 'ghost'}
                   className={cn(
-                    "w-full justify-start gap-3 mt-2",
-                    !canDeleteEntities && "mt-4 pt-4 border-t border-border/50",
-                    location.pathname.startsWith("/platform") && "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                    'w-full justify-start gap-3 mt-2',
+                    !canDeleteEntities && 'mt-4 pt-4 border-t border-border/50',
+                    location.pathname.startsWith('/platform') &&
+                      'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
                   )}
                 >
                   <Shield className="w-5 h-5" />
@@ -336,19 +365,16 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
               <nav className="space-y-1">
                 {/* Nav items before accordions */}
                 {navItemsBeforeAccordions.map((item) => {
-                  const isActive = location.pathname === item.href || 
-                    (item.href !== "/dashboard" && location.pathname.startsWith(item.href));
+                  const isActive =
+                    location.pathname === item.href ||
+                    (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
                   return (
-                    <Link 
-                      key={item.href} 
-                      to={item.href}
-                      onClick={() => setMobileNavOpen(false)}
-                    >
+                    <Link key={item.href} to={item.href} onClick={() => setMobileNavOpen(false)}>
                       <Button
-                        variant={isActive ? "secondary" : "ghost"}
+                        variant={isActive ? 'secondary' : 'ghost'}
                         className={cn(
-                          "w-full justify-start gap-3",
-                          isActive && "bg-accent/10 text-accent"
+                          'w-full justify-start gap-3',
+                          isActive && 'bg-accent/10 text-accent',
                         )}
                       >
                         <item.icon className="w-5 h-5" />
@@ -366,19 +392,16 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
 
                 {/* Nav items after accordions */}
                 {navItemsAfterAccordions.map((item) => {
-                  const isActive = location.pathname === item.href || 
-                    (item.href !== "/dashboard" && location.pathname.startsWith(item.href));
+                  const isActive =
+                    location.pathname === item.href ||
+                    (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
                   return (
-                    <Link 
-                      key={item.href} 
-                      to={item.href}
-                      onClick={() => setMobileNavOpen(false)}
-                    >
+                    <Link key={item.href} to={item.href} onClick={() => setMobileNavOpen(false)}>
                       <Button
-                        variant={isActive ? "secondary" : "ghost"}
+                        variant={isActive ? 'secondary' : 'ghost'}
                         className={cn(
-                          "w-full justify-start gap-3",
-                          isActive && "bg-accent/10 text-accent"
+                          'w-full justify-start gap-3',
+                          isActive && 'bg-accent/10 text-accent',
                         )}
                       >
                         <item.icon className="w-5 h-5" />
@@ -389,15 +412,15 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
                 })}
 
                 {canDeleteEntities && !permissionsLoading && (
-                  <Link
-                    to="/admin/recently-deleted"
-                    onClick={() => setMobileNavOpen(false)}
-                  >
+                  <Link to="/admin/recently-deleted" onClick={() => setMobileNavOpen(false)}>
                     <Button
-                      variant={location.pathname === "/admin/recently-deleted" ? "secondary" : "ghost"}
+                      variant={
+                        location.pathname === '/admin/recently-deleted' ? 'secondary' : 'ghost'
+                      }
                       className={cn(
-                        "w-full justify-start gap-3 mt-4 pt-4 border-t border-border/50",
-                        location.pathname === "/admin/recently-deleted" && "bg-accent/10 text-accent"
+                        'w-full justify-start gap-3 mt-4 pt-4 border-t border-border/50',
+                        location.pathname === '/admin/recently-deleted' &&
+                          'bg-accent/10 text-accent',
                       )}
                     >
                       <Trash2 className="w-5 h-5" />
@@ -412,16 +435,14 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
                   </div>
                 )}
                 {rolesLoaded && isSuperAdmin && (
-                  <Link
-                    to="/platform"
-                    onClick={() => setMobileNavOpen(false)}
-                  >
+                  <Link to="/platform" onClick={() => setMobileNavOpen(false)}>
                     <Button
-                      variant={location.pathname.startsWith("/platform") ? "secondary" : "ghost"}
+                      variant={location.pathname.startsWith('/platform') ? 'secondary' : 'ghost'}
                       className={cn(
-                        "w-full justify-start gap-3 mt-2",
-                        !canDeleteEntities && "mt-4 pt-4 border-t border-border/50",
-                        location.pathname.startsWith("/platform") && "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                        'w-full justify-start gap-3 mt-2',
+                        !canDeleteEntities && 'mt-4 pt-4 border-t border-border/50',
+                        location.pathname.startsWith('/platform') &&
+                          'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
                       )}
                     >
                       <Shield className="w-5 h-5" />
@@ -437,15 +458,11 @@ const DashboardLayout = ({ children, title, showBack, backHref }: DashboardLayou
         {/* Main Content */}
         <main className="flex-1 lg:ml-64 min-w-0 overflow-x-hidden">
           <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
-            {title && (
-              <h1 className="text-2xl font-bold text-foreground mb-6">{title}</h1>
-            )}
-            <MigrationErrorBoundary>
-              {children}
-            </MigrationErrorBoundary>
+            {title && <h1 className="text-2xl font-bold text-foreground mb-6">{title}</h1>}
+            <MigrationErrorBoundary>{children}</MigrationErrorBoundary>
           </div>
         </main>
-        
+
         {/* Support Diagnostics Panel - visible only to Super Admins in support mode */}
         <SupportDiagnosticsPanel />
       </div>

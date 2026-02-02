@@ -1,24 +1,24 @@
 /**
  * Layout Validation Hook
- * 
+ *
  * Validates layout configuration before saving, checking for:
  * - Missing mandatory widgets
  * - Widget data binding issues (capability-based validation)
  * - Missing required data sources
  */
 
-import { useMemo } from "react";
-import { WIDGET_REGISTRY, getMandatoryWidgets } from "../registry/widgetRegistry";
-import type { LayoutConfig } from "../types";
-import type { EntityType } from "../hooks/useEntityLayoutStorage";
-import type { DeviceCapability } from "@/lib/registry/capabilityRegistry";
-import { 
-  checkWidgetCompatibility, 
+import { useMemo } from 'react';
+import { WIDGET_REGISTRY, getMandatoryWidgets } from '../registry/widgetRegistry';
+import type { LayoutConfig } from '../types';
+import type { EntityType } from '../hooks/useEntityLayoutStorage';
+import type { DeviceCapability } from '@/lib/registry/capabilityRegistry';
+import {
+  checkWidgetCompatibility,
   checkWidgetCompatibilityBySensorType,
-  type CompatibilityResult 
-} from "../utils/compatibilityMatrix";
+  type CompatibilityResult,
+} from '../utils/compatibilityMatrix';
 
-export type ValidationSeverity = "error" | "warning" | "info";
+export type ValidationSeverity = 'error' | 'warning' | 'info';
 
 export interface ValidationIssue {
   id: string;
@@ -49,11 +49,11 @@ interface ValidationContext {
   unitCapabilities?: DeviceCapability[];
   payloadType?: string;
   bindingConfidence?: number;
-  
+
   // Legacy support
   hasSensor: boolean;
   sensorType?: string;
-  
+
   // Other context
   hasLocationConfigured: boolean;
   hasManualLoggingEnabled: boolean;
@@ -65,34 +65,34 @@ interface ValidationContext {
 function capabilityResultToIssue(
   widgetId: string,
   widgetName: string,
-  result: CompatibilityResult
+  result: CompatibilityResult,
 ): ValidationIssue | null {
   if (result.compatible && !result.partial) {
     return null;
   }
-  
+
   if (!result.compatible) {
     return {
       id: `capability-${widgetId}`,
       widgetId,
       widgetName,
-      severity: "warning",
-      message: result.reason ?? "Missing required capabilities",
-      action: { label: "Configure Sensor", href: "#sensors" },
+      severity: 'warning',
+      message: result.reason ?? 'Missing required capabilities',
+      action: { label: 'Configure Sensor', href: '#sensors' },
     };
   }
-  
+
   // Partial compatibility
   if (result.partial && result.reason) {
     return {
       id: `capability-partial-${widgetId}`,
       widgetId,
       widgetName,
-      severity: "info",
+      severity: 'info',
       message: result.reason,
     };
   }
-  
+
   return null;
 }
 
@@ -101,40 +101,40 @@ function capabilityResultToIssue(
  */
 function validateWidgetCapabilities(
   widgetId: string,
-  context: ValidationContext
+  context: ValidationContext,
 ): ValidationIssue | null {
   const widgetDef = WIDGET_REGISTRY[widgetId];
   if (!widgetDef) return null;
-  
+
   // If widget has no capability requirements, skip validation
   if (!widgetDef.requiredCapabilities || widgetDef.requiredCapabilities.length === 0) {
     return null;
   }
-  
+
   // Use capability-based validation if capabilities are available
   if (context.unitCapabilities && context.unitCapabilities.length > 0) {
     const result = checkWidgetCompatibility(widgetId, context.unitCapabilities);
     return capabilityResultToIssue(widgetId, widgetDef.name, result);
   }
-  
+
   // Fallback to sensor type-based validation
   if (context.sensorType) {
     const result = checkWidgetCompatibilityBySensorType(widgetId, context.sensorType);
     return capabilityResultToIssue(widgetId, widgetDef.name, result);
   }
-  
+
   // No sensor assigned at all
   if (!context.hasSensor) {
     return {
       id: `no-sensor-${widgetId}`,
       widgetId,
       widgetName: widgetDef.name,
-      severity: "warning",
-      message: "No sensor assigned to this unit",
-      action: { label: "Assign Sensor", href: "#sensors" },
+      severity: 'warning',
+      message: 'No sensor assigned to this unit',
+      action: { label: 'Assign Sensor', href: '#sensors' },
     };
   }
-  
+
   return null;
 }
 
@@ -143,7 +143,7 @@ function validateWidgetCapabilities(
  */
 function validateLegacyDataSource(
   widgetId: string,
-  context: ValidationContext
+  context: ValidationContext,
 ): ValidationIssue | null {
   const widgetDef = WIDGET_REGISTRY[widgetId];
   if (!widgetDef?.requiredDataSource) return null;
@@ -151,37 +151,37 @@ function validateLegacyDataSource(
   const { type, message } = widgetDef.requiredDataSource;
 
   switch (type) {
-    case "weather":
+    case 'weather':
       if (!context.hasLocationConfigured) {
         return {
           id: `binding-${widgetId}-location`,
           widgetId,
           widgetName: widgetDef.name,
-          severity: "warning",
-          message: message || "Requires site location to be configured",
-          action: { label: "Set Location" },
+          severity: 'warning',
+          message: message || 'Requires site location to be configured',
+          action: { label: 'Set Location' },
         };
       }
       break;
 
-    case "manual_log":
+    case 'manual_log':
       if (!context.hasManualLoggingEnabled) {
         return {
           id: `binding-${widgetId}-manual`,
           widgetId,
           widgetName: widgetDef.name,
-          severity: "info",
-          message: message || "Works best with manual logging enabled",
+          severity: 'info',
+          message: message || 'Works best with manual logging enabled',
         };
       }
       break;
 
-    case "gateway":
-    case "none":
+    case 'gateway':
+    case 'none':
       // No validation needed
       break;
-      
-    case "sensor":
+
+    case 'sensor':
       // Handled by capability validation
       break;
   }
@@ -203,7 +203,7 @@ export function useLayoutValidation(
     payloadType?: string;
     bindingConfidence?: number;
     hasLocationConfigured?: boolean;
-  } = {}
+  } = {},
 ): LayoutValidationResult {
   return useMemo(() => {
     const issues: ValidationIssue[] = [];
@@ -234,7 +234,7 @@ export function useLayoutValidation(
           id: `missing-${widget.id}`,
           widgetId: widget.id,
           widgetName: widget.name,
-          severity: "error",
+          severity: 'error',
           message: `Required widget "${widget.name}" is missing from layout`,
         });
       }
@@ -247,12 +247,14 @@ export function useLayoutValidation(
       if (capabilityIssue) {
         issues.push(capabilityIssue);
       }
-      
+
       // Legacy validation for non-sensor requirements
       const legacyIssue = validateLegacyDataSource(widgetPos.i, validationContext);
       if (legacyIssue) {
         // Don't duplicate issues
-        const isDuplicate = issues.some(i => i.widgetId === legacyIssue.widgetId && i.id !== legacyIssue.id);
+        const isDuplicate = issues.some(
+          (i) => i.widgetId === legacyIssue.widgetId && i.id !== legacyIssue.id,
+        );
         if (!isDuplicate) {
           issues.push(legacyIssue);
         }
@@ -260,8 +262,8 @@ export function useLayoutValidation(
     }
 
     // Calculate counts
-    const errorCount = issues.filter((i) => i.severity === "error").length;
-    const warningCount = issues.filter((i) => i.severity === "warning").length;
+    const errorCount = issues.filter((i) => i.severity === 'error').length;
+    const warningCount = issues.filter((i) => i.severity === 'warning').length;
 
     return {
       isValid: errorCount === 0,
@@ -272,10 +274,10 @@ export function useLayoutValidation(
       warningCount,
     };
   }, [
-    config, 
-    entityType, 
-    context.hasSensor, 
-    context.sensorType, 
+    config,
+    entityType,
+    context.hasSensor,
+    context.sensorType,
     context.unitCapabilities,
     context.payloadType,
     context.bindingConfidence,
@@ -289,7 +291,7 @@ export function useLayoutValidation(
 export function canAddWidget(
   widgetId: string,
   unitCapabilities?: DeviceCapability[],
-  sensorType?: string
+  sensorType?: string,
 ): { canAdd: boolean; reason: string | null } {
   if (unitCapabilities && unitCapabilities.length > 0) {
     const result = checkWidgetCompatibility(widgetId, unitCapabilities);
@@ -298,7 +300,7 @@ export function canAddWidget(
       reason: result.reason,
     };
   }
-  
+
   if (sensorType) {
     const result = checkWidgetCompatibilityBySensorType(widgetId, sensorType);
     return {
@@ -306,15 +308,15 @@ export function canAddWidget(
       reason: result.reason,
     };
   }
-  
+
   // No sensor info - check if widget requires capabilities
   const widget = WIDGET_REGISTRY[widgetId];
   if (widget?.requiredCapabilities && widget.requiredCapabilities.length > 0) {
     return {
       canAdd: false,
-      reason: "No sensor assigned",
+      reason: 'No sensor assigned',
     };
   }
-  
+
   return { canAdd: true, reason: null };
 }

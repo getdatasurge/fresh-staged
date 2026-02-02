@@ -20,16 +20,16 @@ key-files:
     - src/hooks/useTTNOperations.ts
 
 decisions:
-  - decision: "Pass Stack Auth token via x-stack-access-token header to edge functions"
-    rationale: "Consistent header name for edge function validation, distinct from Authorization header"
-  - decision: "Extract common invokeEdgeFunction helper in useTTNOperations"
-    rationale: "DRY pattern for edge function calls - single place to handle token injection and error handling"
-  - decision: "Mark all Supabase edge function calls with TODO Phase 6"
-    rationale: "Clear migration path - Phase 6 will replace edge functions with backend API/job queue"
+  - decision: 'Pass Stack Auth token via x-stack-access-token header to edge functions'
+    rationale: 'Consistent header name for edge function validation, distinct from Authorization header'
+  - decision: 'Extract common invokeEdgeFunction helper in useTTNOperations'
+    rationale: 'DRY pattern for edge function calls - single place to handle token injection and error handling'
+  - decision: 'Mark all Supabase edge function calls with TODO Phase 6'
+    rationale: 'Clear migration path - Phase 6 will replace edge functions with backend API/job queue'
 
 metrics:
   completed: 2026-01-23
-  duration: "3 minutes 58 seconds"
+  duration: '3 minutes 58 seconds'
   tasks_completed: 4/4
   commits: 4
 ---
@@ -49,6 +49,7 @@ Migrated all 4 TTN (The Things Network) configuration hooks from Supabase auth t
 **File:** `src/hooks/useTTNSettings.ts`
 
 **Migration changes:**
+
 - Replaced `supabase.auth.getUser()` with `useUser()` from Stack Auth
 - Pass Stack Auth token to `manage-ttn-settings` edge function via `x-stack-access-token` header
 - Mark edge function call with TODO Phase 6 for backend API migration
@@ -56,6 +57,7 @@ Migrated all 4 TTN (The Things Network) configuration hooks from Supabase auth t
 - Preserved all functionality: loadSettings, checkBootstrapHealth, computed states
 
 **Edge functions called:**
+
 - `manage-ttn-settings` (action: "get")
 
 **Result:** TTN settings loading works with Stack Auth identity
@@ -65,6 +67,7 @@ Migrated all 4 TTN (The Things Network) configuration hooks from Supabase auth t
 **File:** `src/hooks/useTTNApiKey.ts`
 
 **Migration changes:**
+
 - Replaced `supabase.auth.getSession()` with `useUser()` from Stack Auth
 - Pass Stack Auth token to `ttn-bootstrap` edge function via `x-stack-access-token` header
 - Two edge function operations: validate_only and save_and_configure
@@ -73,6 +76,7 @@ Migrated all 4 TTN (The Things Network) configuration hooks from Supabase auth t
 - Preserved client-side validation logic, bootstrap results, error handling
 
 **Edge functions called:**
+
 - `ttn-bootstrap` (action: "validate_only") - preflight validation
 - `ttn-bootstrap` (action: "save_and_configure") - save and configure webhook
 
@@ -83,6 +87,7 @@ Migrated all 4 TTN (The Things Network) configuration hooks from Supabase auth t
 **File:** `src/hooks/useTTNWebhook.ts`
 
 **Migration changes:**
+
 - Replaced `supabase.auth.getSession()` with `useUser()` from Stack Auth
 - Pass Stack Auth token to edge functions via `x-stack-access-token` header
 - Mark edge function calls with TODO Phase 6 for backend API migration
@@ -90,6 +95,7 @@ Migrated all 4 TTN (The Things Network) configuration hooks from Supabase auth t
 - Preserved webhook draft editing, validation, event toggle logic
 
 **Edge functions called:**
+
 - `update-ttn-webhook` - update webhook configuration
 - `ttn-provision-org` (action: "regenerate_webhook_secret") - regenerate secret
 
@@ -100,6 +106,7 @@ Migrated all 4 TTN (The Things Network) configuration hooks from Supabase auth t
 **File:** `src/hooks/useTTNOperations.ts`
 
 **Migration changes:**
+
 - Replaced `supabase.auth.getUser()` and `supabase.auth.getSession()` with `useUser()` from Stack Auth
 - Extracted common `invokeEdgeFunction` helper with Stack Auth token injection
 - Pass Stack Auth token to all edge functions via `x-stack-access-token` header
@@ -108,24 +115,29 @@ Migrated all 4 TTN (The Things Network) configuration hooks from Supabase auth t
 - Preserved provisioning, testing, toggle enabled logic
 
 **Edge functions called:**
+
 - `ttn-provision-org` (action: "provision" or "retry") - provision TTN application
 - `manage-ttn-settings` (action: "test") - test connection
 - `manage-ttn-settings` (action: "update") - toggle enabled state
 
 **invokeEdgeFunction helper pattern:**
+
 ```typescript
-const invokeEdgeFunction = useCallback(async (functionName: string, payload: any) => {
-  if (!user) throw new Error('Not authenticated');
-  const { accessToken } = await user.getAuthJson();
+const invokeEdgeFunction = useCallback(
+  async (functionName: string, payload: any) => {
+    if (!user) throw new Error('Not authenticated');
+    const { accessToken } = await user.getAuthJson();
 
-  const { data, error } = await supabase.functions.invoke(functionName, {
-    body: { organization_id: organizationId, ...payload },
-    headers: { 'x-stack-access-token': accessToken },
-  });
+    const { data, error } = await supabase.functions.invoke(functionName, {
+      body: { organization_id: organizationId, ...payload },
+      headers: { 'x-stack-access-token': accessToken },
+    });
 
-  if (error) throw error;
-  return data;
-}, [user, organizationId]);
+    if (error) throw error;
+    return data;
+  },
+  [user, organizationId],
+);
 ```
 
 **Result:** TTN provisioning, testing, and operations work with Stack Auth identity
@@ -199,6 +211,7 @@ const { data, error } = await supabase.functions.invoke('edge-function-name', {
 ```
 
 This pattern:
+
 - Uses Stack Auth useUser() for identity
 - Extracts access token via getAuthJson()
 - Passes token via x-stack-access-token header (not Authorization)
@@ -209,18 +222,21 @@ This pattern:
 useTTNOperations extracts the edge function call pattern into a reusable helper:
 
 ```typescript
-const invokeEdgeFunction = useCallback(async (functionName: string, payload: any) => {
-  if (!user) throw new Error('Not authenticated');
-  const { accessToken } = await user.getAuthJson();
+const invokeEdgeFunction = useCallback(
+  async (functionName: string, payload: any) => {
+    if (!user) throw new Error('Not authenticated');
+    const { accessToken } = await user.getAuthJson();
 
-  const { data, error } = await supabase.functions.invoke(functionName, {
-    body: { organization_id: organizationId, ...payload },
-    headers: { 'x-stack-access-token': accessToken },
-  });
+    const { data, error } = await supabase.functions.invoke(functionName, {
+      body: { organization_id: organizationId, ...payload },
+      headers: { 'x-stack-access-token': accessToken },
+    });
 
-  if (error) throw error;
-  return data;
-}, [user, organizationId]);
+    if (error) throw error;
+    return data;
+  },
+  [user, organizationId],
+);
 ```
 
 This reduces duplication across multiple edge function calls (provision, test, toggle).
@@ -228,6 +244,7 @@ This reduces duplication across multiple edge function calls (provision, test, t
 ### Phase 6 Migration Strategy
 
 All edge function calls are marked with TODO Phase 6 comments:
+
 - Edge functions will be replaced with backend API endpoints or job queue
 - Token header pattern (x-stack-access-token) will be replaced with standard Authorization: Bearer
 - Hook interfaces will remain unchanged - only implementation changes
@@ -237,6 +254,7 @@ When Phase 6 implements backend TTN endpoints, only the TODO sections need updat
 ## Edge Functions Inventory
 
 **Edge functions called by TTN hooks:**
+
 1. `manage-ttn-settings` (get, test, update actions)
 2. `ttn-bootstrap` (validate_only, save_and_configure actions)
 3. `update-ttn-webhook` (webhook configuration)
@@ -253,6 +271,7 @@ All now receive Stack Auth token via x-stack-access-token header.
 **Concerns:** None - TTN hooks work in hybrid mode (Stack Auth + Supabase edge functions)
 
 **Dependencies satisfied for:**
+
 - 05-09: Battery forecast and offline sync hooks (if they use TTN data)
 - 05-10: Setup wizard hooks (may use TTN operations)
 - All subsequent plans that interact with TTN configuration

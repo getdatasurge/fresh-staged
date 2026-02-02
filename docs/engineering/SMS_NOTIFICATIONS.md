@@ -23,17 +23,18 @@ FreshTrack Pro uses **Telnyx** as the sole SMS provider for critical alert deliv
 
 ### Key Configuration
 
-| Property | Value |
-|----------|-------|
-| **Provider** | Telnyx |
-| **Messaging Profile** | `frost guard` |
-| **Profile ID** | `40019baa-aa62-463c-b254-463c66f4b2d3` |
-| **Phone Number** | `+18889890560` (Toll-Free) |
-| **Verification ID** | `99ac127c-6dae-57ee-afc4-32949ac9124e` |
+| Property              | Value                                  |
+| --------------------- | -------------------------------------- |
+| **Provider**          | Telnyx                                 |
+| **Messaging Profile** | `frost guard`                          |
+| **Profile ID**        | `40019baa-aa62-463c-b254-463c66f4b2d3` |
+| **Phone Number**      | `+18889890560` (Toll-Free)             |
+| **Verification ID**   | `99ac127c-6dae-57ee-afc4-32949ac9124e` |
 
 ### When SMS is Sent
 
 SMS alerts are triggered by the `process-escalations` edge function when:
+
 - An alert reaches `critical` severity
 - The notification policy includes SMS as a channel
 - The escalation contact has a valid phone number
@@ -87,16 +88,16 @@ SMS alerts are triggered by the `process-escalations` edge function when:
 
 ### Components
 
-| Component | Purpose | Location |
-|-----------|---------|----------|
-| `process-escalations` | Orchestrates all notifications | `supabase/functions/process-escalations/` |
-| `send-sms-alert` | Sends SMS via Telnyx API | `supabase/functions/send-sms-alert/` |
-| `telnyx-webhook` | Receives delivery status | `supabase/functions/telnyx-webhook/` |
-| `telnyx-verification-status` | Checks toll-free verification | `supabase/functions/telnyx-verification-status/` |
-| `telnyx-configure-webhook` | Automates webhook setup | `supabase/functions/telnyx-configure-webhook/` |
-| `SmsAlertHistory.tsx` | UI for viewing SMS history | `src/components/settings/` |
-| `TelnyxWebhookUrlsCard.tsx` | Displays webhook URLs | `src/components/settings/` |
-| `TollFreeVerificationCard.tsx` | Shows verification status | `src/components/settings/` |
+| Component                      | Purpose                        | Location                                         |
+| ------------------------------ | ------------------------------ | ------------------------------------------------ |
+| `process-escalations`          | Orchestrates all notifications | `supabase/functions/process-escalations/`        |
+| `send-sms-alert`               | Sends SMS via Telnyx API       | `supabase/functions/send-sms-alert/`             |
+| `telnyx-webhook`               | Receives delivery status       | `supabase/functions/telnyx-webhook/`             |
+| `telnyx-verification-status`   | Checks toll-free verification  | `supabase/functions/telnyx-verification-status/` |
+| `telnyx-configure-webhook`     | Automates webhook setup        | `supabase/functions/telnyx-configure-webhook/`   |
+| `SmsAlertHistory.tsx`          | UI for viewing SMS history     | `src/components/settings/`                       |
+| `TelnyxWebhookUrlsCard.tsx`    | Displays webhook URLs          | `src/components/settings/`                       |
+| `TollFreeVerificationCard.tsx` | Shows verification status      | `src/components/settings/`                       |
 
 ---
 
@@ -106,12 +107,12 @@ SMS alerts are triggered by the `process-escalations` edge function when:
 
 Set these in Supabase secrets:
 
-| Secret | Description | Example |
-|--------|-------------|---------|
-| `TELNYX_API_KEY` | API key from Telnyx portal | `KEY01234567890ABCDEF...` |
-| `TELNYX_PHONE_NUMBER` | Toll-free sender number | `+18889890560` |
-| `TELNYX_MESSAGING_PROFILE_ID` | Profile ID for routing | `40019baa-aa62-463c-b254-463c66f4b2d3` |
-| `TELNYX_PUBLIC_KEY` | Ed25519 public key for webhook verification | `MFkwEwYHKoZIzj0C...` |
+| Secret                        | Description                                 | Example                                |
+| ----------------------------- | ------------------------------------------- | -------------------------------------- |
+| `TELNYX_API_KEY`              | API key from Telnyx portal                  | `KEY01234567890ABCDEF...`              |
+| `TELNYX_PHONE_NUMBER`         | Toll-free sender number                     | `+18889890560`                         |
+| `TELNYX_MESSAGING_PROFILE_ID` | Profile ID for routing                      | `40019baa-aa62-463c-b254-463c66f4b2d3` |
+| `TELNYX_PUBLIC_KEY`           | Ed25519 public key for webhook verification | `MFkwEwYHKoZIzj0C...`                  |
 
 ```bash
 # Set via Supabase CLI
@@ -125,13 +126,14 @@ supabase secrets set TELNYX_PUBLIC_KEY=your-ed25519-public-key
 
 Configure in Telnyx Portal → Messaging → Messaging Profiles → "frost guard":
 
-| Setting | Value |
-|---------|-------|
-| **Webhook URL** | `https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/telnyx-webhook` |
+| Setting          | Value                                                                  |
+| ---------------- | ---------------------------------------------------------------------- |
+| **Webhook URL**  | `https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/telnyx-webhook` |
 | **Failover URL** | `https://mfwyiifehsvwnjwqoxht.supabase.co/functions/v1/telnyx-webhook` |
-| **API Version** | `2` |
+| **API Version**  | `2`                                                                    |
 
 **Required Event Types:**
+
 - ✅ `message.sent`
 - ✅ `message.delivered`
 - ✅ `message.failed`
@@ -167,7 +169,7 @@ const payload = {
 const response = await fetch('https://api.telnyx.com/v2/messages', {
   method: 'POST',
   headers: {
-    'Authorization': `Bearer ${TELNYX_API_KEY}`,
+    Authorization: `Bearer ${TELNYX_API_KEY}`,
     'Content-Type': 'application/json',
   },
   body: JSON.stringify(payload),
@@ -191,11 +193,11 @@ INSERT INTO sms_alert_log (
 
 Telnyx sends webhook events as the message progresses:
 
-| Event | Meaning | Action |
-|-------|---------|--------|
-| `message.sent` | Accepted by carrier | Update status to `sent` |
-| `message.delivered` | Delivered to device | Update status to `delivered` |
-| `message.failed` | Delivery failed | Update status to `failed`, log error |
+| Event               | Meaning             | Action                               |
+| ------------------- | ------------------- | ------------------------------------ |
+| `message.sent`      | Accepted by carrier | Update status to `sent`              |
+| `message.delivered` | Delivered to device | Update status to `delivered`         |
+| `message.failed`    | Delivery failed     | Update status to `failed`, log error |
 
 ### 5. Status Updated
 
@@ -220,11 +222,7 @@ const signature = req.headers['telnyx-signature-ed25519'];
 const timestamp = req.headers['telnyx-timestamp'];
 const payload = await req.text();
 
-const isValid = verifyEd25519Signature(
-  TELNYX_PUBLIC_KEY,
-  signature,
-  timestamp + '|' + payload
-);
+const isValid = verifyEd25519Signature(TELNYX_PUBLIC_KEY, signature, timestamp + '|' + payload);
 
 if (!isValid) {
   return new Response('Invalid signature', { status: 401 });
@@ -253,6 +251,7 @@ switch (event.event_type) {
 ### Inbound Message Handling
 
 When users reply STOP or HELP:
+
 - Telnyx automatically handles opt-out
 - `message.received` webhook logs the response
 - User preference is tracked for future sends
@@ -322,12 +321,14 @@ Toll-free numbers require verification before sending SMS at scale:
 4. **Opt-In Proof** - Submit opt-in asset
 
 **Current Status:**
+
 - Verification ID: `99ac127c-6dae-57ee-afc4-32949ac9124e`
 - Check status in Settings → Notifications
 
 ### Opt-In Requirements
 
 FreshTrack collects consent when adding escalation contacts:
+
 - Checkbox confirming SMS consent
 - Opt-in asset: `src/assets/telnyx-opt-in-verification.png`
 - Records timestamp of consent
@@ -350,15 +351,15 @@ FreshTrack collects consent when adding escalation contacts:
 
 ### Common Issues
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| SMS not delivered | Invalid phone format | Ensure E.164 format (`+15551234567`) |
-| Delivery failed | Number opted out | User replies START to opt back in |
-| Auth error | Invalid API key | Regenerate key in Telnyx portal |
-| Rate limited | Too many SMS | Check escalation policy timing |
+| Issue                 | Cause                  | Solution                               |
+| --------------------- | ---------------------- | -------------------------------------- |
+| SMS not delivered     | Invalid phone format   | Ensure E.164 format (`+15551234567`)   |
+| Delivery failed       | Number opted out       | User replies START to opt back in      |
+| Auth error            | Invalid API key        | Regenerate key in Telnyx portal        |
+| Rate limited          | Too many SMS           | Check escalation policy timing         |
 | Webhook not receiving | Wrong URL or signature | Verify webhook config in Telnyx portal |
-| Toll-free rejected | Unverified number | Complete toll-free verification |
-| Signature invalid | Wrong public key | Update `TELNYX_PUBLIC_KEY` secret |
+| Toll-free rejected    | Unverified number      | Complete toll-free verification        |
+| Signature invalid     | Wrong public key       | Update `TELNYX_PUBLIC_KEY` secret      |
 
 ### Debugging Checklist
 
@@ -372,15 +373,15 @@ FreshTrack collects consent when adding escalation contacts:
 
 ### Error Codes
 
-| Code | Meaning | Resolution |
-|------|---------|------------|
-| 10009 | Authentication failed | Check API key |
-| 40001 | Landline destination | Use mobile number |
-| 40300 | Number opted out | Recipient replies START |
-| 40310 | Invalid number | Check E.164 format |
-| 40311 | Not SMS-capable | Use different number |
-| 40002/40003 | Message blocked | Check content for spam triggers |
-| 40008 | Toll-free unverified | Complete verification |
+| Code        | Meaning               | Resolution                      |
+| ----------- | --------------------- | ------------------------------- |
+| 10009       | Authentication failed | Check API key                   |
+| 40001       | Landline destination  | Use mobile number               |
+| 40300       | Number opted out      | Recipient replies START         |
+| 40310       | Invalid number        | Check E.164 format              |
+| 40311       | Not SMS-capable       | Use different number            |
+| 40002/40003 | Message blocked       | Check content for spam triggers |
+| 40008       | Toll-free unverified  | Complete verification           |
 
 ### Useful Queries
 
@@ -417,4 +418,4 @@ WHERE error_message LIKE '%opted out%'
 
 ---
 
-*Last Updated: January 2025*
+_Last Updated: January 2025_

@@ -20,9 +20,7 @@ export interface AvailabilityResult {
  * @param email - Email address to check
  * @returns Availability result indicating if email is not yet registered
  */
-export async function checkEmailAvailability(
-  email: string
-): Promise<AvailabilityResult> {
+export async function checkEmailAvailability(email: string): Promise<AvailabilityResult> {
   const normalizedEmail = email.toLowerCase().trim();
 
   const [existing] = await db
@@ -40,9 +38,7 @@ export async function checkEmailAvailability(
  * @param phone - Phone number to check (E.164 format recommended)
  * @returns Availability result indicating if phone is not yet registered
  */
-export async function checkPhoneAvailability(
-  phone: string
-): Promise<AvailabilityResult> {
+export async function checkPhoneAvailability(phone: string): Promise<AvailabilityResult> {
   // Normalize phone: remove spaces, dashes, parentheses
   const normalizedPhone = phone.replace(/[\s\-()]/g, '').trim();
 

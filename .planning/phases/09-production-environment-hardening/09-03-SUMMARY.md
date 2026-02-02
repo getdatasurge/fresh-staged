@@ -67,10 +67,12 @@ Both overlays layer on top of `docker-compose.yml` (base) and `compose.prod.yaml
 ## Tasks Completed
 
 ### Task 1: Create Self-Hosted Deployment Overlay ✓
+
 **Commit:** `05a1e15`
 **Files:** `docker/compose.selfhosted.yaml`
 
 Created self-hosted deployment overlay with:
+
 - Localhost-only port bindings (127.0.0.1:) for postgres, pgbouncer, redis, minio
 - Secrets from Infisical file mounts (`/var/infisical/secrets/`)
 - Caddy and backend service definitions (commented until services exist in base)
@@ -79,15 +81,18 @@ Created self-hosted deployment overlay with:
 Security feature: Only Caddy reverse proxy should be externally accessible; all internal services bound to localhost.
 
 **Verification:**
+
 - 5 localhost bindings detected
 - Validates cleanly with base + production overlay
 - Secrets section defined with Infisical file sources
 
 ### Task 2: Create DigitalOcean Deployment Overlay ✓
+
 **Commit:** `fd8c6f9`
 **Files:** `docker/compose.digitalocean.yaml`
 
 Created DigitalOcean deployment overlay with:
+
 - Reduced resource limits for smaller Droplets (postgres: 1GB RAM vs 2GB)
 - Redis: 512MB limit (vs 768MB in production base)
 - MinIO: 1GB limit (vs 2GB in production base)
@@ -97,6 +102,7 @@ Created DigitalOcean deployment overlay with:
 - Same secrets pattern as self-hosted (Infisical file mounts)
 
 **Verification:**
+
 - File exists and validates with full compose stack
 - Reduced resource limits defined for DO Droplet constraints
 - Secrets section matches self-hosted pattern
@@ -124,10 +130,11 @@ Self-hosted overlay binds internal services to 127.0.0.1 to prevent external acc
 ```yaml
 postgres:
   ports:
-    - "127.0.0.1:5432:5432"  # Only accessible from host
+    - '127.0.0.1:5432:5432' # Only accessible from host
 ```
 
 This means:
+
 - Services can only be accessed from the host machine
 - Container-to-container networking still works
 - External access goes through Caddy reverse proxy (ports 80/443)
@@ -178,11 +185,13 @@ None - plan executed exactly as written.
 ## What's Next
 
 **Immediate (Phase 9):**
+
 - 09-04: Create observability config files (Prometheus, Loki, Promtail, Grafana)
 - 09-05: Create Caddy reverse proxy configuration
 - 09-06: Create deployment scripts for self-hosted and DigitalOcean
 
 **Later (Phase 11):**
+
 - Deployment documentation referencing these overlays
 - Infisical Agent setup guide for `/var/infisical/secrets/` path
 - Backend service definition to uncomment backend/caddy sections
@@ -201,6 +210,7 @@ DigitalOcean overlay supports switching to managed PostgreSQL by commenting out 
 ## Files Reference
 
 ### compose.selfhosted.yaml
+
 ```yaml
 # Services with localhost bindings:
 - postgres: 127.0.0.1:5432
@@ -215,6 +225,7 @@ DigitalOcean overlay supports switching to managed PostgreSQL by commenting out 
 ```
 
 ### compose.digitalocean.yaml
+
 ```yaml
 # Reduced resource limits:
 - postgres: 1GB RAM (vs 2GB)

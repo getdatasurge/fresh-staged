@@ -6,18 +6,10 @@ export type {
   SensorForEligibility,
   GatewayForEligibility,
   ActionPermissions,
-} from "./types";
+} from './types';
 
 // Sensor eligibility helpers
-export {
-  canProvisionSensor,
-  canEditSensor,
-  canDeleteSensor,
-} from "./sensorEligibility";
+export { canProvisionSensor, canEditSensor, canDeleteSensor } from './sensorEligibility';
 
 // Gateway eligibility helpers
-export {
-  canProvisionGateway,
-  canEditGateway,
-  canDeleteGateway,
-} from "./gatewayEligibility";
+export { canProvisionGateway, canEditGateway, canDeleteGateway } from './gatewayEligibility';

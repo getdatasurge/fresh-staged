@@ -9,6 +9,7 @@
 Phase 24 implements interactive configuration for FreshTrack deployment, enabling users to configure their deployment through guided prompts without manually editing files. The research examines the existing codebase infrastructure, bash best practices for user input handling, and secure credential generation patterns.
 
 The project already has substantial infrastructure in place:
+
 - `preflight-lib.sh` provides error handling, checkpoint tracking, and DNS validation
 - `deploy-selfhosted.sh` has working patterns for configuration loading and secret generation
 - `.env.production.example` defines all required environment variables
@@ -21,29 +22,32 @@ The project already has substantial infrastructure in place:
 The established tools and patterns for this domain:
 
 ### Core
-| Tool | Version | Purpose | Why Standard |
-|------|---------|---------|--------------|
-| bash `read` | Built-in | Interactive prompts | Universal availability, -r/-p/-s flags |
-| `openssl rand` | System | Secure random generation | Cryptographically secure PRNG |
-| bash `[[ =~ ]]` | Built-in | Regex validation | Native bash regex matching |
-| `printf` | Built-in | Formatted output | More portable than echo for escapes |
+
+| Tool            | Version  | Purpose                  | Why Standard                           |
+| --------------- | -------- | ------------------------ | -------------------------------------- |
+| bash `read`     | Built-in | Interactive prompts      | Universal availability, -r/-p/-s flags |
+| `openssl rand`  | System   | Secure random generation | Cryptographically secure PRNG          |
+| bash `[[ =~ ]]` | Built-in | Regex validation         | Native bash regex matching             |
+| `printf`        | Built-in | Formatted output         | More portable than echo for escapes    |
 
 ### Supporting
-| Tool | Purpose | When to Use |
-|------|---------|-------------|
-| `curl` | Network validation | Already in preflight-lib.sh |
-| `dig`/`getent` | DNS resolution | Already in preflight-lib.sh |
-| `tr` | Character filtering | Removing unwanted chars from base64 |
+
+| Tool           | Purpose             | When to Use                         |
+| -------------- | ------------------- | ----------------------------------- |
+| `curl`         | Network validation  | Already in preflight-lib.sh         |
+| `dig`/`getent` | DNS resolution      | Already in preflight-lib.sh         |
+| `tr`           | Character filtering | Removing unwanted chars from base64 |
 
 ### Already Available in Codebase
-| Pattern | Location | Can Reuse |
-|---------|----------|-----------|
-| Error handler + trap ERR | `preflight-lib.sh` | YES - source it |
-| DNS validation | `preflight-lib.sh:validate_dns()` | YES - call directly |
-| Color output (step/success/error) | `preflight-lib.sh` | YES - source it |
-| Checkpoint tracking | `preflight-lib.sh:checkpoint_*` | YES - call directly |
-| Secret generation | `deploy-selfhosted.sh:create_secrets()` | PARTIAL - adapt pattern |
-| Config loading | `deploy-selfhosted.sh:load_config()` | PARTIAL - enhance validation |
+
+| Pattern                           | Location                                | Can Reuse                    |
+| --------------------------------- | --------------------------------------- | ---------------------------- |
+| Error handler + trap ERR          | `preflight-lib.sh`                      | YES - source it              |
+| DNS validation                    | `preflight-lib.sh:validate_dns()`       | YES - call directly          |
+| Color output (step/success/error) | `preflight-lib.sh`                      | YES - source it              |
+| Checkpoint tracking               | `preflight-lib.sh:checkpoint_*`         | YES - call directly          |
+| Secret generation                 | `deploy-selfhosted.sh:create_secrets()` | PARTIAL - adapt pattern      |
+| Config loading                    | `deploy-selfhosted.sh:load_config()`    | PARTIAL - enhance validation |
 
 ## Architecture Patterns
 
@@ -65,6 +69,7 @@ scripts/
 **What:** Re-prompt user until valid input received
 **When to use:** All required inputs (domain, email)
 **Example:**
+
 ```bash
 # Pattern: validate until success with retry limit
 prompt_domain() {
@@ -93,6 +98,7 @@ prompt_domain() {
 **What:** Validate fully qualified domain name format
 **When to use:** CONFIG-01 domain prompt
 **Example:**
+
 ```bash
 # Source: RFC 1123, verified via regextester.com
 # Rules: 1-63 char labels, alphanumeric + hyphen, no leading/trailing hyphen
@@ -123,6 +129,7 @@ validate_fqdn() {
 **What:** Validate email address format
 **When to use:** CONFIG-02 admin email prompt
 **Example:**
+
 ```bash
 # Source: Simplified RFC 5322 pattern, covers 99%+ real addresses
 # Avoids overly complex patterns that are hard to maintain
@@ -148,6 +155,7 @@ validate_email() {
 **What:** Generate cryptographically secure random secrets
 **When to use:** CONFIG-06 auto-generated credentials
 **Example:**
+
 ```bash
 # Source: OpenSSL documentation, Linux Audit best practices
 generate_secret() {
@@ -174,6 +182,7 @@ generate_jwt_secret() {
 **What:** Programmatically generate .env.production from template + user input
 **When to use:** CONFIG-05 env file creation
 **Example:**
+
 ```bash
 # Source: bashup/dotenv patterns
 generate_env_file() {
@@ -228,6 +237,7 @@ EOF
 **What:** Display all configuration for user review before proceeding
 **When to use:** CONFIG-07 before deployment
 **Example:**
+
 ```bash
 display_configuration_summary() {
     echo ""
@@ -276,13 +286,13 @@ display_configuration_summary() {
 
 Problems that look simple but have existing solutions:
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Error handling | Custom try/catch | `preflight-lib.sh` trap ERR | Already tested, credential sanitization built-in |
-| DNS validation | New dig wrapper | `validate_dns()` from preflight-lib | Already handles dig/getent fallback |
-| Checkpoint tracking | State file logic | `checkpoint_*` functions | Already handles state dir, timestamps |
-| Color output | echo with escapes | `step()/success()/error()` | Consistent UI across scripts |
-| Recovery prompts | Custom prompt code | `handle_recovery()` | Error category-aware prompts |
+| Problem             | Don't Build        | Use Instead                         | Why                                              |
+| ------------------- | ------------------ | ----------------------------------- | ------------------------------------------------ |
+| Error handling      | Custom try/catch   | `preflight-lib.sh` trap ERR         | Already tested, credential sanitization built-in |
+| DNS validation      | New dig wrapper    | `validate_dns()` from preflight-lib | Already handles dig/getent fallback              |
+| Checkpoint tracking | State file logic   | `checkpoint_*` functions            | Already handles state dir, timestamps            |
+| Color output        | echo with escapes  | `step()/success()/error()`          | Consistent UI across scripts                     |
+| Recovery prompts    | Custom prompt code | `handle_recovery()`                 | Error category-aware prompts                     |
 
 **Key insight:** Phase 22 already built robust infrastructure. Phase 24 should ADD validation functions and configuration logic, not rebuild foundational patterns.
 
@@ -293,6 +303,7 @@ Problems that look simple but have existing solutions:
 **What goes wrong:** FQDN regex allows invalid domains OR rejects valid ones
 **Why it happens:** Testing only happy path, not edge cases
 **How to avoid:** Test these specific cases:
+
 ```bash
 # Should PASS
 "app.example.com"
@@ -309,6 +320,7 @@ Problems that look simple but have existing solutions:
 "bad-.com"            # Trailing hyphen
 "too-long-label-..."  # 64+ char label
 ```
+
 **Warning signs:** Users report valid domains rejected
 
 ### Pitfall 2: read Without -r Flag
@@ -316,6 +328,7 @@ Problems that look simple but have existing solutions:
 **What goes wrong:** Backslashes interpreted as escapes
 **Why it happens:** Default read behavior
 **How to avoid:** ALWAYS use `read -r` for user input
+
 ```bash
 # WRONG - backslashes will be interpreted
 read -p "Enter path: " path
@@ -323,6 +336,7 @@ read -p "Enter path: " path
 # RIGHT - literal backslash handling
 read -rp "Enter path: " path
 ```
+
 **Warning signs:** File paths with backslashes cause issues
 
 ### Pitfall 3: Password Confirmation Logic Error
@@ -330,6 +344,7 @@ read -rp "Enter path: " path
 **What goes wrong:** Password mismatch not detected correctly
 **Why it happens:** String comparison edge cases
 **How to avoid:**
+
 ```bash
 # WRONG - whitespace issues
 if [ "$pass1" = "$pass2" ]; then
@@ -337,6 +352,7 @@ if [ "$pass1" = "$pass2" ]; then
 # RIGHT - proper quoting and test
 if [[ "$pass1" == "$pass2" ]]; then
 ```
+
 **Note:** CONFIG-03 asks for "passwords with confirmation" but success criteria says "user never types passwords". Recommend: AUTO-GENERATE all passwords (no user typing), show summary for review.
 
 ### Pitfall 4: Existing .env Clobbered
@@ -344,6 +360,7 @@ if [[ "$pass1" == "$pass2" ]]; then
 **What goes wrong:** User's custom configuration lost
 **Why it happens:** Simple file overwrite without check
 **How to avoid:** Always check and backup:
+
 ```bash
 if [[ -f .env.production ]]; then
     warning "Existing configuration found!"
@@ -352,6 +369,7 @@ if [[ -f .env.production ]]; then
     read -rp "Continue? [y/N]: " confirm
 fi
 ```
+
 **Warning signs:** Users complain about lost settings
 
 ### Pitfall 5: DNS Validation Before User Ready
@@ -359,6 +377,7 @@ fi
 **What goes wrong:** Script fails because DNS not propagated yet
 **Why it happens:** Validating DNS immediately after domain prompt
 **How to avoid:** Validate DNS at appropriate time:
+
 1. Domain prompt: Validate FORMAT only (regex)
 2. Before SSL/deployment: Validate DNS RESOLUTION (Phase 25)
 
@@ -582,14 +601,15 @@ generate_secrets_files() {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Manual .env editing | Interactive prompts + auto-generation | This phase | User experience improvement |
-| User types passwords | Auto-generated secure secrets | Best practice | Eliminates weak passwords |
-| Single validation | Retry loops with max attempts | Best practice | Better UX on typos |
-| Overwrite existing config | Backup + confirm | Best practice | Data protection |
+| Old Approach              | Current Approach                      | When Changed  | Impact                      |
+| ------------------------- | ------------------------------------- | ------------- | --------------------------- |
+| Manual .env editing       | Interactive prompts + auto-generation | This phase    | User experience improvement |
+| User types passwords      | Auto-generated secure secrets         | Best practice | Eliminates weak passwords   |
+| Single validation         | Retry loops with max attempts         | Best practice | Better UX on typos          |
+| Overwrite existing config | Backup + confirm                      | Best practice | Data protection             |
 
 **Current best practices confirmed:**
+
 - Use `openssl rand -base64` for cryptographic randomness (32+ bytes)
 - Always `read -r` to prevent backslash interpretation
 - Use `read -s` for sensitive input (passwords, secrets)
@@ -624,12 +644,14 @@ Things that need clarification during planning:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Existing codebase: `scripts/lib/preflight-lib.sh` - Error handling, validation infrastructure
 - Existing codebase: `scripts/deploy-selfhosted.sh` - Configuration loading patterns
 - Existing codebase: `compose.production.yaml` - Required environment variables
 - Existing codebase: `secrets/README.md` - Secret file structure and generation
 
 ### Secondary (MEDIUM confidence)
+
 - [Linux Config: Handling User Input](https://linuxconfig.org/handling-user-input-in-bash-scripts) - read command best practices
 - [RegEx Tester: FQDN Validation](https://www.regextester.com/103452) - FQDN regex patterns
 - [Linux Audit: OpenSSL Passwords](https://linux-audit.com/create-random-passwords-with-openssl-libressl/) - Secure generation
@@ -637,11 +659,13 @@ Things that need clarification during planning:
 - [LabEx: Bash Regex](https://labex.io/tutorials/shell-how-to-use-regex-in-bash-scripting-392579) - Bash =~ operator usage
 
 ### Tertiary (LOW confidence)
+
 - WebSearch results for "bash best practices 2026" - General guidance, cross-verified with official docs
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - bash built-ins and openssl are universal, well-documented
 - Architecture: HIGH - patterns derived from existing codebase that already works
 - Validation patterns: HIGH - regex patterns verified via multiple sources

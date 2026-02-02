@@ -13,10 +13,7 @@
       "total_count": { "type": "integer", "minimum": 0 },
       "battery_level": { "type": "integer", "minimum": 0, "maximum": 100 }
     },
-    "oneOf": [
-      { "required": ["pulse_count"] },
-      { "required": ["counter"] }
-    ]
+    "oneOf": [{ "required": ["pulse_count"] }, { "required": ["counter"] }]
   },
   "discriminators": {
     "primary": ["pulse_count", "counter"],

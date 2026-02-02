@@ -18,9 +18,9 @@ affects: [01-04-alerting-schemas, 01-05-complete-schema, 02-backend-api, 03-sens
 tech-stack:
   added: []
   patterns:
-    - "Time-series indexing pattern: composite (unit_id, timestamp) indexes"
-    - "Numeric precision pattern: numeric(7,2) for temperature/humidity"
-    - "Device lifecycle pattern: pairing sessions, calibration records"
+    - 'Time-series indexing pattern: composite (unit_id, timestamp) indexes'
+    - 'Numeric precision pattern: numeric(7,2) for temperature/humidity'
+    - 'Device lifecycle pattern: pairing sessions, calibration records'
 
 key-files:
   created:
@@ -29,15 +29,15 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Use numeric(7,2) for temperature instead of integers for database-level precision"
-  - "Composite indexes on (unitId, timestamp) for time-series query optimization"
-  - "Separate recordedAt and receivedAt timestamps for data integrity"
-  - "Include rawPayload field for debugging and audit trail"
+  - 'Use numeric(7,2) for temperature instead of integers for database-level precision'
+  - 'Composite indexes on (unitId, timestamp) for time-series query optimization'
+  - 'Separate recordedAt and receivedAt timestamps for data integrity'
+  - 'Include rawPayload field for debugging and audit trail'
 
 patterns-established:
-  - "Time-series indexing: Primary composite index on (entity_id, timestamp) for all time-series tables"
-  - "Device lifecycle tracking: Pairing sessions for temporary state, calibration records for compliance history"
-  - "Dual timestamps: recordedAt (device time) vs receivedAt (server time) for clock drift handling"
+  - 'Time-series indexing: Primary composite index on (entity_id, timestamp) for all time-series tables'
+  - 'Device lifecycle tracking: Pairing sessions for temporary state, calibration records for compliance history'
+  - 'Dual timestamps: recordedAt (device time) vs receivedAt (server time) for clock drift handling'
 
 # Metrics
 duration: 2min
@@ -57,6 +57,7 @@ completed: 2026-01-23
 - **Files modified:** 2
 
 ## Accomplishments
+
 - 4 device management tables covering hardware lifecycle from pairing to calibration
 - 3 time-series telemetry tables optimized for high-volume temperature data queries
 - Composite indexes on (unitId, timestamp) for fast time-series queries
@@ -75,6 +76,7 @@ Each task was committed atomically:
 ## Files Created/Modified
 
 ### Created
+
 - `backend/src/db/schema/devices.ts` (170 lines) - Device management tables
   - `devices` - Physical sensor hardware with status tracking
   - `loraSensors` - LoRaWAN-specific configuration (TTN integration)
@@ -109,6 +111,7 @@ None
 ## Next Phase Readiness
 
 **Ready for Phase 01-04 (Alerting Schemas):**
+
 - Device and telemetry tables complete
 - All foreign key relationships established (units, hubs, devices, profiles)
 - Time-series indexes in place for alert rule evaluation queries
@@ -117,10 +120,12 @@ None
 **Blockers:** None
 
 **Notes:**
+
 - Alert rules will query sensorReadings using the composite (unitId, recordedAt) index
 - Door events table ready for door-open alert logic
 - Calibration expiration tracking ready for calibration-due alerts
 
 ---
-*Phase: 01-local-development-environment*
-*Completed: 2026-01-23*
+
+_Phase: 01-local-development-environment_
+_Completed: 2026-01-23_

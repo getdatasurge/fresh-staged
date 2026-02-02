@@ -10,7 +10,7 @@ export function SupportModeBanner() {
     isSupportModeActive,
     supportModeExpiresAt,
     exitSupportMode,
-    impersonation
+    impersonation,
   } = useSuperAdmin();
 
   const [timeRemaining, setTimeRemaining] = useState<string>('');
@@ -49,10 +49,8 @@ export function SupportModeBanner() {
   return (
     <div
       className={cn(
-        "fixed top-0 left-0 right-0 z-[100] px-4 py-2 flex items-center justify-between gap-4",
-        impersonation.isImpersonating
-          ? "bg-orange-600 text-white"
-          : "bg-purple-600 text-white"
+        'fixed top-0 left-0 right-0 z-[100] px-4 py-2 flex items-center justify-between gap-4',
+        impersonation.isImpersonating ? 'bg-orange-600 text-white' : 'bg-purple-600 text-white',
       )}
     >
       <div className="flex items-center gap-3">
@@ -65,7 +63,8 @@ export function SupportModeBanner() {
           <div className="flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-sm">
             <User className="w-4 h-4" />
             <span>
-              Viewing as: {impersonation.impersonatedUserName || impersonation.impersonatedUserEmail}
+              Viewing as:{' '}
+              {impersonation.impersonatedUserName || impersonation.impersonatedUserEmail}
             </span>
             {impersonation.impersonatedOrgName && (
               <span className="text-white/80">({impersonation.impersonatedOrgName})</span>

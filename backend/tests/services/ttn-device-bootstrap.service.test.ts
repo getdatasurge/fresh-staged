@@ -12,17 +12,21 @@ vi.mock('../../src/db/client.js', () => ({
     })),
     insert: vi.fn(() => ({
       values: vi.fn(() => ({
-        returning: vi.fn(() => Promise.resolve([{
-          id: '6ee7bf36-9c9f-4a00-99ec-6e0730558f67',
-          name: 'Test Sensor',
-          deviceEui: 'AABBCCDDEEFF0011',
-          deviceType: 'lora',
-          status: 'inactive',
-          unitId: null,
-          lastSeenAt: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }])),
+        returning: vi.fn(() =>
+          Promise.resolve([
+            {
+              id: '6ee7bf36-9c9f-4a00-99ec-6e0730558f67',
+              name: 'Test Sensor',
+              deviceEui: 'AABBCCDDEEFF0011',
+              deviceType: 'lora',
+              status: 'inactive',
+              unitId: null,
+              lastSeenAt: null,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          ]),
+        ),
       })),
     })),
   },
@@ -31,16 +35,21 @@ vi.mock('../../src/db/client.js', () => ({
 // Mock the TTN service
 vi.mock('../../src/services/ttn.service.js', () => ({
   createTTNClient: vi.fn(() => ({
-    provisionDevice: vi.fn(() => Promise.resolve({
-      ids: {
-        device_id: 'test-sensor-abc123',
-        dev_eui: 'AABBCCDDEEFF0011',
-        join_eui: '0011223344556677',
-      },
-    })),
+    provisionDevice: vi.fn(() =>
+      Promise.resolve({
+        ids: {
+          device_id: 'test-sensor-abc123',
+          dev_eui: 'AABBCCDDEEFF0011',
+          join_eui: '0011223344556677',
+        },
+      }),
+    ),
   })),
   TTNApiError: class TTNApiError extends Error {
-    constructor(public readonly statusCode: number, message: string) {
+    constructor(
+      public readonly statusCode: number,
+      message: string,
+    ) {
       super(message);
       this.name = 'TTNApiError';
     }
@@ -115,7 +124,7 @@ describe('TTN Device Bootstrap Service - Credential Generation', () => {
     });
 
     it('should remove special characters', () => {
-      const name = "Sensor #1 @ Site!";
+      const name = 'Sensor #1 @ Site!';
       const deviceId = name
         .toLowerCase()
         .replace(/[^a-z0-9-]/g, '-')

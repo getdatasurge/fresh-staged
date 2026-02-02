@@ -12,6 +12,7 @@ This playbook guides the production migration of `sensor_readings` table from mo
 **Migration Strategy**: Low-traffic window (2-6 AM UTC)
 
 **Critical Success Criteria**:
+
 - Zero data loss
 - Zero sensor data ingestion failures
 - Dashboard performance maintained (<2s loads)
@@ -35,12 +36,15 @@ This playbook guides the production migration of `sensor_readings` table from mo
 ### Pre-Migration Validation
 
 1. **Verify PostgreSQL version**:
+
    ```sql
    SELECT version();
    ```
+
    Required: PostgreSQL ≥10
 
 2. **Check current data volume**:
+
    ```sql
    SELECT
      COUNT(*) AS total_rows,
@@ -53,6 +57,7 @@ This playbook guides the production migration of `sensor_readings` table from mo
    Document for comparison post-migration.
 
 3. **Verify disk space** (need 2x current table size for migration):
+
    ```sql
    SELECT
      pg_size_pretty(pg_database_size(current_database())) AS db_size,
@@ -77,17 +82,17 @@ This playbook guides the production migration of `sensor_readings` table from mo
 
 **Total Duration**: 4 hours (2-6 AM UTC)
 
-| Time | Phase | Duration | Activities |
-|------|-------|----------|------------|
-| 01:30 AM | Preparation | 30 min | Final validations, team briefing |
-| 02:00 AM | Maintenance Start | - | Post notification, enable monitoring |
-| 02:05 AM | Backup | 10 min | Full database backup |
-| 02:15 AM | Migration Execute | 60-90 min | Run migration script, monitor progress |
-| 03:45 AM | Validation | 30 min | Row count, partition pruning, FK checks |
-| 04:15 AM | Application Test | 15 min | Restart services, API testing |
-| 04:30 AM | Monitoring | 60 min | Watch for errors, performance checks |
-| 05:30 AM | Finalization | 30 min | Drop old table, cleanup |
-| 06:00 AM | Maintenance End | - | Post completion notification |
+| Time     | Phase             | Duration  | Activities                              |
+| -------- | ----------------- | --------- | --------------------------------------- |
+| 01:30 AM | Preparation       | 30 min    | Final validations, team briefing        |
+| 02:00 AM | Maintenance Start | -         | Post notification, enable monitoring    |
+| 02:05 AM | Backup            | 10 min    | Full database backup                    |
+| 02:15 AM | Migration Execute | 60-90 min | Run migration script, monitor progress  |
+| 03:45 AM | Validation        | 30 min    | Row count, partition pruning, FK checks |
+| 04:15 AM | Application Test  | 15 min    | Restart services, API testing           |
+| 04:30 AM | Monitoring        | 60 min    | Watch for errors, performance checks    |
+| 05:30 AM | Finalization      | 30 min    | Drop old table, cleanup                 |
+| 06:00 AM | Maintenance End   | -         | Post completion notification            |
 
 ---
 
@@ -98,6 +103,7 @@ This playbook guides the production migration of `sensor_readings` table from mo
 **Subject**: [SCHEDULED MAINTENANCE] Database Optimization - Feb X, 2-6 AM UTC
 
 **Body**:
+
 ```
 Team,
 
@@ -130,6 +136,7 @@ DevOps Team
    - Engineering on-call (available for rollback)
 
 2. **Final pre-flight checks**:
+
    ```bash
    # Verify staging results documented
    cat staging_migration_lessons_learned.md
@@ -152,11 +159,13 @@ DevOps Team
 1. **Post maintenance start notification** (Slack, status page).
 
 2. **Create full database backup**:
+
    ```bash
    pg_dump $DATABASE_URL | gzip > production_backup_$(date +%Y%m%d_%H%M%S).dump.gz
    ```
 
    Alternative: Use cloud provider snapshot (faster):
+
    ```bash
    # AWS RDS snapshot
    aws rds create-db-snapshot \
@@ -169,6 +178,7 @@ DevOps Team
    ```
 
 3. **Verify backup**:
+
    ```bash
    # Check backup file size (should be >100MB for production data)
    ls -lh production_backup_*.dump.gz
@@ -181,6 +191,7 @@ DevOps Team
 ### Phase 3: Migration Execution (02:15 AM - 03:45 AM)
 
 1. **Capture pre-migration snapshot**:
+
    ```sql
    CREATE TEMP TABLE pre_migration_stats AS
    SELECT
@@ -197,6 +208,7 @@ DevOps Team
    **Save output** for validation.
 
 2. **Execute migration script**:
+
    ```bash
    psql $DATABASE_URL -v ON_ERROR_STOP=1 \
      -f backend/drizzle/0006_partition_sensor_readings.sql \
@@ -219,6 +231,7 @@ DevOps Team
 **CRITICAL**: All validation checks must pass before proceeding.
 
 1. **Row count match**:
+
    ```sql
    SELECT
      (SELECT total_rows FROM pre_migration_stats) AS pre_count,
@@ -231,6 +244,7 @@ DevOps Team
    **If mismatch detected**: Immediately execute rollback (see Rollback section).
 
 2. **Partition count**:
+
    ```sql
    SELECT COUNT(*) AS partition_count
    FROM pg_tables
@@ -240,6 +254,7 @@ DevOps Team
    Expected: 24-30 partitions (historical + current + 3 future).
 
 3. **Default partition empty**:
+
    ```sql
    SELECT COUNT(*) FROM sensor_readings_default;
    ```
@@ -249,6 +264,7 @@ DevOps Team
    **If >0 rows**: Investigate NULL or out-of-range dates (may continue if <100 rows).
 
 4. **Indexes verified**:
+
    ```sql
    SELECT COUNT(*) AS index_count
    FROM pg_indexes
@@ -259,6 +275,7 @@ DevOps Team
    **REQUIRED**: `index_count = partition_count * 3`
 
 5. **Partition pruning verification**:
+
    ```sql
    EXPLAIN (ANALYZE, BUFFERS)
    SELECT * FROM sensor_readings
@@ -272,6 +289,7 @@ DevOps Team
    **If pruning not working**: Investigate but may continue (performance issue, not data loss).
 
 6. **Foreign key joins**:
+
    ```sql
    SELECT COUNT(*)
    FROM sensor_readings sr
@@ -284,6 +302,7 @@ DevOps Team
 ### Phase 5: Application Testing (04:15 AM - 04:30 AM)
 
 1. **Restart backend services** (optional, only if schema changes require restart):
+
    ```bash
    # Docker Compose
    docker-compose restart backend
@@ -293,6 +312,7 @@ DevOps Team
    ```
 
 2. **Health check**:
+
    ```bash
    curl -f https://api.freshguard.app/health || echo "FAILED"
    ```
@@ -300,6 +320,7 @@ DevOps Team
    **REQUIRED**: Health check passes.
 
 3. **API smoke tests**:
+
    ```bash
    # Test sensor readings endpoint
    curl -X POST https://api.freshguard.app/trpc/readings.recent \
@@ -316,6 +337,7 @@ DevOps Team
    - Check page load time <2s
 
 5. **TTN webhook test** (verify sensor data ingestion):
+
    ```bash
    # Check recent sensor_readings insertions
    SELECT COUNT(*) FROM sensor_readings WHERE received_at >= NOW() - INTERVAL '10 minutes';
@@ -353,6 +375,7 @@ DevOps Team
 **Only proceed if all validation passed and monitoring period clean.**
 
 1. **Drop old table** (DESTRUCTIVE - data permanently deleted):
+
    ```sql
    -- FINAL CONFIRMATION: All validation passed?
    -- [ ] Row count match
@@ -365,6 +388,7 @@ DevOps Team
    ```
 
 2. **Verify cleanup**:
+
    ```sql
    SELECT tablename FROM pg_tables WHERE tablename = 'sensor_readings_old';
    ```
@@ -372,6 +396,7 @@ DevOps Team
    Expected: 0 rows (table dropped).
 
 3. **Reclaim disk space**:
+
    ```sql
    VACUUM FULL sensor_readings;
    ```
@@ -393,6 +418,7 @@ DevOps Team
 ## Rollback Procedure
 
 **Trigger Conditions**:
+
 - Row count mismatch detected
 - Partition pruning not working
 - Application errors observed
@@ -403,12 +429,14 @@ DevOps Team
 ### Rollback Execution
 
 1. **Stop migration immediately** (if in progress):
+
    ```sql
    -- Cancel running query (if possible)
    SELECT pg_cancel_backend(<pid>);
    ```
 
 2. **Drop partitioned table**:
+
    ```sql
    DROP TABLE IF EXISTS sensor_readings CASCADE;
    ```
@@ -416,16 +444,19 @@ DevOps Team
 3. **Restore from backup**:
 
    **Option A: Rename old table** (fastest, if sensor_readings_old exists):
+
    ```sql
    ALTER TABLE sensor_readings_old RENAME TO sensor_readings;
    ```
 
    **Option B: Restore from dump** (slower, if old table dropped):
+
    ```bash
    gunzip -c production_backup_*.dump.gz | psql $DATABASE_URL
    ```
 
    **Option C: Restore from snapshot** (cloud provider):
+
    ```bash
    # AWS RDS restore (creates new instance, requires DNS update)
    aws rds restore-db-instance-from-db-snapshot \
@@ -434,6 +465,7 @@ DevOps Team
    ```
 
 4. **Verify service recovery**:
+
    ```sql
    SELECT COUNT(*) FROM sensor_readings;
    ```
@@ -441,6 +473,7 @@ DevOps Team
    Expected: Pre-migration row count.
 
 5. **Restart application** (if needed):
+
    ```bash
    docker-compose restart backend
    ```
@@ -451,6 +484,7 @@ DevOps Team
    - Sensor data ingestion working
 
 7. **Post rollback notification**:
+
    ```
    Migration rollback completed. Services restored to pre-migration state.
    Investigating failure cause. Will reschedule after fixes validated in staging.
@@ -550,6 +584,7 @@ DevOps Team
 **Emergency Contact**: PagerDuty on-call rotation
 
 **Communication Channels**:
+
 - Slack: #devops-alerts, #engineering
 - Incident Room: [Conference line / Zoom link]
 

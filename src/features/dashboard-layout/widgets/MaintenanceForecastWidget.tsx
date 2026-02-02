@@ -1,26 +1,26 @@
 /**
  * Maintenance Forecast Widget
- * 
+ *
  * Shows estimated battery replacement date and health score.
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Wrench, Battery, Calendar, AlertTriangle } from "lucide-react";
-import type { WidgetProps } from "../types";
-import { useBatteryForecast } from "@/hooks/useBatteryForecast";
-import { format, addDays } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Wrench, Battery, Calendar, AlertTriangle } from 'lucide-react';
+import type { WidgetProps } from '../types';
+import { useBatteryForecast } from '@/hooks/useBatteryForecast';
+import { format, addDays } from 'date-fns';
 
 export function MaintenanceForecastWidget({ sensor, loraSensors = [] }: WidgetProps) {
   // Use the primary sensor or first available
   const activeSensor = sensor || loraSensors[0];
-  
+
   const batteryLevel = activeSensor?.battery_level ?? null;
-  
+
   // Estimate days remaining based on battery level
   // Rough estimate: 1% = ~10 days for LoRa sensors
   const estimatedDaysRemaining = batteryLevel ? Math.max(0, batteryLevel * 10) : null;
-  const estimatedReplacementDate = estimatedDaysRemaining 
+  const estimatedReplacementDate = estimatedDaysRemaining
     ? addDays(new Date(), estimatedDaysRemaining)
     : null;
 
@@ -28,23 +28,25 @@ export function MaintenanceForecastWidget({ sensor, loraSensors = [] }: WidgetPr
   const signalStrength = activeSensor?.signal_strength ?? -100;
   const signalScore = Math.max(0, Math.min(100, ((signalStrength + 120) / 80) * 100));
   const batteryScore = batteryLevel ?? 50;
-  const healthScore = Math.round((batteryScore * 0.6) + (signalScore * 0.4));
+  const healthScore = Math.round(batteryScore * 0.6 + signalScore * 0.4);
 
-  const healthStatus = healthScore >= 80 
-    ? "Excellent" 
-    : healthScore >= 60 
-      ? "Good" 
-      : healthScore >= 40 
-        ? "Fair" 
-        : "Poor";
+  const healthStatus =
+    healthScore >= 80
+      ? 'Excellent'
+      : healthScore >= 60
+        ? 'Good'
+        : healthScore >= 40
+          ? 'Fair'
+          : 'Poor';
 
-  const statusColor = healthScore >= 80 
-    ? "text-green-500" 
-    : healthScore >= 60 
-      ? "text-blue-500" 
-      : healthScore >= 40 
-        ? "text-yellow-500" 
-        : "text-destructive";
+  const statusColor =
+    healthScore >= 80
+      ? 'text-green-500'
+      : healthScore >= 60
+        ? 'text-blue-500'
+        : healthScore >= 40
+          ? 'text-yellow-500'
+          : 'text-destructive';
 
   if (!activeSensor) {
     return (
@@ -77,16 +79,14 @@ export function MaintenanceForecastWidget({ sensor, loraSensors = [] }: WidgetPr
           </div>
           <div>
             <p className={`text-lg font-bold ${statusColor}`}>{healthStatus}</p>
-            <p className="text-xs text-muted-foreground">
-              Health Score: {healthScore}%
-            </p>
+            <p className="text-xs text-muted-foreground">Health Score: {healthScore}%</p>
           </div>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Battery Level</span>
-            <span className="font-medium">{batteryLevel ?? "—"}%</span>
+            <span className="font-medium">{batteryLevel ?? '—'}%</span>
           </div>
           <Progress value={batteryLevel ?? 0} className="h-2" />
         </div>
@@ -96,9 +96,7 @@ export function MaintenanceForecastWidget({ sensor, loraSensors = [] }: WidgetPr
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <div className="text-sm">
               <p className="text-muted-foreground">Est. Battery Replacement</p>
-              <p className="font-medium">
-                {format(estimatedReplacementDate, "MMM d, yyyy")}
-              </p>
+              <p className="font-medium">{format(estimatedReplacementDate, 'MMM d, yyyy')}</p>
             </div>
           </div>
         )}
