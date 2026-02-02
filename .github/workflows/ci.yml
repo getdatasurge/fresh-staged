@@ -40,8 +40,21 @@ jobs:
       - name: Typecheck
         run: pnpm exec tsc --noEmit
 
-      - name: Test
-        run: pnpm test
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Test with coverage
+        run: pnpm test:coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage/
 
   frontend:
     name: Frontend
@@ -72,5 +85,15 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Test
-        run: pnpm test
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Test with coverage
+        run: pnpm test:coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: coverage/

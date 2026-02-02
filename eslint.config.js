@@ -15,7 +15,11 @@ export default tseslint.config(
       'backend/supabase',
       'backend/drizzle',
       '.skills',
+      '.claude',
       'coverage',
+      'current-version.tsx',
+      'git-version.tsx',
+      'original.tsx',
     ],
   },
 
