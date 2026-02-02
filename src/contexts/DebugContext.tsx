@@ -4,10 +4,11 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useMemo,
   ReactNode,
 } from 'react';
-import { debugLog, DebugLogEntry } from '@/lib/debugLogger';
 import { useToast } from '@/hooks/use-toast';
+import { debugLog, DebugLogEntry } from '@/lib/debugLogger';
 
 interface DebugContextValue {
   isDebugEnabled: boolean;
@@ -143,30 +144,45 @@ export function DebugProvider({ children }: { children: ReactNode }) {
     setSelectedErrorForExplanation(null);
   }, []);
 
-  return (
-    <DebugContext.Provider
-      value={{
-        isDebugEnabled,
-        isTerminalVisible,
-        isPaused,
-        logs,
-        selectedErrorForExplanation,
-        setDebugEnabled,
-        toggleTerminal,
-        showTerminal,
-        hideTerminal,
-        clearLogs,
-        pauseLogging,
-        resumeLogging,
-        showExplanation,
-        hideExplanation,
-      }}
-    >
-      {children}
-    </DebugContext.Provider>
+  const value = useMemo(
+    () => ({
+      isDebugEnabled,
+      isTerminalVisible,
+      isPaused,
+      logs,
+      selectedErrorForExplanation,
+      setDebugEnabled,
+      toggleTerminal,
+      showTerminal,
+      hideTerminal,
+      clearLogs,
+      pauseLogging,
+      resumeLogging,
+      showExplanation,
+      hideExplanation,
+    }),
+    [
+      isDebugEnabled,
+      isTerminalVisible,
+      isPaused,
+      logs,
+      selectedErrorForExplanation,
+      setDebugEnabled,
+      toggleTerminal,
+      showTerminal,
+      hideTerminal,
+      clearLogs,
+      pauseLogging,
+      resumeLogging,
+      showExplanation,
+      hideExplanation,
+    ],
   );
+
+  return <DebugContext.Provider value={value}>{children}</DebugContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useDebugContext() {
   const context = useContext(DebugContext);
   if (!context) {
@@ -179,6 +195,7 @@ export function useDebugContext() {
  * Safe version of useDebugContext that returns null if used outside the provider.
  * Use this for components that may render before providers are mounted.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useDebugContextSafe(): DebugContextValue | null {
   return useContext(DebugContext);
 }

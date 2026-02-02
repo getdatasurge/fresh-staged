@@ -598,45 +598,45 @@ export const adminRouter = router({
         });
       }
 
-      // Fetch users for this organization
-      const userResults = await db
-        .select({
-          userId: profiles.userId,
-          email: profiles.email,
-          fullName: profiles.fullName,
-          phone: profiles.phone,
-          role: userRoles.role,
-        })
-        .from(profiles)
-        .leftJoin(
-          userRoles,
-          and(
-            eq(profiles.userId, userRoles.userId),
-            eq(profiles.organizationId, userRoles.organizationId),
-          ),
-        )
-        .where(eq(profiles.organizationId, organizationId));
+      // Fetch users, sites, and unit count in parallel (independent queries)
+      const [userResults, siteResults, unitsCountResult] = await Promise.all([
+        db
+          .select({
+            userId: profiles.userId,
+            email: profiles.email,
+            fullName: profiles.fullName,
+            phone: profiles.phone,
+            role: userRoles.role,
+          })
+          .from(profiles)
+          .leftJoin(
+            userRoles,
+            and(
+              eq(profiles.userId, userRoles.userId),
+              eq(profiles.organizationId, userRoles.organizationId),
+            ),
+          )
+          .where(eq(profiles.organizationId, organizationId)),
 
-      // Fetch sites for this organization
-      const siteResults = await db
-        .select({
-          id: sites.id,
-          name: sites.name,
-          address: sites.address,
-          isActive: sites.isActive,
-        })
-        .from(sites)
-        .where(eq(sites.organizationId, organizationId));
+        db
+          .select({
+            id: sites.id,
+            name: sites.name,
+            address: sites.address,
+            isActive: sites.isActive,
+          })
+          .from(sites)
+          .where(eq(sites.organizationId, organizationId)),
 
-      // Get units count for this organization
-      const unitsCountResult = await db.execute(sql`
-        SELECT COUNT(*)::int as count
-        FROM units u
-        INNER JOIN areas a ON u.area_id = a.id
-        INNER JOIN sites s ON a.site_id = s.id
-        WHERE s.organization_id = ${organizationId}
-          AND u.deleted_at IS NULL
-      `);
+        db.execute(sql`
+          SELECT COUNT(*)::int as count
+          FROM units u
+          INNER JOIN areas a ON u.area_id = a.id
+          INNER JOIN sites s ON a.site_id = s.id
+          WHERE s.organization_id = ${organizationId}
+            AND u.deleted_at IS NULL
+        `),
+      ]);
       const unitsCount = (unitsCountResult.rows[0] as Record<string, unknown>)?.count || 0;
 
       return {
@@ -690,23 +690,24 @@ export const adminRouter = router({
         });
       }
 
-      // Fetch user roles
-      const roleResults = await db
-        .select({
-          organizationId: userRoles.organizationId,
-          organizationName: organizations.name,
-          role: userRoles.role,
-        })
-        .from(userRoles)
-        .innerJoin(organizations, eq(userRoles.organizationId, organizations.id))
-        .where(eq(userRoles.userId, userId));
+      // Fetch user roles and super admin status in parallel (independent queries)
+      const [roleResults, [superAdminRole]] = await Promise.all([
+        db
+          .select({
+            organizationId: userRoles.organizationId,
+            organizationName: organizations.name,
+            role: userRoles.role,
+          })
+          .from(userRoles)
+          .innerJoin(organizations, eq(userRoles.organizationId, organizations.id))
+          .where(eq(userRoles.userId, userId)),
 
-      // Check if user is super admin
-      const [superAdminRole] = await db
-        .select({ id: platformRoles.id })
-        .from(platformRoles)
-        .where(and(eq(platformRoles.userId, userId), eq(platformRoles.role, 'SUPER_ADMIN')))
-        .limit(1);
+        db
+          .select({ id: platformRoles.id })
+          .from(platformRoles)
+          .where(and(eq(platformRoles.userId, userId), eq(platformRoles.role, 'SUPER_ADMIN')))
+          .limit(1),
+      ]);
 
       return {
         userId: profile.userId,

@@ -1,8 +1,26 @@
+import { useUser } from '@stackframe/react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { format, subDays, subHours } from 'date-fns';
+import {
+  AlertTriangle,
+  ClipboardEdit,
+  Clock,
+  Copy,
+  Download,
+  FileText,
+  History,
+  LayoutDashboard,
+  Loader2,
+  Settings,
+  Trash2,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
+import { UnitDebugBanner } from '@/components/debug';
 import { HierarchyBreadcrumb } from '@/components/HierarchyBreadcrumb';
 import { LayoutHeaderDropdown } from '@/components/LayoutHeaderDropdown';
 import LogTempModal from '@/components/LogTempModal';
-import { UnitDebugBanner } from '@/components/debug';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DeleteConfirmationDialog } from '@/components/ui/delete-confirmation-dialog';
@@ -27,26 +45,9 @@ import { useLoraSensorsByUnit } from '@/hooks/useLoraSensors';
 import { computeUnitAlerts } from '@/hooks/useUnitAlerts';
 import { UnitStatusInfo, computeUnitStatus } from '@/hooks/useUnitStatus';
 import { usePermissions } from '@/hooks/useUserRole';
+import { getAlertClearCondition } from '@/lib/alertConfig';
 import { useTRPC, useTRPCClient } from '@/lib/trpc';
 import { invalidateUnitCaches } from '@/lib/unitCacheInvalidation';
-import { useUser } from '@stackframe/react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { format, subDays, subHours } from 'date-fns';
-import {
-  AlertTriangle,
-  ClipboardEdit,
-  Clock,
-  Copy,
-  Download,
-  FileText,
-  History,
-  LayoutDashboard,
-  Loader2,
-  Settings,
-  Trash2,
-} from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
 
 interface UnitData {
   id: string;
@@ -65,39 +66,6 @@ interface UnitData {
   door_open_grace_minutes?: number;
   area: { id: string; name: string; site: { id: string; name: string; organization_id: string } };
 }
-
-interface SensorReading {
-  id: string;
-  temperature: number;
-  humidity: number | null;
-  recorded_at: string;
-}
-
-interface ManualLog {
-  id: string;
-  temperature: number;
-  notes: string | null;
-  logged_at: string;
-  is_in_range: boolean | null;
-}
-
-interface EventLog {
-  id: string;
-  event_type: string;
-  event_data: any;
-  recorded_at: string;
-}
-
-interface UnitAlert {
-  id: string;
-  type: string;
-  severity: 'critical' | 'warning' | 'info';
-  title: string;
-  message: string;
-  clearCondition: string;
-}
-
-import { getAlertClearCondition } from '@/lib/alertConfig';
 
 const UnitDetail = () => {
   const { unitId } = useParams();
@@ -242,35 +210,11 @@ const UnitDetail = () => {
     unitLookupQuery.isLoading || unitQuery.isLoading || identityInitialized === false;
   const { data: loraSensors } = useLoraSensorsByUnit(unitId || null);
   const { data: alertRules } = useUnitAlertRules(unitId || null);
-  const [isTabVisible, setIsTabVisible] = useState(true);
+  const [_isTabVisible, setIsTabVisible] = useState(true);
   const [refreshTick, setRefreshTick] = useState(0);
-  const [realtimeConnected, setRealtimeConnected] = useState(false);
+  const [realtimeConnected, _setRealtimeConnected] = useState(false);
 
-  // Poll for updates as a simple replacement for Supabase Realtime
-  useEffect(() => {
-    if (!unitId || !isTabVisible) return;
-
-    const interval = setInterval(() => {
-      unitQuery.refetch();
-      readingsQuery.refetch();
-      manualLogsQuery.refetch();
-      latestManualLogQuery.refetch();
-      eventsQuery.refetch();
-      deviceQuery.refetch();
-      setRefreshTick((prev) => prev + 1);
-    }, 30000); // 30s polling
-
-    return () => clearInterval(interval);
-  }, [
-    unitId,
-    isTabVisible,
-    unitQuery,
-    readingsQuery,
-    manualLogsQuery,
-    latestManualLogQuery,
-    eventsQuery,
-    deviceQuery,
-  ]);
+  // Live updates handled by RealtimeProvider (WebSocket: sensor:reading, unit:state:changed events)
 
   // Derived data from tRPC queries
   const unit = useMemo(() => {
@@ -361,7 +305,7 @@ const UnitDetail = () => {
       battery_level: 100,
       signal_strength: -50,
       status: deviceQuery.data.status,
-    } as any;
+    };
   }, [deviceQuery.data]);
 
   const primaryLoraSensor = useMemo(() => {
@@ -378,7 +322,7 @@ const UnitDetail = () => {
     );
   }, [loraSensors]);
 
-  const doorSensor = useMemo(
+  const _doorSensor = useMemo(
     () => loraSensors?.find((s) => s.sensor_type === 'door' || s.sensor_type === 'contact') || null,
     [loraSensors],
   );
@@ -469,7 +413,7 @@ const UnitDetail = () => {
 
   const queryClient = useQueryClient();
   const DEV = import.meta.env.DEV;
-  const [lastError, setLastError] = useState<string | null>(null);
+  const [lastError, _setLastError] = useState<string | null>(null);
 
   const refreshUnitData = useCallback(() => {
     unitQuery.refetch();
@@ -546,14 +490,14 @@ const UnitDetail = () => {
     };
   }, [unit, alertRules, primaryLoraSensor, device]);
 
-  const exportToCSV = async (reportType: 'daily' | 'exceptions' = 'daily') => {
+  const exportToCSV = async (_reportType: 'daily' | 'exceptions' = 'daily') => {
     if (!unit) return;
     setIsExporting(true);
     toast({ title: 'Migration in progress', description: 'CSV exports are moving to tRPC.' });
     setIsExporting(false);
   };
 
-  const formatTemp = (temp: number | null) => {
+  const _formatTemp = (temp: number | null) => {
     if (temp === null) return '--';
     return `${temp.toFixed(1)}°F`;
   };
@@ -773,9 +717,9 @@ const UnitDetail = () => {
             unitType={unit.unit_type}
             tempLimitLow={unit.temp_limit_low}
             tempLimitHigh={unit.temp_limit_high}
-            notes={(unit as any).notes}
-            doorSensorEnabled={(unit as any).door_sensor_enabled}
-            doorOpenGraceMinutes={(unit as any).door_open_grace_minutes}
+            notes={(unit as unknown as { notes?: string }).notes}
+            doorSensorEnabled={unit.door_sensor_enabled}
+            doorOpenGraceMinutes={unit.door_open_grace_minutes}
             onSettingsUpdated={refreshUnitData}
           />
 
@@ -790,10 +734,10 @@ const UnitDetail = () => {
           {unit.area.site.organization_id && (
             <UnitSensorsCard
               unitId={unit.id}
-              organizationId={(unit.area.site as any).organization_id}
+              organizationId={unit.area.site.organization_id}
               siteId={unit.area.site.id}
-              doorState={(unit as any).door_state}
-              doorLastChangedAt={(unit as any).door_last_changed_at}
+              doorState={unit.door_state}
+              doorLastChangedAt={unit.door_last_changed_at}
             />
           )}
 

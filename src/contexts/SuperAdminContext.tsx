@@ -1,5 +1,3 @@
-import { useToast } from '@/hooks/use-toast';
-import { useTRPC } from '@/lib/trpc';
 import { useUser } from '@stackframe/react';
 import { useMutation } from '@tanstack/react-query';
 import {
@@ -8,9 +6,12 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { useTRPC } from '@/lib/trpc';
 
 // Support mode timeout (30 minutes in milliseconds)
 const SUPPORT_MODE_TIMEOUT_MS = 30 * 60 * 1000;
@@ -365,15 +366,27 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
   useEffect(() => {
     if (!isSupportModeActive) return;
 
-    const updateActivity = () => setLastActivityTime(new Date());
+    let lastUpdate = Date.now();
+    const THROTTLE_MS = 30000; // 30s — inactivity timeout is 30min, no need for sub-second precision
 
-    window.addEventListener('click', updateActivity);
-    window.addEventListener('keydown', updateActivity);
+    const updateActivity = () => {
+      const now = Date.now();
+      if (now - lastUpdate >= THROTTLE_MS) {
+        lastUpdate = now;
+        setLastActivityTime(new Date());
+      }
+    };
+
+    // Click and keydown fire infrequently, no need to throttle
+    const updateActivityImmediate = () => setLastActivityTime(new Date());
+
+    window.addEventListener('click', updateActivityImmediate);
+    window.addEventListener('keydown', updateActivityImmediate);
     window.addEventListener('mousemove', updateActivity);
 
     return () => {
-      window.removeEventListener('click', updateActivity);
-      window.removeEventListener('keydown', updateActivity);
+      window.removeEventListener('click', updateActivityImmediate);
+      window.removeEventListener('keydown', updateActivityImmediate);
       window.removeEventListener('mousemove', updateActivity);
     };
   }, [isSupportModeActive]);
@@ -402,7 +415,7 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
         console.error('Error logging super admin action:', err);
       }
     },
-    [isSuperAdmin, impersonation.impersonatedUserId],
+    [isSuperAdmin, impersonation.impersonatedUserId, logSuperAdminActionMutation],
   );
 
   // Enter support mode
@@ -593,7 +606,7 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
     setViewingOrgState({ orgId: null, orgName: null });
 
     await logSuperAdminAction('SUPPORT_MODE_EXITED');
-  }, [impersonation.isImpersonating, logSuperAdminAction, rbacLog, stopImpersonation]);
+  }, [impersonation.isImpersonating, logSuperAdminAction, stopImpersonation]);
 
   // Keep exitSupportModeRef in sync with exitSupportMode callback
   useEffect(() => {
@@ -631,31 +644,55 @@ export function SuperAdminProvider({ children }: SuperAdminProviderProps) {
     }
   }, [impersonation.isImpersonating, stopImpersonation]);
 
-  const value: SuperAdminContextType = {
-    isSuperAdmin,
-    isLoadingSuperAdmin,
-    rolesLoaded,
-    roleLoadStatus,
-    roleLoadError,
-    isSupportModeActive,
-    supportModeStartedAt,
-    supportModeExpiresAt,
-    enterSupportMode,
-    exitSupportMode,
-    impersonation,
-    startImpersonation,
-    stopImpersonation,
-    registerImpersonationCallback,
-    viewingOrg,
-    setViewingOrg,
-    exitToplatform,
-    logSuperAdminAction,
-    refreshSuperAdminStatus: checkSuperAdminStatus,
-  };
+  const value = useMemo<SuperAdminContextType>(
+    () => ({
+      isSuperAdmin,
+      isLoadingSuperAdmin,
+      rolesLoaded,
+      roleLoadStatus,
+      roleLoadError,
+      isSupportModeActive,
+      supportModeStartedAt,
+      supportModeExpiresAt,
+      enterSupportMode,
+      exitSupportMode,
+      impersonation,
+      startImpersonation,
+      stopImpersonation,
+      registerImpersonationCallback,
+      viewingOrg,
+      setViewingOrg,
+      exitToplatform,
+      logSuperAdminAction,
+      refreshSuperAdminStatus: checkSuperAdminStatus,
+    }),
+    [
+      isSuperAdmin,
+      isLoadingSuperAdmin,
+      rolesLoaded,
+      roleLoadStatus,
+      roleLoadError,
+      isSupportModeActive,
+      supportModeStartedAt,
+      supportModeExpiresAt,
+      enterSupportMode,
+      exitSupportMode,
+      impersonation,
+      startImpersonation,
+      stopImpersonation,
+      registerImpersonationCallback,
+      viewingOrg,
+      setViewingOrg,
+      exitToplatform,
+      logSuperAdminAction,
+      checkSuperAdminStatus,
+    ],
+  );
 
   return <SuperAdminContext.Provider value={value}>{children}</SuperAdminContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSuperAdmin(): SuperAdminContextType {
   const context = useContext(SuperAdminContext);
   if (context === undefined) {
@@ -664,12 +701,13 @@ export function useSuperAdmin(): SuperAdminContextType {
   return context;
 }
 
-// Convenience hooks
+// eslint-disable-next-line react-refresh/only-export-components
 export function useIsSuperAdmin() {
   const { isSuperAdmin, isLoadingSuperAdmin } = useSuperAdmin();
   return { isSuperAdmin, isLoading: isLoadingSuperAdmin };
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSupportMode() {
   const {
     isSupportModeActive,
@@ -687,6 +725,7 @@ export function useSupportMode() {
   };
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useImpersonation() {
   const {
     impersonation,

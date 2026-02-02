@@ -106,6 +106,11 @@ export class SensorStreamService {
     // Update latest reading cache (for new client queries)
     const existingLatest = this.latestByUnit.get(reading.unitId);
     if (!existingLatest || reading.recordedAt > existingLatest.recordedAt) {
+      // Cap latestByUnit to prevent unbounded memory growth
+      if (this.latestByUnit.size >= 10_000 && !this.latestByUnit.has(reading.unitId)) {
+        const oldestKey = this.latestByUnit.keys().next().value;
+        if (oldestKey) this.latestByUnit.delete(oldestKey);
+      }
       this.latestByUnit.set(reading.unitId, reading);
     }
   }

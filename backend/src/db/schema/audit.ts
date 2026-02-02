@@ -67,6 +67,7 @@ export const eventLogs = pgTable(
     index('event_logs_actor_idx').on(table.actorId),
     index('event_logs_type_idx').on(table.eventType),
     index('event_logs_recorded_idx').on(table.recordedAt),
+    index('event_logs_unit_idx').on(table.unitId),
     // Composite for audit queries
     index('event_logs_org_date_idx').on(table.organizationId, table.recordedAt),
   ],

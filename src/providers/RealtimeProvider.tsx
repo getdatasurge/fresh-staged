@@ -1,10 +1,10 @@
-import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
-import { socket, connectSocket, disconnectSocket, setTokenGetter } from '@/lib/socket';
 import { useUser } from '@stackframe/react';
-import { useRealtimeSensorData } from '@/hooks/useRealtimeSensorData';
-import { useRealtimeAlerts } from '@/hooks/useRealtimeAlerts';
-import { useRealtimeUnitState } from '@/hooks/useRealtimeUnitState';
+import { createContext, useContext, useEffect, useMemo, useState, useRef, ReactNode } from 'react';
 import { useOrgScope } from '@/hooks/useOrgScope';
+import { useRealtimeAlerts } from '@/hooks/useRealtimeAlerts';
+import { useRealtimeSensorData } from '@/hooks/useRealtimeSensorData';
+import { useRealtimeUnitState } from '@/hooks/useRealtimeUnitState';
+import { socket, connectSocket, disconnectSocket, setTokenGetter } from '@/lib/socket';
 
 interface RealtimeContextValue {
   isConnected: boolean;
@@ -18,6 +18,7 @@ const RealtimeContext = createContext<RealtimeContextValue>({
   connectionError: null,
 });
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useRealtimeStatus() {
   return useContext(RealtimeContext);
 }
@@ -116,8 +117,13 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     };
   }, [userId]);
 
+  const value = useMemo(
+    () => ({ isConnected, isConnecting, connectionError }),
+    [isConnected, isConnecting, connectionError],
+  );
+
   return (
-    <RealtimeContext.Provider value={{ isConnected, isConnecting, connectionError }}>
+    <RealtimeContext.Provider value={value}>
       {isConnected && <RealtimeHandlers />}
       {children}
     </RealtimeContext.Provider>

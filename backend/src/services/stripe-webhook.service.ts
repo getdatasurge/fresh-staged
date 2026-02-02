@@ -349,6 +349,11 @@ export async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promi
       : null,
   };
 
+  // Cap notifications to prevent unbounded memory growth
+  if (adminNotifications.length >= 1000) {
+    adminNotifications.shift();
+  }
+
   // Store notification (in production, send email/slack/etc)
   adminNotifications.push(notification);
 
