@@ -2,6 +2,9 @@
  * TTN Crypto Utilities
  * Ported from supabase/functions/_shared/ttnConfig.ts
  */
+import { logger } from '../../utils/logger.js';
+
+const log = logger.child({ service: 'ttn-crypto' });
 
 export class TtnCrypto {
   /**
@@ -16,7 +19,7 @@ export class TtnCrypto {
       try {
         return Buffer.from(encoded.slice(4), 'base64').toString('utf-8');
       } catch (err) {
-        console.error('[deobfuscateKey] Failed to decode b64:', err);
+        log.error({ err }, 'Failed to decode b64');
         return '';
       }
     }
@@ -34,7 +37,7 @@ export class TtnCrypto {
    * Obfuscate a key
    * Currently uses 'b64:' format for stability
    */
-  static obfuscateKey(key: string, salt: string): string {
+  static obfuscateKey(key: string, _salt: string): string {
     return `b64:${Buffer.from(key).toString('base64')}`;
   }
 
@@ -51,7 +54,7 @@ export class TtnCrypto {
 
       return result.toString('utf-8');
     } catch (err) {
-      console.error('[deobfuscateKeyV2] Failed to decode:', err);
+      log.error({ err }, 'Failed to decode v2');
       return '';
     }
   }
@@ -65,7 +68,7 @@ export class TtnCrypto {
       }
       return result;
     } catch {
-      console.warn('[legacyDeobfuscateKey] Failed to decode');
+      log.warn('Failed to decode legacy key');
       return '';
     }
   }

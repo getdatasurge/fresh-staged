@@ -14,20 +14,23 @@
  * - sensor-stream.service.ts (real-time streaming)
  */
 
+import { and, eq, gte, lte, sql } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import {
   readingMetrics,
   type InsertReadingMetric,
   type MetricGranularity,
 } from '../db/schema/index.js';
-import { eq, and } from 'drizzle-orm';
+import { QueueNames, JobNames, type MeterReportJobData } from '../jobs/index.js';
 import type { SingleReading } from '../schemas/readings.js';
-import * as readingsService from './readings.service.js';
+import { logger } from '../utils/logger.js';
 import * as alertEvaluator from './alert-evaluator.service.js';
+import { getQueueService } from './queue.service.js';
+import * as readingsService from './readings.service.js';
 import type { SensorStreamService } from './sensor-stream.service.js';
 import type { SocketService } from './socket.service.js';
-import { getQueueService } from './queue.service.js';
-import { QueueNames, JobNames, type MeterReportJobData } from '../jobs/index.js';
+
+const log = logger.child({ service: 'reading-ingestion' });
 
 /**
  * Result of complete reading ingestion pipeline
@@ -199,71 +202,10 @@ export async function upsertHourlyMetrics(
 ): Promise<void> {
   const granularity: MetricGranularity = 'hourly';
 
-  // Check for existing metrics in this period
-  const [existing] = await db
-    .select()
-    .from(readingMetrics)
-    .where(
-      and(
-        eq(readingMetrics.unitId, unitId),
-        eq(readingMetrics.periodStart, periodStart),
-        eq(readingMetrics.granularity, granularity),
-      ),
-    )
-    .limit(1);
-
-  if (existing) {
-    // Merge with existing metrics
-    const mergedCount = existing.readingCount + newMetrics.readingCount;
-    const mergedSum = parseFloat(existing.tempSum) + newMetrics.tempSum;
-    const mergedMin = Math.min(parseFloat(existing.tempMin), newMetrics.tempMin);
-    const mergedMax = Math.max(parseFloat(existing.tempMax), newMetrics.tempMax);
-    const mergedAvg = mergedSum / mergedCount;
-
-    // Merge humidity if present
-    let mergedHumidityMin = existing.humidityMin ? parseFloat(existing.humidityMin) : null;
-    let mergedHumidityMax = existing.humidityMax ? parseFloat(existing.humidityMax) : null;
-
-    if (newMetrics.humidityMin !== null) {
-      mergedHumidityMin =
-        mergedHumidityMin === null
-          ? newMetrics.humidityMin
-          : Math.min(mergedHumidityMin, newMetrics.humidityMin);
-    }
-    if (newMetrics.humidityMax !== null) {
-      mergedHumidityMax =
-        mergedHumidityMax === null
-          ? newMetrics.humidityMax
-          : Math.max(mergedHumidityMax, newMetrics.humidityMax);
-    }
-
-    // Note: humidity average requires storing humidity sum and count separately for accuracy
-    // For simplicity, we use the new humidity average when available
-    const mergedHumidityAvg =
-      newMetrics.humidityAvg !== null
-        ? newMetrics.humidityAvg
-        : existing.humidityAvg
-          ? parseFloat(existing.humidityAvg)
-          : null;
-
-    await db
-      .update(readingMetrics)
-      .set({
-        tempMin: mergedMin.toString(),
-        tempMax: mergedMax.toString(),
-        tempAvg: mergedAvg.toString(),
-        tempSum: mergedSum.toString(),
-        humidityMin: mergedHumidityMin?.toString() ?? null,
-        humidityMax: mergedHumidityMax?.toString() ?? null,
-        humidityAvg: mergedHumidityAvg?.toString() ?? null,
-        readingCount: mergedCount,
-        anomalyCount: existing.anomalyCount + newMetrics.anomalyCount,
-        updatedAt: new Date(),
-      })
-      .where(eq(readingMetrics.id, existing.id));
-  } else {
-    // Create new metrics record
-    const insert: InsertReadingMetric = {
+  // Single-query upsert using ON CONFLICT on the unique (unitId, periodStart, granularity) constraint
+  await db
+    .insert(readingMetrics)
+    .values({
       unitId,
       periodStart,
       periodEnd,
@@ -277,10 +219,22 @@ export async function upsertHourlyMetrics(
       humidityAvg: newMetrics.humidityAvg?.toString() ?? null,
       readingCount: newMetrics.readingCount,
       anomalyCount: newMetrics.anomalyCount,
-    };
-
-    await db.insert(readingMetrics).values(insert);
-  }
+    } satisfies InsertReadingMetric)
+    .onConflictDoUpdate({
+      target: [readingMetrics.unitId, readingMetrics.periodStart, readingMetrics.granularity],
+      set: {
+        tempMin: sql`LEAST(${readingMetrics.tempMin}::numeric, EXCLUDED.temp_min::numeric)::text`,
+        tempMax: sql`GREATEST(${readingMetrics.tempMax}::numeric, EXCLUDED.temp_max::numeric)::text`,
+        tempSum: sql`(${readingMetrics.tempSum}::numeric + EXCLUDED.temp_sum::numeric)::text`,
+        tempAvg: sql`((${readingMetrics.tempSum}::numeric + EXCLUDED.temp_sum::numeric) / (${readingMetrics.readingCount} + EXCLUDED.reading_count))::text`,
+        humidityMin: sql`CASE WHEN EXCLUDED.humidity_min IS NOT NULL THEN LEAST(${readingMetrics.humidityMin}::numeric, EXCLUDED.humidity_min::numeric)::text ELSE ${readingMetrics.humidityMin} END`,
+        humidityMax: sql`CASE WHEN EXCLUDED.humidity_max IS NOT NULL THEN GREATEST(${readingMetrics.humidityMax}::numeric, EXCLUDED.humidity_max::numeric)::text ELSE ${readingMetrics.humidityMax} END`,
+        humidityAvg: sql`COALESCE(EXCLUDED.humidity_avg, ${readingMetrics.humidityAvg})`,
+        readingCount: sql`${readingMetrics.readingCount} + EXCLUDED.reading_count`,
+        anomalyCount: sql`${readingMetrics.anomalyCount} + EXCLUDED.anomaly_count`,
+        updatedAt: new Date(),
+      },
+    });
 }
 
 /**
@@ -385,12 +339,12 @@ export async function ingestReadings(
         .addJob(QueueNames.METER_REPORTING, JobNames.METER_REPORT, meterJobData)
         .catch((err) => {
           // Log but don't fail ingestion if queue is unavailable
-          console.warn(`[Ingestion] Failed to queue meter event: ${err.message}`);
+          log.warn({ err }, 'Failed to queue meter event');
         });
     }
-  } catch (err) {
+  } catch {
     // Queue service not available - skip metering silently
-    console.warn('[Ingestion] Queue service unavailable for metering');
+    log.warn('Queue service unavailable for metering');
   }
 
   // Step 2: Stream readings to real-time dashboards
@@ -505,22 +459,26 @@ export async function queryMetrics(
   const results = await db
     .select()
     .from(readingMetrics)
-    .where(and(eq(readingMetrics.unitId, unitId), eq(readingMetrics.granularity, granularity)))
+    .where(
+      and(
+        eq(readingMetrics.unitId, unitId),
+        eq(readingMetrics.granularity, granularity),
+        gte(readingMetrics.periodStart, start),
+        lte(readingMetrics.periodEnd, end),
+      ),
+    )
     .orderBy(readingMetrics.periodStart);
 
-  // Filter by date range in application (Drizzle handles this in query)
-  return results
-    .filter((r) => r.periodStart >= start && r.periodEnd <= end)
-    .map((r) => ({
-      periodStart: r.periodStart,
-      periodEnd: r.periodEnd,
-      tempMin: parseFloat(r.tempMin),
-      tempMax: parseFloat(r.tempMax),
-      tempAvg: parseFloat(r.tempAvg),
-      humidityMin: r.humidityMin ? parseFloat(r.humidityMin) : null,
-      humidityMax: r.humidityMax ? parseFloat(r.humidityMax) : null,
-      humidityAvg: r.humidityAvg ? parseFloat(r.humidityAvg) : null,
-      readingCount: r.readingCount,
-      anomalyCount: r.anomalyCount,
-    }));
+  return results.map((r) => ({
+    periodStart: r.periodStart,
+    periodEnd: r.periodEnd,
+    tempMin: parseFloat(r.tempMin),
+    tempMax: parseFloat(r.tempMax),
+    tempAvg: parseFloat(r.tempAvg),
+    humidityMin: r.humidityMin ? parseFloat(r.humidityMin) : null,
+    humidityMax: r.humidityMax ? parseFloat(r.humidityMax) : null,
+    humidityAvg: r.humidityAvg ? parseFloat(r.humidityAvg) : null,
+    readingCount: r.readingCount,
+    anomalyCount: r.anomalyCount,
+  }));
 }

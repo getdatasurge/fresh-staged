@@ -28,10 +28,7 @@
  * ```
  */
 
-import { eq, and, inArray, gte } from 'drizzle-orm';
-import { db } from '../db/client.js';
-import { units, areas, sites, sensorReadings } from '../db/schema/index.js';
-import type { SocketService } from './socket.service.js';
+import { eq, and } from 'drizzle-orm';
 import {
   type UnitDashboardState,
   STATUS_TO_DASHBOARD_STATE,
@@ -39,6 +36,12 @@ import {
   OFFLINE_CONFIG,
   STATE_CACHE_CONFIG,
 } from '../config/unit-state.config.js';
+import { db } from '../db/client.js';
+import { units, areas, sites } from '../db/schema/index.js';
+import { logger } from '../utils/logger.js';
+import type { SocketService } from './socket.service.js';
+
+const log = logger.child({ service: 'unit-state' });
 
 /**
  * Cached unit state entry
@@ -91,11 +94,7 @@ export class UnitStateService {
       STATE_CACHE_CONFIG.CLEANUP_INTERVAL_MS,
     );
 
-    console.log(
-      '[UnitStateService] Initialized with cache TTL:',
-      STATE_CACHE_CONFIG.CACHE_TTL_MS,
-      'ms',
-    );
+    log.info({ cacheTtlMs: STATE_CACHE_CONFIG.CACHE_TTL_MS }, 'Initialized with cache TTL');
   }
 
   /**
@@ -139,7 +138,7 @@ export class UnitStateService {
     }
 
     // Unknown status defaults to normal
-    console.warn(`[UnitStateService] Unknown unit status: ${dbStatus}, defaulting to normal`);
+    log.warn({ dbStatus }, 'Unknown unit status, defaulting to normal');
     return 'normal';
   }
 
@@ -377,9 +376,7 @@ export class UnitStateService {
       this.socketService.emitToOrg(organizationId, 'unit:state:changed', changeEvent);
       this.socketService.emitToUnit(organizationId, unitId, 'unit:state:changed', changeEvent);
 
-      console.log(
-        `[UnitStateService] State change for unit ${unitId}: ${previousState} -> ${newState}`,
-      );
+      log.info({ unitId, previousState, newState }, 'State change for unit');
     }
 
     return {
@@ -491,9 +488,7 @@ export class UnitStateService {
     }
 
     if (offlineCount > 0) {
-      console.log(
-        `[UnitStateService] Detected ${offlineCount} unit(s) went offline for org ${organizationId}`,
-      );
+      log.info({ offlineCount, organizationId }, 'Detected unit(s) went offline');
     }
 
     return offlineCount;
@@ -614,7 +609,7 @@ export class UnitStateService {
     }
 
     if (removedCount > 0) {
-      console.log(`[UnitStateService] Cleaned up ${removedCount} expired cache entries`);
+      log.info({ removedCount }, 'Cleaned up expired cache entries');
     }
   }
 
@@ -638,7 +633,7 @@ export class UnitStateService {
    */
   clearCache(): void {
     this.cache.clear();
-    console.log('[UnitStateService] Cache cleared');
+    log.info('Cache cleared');
   }
 
   /**
@@ -650,7 +645,7 @@ export class UnitStateService {
       this.cleanupIntervalId = null;
     }
     this.cache.clear();
-    console.log('[UnitStateService] Stopped and cleaned up');
+    log.info('Stopped and cleaned up');
   }
 }
 

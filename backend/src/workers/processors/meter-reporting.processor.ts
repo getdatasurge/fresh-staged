@@ -17,6 +17,9 @@ import type { Job, Processor } from 'bullmq';
 import type { MeterReportJobData } from '../../jobs/index.js';
 import { JobNames } from '../../jobs/index.js';
 import { getStripeMeterService } from '../../services/stripe-meter.service.js';
+import { logger } from '../../utils/logger.js';
+
+const log = logger.child({ service: 'meter-processor' });
 
 /**
  * Process a meter reporting job
@@ -30,21 +33,17 @@ export async function processMeterReport(job: Job<MeterReportJobData>): Promise<
   // Handle scheduler job - triggers batch reporting for all billable orgs
   // Scheduler job uses SENSOR_COUNT_SCHEDULER name with placeholder data
   if (job.name === JobNames.SENSOR_COUNT_SCHEDULER) {
-    console.log('[MeterProcessor] Processing scheduled sensor count reporting');
+    log.info('Processing scheduled sensor count reporting');
     // Import dynamically to avoid circular dependency
     const { getSensorCountScheduler } =
       await import('../../services/sensor-count-scheduler.service.js');
     const scheduler = getSensorCountScheduler();
     const result = await scheduler.reportAllSensorCounts();
-    console.log(
-      `[MeterProcessor] Scheduler completed: ${result.reported} reported, ${result.errors} errors`,
-    );
+    log.info({ reported: result.reported, errors: result.errors }, 'Scheduler completed');
     return;
   }
 
-  console.log(
-    `[MeterProcessor] Processing ${eventName} job for org ${organizationId}, value: ${value}`,
-  );
+  log.info({ eventName, organizationId, value }, 'Processing meter report job');
 
   const meterService = getStripeMeterService();
   let result: { success: boolean; error?: string };
@@ -75,7 +74,7 @@ export async function processMeterReport(job: Job<MeterReportJobData>): Promise<
     throw new Error(`Meter reporting failed: ${result.error}`);
   }
 
-  console.log(`[MeterProcessor] Successfully reported ${eventName} for org ${organizationId}`);
+  log.info({ eventName, organizationId }, 'Successfully reported meter event');
 }
 
 /**

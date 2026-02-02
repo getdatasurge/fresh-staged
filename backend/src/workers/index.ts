@@ -14,9 +14,12 @@
 import { Worker } from 'bullmq';
 import { Redis } from 'ioredis';
 import { QueueNames } from '../jobs/index.js';
-import { processSmsNotification } from './processors/sms-notification.processor.js';
+import { logger } from '../utils/logger.js';
 import { processEmailDigest } from './processors/email-digest.processor.js';
 import { createMeterReportingProcessor } from './processors/meter-reporting.processor.js';
+import { processSmsNotification } from './processors/sms-notification.processor.js';
+
+const log = logger.child({ service: 'worker' });
 
 // CRITICAL: Workers MUST use maxRetriesPerRequest: null
 // This is required for BullMQ workers to handle blocking Redis operations correctly
@@ -37,18 +40,18 @@ const connection = redisUrl
     });
 
 connection.on('connect', () => {
-  console.log('[Worker] Connected to Redis');
+  log.info('Connected to Redis');
 });
 
 connection.on('error', (err: Error) => {
-  console.error('[Worker] Redis connection error:', err.message);
+  log.error({ err }, 'Redis connection error');
 });
 
 // SMS notification worker
 const smsWorker = new Worker(
   QueueNames.SMS_NOTIFICATIONS,
   async (job) => {
-    console.log(`[Worker] Processing SMS job ${job.id}`);
+    log.info({ jobId: job.id }, 'Processing SMS job');
     return processSmsNotification(job);
   },
   {
@@ -61,7 +64,7 @@ const smsWorker = new Worker(
 const emailWorker = new Worker(
   QueueNames.EMAIL_DIGESTS,
   async (job) => {
-    console.log(`[Worker] Processing email job ${job.id}`);
+    log.info({ jobId: job.id }, 'Processing email job');
     return processEmailDigest(job);
   },
   {
@@ -81,48 +84,49 @@ const workers = [smsWorker, emailWorker, meterWorker];
 
 workers.forEach((worker) => {
   worker.on('completed', (job) => {
-    console.log(`✓ [Worker] Job ${job.id} completed in queue ${worker.name}`);
+    log.info({ jobId: job.id, queue: worker.name }, 'Job completed');
   });
 
   worker.on('failed', (job, err) => {
-    console.error(`✗ [Worker] Job ${job?.id} failed in queue ${worker.name}:`, err.message);
+    log.error({ jobId: job?.id, queue: worker.name, err }, 'Job failed');
   });
 
   worker.on('error', (err) => {
-    console.error(`[Worker] Worker error in ${worker.name}:`, err);
+    log.error({ queue: worker.name, err }, 'Worker error');
   });
 
   worker.on('stalled', (jobId) => {
-    console.warn(`[Worker] Job ${jobId} stalled in queue ${worker.name}`);
+    log.warn({ jobId, queue: worker.name }, 'Job stalled');
   });
 });
 
 // Graceful shutdown
 const shutdown = async (signal: string) => {
-  console.log(`[Worker] ${signal} received, shutting down gracefully...`);
+  log.info({ signal }, 'Received signal, shutting down gracefully');
 
   // Close workers (waits for active jobs to complete)
   await Promise.all(
     workers.map((worker) =>
       worker.close().catch((err) => {
-        console.error(`[Worker] Error closing worker ${worker.name}:`, err);
+        log.error({ err, queue: worker.name }, 'Error closing worker');
       }),
     ),
   );
 
   // Close Redis connection
   await connection.quit().catch(() => {
-    console.error('[Worker] Error closing Redis connection');
+    log.error('Error closing Redis connection');
   });
 
-  console.log('[Worker] Shutdown complete');
+  log.info('Shutdown complete');
   process.exit(0);
 };
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
-console.log('[Worker] Started and ready to process jobs');
-console.log(
-  `[Worker] Registered queues: ${QueueNames.SMS_NOTIFICATIONS}, ${QueueNames.EMAIL_DIGESTS}, ${QueueNames.METER_REPORTING}`,
+log.info('Started and ready to process jobs');
+log.info(
+  { queues: [QueueNames.SMS_NOTIFICATIONS, QueueNames.EMAIL_DIGESTS, QueueNames.METER_REPORTING] },
+  'Registered queues',
 );

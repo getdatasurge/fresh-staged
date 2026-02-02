@@ -11,6 +11,7 @@
 
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { requireAuth } from '../middleware/index.js';
+import { isSuperAdmin } from '../services/user.service.js';
 
 /**
  * Admin routes plugin
@@ -20,8 +21,17 @@ import { requireAuth } from '../middleware/index.js';
  * All routes under /api/admin require authentication.
  */
 const adminRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-  // Add authentication requirement to ALL routes under /api/admin
+  // Add authentication + super admin requirement to ALL routes under /api/admin
   fastify.addHook('onRequest', requireAuth);
+  fastify.addHook('onRequest', async (request, reply) => {
+    const isAdmin = await isSuperAdmin(request.user!.id);
+    if (!isAdmin) {
+      return reply.status(403).send({
+        error: 'Forbidden',
+        message: 'Super admin access required',
+      });
+    }
+  });
   /**
    * GET /admin/queues/health
    *
@@ -67,7 +77,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
             delayed,
           },
         });
-      } catch (error) {
+      } catch {
         queueStats.push({
           name,
           error: 'Failed to get queue stats',

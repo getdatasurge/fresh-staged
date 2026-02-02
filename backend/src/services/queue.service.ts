@@ -25,8 +25,8 @@
  */
 
 import { Queue } from 'bullmq';
-import { Redis } from 'ioredis';
 import type { JobsOptions } from 'bullmq';
+import { Redis } from 'ioredis';
 import {
   QueueNames,
   JobNames,
@@ -37,6 +37,9 @@ import {
   type SmsNotificationJobData,
   type MeterReportJobData,
 } from '../jobs/index.js';
+import { logger } from '../utils/logger.js';
+
+const log = logger.child({ service: 'queue-service' });
 
 /**
  * QueueService class for managing BullMQ queues
@@ -73,9 +76,8 @@ export class QueueService {
 
     // Skip Redis setup if no configuration provided
     if (!redisUrl && !process.env.REDIS_HOST) {
-      console.log(
-        '[QueueService] Redis not configured - queues disabled. ' +
-          'Set REDIS_URL or REDIS_HOST for background job support.',
+      log.info(
+        'Redis not configured - queues disabled. Set REDIS_URL or REDIS_HOST for background job support.',
       );
       return;
     }
@@ -102,12 +104,12 @@ export class QueueService {
       let suppressErrors = true;
       this.connection.on('error', (err: Error) => {
         if (!suppressErrors) {
-          console.error('[QueueService] Redis connection error:', err);
+          log.error({ err }, 'Redis connection error');
         }
       });
 
       this.connection.on('connect', () => {
-        console.log('[QueueService] Connected to Redis');
+        log.info('Connected to Redis');
       });
 
       // Attempt connection with timeout
@@ -123,10 +125,10 @@ export class QueueService {
       this.registerQueue(QueueNames.METER_REPORTING);
 
       this.redisEnabled = true;
-      console.log('[QueueService] Queues initialized and ready');
+      log.info('Queues initialized and ready');
     } catch (error) {
-      console.error('[QueueService] Failed to connect to Redis:', error);
-      console.warn('[QueueService] Queues disabled - background jobs will not be processed');
+      log.error({ err: error }, 'Failed to connect to Redis');
+      log.warn('Queues disabled - background jobs will not be processed');
 
       // Clean up connection on failure
       try {
@@ -148,7 +150,7 @@ export class QueueService {
    */
   private registerQueue(queueName: string): void {
     if (!this.connection) {
-      console.warn(`[QueueService] Cannot register queue ${queueName} - no Redis connection`);
+      log.warn({ queueName }, 'Cannot register queue - no Redis connection');
       return;
     }
 
@@ -158,7 +160,7 @@ export class QueueService {
     });
 
     this.queues.set(queueName, queue);
-    console.log(`[QueueService] Registered queue: ${queueName}`);
+    log.info({ queueName }, 'Registered queue');
   }
 
   /**
@@ -193,22 +195,22 @@ export class QueueService {
     const queue = this.queues.get(queueName);
 
     if (!queue) {
-      console.warn(
-        `[QueueService] Queue ${queueName} not available - job ${jobName} not queued. ` +
-          'Ensure Redis is configured.',
+      log.warn(
+        { queueName, jobName },
+        'Queue not available - job not queued. Ensure Redis is configured.',
       );
       return null;
     }
 
     try {
       const job = await queue.add(jobName, data, options);
-      console.log(
-        `[QueueService] Job ${jobName} queued in ${queueName} with ID ${job.id} ` +
-          `for organization ${data.organizationId}`,
+      log.info(
+        { jobName, queueName, jobId: job.id, organizationId: data.organizationId },
+        'Job queued',
       );
       return job.id || null;
     } catch (error) {
-      console.error(`[QueueService] Failed to queue job ${jobName} in ${queueName}:`, error);
+      log.error({ err: error, jobName, queueName }, 'Failed to queue job');
       throw error;
     }
   }
@@ -339,28 +341,28 @@ export class QueueService {
    */
   async shutdown(): Promise<void> {
     if (this.queues.size > 0) {
-      console.log('[QueueService] Closing queues...');
+      log.info('Closing queues...');
 
       // Close all queues
       await Promise.all(
         Array.from(this.queues.values()).map((queue) =>
           queue.close().catch((err) => {
-            console.error(`[QueueService] Error closing queue ${queue.name}:`, err);
+            log.error({ err, queueName: queue.name }, 'Error closing queue');
           }),
         ),
       );
 
       this.queues.clear();
-      console.log('[QueueService] All queues closed');
+      log.info('All queues closed');
     }
 
     if (this.connection) {
-      console.log('[QueueService] Disconnecting Redis...');
+      log.info('Disconnecting Redis...');
       try {
         await this.connection.quit();
-        console.log('[QueueService] Redis disconnected');
+        log.info('Redis disconnected');
       } catch (err) {
-        console.error('[QueueService] Error disconnecting Redis:', err);
+        log.error({ err }, 'Error disconnecting Redis');
       }
     }
   }

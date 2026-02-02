@@ -11,6 +11,9 @@
  */
 
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
+import { logger } from './logger.js';
+
+const log = logger.child({ service: 'unsubscribe-token' });
 
 // Use dedicated secret or fall back to JWT_SECRET
 const getUnsubscribeSecret = () => {
@@ -67,14 +70,14 @@ export async function verifyUnsubscribeToken(token: string): Promise<Unsubscribe
       typeof payload.userId !== 'string' ||
       !['daily', 'weekly', 'all'].includes(payload.type as string)
     ) {
-      console.warn('[UnsubscribeToken] Invalid payload structure');
+      log.warn('Invalid payload structure');
       return null;
     }
 
     return payload as UnsubscribePayload;
   } catch (error) {
     // Token expired, invalid signature, or malformed
-    console.warn('[UnsubscribeToken] Verification failed:', error);
+    log.warn({ err: error }, 'Verification failed');
     return null;
   }
 }

@@ -20,6 +20,9 @@ import {
 } from '../jobs/schedulers/digest-schedulers.js';
 import { router } from '../trpc/index.js';
 import { protectedProcedure } from '../trpc/procedures.js';
+import { logger } from '../utils/logger.js';
+
+const log = logger.child({ service: 'preferences-router' });
 
 // --- Schemas ---
 
@@ -142,7 +145,7 @@ export const preferencesRouter = router({
       // Update profile in database
       const [updated] = await db
         .update(profiles)
-        .set(updates as any)
+        .set(updates as Record<string, unknown>)
         .where(eq(profiles.userId, userId))
         .returning({
           digestDaily: profiles.digestDaily,
@@ -160,7 +163,7 @@ export const preferencesRouter = router({
         timezone: updated.timezone,
         dailyTime: updated.digestDailyTime,
       }).catch((err) => {
-        console.error('[Preferences] Failed to sync digest schedulers:', err);
+        log.error({ err }, 'Failed to sync digest schedulers');
       });
 
       // Parse digestSiteIds from JSON text to array
@@ -198,7 +201,7 @@ export const preferencesRouter = router({
       // Disable both digest types in database
       await db
         .update(profiles)
-        .set({ digestDaily: false, digestWeekly: false } as any)
+        .set({ digestDaily: false, digestWeekly: false } as Record<string, unknown>)
         .where(eq(profiles.userId, userId));
 
       // Remove all schedulers for this user

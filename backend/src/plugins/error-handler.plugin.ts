@@ -2,6 +2,9 @@ import type { FastifyPluginAsync, FastifyError, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 import { ZodError } from 'zod';
 import { ErrorCodes } from '../utils/errors.js';
+import { logger } from '../utils/logger.js';
+
+const log = logger.child({ service: 'error-handler' });
 
 /**
  * Global error handler plugin for production monitoring
@@ -61,7 +64,7 @@ async function initSentry() {
       });
     } catch {
       // Sentry is optional - if import fails, continue without it
-      console.warn('Sentry not available - error tracking disabled');
+      log.warn('Sentry not available - error tracking disabled');
     }
   }
 }

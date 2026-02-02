@@ -6,11 +6,14 @@ import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
 import { db } from '../../db/client.js';
 import { ttnConnections } from '../../db/schema/tenancy.js';
-import { TtnClient, TTN_BASE_URL } from './client.js';
+import { logger } from '../../utils/logger.js';
+import { TTN_BASE_URL } from './client.js';
 import { TtnCrypto } from './crypto.js';
 import { TtnPermissionService } from './permissions.js';
 import { PermissionReport } from './types.js';
 import { TtnWebhookService } from './webhook.js';
+
+const log = logger.child({ service: 'ttn-provisioning' });
 
 // Request timeout for TTN API calls
 const REQUEST_TIMEOUT_MS = 15000;
@@ -22,7 +25,7 @@ export class TtnProvisioningService {
   static async validateConfiguration(
     apiKey: string,
     applicationId: string,
-    region: string,
+    _region: string,
   ): Promise<{
     valid: boolean;
     permissions?: PermissionReport;
@@ -75,9 +78,9 @@ export class TtnProvisioningService {
   ): Promise<{
     success: boolean;
     webhookAction: 'created' | 'updated' | 'unchanged';
-    config: any;
+    config: Record<string, unknown>;
   }> {
-    const requestId = crypto.randomUUID();
+    const _requestId = crypto.randomUUID();
     const encryptionSalt = process.env.TTN_ENCRYPTION_SALT || 'default-salt'; // Env var
 
     // 1. Validate first
@@ -158,7 +161,7 @@ export class TtnProvisioningService {
     error?: string;
   }> {
     const requestId = crypto.randomUUID().slice(0, 8);
-    console.log(`[retryProvisioning] [${requestId}] Starting retry for org: ${organizationId}`);
+    log.info({ requestId, organizationId }, 'Starting retry for org');
 
     // Get current provisioning state
     const conn = await db.query.ttnConnections.findFirst({
@@ -263,9 +266,7 @@ export class TtnProvisioningService {
         })
         .where(eq(ttnConnections.organizationId, organizationId));
 
-      console.log(
-        `[retryProvisioning] [${requestId}] Retry successful, webhook: ${webhookResult.action}`,
-      );
+      log.info({ requestId, webhookAction: webhookResult.action }, 'Retry successful');
 
       return {
         success: true,
@@ -273,7 +274,7 @@ export class TtnProvisioningService {
       };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      console.error(`[retryProvisioning] [${requestId}] Error:`, errorMessage);
+      log.error({ requestId, error: errorMessage }, 'Retry error');
 
       await db
         .update(ttnConnections)
@@ -298,7 +299,7 @@ export class TtnProvisioningService {
    */
   static async startFresh(
     organizationId: string,
-    region: string = 'nam1',
+    _region: string = 'nam1',
   ): Promise<{
     success: boolean;
     message?: string;
@@ -306,9 +307,7 @@ export class TtnProvisioningService {
   }> {
     const requestId = crypto.randomUUID().slice(0, 8);
     const ttnAdminKey = process.env.TTN_ADMIN_API_KEY;
-    console.log(
-      `[startFresh] [${requestId}] Starting fresh provisioning for org: ${organizationId}`,
-    );
+    log.info({ requestId, organizationId }, 'Starting fresh provisioning');
 
     if (!ttnAdminKey) {
       return {
@@ -335,7 +334,7 @@ export class TtnProvisioningService {
     if (currentAppId) {
       try {
         const deleteUrl = `${TTN_BASE_URL}/api/v3/applications/${currentAppId}`;
-        console.log(`[startFresh] [${requestId}] Deleting application: ${currentAppId}`);
+        log.info({ requestId, applicationId: currentAppId }, 'Deleting application');
 
         const response = await fetch(deleteUrl, {
           method: 'DELETE',
@@ -346,16 +345,14 @@ export class TtnProvisioningService {
         });
 
         if (response.ok || response.status === 404) {
-          console.log(`[startFresh] [${requestId}] Application deleted or not found`);
+          log.info({ requestId }, 'Application deleted or not found');
         } else {
           const errorText = await response.text();
-          console.log(
-            `[startFresh] [${requestId}] Delete failed (${response.status}): ${errorText}`,
-          );
+          log.info({ requestId, status: response.status, errorText }, 'Delete failed');
           // Continue anyway - we'll create a new app
         }
       } catch (err) {
-        console.log(`[startFresh] [${requestId}] Delete error (continuing):`, err);
+        log.info({ requestId, err }, 'Delete error (continuing)');
       }
     }
 
@@ -385,7 +382,7 @@ export class TtnProvisioningService {
       })
       .where(eq(ttnConnections.organizationId, organizationId));
 
-    console.log(`[startFresh] [${requestId}] Credentials cleared. Ready for fresh provisioning.`);
+    log.info({ requestId }, 'Credentials cleared. Ready for fresh provisioning.');
 
     return {
       success: true,
@@ -410,7 +407,7 @@ export class TtnProvisioningService {
   }> {
     const requestId = crypto.randomUUID().slice(0, 8);
     const ttnAdminKey = process.env.TTN_ADMIN_API_KEY;
-    console.log(`[deepClean] [${requestId}] Starting deep clean for org: ${organizationId}`);
+    log.info({ requestId, organizationId }, 'Starting deep clean');
 
     if (!ttnAdminKey) {
       return {
@@ -441,7 +438,7 @@ export class TtnProvisioningService {
       try {
         // List devices
         const listUrl = `${TTN_BASE_URL}/api/v3/applications/${currentAppId}/devices`;
-        console.log(`[deepClean] [${requestId}] Listing devices from: ${listUrl}`);
+        log.info({ requestId, listUrl }, 'Listing devices');
 
         const listResponse = await fetch(listUrl, {
           method: 'GET',
@@ -456,7 +453,7 @@ export class TtnProvisioningService {
             end_devices?: Array<{ ids?: { device_id?: string } }>;
           };
           const devices = data.end_devices || [];
-          console.log(`[deepClean] [${requestId}] Found ${devices.length} devices to delete`);
+          log.info({ requestId, deviceCount: devices.length }, 'Found devices to delete');
 
           // Delete each device
           for (const device of devices) {
@@ -474,18 +471,18 @@ export class TtnProvisioningService {
 
                 if (deleteResponse.ok || deleteResponse.status === 404) {
                   deletedDevices++;
-                  console.log(`[deepClean] [${requestId}] Deleted device: ${deviceId}`);
+                  log.info({ requestId, deviceId }, 'Deleted device');
                 }
               } catch (err) {
-                console.log(`[deepClean] [${requestId}] Failed to delete device ${deviceId}:`, err);
+                log.info({ requestId, deviceId, err }, 'Failed to delete device');
               }
             }
           }
         } else {
-          console.log(`[deepClean] [${requestId}] Could not list devices (${listResponse.status})`);
+          log.info({ requestId, status: listResponse.status }, 'Could not list devices');
         }
       } catch (err) {
-        console.log(`[deepClean] [${requestId}] Device listing error:`, err);
+        log.info({ requestId, err }, 'Device listing error');
       }
     }
 
@@ -493,7 +490,7 @@ export class TtnProvisioningService {
     if (currentAppId) {
       try {
         const deleteAppUrl = `${TTN_BASE_URL}/api/v3/applications/${currentAppId}`;
-        console.log(`[deepClean] [${requestId}] Deleting application: ${currentAppId}`);
+        log.info({ requestId, applicationId: currentAppId }, 'Deleting application');
 
         const response = await fetch(deleteAppUrl, {
           method: 'DELETE',
@@ -505,15 +502,13 @@ export class TtnProvisioningService {
 
         if (response.ok || response.status === 404) {
           deletedApp = true;
-          console.log(`[deepClean] [${requestId}] Application deleted`);
+          log.info({ requestId }, 'Application deleted');
         } else {
           const errorText = await response.text();
-          console.log(
-            `[deepClean] [${requestId}] App delete failed (${response.status}): ${errorText}`,
-          );
+          log.info({ requestId, status: response.status, errorText }, 'App delete failed');
         }
       } catch (err) {
-        console.log(`[deepClean] [${requestId}] App delete error:`, err);
+        log.info({ requestId, err }, 'App delete error');
       }
     }
 
@@ -544,9 +539,7 @@ export class TtnProvisioningService {
       })
       .where(eq(ttnConnections.organizationId, organizationId));
 
-    console.log(
-      `[deepClean] [${requestId}] Deep clean completed: ${deletedDevices} devices, app=${deletedApp}`,
-    );
+    log.info({ requestId, deletedDevices, deletedApp }, 'Deep clean completed');
 
     return {
       success: true,

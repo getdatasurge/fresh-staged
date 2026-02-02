@@ -21,6 +21,9 @@ import * as notificationPolicyService from '../services/notification-policy.serv
 import { getTelnyxService } from '../services/telnyx.service.js';
 import { router } from '../trpc/index.js';
 import { orgProcedure, protectedProcedure } from '../trpc/procedures.js';
+import { logger } from '../utils/logger.js';
+
+const log = logger.child({ service: 'notification-policies-router' });
 
 // ============================================================================
 // Zod Schemas
@@ -201,7 +204,7 @@ export const notificationPoliciesRouter = router({
         error: z.string().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const telnyxService = getTelnyxService();
 
       if (!telnyxService?.isEnabled()) {
@@ -223,7 +226,7 @@ export const notificationPoliciesRouter = router({
           status: result.status,
         };
       } catch (error) {
-        console.error('[NotificationPolicies] Failed to send test SMS:', error);
+        log.error({ err: error }, 'Failed to send test SMS');
         return {
           success: false,
           error: error instanceof Error ? error.message : 'Failed to send SMS',
@@ -459,7 +462,7 @@ export const notificationPoliciesRouter = router({
         // Update
         const [updated] = await db
           .update(notificationSettings)
-          .set(settingsData as any)
+          .set(settingsData as Record<string, unknown>)
           .where(eq(notificationSettings.id, existing.id))
           .returning();
         return { ...input.data, id: updated.id };

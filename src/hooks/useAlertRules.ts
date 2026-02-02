@@ -1,5 +1,5 @@
-import { useTRPC, useTRPCClient } from '@/lib/trpc';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTRPC, useTRPCClient } from '@/lib/trpc';
 
 export interface AlertRules {
   manual_interval_minutes: number;
@@ -94,8 +94,10 @@ export function computeOfflineSeverity(
 }
 
 // Helper: Map backend camelCase to frontend snake_case
-function mapBackendToFrontend(rule: any): AlertRulesRow {
-  if (!rule) return null as any;
+function mapBackendToFrontend(
+  rule: Record<string, unknown> | null | undefined,
+): AlertRulesRow | null {
+  if (!rule) return null;
   return {
     id: rule.id,
     organization_id: rule.organizationId,
@@ -119,7 +121,7 @@ function mapBackendToFrontend(rule: any): AlertRulesRow {
 }
 
 // Helper: Map frontend snake_case to backend camelCase
-function mapFrontendToBackend(rules: Partial<AlertRulesRow>): any {
+function mapFrontendToBackend(rules: Partial<AlertRulesRow>): Record<string, unknown> {
   return {
     manualIntervalMinutes: rules.manual_interval_minutes,
     manualGraceMinutes: rules.manual_grace_minutes,
@@ -176,7 +178,6 @@ export function useUnitAlertRulesOverride(unitId: string | null) {
 
 // Hook for upserting rules
 export function useUpsertAlertRules() {
-  const trpc = useTRPC();
   const trpcClient = useTRPCClient();
   const queryClient = useQueryClient();
 
@@ -200,7 +201,6 @@ export function useUpsertAlertRules() {
 
 // Hook for deleting rules
 export function useDeleteAlertRules() {
-  const trpc = useTRPC();
   const trpcClient = useTRPCClient();
   const queryClient = useQueryClient();
 
@@ -221,7 +221,6 @@ export function useDeleteAlertRules() {
 // Hook for clearing field (if needed, or use upsert with null? Editor uses clearField endpoint usually or update with null)
 // We added clearField to router.
 export function useClearRuleField() {
-  const trpc = useTRPC();
   const trpcClient = useTRPCClient();
   const queryClient = useQueryClient();
 

@@ -9,7 +9,10 @@
 import { TRPCError } from '@trpc/server';
 import { userService } from '../services/index.js';
 import type { AuthUser } from '../types/auth.js';
+import { logger } from '../utils/logger.js';
 import { middleware, publicProcedure } from './index.js';
+
+const log = logger.child({ service: 'trpc-procedures' });
 
 /**
  * Performance monitoring middleware
@@ -25,7 +28,7 @@ const performanceMonitor = middleware(async ({ ctx, next }) => {
 
   // Log performance metrics (only in dev or when debug mode is enabled)
   if (process.env.NODE_ENV === 'development' || process.env.DEBUG) {
-    const color =
+    const _color =
       duration > 500
         ? '\x1b[31m' // Red
         : duration > 200
@@ -34,7 +37,7 @@ const performanceMonitor = middleware(async ({ ctx, next }) => {
             ? '\x1b[33m' // Yellow
             : '\x1b[32m'; // Green
 
-    console.log(`${color}[PERF] Request: ${duration}ms\x1b[0m`);
+    log.info({ duration }, 'Request performance');
   }
 
   // Add response header with duration - use Fastify's header() method if available

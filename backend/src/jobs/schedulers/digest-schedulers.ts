@@ -13,7 +13,10 @@
  */
 
 import { getQueueService } from '../../services/queue.service.js';
+import { logger } from '../../utils/logger.js';
 import { QueueNames, JobNames, type EmailDigestJobData } from '../index.js';
+
+const log = logger.child({ service: 'digest-schedulers' });
 
 /**
  * Sync digest schedulers for a user based on their preferences
@@ -37,13 +40,13 @@ export async function syncUserDigestSchedulers(
 ): Promise<void> {
   const queueService = getQueueService();
   if (!queueService || !queueService.isRedisEnabled()) {
-    console.log('[DigestSchedulers] Queue service not available - skipping scheduler sync');
+    log.info('Queue service not available - skipping scheduler sync');
     return;
   }
 
   const queue = queueService.getQueue(QueueNames.EMAIL_DIGESTS);
   if (!queue) {
-    console.warn('[DigestSchedulers] EMAIL_DIGESTS queue not found');
+    log.warn('EMAIL_DIGESTS queue not found');
     return;
   }
 
@@ -75,13 +78,11 @@ export async function syncUserDigestSchedulers(
         },
       },
     );
-    console.log(
-      `[DigestSchedulers] Upserted daily scheduler for user ${userId} at ${dailyTime} ${timezone}`,
-    );
+    log.info({ userId, dailyTime, timezone }, 'Upserted daily scheduler');
   } else {
     // Remove scheduler if disabled
     await queue.removeJobScheduler(`digest-daily-${userId}`);
-    console.log(`[DigestSchedulers] Removed daily scheduler for user ${userId}`);
+    log.info({ userId }, 'Removed daily scheduler');
   }
 
   // Weekly digest: Monday at user's preferred time
@@ -107,12 +108,10 @@ export async function syncUserDigestSchedulers(
         },
       },
     );
-    console.log(
-      `[DigestSchedulers] Upserted weekly scheduler for user ${userId} at Monday ${dailyTime} ${timezone}`,
-    );
+    log.info({ userId, dailyTime, timezone }, 'Upserted weekly scheduler for Monday');
   } else {
     await queue.removeJobScheduler(`digest-weekly-${userId}`);
-    console.log(`[DigestSchedulers] Removed weekly scheduler for user ${userId}`);
+    log.info({ userId }, 'Removed weekly scheduler');
   }
 }
 
@@ -135,5 +134,5 @@ export async function removeUserDigestSchedulers(userId: string): Promise<void> 
 
   await queue.removeJobScheduler(`digest-daily-${userId}`);
   await queue.removeJobScheduler(`digest-weekly-${userId}`);
-  console.log(`[DigestSchedulers] Removed all schedulers for user ${userId}`);
+  log.info({ userId }, 'Removed all schedulers');
 }

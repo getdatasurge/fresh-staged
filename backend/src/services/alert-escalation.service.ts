@@ -23,7 +23,12 @@
  * ```
  */
 
-import { eq, and, gte, inArray, lt, asc, desc, sql } from 'drizzle-orm';
+import { eq, and, gte, inArray, asc, sql } from 'drizzle-orm';
+import {
+  COOLDOWN_CONFIG,
+  getEscalationRule,
+  getContactPriorityThreshold,
+} from '../config/escalation.config.js';
 import { db } from '../db/client.js';
 import {
   alerts,
@@ -35,13 +40,10 @@ import {
   type Alert,
   type EscalationContact,
 } from '../db/schema/index.js';
-import {
-  ESCALATION_RULES,
-  COOLDOWN_CONFIG,
-  getEscalationRule,
-  getContactPriorityThreshold,
-} from '../config/escalation.config.js';
+import { logger } from '../utils/logger.js';
 import { getQueueService } from './queue.service.js';
+
+const log = logger.child({ service: 'alert-escalation' });
 
 /**
  * Result of an escalation attempt
@@ -357,10 +359,7 @@ export async function escalateAlert(
     }
   }
 
-  console.log(
-    `[AlertEscalation] Alert ${alertId} escalated to level ${newLevel}. ` +
-      `SMS queued: ${smsQueued}`,
-  );
+  log.info({ alertId, newLevel, smsQueued }, 'Alert escalated');
 
   return {
     success: true,
@@ -387,14 +386,14 @@ async function queueEscalationSms(
 ): Promise<number> {
   const queueService = getQueueService();
   if (!queueService || !queueService.isRedisEnabled()) {
-    console.log('[AlertEscalation] Queue service not available - SMS not sent');
+    log.info('Queue service not available - SMS not sent');
     return 0;
   }
 
   // Get escalation contacts within priority threshold
   const contacts = await getEscalationContacts(organizationId, maxPriority);
   if (contacts.length === 0) {
-    console.log('[AlertEscalation] No escalation contacts found');
+    log.info('No escalation contacts found');
     return 0;
   }
 
@@ -404,13 +403,13 @@ async function queueEscalationSms(
   for (const contact of contacts) {
     // Check per-user cooldown if contact has a linked profile
     if (contact.profileId && (await isUserInSmsCooldown(contact.profileId))) {
-      console.log(`[AlertEscalation] User ${contact.profileId} in SMS cooldown - skipping`);
+      log.info({ profileId: contact.profileId }, 'User in SMS cooldown - skipping');
       continue;
     }
 
     // Validate phone number format (E.164)
     if (!contact.phone.startsWith('+')) {
-      console.log(`[AlertEscalation] Invalid phone format for contact ${contact.id} - skipping`);
+      log.info({ contactId: contact.id }, 'Invalid phone format for contact - skipping');
       continue;
     }
 
@@ -440,9 +439,12 @@ async function queueEscalationSms(
     queued++;
 
     // Log with masked phone number
-    console.log(
-      `[AlertEscalation] Queued SMS for contact ${contact.name} ` +
-        `(${contact.phone.slice(0, 5)}***${contact.phone.slice(-2)})`,
+    log.info(
+      {
+        contactName: contact.name,
+        phone: `${contact.phone.slice(0, 5)}***${contact.phone.slice(-2)}`,
+      },
+      'Queued SMS for contact',
     );
   }
 
@@ -472,7 +474,7 @@ export async function processEscalations(): Promise<{
 
   try {
     const alertsToEscalate = await getAlertsReadyForEscalation();
-    console.log(`[AlertEscalation] Found ${alertsToEscalate.length} alerts ready for escalation`);
+    log.info({ count: alertsToEscalate.length }, 'Found alerts ready for escalation');
 
     for (const { alert, organizationId } of alertsToEscalate) {
       summary.processed++;
@@ -484,22 +486,26 @@ export async function processEscalations(): Promise<{
           summary.escalated++;
           summary.smsQueued += result.smsQueued;
         } else {
-          console.log(`[AlertEscalation] Skipped alert ${alert.id}: ${result.skipReason}`);
+          log.info({ alertId: alert.id, skipReason: result.skipReason }, 'Skipped alert');
         }
       } catch (error) {
-        console.error(`[AlertEscalation] Error escalating alert ${alert.id}:`, error);
+        log.error({ err: error, alertId: alert.id }, 'Error escalating alert');
         summary.errors++;
       }
     }
   } catch (error) {
-    console.error('[AlertEscalation] Error fetching alerts for escalation:', error);
+    log.error({ err: error }, 'Error fetching alerts for escalation');
     summary.errors++;
   }
 
-  console.log(
-    `[AlertEscalation] Processing complete. ` +
-      `Processed: ${summary.processed}, Escalated: ${summary.escalated}, ` +
-      `SMS queued: ${summary.smsQueued}, Errors: ${summary.errors}`,
+  log.info(
+    {
+      processed: summary.processed,
+      escalated: summary.escalated,
+      smsQueued: summary.smsQueued,
+      errors: summary.errors,
+    },
+    'Processing complete',
   );
 
   return summary;
@@ -609,10 +615,7 @@ export async function manualEscalate(
     }
   }
 
-  console.log(
-    `[AlertEscalation] Alert ${alertId} manually escalated to level ${clampedLevel}. ` +
-      `SMS queued: ${smsQueued}`,
-  );
+  log.info({ alertId, newLevel: clampedLevel, smsQueued }, 'Alert manually escalated');
 
   return {
     success: true,

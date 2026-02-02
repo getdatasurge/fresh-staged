@@ -17,15 +17,14 @@
  * ```
  */
 
+import { eq } from 'drizzle-orm';
+import { categorizeError } from '../config/telnyx.config.js';
 import { db } from '../db/client.js';
 import { notificationDeliveries } from '../db/schema/notifications.js';
-import { eq } from 'drizzle-orm';
-import {
-  type TelnyxWebhookEvent,
-  type TelnyxDeliveryStatus,
-  mapEventTypeToStatus,
-} from '../schemas/telnyx-webhooks.js';
-import { extractErrorCode, categorizeError } from '../config/telnyx.config.js';
+import type { TelnyxWebhookEvent } from '../schemas/telnyx-webhooks.js';
+import { logger } from '../utils/logger.js';
+
+const log = logger.child({ service: 'telnyx-webhook' });
 
 /**
  * Custom error class for Telnyx webhook processing errors
@@ -72,7 +71,7 @@ export async function handleMessageSent(
     .returning({ id: notificationDeliveries.id });
 
   if (result.length === 0) {
-    console.log(`[TelnyxWebhook] No delivery found for messageId: ${messageId}`);
+    log.info({ messageId }, 'No delivery found for messageId');
     return {
       messageId,
       eventType: 'message.sent',
@@ -81,9 +80,7 @@ export async function handleMessageSent(
     };
   }
 
-  console.log(
-    `[TelnyxWebhook] Updated delivery ${result[0].id} to 'sent' for messageId: ${messageId}`,
-  );
+  log.info({ deliveryId: result[0].id, messageId, status: 'sent' }, 'Updated delivery status');
 
   return {
     messageId,
@@ -113,7 +110,7 @@ export async function handleMessageDelivered(
     .returning({ id: notificationDeliveries.id });
 
   if (result.length === 0) {
-    console.log(`[TelnyxWebhook] No delivery found for messageId: ${messageId}`);
+    log.info({ messageId }, 'No delivery found for messageId');
     return {
       messageId,
       eventType: 'message.delivered',
@@ -122,9 +119,7 @@ export async function handleMessageDelivered(
     };
   }
 
-  console.log(
-    `[TelnyxWebhook] Updated delivery ${result[0].id} to 'delivered' for messageId: ${messageId}`,
-  );
+  log.info({ deliveryId: result[0].id, messageId, status: 'delivered' }, 'Updated delivery status');
 
   return {
     messageId,
@@ -165,7 +160,7 @@ export async function handleMessageFailed(
     .returning({ id: notificationDeliveries.id });
 
   if (result.length === 0) {
-    console.log(`[TelnyxWebhook] No delivery found for messageId: ${messageId}`);
+    log.info({ messageId }, 'No delivery found for messageId');
     return {
       messageId,
       eventType: 'message.failed',
@@ -178,14 +173,9 @@ export async function handleMessageFailed(
   if (errors && errors.length > 0) {
     const errorCode = errors[0].code;
     const category = categorizeError(errorCode);
-    console.log(
-      `[TelnyxWebhook] Delivery ${result[0].id} failed - ` +
-        `Code: ${errorCode}, Category: ${category}, Message: ${errorMessage}`,
-    );
+    log.info({ deliveryId: result[0].id, errorCode, category, errorMessage }, 'Delivery failed');
   } else {
-    console.log(
-      `[TelnyxWebhook] Updated delivery ${result[0].id} to 'failed' for messageId: ${messageId}`,
-    );
+    log.info({ deliveryId: result[0].id, messageId, status: 'failed' }, 'Updated delivery status');
   }
 
   return {
@@ -214,7 +204,7 @@ export async function handleTelnyxWebhookEvent(
     throw new TelnyxWebhookError('Missing message ID in webhook payload');
   }
 
-  console.log(`[TelnyxWebhook] Processing event: ${eventType} for messageId: ${messageId}`);
+  log.info({ eventType, messageId }, 'Processing event');
 
   switch (eventType) {
     case 'message.sent': {
@@ -234,7 +224,7 @@ export async function handleTelnyxWebhookEvent(
 
     default:
       // Unhandled event type - log and acknowledge
-      console.log(`[TelnyxWebhook] Unhandled event type: ${eventType}`);
+      log.info({ eventType }, 'Unhandled event type');
       return {
         messageId,
         eventType,

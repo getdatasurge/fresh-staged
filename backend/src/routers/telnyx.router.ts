@@ -7,11 +7,14 @@
  * - verifyPublicAsset: Verify a public URL is accessible (for opt-in images)
  */
 
-import { z } from 'zod';
 import { Telnyx } from 'telnyx';
+import type { TfVerificationStatus } from 'telnyx/resources/messaging-tollfree/verification/requests.js';
+import { z } from 'zod';
 import { router, publicProcedure } from '../trpc/index.js';
 import { orgProcedure } from '../trpc/procedures.js';
-import type { TfVerificationStatus } from 'telnyx/resources/messaging-tollfree/verification/requests.js';
+import { logger } from '../utils/logger.js';
+
+const log = logger.child({ service: 'telnyx-router' });
 
 /**
  * Create a Telnyx client if API key is configured
@@ -125,7 +128,7 @@ export const telnyxRouter = router({
           lastChecked: new Date().toISOString(),
         };
       } catch (error) {
-        console.error('[telnyx.verificationStatus] API error:', error);
+        log.error({ err: error }, 'Verification status API error');
         return {
           status: 'unknown' as const,
           verificationId: null,
@@ -191,14 +194,14 @@ export const telnyxRouter = router({
           webhook_api_version: '2',
         });
 
-        console.log(`[telnyx.configureWebhook] Webhook configured: ${webhookUrl}`);
+        log.info({ webhookUrl }, 'Webhook configured');
 
         return {
           success: true,
           webhookUrl,
         };
       } catch (error) {
-        console.error('[telnyx.configureWebhook] API error:', error);
+        log.error({ err: error }, 'Configure webhook API error');
         return {
           success: false,
           error: error instanceof Error ? error.message : 'Failed to configure webhook',

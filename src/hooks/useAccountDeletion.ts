@@ -1,8 +1,7 @@
+import { useUser } from '@stackframe/react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useUser, useStackApp } from '@stackframe/react';
-import { debugLog } from '@/lib/debugLogger';
 import { useToast } from '@/hooks/use-toast';
+import { debugLog } from '@/lib/debugLogger';
 
 export type DeletionStatus =
   | 'idle'
@@ -24,27 +23,13 @@ export interface DeletionProgress {
   jobId?: string;
 }
 
-interface DeletionResult {
-  success: boolean;
-  job_id?: string;
-  request_id?: string;
-  error?: string;
-  error_code?: string;
-  sensors_queued?: number;
-  gateways_deleted?: number;
-  org_deleted?: boolean;
-  org_had_other_users?: boolean;
-}
-
 export function useAccountDeletion() {
   const user = useUser();
-  const stackApp = useStackApp();
   const [progress, setProgress] = useState<DeletionProgress>({
     status: 'idle',
     currentStep: '',
   });
   const [isDeleting, setIsDeleting] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   const deleteAccount = async (userId: string) => {
@@ -68,9 +53,6 @@ export function useAccountDeletion() {
     });
 
     try {
-      // Get Stack Auth token for future backend call
-      const { accessToken } = await user.getAuthJson();
-
       // TODO: Migrate to new backend endpoint
       // Account deletion needs secure backend handling
       // For Stack Auth, account deletion should go through Stack Auth API
@@ -85,20 +67,6 @@ export function useAccountDeletion() {
       });
       setIsDeleting(false);
       return false;
-
-      // Sign out the user via Stack Auth
-      await stackApp.signOut();
-
-      setProgress({
-        status: 'complete',
-        currentStep: 'Account deleted',
-        requestId,
-        jobId: result.job_id,
-      });
-
-      // Navigate to confirmation page
-      navigate('/account-deleted', { replace: true });
-      return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
 

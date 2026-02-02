@@ -7,6 +7,10 @@
  * - Native fetch wrapper for consistent error handling
  */
 
+import { logger } from '../../utils/logger.js';
+
+const log = logger.child({ service: 'ttn-client' });
+
 // NAM1-ONLY: All operations target this cluster
 export const CLUSTER_HOST = 'nam1.cloud.thethings.network';
 export const CLUSTER_BASE_URL = `https://${CLUSTER_HOST}`;
@@ -21,8 +25,9 @@ export function assertClusterHost(url: string | URL): void {
   if (host === 'status.thethings.network') return;
 
   if (host !== CLUSTER_HOST) {
-    console.error(
-      `[assertClusterHost] CRITICAL: Attempted to access ${host} but only ${CLUSTER_HOST} is allowed`,
+    log.error(
+      { host, allowedHost: CLUSTER_HOST },
+      'CRITICAL: Attempted to access unauthorized cluster host',
     );
     throw new Error(`Security Exception: TTN API calls restricted to ${CLUSTER_HOST} only.`);
   }
@@ -74,17 +79,7 @@ export function logTtnApiCall(
   step: string,
   requestId: string,
 ): void {
-  console.log(
-    JSON.stringify({
-      event: 'ttn_api_call',
-      context,
-      method,
-      url,
-      step,
-      request_id: requestId,
-      timestamp: new Date().toISOString(),
-    }),
-  );
+  log.info({ context, method, url, step, requestId }, 'TTN API call');
 }
 
 export class TtnClient {

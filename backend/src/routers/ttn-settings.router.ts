@@ -33,13 +33,16 @@ import {
   UpdateTTNSettingsSchema,
   type SecretStatus,
 } from '../schemas/ttn-settings.js';
-import * as ttnSettingsService from '../services/ttn-settings.service.js';
 import { TtnCrypto } from '../services/ttn/crypto.js';
 import { TtnProvisioningService } from '../services/ttn/provisioning.js';
 import { TtnSettingsService } from '../services/ttn/settings.js';
 import { TtnWebhookService } from '../services/ttn/webhook.js';
+import * as ttnSettingsService from '../services/ttn-settings.service.js';
 import { router } from '../trpc/index.js';
 import { orgProcedure } from '../trpc/procedures.js';
+import { logger } from '../utils/logger.js';
+
+const log = logger.child({ service: 'ttn-settings-router' });
 
 /**
  * Base input schema for organization-scoped operations
@@ -147,7 +150,7 @@ export const ttnSettingsRouter = router({
           const decrypted = TtnCrypto.deobfuscateKey(encrypted, salt);
           return { value: decrypted, status: 'decrypted' };
         } catch (err) {
-          console.error('[getCredentials] Decryption failed:', err);
+          log.error({ err }, 'Decryption failed');
           return { value: null, status: 'failed' };
         }
       };
@@ -408,8 +411,8 @@ export const ttnSettingsRouter = router({
         });
       }
 
-      // Get settings for test result details
-      const settings = await ttnSettingsService.getTTNSettings(input.organizationId);
+      // Get settings for test result details (validate TTN is properly configured)
+      const _settings = await ttnSettingsService.getTTNSettings(input.organizationId);
 
       // Execute real connection test
       const testResult = await TtnSettingsService.testConnection(
@@ -560,6 +563,7 @@ export const ttnSettingsRouter = router({
 				LIMIT ${input.limit}
 			`);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw SQL result rows need dynamic access
       return logs.rows.map((log: any) => ({
         id: log.id,
         createdAt: new Date(log.created_at),

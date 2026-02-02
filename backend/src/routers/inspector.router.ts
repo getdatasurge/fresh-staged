@@ -21,7 +21,7 @@ import { manualTemperatureLogs, sensorReadings } from '../db/schema/telemetry.js
 import { organizations } from '../db/schema/tenancy.js';
 import { profiles, userRoles } from '../db/schema/users.js';
 import { router } from '../trpc/index.js';
-import { orgProcedure, protectedProcedure } from '../trpc/procedures.js';
+import { protectedProcedure, orgProcedure } from '../trpc/procedures.js';
 
 /**
  * Validate an inspector session token
@@ -62,9 +62,11 @@ export const inspectorRouter = router({
    * Validate inspector session token
    * For external (token-based) inspector access
    */
-  validateSession: protectedProcedure.input(validateSessionSchema).mutation(async ({ input }) => {
-    // Query inspector_sessions table for valid session
-    const result = await db.execute(sql`
+  validateSession: protectedProcedure
+    .input(validateSessionSchema)
+    .mutation(async ({ ctx, input }) => {
+      // Query inspector_sessions table for valid session
+      const result = await db.execute(sql`
         SELECT
           organization_id,
           allowed_site_ids,
@@ -75,48 +77,67 @@ export const inspectorRouter = router({
         LIMIT 1
       `);
 
-    const session = result.rows[0] as
-      | {
-          organization_id: string;
-          allowed_site_ids: string[] | null;
-          expires_at: string;
-          is_active: boolean;
-        }
-      | undefined;
+      const session = result.rows[0] as
+        | {
+            organization_id: string;
+            allowed_site_ids: string[] | null;
+            expires_at: string;
+            is_active: boolean;
+          }
+        | undefined;
 
-    if (!session) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Invalid inspector token',
-      });
-    }
+      if (!session) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Invalid inspector token',
+        });
+      }
 
-    if (!session.is_active) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'Inspector session is inactive',
-      });
-    }
+      // Verify the authenticated user belongs to this session's organization
+      const [membership] = await db
+        .select({ id: userRoles.id })
+        .from(userRoles)
+        .where(
+          and(
+            eq(userRoles.userId, ctx.user.id),
+            eq(userRoles.organizationId, session.organization_id),
+          ),
+        )
+        .limit(1);
 
-    if (new Date(session.expires_at) < new Date()) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'Inspector session has expired',
-      });
-    }
+      if (!membership) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Not authorized to access this organization',
+        });
+      }
 
-    // Update last_used_at timestamp
-    await db.execute(sql`
+      if (!session.is_active) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Inspector session is inactive',
+        });
+      }
+
+      if (new Date(session.expires_at) < new Date()) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Inspector session has expired',
+        });
+      }
+
+      // Update last_used_at timestamp
+      await db.execute(sql`
         UPDATE inspector_sessions
         SET last_used_at = NOW()
         WHERE token = ${input.token}
       `);
 
-    return {
-      organizationId: session.organization_id,
-      allowedSiteIds: session.allowed_site_ids,
-    };
-  }),
+      return {
+        organizationId: session.organization_id,
+        allowedSiteIds: session.allowed_site_ids,
+      };
+    }),
 
   /**
    * Check user's inspector role in organization
@@ -164,7 +185,7 @@ export const inspectorRouter = router({
     }
 
     // Get sites, optionally filtered by allowedSiteIds
-    let sitesQuery = db
+    const sitesQuery = db
       .select({
         id: sites.id,
         name: sites.name,
@@ -230,7 +251,7 @@ export const inspectorRouter = router({
    * Get all inspection data for date range
    * Returns temperature logs, exceptions, corrective actions, and monitoring gaps
    */
-  getInspectionData: orgProcedure.input(getInspectionDataSchema).query(async ({ ctx, input }) => {
+  getInspectionData: orgProcedure.input(getInspectionDataSchema).query(async ({ input }) => {
     if (input.unitIds.length === 0) {
       return {
         temperatureLogs: [],

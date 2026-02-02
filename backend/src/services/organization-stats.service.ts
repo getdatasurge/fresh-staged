@@ -23,7 +23,10 @@ import { and, count, eq, gte, sql } from 'drizzle-orm';
 import type { UnitDashboardState } from '../config/unit-state.config.js';
 import { db } from '../db/client.js';
 import { alerts, areas, sensorReadings, sites, units } from '../db/schema/index.js';
+import { logger } from '../utils/logger.js';
 import type { UnitStateService } from './unit-state.service.js';
+
+const log = logger.child({ service: 'organization-stats' });
 
 /**
  * Configuration for organization stats caching
@@ -111,11 +114,7 @@ export class OrganizationStatsService {
       ORG_STATS_CACHE_CONFIG.CLEANUP_INTERVAL_MS,
     );
 
-    console.log(
-      '[OrganizationStatsService] Initialized with cache TTL:',
-      ORG_STATS_CACHE_CONFIG.CACHE_TTL_MS,
-      'ms',
-    );
+    log.info({ cacheTtlMs: ORG_STATS_CACHE_CONFIG.CACHE_TTL_MS }, 'Initialized with cache TTL');
   }
 
   /**
@@ -368,7 +367,7 @@ export class OrganizationStatsService {
    */
   invalidateCache(organizationId: string): void {
     this.cache.delete(organizationId);
-    console.log(`[OrganizationStatsService] Cache invalidated for org ${organizationId}`);
+    log.info({ organizationId }, 'Cache invalidated');
   }
 
   /**
@@ -376,7 +375,7 @@ export class OrganizationStatsService {
    */
   invalidateAllCaches(): void {
     this.cache.clear();
-    console.log('[OrganizationStatsService] All caches invalidated');
+    log.info('All caches invalidated');
   }
 
   /**
@@ -416,7 +415,7 @@ export class OrganizationStatsService {
     }
 
     if (removedCount > 0) {
-      console.log(`[OrganizationStatsService] Cleaned up ${removedCount} expired cache entries`);
+      log.info({ removedCount }, 'Cleaned up expired cache entries');
     }
   }
 
@@ -442,7 +441,7 @@ export class OrganizationStatsService {
       this.cleanupIntervalId = null;
     }
     this.cache.clear();
-    console.log('[OrganizationStatsService] Stopped and cleaned up');
+    log.info('Stopped and cleaned up');
   }
 }
 

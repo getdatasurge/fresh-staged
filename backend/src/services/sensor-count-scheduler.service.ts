@@ -10,12 +10,15 @@
  * - Only reports for organizations with stripeCustomerId and active/trial status
  */
 
+import { and, isNotNull, inArray } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { subscriptions } from '../db/schema/tenancy.js';
-import { and, isNotNull, inArray } from 'drizzle-orm';
-import { getQueueService } from './queue.service.js';
 import { QueueNames, JobNames, type MeterReportJobData } from '../jobs/index.js';
 import { getActiveSensorCount } from '../middleware/subscription.js';
+import { logger } from '../utils/logger.js';
+import { getQueueService } from './queue.service.js';
+
+const log = logger.child({ service: 'sensor-count-scheduler' });
 
 // Valid statuses for metering (only bill active/trial subscriptions)
 const BILLABLE_STATUSES = ['active', 'trial'] as const;
@@ -46,13 +49,13 @@ export class SensorCountScheduler {
 
     const queueService = getQueueService();
     if (!queueService?.isEnabled()) {
-      console.log('[SensorScheduler] Queue service not available, skipping initialization');
+      log.info('Queue service not available, skipping initialization');
       return;
     }
 
     const queue = queueService.getQueue(QueueNames.METER_REPORTING);
     if (!queue) {
-      console.log('[SensorScheduler] METER_REPORTING queue not available, skipping initialization');
+      log.info('METER_REPORTING queue not available, skipping initialization');
       return;
     }
 
@@ -62,7 +65,7 @@ export class SensorCountScheduler {
       for (const job of repeatableJobs) {
         if (job.name === JobNames.SENSOR_COUNT_SCHEDULER) {
           await queue.removeRepeatableByKey(job.key);
-          console.log('[SensorScheduler] Removed existing repeatable job');
+          log.info('Removed existing repeatable job');
         }
       }
 
@@ -82,13 +85,13 @@ export class SensorCountScheduler {
       );
 
       this.isInitialized = true;
-      console.log(`[SensorScheduler] Hourly repeatable job created with cron: ${HOURLY_CRON}`);
+      log.info({ cron: HOURLY_CRON }, 'Hourly repeatable job created');
 
       // Run initial report on startup
       await this.reportAllSensorCounts();
-      console.log('[SensorScheduler] Initial sensor count report completed');
+      log.info('Initial sensor count report completed');
     } catch (err) {
-      console.error('[SensorScheduler] Failed to initialize:', err);
+      log.error({ err }, 'Failed to initialize');
     }
   }
 
@@ -113,11 +116,9 @@ export class SensorCountScheduler {
 
     try {
       await queueService.addJob(QueueNames.METER_REPORTING, JobNames.METER_REPORT, jobData);
-      console.log(
-        `[SensorScheduler] Queued sensor count (${sensorCount}) for org ${organizationId}`,
-      );
+      log.info({ sensorCount, organizationId }, 'Queued sensor count');
     } catch (err) {
-      console.error(`[SensorScheduler] Failed to queue sensor count: ${err}`);
+      log.error({ err }, 'Failed to queue sensor count');
     }
   }
 
@@ -138,7 +139,7 @@ export class SensorCountScheduler {
         ),
       );
 
-    console.log(`[SensorScheduler] Processing ${billableOrgs.length} billable organizations`);
+    log.info({ count: billableOrgs.length }, 'Processing billable organizations');
 
     let reported = 0;
     let errors = 0;
@@ -152,7 +153,7 @@ export class SensorCountScheduler {
       }
     }
 
-    console.log(`[SensorScheduler] Queued ${reported} reports, ${errors} errors`);
+    log.info({ reported, errors }, 'Queued reports');
     return { reported, errors };
   }
 }

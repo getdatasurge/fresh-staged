@@ -24,6 +24,9 @@
  */
 
 import { Telnyx } from 'telnyx';
+import { logger } from '../utils/logger.js';
+
+const log = logger.child({ service: 'telnyx-service' });
 
 /**
  * Parameters for sending an SMS
@@ -75,9 +78,8 @@ export class TelnyxService {
     const apiKey = process.env.TELNYX_API_KEY;
 
     if (!apiKey) {
-      console.warn(
-        '[TelnyxService] TELNYX_API_KEY not configured - SMS sending disabled. ' +
-          'Set environment variable for SMS functionality.',
+      log.warn(
+        'TELNYX_API_KEY not configured - SMS sending disabled. Set environment variable for SMS functionality.',
       );
       this.enabled = false;
       return;
@@ -137,9 +139,7 @@ export class TelnyxService {
 
     const profileId = messagingProfileId || process.env.TELNYX_MESSAGING_PROFILE_ID;
 
-    console.log(
-      `[TelnyxService] Sending SMS from ${fromNumber.slice(0, 5)}*** ` + `to ${to.slice(0, 5)}***`,
-    );
+    log.info({ from: `${fromNumber.slice(0, 5)}***`, to: `${to.slice(0, 5)}***` }, 'Sending SMS');
 
     // Build request payload
     const payload: {
@@ -168,9 +168,7 @@ export class TelnyxService {
     // Status is in the 'to' array for each recipient
     const status = data?.to?.[0]?.status || 'queued';
 
-    console.log(
-      `[TelnyxService] SMS sent successfully. ` + `MessageId: ${messageId}, Status: ${status}`,
-    );
+    log.info({ messageId, status }, 'SMS sent successfully');
 
     return {
       messageId,

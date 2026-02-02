@@ -4,8 +4,11 @@
  */
 
 // Actually, backend uses Node 20+, so global fetch is fine. Removing undici import to stick to standards.
+import { logger } from '../../utils/logger.js';
 import { TtnClient } from './client.js';
 import { FetchRightsResult, PermissionReport, PreflightResult } from './types.js';
+
+const log = logger.child({ service: 'ttn-permissions' });
 
 // ============================================================================
 // CONSTANTS
@@ -85,16 +88,14 @@ export class TtnPermissionService {
    */
   static async validateMainUserApiKey(apiKey: string, requestId: string): Promise<PreflightResult> {
     const endpoint = '/api/v3/auth_info';
-    console.log(`[ttnPermissions] [${requestId}] Preflight: Identity Server at ${endpoint}`);
+    log.info({ requestId, endpoint }, 'Preflight: Identity Server');
 
     try {
       const response = await TtnClient.fetch(endpoint, apiKey);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(
-          `[ttnPermissions] [${requestId}] Preflight failed: ${response.status} ${errorText}`,
-        );
+        log.error({ requestId, status: response.status, errorText }, 'Preflight failed');
 
         if (response.status === 401) {
           return {
@@ -113,6 +114,7 @@ export class TtnPermissionService {
         };
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TTN auth_info response has deeply nested dynamic structure
       const data = (await response.json()) as any;
 
       // Extract rights (logic ported from _shared/ttnPermissions.ts)
@@ -172,11 +174,11 @@ export class TtnPermissionService {
         granted_rights: rights,
         missing_rights: [],
       };
-    } catch (err: any) {
-      console.error(`[ttnPermissions] [${requestId}] Preflight exception:`, err);
+    } catch (err: unknown) {
+      log.error({ requestId, err }, 'Preflight exception');
       return {
         success: false,
-        error: err.message || 'Network error',
+        error: err instanceof Error ? err.message : 'Network error',
         hint: 'Check network connectivity.',
       };
     }
@@ -188,7 +190,7 @@ export class TtnPermissionService {
   static async fetchTtnRights(
     applicationId: string,
     apiKey: string,
-    requestId: string,
+    _requestId: string,
   ): Promise<FetchRightsResult> {
     const endpoint = `/api/v3/applications/${applicationId}/rights`;
 
@@ -213,17 +215,17 @@ export class TtnPermissionService {
         };
       }
 
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as { rights?: string[] };
       return {
         success: true,
         rights: data.rights || [],
         method: 'direct',
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         success: false,
         error: 'Network error',
-        hint: err.message,
+        hint: err instanceof Error ? err.message : undefined,
       };
     }
   }

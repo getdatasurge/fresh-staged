@@ -1,9 +1,12 @@
+import { eq } from 'drizzle-orm';
 import Stripe from 'stripe';
 import { db } from '../db/client.js';
-import { organizations, subscriptions, type Subscription } from '../db/schema/tenancy.js';
 import { stripeEvents, type InsertStripeEvent } from '../db/schema/billing.js';
-import { eq } from 'drizzle-orm';
+import { organizations, subscriptions, type Subscription } from '../db/schema/tenancy.js';
 import type { PlanKey } from '../schemas/payments.js';
+import { logger } from '../utils/logger.js';
+
+const log = logger.child({ service: 'stripe-webhook' });
 
 // Initialize Stripe client
 const getStripeClient = (): Stripe => {
@@ -350,7 +353,7 @@ export async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promi
   adminNotifications.push(notification);
 
   // Log for monitoring
-  console.log('[Stripe Webhook] Payment failed notification:', notification);
+  log.info({ notification }, 'Payment failed notification');
 }
 
 /**
@@ -400,7 +403,7 @@ async function recordProcessedEvent(eventId: string, eventType: string): Promise
 export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
   // Idempotency check - Stripe retries failed webhooks for up to 3 days
   if (await isEventProcessed(event.id)) {
-    console.log(`[Stripe Webhook] Event ${event.id} already processed, skipping`);
+    log.info({ eventId: event.id }, 'Event already processed, skipping');
     return;
   }
 
@@ -427,7 +430,7 @@ export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
     }
     default:
       // Unhandled event type - log for monitoring
-      console.log(`[Stripe Webhook] Unhandled event type: ${event.type}`);
+      log.info({ eventType: event.type }, 'Unhandled event type');
   }
 
   // Record successful processing for idempotency

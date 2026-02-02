@@ -13,17 +13,20 @@
  * - Both emailEnabled and specific digest preference must be true
  */
 
-import type { Job } from 'bullmq';
 import { render } from '@react-email/render';
-import type { EmailDigestJobData } from '../../jobs/index.js';
-import { getEmailService } from '../../services/email.service.js';
-import { DigestBuilderService } from '../../services/digest-builder.service.js';
-import { DailyDigest } from '../../emails/daily-digest.js';
-import { WeeklyDigest } from '../../emails/weekly-digest.js';
+import type { Job } from 'bullmq';
+import { eq } from 'drizzle-orm';
 import { db } from '../../db/client.js';
 import { profiles } from '../../db/schema/users.js';
-import { eq } from 'drizzle-orm';
+import { DailyDigest } from '../../emails/daily-digest.js';
+import { WeeklyDigest } from '../../emails/weekly-digest.js';
+import type { EmailDigestJobData } from '../../jobs/index.js';
+import { DigestBuilderService } from '../../services/digest-builder.service.js';
+import { getEmailService } from '../../services/email.service.js';
+import { logger } from '../../utils/logger.js';
 import { generateUnsubscribeToken } from '../../utils/unsubscribe-token.js';
+
+const log = logger.child({ service: 'email-digest' });
 
 // Singleton digest builder for reuse across jobs
 const digestBuilder = new DigestBuilderService();
@@ -47,29 +50,29 @@ export async function processEmailDigest(
   job: Job<EmailDigestJobData>,
 ): Promise<ProcessEmailDigestResult> {
   const { userId, organizationId, period } = job.data;
-  console.log(`[Email Digest] Processing ${period} digest for user ${userId}`);
+  log.info({ period, userId }, 'Processing digest');
 
   // Get user profile
   const [user] = await db.select().from(profiles).where(eq(profiles.userId, userId)).limit(1);
 
   if (!user) {
-    console.warn(`[Email Digest] User ${userId} not found - skipping`);
+    log.warn({ userId }, 'User not found - skipping');
     return { success: false, reason: 'user_not_found' };
   }
 
   // Check if emails enabled globally
   if (!user.emailEnabled) {
-    console.log(`[Email Digest] User ${userId} has emails disabled - skipping`);
+    log.info({ userId }, 'User has emails disabled - skipping');
     return { success: false, reason: 'user_disabled_emails' };
   }
 
   // Check if specific digest type enabled
   if (period === 'daily' && !user.digestDaily) {
-    console.log(`[Email Digest] User ${userId} has daily digest disabled - skipping`);
+    log.info({ userId }, 'User has daily digest disabled - skipping');
     return { success: false, reason: 'daily_digest_disabled' };
   }
   if (period === 'weekly' && !user.digestWeekly) {
-    console.log(`[Email Digest] User ${userId} has weekly digest disabled - skipping`);
+    log.info({ userId }, 'User has weekly digest disabled - skipping');
     return { success: false, reason: 'weekly_digest_disabled' };
   }
 
@@ -88,7 +91,7 @@ export async function processEmailDigest(
     try {
       siteIds = JSON.parse(user.digestSiteIds);
     } catch {
-      console.warn(`[Email Digest] Failed to parse digestSiteIds for user ${userId}`);
+      log.warn({ userId }, 'Failed to parse digestSiteIds');
     }
   }
 
@@ -104,7 +107,7 @@ export async function processEmailDigest(
 
   // Skip if no alerts (don't send empty digests)
   if (digestData.sites.length === 0) {
-    console.log(`[Email Digest] No alerts for user ${userId} in period - skipping send`);
+    log.info({ userId }, 'No alerts in period - skipping send');
     return { success: true, reason: 'no_content' };
   }
 
@@ -132,7 +135,7 @@ export async function processEmailDigest(
   // Get EmailService
   const emailService = getEmailService();
   if (!emailService || !emailService.isEnabled()) {
-    console.warn('[Email Digest] EmailService not available - skipping send');
+    log.warn('EmailService not available - skipping send');
     return { success: false, reason: 'email_service_disabled' };
   }
 
@@ -148,8 +151,6 @@ export async function processEmailDigest(
     return { success: false, reason: 'email_service_returned_null' };
   }
 
-  console.log(
-    `[Email Digest] Sent ${period} digest to ${user.email} - messageId: ${result.messageId}`,
-  );
+  log.info({ period, email: user.email, messageId: result.messageId }, 'Sent digest');
   return { success: true, messageId: result.messageId };
 }

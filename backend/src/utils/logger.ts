@@ -1,5 +1,6 @@
 import type { FastifyServerOptions, FastifyRequest } from 'fastify';
 import type { PinoLoggerOptions } from 'fastify/types/logger.js';
+import pino from 'pino';
 
 /**
  * Production-ready structured logging configuration for Fastify/Pino
@@ -153,3 +154,19 @@ export function createLogContext(context: Record<string, unknown>) {
     timestamp: new Date().toISOString(),
   };
 }
+
+/**
+ * Standalone Pino logger for use outside Fastify request context.
+ *
+ * Use this in services, workers, and utilities instead of console.log/warn/error.
+ * Shares the same config (log level, redaction, format) as the Fastify logger.
+ *
+ * Usage:
+ *   import { logger } from '../utils/logger.js';
+ *   logger.info({ unitId }, 'Processing reading');
+ *   logger.error({ err }, 'Failed to send SMS');
+ *
+ * Create child loggers for service context:
+ *   const log = logger.child({ service: 'alert-evaluator' });
+ */
+export const logger = pino(getLoggerConfig() as pino.LoggerOptions);

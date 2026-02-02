@@ -11,8 +11,11 @@ import {
   type Alert,
   type InsertAlert,
 } from '../db/schema/index.js';
+import { logger } from '../utils/logger.js';
 import { getQueueService } from './queue.service.js';
 import type { SocketService } from './socket.service.js';
+
+const log = logger.child({ service: 'alert-evaluator' });
 
 // Rate limit window in milliseconds (15 minutes)
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
@@ -50,23 +53,32 @@ async function getAlertRecipients(
  * @param userId - User profile ID to check
  * @returns True if rate limited (should not send), false if OK to send
  */
-async function isRateLimited(userId: string): Promise<boolean> {
+/**
+ * Batch check which user IDs are rate-limited for SMS
+ *
+ * Returns a Set of user IDs that have received an SMS within the rate limit window.
+ * Single query instead of N sequential queries.
+ */
+async function getRateLimitedUserIds(userIds: string[]): Promise<Set<string>> {
+  if (userIds.length === 0) return new Set();
+
   const rateLimitCutoff = new Date(Date.now() - RATE_LIMIT_WINDOW_MS);
 
-  const [recentDelivery] = await db
-    .select({ id: notificationDeliveries.id })
+  const recentDeliveries = await db
+    .select({ profileId: notificationDeliveries.profileId })
     .from(notificationDeliveries)
     .where(
       and(
-        eq(notificationDeliveries.profileId, userId),
+        inArray(notificationDeliveries.profileId, userIds),
         eq(notificationDeliveries.channel, 'sms'),
         inArray(notificationDeliveries.status, ['sent', 'delivered']),
         gte(notificationDeliveries.sentAt, rateLimitCutoff),
       ),
-    )
-    .limit(1);
+    );
 
-  return !!recentDelivery;
+  return new Set(
+    recentDeliveries.map((d) => d.profileId).filter((id): id is string => id !== null),
+  );
 }
 
 /**
@@ -91,33 +103,44 @@ async function queueAlertSms(
 ): Promise<void> {
   const queueService = getQueueService();
   if (!queueService || !queueService.isRedisEnabled()) {
-    console.log('[Alert SMS] Queue service not available - SMS not sent');
+    log.info('Queue service not available - SMS not sent');
     return;
   }
 
   const recipients = await getAlertRecipients(organizationId);
-  console.log(`[Alert SMS] Found ${recipients.length} recipients for org ${organizationId}`);
+  log.info({ recipientCount: recipients.length, organizationId }, 'Found recipients for org');
 
-  for (const recipient of recipients) {
-    // Check rate limit
-    if (await isRateLimited(recipient.userId)) {
-      console.log(`[Alert SMS] Rate limited for user ${recipient.userId} - skipping`);
-      continue;
+  // Batch rate-limit check — single query instead of N sequential queries
+  const rateLimitedIds = await getRateLimitedUserIds(recipients.map((r) => r.userId));
+  const eligibleRecipients = recipients.filter((r) => {
+    if (rateLimitedIds.has(r.userId)) {
+      log.info({ userId: r.userId }, 'Rate limited for user - skipping');
+      return false;
     }
+    return true;
+  });
 
-    // Create notification delivery record
-    const [delivery] = await db
-      .insert(notificationDeliveries)
-      .values({
+  if (eligibleRecipients.length === 0) return;
+
+  // Batch insert all notification delivery records
+  const deliveries = await db
+    .insert(notificationDeliveries)
+    .values(
+      eligibleRecipients.map((recipient) => ({
         alertId,
         profileId: recipient.userId,
-        channel: 'sms',
+        channel: 'sms' as const,
         recipient: recipient.phoneNumber,
-        status: 'pending',
-      })
-      .returning();
+        status: 'pending' as const,
+      })),
+    )
+    .returning();
 
-    // Queue SMS job
+  // Queue SMS jobs for each delivery
+  for (let i = 0; i < deliveries.length; i++) {
+    const delivery = deliveries[i];
+    const recipient = eligibleRecipients[i];
+
     await queueService.addSmsJob({
       organizationId,
       phoneNumber: recipient.phoneNumber,
@@ -128,9 +151,12 @@ async function queueAlertSms(
       alertType,
     });
 
-    // Log with masked phone number for privacy
-    console.log(
-      `[Alert SMS] Queued SMS for user ${recipient.userId} to ${recipient.phoneNumber.slice(0, 5)}***${recipient.phoneNumber.slice(-2)}`,
+    log.info(
+      {
+        userId: recipient.userId,
+        phone: `${recipient.phoneNumber.slice(0, 5)}***${recipient.phoneNumber.slice(-2)}`,
+      },
+      'Queued SMS for user',
     );
   }
 }
@@ -498,7 +524,7 @@ export async function evaluateUnitAfterReading(
           // Queue asynchronously - don't await to avoid blocking the reading pipeline
           queueAlertSms(organizationId, escalatedAlert.id, alertMessage, 'alarm_active').catch(
             (err) => {
-              console.error('[Alert SMS] Failed to queue SMS:', err);
+              log.error({ err }, 'Failed to queue SMS');
             },
           );
         }

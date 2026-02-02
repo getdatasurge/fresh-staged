@@ -5,8 +5,8 @@
  * Manages the relationship between local devices/loraSensors and TTN.
  */
 
-import { and, eq } from 'drizzle-orm';
 import crypto from 'node:crypto';
+import { and, eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { devices, loraSensors, type Device } from '../db/schema/devices.js';
 import { sites } from '../db/schema/hierarchy.js';
@@ -16,7 +16,10 @@ import type {
   ProvisionTTNDeviceRequest,
   UpdateTTNDeviceRequest,
 } from '../schemas/ttn-devices.js';
+import { logger } from '../utils/logger.js';
 import { createTTNClient, TTNApiError, type TTNConfig, type TTNDevice } from './ttn.service.js';
+
+const log = logger.child({ service: 'ttn-device' });
 
 // Combined device response for API
 export interface TTNDeviceWithLora {
@@ -314,9 +317,9 @@ export async function provisionTTNDevice(
   const client = createTTNClient(ttnConfig);
 
   // Provision in TTN first
-  let ttnDevice: TTNDevice;
+  let _ttnDevice: TTNDevice;
   try {
-    ttnDevice = await client.provisionDevice({
+    _ttnDevice = await client.provisionDevice({
       deviceId: data.deviceId,
       devEui: data.devEui,
       joinEui: data.joinEui,
@@ -422,7 +425,7 @@ export async function updateTTNDevice(
         });
       } catch (error) {
         // Log but don't fail - local update can still proceed
-        console.error('Failed to update device in TTN:', error);
+        log.error({ err: error }, 'Failed to update device in TTN');
       }
     }
   }
@@ -512,7 +515,7 @@ export async function deprovisionTTNDevice(
       await client.deprovisionDevice(ttnDeviceId);
     } catch (error) {
       if (!(error instanceof TTNApiError && error.statusCode === 404)) {
-        console.error('Failed to deprovision device from TTN:', error);
+        log.error({ err: error }, 'Failed to deprovision device from TTN');
         // Continue with local deletion anyway
       }
     }
@@ -631,7 +634,7 @@ export async function permanentlyDeleteTTNDevice(
       await client.deprovisionDevice(ttnDeviceId);
     } catch (error) {
       if (!(error instanceof TTNApiError && error.statusCode === 404)) {
-        console.error('Failed to deprovision device from TTN:', error);
+        log.error({ err: error }, 'Failed to deprovision device from TTN');
         // Continue with local deletion anyway
       }
     }

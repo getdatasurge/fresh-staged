@@ -9,8 +9,6 @@
 
 import { Job, UnrecoverableError } from 'bullmq';
 import { eq } from 'drizzle-orm';
-import type { SmsNotificationJobData } from '../../jobs/index.js';
-import { getTelnyxService } from '../../services/telnyx.service.js';
 import {
   categorizeError,
   extractErrorCode,
@@ -19,6 +17,11 @@ import {
 } from '../../config/telnyx.config.js';
 import { db } from '../../db/client.js';
 import { notificationDeliveries } from '../../db/schema/notifications.js';
+import type { SmsNotificationJobData } from '../../jobs/index.js';
+import { getTelnyxService } from '../../services/telnyx.service.js';
+import { logger } from '../../utils/logger.js';
+
+const log = logger.child({ service: 'sms-processor' });
 
 export interface SmsProcessorResult {
   success: boolean;
@@ -30,16 +33,23 @@ export interface SmsProcessorResult {
 export async function processSmsNotification(
   job: Job<SmsNotificationJobData>,
 ): Promise<SmsProcessorResult> {
-  const { phoneNumber, message, organizationId, alertId, deliveryId } = job.data;
+  const { phoneNumber, message, organizationId, alertId: _alertId, deliveryId } = job.data;
 
-  console.log(`[SMS Processor] Processing job ${job.id} for org ${organizationId}`);
-  console.log(`[SMS Processor] Phone: ${phoneNumber.slice(0, 5)}***${phoneNumber.slice(-2)}`);
-  console.log(`[SMS Processor] Attempt ${job.attemptsMade + 1}/${job.opts.attempts || 5}`);
+  log.info(
+    {
+      jobId: job.id,
+      organizationId,
+      phone: `${phoneNumber.slice(0, 5)}***${phoneNumber.slice(-2)}`,
+      attempt: job.attemptsMade + 1,
+      maxAttempts: job.opts.attempts || 5,
+    },
+    'Processing SMS job',
+  );
 
   // Validate E.164 format before attempting send
   if (!validateE164(phoneNumber)) {
     const error = `Invalid phone number format: ${phoneNumber}. Must be E.164 format.`;
-    console.error(`[SMS Processor] ${error}`);
+    log.error({ phoneNumber }, 'Invalid phone number format');
 
     // Update delivery record if exists
     if (deliveryId) {
@@ -62,10 +72,14 @@ export async function processSmsNotification(
       message,
     });
 
-    console.log(
-      `[SMS Processor] Sent message ${result.messageId} to ${phoneNumber.slice(0, 5)}***`,
+    log.info(
+      {
+        messageId: result.messageId,
+        phone: `${phoneNumber.slice(0, 5)}***`,
+        status: result.status,
+      },
+      'SMS sent',
     );
-    console.log(`[SMS Processor] Status: ${result.status}`);
 
     // Update delivery record on success
     if (deliveryId) {
@@ -81,11 +95,10 @@ export async function processSmsNotification(
     const errorMessage = extractErrorMessage(error);
     const category = categorizeError(errorCode);
 
-    console.error(`[SMS Processor] Send failed: ${errorCode} - ${errorMessage}`);
-    console.log(`[SMS Processor] Error category: ${category}`);
+    log.error({ errorCode, errorMessage, category }, 'SMS send failed');
 
     if (category === 'unrecoverable') {
-      console.log(`[SMS Processor] Permanent failure - will not retry`);
+      log.info({ errorCode }, 'Permanent failure - will not retry');
 
       // Update delivery record with failure
       if (deliveryId) {
@@ -119,7 +132,7 @@ async function updateDeliverySent(deliveryId: string, externalId: string): Promi
       })
       .where(eq(notificationDeliveries.id, deliveryId));
   } catch (err) {
-    console.error(`[SMS Processor] Failed to update delivery record: ${err}`);
+    log.error({ err, deliveryId }, 'Failed to update delivery record');
     // Don't throw - delivery update failure shouldn't fail the job
   }
 }
@@ -135,7 +148,7 @@ async function updateDeliveryFailed(deliveryId: string, errorMessage: string): P
       })
       .where(eq(notificationDeliveries.id, deliveryId));
   } catch (err) {
-    console.error(`[SMS Processor] Failed to update delivery record: ${err}`);
+    log.error({ err, deliveryId }, 'Failed to update delivery record');
   }
 }
 
@@ -149,6 +162,6 @@ async function updateDeliveryRetry(deliveryId: string, retryCount: number): Prom
       })
       .where(eq(notificationDeliveries.id, deliveryId));
   } catch (err) {
-    console.error(`[SMS Processor] Failed to update delivery record: ${err}`);
+    log.error({ err, deliveryId }, 'Failed to update delivery record');
   }
 }

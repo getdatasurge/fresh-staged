@@ -10,10 +10,13 @@
  * - 'temperature_readings' meter with 'sum' formula
  */
 
+import { eq } from 'drizzle-orm';
 import Stripe from 'stripe';
 import { db } from '../db/client.js';
 import { subscriptions } from '../db/schema/tenancy.js';
-import { eq } from 'drizzle-orm';
+import { logger } from '../utils/logger.js';
+
+const log = logger.child({ service: 'stripe-meter' });
 
 // Lazy-initialized Stripe client
 let stripeClient: Stripe | null = null;
@@ -68,11 +71,11 @@ export class StripeMeterService {
         },
       });
 
-      console.log(`[Meter] Reported ${sensorCount} active sensors for org ${organizationId}`);
+      log.info({ sensorCount, organizationId }, 'Reported active sensors');
       return { success: true };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error(`[Meter] Failed to report active sensors: ${message}`);
+      log.error({ err: error, message }, 'Failed to report active sensors');
       return { success: false, error: message };
     }
   }
@@ -103,11 +106,11 @@ export class StripeMeterService {
         },
       });
 
-      console.log(`[Meter] Reported ${readingCount} readings for org ${organizationId}`);
+      log.info({ readingCount, organizationId }, 'Reported reading volume');
       return { success: true };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error(`[Meter] Failed to report reading volume: ${message}`);
+      log.error({ err: error, message }, 'Failed to report reading volume');
       return { success: false, error: message };
     }
   }

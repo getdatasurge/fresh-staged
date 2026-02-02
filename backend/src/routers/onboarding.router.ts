@@ -13,7 +13,7 @@
  */
 
 import { TRPCError } from '@trpc/server';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../db/client.js';
 import { areas, gateways, sites, units } from '../db/schema/hierarchy.js';
@@ -21,6 +21,9 @@ import { organizations, ttnConnections } from '../db/schema/tenancy.js';
 import { profiles, userRoles } from '../db/schema/users.js';
 import { router } from '../trpc/index.js';
 import { orgProcedure, protectedProcedure } from '../trpc/procedures.js';
+import { logger } from '../utils/logger.js';
+
+const log = logger.child({ service: 'onboarding-router' });
 
 /**
  * Unit type enum matching the database constraint
@@ -125,6 +128,7 @@ export const onboardingRouter = router({
               name: input.name,
               slug: input.slug,
               timezone: input.timezone,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any)
             .returning({ id: organizations.id });
 
@@ -140,6 +144,7 @@ export const onboardingRouter = router({
             isActive: true,
             isEnabled: false,
             provisioningStatus: 'not_started',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any);
 
           // Create user role (owner)
@@ -147,6 +152,7 @@ export const onboardingRouter = router({
             userId: ctx.user.id,
             organizationId: org.id,
             role: 'owner',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any);
 
           // Create or update profile
@@ -169,6 +175,7 @@ export const onboardingRouter = router({
               organizationId: org.id,
               email: ctx.user.email ?? '',
               fullName: ctx.user.name ?? null,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any);
           }
 
@@ -181,7 +188,7 @@ export const onboardingRouter = router({
           slug: input.slug,
         };
       } catch (error) {
-        console.error('Error creating organization:', error);
+        log.error({ err: error }, 'Error creating organization');
         return {
           ok: false,
           code: 'CREATE_FAILED',
@@ -216,6 +223,7 @@ export const onboardingRouter = router({
           state: input.state || null,
           postalCode: input.postalCode || null,
           timezone: 'America/New_York', // Default, inherit from org
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any)
         .returning({ id: sites.id });
 
@@ -241,7 +249,7 @@ export const onboardingRouter = router({
         description: z.string().max(1024).optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       // Verify site belongs to user's organization
       const [site] = await db
         .select({ id: sites.id })
@@ -262,6 +270,7 @@ export const onboardingRouter = router({
           siteId: input.siteId,
           name: input.name,
           description: input.description || null,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any)
         .returning({ id: areas.id });
 
@@ -287,7 +296,7 @@ export const onboardingRouter = router({
         unitType: unitTypeEnum,
       }),
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       // Verify area exists via site -> org chain
       const [area] = await db
         .select({
@@ -380,6 +389,7 @@ export const onboardingRouter = router({
           gatewayId,
           gatewayEui: input.gatewayEui.toUpperCase(),
           name: input.name,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any)
         .returning({ id: gateways.id });
 

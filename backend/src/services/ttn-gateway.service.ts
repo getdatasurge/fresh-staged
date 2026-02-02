@@ -9,12 +9,15 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { gateways, type Gateway } from '../db/schema/hierarchy.js';
 import { ttnConnections, type TtnConnection } from '../db/schema/tenancy.js';
-import { createTTNClient, TTNApiError, type TTNGateway, type TTNConfig } from './ttn.service.js';
 import type {
   RegisterTTNGatewayRequest,
   UpdateTTNGatewayRequest,
   GatewayStatus,
 } from '../schemas/ttn-gateways.js';
+import { logger } from '../utils/logger.js';
+import { createTTNClient, TTNApiError, type TTNGateway, type TTNConfig } from './ttn.service.js';
+
+const log = logger.child({ service: 'ttn-gateway' });
 
 // Combined gateway response for API
 export interface TTNGatewayWithLocation {
@@ -193,9 +196,9 @@ export async function registerTTNGateway(
   const client = createTTNClient(ttnConfig);
 
   // Register in TTN first
-  let ttnGateway: TTNGateway;
+  let _ttnGateway: TTNGateway;
   try {
-    ttnGateway = await client.registerGateway({
+    _ttnGateway = await client.registerGateway({
       gatewayId: data.gatewayId,
       gatewayEui: data.gatewayEui,
       name: data.name,
@@ -301,7 +304,7 @@ export async function updateTTNGateway(
         });
       } catch (error) {
         // Log but don't fail - local update can still proceed
-        console.error('Failed to update gateway in TTN:', error);
+        log.error({ err: error }, 'Failed to update gateway in TTN');
       }
     }
   }
@@ -394,7 +397,7 @@ export async function deregisterTTNGateway(
       await client.deregisterGateway(existingGateway.gatewayId);
     } catch (error) {
       if (!(error instanceof TTNApiError && error.statusCode === 404)) {
-        console.error('Failed to deregister gateway from TTN:', error);
+        log.error({ err: error }, 'Failed to deregister gateway from TTN');
         // Continue with local deletion anyway
       }
     }
@@ -468,7 +471,7 @@ export async function updateGatewayStatus(
 
     return gatewayToResponse(updatedGateway);
   } catch (error) {
-    console.error('Failed to get gateway status from TTN:', error);
+    log.error({ err: error }, 'Failed to get gateway status from TTN');
     return gatewayToResponse(existingGateway);
   }
 }

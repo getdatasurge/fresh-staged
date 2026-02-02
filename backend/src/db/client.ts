@@ -1,6 +1,9 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+import { logger } from '../utils/logger.js';
 import * as schema from './schema/index.js';
+
+const log = logger.child({ service: 'db-client' });
 
 /**
  * Database connection pool
@@ -48,7 +51,7 @@ export async function closeDatabase(): Promise<void> {
 
 // Graceful shutdown handler
 process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, closing database connections...');
+  log.info('SIGTERM received, closing database connections');
   await closeDatabase();
   process.exit(0);
 });

@@ -16,7 +16,7 @@
 import { z } from 'zod';
 import { WidgetHealthMetricsService } from '../services/widget-health-metrics.service.js';
 import { router } from '../trpc/index.js';
-import { orgProcedure, protectedProcedure } from '../trpc/procedures.js';
+import { orgProcedure } from '../trpc/procedures.js';
 
 // Define widget health status enum
 const WidgetHealthStatusSchema = z.enum([
@@ -96,10 +96,13 @@ export const widgetHealthRouter = router({
   /**
    * Track a widget health status change
    */
-  trackHealthChange: protectedProcedure
+  trackHealthChange: orgProcedure
     .input(TrackHealthChangeSchema)
-    .mutation(async ({ input }) => {
-      WidgetHealthMetricsService.trackHealthChange(input);
+    .mutation(async ({ ctx, input }) => {
+      WidgetHealthMetricsService.trackHealthChange({
+        ...input,
+        orgId: ctx.user.organizationId,
+      });
       return { success: true };
     }),
 
@@ -136,18 +139,16 @@ export const widgetHealthRouter = router({
   /**
    * Flush buffered events to database
    */
-  flushHealthMetrics: protectedProcedure
-    .input(FlushHealthMetricsSchema)
-    .mutation(async ({ input }) => {
-      await WidgetHealthMetricsService.flushHealthMetrics(input.orgId);
-      return { success: true };
-    }),
+  flushHealthMetrics: orgProcedure.input(FlushHealthMetricsSchema).mutation(async ({ ctx }) => {
+    await WidgetHealthMetricsService.flushHealthMetrics(ctx.user.organizationId);
+    return { success: true };
+  }),
 
   /**
    * Reset counters for an org (for testing)
    */
-  resetOrgCounters: protectedProcedure.input(ResetOrgCountersSchema).mutation(async ({ input }) => {
-    WidgetHealthMetricsService.resetOrgCounters(input.orgId);
+  resetOrgCounters: orgProcedure.input(ResetOrgCountersSchema).mutation(async ({ ctx }) => {
+    WidgetHealthMetricsService.resetOrgCounters(ctx.user.organizationId);
     return { success: true };
   }),
 });

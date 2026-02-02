@@ -30,6 +30,9 @@ import type { RedisClientType } from 'redis';
 import type { Server as SocketIOServer, Socket } from 'socket.io';
 import { db } from '../db/client.js';
 import { areas, sites, units } from '../db/schema/hierarchy.js';
+import { logger } from '../utils/logger.js';
+
+const log = logger.child({ service: 'socket-service' });
 
 /**
  * SocketService class for managing WebSocket connections and broadcasting
@@ -70,9 +73,8 @@ export class SocketService {
 
     // Skip Redis setup if no configuration provided
     if (!redisUrl && !process.env.REDIS_HOST) {
-      console.log(
-        '[SocketService] Redis not configured - running in single-instance mode. ' +
-          'Set REDIS_URL or REDIS_HOST for multi-instance support.',
+      log.info(
+        'Redis not configured - running in single-instance mode. Set REDIS_URL or REDIS_HOST for multi-instance support.',
       );
       return;
     }
@@ -88,11 +90,11 @@ export class SocketService {
 
       // Setup error handlers
       this.pubClient.on('error', (err) => {
-        console.error('[SocketService] Redis pub client error:', err);
+        log.error({ err }, 'Redis pub client error');
       });
 
       this.subClient.on('error', (err) => {
-        console.error('[SocketService] Redis sub client error:', err);
+        log.error({ err }, 'Redis sub client error');
       });
 
       // Connect both clients
@@ -102,10 +104,10 @@ export class SocketService {
       this.io.adapter(createAdapter(this.pubClient, this.subClient));
 
       this.redisEnabled = true;
-      console.log('[SocketService] Redis adapter configured for Socket.io scaling');
+      log.info('Redis adapter configured for Socket.io scaling');
     } catch (error) {
-      console.error('[SocketService] Failed to connect to Redis:', error);
-      console.warn('[SocketService] Falling back to single-instance mode');
+      log.error({ err: error }, 'Failed to connect to Redis');
+      log.warn('Falling back to single-instance mode');
 
       // Clean up clients on failure
       await this.pubClient?.disconnect().catch(() => {});
@@ -129,7 +131,7 @@ export class SocketService {
   joinOrganization(socket: Socket): void {
     const { organizationId } = socket.data;
     if (!organizationId) {
-      console.warn('[SocketService] Cannot join organization - no organizationId in socket.data');
+      log.warn('Cannot join organization - no organizationId in socket.data');
       return;
     }
 
@@ -189,7 +191,7 @@ export class SocketService {
   async joinSite(socket: Socket, siteId: string): Promise<boolean> {
     const { organizationId } = socket.data;
     if (!organizationId) {
-      console.warn('[SocketService] Cannot join site - no organizationId in socket.data');
+      log.warn('Cannot join site - no organizationId in socket.data');
       return false;
     }
 
@@ -219,7 +221,7 @@ export class SocketService {
   async joinUnit(socket: Socket, unitId: string): Promise<boolean> {
     const { organizationId } = socket.data;
     if (!organizationId) {
-      console.warn('[SocketService] Cannot join unit - no organizationId in socket.data');
+      log.warn('Cannot join unit - no organizationId in socket.data');
       return false;
     }
 
@@ -302,12 +304,12 @@ export class SocketService {
    */
   async shutdown(): Promise<void> {
     if (this.pubClient || this.subClient) {
-      console.log('[SocketService] Disconnecting Redis clients...');
+      log.info('Disconnecting Redis clients...');
       await Promise.all([
         this.pubClient?.disconnect().catch(() => {}),
         this.subClient?.disconnect().catch(() => {}),
       ]);
-      console.log('[SocketService] Redis clients disconnected');
+      log.info('Redis clients disconnected');
     }
   }
 }

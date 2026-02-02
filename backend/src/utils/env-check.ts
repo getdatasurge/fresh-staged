@@ -4,6 +4,9 @@
  * These utilities ensure required environment variables are set correctly
  * before the application starts, providing clear error messages to developers.
  */
+import { logger } from './logger.js';
+
+const log = logger.child({ service: 'env-check' });
 
 /**
  * Stack Auth environment configuration
@@ -81,19 +84,20 @@ export async function checkJwksReachable(jwksUrl: string): Promise<boolean> {
   try {
     const response = await fetch(jwksUrl, { method: 'GET' });
     if (!response.ok) {
-      console.warn(
-        `JWKS endpoint returned ${response.status}. Stack Auth may not be configured correctly.`,
+      log.warn(
+        { status: response.status },
+        'JWKS endpoint returned non-OK status. Stack Auth may not be configured correctly',
       );
       return false;
     }
     const data = await response.json();
     if (!data.keys || !Array.isArray(data.keys)) {
-      console.warn('JWKS response missing keys array');
+      log.warn('JWKS response missing keys array');
       return false;
     }
     return true;
   } catch (error) {
-    console.warn(`Could not reach JWKS endpoint: ${error}`);
+    log.warn({ err: error }, 'Could not reach JWKS endpoint');
     return false;
   }
 }

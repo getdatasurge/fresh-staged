@@ -27,7 +27,10 @@
  * ```
  */
 
+import { logger } from '../utils/logger.js';
 import type { SocketService } from './socket.service.js';
+
+const log = logger.child({ service: 'sensor-stream' });
 
 /**
  * Sensor reading data structure for real-time streaming
@@ -77,7 +80,7 @@ export class SensorStreamService {
     // Start flush interval
     this.intervalId = setInterval(() => this.flush(), this.flushInterval);
 
-    console.log('[SensorStreamService] Initialized with flush interval:', this.flushInterval, 'ms');
+    log.info({ flushIntervalMs: this.flushInterval }, 'Initialized with flush interval');
   }
 
   /**
@@ -161,9 +164,7 @@ export class SensorStreamService {
     }
 
     // Log flush statistics
-    console.log(
-      `[SensorStreamService] Flushed ${totalReadings} reading(s) for ${uniqueUnits.size} unit(s)`,
-    );
+    log.info({ totalReadings, unitCount: uniqueUnits.size }, 'Flushed readings');
 
     // Clean up empty buffers to prevent memory leak
     for (const [key, readings] of this.buffer.entries()) {
@@ -195,7 +196,7 @@ export class SensorStreamService {
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
-      console.log('[SensorStreamService] Stopped flush interval');
+      log.info('Stopped flush interval');
     }
   }
 

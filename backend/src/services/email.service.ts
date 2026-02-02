@@ -26,6 +26,9 @@
  */
 
 import { Resend } from 'resend';
+import { logger } from '../utils/logger.js';
+
+const log = logger.child({ service: 'email-service' });
 
 /**
  * Parameters for sending a digest email
@@ -78,9 +81,8 @@ export class EmailService {
     this.fromAddress = process.env.EMAIL_FROM_ADDRESS || 'noreply@freshtrack.app';
 
     if (!apiKey) {
-      console.warn(
-        '[EmailService] RESEND_API_KEY not configured - email sending disabled. ' +
-          'Set environment variable for email functionality.',
+      log.warn(
+        'RESEND_API_KEY not configured - email sending disabled. Set environment variable for email functionality.',
       );
       this.enabled = false;
       return;
@@ -120,16 +122,15 @@ export class EmailService {
   async sendDigest(params: SendDigestParams): Promise<SendDigestResult | null> {
     // Check if service is enabled
     if (!this.enabled || !this.client) {
-      console.warn(
-        '[EmailService] Service not configured - skipping email send. ' +
-          'Set RESEND_API_KEY environment variable to enable.',
+      log.warn(
+        'Service not configured - skipping email send. Set RESEND_API_KEY environment variable to enable.',
       );
       return null;
     }
 
     const { to, subject, html, text } = params;
 
-    console.log(`[EmailService] Sending digest email from ${this.fromAddress} to ${to}`);
+    log.info({ from: this.fromAddress, to }, 'Sending digest email');
 
     // Send via Resend SDK
     const { data, error } = await this.client.emails.send({
@@ -147,7 +148,7 @@ export class EmailService {
     });
 
     if (error) {
-      console.error('[EmailService] Failed to send email:', error);
+      log.error({ err: error }, 'Failed to send email');
       throw new Error(`[EmailService] Resend API error: ${error.message}`);
     }
 
@@ -155,7 +156,7 @@ export class EmailService {
       throw new Error('[EmailService] No message ID returned from Resend API');
     }
 
-    console.log(`[EmailService] Email sent successfully. MessageId: ${data.id}`);
+    log.info({ messageId: data.id }, 'Email sent successfully');
 
     return {
       messageId: data.id,
