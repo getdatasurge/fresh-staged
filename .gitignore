@@ -46,3 +46,7 @@ coverage/
 .worktrees/
 .security-key
 logs/security/
+
+# Local planning & orchestration artifacts
+.planning/
+task-orchestration/

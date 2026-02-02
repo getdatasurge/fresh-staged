@@ -154,9 +154,34 @@ export interface EffectiveThresholds {
   confirmTimeSeconds: number;
 }
 
-// In-memory threshold cache with TTL
+// In-memory threshold cache with TTL and bounded size
 const THRESHOLD_CACHE_TTL_MS = 60_000; // 60 seconds
+const THRESHOLD_CACHE_MAX_SIZE = 10_000;
 const thresholdCache = new Map<string, { value: EffectiveThresholds; expiresAt: number }>();
+
+/**
+ * Evict expired entries from the cache. If still over the max size after
+ * purging expired entries, remove the oldest entries by expiry time.
+ */
+function evictStaleEntries(): void {
+  const now = Date.now();
+
+  // First pass: remove expired entries
+  for (const [key, entry] of thresholdCache) {
+    if (now >= entry.expiresAt) {
+      thresholdCache.delete(key);
+    }
+  }
+
+  // Second pass: if still over limit, remove oldest by expiresAt
+  if (thresholdCache.size > THRESHOLD_CACHE_MAX_SIZE) {
+    const sorted = [...thresholdCache.entries()].sort((a, b) => a[1].expiresAt - b[1].expiresAt);
+    const toRemove = sorted.length - THRESHOLD_CACHE_MAX_SIZE;
+    for (let i = 0; i < toRemove; i++) {
+      thresholdCache.delete(sorted[i][0]);
+    }
+  }
+}
 
 /**
  * Clear the in-memory threshold cache
@@ -265,6 +290,11 @@ export async function resolveEffectiveThresholds(unitId: string): Promise<Effect
     hysteresis,
     confirmTimeSeconds,
   };
+
+  // Evict stale entries before storing to keep cache bounded
+  if (thresholdCache.size >= THRESHOLD_CACHE_MAX_SIZE) {
+    evictStaleEntries();
+  }
 
   // Store in cache
   thresholdCache.set(unitId, {

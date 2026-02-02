@@ -400,7 +400,7 @@ describe('Admin tRPC Router', () => {
         const caller = createCaller(noAuthCtx());
 
         await expect(
-          caller.hardDeleteOrganization({ organizationId: validOrgId }),
+          caller.hardDeleteOrganization({ organizationId: validOrgId, confirmName: 'Test' }),
         ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
       });
 
@@ -409,7 +409,7 @@ describe('Admin tRPC Router', () => {
         const caller = createCaller(regularUserCtx());
 
         await expect(
-          caller.hardDeleteOrganization({ organizationId: validOrgId }),
+          caller.hardDeleteOrganization({ organizationId: validOrgId, confirmName: 'Test' }),
         ).rejects.toMatchObject({ code: 'FORBIDDEN' });
       });
     });
@@ -659,38 +659,21 @@ describe('Admin tRPC Router', () => {
   describe('listOrganizations', () => {
     it('should return organizations with user and site counts', async () => {
       const now = new Date();
-      const mockOrgs = [
-        {
-          id: 'org-1',
-          name: 'Org One',
-          slug: 'org-one',
-          timezone: 'UTC',
-          complianceMode: 'standard',
-          createdAt: now,
-        },
-      ];
 
-      // First select: get organizations list
-      // Then for each org: two selects (userCount, siteCount)
-      let selectCallCount = 0;
-      mockSelect.mockImplementation(() => {
-        selectCallCount++;
-        if (selectCallCount === 1) {
-          // Main org query
-          return {
-            from: vi.fn().mockReturnValue({
-              where: vi.fn().mockReturnValue({
-                orderBy: vi.fn().mockResolvedValue(mockOrgs),
-              }),
-            }),
-          };
-        }
-        // userCount or siteCount subquery
-        return {
-          from: vi.fn().mockReturnValue({
-            where: vi.fn().mockResolvedValue([{ count: selectCallCount === 2 ? 3 : 1 }]),
-          }),
-        };
+      // listOrganizations now uses a single db.execute(sql`...`) call
+      mockExecute.mockResolvedValue({
+        rows: [
+          {
+            id: 'org-1',
+            name: 'Org One',
+            slug: 'org-one',
+            timezone: 'UTC',
+            complianceMode: 'standard',
+            createdAt: now.toISOString(),
+            userCount: 3,
+            siteCount: 1,
+          },
+        ],
       });
 
       const caller = createCaller(superAdminCtx());
@@ -703,10 +686,19 @@ describe('Admin tRPC Router', () => {
         slug: 'org-one',
         timezone: 'UTC',
         complianceMode: 'standard',
+        userCount: 3,
+        siteCount: 1,
       });
       expect(result[0].createdAt).toBe(now.toISOString());
-      expect(typeof result[0].userCount).toBe('number');
-      expect(typeof result[0].siteCount).toBe('number');
+    });
+
+    it('should return empty array when no organizations exist', async () => {
+      mockExecute.mockResolvedValue({ rows: [] });
+
+      const caller = createCaller(superAdminCtx());
+      const result = await caller.listOrganizations();
+
+      expect(result).toEqual([]);
     });
   });
 
@@ -1323,7 +1315,36 @@ describe('Admin tRPC Router', () => {
         caller.softDeleteOrganization({ organizationId: validOrgId }),
       ).rejects.toMatchObject({
         code: 'NOT_FOUND',
-        message: 'Organization not found or already deleted',
+        message: 'Organization not found',
+      });
+    });
+
+    it('should throw BAD_REQUEST when organization is already deleted', async () => {
+      mockSelect.mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([
+              {
+                id: validOrgId,
+                slug: 'my-org_deleted_1234',
+                name: 'My Org',
+                deletedAt: new Date(),
+              },
+            ]),
+          }),
+        }),
+      });
+
+      const caller = createCaller(superAdminCtx());
+
+      await expect(caller.softDeleteOrganization({ organizationId: validOrgId })).rejects.toThrow(
+        TRPCError,
+      );
+      await expect(
+        caller.softDeleteOrganization({ organizationId: validOrgId }),
+      ).rejects.toMatchObject({
+        code: 'BAD_REQUEST',
+        message: 'Organization is already deleted',
       });
     });
 
@@ -1331,7 +1352,11 @@ describe('Admin tRPC Router', () => {
       mockSelect.mockReturnValue({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
-            limit: vi.fn().mockResolvedValue([{ id: validOrgId, slug: 'my-org', name: 'My Org' }]),
+            limit: vi
+              .fn()
+              .mockResolvedValue([
+                { id: validOrgId, slug: 'my-org', name: 'My Org', deletedAt: null },
+              ]),
           }),
         }),
       });
@@ -1364,37 +1389,94 @@ describe('Admin tRPC Router', () => {
 
       const caller = createCaller(superAdminCtx());
 
-      await expect(caller.hardDeleteOrganization({ organizationId: validOrgId })).rejects.toThrow(
-        TRPCError,
-      );
       await expect(
-        caller.hardDeleteOrganization({ organizationId: validOrgId }),
+        caller.hardDeleteOrganization({ organizationId: validOrgId, confirmName: 'Whatever' }),
+      ).rejects.toThrow(TRPCError);
+      await expect(
+        caller.hardDeleteOrganization({ organizationId: validOrgId, confirmName: 'Whatever' }),
       ).rejects.toMatchObject({
         code: 'NOT_FOUND',
         message: 'Organization not found',
       });
     });
 
-    it('should hard delete organization and return success', async () => {
+    it('should throw PRECONDITION_FAILED when organization is not soft-deleted', async () => {
       mockSelect.mockReturnValue({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
-            limit: vi.fn().mockResolvedValue([{ id: validOrgId, name: 'Doomed Org' }]),
+            limit: vi
+              .fn()
+              .mockResolvedValue([{ id: validOrgId, name: 'Active Org', deletedAt: null }]),
           }),
         }),
       });
 
       const caller = createCaller(superAdminCtx());
-      const result = await caller.hardDeleteOrganization({ organizationId: validOrgId });
+
+      await expect(
+        caller.hardDeleteOrganization({ organizationId: validOrgId, confirmName: 'Active Org' }),
+      ).rejects.toThrow(TRPCError);
+      await expect(
+        caller.hardDeleteOrganization({ organizationId: validOrgId, confirmName: 'Active Org' }),
+      ).rejects.toMatchObject({
+        code: 'PRECONDITION_FAILED',
+        message: 'Organization must be soft-deleted before hard deletion',
+      });
+    });
+
+    it('should throw BAD_REQUEST when confirmName does not match', async () => {
+      mockSelect.mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi
+              .fn()
+              .mockResolvedValue([{ id: validOrgId, name: 'Doomed Org', deletedAt: new Date() }]),
+          }),
+        }),
+      });
+
+      const caller = createCaller(superAdminCtx());
+
+      await expect(
+        caller.hardDeleteOrganization({ organizationId: validOrgId, confirmName: 'Wrong Name' }),
+      ).rejects.toThrow(TRPCError);
+      await expect(
+        caller.hardDeleteOrganization({ organizationId: validOrgId, confirmName: 'Wrong Name' }),
+      ).rejects.toMatchObject({
+        code: 'BAD_REQUEST',
+        message: 'Confirmation name does not match organization name',
+      });
+    });
+
+    it('should hard delete organization with audit log and return success', async () => {
+      mockSelect.mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            limit: vi
+              .fn()
+              .mockResolvedValue([{ id: validOrgId, name: 'Doomed Org', deletedAt: new Date() }]),
+          }),
+        }),
+      });
+
+      const caller = createCaller(superAdminCtx());
+      const result = await caller.hardDeleteOrganization({
+        organizationId: validOrgId,
+        confirmName: 'Doomed Org',
+      });
 
       expect(result).toEqual({ success: true });
+      // Audit log should be created before deletion
+      expect(mockInsert).toHaveBeenCalled();
       expect(mockDelete).toHaveBeenCalled();
     });
 
     it('should reject invalid UUID input', async () => {
       const caller = createCaller(superAdminCtx());
 
-      await expect(caller.hardDeleteOrganization({ organizationId: 'bad-uuid' })).rejects.toThrow();
+      await expect(
+        caller.hardDeleteOrganization({ organizationId: 'bad-uuid', confirmName: 'Test' }),
+      ).rejects.toThrow();
     });
   });
 });

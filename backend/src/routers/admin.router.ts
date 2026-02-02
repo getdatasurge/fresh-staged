@@ -5,11 +5,11 @@
  * - Queue health and status monitoring
  * - System status and diagnostics
  *
- * All procedures require authentication.
+ * All procedures require super admin authorization (superAdminProcedure).
  */
 
 import { TRPCError } from '@trpc/server';
-import { and, count, desc, eq, ilike, isNull, or, sql } from 'drizzle-orm';
+import { and, count, desc, eq, ilike, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../db/client.js';
 import { eventLogs } from '../db/schema/audit.js';
@@ -20,6 +20,15 @@ import { getQueueService } from '../services/queue.service.js';
 import { getOrCreateProfile, getUserPrimaryOrganization } from '../services/user.service.js';
 import { router } from '../trpc/index.js';
 import { superAdminProcedure } from '../trpc/procedures.js';
+
+/**
+ * Escape special ILIKE/LIKE characters so they are treated as literals.
+ * PostgreSQL LIKE/ILIKE treats `%` as any-sequence, `_` as single-char,
+ * and `\` as escape prefix.
+ */
+function escapeIlike(str: string): string {
+  return str.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+}
 
 /**
  * Queue stats schema for response typing
@@ -39,11 +48,7 @@ const QueueStatsSchema = z.object({
 });
 
 /**
- * Admin router
- *
- * Procedures:
- * - queueHealth: Get health status of all registered queues
- * - systemStatus: Get overall system status
+ * Admin router — platform-wide super admin endpoints
  */
 export const adminRouter = router({
   /**
@@ -54,7 +59,7 @@ export const adminRouter = router({
    * - Job counts by status (waiting, active, completed, failed, delayed)
    * - Redis connection status
    *
-   * @requires Authentication (protectedProcedure)
+   * @requires Super Admin (superAdminProcedure)
    */
   queueHealth: superAdminProcedure
     .output(
@@ -256,43 +261,32 @@ export const adminRouter = router({
       ),
     )
     .query(async () => {
-      // Get organizations that are not deleted
-      const orgs = await db
-        .select({
-          id: organizations.id,
-          name: organizations.name,
-          slug: organizations.slug,
-          timezone: organizations.timezone,
-          complianceMode: organizations.complianceMode,
-          createdAt: organizations.createdAt,
-        })
-        .from(organizations)
-        .where(isNull(organizations.deletedAt))
-        .orderBy(sql`${organizations.createdAt} DESC`);
+      // Single query with correlated subqueries instead of N+1
+      const result = await db.execute(sql`
+        SELECT
+          o.id,
+          o.name,
+          o.slug,
+          o.timezone,
+          o.compliance_mode AS "complianceMode",
+          o.created_at AS "createdAt",
+          (SELECT COUNT(*)::int FROM user_roles ur WHERE ur.organization_id = o.id) AS "userCount",
+          (SELECT COUNT(*)::int FROM sites s WHERE s.organization_id = o.id AND s.deleted_at IS NULL) AS "siteCount"
+        FROM organizations o
+        WHERE o.deleted_at IS NULL
+        ORDER BY o.created_at DESC
+      `);
 
-      // Enrich with counts
-      const stats = await Promise.all(
-        orgs.map(async (org) => {
-          const [userCountResult] = await db
-            .select({ count: count() })
-            .from(userRoles)
-            .where(eq(userRoles.organizationId, org.id));
-
-          const [siteCountResult] = await db
-            .select({ count: count() })
-            .from(sites)
-            .where(and(eq(sites.organizationId, org.id), isNull(sites.deletedAt)));
-
-          return {
-            ...org,
-            createdAt: org.createdAt.toISOString(),
-            userCount: Number(userCountResult?.count || 0),
-            siteCount: Number(siteCountResult?.count || 0),
-          };
-        }),
-      );
-
-      return stats;
+      return (result.rows as Record<string, unknown>[]).map((row) => ({
+        id: String(row.id),
+        name: String(row.name),
+        slug: String(row.slug),
+        timezone: String(row.timezone),
+        complianceMode: String(row.complianceMode),
+        createdAt: new Date(row.createdAt as string).toISOString(),
+        userCount: Number(row.userCount || 0),
+        siteCount: Number(row.siteCount || 0),
+      }));
     }),
 
   /**
@@ -374,7 +368,7 @@ export const adminRouter = router({
       ),
     )
     .query(async ({ input }) => {
-      const searchPattern = `%${input.query}%`;
+      const searchPattern = `%${escapeIlike(input.query)}%`;
 
       const results = await db
         .select({
@@ -563,7 +557,11 @@ export const adminRouter = router({
   }),
 
   /**
-   * List cleanup jobs (placeholder)
+   * List cleanup jobs
+   *
+   * TODO: Implement — the DataMaintenance page (src/pages/DataMaintenance.tsx)
+   * expects this endpoint to return scheduled/completed org cleanup jobs.
+   * Returns an empty array until the cleanup-job scheduling system is built.
    */
   listCleanupJobs: superAdminProcedure.query(async () => {
     return [];
@@ -737,7 +735,12 @@ export const adminRouter = router({
 
       // Fetch organization first
       const [org] = await db
-        .select({ id: organizations.id, slug: organizations.slug, name: organizations.name })
+        .select({
+          id: organizations.id,
+          slug: organizations.slug,
+          name: organizations.name,
+          deletedAt: organizations.deletedAt,
+        })
         .from(organizations)
         .where(eq(organizations.id, organizationId))
         .limit(1);
@@ -745,7 +748,14 @@ export const adminRouter = router({
       if (!org) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Organization not found or already deleted',
+          message: 'Organization not found',
+        });
+      }
+
+      if (org.deletedAt) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Organization is already deleted',
         });
       }
 
@@ -766,15 +776,29 @@ export const adminRouter = router({
 
   /**
    * Hard delete an organization (permanently deletes from database)
+   *
+   * Safeguards:
+   * - Organization must be soft-deleted first (deletedAt must be set)
+   * - Caller must confirm by providing the exact organization name
+   * - An audit log entry is created before deletion for traceability
    */
   hardDeleteOrganization: superAdminProcedure
-    .input(z.object({ organizationId: z.string().uuid() }))
-    .mutation(async ({ input }) => {
-      const { organizationId } = input;
+    .input(
+      z.object({
+        organizationId: z.string().uuid(),
+        confirmName: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { organizationId, confirmName } = input;
 
-      // Fetch organization first
+      // Fetch organization with deletion status
       const [org] = await db
-        .select({ id: organizations.id, name: organizations.name })
+        .select({
+          id: organizations.id,
+          name: organizations.name,
+          deletedAt: organizations.deletedAt,
+        })
         .from(organizations)
         .where(eq(organizations.id, organizationId))
         .limit(1);
@@ -785,6 +809,38 @@ export const adminRouter = router({
           message: 'Organization not found',
         });
       }
+
+      // Require prior soft-delete
+      if (!org.deletedAt) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: 'Organization must be soft-deleted before hard deletion',
+        });
+      }
+
+      // Require name confirmation to prevent accidental deletion
+      if (confirmName !== org.name) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Confirmation name does not match organization name',
+        });
+      }
+
+      // Audit log before irreversible deletion
+      await db.insert(eventLogs).values({
+        eventType: 'hard_delete_organization',
+        category: 'admin_action',
+        severity: 'critical',
+        title: `Hard deleted organization: ${org.name}`,
+        organizationId,
+        actorType: 'super_admin',
+        eventData: {
+          organizationName: org.name,
+          deletedBy: ctx.user.id,
+          deletedByEmail: ctx.user.email,
+        },
+        recordedAt: new Date(),
+      } as Record<string, unknown>);
 
       // Hard delete
       await db.delete(organizations).where(eq(organizations.id, organizationId));
