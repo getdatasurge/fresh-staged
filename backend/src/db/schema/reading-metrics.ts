@@ -69,7 +69,8 @@ export const readingMetrics = pgTable(
       withTimezone: true,
     })
       .defaultNow()
-      .notNull(),
+      .notNull()
+      .$onUpdateFn(() => new Date()),
   },
   (table) => [
     // Primary query pattern: metrics for a unit over time

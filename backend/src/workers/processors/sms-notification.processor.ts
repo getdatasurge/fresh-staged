@@ -157,7 +157,7 @@ async function updateDeliveryRetry(deliveryId: string, retryCount: number): Prom
     await db
       .update(notificationDeliveries)
       .set({
-        retryCount: String(retryCount),
+        retryCount,
         lastRetryAt: new Date(),
       })
       .where(eq(notificationDeliveries.id, deliveryId));

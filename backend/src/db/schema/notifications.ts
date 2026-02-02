@@ -1,6 +1,6 @@
-import { pgTable, uuid, varchar, text, timestamp, index } from 'drizzle-orm/pg-core';
-import { notificationChannelEnum, notificationStatusEnum } from './enums.js';
+import { integer, pgTable, uuid, varchar, text, timestamp, index } from 'drizzle-orm/pg-core';
 import { alerts } from './alerts.js';
+import { notificationChannelEnum, notificationStatusEnum } from './enums.js';
 import { profiles } from './users.js';
 
 // Notification Deliveries - tracks delivery status per channel
@@ -48,7 +48,7 @@ export const notificationDeliveries = pgTable(
       withTimezone: true,
     }),
     // Retry tracking
-    retryCount: varchar('retry_count', { length: 10 }).default('0'),
+    retryCount: integer('retry_count').default(0),
     lastRetryAt: timestamp('last_retry_at', {
       mode: 'date',
       precision: 3,
@@ -70,6 +70,10 @@ export const notificationDeliveries = pgTable(
     index('notification_deliveries_scheduled_idx').on(table.scheduledAt),
     // For finding pending deliveries to retry
     index('notification_deliveries_pending_idx').on(table.status, table.scheduledAt),
+    // Webhook status lookups by provider reference (Telnyx message ID, etc.)
+    index('notification_deliveries_external_id_idx').on(table.externalId),
+    // SMS rate limiting: WHERE channel='sms' AND status IN (...) AND sent_at >= cutoff
+    index('notification_deliveries_rate_limit_idx').on(table.channel, table.status, table.sentAt),
   ],
 );
 

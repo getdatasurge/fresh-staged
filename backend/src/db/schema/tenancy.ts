@@ -172,7 +172,7 @@ export const smsConfigs = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('sms_configs_org_idx').on(table.organizationId),
+    // Unique constraint: one SMS config per org (also serves as lookup index)
     uniqueIndex('sms_configs_org_unique_idx').on(table.organizationId),
   ],
 );
@@ -196,7 +196,7 @@ export const notificationSettings = pgTable(
     ...timestamps,
   },
   (table) => [
-    index('notification_settings_org_idx').on(table.organizationId),
+    // Unique constraint: one notification config per org (also serves as lookup index)
     uniqueIndex('notification_settings_org_unique_idx').on(table.organizationId),
   ],
 );

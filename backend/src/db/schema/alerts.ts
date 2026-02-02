@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   boolean,
   index,
@@ -184,6 +185,10 @@ export const alerts = pgTable(
     index('alerts_unit_triggered_desc_idx').on(table.unitId, table.triggeredAt.desc()),
     // Dashboard filtering by status + severity
     index('alerts_status_severity_idx').on(table.status, table.severity),
+    // Active alerts dashboard: partial index keeps index small
+    index('alerts_active_triggered_idx')
+      .on(table.status, table.triggeredAt.desc())
+      .where(sql`${table.status} IN ('active', 'escalated')`),
   ],
 );
 
