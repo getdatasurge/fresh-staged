@@ -45,8 +45,8 @@ importers:
         specifier: ^11.8.1
         version: 11.9.0(typescript@5.9.3)
       bullmq:
-        specifier: ^5.67.0
-        version: 5.67.0
+        specifier: ^5.67.2
+        version: 5.67.2
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1
@@ -1665,8 +1665,8 @@ packages:
     resolution: {integrity: sha512-ZMANVnAixE6AWWnPzlW2KpUrxhm9woycYvPOo67jWHyFowASTEd9s+QN1EIMsSDtwhIxN4sWE1jotpuDUIgyIw==}
     engines: {node: '>=6.14.2'}
 
-  bullmq@5.67.0:
-    resolution: {integrity: sha512-8oLrD+8uZOkNtMbqd1Ok6asZEGJ4+wKQhD0BZJTUg78vjxtVJ0DCzFm8Vcq7RpzAH/U4YHombz79y2SWHzgd4g==}
+  bullmq@5.67.2:
+    resolution: {integrity: sha512-3KYqNqQptKcgksACO1li4YW9/jxEh6XWa1lUg4OFrHa80Pf0C7H9zeb6ssbQQDfQab/K3QCXopbZ40vrvcyrLw==}
 
   call-bind-apply-helpers@1.0.2:
     resolution: {integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==}
@@ -4790,7 +4790,7 @@ snapshots:
       node-gyp-build: 4.8.4
     optional: true
 
-  bullmq@5.67.0:
+  bullmq@5.67.2:
     dependencies:
       cron-parser: 4.9.0
       ioredis: 5.9.2
