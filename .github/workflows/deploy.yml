@@ -270,7 +270,7 @@ jobs:
       # Optional: Slack notification
       - name: Slack notification
         if: always() && vars.SLACK_WEBHOOK_URL != ''
-        uses: slackapi/slack-github-action@v1.25.0
+        uses: slackapi/slack-github-action@v2.1.1
         with:
           payload: |
             {
