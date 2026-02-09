@@ -75,7 +75,7 @@
     "framer-motion": "^12.29.2",
     "get-shit-done-codex": "^1.4.1",
     "input-otp": "^1.4.2",
-    "ky": "^1.14.2",
+    "ky": "^1.14.3",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
     "react": "^18.3.1",
